@@ -95,8 +95,8 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.device.db.DeviceStore
 import com.terraformation.backend.device.event.DeviceUnresponsiveEvent
 import com.terraformation.backend.device.event.SensorBoundsAlertTriggeredEvent
@@ -320,7 +320,7 @@ internal class EmailNotificationServiceTest {
       )
   private val plantingSubzone =
       PlantingSubzoneModel(
-          id = PlantingSubzoneId(1),
+          id = SubstratumId(1),
           areaHa = BigDecimal.ONE,
           boundary = multiPolygon(1),
           name = "My Zone",
@@ -330,7 +330,7 @@ internal class EmailNotificationServiceTest {
       )
   private val plantingZone =
       PlantingZoneModel(
-          id = PlantingZoneId(1),
+          id = StratumId(1),
           areaHa = BigDecimal.ONE,
           boundary = multiPolygon(1),
           boundaryModifiedTime = Instant.EPOCH,
@@ -1577,7 +1577,7 @@ internal class EmailNotificationServiceTest {
                         speciesDensityChanges = emptyList(),
                     ),
                     ZoneT0DensityChangedEventModel(
-                        PlantingZoneId(2),
+                        StratumId(2),
                         zoneName = "Z2",
                         speciesDensityChanges = emptyList(),
                     ),
@@ -1603,7 +1603,7 @@ internal class EmailNotificationServiceTest {
                         speciesDensityChanges = emptyList(),
                     ),
                     ZoneT0DensityChangedEventModel(
-                        PlantingZoneId(2),
+                        StratumId(2),
                         zoneName = "Z2",
                         speciesDensityChanges = emptyList(),
                     ),

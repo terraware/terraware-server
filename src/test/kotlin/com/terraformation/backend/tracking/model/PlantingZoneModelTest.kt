@@ -4,8 +4,8 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toMultiPolygon
@@ -730,7 +730,7 @@ class PlantingZoneModelTest {
       PlantingSubzoneModel(
           areaHa = BigDecimal.ONE,
           boundary = boundary,
-          id = PlantingSubzoneId(id.toLong()),
+          id = SubstratumId(id.toLong()),
           fullName = "name",
           name = "name",
           plantingCompletedTime = null,
@@ -738,7 +738,7 @@ class PlantingZoneModelTest {
           stableId = StableId("name"),
       )
 
-  private fun plantingSubzoneIds(vararg id: Int) = id.map { PlantingSubzoneId(it.toLong()) }.toSet()
+  private fun plantingSubzoneIds(vararg id: Int) = id.map { SubstratumId(it.toLong()) }.toSet()
 
   /**
    * Returns the boundary for a sample planting zone that contains some number of 51x76 meter
@@ -766,7 +766,7 @@ class PlantingZoneModelTest {
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
           errorMargin = BigDecimal.ONE,
-          id = PlantingZoneId(1),
+          id = StratumId(1),
           name = "name",
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,

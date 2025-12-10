@@ -30,10 +30,10 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
@@ -779,7 +779,7 @@ data class ObservationPayload(
                 description = "If specific subzones were requested for this observation, their IDs."
             )
     )
-    val requestedSubzoneIds: Set<PlantingSubzoneId>?,
+    val requestedSubzoneIds: Set<SubstratumId>?,
     @Schema(description = "Date this observation started.") //
     val startDate: LocalDate,
     val state: ObservationState,
@@ -838,7 +838,7 @@ data class AssignedPlotPayload(
     val isFirstObservation: Boolean,
     val isPermanent: Boolean,
     val observationId: ObservationId,
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val plantingSubzoneId: SubstratumId?,
     val plantingSubzoneName: String,
     val plantingZoneName: String,
     val plotId: MonitoringPlotId,
@@ -1050,7 +1050,7 @@ data class ScheduleObservationRequestPayload(
             Schema(description = "The IDs of the subzones this observation should cover."),
         minItems = 1,
     )
-    val requestedSubzoneIds: Set<PlantingSubzoneId>,
+    val requestedSubzoneIds: Set<SubstratumId>,
     @Schema(
         description =
             "The start date for this observation, can be up to a year from the date this " +

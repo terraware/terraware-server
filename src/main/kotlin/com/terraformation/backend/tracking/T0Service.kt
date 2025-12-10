@@ -6,9 +6,9 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
@@ -157,10 +157,8 @@ class T0Service(
             )
       }
 
-  private fun getZoneInfo(
-      zoneIds: Collection<PlantingZoneId>
-  ): Map<PlantingZoneId, ZoneEventDetailsModel> =
-      with(PLANTING_ZONES) {
+  private fun getZoneInfo(zoneIds: Collection<StratumId>): Map<StratumId, ZoneEventDetailsModel> =
+      with(STRATA) {
         dslContext
             .select(ID, NAME, plantingSites.ORGANIZATION_ID, PLANTING_SITE_ID)
             .from(this)

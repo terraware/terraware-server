@@ -32,11 +32,11 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
@@ -381,7 +381,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
           assertEquals(
               subzone1Id,
-              plot.plantingSubzoneId,
+              plot.substratumId,
               "Planting subzone ID for plot ${plot.id}",
           )
 
@@ -392,10 +392,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           }
         }
 
-        val numPermanentPlotsBySubzone: Map<PlantingSubzoneId, Int> =
+        val numPermanentPlotsBySubzone: Map<SubstratumId, Int> =
             monitoringPlots
                 .filter { it.permanentIndex != null }
-                .groupBy { it.plantingSubzoneId!! }
+                .groupBy { it.substratumId!! }
                 .mapValues { it.value.size }
         val numPermanentPlotsInSubzone1 = numPermanentPlotsBySubzone[subzone1Id] ?: 0
         val numPermanentPlotsInSubzone2 = numPermanentPlotsBySubzone[subzone2Id] ?: 0
@@ -494,7 +494,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           numTemporaryPlots = 6,
       )
       val subzoneIds =
-          listOf(PlantingSubzoneId(0)) +
+          listOf(SubstratumId(0)) +
               (0..4).map { index -> insertPlantingSubzone(x = 3 * index, width = 3) }
 
       // Pre-existing permanent plots in subzones 2, 3, and 5
@@ -516,7 +516,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       service.startObservation(observationId)
 
       val subzoneIdsByMonitoringPlot =
-          monitoringPlotsDao.findAll().associate { it.id to it.plantingSubzoneId }
+          monitoringPlotsDao.findAll().associate { it.id to it.substratumId }
       val observationPlots = observationPlotsDao.findAll()
 
       val numTemporaryPlotsBySubzone =

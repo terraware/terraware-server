@@ -12,7 +12,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -40,7 +40,7 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           monitoringPlots.asMultiValueSublist(
               "exteriorPlots",
               PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
-                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNull),
+                  .and(MONITORING_PLOTS.SUBSTRATUM_ID.isNull),
           ),
           plantingSiteHistories.asMultiValueSublist(
               "histories",
@@ -49,7 +49,7 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           monitoringPlots.asMultiValueSublist(
               "monitoringPlots",
               PLANTING_SITE_SUMMARIES.ID.eq(MONITORING_PLOTS.PLANTING_SITE_ID)
-                  .and(MONITORING_PLOTS.PLANTING_SUBZONE_ID.isNotNull),
+                  .and(MONITORING_PLOTS.SUBSTRATUM_ID.isNotNull),
           ),
           observations.asMultiValueSublist(
               "observations",
@@ -65,7 +65,7 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           ),
           plantingZones.asMultiValueSublist(
               "plantingZones",
-              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_ZONES.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID.eq(STRATA.PLANTING_SITE_ID),
           ),
           plantingSitePopulations.asMultiValueSublist(
               "populations",
@@ -89,8 +89,8 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           idWrapperField("id", PLANTING_SITE_SUMMARIES.ID) { PlantingSiteId(it) },
           timestampField("modifiedTime", PLANTING_SITE_SUMMARIES.MODIFIED_TIME),
           textField("name", PLANTING_SITE_SUMMARIES.NAME),
-          longField("numPlantingZones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_ZONES),
-          longField("numPlantingSubzones", PLANTING_SITE_SUMMARIES.NUM_PLANTING_SUBZONES),
+          longField("numPlantingZones", PLANTING_SITE_SUMMARIES.NUM_STRATA),
+          longField("numPlantingSubzones", PLANTING_SITE_SUMMARIES.NUM_SUBSTRATA),
           zoneIdField("timeZone", PLANTING_SITE_SUMMARIES.TIME_ZONE),
           bigDecimalField(
               "totalPlants",

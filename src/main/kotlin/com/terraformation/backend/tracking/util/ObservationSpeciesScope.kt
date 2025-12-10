@@ -2,18 +2,18 @@ package com.terraformation.backend.tracking.util
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.ObservationPlots
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import org.jooq.Condition
 import org.jooq.Record
 import org.jooq.Record1
@@ -61,60 +61,55 @@ class ObservationSpeciesPlot(val plotId: MonitoringPlotId) :
 }
 
 class ObservationSpeciesSubzone(
-    val subzoneSelect: Select<Record1<PlantingSubzoneId?>>,
+    val subzoneSelect: Select<Record1<SubstratumId?>>,
     val plotId: MonitoringPlotId? = null,
-) : ObservationSpeciesScope<PlantingSubzoneId> {
+) : ObservationSpeciesScope<SubstratumId> {
   constructor(
-      subzoneId: PlantingSubzoneId,
+      subzoneId: SubstratumId,
       plotId: MonitoringPlotId? = null,
   ) : this(DSL.select(DSL.inline(subzoneId)), plotId)
 
   constructor(
       plotId: MonitoringPlotId
   ) : this(
-      DSL.select(
-              OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories.PLANTING_SUBZONE_ID
-          )
+      DSL.select(OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID)
           .from(OBSERVATION_PLOTS)
           .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
-          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVED_SUBZONE_SPECIES_TOTALS.OBSERVATION_ID)),
+          .and(
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID)
+          ),
       plotId,
   )
 
   override val scopeId = subzoneSelect
 
   override val observedTotalsCondition =
-      OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID.eq(subzoneSelect)
+      OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID.eq(subzoneSelect)
 
   override val observedTotalsPlantingSiteTempCondition =
-      OBSERVED_SUBZONE_SPECIES_TOTALS.plantingSubzones.plantingSites
-          .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
+      OBSERVED_SUBSTRATUM_SPECIES_TOTALS.substrata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
           .eq(true)
 
-  override val observedTotalsScopeField = OBSERVED_SUBZONE_SPECIES_TOTALS.PLANTING_SUBZONE_ID
+  override val observedTotalsScopeField = OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID
 
-  override val observedTotalsTable = OBSERVED_SUBZONE_SPECIES_TOTALS
+  override val observedTotalsTable = OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
   override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      tempZoneTable.monitoringPlotHistories.plantingSubzoneHistories.PLANTING_SUBZONE_ID.eq(
-          subzoneSelect
-      )
+      tempZoneTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(subzoneSelect)
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
-      permPlotsTable.monitoringPlotHistories.plantingSubzoneHistories.PLANTING_SUBZONE_ID.eq(
-          subzoneSelect
-      )
+      permPlotsTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(subzoneSelect)
 }
 
 class ObservationSpeciesZone(
-    val zoneSelect: Select<Record1<PlantingZoneId?>>,
+    val zoneSelect: Select<Record1<StratumId?>>,
     val plotId: MonitoringPlotId? = null,
-) : ObservationSpeciesScope<PlantingZoneId> {
+) : ObservationSpeciesScope<StratumId> {
   constructor(
-      zoneId: PlantingZoneId,
+      zoneId: StratumId,
       plotId: MonitoringPlotId? = null,
   ) : this(DSL.select(DSL.inline(zoneId)), plotId)
 
@@ -122,40 +117,38 @@ class ObservationSpeciesZone(
       plotId: MonitoringPlotId
   ) : this(
       DSL.select(
-              OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
-                  .plantingZoneHistories
-                  .PLANTING_ZONE_ID
+              OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
+                  .STRATUM_ID
           )
           .from(OBSERVATION_PLOTS)
           .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
-          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID)),
+          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID)),
       plotId,
   )
 
   override val scopeId = zoneSelect
 
-  override val observedTotalsCondition =
-      OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID.eq(zoneSelect)
+  override val observedTotalsCondition = OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID.eq(zoneSelect)
 
   override val observedTotalsPlantingSiteTempCondition =
-      OBSERVED_ZONE_SPECIES_TOTALS.plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
+      OBSERVED_STRATUM_SPECIES_TOTALS.strata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
           true
       )
 
-  override val observedTotalsScopeField = OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID
+  override val observedTotalsScopeField = OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID
 
-  override val observedTotalsTable = OBSERVED_ZONE_SPECIES_TOTALS
+  override val observedTotalsTable = OBSERVED_STRATUM_SPECIES_TOTALS
 
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
   override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(zoneSelect)
+      STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(zoneSelect)
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
-      permPlotsTable.monitoringPlotHistories.plantingSubzoneHistories.plantingZoneHistories
-          .PLANTING_ZONE_ID
-          .eq(zoneSelect)
+      permPlotsTable.monitoringPlotHistories.substratumHistories.stratumHistories.STRATUM_ID.eq(
+          zoneSelect
+      )
 }
 
 class ObservationSpeciesSite(
@@ -177,12 +170,8 @@ class ObservationSpeciesSite(
   )
 
   constructor(
-      zoneId: PlantingZoneId
-  ) : this(
-      DSL.select(PLANTING_ZONES.PLANTING_SITE_ID)
-          .from(PLANTING_ZONES)
-          .where(PLANTING_ZONES.ID.eq(zoneId))
-  )
+      zoneId: StratumId
+  ) : this(DSL.select(STRATA.PLANTING_SITE_ID).from(STRATA).where(STRATA.ID.eq(zoneId)))
 
   override val scopeId = siteSelect
 
@@ -200,7 +189,7 @@ class ObservationSpeciesSite(
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
   override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      PLANTING_ZONE_T0_TEMP_DENSITIES.plantingZones.PLANTING_SITE_ID.eq(siteSelect)
+      STRATUM_T0_TEMP_DENSITIES.strata.PLANTING_SITE_ID.eq(siteSelect)
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
       PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect)

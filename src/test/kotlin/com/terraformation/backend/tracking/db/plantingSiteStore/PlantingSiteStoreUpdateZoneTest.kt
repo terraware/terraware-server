@@ -1,10 +1,10 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.StableId
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.multiPolygon
 import io.mockk.every
 import java.math.BigDecimal
@@ -25,7 +25,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
       val plantingSiteId = insertPlantingSite(x = 0)
 
       val initialRow =
-          PlantingZonesRow(
+          StrataRow(
               areaHa = BigDecimal.ONE,
               boundaryModifiedBy = createdBy,
               boundaryModifiedTime = createdTime,
@@ -127,13 +127,13 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
 
       val expectedSiteHistory = dslContext.fetch(PLANTING_SITE_HISTORIES)
       val expectedZoneHistory =
-          dslContext.fetch(PLANTING_ZONE_HISTORIES).onEach { record ->
+          dslContext.fetch(STRATUM_HISTORIES).onEach { record ->
             if (record.id == newPlantingZoneHistoryId) {
               record.name = "renamed"
             }
           }
       val expectedSubzoneHistory =
-          dslContext.fetch(PLANTING_SUBZONE_HISTORIES).onEach { record ->
+          dslContext.fetch(SUBSTRATUM_HISTORIES).onEach { record ->
             if (record.id == newPlantingSubzoneHistoryId) {
               record.fullName = "renamed-subzone"
             }

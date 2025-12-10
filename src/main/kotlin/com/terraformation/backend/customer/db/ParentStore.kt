@@ -69,16 +69,16 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import jakarta.inject.Named
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -183,18 +183,18 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(plantingSiteId: PlantingSiteId): OrganizationId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.ORGANIZATION_ID)
 
-  fun getOrganizationId(plantingSubzoneId: PlantingSubzoneId): OrganizationId? =
+  fun getOrganizationId(plantingSubzoneId: SubstratumId): OrganizationId? =
       fetchFieldById(
           plantingSubzoneId,
-          PLANTING_SUBZONES.ID,
-          PLANTING_SUBZONES.plantingSites.ORGANIZATION_ID,
+          SUBSTRATA.ID,
+          SUBSTRATA.plantingSites.ORGANIZATION_ID,
       )
 
-  fun getOrganizationId(plantingZoneId: PlantingZoneId): OrganizationId? =
+  fun getOrganizationId(plantingZoneId: StratumId): OrganizationId? =
       fetchFieldById(
           plantingZoneId,
-          PLANTING_ZONES.ID,
-          PLANTING_ZONES.plantingSites.ORGANIZATION_ID,
+          STRATA.ID,
+          STRATA.plantingSites.ORGANIZATION_ID,
       )
 
   fun getOrganizationId(projectId: ProjectId): OrganizationId? =
@@ -243,7 +243,7 @@ class ParentStore(private val dslContext: DSLContext) {
       fetchFieldById(
           monitoringPlotId,
           MONITORING_PLOTS.ID,
-          MONITORING_PLOTS.plantingSubzones.plantingSites.PROJECT_ID,
+          MONITORING_PLOTS.substrata.plantingSites.PROJECT_ID,
       )
 
   fun getProjectId(observationId: ObservationId): ProjectId? =
@@ -255,15 +255,15 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getProjectId(plantingSiteId: PlantingSiteId): ProjectId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.PROJECT_ID)
 
-  fun getProjectId(plantingSubzoneId: PlantingSubzoneId): ProjectId? =
+  fun getProjectId(plantingSubzoneId: SubstratumId): ProjectId? =
       fetchFieldById(
           plantingSubzoneId,
-          PLANTING_SUBZONES.ID,
-          PLANTING_SUBZONES.plantingSites.PROJECT_ID,
+          SUBSTRATA.ID,
+          SUBSTRATA.plantingSites.PROJECT_ID,
       )
 
-  fun getProjectId(plantingZoneId: PlantingZoneId): ProjectId? =
-      fetchFieldById(plantingZoneId, PLANTING_ZONES.ID, PLANTING_ZONES.plantingSites.PROJECT_ID)
+  fun getProjectId(plantingZoneId: StratumId): ProjectId? =
+      fetchFieldById(plantingZoneId, STRATA.ID, STRATA.plantingSites.PROJECT_ID)
 
   fun getProjectId(reportId: ReportId): ProjectId? =
       fetchFieldById(reportId, REPORTS.ID, REPORTS.PROJECT_ID)

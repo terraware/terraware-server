@@ -1,10 +1,10 @@
 package com.terraformation.backend.search.table
 
-import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -15,24 +15,22 @@ import org.jooq.TableField
 
 class PlantingSubzoneHistoriesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = PLANTING_SUBZONE_HISTORIES.ID
+    get() = SUBSTRATUM_HISTORIES.ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
           monitoringPlotHistories.asMultiValueSublist(
               "monitoringPlotHistories",
-              PLANTING_SUBZONE_HISTORIES.ID.eq(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
-              ),
+              SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID),
           ),
           plantingSubzones.asSingleValueSublist(
               "plantingSubzone",
-              PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID),
+              SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
           plantingZoneHistories.asSingleValueSublist(
               "plantingZoneHistory",
-              PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(PLANTING_ZONE_HISTORIES.ID),
+              SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID),
           ),
       )
     }
@@ -40,11 +38,11 @@ class PlantingSubzoneHistoriesTable(private val tables: SearchTables) : SearchTa
 
   override val fields: List<SearchField> =
       listOf(
-          geometryField("boundary", PLANTING_SUBZONE_HISTORIES.BOUNDARY),
-          textField("fullName", PLANTING_SUBZONE_HISTORIES.FULL_NAME),
-          idWrapperField("id", PLANTING_SUBZONE_HISTORIES.ID) { PlantingSubzoneHistoryId(it) },
-          textField("name", PLANTING_SUBZONE_HISTORIES.NAME),
-          stableIdField("stableId", PLANTING_SUBZONE_HISTORIES.STABLE_ID),
+          geometryField("boundary", SUBSTRATUM_HISTORIES.BOUNDARY),
+          textField("fullName", SUBSTRATUM_HISTORIES.FULL_NAME),
+          idWrapperField("id", SUBSTRATUM_HISTORIES.ID) { SubstratumHistoryId(it) },
+          textField("name", SUBSTRATUM_HISTORIES.NAME),
+          stableIdField("stableId", SUBSTRATUM_HISTORIES.STABLE_ID),
       )
 
   override val inheritsVisibilityFrom: SearchTable
@@ -52,10 +50,10 @@ class PlantingSubzoneHistoriesTable(private val tables: SearchTables) : SearchTa
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query
-        .join(PLANTING_ZONE_HISTORIES)
-        .on(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(PLANTING_ZONE_HISTORIES.ID))
+        .join(STRATUM_HISTORIES)
+        .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
   }
 
   override val defaultOrderFields: List<OrderField<*>>
-    get() = listOf(PLANTING_SUBZONE_HISTORIES.ID)
+    get() = listOf(SUBSTRATUM_HISTORIES.ID)
 }

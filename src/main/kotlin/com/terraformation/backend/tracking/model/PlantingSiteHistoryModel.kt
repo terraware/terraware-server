@@ -6,10 +6,10 @@ import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumHistoryId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.equalsOrBothNull
 import java.math.BigDecimal
 import java.time.Instant
@@ -44,11 +44,11 @@ data class PlantingSiteHistoryModel(
 data class PlantingZoneHistoryModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val id: PlantingZoneHistoryId,
+    val id: StratumHistoryId,
     val name: String,
     val plantingSubzones: List<PlantingSubzoneHistoryModel>,
     /** ID of planting zone if it currently exists. Null if the zone has been deleted. */
-    val plantingZoneId: PlantingZoneId?,
+    val plantingZoneId: StratumId?,
     val stableId: StableId,
 ) {
   fun equals(other: Any?, tolerance: Double = 0.00001): Boolean {
@@ -68,11 +68,11 @@ data class PlantingSubzoneHistoryModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val fullName: String,
-    val id: PlantingSubzoneHistoryId,
+    val id: SubstratumHistoryId,
     val monitoringPlots: List<MonitoringPlotHistoryModel>,
     val name: String,
     /** ID of planting subzone if it currently exists. Null if the zone has been deleted. */
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val plantingSubzoneId: SubstratumId?,
     val stableId: StableId,
 ) {
   fun equals(other: Any?, tolerance: Double = 0.00001): Boolean {

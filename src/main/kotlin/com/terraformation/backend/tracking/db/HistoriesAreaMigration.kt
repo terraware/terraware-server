@@ -3,8 +3,8 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
@@ -25,11 +25,9 @@ class HistoriesAreaMigration(private val dslContext: DSLContext) {
   @EventListener
   fun populatePlantingSiteHistoriesAreas(event: ApplicationStartedEvent) {
     with(PLANTING_SITE_HISTORIES) { populateArea(ID, BOUNDARY, AREA_HA, EXCLUSION) }
-    with(PLANTING_ZONE_HISTORIES) {
-      populateArea(ID, BOUNDARY, AREA_HA, plantingSiteHistories.EXCLUSION)
-    }
-    with(PLANTING_SUBZONE_HISTORIES) {
-      populateArea(ID, BOUNDARY, AREA_HA, plantingZoneHistories.plantingSiteHistories.EXCLUSION)
+    with(STRATUM_HISTORIES) { populateArea(ID, BOUNDARY, AREA_HA, plantingSiteHistories.EXCLUSION) }
+    with(SUBSTRATUM_HISTORIES) {
+      populateArea(ID, BOUNDARY, AREA_HA, stratumHistories.plantingSiteHistories.EXCLUSION)
     }
   }
 

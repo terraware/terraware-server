@@ -8,7 +8,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.tracking.T0Service
 import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
@@ -132,7 +132,7 @@ data class PlotT0DataPayload(
 }
 
 data class ZoneT0DataPayload(
-    val plantingZoneId: PlantingZoneId,
+    val plantingZoneId: StratumId,
     val densityData: List<SpeciesDensityPayload> = emptyList(),
 ) {
   constructor(

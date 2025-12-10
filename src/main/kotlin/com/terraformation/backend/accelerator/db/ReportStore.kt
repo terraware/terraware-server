@@ -1491,7 +1491,7 @@ class ReportStore(
   }
 
   private val hectaresPlantedField =
-      with(PLANTING_SUBZONES) {
+      with(SUBSTRATA) {
         DSL.field(
                 DSL.select(DSL.sum(AREA_HA))
                     .from(this)

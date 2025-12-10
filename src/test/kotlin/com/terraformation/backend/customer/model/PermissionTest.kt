@@ -5,7 +5,6 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.model.PermissionTest.PermissionsTracker
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
@@ -67,12 +66,12 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.dummyKeycloakInfo
 import io.mockk.mockk
 import java.time.Clock
@@ -154,8 +153,8 @@ internal class PermissionTest : DatabaseTest() {
   private val draftPlantingSiteIds = facilityIds.map { DraftPlantingSiteId(it.value) }
   private val monitoringPlotIds = facilityIds.map { MonitoringPlotId(it.value) }
   private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
-  private val plantingSubzoneIds = facilityIds.map { PlantingSubzoneId(it.value) }
-  private val plantingZoneIds = facilityIds.map { PlantingZoneId(it.value) }
+  private val plantingSubzoneIds = facilityIds.map { SubstratumId(it.value) }
+  private val plantingZoneIds = facilityIds.map { StratumId(it.value) }
   private val observationIds = plantingSiteIds.map { ObservationId(it.value) }
 
   private val projectIds = listOf(1000, 1001, 3000, 4000).map { ProjectId(it.toLong()) }
@@ -400,7 +399,7 @@ internal class PermissionTest : DatabaseTest() {
           insertPlantingSubzone(
               createdBy = userId,
               plantingSiteId = getDatabaseId(PlantingSiteId(plantingSubzoneId.value)),
-              plantingZoneId = getDatabaseId(PlantingZoneId(plantingSubzoneId.value)),
+              plantingZoneId = getDatabaseId(StratumId(plantingSubzoneId.value)),
           ),
       )
     }
@@ -411,7 +410,7 @@ internal class PermissionTest : DatabaseTest() {
           insertMonitoringPlot(
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(monitoringPlotId.value / 1000)),
-              plantingSubzoneId = getDatabaseId(PlantingSubzoneId(monitoringPlotId.value)),
+              plantingSubzoneId = getDatabaseId(SubstratumId(monitoringPlotId.value)),
           ),
       )
     }
@@ -3139,7 +3138,7 @@ internal class PermissionTest : DatabaseTest() {
     dslContext.deleteFrom(ACCESSIONS).execute()
     dslContext.deleteFrom(FACILITIES).execute()
     dslContext.deleteFrom(OBSERVATIONS).execute()
-    dslContext.deleteFrom(PLANTING_ZONES).execute()
+    dslContext.deleteFrom(STRATA).execute()
     dslContext.deleteFrom(PLANTING_SITES).execute()
     dslContext.deleteFrom(DRAFT_PLANTING_SITES).execute()
     dslContext.deleteFrom(SPECIES).execute()
@@ -3916,7 +3915,7 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
-        vararg plantingSubzoneIds: PlantingSubzoneId,
+        vararg plantingSubzoneIds: SubstratumId,
         readPlantingSubzone: Boolean = false,
         updatePlantingSubzoneCompleted: Boolean = false,
     ) {
@@ -3939,7 +3938,7 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
-        vararg plantingZoneIds: PlantingZoneId,
+        vararg plantingZoneIds: StratumId,
         readPlantingZone: Boolean = false,
         updatePlantingZone: Boolean = false,
         updateT0: Boolean = false,

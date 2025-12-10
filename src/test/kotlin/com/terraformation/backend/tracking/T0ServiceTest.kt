@@ -9,10 +9,10 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.PlantingZoneId
-import com.terraformation.backend.db.tracking.tables.records.PlantingZoneT0TempDensitiesRecord
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
+import com.terraformation.backend.db.tracking.tables.records.StratumT0TempDensitiesRecord
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.T0Store
@@ -43,8 +43,8 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private lateinit var monitoringPlotId1: MonitoringPlotId
   private lateinit var monitoringPlotId2: MonitoringPlotId
-  private lateinit var plantingZoneId1: PlantingZoneId
-  private lateinit var plantingZoneId2: PlantingZoneId
+  private lateinit var plantingZoneId1: StratumId
+  private lateinit var plantingZoneId2: StratumId
   private lateinit var observationId: ObservationId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
@@ -358,14 +358,14 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
   private fun zoneDensityRecord(
-      zoneId: PlantingZoneId,
+      zoneId: StratumId,
       speciesId: SpeciesId,
       density: BigDecimal,
   ) =
-      PlantingZoneT0TempDensitiesRecord(
-          plantingZoneId = zoneId,
+      StratumT0TempDensitiesRecord(
+          stratumId = zoneId,
           speciesId = speciesId,
-          zoneDensity = density,
+          stratumDensity = density,
           createdBy = user.userId,
           modifiedBy = user.userId,
           createdTime = clock.instant(),

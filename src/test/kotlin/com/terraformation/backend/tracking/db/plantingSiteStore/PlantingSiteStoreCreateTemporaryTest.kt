@@ -47,7 +47,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
               modifiedTime = clock.instant,
               organizationId = organizationId,
               plantingSiteId = plantingSiteId,
-              plantingSubzoneId = plantingSubzoneId,
+              substratumId = plantingSubzoneId,
               plotNumber = 2,
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           )
@@ -65,8 +65,8 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
                   monitoringPlotId = newPlotId,
                   plantingSiteHistoryId = plantingSiteHistoryId,
                   plantingSiteId = plantingSiteId,
-                  plantingSubzoneHistoryId = plantingSubzoneHistoryId,
-                  plantingSubzoneId = plantingSubzoneId,
+                  substratumHistoryId = plantingSubzoneHistoryId,
+                  substratumId = plantingSubzoneId,
               )
           )
       )

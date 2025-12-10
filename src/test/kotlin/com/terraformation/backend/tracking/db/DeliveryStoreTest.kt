@@ -9,13 +9,13 @@ import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
+import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.tracking.model.DeliveryModel
@@ -98,7 +98,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                   numPlants = 15,
                   plantingSiteId = plantingSiteId,
                   plantingTypeId = PlantingType.Delivery,
-                  plantingSubzoneId = plantingSubzoneId,
+                  substratumId = plantingSubzoneId,
                   speciesId = speciesId1,
               ),
               PlantingsRow(
@@ -108,7 +108,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                   numPlants = 20,
                   plantingSiteId = plantingSiteId,
                   plantingTypeId = PlantingType.Delivery,
-                  plantingSubzoneId = plantingSubzoneId,
+                  substratumId = plantingSubzoneId,
                   speciesId = speciesId2,
               ),
           ),
@@ -127,8 +127,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingZonePopulationsRow(plantingZoneId, speciesId1, 19, 18),
-              PlantingZonePopulationsRow(plantingZoneId, speciesId2, 20, 20),
+              StratumPopulationsRow(plantingZoneId, speciesId1, 19, 18),
+              StratumPopulationsRow(plantingZoneId, speciesId2, 20, 20),
           ),
           plantingZonePopulationsDao.findAll().toSet(),
           "Planting zone populations",
@@ -136,8 +136,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 17, 16),
-              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 20, 20),
+              SubstratumPopulationsRow(plantingSubzoneId, speciesId1, 17, 16),
+              SubstratumPopulationsRow(plantingSubzoneId, speciesId2, 20, 20),
           ),
           plantingSubzonePopulationsDao.findAll().toSet(),
           "Planting subzone populations",
@@ -192,7 +192,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     private val species2PlantingId: PlantingId by lazy {
       plantingsDao.fetchByDeliveryId(deliveryId).first { it.speciesId == speciesId2 }.id!!
     }
-    private val otherPlantingSubzoneId: PlantingSubzoneId by lazy {
+    private val otherPlantingSubzoneId: SubstratumId by lazy {
       insertPlantingSubzone(plantingZoneId = plantingZoneId)
     }
 
@@ -232,27 +232,27 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           setOf(
               commonValues.copy(
                   plantingTypeId = PlantingType.ReassignmentFrom,
-                  plantingSubzoneId = plantingSubzoneId,
+                  substratumId = plantingSubzoneId,
                   speciesId = speciesId1,
                   numPlants = -1,
               ),
               commonValues.copy(
                   notes = "notes 1",
                   plantingTypeId = PlantingType.ReassignmentTo,
-                  plantingSubzoneId = otherPlantingSubzoneId,
+                  substratumId = otherPlantingSubzoneId,
                   speciesId = speciesId1,
                   numPlants = 1,
               ),
               commonValues.copy(
                   plantingTypeId = PlantingType.ReassignmentFrom,
-                  plantingSubzoneId = plantingSubzoneId,
+                  substratumId = plantingSubzoneId,
                   speciesId = speciesId2,
                   numPlants = -2,
               ),
               commonValues.copy(
                   notes = "notes 2",
                   plantingTypeId = PlantingType.ReassignmentTo,
-                  plantingSubzoneId = otherPlantingSubzoneId,
+                  substratumId = otherPlantingSubzoneId,
                   speciesId = speciesId2,
                   numPlants = 2,
               ),
@@ -282,8 +282,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingZonePopulationsRow(plantingZoneId, speciesId1, 104, 103),
-              PlantingZonePopulationsRow(plantingZoneId, speciesId2, 100, 100),
+              StratumPopulationsRow(plantingZoneId, speciesId1, 104, 103),
+              StratumPopulationsRow(plantingZoneId, speciesId2, 100, 100),
           ),
           plantingZonePopulationsDao.findAll().toSet(),
           "Planting zone populations",
@@ -291,10 +291,10 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 101, 100),
-              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 98, 98),
-              PlantingSubzonePopulationsRow(otherPlantingSubzoneId, speciesId1, 1, 1),
-              PlantingSubzonePopulationsRow(otherPlantingSubzoneId, speciesId2, 2, 2),
+              SubstratumPopulationsRow(plantingSubzoneId, speciesId1, 101, 100),
+              SubstratumPopulationsRow(plantingSubzoneId, speciesId2, 98, 98),
+              SubstratumPopulationsRow(otherPlantingSubzoneId, speciesId1, 1, 1),
+              SubstratumPopulationsRow(otherPlantingSubzoneId, speciesId2, 2, 2),
           ),
           plantingSubzonePopulationsDao.findAll().toSet(),
           "Planting subzone populations",
@@ -614,8 +614,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingZonePopulationsRow(plantingZoneId, speciesId1, 3, 2),
-              PlantingZonePopulationsRow(plantingZoneId, speciesId2, 4, 3),
+              StratumPopulationsRow(plantingZoneId, speciesId1, 3, 2),
+              StratumPopulationsRow(plantingZoneId, speciesId2, 4, 3),
           ),
           plantingZonePopulationsDao.findAll().toSet(),
           "Planting zone populations",
@@ -623,9 +623,9 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId1, 3, 2),
-              PlantingSubzonePopulationsRow(plantingSubzoneId, speciesId2, 3, 2),
-              PlantingSubzonePopulationsRow(otherSubzoneId, speciesId1, 2, 1),
+              SubstratumPopulationsRow(plantingSubzoneId, speciesId1, 3, 2),
+              SubstratumPopulationsRow(plantingSubzoneId, speciesId2, 3, 2),
+              SubstratumPopulationsRow(otherSubzoneId, speciesId1, 2, 1),
           ),
           plantingSubzonePopulationsDao.findAll().toSet(),
           "Planting subzone populations",

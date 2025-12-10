@@ -7,18 +7,18 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.point
 import java.time.Instant
 import java.time.ZoneId
@@ -56,11 +56,11 @@ class ObservationTestHelper(
             .selectFrom(OBSERVED_PLOT_SPECIES_TOTALS)
             .fetchInto(ObservedPlotSpeciesTotalsRow::class.java) +
             dslContext
-                .selectFrom(OBSERVED_SUBZONE_SPECIES_TOTALS)
-                .fetchInto(ObservedSubzoneSpeciesTotalsRow::class.java) +
+                .selectFrom(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+                .fetchInto(ObservedSubstratumSpeciesTotalsRow::class.java) +
             dslContext
-                .selectFrom(OBSERVED_ZONE_SPECIES_TOTALS)
-                .fetchInto(ObservedZoneSpeciesTotalsRow::class.java) +
+                .selectFrom(OBSERVED_STRATUM_SPECIES_TOTALS)
+                .fetchInto(ObservedStratumSpeciesTotalsRow::class.java) +
             dslContext
                 .selectFrom(OBSERVED_SITE_SPECIES_TOTALS)
                 .fetchInto(ObservedSiteSpeciesTotalsRow::class.java))
@@ -195,7 +195,7 @@ class ObservationTestHelper(
   )
 
   data class ObservationZone(
-      val zoneId: PlantingZoneId,
+      val zoneId: StratumId,
       val plots: List<ObservationPlot>,
   )
 }

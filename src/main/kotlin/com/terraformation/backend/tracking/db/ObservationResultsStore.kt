@@ -16,9 +16,9 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteIdConverter
-import com.terraformation.backend.db.tracking.PlantingSubzoneIdConverter
-import com.terraformation.backend.db.tracking.PlantingZoneIdConverter
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumIdConverter
+import com.terraformation.backend.db.tracking.SubstratumIdConverter
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_OVERLAPS
@@ -33,17 +33,17 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.BiomassSpeciesModel
@@ -173,17 +173,20 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   ): ObservationRollupResultsModel? {
     val allSubzoneIdsByZoneIds =
         dslContext
-            .select(PLANTING_SUBZONES.ID, PLANTING_SUBZONES.PLANTING_ZONE_ID)
-            .from(PLANTING_SUBZONES)
-            .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-            .groupBy({ it[PLANTING_SUBZONES.PLANTING_ZONE_ID]!! }, { it[PLANTING_SUBZONES.ID]!! })
+            .select(SUBSTRATA.ID, SUBSTRATA.STRATUM_ID)
+            .from(SUBSTRATA)
+            .where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
+            .groupBy(
+                { it[SUBSTRATA.STRATUM_ID]!! },
+                { it[SUBSTRATA.ID]!! },
+            )
 
     val zoneAreasById =
         dslContext
-            .select(PLANTING_ZONES.ID, PLANTING_ZONES.AREA_HA)
-            .from(PLANTING_ZONES)
-            .where(PLANTING_ZONES.ID.`in`(allSubzoneIdsByZoneIds.keys))
-            .associate { it[PLANTING_ZONES.ID]!! to it[PLANTING_ZONES.AREA_HA]!! }
+            .select(STRATA.ID, STRATA.AREA_HA)
+            .from(STRATA)
+            .where(STRATA.ID.`in`(allSubzoneIdsByZoneIds.keys))
+            .associate { it[STRATA.ID]!! to it[STRATA.AREA_HA]!! }
 
     val resultsBySubzone =
         completedObservations
@@ -590,7 +593,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     DSL.coalesce(
                         SPECIES_ID,
                         PLOT_T0_DENSITIES.SPECIES_ID,
-                        PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID,
+                        STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,
                     ),
                     SPECIES_NAME,
                     DSL.coalesce(TOTAL_LIVE, 0),
@@ -602,7 +605,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         SURVIVAL_RATE,
                         DSL.`when`(
                             PLOT_T0_DENSITIES.PLOT_DENSITY.isNotNull.or(
-                                PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY.isNotNull
+                                STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY.isNotNull
                             ),
                             DSL.inline(BigDecimal.ZERO),
                         ),
@@ -617,7 +620,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                                     true
                                 )
                                 .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false)),
-                            PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY,
+                            STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY,
                         )
                         .else_(null as BigDecimal?),
                     DSL.coalesce(TOTAL_LIVE, 0),
@@ -632,14 +635,14 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
                         .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 )
-                .fullOuterJoin(PLANTING_ZONE_T0_TEMP_DENSITIES)
+                .fullOuterJoin(STRATUM_T0_TEMP_DENSITIES)
                 .on(
-                    PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                            OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
-                                .plantingZoneHistories
-                                .PLANTING_ZONE_ID
+                    STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
+                            OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories
+                                .stratumHistories
+                                .STRATUM_ID
                         )
-                        .and(PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
+                        .and(STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(SPECIES_ID))
                         .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
                         .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
                 )
@@ -654,10 +657,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     MONITORING_PLOT_ID.isNull
                         .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
                         .and(
-                            PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                                OBSERVATION_PLOTS.monitoringPlotHistories.plantingSubzoneHistories
-                                    .plantingZoneHistories
-                                    .PLANTING_ZONE_ID
+                            STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
+                                OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories
+                                    .stratumHistories
+                                    .STRATUM_ID
                             )
                         )
                     //                        )
@@ -818,7 +821,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
   private fun plantingSubzoneMonitoringPlotsMultiset(depth: ObservationResultsDepth) =
       monitoringPlotsMultiset(
-          MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(PLANTING_SUBZONE_HISTORIES.ID),
+          MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID),
           depth,
       )
 
@@ -826,7 +829,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     val permanentSubzoneT0 =
         with(PLOT_T0_DENSITIES) {
           DSL.select(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_ID,
+                  MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID,
                   SPECIES_ID,
                   DSL.sum(PLOT_DENSITY).`as`("plot_density"),
               )
@@ -838,36 +841,36 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .and(
                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
               )
-              .groupBy(MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_ID, SPECIES_ID)
+              .groupBy(MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID, SPECIES_ID)
               .asTable()
         }
 
     val tempSubzoneT0 =
         with(MONITORING_PLOT_HISTORIES) {
           DSL.select(
-                  PLANTING_SUBZONE_ID,
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID,
-                  DSL.sum(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY).`as`("plot_density"),
+                  SUBSTRATUM_ID,
+                  STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,
+                  DSL.sum(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY).`as`("plot_density"),
               )
               .from(this)
-              .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
+              .join(STRATUM_T0_TEMP_DENSITIES)
               .on(
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                      plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID
+                  STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
+                      substratumHistories.stratumHistories.STRATUM_ID
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
               .and(observationIdForPlot(MONITORING_PLOT_ID, OBSERVATIONS.ID, false).isNotNull)
               .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
-              .groupBy(PLANTING_SUBZONE_ID, PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID)
+              .groupBy(SUBSTRATUM_ID, STRATUM_T0_TEMP_DENSITIES.SPECIES_ID)
               .asTable()
         }
 
     val permSubzoneCol =
         permanentSubzoneT0.field(
-            "planting_subzone_id",
-            SQLDataType.BIGINT.asConvertedDataType(PlantingSubzoneIdConverter()),
+            "substratum_id",
+            SQLDataType.BIGINT.asConvertedDataType(SubstratumIdConverter()),
         )!!
     val permSpeciesCol =
         permanentSubzoneT0.field(
@@ -878,8 +881,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
     val tempSubzoneCol =
         tempSubzoneT0.field(
-            "planting_subzone_id",
-            SQLDataType.BIGINT.asConvertedDataType(PlantingSubzoneIdConverter()),
+            "substratum_id",
+            SQLDataType.BIGINT.asConvertedDataType(SubstratumIdConverter()),
         )!!
     val tempSpeciesCol =
         tempSubzoneT0.field(
@@ -888,7 +891,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         )!!
     val tempDensityCol = tempSubzoneT0.field("plot_density", BigDecimal::class.java)!!
 
-    return with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+    return with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
       speciesMultiset(
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
@@ -912,27 +915,27 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   DSL.coalesce(permDensityCol.plus(tempDensityCol), permDensityCol, tempDensityCol),
                   DSL.coalesce(TOTAL_LIVE, 0),
               )
-              .from(OBSERVED_SUBZONE_SPECIES_TOTALS)
+              .from(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
               // full outer join because we want survival rate to be 0 if a species wasn't observed
               // but has t0 density data set
               .fullOuterJoin(permanentSubzoneT0)
               .on(
                   permSubzoneCol
-                      .eq(PLANTING_SUBZONE_ID)
+                      .eq(SUBSTRATUM_ID)
                       .and(permSpeciesCol.eq(SPECIES_ID))
                       .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .fullOuterJoin(tempSubzoneT0)
               .on(
                   tempSubzoneCol
-                      .eq(PLANTING_SUBZONE_ID)
+                      .eq(SUBSTRATUM_ID)
                       .and(tempSpeciesCol.eq(SPECIES_ID))
                       .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .where(
-                  PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID)
-                      .or(permSubzoneCol.eq(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID))
-                      .or(tempSubzoneCol.eq(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID))
+                  SUBSTRATUM_ID.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID)
+                      .or(permSubzoneCol.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
+                      .or(tempSubzoneCol.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
               )
               .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
               .orderBy(SPECIES_ID, SPECIES_NAME)
@@ -947,22 +950,21 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     val plantingSubzoneSpeciesMultisetField = plantingSubzoneSpeciesMultiset()
     return DSL.multiset(
             DSL.select(
-                    PLANTING_SUBZONE_HISTORIES.AREA_HA,
-                    PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID,
-                    PLANTING_SUBZONE_HISTORIES.NAME,
-                    PLANTING_SUBZONES.PLANTING_COMPLETED_TIME,
+                    SUBSTRATUM_HISTORIES.AREA_HA,
+                    SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+                    SUBSTRATUM_HISTORIES.NAME,
+                    SUBSTRATA.PLANTING_COMPLETED_TIME,
                     plotsField,
                     plantingSubzoneSpeciesMultisetField,
-                    PLANTING_SUBZONE_HISTORIES.plantingZoneHistories.plantingSiteHistories
-                        .plantingSites
+                    SUBSTRATUM_HISTORIES.stratumHistories.plantingSiteHistories.plantingSites
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
                 )
-                .from(PLANTING_SUBZONE_HISTORIES)
-                .leftJoin(PLANTING_SUBZONES)
-                .on(PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                .from(SUBSTRATUM_HISTORIES)
+                .leftJoin(SUBSTRATA)
+                .on(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                 .where(
-                    PLANTING_SUBZONE_HISTORIES.ID.`in`(
-                        DSL.select(MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID)
+                    SUBSTRATUM_HISTORIES.ID.`in`(
+                        DSL.select(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID)
                             .from(MONITORING_PLOT_HISTORIES)
                             .join(OBSERVATION_PLOTS)
                             .on(
@@ -971,11 +973,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                                 )
                             )
                             .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                            .and(
-                                PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID.eq(
-                                    PLANTING_ZONE_HISTORIES.ID
-                                )
-                            )
+                            .and(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
                             .and(
                                 MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
                                     OBSERVATIONS.PLANTING_SITE_HISTORY_ID
@@ -988,11 +986,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           results.map { record: Record ->
             val monitoringPlots = record[plotsField]
 
-            val areaHa = record[PLANTING_SUBZONE_HISTORIES.AREA_HA]!!
+            val areaHa = record[SUBSTRATUM_HISTORIES.AREA_HA]!!
             val survivalRateIncludesTempPlots =
                 record[
-                    PLANTING_SUBZONE_HISTORIES.plantingZoneHistories.plantingSiteHistories
-                        .plantingSites
+                    SUBSTRATUM_HISTORIES.stratumHistories.plantingSiteHistories.plantingSites
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
                         .asNonNullable()]
 
@@ -1051,7 +1048,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   null
                 }
 
-            val plantingCompleted = record[PLANTING_SUBZONES.PLANTING_COMPLETED_TIME] != null
+            val plantingCompleted = record[SUBSTRATA.PLANTING_COMPLETED_TIME] != null
             val completedPlotsPlantingDensities =
                 monitoringPlots
                     .filter { it.status == ObservationPlotStatus.Completed }
@@ -1078,12 +1075,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 monitoringPlots = monitoringPlots,
                 mortalityRate = mortalityRate,
                 mortalityRateStdDev = mortalityRateStdDev,
-                name = record[PLANTING_SUBZONE_HISTORIES.NAME.asNonNullable()],
+                name = record[SUBSTRATUM_HISTORIES.NAME.asNonNullable()],
                 plantingCompleted = plantingCompleted,
                 plantingDensity = plantingDensity.roundToInt(),
                 plantingDensityStdDev = plantingDensityStdDev,
-                plantingSubzoneId =
-                    record[PLANTING_SUBZONE_HISTORIES.PLANTING_SUBZONE_ID.asNonNullable()],
+                plantingSubzoneId = record[SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.asNonNullable()],
                 species = species,
                 survivalRate = survivalRate,
                 survivalRateStdDev = survivalRateStdDev,
@@ -1096,48 +1092,44 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
   }
 
   private fun plantingZoneSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel>> {
-    val zoneHistoryAlias = PLANTING_ZONE_HISTORIES.`as`("planting_zone_histories_2")
+    val zoneHistoryAlias = STRATUM_HISTORIES.`as`("planting_zone_histories_2")
     val permZoneT0 =
         with(PLOT_T0_DENSITIES) {
           DSL.select(
-                  zoneHistoryAlias.PLANTING_ZONE_ID,
+                  zoneHistoryAlias.STRATUM_ID,
                   SPECIES_ID,
                   DSL.sum(PLOT_DENSITY).`as`("plot_density"),
               )
               .from(this)
               .join(MONITORING_PLOT_HISTORIES)
               .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
-              .join(PLANTING_SUBZONE_HISTORIES)
-              .on(
-                  PLANTING_SUBZONE_HISTORIES.ID.eq(
-                      MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID
-                  )
-              )
+              .join(SUBSTRATUM_HISTORIES)
+              .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
               .join(zoneHistoryAlias)
-              .on(zoneHistoryAlias.ID.eq(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID))
+              .on(zoneHistoryAlias.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
               .and(observationIdForPlot(MONITORING_PLOT_ID, OBSERVATIONS.ID, true).isNotNull)
               .and(
                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
               )
-              .groupBy(zoneHistoryAlias.PLANTING_ZONE_ID, SPECIES_ID)
+              .groupBy(zoneHistoryAlias.STRATUM_ID, SPECIES_ID)
               .asTable()
         }
 
     val tempZoneT0 =
         with(MONITORING_PLOT_HISTORIES) {
           DSL.select(
-                  plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID,
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID,
-                  DSL.sum(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY).`as`("plot_density"),
+                  substratumHistories.stratumHistories.STRATUM_ID,
+                  STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,
+                  DSL.sum(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY).`as`("plot_density"),
               )
               .from(this)
-              .join(PLANTING_SUBZONE_HISTORIES)
-              .on(PLANTING_SUBZONE_HISTORIES.ID.eq(PLANTING_SUBZONE_HISTORY_ID))
-              .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
+              .join(SUBSTRATUM_HISTORIES)
+              .on(SUBSTRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORY_ID))
+              .join(STRATUM_T0_TEMP_DENSITIES)
               .on(
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                      plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID
+                  STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
+                      substratumHistories.stratumHistories.STRATUM_ID
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
@@ -1145,16 +1137,16 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .groupBy(
-                  plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID,
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID,
+                  substratumHistories.stratumHistories.STRATUM_ID,
+                  STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,
               )
               .asTable()
         }
 
     val permZoneCol =
         permZoneT0.field(
-            "planting_zone_id",
-            SQLDataType.BIGINT.asConvertedDataType(PlantingZoneIdConverter()),
+            "stratum_id",
+            SQLDataType.BIGINT.asConvertedDataType(StratumIdConverter()),
         )!!
     val permSpeciesCol =
         permZoneT0.field(
@@ -1165,8 +1157,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
     val tempZoneCol =
         tempZoneT0.field(
-            "planting_zone_id",
-            SQLDataType.BIGINT.asConvertedDataType(PlantingZoneIdConverter()),
+            "stratum_id",
+            SQLDataType.BIGINT.asConvertedDataType(StratumIdConverter()),
         )!!
     val tempSpeciesCol =
         tempZoneT0.field(
@@ -1176,32 +1168,30 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     val tempDensityCol = tempZoneT0.field("plot_density", BigDecimal::class.java)!!
 
     val latestLiveField =
-        with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+        with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
           DSL.field(
               DSL.select(
-                      DSL.sum(DSL.coalesce(OBSERVED_SUBZONE_SPECIES_TOTALS.TOTAL_LIVE, 0))
+                      DSL.sum(DSL.coalesce(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_LIVE, 0))
                           .cast(SQLDataType.INTEGER)
                   )
-                  .from(PLANTING_SUBZONES)
-                  .join(OBSERVED_SUBZONE_SPECIES_TOTALS)
-                  .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                  .from(SUBSTRATA)
+                  .join(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+                  .on(SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                   .where(
-                      PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(
-                              OBSERVED_ZONE_SPECIES_TOTALS.PLANTING_ZONE_ID
-                          )
-                          .and(SPECIES_ID.eq(OBSERVED_ZONE_SPECIES_TOTALS.SPECIES_ID))
+                      SUBSTRATA.STRATUM_ID.eq(OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID)
+                          .and(SPECIES_ID.eq(OBSERVED_STRATUM_SPECIES_TOTALS.SPECIES_ID))
                   )
                   .and(
                       OBSERVATION_ID.eq(
                           latestObservationForSubzoneField(
-                              OBSERVED_ZONE_SPECIES_TOTALS.OBSERVATION_ID
+                              OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID
                           )
                       )
                   )
           )
         }
 
-    return with(OBSERVED_ZONE_SPECIES_TOTALS) {
+    return with(OBSERVED_STRATUM_SPECIES_TOTALS) {
       speciesMultiset(
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
@@ -1225,27 +1215,27 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   DSL.coalesce(permDensityCol.plus(tempDensityCol), permDensityCol, tempDensityCol),
                   DSL.coalesce(latestLiveField, 0),
               )
-              .from(OBSERVED_ZONE_SPECIES_TOTALS)
+              .from(OBSERVED_STRATUM_SPECIES_TOTALS)
               // full outer join because we want survival rate to be 0 if a species wasn't observed
               // but has t0 density data set
               .fullOuterJoin(permZoneT0)
               .on(
                   permZoneCol
-                      .eq(PLANTING_ZONE_ID)
+                      .eq(STRATUM_ID)
                       .and(permSpeciesCol.eq(SPECIES_ID))
                       .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .fullOuterJoin(tempZoneT0)
               .on(
                   tempZoneCol
-                      .eq(PLANTING_ZONE_ID)
+                      .eq(STRATUM_ID)
                       .and(tempSpeciesCol.eq(SPECIES_ID))
                       .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .where(
-                  PLANTING_ZONE_ID.eq(PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID)
-                      .or(permZoneCol.eq(PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID))
-                      .or(tempZoneCol.eq(PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID))
+                  STRATUM_ID.eq(STRATUM_HISTORIES.STRATUM_ID)
+                      .or(permZoneCol.eq(STRATUM_HISTORIES.STRATUM_ID))
+                      .or(tempZoneCol.eq(STRATUM_HISTORIES.STRATUM_ID))
               )
               .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
               .orderBy(SPECIES_ID, SPECIES_NAME)
@@ -1257,15 +1247,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       DSL.field(
           DSL.notExists(
               DSL.selectOne()
-                  .from(PLANTING_SUBZONES)
-                  .where(
-                      PLANTING_SUBZONES.PLANTING_ZONE_ID.eq(
-                          PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID
-                      )
-                  )
+                  .from(SUBSTRATA)
+                  .where(SUBSTRATA.STRATUM_ID.eq(STRATUM_HISTORIES.STRATUM_ID))
                   .and(
-                      PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.gt(OBSERVATIONS.COMPLETED_TIME)
-                          .or(PLANTING_SUBZONES.PLANTING_COMPLETED_TIME.isNull)
+                      SUBSTRATA.PLANTING_COMPLETED_TIME.gt(OBSERVATIONS.COMPLETED_TIME)
+                          .or(SUBSTRATA.PLANTING_COMPLETED_TIME.isNull)
                   )
           )
       )
@@ -1278,24 +1264,24 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
     return DSL.multiset(
             DSL.select(
-                    PLANTING_ZONE_HISTORIES.AREA_HA,
-                    PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID,
-                    PLANTING_ZONE_HISTORIES.NAME,
+                    STRATUM_HISTORIES.AREA_HA,
+                    STRATUM_HISTORIES.STRATUM_ID,
+                    STRATUM_HISTORIES.NAME,
                     plantingSubzonesField,
                     plantingZoneSpeciesMultisetField,
                     zonePlantingCompletedField,
-                    PLANTING_ZONE_HISTORIES.plantingSiteHistories.plantingSites
+                    STRATUM_HISTORIES.plantingSiteHistories.plantingSites
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
                 )
-                .from(PLANTING_ZONE_HISTORIES)
+                .from(STRATUM_HISTORIES)
                 .where(
-                    PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                    STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
                         OBSERVATIONS.PLANTING_SITE_HISTORY_ID
                     )
                 )
                 .and(
-                    PLANTING_ZONE_HISTORIES.ID.`in`(
-                        DSL.select(PLANTING_SUBZONE_HISTORIES.PLANTING_ZONE_HISTORY_ID)
+                    STRATUM_HISTORIES.ID.`in`(
+                        DSL.select(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
                             .from(OBSERVATION_PLOTS)
                             .join(MONITORING_PLOT_HISTORIES)
                             .on(
@@ -1303,10 +1289,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                                     MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID
                                 )
                             )
-                            .join(PLANTING_SUBZONE_HISTORIES)
+                            .join(SUBSTRATUM_HISTORIES)
                             .on(
-                                MONITORING_PLOT_HISTORIES.PLANTING_SUBZONE_HISTORY_ID.eq(
-                                    PLANTING_SUBZONE_HISTORIES.ID
+                                MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(
+                                    SUBSTRATUM_HISTORIES.ID
                                 )
                             )
                             .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
@@ -1320,12 +1306,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         )
         .convertFrom { results ->
           results.map { record: Record ->
-            val areaHa = record[PLANTING_ZONE_HISTORIES.AREA_HA]!!
+            val areaHa = record[STRATUM_HISTORIES.AREA_HA]!!
             val species = record[plantingZoneSpeciesMultisetField]
             val subzones = record[plantingSubzonesField]
             val survivalRateIncludesTempPlots =
                 record[
-                    PLANTING_ZONE_HISTORIES.plantingSiteHistories.plantingSites
+                    STRATUM_HISTORIES.plantingSiteHistories.plantingSites
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
                         .asNonNullable()]
 
@@ -1415,12 +1401,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 estimatedPlants = estimatedPlants?.roundToInt(),
                 mortalityRate = mortalityRate,
                 mortalityRateStdDev = mortalityRateStdDev,
-                name = record[PLANTING_ZONE_HISTORIES.NAME.asNonNullable()],
+                name = record[STRATUM_HISTORIES.NAME.asNonNullable()],
                 plantingCompleted = plantingCompleted,
                 plantingDensity = plantingDensity.roundToInt(),
                 plantingDensityStdDev = plantingDensityStdDev,
                 plantingSubzones = subzones,
-                plantingZoneId = record[PLANTING_ZONE_HISTORIES.PLANTING_ZONE_ID.asNonNullable()],
+                plantingZoneId = record[STRATUM_HISTORIES.STRATUM_ID.asNonNullable()],
                 species = identifiedSpecies,
                 survivalRate = survivalRate,
                 survivalRateStdDev = survivalRateStdDev,
@@ -1455,14 +1441,14 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         with(MONITORING_PLOT_HISTORIES) {
           DSL.select(
                   plantingSiteHistories.plantingSites.ID.`as`("planting_site_id"),
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID,
-                  DSL.sum(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY).`as`("plot_density"),
+                  STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,
+                  DSL.sum(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY).`as`("plot_density"),
               )
               .from(this)
-              .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
+              .join(STRATUM_T0_TEMP_DENSITIES)
               .on(
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                      plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID
+                  STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
+                      substratumHistories.stratumHistories.STRATUM_ID
                   )
               )
               .where(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
@@ -1471,7 +1457,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .groupBy(
                   plantingSiteHistories.plantingSites.ID,
-                  PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID,
+                  STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,
               )
               .asTable()
         }
@@ -1501,16 +1487,14 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     val tempDensityCol = tempSiteT0.field("plot_density", BigDecimal::class.java)!!
 
     val latestLiveField =
-        with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+        with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
           DSL.field(
               DSL.select(DSL.sum(DSL.coalesce(TOTAL_LIVE, 0)).cast(SQLDataType.INTEGER))
-                  .from(PLANTING_SUBZONES)
-                  .join(OBSERVED_SUBZONE_SPECIES_TOTALS)
-                  .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                  .from(SUBSTRATA)
+                  .join(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+                  .on(SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                   .where(
-                      PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
-                              OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
-                          )
+                      SUBSTRATA.PLANTING_SITE_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID)
                           .and(
                               SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID)
                                   .or(

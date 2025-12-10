@@ -13,9 +13,9 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
@@ -310,7 +310,7 @@ data class ObservationSubstratumResultsPayload(
     @Schema(
         description = "ID of the subzone. Absent if the subzone was deleted after the observation."
     )
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val plantingSubzoneId: SubstratumId?,
     val species: List<ObservationSpeciesResultsPayload>,
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
@@ -422,7 +422,7 @@ data class ObservationStratumResultsPayload(
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     @Schema(description = "ID of the zone. Absent if the zone was deleted after the observation.")
-    val plantingZoneId: PlantingZoneId?,
+    val plantingZoneId: StratumId?,
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
@@ -573,7 +573,7 @@ data class PlantingZoneObservationSummaryPayload(
     val plantingDensityStdDev: Int?,
     @Schema(description = "Use substrata instead", deprecated = true)
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
-    val plantingZoneId: PlantingZoneId,
+    val plantingZoneId: StratumId,
     @Schema(
         description =
             "Combined list of observed species and their statuses from the latest observation of each subzone."

@@ -393,15 +393,15 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
-import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
-import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.StratumHistoryId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.keys.PLANTING_SITES_PKEY
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
@@ -415,7 +415,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassSpec
 import com.terraformation.backend.db.tracking.tables.daos.ObservationMediaFilesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
-import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubzonesDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubstrataDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
@@ -423,15 +423,15 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteHistoriesD
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteNotificationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzoneHistoriesDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonePopulationsDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingSubzonesDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingZoneHistoriesDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingZonePopulationsDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingZonesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedTreesDao
+import com.terraformation.backend.db.tracking.tables.daos.StrataDao
+import com.terraformation.backend.db.tracking.tables.daos.StratumHistoriesDao
+import com.terraformation.backend.db.tracking.tables.daos.StratumPopulationsDao
+import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
+import com.terraformation.backend.db.tracking.tables.daos.SubstratumHistoriesDao
+import com.terraformation.backend.db.tracking.tables.daos.SubstratumPopulationsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotHistoriesRow
@@ -444,7 +444,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpe
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubzonesRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
@@ -454,29 +454,29 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistories
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzoneHistoriesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneT0TempDensitiesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensitiesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
+import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
+import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.StratumT0TempDensitiesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
+import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
@@ -658,7 +658,7 @@ abstract class DatabaseBackedTest {
   protected val observationMediaFilesDao: ObservationMediaFilesDao by lazyDao()
   protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
-  protected val observationRequestedSubzonesDao: ObservationRequestedSubzonesDao by lazyDao()
+  protected val observationRequestedSubzonesDao: ObservationRequestedSubstrataDao by lazyDao()
   protected val observationsDao: ObservationsDao by lazyDao()
   protected val observedPlotCoordinatesDao: ObservedPlotCoordinatesDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
@@ -675,12 +675,12 @@ abstract class DatabaseBackedTest {
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
   protected val plantingSitePopulationsDao: PlantingSitePopulationsDao by lazyDao()
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
-  protected val plantingSubzoneHistoriesDao: PlantingSubzoneHistoriesDao by lazyDao()
-  protected val plantingSubzonePopulationsDao: PlantingSubzonePopulationsDao by lazyDao()
-  protected val plantingSubzonesDao: PlantingSubzonesDao by lazyDao()
-  protected val plantingZoneHistoriesDao: PlantingZoneHistoriesDao by lazyDao()
-  protected val plantingZonePopulationsDao: PlantingZonePopulationsDao by lazyDao()
-  protected val plantingZonesDao: PlantingZonesDao by lazyDao()
+  protected val plantingSubzoneHistoriesDao: SubstratumHistoriesDao by lazyDao()
+  protected val plantingSubzonePopulationsDao: SubstratumPopulationsDao by lazyDao()
+  protected val plantingSubzonesDao: SubstrataDao by lazyDao()
+  protected val plantingZoneHistoriesDao: StratumHistoriesDao by lazyDao()
+  protected val plantingZonePopulationsDao: StratumPopulationsDao by lazyDao()
+  protected val plantingZonesDao: StrataDao by lazyDao()
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
   protected val projectInternalUsersDao: ProjectInternalUsersDao by lazyDao()
   protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
@@ -2299,10 +2299,10 @@ abstract class DatabaseBackedTest {
   }
 
   private var nextPlantingZoneNumber: Int = 1
-  private lateinit var lastPlantingZonesRow: PlantingZonesRow
+  private lateinit var lastPlantingZonesRow: StrataRow
 
   fun insertPlantingZone(
-      row: PlantingZonesRow = PlantingZonesRow(),
+      row: StrataRow = StrataRow(),
       areaHa: BigDecimal = row.areaHa ?: BigDecimal.TEN,
       x: Number = 0,
       y: Number = 0,
@@ -2334,7 +2334,7 @@ abstract class DatabaseBackedTest {
       insertHistory: Boolean = true,
       boundaryModifiedBy: UserId = row.boundaryModifiedBy ?: modifiedBy,
       boundaryModifiedTime: Instant = row.boundaryModifiedTime ?: modifiedTime,
-  ): PlantingZoneId {
+  ): StratumId {
     val rowWithDefaults =
         row.copy(
             areaHa = areaHa,
@@ -2374,16 +2374,16 @@ abstract class DatabaseBackedTest {
       boundary: Geometry = lastPlantingZonesRow.boundary!!,
       name: String = lastPlantingZonesRow.name!!,
       plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
-      plantingZoneId: PlantingZoneId = inserted.plantingZoneId,
+      plantingZoneId: StratumId = inserted.plantingZoneId,
       stableId: Any = lastPlantingZonesRow.stableId!!,
-  ): PlantingZoneHistoryId {
+  ): StratumHistoryId {
     val row =
-        PlantingZoneHistoriesRow(
+        StratumHistoriesRow(
             areaHa = areaHa,
             boundary = boundary,
             name = name,
             plantingSiteHistoryId = plantingSiteHistoryId,
-            plantingZoneId = plantingZoneId,
+            stratumId = plantingZoneId,
             stableId = StableId("$stableId"),
         )
 
@@ -2393,10 +2393,10 @@ abstract class DatabaseBackedTest {
   }
 
   private var nextPlantingSubzoneNumber: Int = 1
-  private lateinit var lastPlantingSubzonesRow: PlantingSubzonesRow
+  private lateinit var lastPlantingSubzonesRow: SubstrataRow
 
   fun insertPlantingSubzone(
-      row: PlantingSubzonesRow = PlantingSubzonesRow(),
+      row: SubstrataRow = SubstrataRow(),
       areaHa: BigDecimal = row.areaHa ?: BigDecimal.ONE,
       x: Number = 0,
       y: Number = 0,
@@ -2415,14 +2415,14 @@ abstract class DatabaseBackedTest {
       observedTime: Instant? = row.observedTime,
       plantingCompletedTime: Instant? = row.plantingCompletedTime,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      plantingZoneId: PlantingZoneId = row.plantingZoneId ?: inserted.plantingZoneId,
+      plantingZoneId: StratumId = row.stratumId ?: inserted.plantingZoneId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "${nextPlantingSubzoneNumber++}",
       fullName: String = "${lastPlantingZonesRow.name}-$name",
       stableId: Any = row.fullName ?: fullName,
       insertHistory: Boolean = true,
-  ): PlantingSubzoneId {
+  ): SubstratumId {
     val rowWithDefaults =
         row.copy(
             areaHa = areaHa,
@@ -2436,7 +2436,7 @@ abstract class DatabaseBackedTest {
             observedTime = observedTime,
             plantingCompletedTime = plantingCompletedTime,
             plantingSiteId = plantingSiteId,
-            plantingZoneId = plantingZoneId,
+            stratumId = plantingZoneId,
             stableId = StableId("$stableId"),
         )
 
@@ -2458,18 +2458,18 @@ abstract class DatabaseBackedTest {
       boundary: Geometry = lastPlantingSubzonesRow.boundary!!,
       fullName: String = lastPlantingSubzonesRow.fullName!!,
       name: String = lastPlantingSubzonesRow.name!!,
-      plantingSubzoneId: PlantingSubzoneId? = inserted.plantingSubzoneId,
-      plantingZoneHistoryId: PlantingZoneHistoryId = inserted.plantingZoneHistoryId,
+      plantingSubzoneId: SubstratumId? = inserted.plantingSubzoneId,
+      plantingZoneHistoryId: StratumHistoryId = inserted.plantingZoneHistoryId,
       stableId: Any = lastPlantingSubzonesRow.stableId!!,
-  ): PlantingSubzoneHistoryId {
+  ): SubstratumHistoryId {
     val row =
-        PlantingSubzoneHistoriesRow(
+        SubstratumHistoriesRow(
             areaHa = areaHa,
             boundary = boundary,
             fullName = fullName,
             name = name,
-            plantingZoneHistoryId = plantingZoneHistoryId,
-            plantingSubzoneId = plantingSubzoneId,
+            stratumHistoryId = plantingZoneHistoryId,
+            substratumId = plantingSubzoneId,
             stableId = StableId("$stableId"),
         )
 
@@ -2543,8 +2543,8 @@ abstract class DatabaseBackedTest {
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       permanentIndex: Int? = row.permanentIndex,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
-      plantingSubzoneId: PlantingSubzoneId? =
-          row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
+      plantingSubzoneId: SubstratumId? =
+          row.substratumId ?: inserted.plantingSubzoneIds.lastOrNull(),
       plotNumber: Long =
           row.plotNumber
               ?: IdentifierGenerator(TestClock(), dslContext)
@@ -2564,7 +2564,7 @@ abstract class DatabaseBackedTest {
             organizationId = organizationId,
             permanentIndex = permanentIndex,
             plantingSiteId = plantingSiteId,
-            plantingSubzoneId = plantingSubzoneId,
+            substratumId = plantingSubzoneId,
             plotNumber = plotNumber,
             sizeMeters = sizeMeters,
         )
@@ -2588,9 +2588,9 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
       plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId = inserted.plantingSiteHistoryId,
-      plantingSubzoneId: PlantingSubzoneId? =
+      plantingSubzoneId: SubstratumId? =
           if (inserted.plantingSubzoneIds.isNotEmpty()) inserted.plantingSubzoneId else null,
-      plantingSubzoneHistoryId: PlantingSubzoneHistoryId? =
+      plantingSubzoneHistoryId: SubstratumHistoryId? =
           if (plantingSubzoneId != null) inserted.plantingSubzoneHistoryId else null,
   ): MonitoringPlotHistoryId {
     val row =
@@ -2600,8 +2600,8 @@ abstract class DatabaseBackedTest {
             monitoringPlotId = monitoringPlotId,
             plantingSiteHistoryId = plantingSiteHistoryId,
             plantingSiteId = plantingSiteId,
-            plantingSubzoneHistoryId = plantingSubzoneHistoryId,
-            plantingSubzoneId = plantingSubzoneId,
+            substratumHistoryId = plantingSubzoneHistoryId,
+            substratumId = plantingSubzoneId,
         )
 
     monitoringPlotHistoriesDao.insert(row)
@@ -2643,8 +2643,8 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "Draft site ${nextDraftPlantingSiteNumber++}",
-      numPlantingSubzones: Int? = row.numPlantingSubzones,
-      numPlantingZones: Int? = row.numPlantingZones,
+      numPlantingSubzones: Int? = row.numSubstrata,
+      numPlantingZones: Int? = row.numStrata,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       projectId: ProjectId? = row.projectId,
       timeZone: ZoneId? = row.timeZone,
@@ -2658,8 +2658,8 @@ abstract class DatabaseBackedTest {
             modifiedBy = modifiedBy,
             modifiedTime = modifiedTime,
             name = name,
-            numPlantingSubzones = numPlantingSubzones,
-            numPlantingZones = numPlantingZones,
+            numSubstrata = numPlantingSubzones,
+            numStrata = numPlantingZones,
             organizationId = organizationId,
             projectId = projectId,
             timeZone = timeZone,
@@ -2702,8 +2702,8 @@ abstract class DatabaseBackedTest {
       numPlants: Int = row.numPlants ?: 1,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingTypeId: PlantingType = row.plantingTypeId ?: PlantingType.Delivery,
-      plantingSubzoneId: PlantingSubzoneId? =
-          row.plantingSubzoneId ?: inserted.plantingSubzoneIds.lastOrNull(),
+      plantingSubzoneId: SubstratumId? =
+          row.substratumId ?: inserted.plantingSubzoneIds.lastOrNull(),
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
   ): PlantingId {
     val rowWithDefaults =
@@ -2714,7 +2714,7 @@ abstract class DatabaseBackedTest {
             numPlants = numPlants,
             plantingSiteId = plantingSiteId,
             plantingTypeId = plantingTypeId,
-            plantingSubzoneId = plantingSubzoneId,
+            substratumId = plantingSubzoneId,
             speciesId = speciesId,
         )
 
@@ -2740,14 +2740,14 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingSubzonePopulation(
-      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId,
+      plantingSubzoneId: SubstratumId = inserted.plantingSubzoneId,
       speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
     plantingSubzonePopulationsDao.insert(
-        PlantingSubzonePopulationsRow(
-            plantingSubzoneId = plantingSubzoneId,
+        SubstratumPopulationsRow(
+            substratumId = plantingSubzoneId,
             speciesId = speciesId,
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
@@ -2756,14 +2756,14 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingZonePopulation(
-      plantingZoneId: PlantingZoneId = inserted.plantingZoneId,
+      plantingZoneId: StratumId = inserted.plantingZoneId,
       speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
     plantingZonePopulationsDao.insert(
-        PlantingZonePopulationsRow(
-            plantingZoneId = plantingZoneId,
+        StratumPopulationsRow(
+            stratumId = plantingZoneId,
             speciesId = speciesId,
             totalPlants = totalPlants,
             plantsSinceLastObservation = plantsSinceLastObservation,
@@ -2772,15 +2772,15 @@ abstract class DatabaseBackedTest {
   }
 
   fun addPlantingSubzonePopulation(
-      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId,
+      plantingSubzoneId: SubstratumId = inserted.plantingSubzoneId,
       speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
-    with(PLANTING_SUBZONE_POPULATIONS) {
+    with(SUBSTRATUM_POPULATIONS) {
       dslContext
-          .insertInto(PLANTING_SUBZONE_POPULATIONS)
-          .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
+          .insertInto(SUBSTRATUM_POPULATIONS)
+          .set(SUBSTRATUM_ID, plantingSubzoneId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, totalPlants)
           .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
@@ -2795,15 +2795,15 @@ abstract class DatabaseBackedTest {
   }
 
   fun addPlantingZonePopulation(
-      plantingZoneId: PlantingZoneId = inserted.plantingZoneId,
+      plantingZoneId: StratumId = inserted.plantingZoneId,
       speciesId: SpeciesId = inserted.speciesId,
       totalPlants: Int = 1,
       plantsSinceLastObservation: Int = totalPlants,
   ) {
-    with(PLANTING_ZONE_POPULATIONS) {
+    with(STRATUM_POPULATIONS) {
       dslContext
-          .insertInto(PLANTING_ZONE_POPULATIONS)
-          .set(PLANTING_ZONE_ID, plantingZoneId)
+          .insertInto(STRATUM_POPULATIONS)
+          .set(STRATUM_ID, plantingZoneId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, totalPlants)
           .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
@@ -3159,10 +3159,10 @@ abstract class DatabaseBackedTest {
 
   fun insertObservationRequestedSubzone(
       observationId: ObservationId = inserted.observationId,
-      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId,
+      plantingSubzoneId: SubstratumId = inserted.plantingSubzoneId,
   ) {
     observationRequestedSubzonesDao.insert(
-        ObservationRequestedSubzonesRow(observationId, plantingSubzoneId)
+        ObservationRequestedSubstrataRow(observationId, plantingSubzoneId)
     )
   }
 
@@ -3335,21 +3335,21 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertPlantingZoneT0TempDensity(
-      row: PlantingZoneT0TempDensitiesRow = PlantingZoneT0TempDensitiesRow(),
-      plantingZoneId: PlantingZoneId = row.plantingZoneId ?: inserted.plantingZoneId,
+      row: StratumT0TempDensitiesRow = StratumT0TempDensitiesRow(),
+      plantingZoneId: StratumId = row.stratumId ?: inserted.plantingZoneId,
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
-      zoneDensity: BigDecimal = row.zoneDensity ?: BigDecimal.valueOf(10),
+      zoneDensity: BigDecimal = row.stratumDensity ?: BigDecimal.valueOf(10),
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
-    with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+    with(STRATUM_T0_TEMP_DENSITIES) {
       dslContext
           .insertInto(this)
-          .set(PLANTING_ZONE_ID, plantingZoneId)
+          .set(STRATUM_ID, plantingZoneId)
           .set(SPECIES_ID, speciesId)
-          .set(ZONE_DENSITY, zoneDensity)
+          .set(STRATUM_DENSITY, zoneDensity)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
           .set(MODIFIED_BY, modifiedBy)
@@ -5156,10 +5156,10 @@ abstract class DatabaseBackedTest {
     val plantingSiteHistoryIds = mutableListOf<PlantingSiteHistoryId>()
     val plantingSiteIds = mutableListOf<PlantingSiteId>()
     val plantingSiteNotificationIds = mutableListOf<PlantingSiteNotificationId>()
-    val plantingSubzoneHistoryIds = mutableListOf<PlantingSubzoneHistoryId>()
-    val plantingSubzoneIds = mutableListOf<PlantingSubzoneId>()
-    val plantingZoneHistoryIds = mutableListOf<PlantingZoneHistoryId>()
-    val plantingZoneIds = mutableListOf<PlantingZoneId>()
+    val plantingSubzoneHistoryIds = mutableListOf<SubstratumHistoryId>()
+    val plantingSubzoneIds = mutableListOf<SubstratumId>()
+    val plantingZoneHistoryIds = mutableListOf<StratumHistoryId>()
+    val plantingZoneIds = mutableListOf<StratumId>()
     val projectIds = mutableListOf<ProjectId>()
     val projectReportConfigIds = mutableListOf<ProjectReportConfigId>()
     val recordedTreeIds = mutableListOf<RecordedTreeId>()

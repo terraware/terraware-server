@@ -10,8 +10,8 @@ import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
@@ -20,10 +20,10 @@ import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
@@ -81,7 +81,7 @@ class DeliveryStore(
   fun createDelivery(
       withdrawalId: WithdrawalId,
       plantingSiteId: PlantingSiteId,
-      plantingSubzoneId: PlantingSubzoneId? = null,
+      plantingSubzoneId: SubstratumId? = null,
       quantities: Map<SpeciesId, Int>,
   ): DeliveryId {
     requirePermissions { createDelivery(plantingSiteId) }
@@ -126,7 +126,7 @@ class DeliveryStore(
                     numPlants = numPlants,
                     plantingSiteId = plantingSiteId,
                     plantingTypeId = PlantingType.Delivery,
-                    plantingSubzoneId = plantingSubzoneId,
+                    substratumId = plantingSubzoneId,
                     speciesId = speciesId,
                 )
 
@@ -195,7 +195,7 @@ class DeliveryStore(
             throw ReassignmentTooLargeException(fromPlantingId)
           }
 
-          if (reassignment.toPlantingSubzoneId == originalPlanting.plantingSubzoneId) {
+          if (reassignment.toPlantingSubzoneId == originalPlanting.substratumId) {
             throw ReassignmentToSamePlotNotAllowedException(fromPlantingId)
           }
 
@@ -218,13 +218,13 @@ class DeliveryStore(
               skeletonRow.copy(
                   numPlants = -reassignment.numPlants,
                   plantingTypeId = PlantingType.ReassignmentFrom,
-                  plantingSubzoneId = originalPlanting.plantingSubzoneId,
+                  substratumId = originalPlanting.substratumId,
               ),
               skeletonRow.copy(
                   notes = reassignment.notes,
                   numPlants = reassignment.numPlants,
                   plantingTypeId = PlantingType.ReassignmentTo,
-                  plantingSubzoneId = reassignment.toPlantingSubzoneId,
+                  substratumId = reassignment.toPlantingSubzoneId,
               ),
           )
         }
@@ -241,7 +241,7 @@ class DeliveryStore(
 
       newPlantings.forEach { planting ->
         addToSubzonePopulations(
-            planting.plantingSubzoneId!!,
+            planting.substratumId!!,
             planting.speciesId!!,
             planting.numPlants!!,
         )
@@ -302,7 +302,7 @@ class DeliveryStore(
                 deliveryId = undoDeliveryId,
                 numPlants = -originalPlanting.numPlants,
                 plantingSiteId = originalDelivery.plantingSiteId,
-                plantingSubzoneId = originalPlanting.plantingSubzoneId,
+                substratumId = originalPlanting.plantingSubzoneId,
                 plantingTypeId = plantingType,
                 speciesId = originalPlanting.speciesId,
             )
@@ -329,39 +329,39 @@ class DeliveryStore(
    */
   fun recalculateZonePopulations(plantingSiteId: PlantingSiteId) {
     dslContext.transaction { _ ->
-      with(PLANTING_ZONE_POPULATIONS) {
+      with(STRATUM_POPULATIONS) {
         dslContext
-            .deleteFrom(PLANTING_ZONE_POPULATIONS)
+            .deleteFrom(STRATUM_POPULATIONS)
             .where(
-                PLANTING_ZONE_ID.`in`(
-                    DSL.select(PLANTING_ZONES.ID)
-                        .from(PLANTING_ZONES)
-                        .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+                STRATUM_ID.`in`(
+                    DSL.select(STRATA.ID)
+                        .from(STRATA)
+                        .where(STRATA.PLANTING_SITE_ID.eq(plantingSiteId))
                 )
             )
             .execute()
 
         dslContext
             .insertInto(
-                PLANTING_ZONE_POPULATIONS,
-                PLANTING_ZONE_ID,
+                STRATUM_POPULATIONS,
+                STRATUM_ID,
                 SPECIES_ID,
                 TOTAL_PLANTS,
                 PLANTS_SINCE_LAST_OBSERVATION,
             )
             .select(
-                with(PLANTING_SUBZONE_POPULATIONS) {
+                with(SUBSTRATUM_POPULATIONS) {
                   DSL.select(
-                          PLANTING_SUBZONES.PLANTING_ZONE_ID,
+                          SUBSTRATA.STRATUM_ID,
                           SPECIES_ID,
                           DSL.sum(TOTAL_PLANTS).cast(SQLDataType.INTEGER),
                           DSL.sum(PLANTS_SINCE_LAST_OBSERVATION).cast(SQLDataType.INTEGER),
                       )
-                      .from(PLANTING_SUBZONE_POPULATIONS)
-                      .join(PLANTING_SUBZONES)
-                      .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-                      .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-                      .groupBy(PLANTING_SUBZONES.PLANTING_ZONE_ID, SPECIES_ID)
+                      .from(SUBSTRATUM_POPULATIONS)
+                      .join(SUBSTRATA)
+                      .on(SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+                      .where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
+                      .groupBy(SUBSTRATA.STRATUM_ID, SPECIES_ID)
                 }
             )
             .execute()
@@ -391,17 +391,17 @@ class DeliveryStore(
                 PLANTS_SINCE_LAST_OBSERVATION,
             )
             .select(
-                with(PLANTING_ZONE_POPULATIONS) {
+                with(STRATUM_POPULATIONS) {
                   DSL.select(
                           DSL.value(plantingSiteId, PLANTING_SITE_ID),
                           SPECIES_ID,
                           DSL.sum(TOTAL_PLANTS).cast(SQLDataType.INTEGER),
                           DSL.sum(PLANTS_SINCE_LAST_OBSERVATION).cast(SQLDataType.INTEGER),
                       )
-                      .from(PLANTING_ZONE_POPULATIONS)
-                      .join(PLANTING_ZONES)
-                      .on(PLANTING_ZONE_ID.eq(PLANTING_ZONES.ID))
-                      .where(PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+                      .from(STRATUM_POPULATIONS)
+                      .join(STRATA)
+                      .on(STRATUM_ID.eq(STRATA.ID))
+                      .where(STRATA.PLANTING_SITE_ID.eq(plantingSiteId))
                       .groupBy(SPECIES_ID)
                 }
             )
@@ -417,7 +417,10 @@ class DeliveryStore(
    */
   fun recalculatePopulationsFromPlantings(plantingSiteId: PlantingSiteId) {
     if (
-        !dslContext.fetchExists(PLANTING_ZONES, PLANTING_ZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+        !dslContext.fetchExists(
+            STRATA,
+            STRATA.PLANTING_SITE_ID.eq(plantingSiteId),
+        )
     ) {
       throw IllegalArgumentException("Recalculation not supported for simple planting sites")
     }
@@ -426,17 +429,13 @@ class DeliveryStore(
       // Remove any populations that no longer have any plantings, or whose plantings are canceled
       // out by reassignments to other subzones.
       dslContext
-          .deleteFrom(PLANTING_SUBZONE_POPULATIONS)
-          .where(PLANTING_SUBZONE_POPULATIONS.plantingSubzones.PLANTING_SITE_ID.eq(plantingSiteId))
+          .deleteFrom(SUBSTRATUM_POPULATIONS)
+          .where(SUBSTRATUM_POPULATIONS.substrata.PLANTING_SITE_ID.eq(plantingSiteId))
           .and(
-              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.notIn(
+              SUBSTRATUM_POPULATIONS.SPECIES_ID.notIn(
                   DSL.select(PLANTINGS.SPECIES_ID)
                       .from(PLANTINGS)
-                      .where(
-                          PLANTINGS.PLANTING_SUBZONE_ID.eq(
-                              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID
-                          )
-                      )
+                      .where(PLANTINGS.SUBSTRATUM_ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID))
                       .groupBy(PLANTINGS.SPECIES_ID)
                       .having(DSL.sum(PLANTINGS.NUM_PLANTS).gt(BigDecimal.ZERO))
               )
@@ -447,31 +446,31 @@ class DeliveryStore(
 
       dslContext
           .insertInto(
-              PLANTING_SUBZONE_POPULATIONS,
-              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID,
-              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID,
-              PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS,
-              PLANTING_SUBZONE_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
+              SUBSTRATUM_POPULATIONS,
+              SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID,
+              SUBSTRATUM_POPULATIONS.SPECIES_ID,
+              SUBSTRATUM_POPULATIONS.TOTAL_PLANTS,
+              SUBSTRATUM_POPULATIONS.PLANTS_SINCE_LAST_OBSERVATION,
           )
           .select(
               DSL.select(
-                      PLANTINGS.PLANTING_SUBZONE_ID,
+                      PLANTINGS.SUBSTRATUM_ID,
                       PLANTINGS.SPECIES_ID,
                       sumField,
                       DSL.value(0),
                   )
                   .from(PLANTINGS)
-                  .join(PLANTING_SUBZONES)
-                  .on(PLANTINGS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-                  .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
-                  .groupBy(PLANTINGS.PLANTING_SUBZONE_ID, PLANTINGS.SPECIES_ID)
+                  .join(SUBSTRATA)
+                  .on(PLANTINGS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+                  .where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
+                  .groupBy(PLANTINGS.SUBSTRATUM_ID, PLANTINGS.SPECIES_ID)
           )
           .onConflict(
-              PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID,
-              PLANTING_SUBZONE_POPULATIONS.SPECIES_ID,
+              SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID,
+              SUBSTRATUM_POPULATIONS.SPECIES_ID,
           )
           .doUpdate()
-          .set(PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS, DSL.excluded(sumField))
+          .set(SUBSTRATUM_POPULATIONS.TOTAL_PLANTS, DSL.excluded(sumField))
           .execute()
 
       recalculateZonePopulations(plantingSiteId)
@@ -481,7 +480,7 @@ class DeliveryStore(
 
   private fun addToPopulations(
       plantingSiteId: PlantingSiteId,
-      plantingSubzoneId: PlantingSubzoneId?,
+      plantingSubzoneId: SubstratumId?,
       speciesId: SpeciesId,
       numPlants: Int,
       plantsSinceLastObservation: Int = numPlants,
@@ -517,23 +516,23 @@ class DeliveryStore(
   }
 
   private fun addToSubzonePopulations(
-      plantingSubzoneId: PlantingSubzoneId,
+      plantingSubzoneId: SubstratumId,
       speciesId: SpeciesId,
       numPlants: Int,
       plantsSinceLastObservation: Int = numPlants,
   ) {
     val plantingZoneId =
         dslContext
-            .select(PLANTING_SUBZONES.PLANTING_ZONE_ID)
-            .from(PLANTING_SUBZONES)
-            .where(PLANTING_SUBZONES.ID.eq(plantingSubzoneId))
-            .fetchOne(PLANTING_SUBZONES.PLANTING_ZONE_ID)
+            .select(SUBSTRATA.STRATUM_ID)
+            .from(SUBSTRATA)
+            .where(SUBSTRATA.ID.eq(plantingSubzoneId))
+            .fetchOne(SUBSTRATA.STRATUM_ID)
             ?: throw PlantingSubzoneNotFoundException(plantingSubzoneId)
 
-    with(PLANTING_SUBZONE_POPULATIONS) {
+    with(SUBSTRATUM_POPULATIONS) {
       dslContext
-          .insertInto(PLANTING_SUBZONE_POPULATIONS)
-          .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
+          .insertInto(SUBSTRATUM_POPULATIONS)
+          .set(SUBSTRATUM_ID, plantingSubzoneId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, numPlants)
           .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
@@ -547,18 +546,18 @@ class DeliveryStore(
 
       if (numPlants < 0) {
         dslContext
-            .deleteFrom(PLANTING_SUBZONE_POPULATIONS)
-            .where(PLANTING_SUBZONE_ID.eq(plantingSubzoneId))
+            .deleteFrom(SUBSTRATUM_POPULATIONS)
+            .where(SUBSTRATUM_ID.eq(plantingSubzoneId))
             .and(SPECIES_ID.eq(speciesId))
             .and(TOTAL_PLANTS.le(0))
             .execute()
       }
     }
 
-    with(PLANTING_ZONE_POPULATIONS) {
+    with(STRATUM_POPULATIONS) {
       dslContext
-          .insertInto(PLANTING_ZONE_POPULATIONS)
-          .set(PLANTING_ZONE_ID, plantingZoneId)
+          .insertInto(STRATUM_POPULATIONS)
+          .set(STRATUM_ID, plantingZoneId)
           .set(SPECIES_ID, speciesId)
           .set(TOTAL_PLANTS, numPlants)
           .set(PLANTS_SINCE_LAST_OBSERVATION, plantsSinceLastObservation)
@@ -572,8 +571,8 @@ class DeliveryStore(
 
       if (numPlants < 0) {
         dslContext
-            .deleteFrom(PLANTING_ZONE_POPULATIONS)
-            .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+            .deleteFrom(STRATUM_POPULATIONS)
+            .where(STRATUM_ID.eq(plantingZoneId))
             .and(SPECIES_ID.eq(speciesId))
             .and(TOTAL_PLANTS.le(0))
             .execute()
@@ -593,9 +592,7 @@ class DeliveryStore(
 
   private fun plantingSiteHasSubzones(plantingSiteId: PlantingSiteId): Boolean {
     return dslContext.fetchExists(
-        DSL.selectOne()
-            .from(PLANTING_SUBZONES)
-            .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+        DSL.selectOne().from(SUBSTRATA).where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
     )
   }
 
@@ -639,7 +636,7 @@ class DeliveryStore(
       val fromPlantingId: PlantingId,
       val numPlants: Int,
       val notes: String? = null,
-      val toPlantingSubzoneId: PlantingSubzoneId,
+      val toPlantingSubzoneId: SubstratumId,
   ) {
     init {
       if (numPlants <= 0) {

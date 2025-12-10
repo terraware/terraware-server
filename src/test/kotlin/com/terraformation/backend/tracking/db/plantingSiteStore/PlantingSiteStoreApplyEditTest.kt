@@ -2,14 +2,14 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.StableId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
-import com.terraformation.backend.db.tracking.tables.records.PlantingSubzoneHistoriesRecord
+import com.terraformation.backend.db.tracking.tables.records.SubstratumHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
@@ -69,10 +69,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   },
           )
 
-      fun ExistingPlantingSiteModel.allZoneIds(): Set<PlantingZoneId> =
+      fun ExistingPlantingSiteModel.allZoneIds(): Set<StratumId> =
           plantingZones.map { it.id }.toSet()
 
-      fun ExistingPlantingSiteModel.allSubzoneIds(): Set<PlantingSubzoneId> =
+      fun ExistingPlantingSiteModel.allSubzoneIds(): Set<SubstratumId> =
           plantingZones.flatMap { zone -> zone.plantingSubzones.map { it.id } }.toSet()
 
       assertNull(
@@ -645,7 +645,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         desired: NewPlantingSiteModel,
         expected: NewPlantingSiteModel = desired,
         expectedPlotCounts: List<Pair<Geometry, Int>>? = null,
-        getSubzonesToMarkIncomplete: (ExistingPlantingSiteModel) -> Set<PlantingSubzoneId> = {
+        getSubzonesToMarkIncomplete: (ExistingPlantingSiteModel) -> Set<SubstratumId> = {
           emptySet()
         },
     ): ScenarioResults {
@@ -766,12 +766,12 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           edited.plantingZones
               .map { zone ->
-                PlantingZoneHistoriesRow(
+                StratumHistoriesRow(
                     areaHa = zone.areaHa,
                     boundary = zone.boundary,
                     name = zone.name,
                     plantingSiteHistoryId = editedSiteHistory.id,
-                    plantingZoneId = zone.id,
+                    stratumId = zone.id,
                     stableId = zone.stableId,
                 )
               }
@@ -781,29 +781,28 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       )
 
       val editedSubzoneHistories =
-          plantingSubzoneHistoriesDao.fetchByPlantingZoneHistoryId(
+          plantingSubzoneHistoriesDao.fetchByStratumHistoryId(
               *editedZoneHistories.map { it.id!! }.toTypedArray()
           )
 
       assertTableEquals(
           edited.plantingZones.flatMap { zone ->
-            val plantingZoneHistoryId =
-                editedZoneHistories.first { it.plantingZoneId == zone.id }.id
+            val plantingZoneHistoryId = editedZoneHistories.first { it.stratumId == zone.id }.id
             zone.plantingSubzones.map { subzone ->
-              PlantingSubzoneHistoriesRecord(
+              SubstratumHistoriesRecord(
                   areaHa = subzone.areaHa,
                   boundary = subzone.boundary,
                   fullName = subzone.fullName,
                   name = subzone.name,
-                  plantingSubzoneId = subzone.id,
-                  plantingZoneHistoryId = plantingZoneHistoryId,
+                  substratumId = subzone.id,
+                  stratumHistoryId = plantingZoneHistoryId,
                   stableId = subzone.stableId,
               )
             }
           },
           "Planting subzone histories from edit",
           where =
-              PLANTING_SUBZONE_HISTORIES.plantingZoneHistories.PLANTING_SITE_HISTORY_ID.eq(
+              SUBSTRATUM_HISTORIES.stratumHistories.PLANTING_SITE_HISTORY_ID.eq(
                   editedSiteHistory.id
               ),
       )
@@ -836,7 +835,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           edited.plantingZones.flatMap { zone ->
             zone.plantingSubzones.flatMap { subzone ->
               val plantingSubzoneHistoryId =
-                  editedSubzoneHistories.first { it.plantingSubzoneId == subzone.id }.id
+                  editedSubzoneHistories.first { it.substratumId == subzone.id }.id
               subzone.monitoringPlots.map { plot ->
                 MonitoringPlotHistoriesRecord(
                     createdBy = user.userId,
@@ -844,8 +843,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                     monitoringPlotId = plot.id,
                     plantingSiteHistoryId = editedSiteHistory.id,
                     plantingSiteId = edited.id,
-                    plantingSubzoneHistoryId = plantingSubzoneHistoryId,
-                    plantingSubzoneId = subzone.id,
+                    substratumHistoryId = plantingSubzoneHistoryId,
+                    substratumId = subzone.id,
                 )
               }
             }
