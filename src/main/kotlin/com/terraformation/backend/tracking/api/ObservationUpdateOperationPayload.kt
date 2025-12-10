@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
@@ -99,6 +100,22 @@ data class BiomassUpdateOperationPayload(
     )
   }
 }
+
+@JsonTypeName("MonitoringSpecies")
+data class MonitoringSpeciesUpdateOperationPayload(
+    val certainty: RecordedSpeciesCertainty,
+    @Schema(
+        description = "Required if certainty is Known. Ignored if certainty is Other or Unknown."
+    )
+    val speciesId: SpeciesId?,
+    @Schema(
+        description = "Required if certainty is Other. Ignored if certainty is Known or Unknown."
+    )
+    val speciesName: String?,
+    val totalDead: Int?,
+    val totalExisting: Int?,
+    val totalLive: Int?,
+) : ObservationUpdateOperationPayload
 
 @JsonTypeName("ObservationPlot")
 data class ObservationPlotUpdateOperationPayload(

@@ -348,6 +348,7 @@ class ObservationsController(
               )
           is BiomassUpdateOperationPayload ->
               biomassStore.updateBiomassDetails(observationId, plotId, element::applyTo)
+          is MonitoringSpeciesUpdateOperationPayload -> Unit
           is ObservationPlotUpdateOperationPayload ->
               observationStore.updateObservationPlotDetails(observationId, plotId, element::applyTo)
           is QuadratSpeciesUpdateOperationPayload ->
