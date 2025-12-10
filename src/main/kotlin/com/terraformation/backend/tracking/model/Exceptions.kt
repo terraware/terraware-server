@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.tracking.PlantingSeasonId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.SubstratumId
 import java.time.LocalDate
 
 class CannotCreatePastPlantingSeasonException(val startDate: LocalDate, val endDate: LocalDate) :
@@ -36,7 +36,7 @@ class PlantingSeasonTooShortException(val startDate: LocalDate, val endDate: Loc
     IllegalArgumentException("Planting season $startDate-$endDate is too short")
 
 class PlantingSubzoneFullException(
-    val plantingSubzoneId: PlantingSubzoneId,
+    val plantingSubzoneId: SubstratumId,
     val plotsNeeded: Int,
     val plotsRemaining: Int,
 ) :

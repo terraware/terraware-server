@@ -13,15 +13,15 @@ import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumHistoryId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
@@ -77,12 +77,12 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
 
   protected lateinit var plotIds: MutableMap<String, MonitoringPlotId>
   protected val plotHistoryIds = mutableMapOf<MonitoringPlotId, MonitoringPlotHistoryId>()
-  protected lateinit var subzoneHistoryIds: Map<PlantingSubzoneId, PlantingSubzoneHistoryId>
-  protected lateinit var subzoneIds: Map<String, PlantingSubzoneId>
-  protected lateinit var zoneHistoryIds: Map<PlantingZoneId, PlantingZoneHistoryId>
-  protected lateinit var zoneIds: Map<String, PlantingZoneId>
+  protected lateinit var subzoneHistoryIds: Map<SubstratumId, SubstratumHistoryId>
+  protected lateinit var subzoneIds: Map<String, SubstratumId>
+  protected lateinit var zoneHistoryIds: Map<StratumId, StratumHistoryId>
+  protected lateinit var zoneIds: Map<String, StratumId>
 
-  protected val zoneNames: Map<PlantingZoneId, String> by lazy {
+  protected val zoneNames: Map<StratumId, String> by lazy {
     zoneIds.entries.associate { it.value to it.key }
   }
 
@@ -725,8 +725,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   }
 
   protected fun importZonesCsv(prefix: String) {
-    val newZoneIds = mutableMapOf<String, PlantingZoneId>()
-    val newZoneHistoryIds = mutableMapOf<PlantingZoneId, PlantingZoneHistoryId>()
+    val newZoneIds = mutableMapOf<String, StratumId>()
+    val newZoneHistoryIds = mutableMapOf<StratumId, StratumHistoryId>()
 
     mapCsv("$prefix/Zones.csv", 2) { cols ->
       val zoneName = cols[1]
@@ -743,8 +743,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   }
 
   protected fun importSubzonesCsv(prefix: String) {
-    val newSubzoneIds = mutableMapOf<String, PlantingSubzoneId>()
-    val newSubzoneHistoryIds = mutableMapOf<PlantingSubzoneId, PlantingSubzoneHistoryId>()
+    val newSubzoneIds = mutableMapOf<String, SubstratumId>()
+    val newSubzoneHistoryIds = mutableMapOf<SubstratumId, SubstratumHistoryId>()
 
     mapCsv("$prefix/Subzones.csv", 2) { cols ->
       val zoneName = cols[0]
@@ -942,11 +942,14 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             )
           }
 
-      with(OBSERVATION_REQUESTED_SUBZONES) {
+      with(OBSERVATION_REQUESTED_SUBSTRATA) {
         dslContext
-            .insertInto(OBSERVATION_REQUESTED_SUBZONES, OBSERVATION_ID, PLANTING_SUBZONE_ID)
+            .insertInto(OBSERVATION_REQUESTED_SUBSTRATA, OBSERVATION_ID, SUBSTRATUM_ID)
             .select(
-                DSL.selectDistinct(DSL.value(observationId), MONITORING_PLOTS.PLANTING_SUBZONE_ID)
+                DSL.selectDistinct(
+                        DSL.value(observationId),
+                        MONITORING_PLOTS.SUBSTRATUM_ID,
+                    )
                     .from(MONITORING_PLOTS)
                     .where(MONITORING_PLOTS.PLOT_NUMBER.`in`(observedPlotNames.map { it.toLong() }))
             )
@@ -1154,11 +1157,11 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             }
             .flatten()
 
-    with(OBSERVATION_REQUESTED_SUBZONES) {
+    with(OBSERVATION_REQUESTED_SUBSTRATA) {
       dslContext
-          .insertInto(OBSERVATION_REQUESTED_SUBZONES, OBSERVATION_ID, PLANTING_SUBZONE_ID)
+          .insertInto(OBSERVATION_REQUESTED_SUBSTRATA, OBSERVATION_ID, SUBSTRATUM_ID)
           .select(
-              DSL.selectDistinct(DSL.value(observationId), MONITORING_PLOTS.PLANTING_SUBZONE_ID)
+              DSL.selectDistinct(DSL.value(observationId), MONITORING_PLOTS.SUBSTRATUM_ID)
                   .from(MONITORING_PLOTS)
                   .where(MONITORING_PLOTS.PLOT_NUMBER.`in`(observedPlotNames.map { it.toLong() }))
           )

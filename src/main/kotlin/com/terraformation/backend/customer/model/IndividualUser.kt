@@ -42,8 +42,8 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.util.ResettableLazy
 import java.time.Instant
@@ -475,11 +475,11 @@ data class IndividualUser(
       canReadAcceleratorProject(parentStore.getProjectId(plantingSiteId)) ||
           isMember(parentStore.getOrganizationId(plantingSiteId))
 
-  override fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId) =
+  override fun canReadPlantingSubzone(plantingSubzoneId: SubstratumId) =
       canReadAcceleratorProject(parentStore.getProjectId(plantingSubzoneId)) ||
           isMember(parentStore.getOrganizationId(plantingSubzoneId))
 
-  override fun canReadPlantingZone(plantingZoneId: PlantingZoneId) =
+  override fun canReadPlantingZone(plantingZoneId: StratumId) =
       canReadAcceleratorProject(parentStore.getProjectId(plantingZoneId)) ||
           isMember(parentStore.getOrganizationId(plantingZoneId))
 
@@ -708,10 +708,10 @@ data class IndividualUser(
   override fun canUpdatePlantingSiteProject(plantingSiteId: PlantingSiteId) =
       isMember(parentStore.getOrganizationId(plantingSiteId))
 
-  override fun canUpdatePlantingSubzoneCompleted(plantingSubzoneId: PlantingSubzoneId) =
+  override fun canUpdatePlantingSubzoneCompleted(plantingSubzoneId: SubstratumId) =
       isMember(parentStore.getOrganizationId(plantingSubzoneId))
 
-  override fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId) =
+  override fun canUpdatePlantingZone(plantingZoneId: StratumId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingZoneId))
 
   override fun canUpdateProject(projectId: ProjectId): Boolean {
@@ -751,7 +751,7 @@ data class IndividualUser(
   override fun canUpdateT0(monitoringPlotId: MonitoringPlotId) =
       isManagerOrHigher(parentStore.getOrganizationId(monitoringPlotId))
 
-  override fun canUpdateT0(plantingZoneId: PlantingZoneId) =
+  override fun canUpdateT0(plantingZoneId: StratumId) =
       isManagerOrHigher(parentStore.getOrganizationId(plantingZoneId))
 
   override fun canUpdateTimeseries(deviceId: DeviceId) =

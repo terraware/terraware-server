@@ -10,8 +10,8 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
 import com.terraformation.backend.db.tracking.PlantingType
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.model.DeliveryModel
 import com.terraformation.backend.tracking.model.PlantingModel
@@ -63,7 +63,7 @@ data class PlantingPayload(
                 "will be negative."
     )
     val numPlants: Int,
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val plantingSubzoneId: SubstratumId?,
     val speciesId: SpeciesId,
     val type: PlantingType,
 ) {
@@ -106,7 +106,7 @@ data class ReassignmentPayload(
     )
     val numPlants: Int,
     val notes: String?,
-    val toPlantingSubzoneId: PlantingSubzoneId,
+    val toPlantingSubzoneId: SubstratumId,
 ) {
   fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlantingSubzoneId)
 }

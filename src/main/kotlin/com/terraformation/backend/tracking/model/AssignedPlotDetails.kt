@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.api.GpxWaypoint
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.i18n.Messages
 import java.math.BigDecimal
 import org.locationtech.jts.geom.Geometry
@@ -17,7 +17,7 @@ data class AssignedPlotDetails(
     val elevationMeters: BigDecimal?,
     val isFirstObservation: Boolean,
     /** Null if the monitoring plot no longer falls within a subzone (due to a map edit). */
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val plantingSubzoneId: SubstratumId?,
     val plantingSubzoneName: String,
     val plantingZoneName: String,
     val plotNumber: Long,

@@ -6,7 +6,7 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -34,7 +34,7 @@ class PlantingSubzonesController(
               "observations.",
   )
   fun listPlantingSubzoneSpecies(
-      @PathVariable id: PlantingSubzoneId,
+      @PathVariable id: SubstratumId,
   ): ListPlantingSubzoneSpeciesResponsePayload {
     val species = speciesStore.fetchSiteSpeciesByPlantingSubzoneId(id)
 
@@ -46,7 +46,7 @@ class PlantingSubzonesController(
   @Operation(summary = "Updates the planting-completed state of a planting subzone.")
   @PutMapping("/{id}")
   fun updatePlantingSubzone(
-      @PathVariable id: PlantingSubzoneId,
+      @PathVariable id: SubstratumId,
       @RequestBody payload: UpdatePlantingSubzoneRequestPayload,
   ): SimpleSuccessResponsePayload {
     plantingSiteStore.updatePlantingSubzoneCompleted(id, payload.plantingCompleted)

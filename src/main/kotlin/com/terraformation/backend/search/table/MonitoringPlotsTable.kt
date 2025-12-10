@@ -6,7 +6,7 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.CoordinateField.Companion.LATITUDE
@@ -33,7 +33,7 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
           ),
           plantingSubzones.asSingleValueSublist(
               "plantingSubzone",
-              MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID),
+              MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
           observationPlots.asMultiValueSublist(
               "observationPlots",

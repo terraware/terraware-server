@@ -18,8 +18,8 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.useAndDelete
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.time.DatabaseBackedClock
@@ -488,7 +488,7 @@ class AdminPlantingSitesController(
         } else {
           plantingSiteStore.applyPlantingSiteEdit(
               edit,
-              subzoneIdsToMarkIncomplete?.split(",")?.map { PlantingSubzoneId(it.trim()) }?.toSet()
+              subzoneIdsToMarkIncomplete?.split(",")?.map { SubstratumId(it.trim()) }?.toSet()
                   ?: emptySet(),
           )
           redirectAttributes.successMessage = "Site map updated."
@@ -530,7 +530,7 @@ class AdminPlantingSitesController(
   @PostMapping("/updatePlantingZone")
   fun updatePlantingZone(
       @RequestParam plantingSiteId: PlantingSiteId,
-      @RequestParam plantingZoneId: PlantingZoneId,
+      @RequestParam plantingZoneId: StratumId,
       @RequestParam name: String,
       @RequestParam variance: BigDecimal,
       @RequestParam errorMargin: BigDecimal,
@@ -676,7 +676,7 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
-      @RequestParam requestedSubzoneIds: Set<PlantingSubzoneId>,
+      @RequestParam requestedSubzoneIds: Set<SubstratumId>,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {

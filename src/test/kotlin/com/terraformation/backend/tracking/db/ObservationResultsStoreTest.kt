@@ -173,7 +173,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       insertPlantingZone()
       val subzoneId2 = insertPlantingSubzone()
       monitoringPlotsDao.update(
-          monitoringPlotsDao.fetchOneById(plotId)!!.copy(plantingSubzoneId = subzoneId2)
+          monitoringPlotsDao.fetchOneById(plotId)!!.copy(substratumId = subzoneId2)
       )
       insertMonitoringPlotHistory()
 

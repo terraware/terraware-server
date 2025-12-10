@@ -72,9 +72,9 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import jakarta.inject.Named
@@ -1459,7 +1459,7 @@ class ReportStore(
   }
 
   private val hectaresPlantedField =
-      with(PLANTING_SUBZONES) {
+      with(SUBSTRATA) {
         DSL.field(
                 DSL.select(DSL.sum(AREA_HA))
                     .from(this)
@@ -1566,28 +1566,20 @@ class ReportStore(
       }
 
   private val survivalRateTempDenominatorField =
-      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+      with(STRATUM_T0_TEMP_DENSITIES) {
         DSL.coalesce(
                 DSL.sum(
                     DSL.field(
-                        DSL.select(DSL.sum(ZONE_DENSITY))
-                            .from(PLANTING_ZONE_T0_TEMP_DENSITIES)
+                        DSL.select(DSL.sum(STRATUM_DENSITY))
+                            .from(STRATUM_T0_TEMP_DENSITIES)
                             .join(MONITORING_PLOTS)
-                            .on(
-                                MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(
-                                    PLANTING_ZONE_ID
-                                )
-                            )
+                            .on(MONITORING_PLOTS.substrata.STRATUM_ID.eq(STRATUM_ID))
                             .where(
                                 MONITORING_PLOTS.PLANTING_SITE_ID.`in`(
                                     OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
                                 )
                             )
-                            .and(
-                                plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
-                                    true
-                                )
-                            )
+                            .and(strata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
                             .and(plotHasCompletedObservations(MONITORING_PLOTS.ID, false))
                             .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
                     )

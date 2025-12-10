@@ -40,8 +40,8 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.log.perClassLogger
 import java.security.Principal
 import java.time.Instant
@@ -473,9 +473,9 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
-  fun canReadPlantingSubzone(plantingSubzoneId: PlantingSubzoneId): Boolean = defaultPermission
+  fun canReadPlantingSubzone(plantingSubzoneId: SubstratumId): Boolean = defaultPermission
 
-  fun canReadPlantingZone(plantingZoneId: PlantingZoneId): Boolean = defaultPermission
+  fun canReadPlantingZone(plantingZoneId: StratumId): Boolean = defaultPermission
 
   fun canReadProject(projectId: ProjectId): Boolean = defaultPermission
 
@@ -627,10 +627,10 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdatePlantingSiteProject(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
-  fun canUpdatePlantingSubzoneCompleted(plantingSubzoneId: PlantingSubzoneId): Boolean =
+  fun canUpdatePlantingSubzoneCompleted(plantingSubzoneId: SubstratumId): Boolean =
       defaultPermission
 
-  fun canUpdatePlantingZone(plantingZoneId: PlantingZoneId): Boolean = defaultPermission
+  fun canUpdatePlantingZone(plantingZoneId: StratumId): Boolean = defaultPermission
 
   fun canUpdateProject(projectId: ProjectId): Boolean = defaultPermission
 
@@ -661,7 +661,7 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdateT0(monitoringPlotId: MonitoringPlotId): Boolean = defaultPermission
 
-  fun canUpdateT0(plantingZoneId: PlantingZoneId): Boolean = defaultPermission
+  fun canUpdateT0(plantingZoneId: StratumId): Boolean = defaultPermission
 
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean = defaultPermission
 

@@ -15,10 +15,10 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneHistoryId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneHistoryId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumHistoryId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
@@ -273,7 +273,7 @@ data class PlantingSubzonePayload(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val fullName: String,
-    val id: PlantingSubzoneId,
+    val id: SubstratumId,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
     val monitoringPlots: List<MonitoringPlotPayload>,
@@ -313,7 +313,7 @@ data class PlantingZonePayload(
                 "attributes of the planting zone do not cause this timestamp to change."
     )
     val boundaryModifiedTime: Instant,
-    val id: PlantingZoneId,
+    val id: StratumId,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
     val name: String,
@@ -400,11 +400,11 @@ data class PlantingSubzoneHistoryPayload(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val fullName: String,
-    val id: PlantingSubzoneHistoryId,
+    val id: SubstratumHistoryId,
     val monitoringPlots: List<MonitoringPlotHistoryPayload>,
     val name: String,
     @Schema(description = "ID of planting subzone if it exists in the current version of the site.")
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val plantingSubzoneId: SubstratumId?,
 ) {
   constructor(
       model: PlantingSubzoneHistoryModel
@@ -422,11 +422,11 @@ data class PlantingSubzoneHistoryPayload(
 data class PlantingZoneHistoryPayload(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val id: PlantingZoneHistoryId,
+    val id: StratumHistoryId,
     val name: String,
     val plantingSubzones: List<PlantingSubzoneHistoryPayload>,
     @Schema(description = "ID of planting zone if it exists in the current version of the site.")
-    val plantingZoneId: PlantingZoneId?,
+    val plantingZoneId: StratumId?,
 ) {
   constructor(
       model: PlantingZoneHistoryModel
@@ -463,7 +463,7 @@ data class PlantingSiteHistoryPayload(
 }
 
 data class PlantingSubzoneReportedPlantsPayload(
-    val id: PlantingSubzoneId,
+    val id: SubstratumId,
     val plantsSinceLastObservation: Int,
     val species: List<ReportedSpeciesPayload>,
     val totalPlants: Int,
@@ -481,7 +481,7 @@ data class PlantingSubzoneReportedPlantsPayload(
 }
 
 data class PlantingZoneReportedPlantsPayload(
-    val id: PlantingZoneId,
+    val id: StratumId,
     val plantsSinceLastObservation: Int,
     val plantingSubzones: List<PlantingSubzoneReportedPlantsPayload>,
     val progressPercent: Int,

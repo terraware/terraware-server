@@ -4,7 +4,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
@@ -39,7 +39,7 @@ class BatchService(
       newWithdrawal: NewWithdrawalModel,
       readyByDate: LocalDate? = null,
       plantingSiteId: PlantingSiteId? = null,
-      plantingSubzoneId: PlantingSubzoneId? = null,
+      plantingSubzoneId: SubstratumId? = null,
   ): ExistingWithdrawalModel {
     return when {
       newWithdrawal.purpose == WithdrawalPurpose.OutPlant && plantingSiteId != null ->
@@ -53,7 +53,7 @@ class BatchService(
   private fun withdrawToPlantingSite(
       newWithdrawal: NewWithdrawalModel,
       plantingSiteId: PlantingSiteId,
-      plantingSubzoneId: PlantingSubzoneId? = null,
+      plantingSubzoneId: SubstratumId? = null,
   ): ExistingWithdrawalModel {
     return dslContext.transactionResult { _ ->
       val withdrawal = batchStore.withdraw(newWithdrawal)
