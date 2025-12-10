@@ -8,18 +8,18 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
@@ -88,27 +88,22 @@ class T0Store(
 
     val densityField =
         DSL.round(
-            PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS.cast(SQLDataType.NUMERIC) /
-                PLANTING_SUBZONES.AREA_HA,
+            SUBSTRATUM_POPULATIONS.TOTAL_PLANTS.cast(SQLDataType.NUMERIC) / SUBSTRATA.AREA_HA,
             1,
         )
 
     val withdrawnSpecies =
         DSL.select(
                 MONITORING_PLOTS.ID,
-                PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
+                SUBSTRATUM_POPULATIONS.SPECIES_ID.`as`("species_id"),
                 densityField.`as`("density"),
             )
             .from(MONITORING_PLOTS)
-            .join(PLANTING_SUBZONE_POPULATIONS)
-            .on(
-                MONITORING_PLOTS.PLANTING_SUBZONE_ID.eq(
-                    PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID
-                )
-            )
-            .join(PLANTING_SUBZONES)
-            .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-            .where(PLANTING_SUBZONES.PLANTING_SITE_ID.eq(plantingSiteId))
+            .join(SUBSTRATUM_POPULATIONS)
+            .on(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID))
+            .join(SUBSTRATA)
+            .on(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+            .where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
             .and(densityField.ge(BigDecimal.valueOf(0.05)))
 
     val observedNotWithdrawnSpecies =
@@ -137,23 +132,21 @@ class T0Store(
             .and(OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID.eq(RecordedSpeciesCertainty.Known))
             .andNotExists(
                 DSL.selectOne()
-                    .from(PLANTING_SUBZONE_POPULATIONS)
-                    .join(PLANTING_SUBZONES)
-                    .on(PLANTING_SUBZONES.ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
+                    .from(SUBSTRATUM_POPULATIONS)
+                    .join(SUBSTRATA)
+                    .on(SUBSTRATA.ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID))
                     .where(
-                        PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(
-                                MONITORING_PLOTS.PLANTING_SUBZONE_ID
-                            )
+                        SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID)
                             .and(
-                                PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.eq(
+                                SUBSTRATUM_POPULATIONS.SPECIES_ID.eq(
                                     OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID
                                 )
                             )
                             .and(
                                 DSL.round(
-                                        PLANTING_SUBZONE_POPULATIONS.TOTAL_PLANTS.cast(
+                                        SUBSTRATUM_POPULATIONS.TOTAL_PLANTS.cast(
                                             SQLDataType.NUMERIC
-                                        ) / PLANTING_SUBZONES.AREA_HA,
+                                        ) / SUBSTRATA.AREA_HA,
                                         1,
                                     )
                                     .ge(BigDecimal.valueOf(0.05))
@@ -213,12 +206,12 @@ class T0Store(
 
     // Get species withdrawn to this monitoring plot's subzone that weren't in the observation
     val withdrawnSpeciesNotInObservation: Set<SpeciesId> =
-        with(PLANTING_SUBZONE_POPULATIONS) {
+        with(SUBSTRATUM_POPULATIONS) {
           dslContext
               .select(SPECIES_ID)
               .from(this)
               .join(MONITORING_PLOTS)
-              .on(PLANTING_SUBZONE_ID.eq(MONITORING_PLOTS.PLANTING_SUBZONE_ID))
+              .on(SUBSTRATUM_ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID))
               .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
               .and(TOTAL_PLANTS.gt(0))
               .and(SPECIES_ID.notIn(observationDensities.keys))
@@ -426,7 +419,7 @@ class T0Store(
   }
 
   fun assignT0TempZoneSpeciesDensities(
-      plantingZoneId: PlantingZoneId,
+      plantingZoneId: StratumId,
       densities: List<SpeciesDensityModel>,
   ): ZoneT0TempDensityChangedModel {
     requirePermissions { updateT0(plantingZoneId) }
@@ -437,19 +430,19 @@ class T0Store(
     val existingDensities = fetchExistingDensities(plantingZoneId)
 
     dslContext.transaction { _ ->
-      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+      with(STRATUM_T0_TEMP_DENSITIES) {
         dslContext
             .deleteFrom(this)
-            .where(PLANTING_ZONE_ID.eq(plantingZoneId))
+            .where(STRATUM_ID.eq(plantingZoneId))
             .and(SPECIES_ID.notIn(densities.map { it.speciesId }))
             .execute()
 
         var insertQuery =
             dslContext.insertInto(
-                PLANTING_ZONE_T0_TEMP_DENSITIES,
-                PLANTING_ZONE_ID,
+                STRATUM_T0_TEMP_DENSITIES,
+                STRATUM_ID,
                 SPECIES_ID,
-                ZONE_DENSITY,
+                STRATUM_DENSITY,
                 CREATED_BY,
                 CREATED_TIME,
                 MODIFIED_BY,
@@ -474,7 +467,7 @@ class T0Store(
 
         insertQuery
             .onDuplicateKeyUpdate()
-            .set(ZONE_DENSITY, DSL.excluded(ZONE_DENSITY))
+            .set(STRATUM_DENSITY, DSL.excluded(STRATUM_DENSITY))
             .set(MODIFIED_BY, currentUserId)
             .set(MODIFIED_TIME, now)
             .execute()
@@ -587,16 +580,16 @@ class T0Store(
   }
 
   private fun zoneT0TempMultiset(plantingSiteId: PlantingSiteId): Field<List<ZoneT0TempDataModel>> {
-    return with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+    return with(STRATUM_T0_TEMP_DENSITIES) {
       DSL.multiset(
-              DSL.select(PLANTING_ZONE_ID, SPECIES_ID, ZONE_DENSITY)
+              DSL.select(STRATUM_ID, SPECIES_ID, STRATUM_DENSITY)
                   .from(this)
-                  .where(plantingZones.PLANTING_SITE_ID.eq(plantingSiteId))
-                  .orderBy(plantingZones.NAME, SPECIES_ID)
+                  .where(strata.PLANTING_SITE_ID.eq(plantingSiteId))
+                  .orderBy(strata.NAME, SPECIES_ID)
           )
           .convertFrom { records ->
             records
-                .groupBy { it[PLANTING_ZONE_ID.asNonNullable()] }
+                .groupBy { it[STRATUM_ID.asNonNullable()] }
                 .map { (plantingZoneId, results) ->
                   ZoneT0TempDataModel(
                       plantingZoneId = plantingZoneId,
@@ -604,7 +597,7 @@ class T0Store(
                           results.map { record ->
                             SpeciesDensityModel(
                                 speciesId = record[SPECIES_ID]!!,
-                                density = record[ZONE_DENSITY]!!,
+                                density = record[STRATUM_DENSITY]!!,
                             )
                           },
                   )
@@ -624,13 +617,13 @@ class T0Store(
             .fetchMap(SPECIES_ID.asNonNullable(), PLOT_DENSITY.asNonNullable())
       }
 
-  private fun fetchExistingDensities(plantingZoneId: PlantingZoneId): Map<SpeciesId, BigDecimal> =
-      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+  private fun fetchExistingDensities(plantingZoneId: StratumId): Map<SpeciesId, BigDecimal> =
+      with(STRATUM_T0_TEMP_DENSITIES) {
         dslContext
-            .select(SPECIES_ID, ZONE_DENSITY)
+            .select(SPECIES_ID, STRATUM_DENSITY)
             .from(this)
-            .where(PLANTING_ZONE_ID.eq(plantingZoneId))
-            .fetchMap(SPECIES_ID.asNonNullable(), ZONE_DENSITY.asNonNullable())
+            .where(STRATUM_ID.eq(plantingZoneId))
+            .fetchMap(SPECIES_ID.asNonNullable(), STRATUM_DENSITY.asNonNullable())
       }
 
   private fun buildSpeciesDensityChangeList(
@@ -705,19 +698,19 @@ class T0Store(
                   ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID)
                       .and(permSpeciesIdField.eq(PLOT_T0_DENSITIES.SPECIES_ID))
               )
-              .leftJoin(PLANTING_SUBZONE_POPULATIONS)
+              .leftJoin(SUBSTRATUM_POPULATIONS)
               .on(
-                  PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID)
-                      .and(permSpeciesIdField.eq(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID))
+                  SUBSTRATUM_ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID)
+                      .and(permSpeciesIdField.eq(SUBSTRATUM_POPULATIONS.SPECIES_ID))
               )
-              .leftJoin(PLANTING_SUBZONES)
-              .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+              .leftJoin(SUBSTRATA)
+              .on(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
               .join(OBSERVATION_PLOTS)
               .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
               .join(OBSERVATIONS)
               .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
-              .and(PLANTING_SUBZONE_ID.isNotNull)
+              .and(SUBSTRATUM_ID.isNotNull)
               .and(IS_AD_HOC.eq(false))
               .and(PERMANENT_INDEX.isNotNull)
               .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
@@ -739,17 +732,13 @@ class T0Store(
               .unionAll(
                   DSL.selectDistinct(
                           ID.`as`("plot_id"),
-                          PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.`as`("species_id"),
+                          STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.`as`("species_id"),
                       )
                       .from(MONITORING_PLOTS)
-                      .join(plantingSubzones)
-                      .on(PLANTING_SUBZONE_ID.eq(plantingSubzones.ID))
-                      .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
-                      .on(
-                          plantingSubzones.PLANTING_ZONE_ID.eq(
-                              PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID
-                          )
-                      )
+                      .join(substrata)
+                      .on(SUBSTRATUM_ID.eq(substrata.ID))
+                      .join(STRATUM_T0_TEMP_DENSITIES)
+                      .on(substrata.STRATUM_ID.eq(STRATUM_T0_TEMP_DENSITIES.STRATUM_ID))
                       .join(OBSERVATION_PLOTS)
                       .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
                       .join(OBSERVATIONS)
@@ -773,30 +762,28 @@ class T0Store(
               .from(MONITORING_PLOTS)
               .leftJoin(tempPlotSpecies)
               .on(ID.eq(tempPlotIdField))
-              .leftJoin(PLANTING_ZONE_T0_TEMP_DENSITIES)
+              .leftJoin(STRATUM_T0_TEMP_DENSITIES)
               .on(
-                  plantingSubzones.PLANTING_ZONE_ID.eq(
-                          PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID
-                      )
-                      .and(tempSpeciesIdField.eq(PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID))
+                  substrata.STRATUM_ID.eq(STRATUM_T0_TEMP_DENSITIES.STRATUM_ID)
+                      .and(tempSpeciesIdField.eq(STRATUM_T0_TEMP_DENSITIES.SPECIES_ID))
               )
-              .leftJoin(PLANTING_SUBZONE_POPULATIONS)
+              .leftJoin(SUBSTRATUM_POPULATIONS)
               .on(
-                  PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID)
-                      .and(tempSpeciesIdField.eq(PLANTING_SUBZONE_POPULATIONS.SPECIES_ID))
+                  SUBSTRATUM_ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID)
+                      .and(tempSpeciesIdField.eq(SUBSTRATUM_POPULATIONS.SPECIES_ID))
               )
-              .leftJoin(PLANTING_SUBZONES)
-              .on(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+              .leftJoin(SUBSTRATA)
+              .on(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
               .leftJoin(OBSERVATION_PLOTS)
               .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
               .leftJoin(OBSERVATIONS)
               .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
               .where(PLANTING_SITE_ID.eq(plantingSiteId))
-              .and(PLANTING_SUBZONE_ID.isNotNull)
+              .and(SUBSTRATUM_ID.isNotNull)
               .and(IS_AD_HOC.eq(false))
               .and(PERMANENT_INDEX.isNull)
               .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
-              .and(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY.isNull)
+              .and(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY.isNull)
               .and(
                   OBSERVATIONS.STATE_ID.`in`(
                       listOf(ObservationState.Completed, ObservationState.Abandoned)
@@ -810,11 +797,11 @@ class T0Store(
       with(MONITORING_PLOTS) {
         DSL.selectDistinct(
                 ID.`as`("plot_id"),
-                PLANTING_SUBZONE_POPULATIONS.SPECIES_ID.`as`("species_id"),
+                SUBSTRATUM_POPULATIONS.SPECIES_ID.`as`("species_id"),
             )
             .from(MONITORING_PLOTS)
-            .join(PLANTING_SUBZONE_POPULATIONS)
-            .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONE_POPULATIONS.PLANTING_SUBZONE_ID))
+            .join(SUBSTRATUM_POPULATIONS)
+            .on(SUBSTRATUM_ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID))
             .where(PLANTING_SITE_ID.eq(plantingSiteId))
             .and(
                 DSL.exists(

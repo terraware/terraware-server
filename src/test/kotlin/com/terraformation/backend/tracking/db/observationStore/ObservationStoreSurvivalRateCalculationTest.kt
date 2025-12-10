@@ -4,15 +4,15 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
@@ -36,8 +36,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   private lateinit var observationId: ObservationId
   private lateinit var plotId: MonitoringPlotId
-  private lateinit var subzoneId: PlantingSubzoneId
-  private lateinit var zoneId: PlantingZoneId
+  private lateinit var subzoneId: SubstratumId
+  private lateinit var zoneId: StratumId
   private val observedTime = Instant.ofEpochSecond(1)
 
   @BeforeEach
@@ -571,7 +571,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     dslContext
         .update(MONITORING_PLOTS)
         .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
-        .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, DSL.castNull(PlantingSubzoneId::class.java))
+        .set(
+            MONITORING_PLOTS.SUBSTRATUM_ID,
+            DSL.castNull(SubstratumId::class.java),
+        )
         .where(MONITORING_PLOTS.ID.`in`(removedPlots))
         .execute()
     val newPlotHistory = insertMonitoringPlotHistory(monitoringPlotId = plotId)
@@ -622,11 +625,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         "After geometry change, Observation 2",
     )
 
-    with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+    with(STRATUM_T0_TEMP_DENSITIES) {
       dslContext
           .update(this)
-          .set(ZONE_DENSITY, BigDecimal.valueOf(30).toPlantsPerHectare())
-          .where(PLANTING_ZONE_ID.eq(zoneId))
+          .set(STRATUM_DENSITY, BigDecimal.valueOf(30).toPlantsPerHectare())
+          .where(STRATUM_ID.eq(zoneId))
           .and(SPECIES_ID.eq(speciesId))
           .execute()
     }
@@ -786,11 +789,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       val species1 = speciesIds["Species 0"]!!
       val zone1 = zoneIds["Zone1"]!!
 
-      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+      with(STRATUM_T0_TEMP_DENSITIES) {
         dslContext
             .update(this)
-            .set(ZONE_DENSITY, BigDecimal.valueOf(20).toPlantsPerHectare())
-            .where(PLANTING_ZONE_ID.eq(zone1))
+            .set(STRATUM_DENSITY, BigDecimal.valueOf(20).toPlantsPerHectare())
+            .where(STRATUM_ID.eq(zone1))
             .and(SPECIES_ID.eq(species1))
             .execute()
       }
@@ -840,7 +843,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       val plot112 = plotIds["112"]!!
       dslContext
           .update(MONITORING_PLOTS)
-          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, subzone2)
+          .set(MONITORING_PLOTS.SUBSTRATUM_ID, subzone2)
           .where(MONITORING_PLOTS.ID.eq(plot112))
           .execute()
       plotHistoryIds[plot112] =
@@ -873,7 +876,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       dslContext
           .update(MONITORING_PLOTS)
           .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
-          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, DSL.castNull(PlantingSubzoneId::class.java))
+          .set(
+              MONITORING_PLOTS.SUBSTRATUM_ID,
+              DSL.castNull(SubstratumId::class.java),
+          )
           .where(MONITORING_PLOTS.ID.eq(plot213))
           .execute()
       plotHistoryIds[plot213] =
@@ -1014,7 +1020,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       val plot212 = plotIds["212"]!!
       dslContext
           .update(MONITORING_PLOTS)
-          .set(MONITORING_PLOTS.PLANTING_SUBZONE_ID, DSL.castNull(PlantingSubzoneId::class.java))
+          .set(
+              MONITORING_PLOTS.SUBSTRATUM_ID,
+              DSL.castNull(SubstratumId::class.java),
+          )
           .where(MONITORING_PLOTS.ID.eq(plot212))
           .execute()
       plotHistoryIds[plot212] =

@@ -56,7 +56,7 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
 
     assertSetEquals(
         setOf(subzoneId1, subzoneId2),
-        observationRequestedSubzonesDao.findAll().map { it.plantingSubzoneId }.toSet(),
+        observationRequestedSubzonesDao.findAll().map { it.substratumId }.toSet(),
         "Subzone IDs",
     )
   }

@@ -6,8 +6,8 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
@@ -29,8 +29,8 @@ import org.locationtech.jts.geom.Point
 
 data class PlantingSiteModel<
     PSID : PlantingSiteId?,
-    PZID : PlantingZoneId?,
-    PSZID : PlantingSubzoneId?,
+    PZID : StratumId?,
+    PSZID : SubstratumId?,
     TIMESTAMP : Instant?,
 >(
     val adHocPlots: List<MonitoringPlotModel> = emptyList(),
@@ -270,12 +270,12 @@ data class PlantingSiteModel<
 typealias AnyPlantingSiteModel =
     PlantingSiteModel<
         out PlantingSiteId?,
-        out PlantingZoneId?,
-        out PlantingSubzoneId?,
+        out StratumId?,
+        out SubstratumId?,
         out Instant?,
     >
 
 typealias ExistingPlantingSiteModel =
-    PlantingSiteModel<PlantingSiteId, PlantingZoneId, PlantingSubzoneId, Instant>
+    PlantingSiteModel<PlantingSiteId, StratumId, SubstratumId, Instant>
 
 typealias NewPlantingSiteModel = PlantingSiteModel<Nothing?, Nothing?, Nothing?, Nothing?>

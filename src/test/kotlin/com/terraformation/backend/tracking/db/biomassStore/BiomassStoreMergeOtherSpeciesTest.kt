@@ -7,7 +7,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassSpeciesRecord
@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
 
 @Suppress("DEPRECATION")
 class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
-  private lateinit var plantingZoneId: PlantingZoneId
+  private lateinit var plantingZoneId: StratumId
   private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var observationId: ObservationId
 

@@ -6,8 +6,8 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.point
 import io.mockk.every
@@ -150,9 +150,9 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
                 cumulativeDead = 1,
                 permanentLive = 0,
             ),
-            ObservedZoneSpeciesTotalsRow(
+            ObservedStratumSpeciesTotalsRow(
                 observationId = observationId,
-                plantingZoneId = inserted.plantingZoneId,
+                stratumId = inserted.plantingZoneId,
                 speciesName = "Species name",
                 certaintyId = RecordedSpeciesCertainty.Other,
                 totalLive = 0,
@@ -162,9 +162,9 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
                 cumulativeDead = 1,
                 permanentLive = 0,
             ),
-            ObservedSubzoneSpeciesTotalsRow(
+            ObservedSubstratumSpeciesTotalsRow(
                 observationId = observationId,
-                plantingSubzoneId = inserted.plantingSubzoneId,
+                substratumId = inserted.plantingSubzoneId,
                 speciesName = "Species name",
                 certaintyId = RecordedSpeciesCertainty.Other,
                 totalLive = 0,

@@ -2,19 +2,19 @@ package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpeciesTotalsRecord
-import com.terraformation.backend.db.tracking.tables.records.ObservedSubzoneSpeciesTotalsRecord
-import com.terraformation.backend.db.tracking.tables.records.ObservedZoneSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservedStratumSpeciesTotalsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservedSubstratumSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.point
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test
 
 @Suppress("DEPRECATION")
 class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
-  private lateinit var plantingZoneId: PlantingZoneId
+  private lateinit var plantingZoneId: StratumId
   private lateinit var monitoringPlotId: MonitoringPlotId
 
   @BeforeEach
@@ -328,8 +328,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsBeforeMerge, "Before merge")
-    assertTableEmpty(OBSERVED_SUBZONE_SPECIES_TOTALS)
-    assertTableEmpty(OBSERVED_ZONE_SPECIES_TOTALS)
+    assertTableEmpty(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+    assertTableEmpty(OBSERVED_STRATUM_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
 
     store.mergeOtherSpeciesForMonitoring(observationId1, plantingSiteId, true, "Merge", speciesId)
@@ -344,17 +344,17 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsAfterMerge, "After merge")
-    assertTableEmpty(OBSERVED_SUBZONE_SPECIES_TOTALS)
-    assertTableEmpty(OBSERVED_ZONE_SPECIES_TOTALS)
+    assertTableEmpty(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+    assertTableEmpty(OBSERVED_STRATUM_SPECIES_TOTALS)
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
   }
 
   private fun ObservedPlotSpeciesTotalsRecord.toSubzone(
-      plantingSubzoneId: PlantingSubzoneId = inserted.plantingSubzoneId
+      plantingSubzoneId: SubstratumId = inserted.plantingSubzoneId
   ) =
-      ObservedSubzoneSpeciesTotalsRecord(
+      ObservedSubstratumSpeciesTotalsRecord(
           observationId = observationId,
-          plantingSubzoneId = plantingSubzoneId,
+          substratumId = plantingSubzoneId,
           speciesId = speciesId,
           speciesName = speciesName,
           certaintyId = certaintyId,
@@ -368,11 +368,11 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
       )
 
   private fun ObservedPlotSpeciesTotalsRecord.toZone(
-      plantingZoneId: PlantingZoneId = inserted.plantingZoneId
+      plantingZoneId: StratumId = inserted.plantingZoneId
   ) =
-      ObservedZoneSpeciesTotalsRecord(
+      ObservedStratumSpeciesTotalsRecord(
           observationId = observationId,
-          plantingZoneId = plantingZoneId,
+          stratumId = plantingZoneId,
           speciesId = speciesId,
           speciesName = speciesName,
           certaintyId = certaintyId,

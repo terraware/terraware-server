@@ -13,9 +13,9 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import java.time.LocalDate
 
@@ -90,10 +90,10 @@ class PlantingSiteNotDetailedException(val plantingSiteId: PlantingSiteId) :
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")
 
-class PlantingSubzoneNotFoundException(val plantingSubzoneId: PlantingSubzoneId) :
+class PlantingSubzoneNotFoundException(val plantingSubzoneId: SubstratumId) :
     EntityNotFoundException("Planting subzone $plantingSubzoneId not found")
 
-class PlantingZoneNotFoundException(val plantingZoneId: PlantingZoneId) :
+class PlantingZoneNotFoundException(val plantingZoneId: StratumId) :
     EntityNotFoundException("Planting zone $plantingZoneId not found")
 
 class PlantingSiteMapInvalidException(val problems: List<PlantingSiteValidationFailure>) :

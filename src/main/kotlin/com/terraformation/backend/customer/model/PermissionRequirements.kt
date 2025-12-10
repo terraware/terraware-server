@@ -63,8 +63,8 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.nursery.db.BatchNotFoundException
@@ -1173,7 +1173,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readPlantingSubzone(plantingSubzoneId: PlantingSubzoneId) {
+  fun readPlantingSubzone(plantingSubzoneId: SubstratumId) {
     user.recordPermissionChecks {
       if (!user.canReadPlantingSubzone(plantingSubzoneId)) {
         throw PlantingSubzoneNotFoundException(plantingSubzoneId)
@@ -1181,7 +1181,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readPlantingZone(plantingZoneId: PlantingZoneId) {
+  fun readPlantingZone(plantingZoneId: StratumId) {
     user.recordPermissionChecks {
       if (!user.canReadPlantingZone(plantingZoneId)) {
         throw PlantingZoneNotFoundException(plantingZoneId)
@@ -1821,7 +1821,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updatePlantingSubzoneCompleted(plantingSubzoneId: PlantingSubzoneId) {
+  fun updatePlantingSubzoneCompleted(plantingSubzoneId: SubstratumId) {
     user.recordPermissionChecks {
       if (!user.canUpdatePlantingSubzoneCompleted(plantingSubzoneId)) {
         readPlantingSubzone(plantingSubzoneId)
@@ -1830,7 +1830,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updatePlantingZone(plantingZoneId: PlantingZoneId) {
+  fun updatePlantingZone(plantingZoneId: StratumId) {
     user.recordPermissionChecks {
       if (!user.canUpdatePlantingZone(plantingZoneId)) {
         readPlantingZone(plantingZoneId)
@@ -1987,7 +1987,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updateT0(plantingZoneId: PlantingZoneId) {
+  fun updateT0(plantingZoneId: StratumId) {
     user.recordPermissionChecks {
       if (!user.canUpdateT0(plantingZoneId)) {
         readPlantingZone(plantingZoneId)

@@ -13,12 +13,12 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.tables.records.PlantingZoneT0TempDensitiesRecord
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
+import com.terraformation.backend.db.tracking.tables.records.StratumT0TempDensitiesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -61,8 +61,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val store: T0Store by lazy { T0Store(clock, dslContext, eventPublisher) }
 
   private lateinit var plantingSiteId: PlantingSiteId
-  private lateinit var plantingZoneId: PlantingZoneId
-  private lateinit var plantingSubzoneId: PlantingSubzoneId
+  private lateinit var plantingZoneId: StratumId
+  private lateinit var plantingSubzoneId: SubstratumId
   private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var tempPlotId: MonitoringPlotId
   private lateinit var observationId: ObservationId
@@ -1244,7 +1244,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PlantingZoneT0TempDensitiesRecord(
+              StratumT0TempDensitiesRecord(
                   plantingZoneId,
                   speciesId1,
                   updatedDensity,
@@ -1253,7 +1253,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   createdTime = clock.instant().minusSeconds(60),
                   modifiedTime = clock.instant(),
               ),
-              PlantingZoneT0TempDensitiesRecord(
+              StratumT0TempDensitiesRecord(
                   plantingZoneId,
                   speciesId2,
                   initialDensity,
@@ -1443,14 +1443,14 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
   private fun zoneDensityRecord(
-      zoneId: PlantingZoneId,
+      zoneId: StratumId,
       speciesId: SpeciesId,
       density: BigDecimal,
   ) =
-      PlantingZoneT0TempDensitiesRecord(
-          plantingZoneId = zoneId,
+      StratumT0TempDensitiesRecord(
+          stratumId = zoneId,
           speciesId = speciesId,
-          zoneDensity = density,
+          stratumDensity = density,
           createdBy = user.userId,
           modifiedBy = user.userId,
           createdTime = clock.instant(),

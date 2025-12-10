@@ -2,7 +2,7 @@ package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -141,7 +141,7 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
     insertObservationPlot(completedBy = user.userId)
 
     // Now a map edit removes the subzone the plot used to be in
-    dslContext.deleteFrom(PLANTING_SUBZONES).execute()
+    dslContext.deleteFrom(SUBSTRATA).execute()
 
     val expected =
         listOf(

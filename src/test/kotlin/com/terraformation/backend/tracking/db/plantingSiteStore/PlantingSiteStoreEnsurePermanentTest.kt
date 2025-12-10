@@ -47,8 +47,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
                 monitoringPlotId = plot.id,
                 plantingSiteHistoryId = plantingSiteHistoryId,
                 plantingSiteId = plantingSiteId,
-                plantingSubzoneHistoryId = plantingSubzoneHistoryId,
-                plantingSubzoneId = plantingSubzoneId,
+                substratumHistoryId = plantingSubzoneHistoryId,
+                substratumId = plantingSubzoneId,
             )
           }
       )
@@ -115,8 +115,8 @@ internal class PlantingSiteStoreEnsurePermanentTest : BasePlantingSiteStoreTest(
                     monitoringPlotId = plot.id,
                     plantingSiteHistoryId = plantingSiteHistoryId,
                     plantingSiteId = plantingSiteId,
-                    plantingSubzoneHistoryId = plantingSubzoneHistoryId,
-                    plantingSubzoneId = plantingSubzoneId,
+                    substratumHistoryId = plantingSubzoneHistoryId,
+                    substratumId = plantingSubzoneId,
                 )
               }
       )

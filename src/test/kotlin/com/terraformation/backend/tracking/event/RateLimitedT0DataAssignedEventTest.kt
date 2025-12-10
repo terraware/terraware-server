@@ -4,7 +4,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
@@ -458,7 +458,7 @@ class RateLimitedT0DataAssignedEventTest {
 
   private fun zoneChangeModel(zoneId: Int, densities: List<SpeciesDensityChangedEventModel>) =
       ZoneT0DensityChangedEventModel(
-          plantingZoneId = PlantingZoneId(zoneId.toLong()),
+          plantingZoneId = StratumId(zoneId.toLong()),
           zoneName = "Z$zoneId",
           speciesDensityChanges = densities,
       )

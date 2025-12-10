@@ -7,13 +7,13 @@ import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzoneHistoriesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZoneHistoriesRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonesRow
+import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
+import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
+import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
 import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
@@ -77,7 +77,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       )
 
       assertTableEmpty(PLANTING_SITE_HISTORIES)
-      assertTableEmpty(PLANTING_ZONES)
+      assertTableEmpty(STRATA)
     }
 
     @Test
@@ -114,7 +114,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           "Planting sites",
       )
 
-      assertTableEmpty(PLANTING_ZONES)
+      assertTableEmpty(STRATA)
     }
 
     @Test
@@ -235,7 +235,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       )
 
       val commonZonesRow =
-          PlantingZonesRow(
+          StrataRow(
               areaHa = BigDecimal("1.5"),
               boundaryModifiedBy = user.userId,
               boundaryModifiedTime = Instant.EPOCH,
@@ -280,7 +280,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       )
 
       val commonSubzonesRow =
-          PlantingSubzonesRow(
+          SubstrataRow(
               areaHa = BigDecimal("0.8"),
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -316,25 +316,25 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               commonSubzonesRow.copy(
                   fullName = "Zone 1-Subzone 1",
                   name = "Subzone 1",
-                  plantingZoneId = actualZones["Zone 1"]?.id,
+                  stratumId = actualZones["Zone 1"]?.id,
                   stableId = StableId("Zone 1-Subzone 1"),
               ),
               commonSubzonesRow.copy(
                   fullName = "Zone 1-Subzone 2",
                   name = "Subzone 2",
-                  plantingZoneId = actualZones["Zone 1"]?.id,
+                  stratumId = actualZones["Zone 1"]?.id,
                   stableId = StableId("Zone 1-Subzone 2"),
               ),
               commonSubzonesRow.copy(
                   fullName = "Zone 2-Subzone 1",
                   name = "Subzone 1",
-                  plantingZoneId = actualZones["Zone 2"]?.id,
+                  stratumId = actualZones["Zone 2"]?.id,
                   stableId = StableId("Zone 2-Subzone 1"),
               ),
               commonSubzonesRow.copy(
                   fullName = "Zone 2-Subzone 2",
                   name = "Subzone 2",
-                  plantingZoneId = actualZones["Zone 2"]?.id,
+                  stratumId = actualZones["Zone 2"]?.id,
                   stableId = StableId("Zone 2-Subzone 2"),
               ),
           ),
@@ -434,12 +434,12 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       val zoneHistories = plantingZoneHistoriesDao.findAll()
       assertEquals(
           listOf(
-              PlantingZoneHistoriesRow(
+              StratumHistoriesRow(
                   areaHa = BigDecimal("4.0"),
                   boundary = zoneBoundary,
                   name = "zone",
                   plantingSiteHistoryId = model.historyId,
-                  plantingZoneId = model.plantingZones.first().id,
+                  stratumId = model.plantingZones.first().id,
                   stableId = StableId("zone"),
               ),
           ),
@@ -449,13 +449,13 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
 
       assertEquals(
           listOf(
-              PlantingSubzoneHistoriesRow(
+              SubstratumHistoriesRow(
                   areaHa = BigDecimal("4.0"),
                   boundary = subzoneBoundary,
                   fullName = "zone-subzone",
                   name = "subzone",
-                  plantingSubzoneId = model.plantingZones.first().plantingSubzones.first().id,
-                  plantingZoneHistoryId = zoneHistories.first().id,
+                  substratumId = model.plantingZones.first().plantingSubzones.first().id,
+                  stratumHistoryId = zoneHistories.first().id,
                   stableId = StableId("zone-subzone"),
               ),
           ),

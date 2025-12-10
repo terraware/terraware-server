@@ -390,8 +390,8 @@ COMMENT ON COLUMN tracking.deliveries.withdrawal_id IS 'Which nursery withdrawal
 
 COMMENT ON TABLE tracking.draft_planting_sites IS 'Details of planting sites that are in the process of being defined.';
 COMMENT ON COLUMN tracking.draft_planting_sites.data IS 'Client-defined state of the definition of the planting site. This may include a mix of map data and application state and is treated as opaque by the server.';
-COMMENT ON COLUMN tracking.draft_planting_sites.num_planting_subzones is 'Number of planting subzones defined so far.';
-COMMENT ON COLUMN tracking.draft_planting_sites.num_planting_zones is 'Number of planting zones defined so far.';
+COMMENT ON COLUMN tracking.draft_planting_sites.num_substrata is 'Number of substrata defined so far.';
+COMMENT ON COLUMN tracking.draft_planting_sites.num_strata is 'Number of strata defined so far.';
 
 COMMENT ON TABLE tracking.mangrove_tides IS '(Enum) High/Low tide at a mangrove during an observation.';
 
@@ -401,16 +401,16 @@ COMMENT ON COLUMN tracking.monitoring_plot_overlaps.overlaps_plot_id IS 'ID of t
 
 COMMENT ON TABLE tracking.monitoring_plot_histories IS 'Versions of monitoring plots over time. Each time a planting site changes, its monitoring plots are added to this table.';
 COMMENT ON COLUMN tracking.monitoring_plot_histories.created_by IS 'Which user created or edited the monitoring plot or its planting site.';
-COMMENT ON COLUMN tracking.monitoring_plot_histories.created_time IS 'When the monitoring plot was created, edited, or associated with a new planting site history record. May differ from the time when the subzone or planting site was created or edited since plots can be created when observations start.';
+COMMENT ON COLUMN tracking.monitoring_plot_histories.created_time IS 'When the monitoring plot was created, edited, or associated with a new planting site history record. May differ from the time when the substratum or planting site was created or edited since plots can be created when observations start.';
 
-COMMENT ON TABLE tracking.monitoring_plots IS 'Regions within planting subzones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any monitoring plot in a subzone is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same subzone.';
+COMMENT ON TABLE tracking.monitoring_plots IS 'Regions within substrata that can be comprehensively surveyed in order to extrapolate results for the entire stratum. Any monitoring plot in a substratum is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same substratum.';
 COMMENT ON COLUMN tracking.monitoring_plots.boundary IS 'Boundary of the monitoring plot. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.monitoring_plots.created_by IS 'Which user created the monitoring plot.';
 COMMENT ON COLUMN tracking.monitoring_plots.created_time IS 'When the monitoring plot was originally created.';
 COMMENT ON COLUMN tracking.monitoring_plots.modified_by IS 'Which user most recently modified the monitoring plot.';
 COMMENT ON COLUMN tracking.monitoring_plots.modified_time IS 'When the monitoring plot was most recently modified.';
-COMMENT ON COLUMN tracking.monitoring_plots.permanent_index IS 'If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the planting zone. Starts at 1 for each planting zone. If null, this plot is not currently a candidate for selection as a permanent plot but may still be chosen as a temporary plot.';
-COMMENT ON COLUMN tracking.monitoring_plots.planting_subzone_id IS 'Which planting subzone this monitoring plot is currently part of, if any. May be null if the subzone was edited or removed after the plot was created, or if the plot was created outside the site boundary.';
+COMMENT ON COLUMN tracking.monitoring_plots.permanent_index IS 'If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the stratum. Starts at 1 for each stratum. If null, this plot is not currently a candidate for selection as a permanent plot but may still be chosen as a temporary plot.';
+COMMENT ON COLUMN tracking.monitoring_plots.substratum_id IS 'Which substratum this monitoring plot is currently part of, if any. May be null if the substratum was edited or removed after the plot was created, or if the plot was created outside the site boundary.';
 COMMENT ON COLUMN tracking.monitoring_plots.plot_number IS 'User-visible identifier of this plot. Plot numbers are sequential and start at 1 for each organization.';
 COMMENT ON COLUMN tracking.monitoring_plots.size_meters IS 'Length in meters of one side of the monitoring plot. Plots are always squares, so for a 30x30m plot, this would be 30.';
 
@@ -430,7 +430,7 @@ COMMENT ON COLUMN tracking.observation_plots.completed_time IS 'Server-generated
 COMMENT ON COLUMN tracking.observation_plots.is_permanent IS 'If true, this plot was selected for observation as a permanent monitoring plot. If false, this plot was selected as a temporary monitoring plot.';
 COMMENT ON COLUMN tracking.observation_plots.observed_time IS 'Client-supplied observation date and time. This is the time the observation was performed in the field, not the time it was submitted to the server.';
 
-COMMENT ON TABLE tracking.observation_requested_subzones IS 'If an observation should only cover a specific set of subzones, the subzone IDs are stored here. If an observation is of the entire site (the default), there will be no rows for that observation in this table.';
+COMMENT ON TABLE tracking.observation_requested_substrata IS 'If an observation should only cover a specific set of substrata, the substratum IDs are stored here. If an observation is of the entire site (the default), there will be no rows for that observation in this table.';
 
 COMMENT ON TABLE tracking.observation_states IS '(Enum) Where in the observation lifecycle a particular observation is.';
 
@@ -475,17 +475,17 @@ COMMENT ON COLUMN tracking.observed_site_species_totals.mortality_rate IS 'Perce
 COMMENT ON COLUMN tracking.observed_site_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
 COMMENT ON COLUMN tracking.observed_site_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting site, in either this observation or in previous ones, that have survived since the t0 point.';
 
-COMMENT ON TABLE tracking.observed_subzone_species_totals IS 'Aggregated per-planting-subzone, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_subzone_species_totals.cumulative_dead IS 'Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this subzone that are included as permanent plots in this observation.';
-COMMENT ON COLUMN tracking.observed_subzone_species_totals.mortality_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting subzone, in either the current observation or in previous ones, that were dead.';
-COMMENT ON COLUMN tracking.observed_subzone_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
-COMMENT ON COLUMN tracking.observed_subzone_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting subzone, in either the current observation or in previous ones, that have survived since the t0 point.';
+COMMENT ON TABLE tracking.observed_substratum_species_totals IS 'Aggregated per-substratum, per-species totals of plants recorded during observations.';
+COMMENT ON COLUMN tracking.observed_substratum_species_totals.cumulative_dead IS 'Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this substratum that are included as permanent plots in this observation.';
+COMMENT ON COLUMN tracking.observed_substratum_species_totals.mortality_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the substratum, in either the current observation or in previous ones, that were dead.';
+COMMENT ON COLUMN tracking.observed_substratum_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
+COMMENT ON COLUMN tracking.observed_substratum_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the substratum, in either the current observation or in previous ones, that have survived since the t0 point.';
 
-COMMENT ON TABLE tracking.observed_zone_species_totals IS 'Aggregated per-planting-zone, per-species totals of plants recorded during observations.';
-COMMENT ON COLUMN tracking.observed_zone_species_totals.cumulative_dead IS 'Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this zone that are included as permanent plots in this observation.';
-COMMENT ON COLUMN tracking.observed_zone_species_totals.mortality_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting zone, in either the current observation or in previous ones, that were dead.';
-COMMENT ON COLUMN tracking.observed_zone_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
-COMMENT ON COLUMN tracking.observed_zone_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the planting zone, in either the current observation or in previous ones, that have survived since the t0 point.';
+COMMENT ON TABLE tracking.observed_stratum_species_totals IS 'Aggregated per-stratum, per-species totals of plants recorded during observations.';
+COMMENT ON COLUMN tracking.observed_stratum_species_totals.cumulative_dead IS 'Total number of dead plants of the species observed, both in this observation and in all previous ones, in plots in this stratum that are included as permanent plots in this observation.';
+COMMENT ON COLUMN tracking.observed_stratum_species_totals.mortality_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the stratum, in either the current observation or in previous ones, that were dead.';
+COMMENT ON COLUMN tracking.observed_stratum_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
+COMMENT ON COLUMN tracking.observed_stratum_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the stratum, in either the current observation or in previous ones, that have survived since the t0 point.';
 
 COMMENT ON TABLE tracking.planting_seasons IS 'Start and end dates of planting seasons for planting sites.';
 COMMENT ON COLUMN tracking.planting_seasons.end_date IS 'What day the planting season ends. This is the last day of the season, not the day after the season, that is, if the planting season is the month of January, this will be January 31, not February 1.';
@@ -502,8 +502,8 @@ COMMENT ON COLUMN tracking.planting_site_notifications.notification_number IS 'N
 
 COMMENT ON TABLE tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
 
-COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one planting zone.';
-COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
+COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one stratum.';
+COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. strata will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_sites.exclusion IS 'Optional area to exclude from a site. No monitoring plots will be located in this area.';
 COMMENT ON COLUMN tracking.planting_sites.created_by IS 'Which user created the planting site.';
 COMMENT ON COLUMN tracking.planting_sites.created_time IS 'When the planting site was originally created.';
@@ -516,40 +516,40 @@ COMMENT ON COLUMN tracking.planting_sites.organization_id IS 'Which organization
 
 COMMENT ON TABLE tracking.planting_types IS '(Enum) Type of planting associated with a delivery. Different planting types distinguish reassignments from initial plantings.';
 
-COMMENT ON TABLE tracking.planting_subzone_histories IS 'Versions of planting subzone maps over time. Each time a planting site map changes, its subzones'' maps are inserted into this table.';
+COMMENT ON TABLE tracking.substratum_histories IS 'Versions of substratum maps over time. Each time a planting site map changes, its substrata'' maps are inserted into this table.';
 
-COMMENT ON TABLE tracking.planting_subzone_populations IS 'Total number of plants of each species in each subzone.';
+COMMENT ON TABLE tracking.substratum_populations IS 'Total number of plants of each species in each substratum.';
 
-COMMENT ON TABLE tracking.planting_subzones IS 'Regions within planting zones that are a convenient size for a planting operation. Typically <10Ha.';
-COMMENT ON COLUMN tracking.planting_subzones.boundary IS 'Boundary of the subzone. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
-COMMENT ON COLUMN tracking.planting_subzones.created_by IS 'Which user created the subzone.';
-COMMENT ON COLUMN tracking.planting_subzones.created_time IS 'When the subzone was originally created.';
-COMMENT ON COLUMN tracking.planting_subzones.modified_by IS 'Which user most recently modified the subzone.';
-COMMENT ON COLUMN tracking.planting_subzones.modified_time IS 'When the subzone was most recently modified.';
-COMMENT ON COLUMN tracking.planting_subzones.name IS 'Short name of this planting subzone. This is often just a single letter and number. Must be unique within a planting zone.';
-COMMENT ON COLUMN tracking.planting_subzones.observed_time IS 'When an observation of a monitoring plot in the subzone was most recently completed.';
-COMMENT ON COLUMN tracking.planting_subzones.planting_site_id IS 'Which planting site this subzone is part of. This is the same as the planting site ID of this subzone''s planting zone, but is duplicated here so it can be used as the target of a foreign key constraint.';
-COMMENT ON COLUMN tracking.planting_subzones.planting_zone_id IS 'Which planting zone this subzone is part of.';
-COMMENT ON COLUMN tracking.planting_subzones.stable_id IS 'Subzone identifier that doesn''t change even if the subzone is renamed or edited. Defaults to the full name.';
+COMMENT ON TABLE tracking.substrata IS 'Regions within strata that are a convenient size for a planting operation. Typically <10Ha.';
+COMMENT ON COLUMN tracking.substrata.boundary IS 'Boundary of the substratum. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
+COMMENT ON COLUMN tracking.substrata.created_by IS 'Which user created the substratum.';
+COMMENT ON COLUMN tracking.substrata.created_time IS 'When the substratum was originally created.';
+COMMENT ON COLUMN tracking.substrata.modified_by IS 'Which user most recently modified the substratum.';
+COMMENT ON COLUMN tracking.substrata.modified_time IS 'When the substratum was most recently modified.';
+COMMENT ON COLUMN tracking.substrata.name IS 'Short name of this substratum. This is often just a single letter and number. Must be unique within a stratum.';
+COMMENT ON COLUMN tracking.substrata.observed_time IS 'When an observation of a monitoring plot in the substratum was most recently completed.';
+COMMENT ON COLUMN tracking.substrata.planting_site_id IS 'Which planting site this substratum is part of. This is the same as the planting site ID of this substratum''s stratum, but is duplicated here so it can be used as the target of a foreign key constraint.';
+COMMENT ON COLUMN tracking.substrata.stratum_id IS 'Which stratum this substratum is part of.';
+COMMENT ON COLUMN tracking.substrata.stable_id IS 'Substratum identifier that doesn''t change even if the substratum is renamed or edited. Defaults to the full name.';
 
-COMMENT ON TABLE tracking.planting_zone_histories IS 'Versions of planting zone maps over time. Each time a planting site map changes, its zones'' maps are inserted into this table.';
+COMMENT ON TABLE tracking.stratum_histories IS 'Versions of stratum maps over time. Each time a planting site map changes, its strata'' maps are inserted into this table.';
 
-COMMENT ON TABLE tracking.planting_zone_populations IS 'Total number of plants of each species in each zone.';
+COMMENT ON TABLE tracking.stratum_populations IS 'Total number of plants of each species in each stratum.';
 
-COMMENT ON TABLE tracking.planting_zone_t0_temp_densities IS 'Density for a zone per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the zone''s planting site.';
+COMMENT ON TABLE tracking.stratum_t0_temp_densities IS 'Density for a stratum per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the stratum''s planting site.';
 
-COMMENT ON TABLE tracking.planting_zones IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.';
-COMMENT ON COLUMN tracking.planting_zones.boundary IS 'Boundary of the planting zone. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a planting zone has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
-COMMENT ON COLUMN tracking.planting_zones.boundary_modified_by IS 'Which user most recently edited the planting zone''s boundary.';
-COMMENT ON COLUMN tracking.planting_zones.boundary_modified_time IS 'When the planting zone''s boundary was most recently modified.';
-COMMENT ON COLUMN tracking.planting_zones.created_by IS 'Which user created the planting zone.';
-COMMENT ON COLUMN tracking.planting_zones.created_time IS 'When the planting zone was originally created.';
-COMMENT ON COLUMN tracking.planting_zones.modified_by IS 'Which user most recently modified the planting zone.';
-COMMENT ON COLUMN tracking.planting_zones.modified_time IS 'When the planting zone was most recently modified.';
-COMMENT ON COLUMN tracking.planting_zones.name IS 'Short name of this planting zone. This is often just a single letter. Must be unique within a planting site.';
-COMMENT ON COLUMN tracking.planting_zones.num_permanent_plots IS 'Number of permanent plots to assign to the next observation. This is typically derived from a statistical formula.';
-COMMENT ON COLUMN tracking.planting_zones.planting_site_id IS 'Which planting site this zone is part of.';
-COMMENT ON COLUMN tracking.planting_zones.stable_id IS 'Zone identifier that doesn''t change even if the zone is renamed or edited. Defaults to the zone name.';
+COMMENT ON TABLE tracking.strata IS 'Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot.';
+COMMENT ON COLUMN tracking.strata.boundary IS 'Boundary of the stratum. This area is further subdivided into plots. This will typically be a single polygon but may be multiple polygons if a stratum has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
+COMMENT ON COLUMN tracking.strata.boundary_modified_by IS 'Which user most recently edited the stratum''s boundary.';
+COMMENT ON COLUMN tracking.strata.boundary_modified_time IS 'When the stratum''s boundary was most recently modified.';
+COMMENT ON COLUMN tracking.strata.created_by IS 'Which user created the stratum.';
+COMMENT ON COLUMN tracking.strata.created_time IS 'When the stratum was originally created.';
+COMMENT ON COLUMN tracking.strata.modified_by IS 'Which user most recently modified the stratum.';
+COMMENT ON COLUMN tracking.strata.modified_time IS 'When the stratum was most recently modified.';
+COMMENT ON COLUMN tracking.strata.name IS 'Short name of this stratum. This is often just a single letter. Must be unique within a planting site.';
+COMMENT ON COLUMN tracking.strata.num_permanent_plots IS 'Number of permanent plots to assign to the next observation. This is typically derived from a statistical formula.';
+COMMENT ON COLUMN tracking.strata.planting_site_id IS 'Which planting site this stratum is part of.';
+COMMENT ON COLUMN tracking.strata.stable_id IS 'Stratum identifier that doesn''t change even if the stratum is renamed or edited. Defaults to the stratum name.';
 
 COMMENT ON TABLE tracking.plantings IS 'Details about plants that were planted or reassigned as part of a delivery. There is one plantings row per species in a delivery.';
 COMMENT ON COLUMN tracking.plantings.created_by IS 'Which user created the planting.';
@@ -559,7 +559,7 @@ COMMENT ON COLUMN tracking.plantings.notes IS 'Notes about this specific plantin
 COMMENT ON COLUMN tracking.plantings.num_plants IS 'Number of plants that were planted (if the number is positive) or reassigned (if the number is negative).';
 COMMENT ON COLUMN tracking.plantings.planting_site_id IS 'Which planting site has the planting. Must be the same as the planting site ID of the delivery. This identifies the site as a whole; in addition, there may be a plot ID.';
 COMMENT ON COLUMN tracking.plantings.planting_type_id IS 'Whether this is the plant assignment from the initial delivery or an adjustment from a reassignment.';
-COMMENT ON COLUMN tracking.plantings.planting_subzone_id IS 'Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive.';
+COMMENT ON COLUMN tracking.plantings.substratum_id IS 'Which plot this planting affected, if any. Must be a plot at the planting site referenced by `planting_site_id`. Null if the planting site does not have plot information. For reassignments, this is the original plot if `num_plants` is negative, or the new plot if `num_plants` is positive.';
 COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
 
 COMMENT ON TABLE tracking.plot_t0_densities IS 'Density for a plot per species, in plants per hectare.';

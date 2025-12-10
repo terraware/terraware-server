@@ -83,8 +83,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               name = "Name",
-              numPlantingSubzones = 2,
-              numPlantingZones = 1,
+              numSubstrata = 2,
+              numStrata = 1,
               organizationId = organizationId,
               projectId = inserted.projectId,
               timeZone = timeZone,
@@ -171,8 +171,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               name = "New name",
-              numPlantingSubzones = 2,
-              numPlantingZones = 1,
+              numSubstrata = 2,
+              numStrata = 1,
               organizationId = organizationId,
               projectId = inserted.projectId,
               timeZone = timeZone,
@@ -182,8 +182,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         it.data = sampleData
         it.description = "Description"
         it.name = "New name"
-        it.numPlantingSubzones = 2
-        it.numPlantingZones = 1
+        it.numSubstrata = 2
+        it.numStrata = 1
         it.projectId = inserted.projectId
         it.timeZone = timeZone
       }
