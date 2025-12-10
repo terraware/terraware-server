@@ -327,7 +327,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           gen.multiRectangle(0 to 0, MONITORING_PLOT_SIZE_INT - 1 to MONITORING_PLOT_SIZE_INT)
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
-      val expected = PlantingSiteValidationFailure.zoneTooSmall("Z1")
+      val expected = PlantingSiteValidationFailure.stratumTooSmall("Z1")
 
       try {
         importer.import(
@@ -367,7 +367,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       val subzoneFeature = gen.subzoneFeature(siteBoundary)
 
-      val expected = PlantingSiteValidationFailure.zoneTooSmall("Z1")
+      val expected = PlantingSiteValidationFailure.stratumTooSmall("Z1")
 
       // Without grid origin
       try {

@@ -60,14 +60,14 @@ internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() 
 
       every { user.canReadPlantingSite(plantingSiteId) } returns false
 
-      assertThrows<PlantingSiteNotFoundException> { store.hasSubzonePlantings(plantingSiteId) }
+      assertThrows<PlantingSiteNotFoundException> { store.hasSubstratumPlantings(plantingSiteId) }
     }
 
     @Test
     fun `returns false when there are no plantings in subzones for a site without subzones`() {
       val plantingSiteId = insertPlantingSite()
 
-      assertFalse(store.hasSubzonePlantings(plantingSiteId))
+      assertFalse(store.hasSubstratumPlantings(plantingSiteId))
     }
 
     @Test
@@ -76,7 +76,7 @@ internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() 
       insertPlantingZone()
       insertPlantingSubzone()
 
-      assertFalse(store.hasSubzonePlantings(plantingSiteId))
+      assertFalse(store.hasSubstratumPlantings(plantingSiteId))
     }
 
     @Test
@@ -90,7 +90,7 @@ internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() 
       insertDelivery()
       insertPlanting()
 
-      assertTrue(store.hasSubzonePlantings(plantingSiteId))
+      assertTrue(store.hasSubstratumPlantings(plantingSiteId))
     }
   }
 }

@@ -158,7 +158,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       // Cause the planting subzone to be inserted by lazy evaluation
       assertNotNull(plantingSubzoneId)
 
-      assertThrows<DeliveryMissingSubzoneException> {
+      assertThrows<DeliveryMissingSubstratumException> {
         store.createDelivery(withdrawalId, plantingSiteId, null, mapOf(speciesId1 to 5))
       }
     }

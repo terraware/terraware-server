@@ -41,8 +41,10 @@ class CrossOrganizationDeliveryNotAllowedException(
             "are in different organizations"
     )
 
-class DeliveryMissingSubzoneException(val plantingSiteId: PlantingSiteId) :
-    MismatchedStateException("Deliveries to planting site $plantingSiteId must include subzone IDs")
+class DeliveryMissingSubstratumException(val plantingSiteId: PlantingSiteId) :
+    MismatchedStateException(
+        "Deliveries to planting site $plantingSiteId must include substratum IDs"
+    )
 
 class DeliveryNotFoundException(val deliveryId: DeliveryId) :
     EntityNotFoundException("Delivery $deliveryId not found")
@@ -64,8 +66,8 @@ class ObservationAlreadyEndedException(val observationId: ObservationId) :
 class ObservationAlreadyStartedException(val observationId: ObservationId) :
     MismatchedStateException("Observation $observationId is already started")
 
-class ObservationHasNoSubzonesException(val observationId: ObservationId) :
-    MismatchedStateException("No subzones were requested for observation $observationId")
+class ObservationHasNoSubstrataException(val observationId: ObservationId) :
+    MismatchedStateException("No substrata were requested for observation $observationId")
 
 class ObservationNotFoundException(val observationId: ObservationId) :
     EntityNotFoundException("Observation $observationId not found")
@@ -90,11 +92,11 @@ class PlantingSiteNotDetailedException(val plantingSiteId: PlantingSiteId) :
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")
 
-class PlantingSubzoneNotFoundException(val plantingSubzoneId: SubstratumId) :
-    EntityNotFoundException("Planting subzone $plantingSubzoneId not found")
+class SubstrataNotFoundException(val substratumId: SubstratumId) :
+    EntityNotFoundException("Substratum $substratumId not found")
 
-class PlantingZoneNotFoundException(val plantingZoneId: StratumId) :
-    EntityNotFoundException("Planting zone $plantingZoneId not found")
+class StratumNotFoundException(val stratumId: StratumId) :
+    EntityNotFoundException("Stratum $stratumId not found")
 
 class PlantingSiteMapInvalidException(val problems: List<PlantingSiteValidationFailure>) :
     RuntimeException("Found problems in planting site edit")
@@ -166,7 +168,7 @@ class ObservationRescheduleStateException(val observationId: ObservationId) :
 
 class ScheduleObservationWithoutPlantsException(val plantingSiteId: PlantingSiteId) :
     IllegalArgumentException(
-        "Cannot schedule observation in planting site $plantingSiteId which has no reported plants in subzones"
+        "Cannot schedule observation in planting site $plantingSiteId which has no reported plants in substrata"
     )
 
 class ShapefilesInvalidException(val problems: List<String>) :

@@ -69,7 +69,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
-        observationRequestedSubzonesDao,
+        observationRequestedSubstrataDao,
         ParentStore(dslContext),
     )
   }
@@ -77,13 +77,13 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
 
   protected lateinit var plotIds: MutableMap<String, MonitoringPlotId>
   protected val plotHistoryIds = mutableMapOf<MonitoringPlotId, MonitoringPlotHistoryId>()
-  protected lateinit var subzoneHistoryIds: Map<SubstratumId, SubstratumHistoryId>
-  protected lateinit var subzoneIds: Map<String, SubstratumId>
-  protected lateinit var zoneHistoryIds: Map<StratumId, StratumHistoryId>
-  protected lateinit var zoneIds: Map<String, StratumId>
+  protected lateinit var substratumHistoryIds: Map<SubstratumId, SubstratumHistoryId>
+  protected lateinit var substratumIds: Map<String, SubstratumId>
+  protected lateinit var stratumHistoryIds: Map<StratumId, StratumHistoryId>
+  protected lateinit var stratumIds: Map<String, StratumId>
 
-  protected val zoneNames: Map<StratumId, String> by lazy {
-    zoneIds.entries.associate { it.value to it.key }
+  protected val stratumNames: Map<StratumId, String> by lazy {
+    stratumIds.entries.associate { it.value to it.key }
   }
 
   @BeforeEach
@@ -174,10 +174,10 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertAll(
         { assertSiteSummary(prefix, results) },
         { assertSiteSpeciesSummary(prefix, numSpecies, results) },
-        { assertZoneSummary(prefix, results) },
-        { assertZoneSpeciesSummary(prefix, numSpecies, results) },
-        { assertSubzoneSummary(prefix, results) },
-        { assertSubzoneSpeciesSummary(prefix, numSpecies, results) },
+        { assertStratumSummary(prefix, results) },
+        { assertStratumSpeciesSummary(prefix, numSpecies, results) },
+        { assertSubstratumSummary(prefix, results) },
+        { assertSubstratumSpeciesSummary(prefix, numSpecies, results) },
         { assertPlotSummary(prefix, results) },
         { assertPlotSpeciesSummary(prefix, numSpecies, results) },
     )
@@ -187,10 +187,10 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertAll(
         { assertSiteResults(prefix, allResults) },
         { assertSiteSpeciesResults(prefix, allResults) },
-        { assertZoneResults(prefix, allResults) },
-        { assertZoneSpeciesResults(prefix, allResults) },
-        { assertSubzoneResults(prefix, allResults) },
-        { assertSubzoneSpeciesResults(prefix, allResults) },
+        { assertStratumResults(prefix, allResults) },
+        { assertStratumSpeciesResults(prefix, allResults) },
+        { assertSubstratumResults(prefix, allResults) },
+        { assertSubstratumSpeciesResults(prefix, allResults) },
         { assertPlotResults(prefix, allResults) },
         { assertPlotSpeciesResults(prefix, allResults) },
         { assertAllPlantsResults(prefix, allResults) },
@@ -216,22 +216,22 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
   }
 
-  protected fun assertZoneResults(prefix: String, allResults: List<ObservationResultsModel>) {
-    val rowKeys = zoneIds.keys.map { listOf(it) }
+  protected fun assertStratumResults(prefix: String, allResults: List<ObservationResultsModel>) {
+    val rowKeys = stratumIds.keys.map { listOf(it) }
 
     val actual =
         makeActualCsv(
             allResults,
             rowKeys,
-            { (zoneName), results ->
-              val zone = results.plantingZones.first { it.plantingZoneId == zoneIds[zoneName] }
+            { (stratumName), results ->
+              val stratum = results.strata.first { it.stratumId == stratumIds[stratumName] }
               listOf(
-                  zone.totalPlants.toStringOrBlank(),
-                  zone.plantingDensity.toStringOrBlank(),
-                  zone.totalSpecies.toStringOrBlank(),
-                  zone.mortalityRate.toStringOrBlank("%"),
-                  zone.survivalRate.toStringOrBlank("%"),
-                  zone.estimatedPlants.toStringOrBlank(),
+                  stratum.totalPlants.toStringOrBlank(),
+                  stratum.plantingDensity.toStringOrBlank(),
+                  stratum.totalSpecies.toStringOrBlank(),
+                  stratum.mortalityRate.toStringOrBlank("%"),
+                  stratum.survivalRate.toStringOrBlank("%"),
+                  stratum.estimatedPlants.toStringOrBlank(),
               )
             },
         )
@@ -239,25 +239,25 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
   }
 
-  protected fun assertSubzoneResults(prefix: String, allResults: List<ObservationResultsModel>) {
-    val rowKeys = subzoneIds.keys.map { listOf(it) }
+  protected fun assertSubstratumResults(prefix: String, allResults: List<ObservationResultsModel>) {
+    val rowKeys = substratumIds.keys.map { listOf(it) }
 
     val actual =
         makeActualCsv(
             allResults,
             rowKeys,
-            { (subzoneName), results ->
-              val subzone =
-                  results.plantingZones
-                      .flatMap { it.plantingSubzones }
-                      .firstOrNull { it.plantingSubzoneId == subzoneIds[subzoneName] }
+            { (substratumName), results ->
+              val substratum =
+                  results.strata
+                      .flatMap { it.substrata }
+                      .firstOrNull { it.substratumId == substratumIds[substratumName] }
               listOf(
-                  subzone?.totalPlants.toStringOrBlank(),
-                  subzone?.plantingDensity.toStringOrBlank(),
-                  subzone?.totalSpecies.toStringOrBlank(),
-                  subzone?.mortalityRate.toStringOrBlank("%"),
-                  subzone?.survivalRate.toStringOrBlank("%"),
-                  subzone?.estimatedPlants.toStringOrBlank(),
+                  substratum?.totalPlants.toStringOrBlank(),
+                  substratum?.plantingDensity.toStringOrBlank(),
+                  substratum?.totalSpecies.toStringOrBlank(),
+                  substratum?.mortalityRate.toStringOrBlank("%"),
+                  substratum?.survivalRate.toStringOrBlank("%"),
+                  substratum?.estimatedPlants.toStringOrBlank(),
               )
             },
         )
@@ -267,9 +267,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
 
   protected fun assertPlantsResults(filePath: String, results: ObservationResultsModel) {
     val plots =
-        results.plantingZones
-            .flatMap { zone -> zone.plantingSubzones }
-            .flatMap { subzone -> subzone.monitoringPlots }
+        results.strata
+            .flatMap { stratum -> stratum.substrata }
+            .flatMap { substratum -> substratum.monitoringPlots }
 
     val rowKeys =
         plots.flatMap { plot ->
@@ -283,9 +283,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             rowKeys,
             { (plotNumber, plantId), results ->
               val plot =
-                  results.plantingZones
-                      .flatMap { zone -> zone.plantingSubzones }
-                      .flatMap { subzone -> subzone.monitoringPlots }
+                  results.strata
+                      .flatMap { stratum -> stratum.substrata }
+                      .flatMap { substratum -> substratum.monitoringPlots }
                       .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
               val plant = plot?.plants?.firstOrNull { it.id.toString() == plantId }
 
@@ -321,9 +321,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             rowKeys,
             { (plotNumber), results ->
               val plot =
-                  results.plantingZones
-                      .flatMap { zone -> zone.plantingSubzones }
-                      .flatMap { subzone -> subzone.monitoringPlots }
+                  results.strata
+                      .flatMap { stratum -> stratum.substrata }
+                      .flatMap { substratum -> substratum.monitoringPlots }
                       .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
 
               listOf(
@@ -369,26 +369,28 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/SiteStatsSummary.csv", actual)
   }
 
-  protected fun assertZoneSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
-    val rowKeys = zoneIds.keys.map { listOf(it) }
+  protected fun assertStratumSummary(
+      prefix: String,
+      allResults: List<ObservationRollupResultsModel>,
+  ) {
+    val rowKeys = stratumIds.keys.map { listOf(it) }
 
     val actual =
         makeActualCsv(
             allResults,
             rowKeys,
-            { (zoneName), results ->
-              val zone =
-                  results.plantingZones.firstOrNull { it.plantingZoneId == zoneIds[zoneName] }
+            { (stratumName), results ->
+              val stratum = results.strata.firstOrNull { it.stratumId == stratumIds[stratumName] }
               listOf(
-                  zone?.totalPlants.toStringOrBlank(),
-                  zone?.plantingDensity.toStringOrBlank(),
-                  zone?.plantingDensityStdDev.toStringOrBlank(),
-                  zone?.totalSpecies.toStringOrBlank(),
-                  zone?.mortalityRate.toStringOrBlank("%"),
-                  zone?.mortalityRateStdDev.toStringOrBlank("%"),
-                  zone?.survivalRate.toStringOrBlank("%"),
-                  zone?.survivalRateStdDev.toStringOrBlank("%"),
-                  zone?.estimatedPlants.toStringOrBlank(),
+                  stratum?.totalPlants.toStringOrBlank(),
+                  stratum?.plantingDensity.toStringOrBlank(),
+                  stratum?.plantingDensityStdDev.toStringOrBlank(),
+                  stratum?.totalSpecies.toStringOrBlank(),
+                  stratum?.mortalityRate.toStringOrBlank("%"),
+                  stratum?.mortalityRateStdDev.toStringOrBlank("%"),
+                  stratum?.survivalRate.toStringOrBlank("%"),
+                  stratum?.survivalRateStdDev.toStringOrBlank("%"),
+                  stratum?.estimatedPlants.toStringOrBlank(),
               )
             },
         )
@@ -396,31 +398,31 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/ZoneStatsSummary.csv", actual)
   }
 
-  protected fun assertSubzoneSummary(
+  protected fun assertSubstratumSummary(
       prefix: String,
       allResults: List<ObservationRollupResultsModel>,
   ) {
-    val rowKeys = subzoneIds.keys.map { listOf(it) }
+    val rowKeys = substratumIds.keys.map { listOf(it) }
 
     val actual =
         makeActualCsv(
             allResults,
             rowKeys,
-            { (subzoneName), results ->
-              val subzone =
-                  results.plantingZones
-                      .flatMap { it.plantingSubzones }
-                      .firstOrNull { it.plantingSubzoneId == subzoneIds[subzoneName] }
+            { (substratumName), results ->
+              val substratum =
+                  results.strata
+                      .flatMap { it.substrata }
+                      .firstOrNull { it.substratumId == substratumIds[substratumName] }
               listOf(
-                  subzone?.totalPlants.toStringOrBlank(),
-                  subzone?.plantingDensity.toStringOrBlank(),
-                  subzone?.plantingDensityStdDev.toStringOrBlank(),
-                  subzone?.totalSpecies.toStringOrBlank(),
-                  subzone?.mortalityRate.toStringOrBlank("%"),
-                  subzone?.mortalityRateStdDev.toStringOrBlank("%"),
-                  subzone?.survivalRate.toStringOrBlank("%"),
-                  subzone?.survivalRateStdDev.toStringOrBlank("%"),
-                  subzone?.estimatedPlants.toStringOrBlank(),
+                  substratum?.totalPlants.toStringOrBlank(),
+                  substratum?.plantingDensity.toStringOrBlank(),
+                  substratum?.plantingDensityStdDev.toStringOrBlank(),
+                  substratum?.totalSpecies.toStringOrBlank(),
+                  substratum?.mortalityRate.toStringOrBlank("%"),
+                  substratum?.mortalityRateStdDev.toStringOrBlank("%"),
+                  substratum?.survivalRate.toStringOrBlank("%"),
+                  substratum?.survivalRateStdDev.toStringOrBlank("%"),
+                  substratum?.estimatedPlants.toStringOrBlank(),
               )
             },
         )
@@ -436,9 +438,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             allResults,
             rowKeys,
             { (plotNumber), results ->
-              results.plantingZones
-                  .flatMap { zone -> zone.plantingSubzones }
-                  .flatMap { subzone -> subzone.monitoringPlots }
+              results.strata
+                  .flatMap { stratum -> stratum.substrata }
+                  .flatMap { substratum -> substratum.monitoringPlots }
                   .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
                   ?.let { plot ->
                     listOf(
@@ -490,23 +492,23 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/SiteStatsPerSpecies.csv", actual)
   }
 
-  protected fun assertSubzoneSpeciesResults(
+  protected fun assertSubstratumSpeciesResults(
       prefix: String,
       allResults: List<ObservationResultsModel>,
   ) {
     val rowKeys =
-        subzoneIds.keys.flatMap { zoneName ->
-          allSpeciesNames.map { speciesName -> listOf(zoneName, speciesName) }
+        substratumIds.keys.flatMap { stratumName ->
+          allSpeciesNames.map { speciesName -> listOf(stratumName, speciesName) }
         }
 
     val actual =
         makeActualCsv(
             allResults,
             rowKeys,
-            { (subzoneName, speciesName), results ->
-              results.plantingZones
-                  .flatMap { it.plantingSubzones }
-                  .firstOrNull { it.plantingSubzoneId == subzoneIds[subzoneName] }
+            { (substratumName, speciesName), results ->
+              results.strata
+                  .flatMap { it.substrata }
+                  .firstOrNull { it.substratumId == substratumIds[substratumName] }
                   ?.species
                   ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
                   ?.firstOrNull { getSpeciesNameValue(it) == speciesName }
@@ -523,22 +525,22 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/SubzoneStatsPerSpecies.csv", actual)
   }
 
-  protected fun assertZoneSpeciesResults(
+  protected fun assertStratumSpeciesResults(
       prefix: String,
       allResults: List<ObservationResultsModel>,
   ) {
     val rowKeys =
-        zoneIds.keys.flatMap { zoneName ->
-          allSpeciesNames.map { speciesName -> listOf(zoneName, speciesName) }
+        stratumIds.keys.flatMap { stratumName ->
+          allSpeciesNames.map { speciesName -> listOf(stratumName, speciesName) }
         }
 
     val actual =
         makeActualCsv(
             allResults,
             rowKeys,
-            { (zoneName, speciesName), results ->
-              results.plantingZones
-                  .firstOrNull { zoneNames[it.plantingZoneId] == zoneName }
+            { (stratumName, speciesName), results ->
+              results.strata
+                  .firstOrNull { stratumNames[it.stratumId] == stratumName }
                   ?.species
                   ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
                   ?.firstOrNull { getSpeciesNameValue(it) == speciesName }
@@ -569,9 +571,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             allResults,
             rowKeys,
             { (plotNumber, speciesName), results ->
-              results.plantingZones
-                  .flatMap { zone -> zone.plantingSubzones }
-                  .flatMap { subzone -> subzone.monitoringPlots }
+              results.strata
+                  .flatMap { stratum -> stratum.substrata }
+                  .flatMap { substratum -> substratum.monitoringPlots }
                   .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
                   ?.species
                   ?.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -604,20 +606,20 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/SiteStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
-  protected fun assertZoneSpeciesSummary(
+  protected fun assertStratumSpeciesSummary(
       prefix: String,
       numSpecies: Int,
       allResults: List<ObservationRollupResultsModel>,
   ) {
-    val rowKeys = zoneIds.keys.map { listOf(it) }
+    val rowKeys = stratumIds.keys.map { listOf(it) }
 
     val actual =
         makeActualCsv(
             allResults,
             rowKeys,
-            { (zoneName), results ->
-              results.plantingZones
-                  .firstOrNull { it.plantingZoneId == zoneIds[zoneName] }
+            { (stratumName), results ->
+              results.strata
+                  .firstOrNull { it.stratumId == stratumIds[stratumName] }
                   ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
                   ?: List(numSpecies * 3 + 3) { "" }
             },
@@ -626,21 +628,23 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     assertResultsMatchCsv("$prefix/ZoneStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
-  protected fun assertSubzoneSpeciesSummary(
+  protected fun assertSubstratumSpeciesSummary(
       prefix: String,
       numSpecies: Int,
       allResults: List<ObservationRollupResultsModel>,
   ) {
-    val rowKeys = subzoneIds.keys.map { listOf(it) }
+    val rowKeys = substratumIds.keys.map { listOf(it) }
 
     val actual =
         makeActualCsv(
             allResults,
             rowKeys,
-            { (subzoneName), results ->
-              results.plantingZones
-                  .flatMap { zone -> zone.plantingSubzones }
-                  .firstOrNull { subzone -> subzone.plantingSubzoneId == subzoneIds[subzoneName] }
+            { (substratumName), results ->
+              results.strata
+                  .flatMap { stratum -> stratum.substrata }
+                  .firstOrNull { substratum ->
+                    substratum.substratumId == substratumIds[substratumName]
+                  }
                   ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
                   ?: List(numSpecies * 3 + 3) { "" }
             },
@@ -661,9 +665,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             allResults,
             rowKeys,
             { (plotNumber), results ->
-              results.plantingZones
-                  .flatMap { zone -> zone.plantingSubzones }
-                  .flatMap { subzone -> subzone.monitoringPlots }
+              results.strata
+                  .flatMap { stratum -> stratum.substrata }
+                  .flatMap { substratum -> substratum.monitoringPlots }
                   .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
                   ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
                   ?: List(numSpecies * 3 + 3) { "" }
@@ -719,41 +723,41 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   }
 
   protected fun importSiteFromCsvFile(prefix: String, sizeMeters: Int) {
-    importZonesCsv(prefix)
-    importSubzonesCsv(prefix)
+    importStrataCsv(prefix)
+    importSubstrataCsv(prefix)
     plotIds = importPlotsCsv(prefix, sizeMeters)
   }
 
-  protected fun importZonesCsv(prefix: String) {
-    val newZoneIds = mutableMapOf<String, StratumId>()
-    val newZoneHistoryIds = mutableMapOf<StratumId, StratumHistoryId>()
+  protected fun importStrataCsv(prefix: String) {
+    val newStratumIds = mutableMapOf<String, StratumId>()
+    val newStratumHistoryIds = mutableMapOf<StratumId, StratumHistoryId>()
 
     mapCsv("$prefix/Zones.csv", 2) { cols ->
-      val zoneName = cols[1]
+      val stratumName = cols[1]
       val areaHa = BigDecimal(cols[2])
 
-      val zoneId =
-          insertPlantingZone(areaHa = areaHa, boundary = squareWithArea(areaHa), name = zoneName)
-      newZoneIds[zoneName] = zoneId
-      newZoneHistoryIds[zoneId] = inserted.plantingZoneHistoryId
+      val stratumId =
+          insertPlantingZone(areaHa = areaHa, boundary = squareWithArea(areaHa), name = stratumName)
+      newStratumIds[stratumName] = stratumId
+      newStratumHistoryIds[stratumId] = inserted.plantingZoneHistoryId
     }
 
-    zoneIds = newZoneIds
-    zoneHistoryIds = newZoneHistoryIds
+    stratumIds = newStratumIds
+    stratumHistoryIds = newStratumHistoryIds
   }
 
-  protected fun importSubzonesCsv(prefix: String) {
-    val newSubzoneIds = mutableMapOf<String, SubstratumId>()
-    val newSubzoneHistoryIds = mutableMapOf<SubstratumId, SubstratumHistoryId>()
+  protected fun importSubstrataCsv(prefix: String) {
+    val newSubstratumIds = mutableMapOf<String, SubstratumId>()
+    val newSubstratumHistoryIds = mutableMapOf<SubstratumId, SubstratumHistoryId>()
 
     mapCsv("$prefix/Subzones.csv", 2) { cols ->
-      val zoneName = cols[0]
-      val subzoneName = cols[1]
-      val subZoneArea = BigDecimal(cols[2])
-      val zoneId = zoneIds[zoneName]!!
-      val zoneHistoryId = zoneHistoryIds[zoneId]!!
+      val stratumName = cols[0]
+      val substratumName = cols[1]
+      val substratumArea = BigDecimal(cols[2])
+      val stratumId = stratumIds[stratumName]!!
+      val stratumHistoryId = stratumHistoryIds[stratumId]!!
 
-      // Find the first observation where the subzone is marked as completed planting, if any.
+      // Find the first observation where the substratum is marked as completed planting, if any.
       val plantingCompletedColumn = cols.drop(3).indexOfFirst { it == "Yes" }
       val plantingCompletedTime =
           if (plantingCompletedColumn >= 0) {
@@ -762,24 +766,24 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             null
           }
 
-      val subzoneId =
+      val substratumId =
           insertPlantingSubzone(
-              areaHa = subZoneArea,
-              boundary = squareWithArea(subZoneArea),
+              areaHa = substratumArea,
+              boundary = squareWithArea(substratumArea),
               plantingCompletedTime = plantingCompletedTime,
-              fullName = subzoneName,
+              fullName = substratumName,
               insertHistory = false,
-              name = subzoneName,
-              plantingZoneId = zoneId,
+              name = substratumName,
+              plantingZoneId = stratumId,
           )
-      insertPlantingSubzoneHistory(plantingZoneHistoryId = zoneHistoryId)
+      insertPlantingSubzoneHistory(plantingZoneHistoryId = stratumHistoryId)
 
-      newSubzoneIds[subzoneName] = subzoneId
-      newSubzoneHistoryIds[subzoneId] = inserted.plantingSubzoneHistoryId
+      newSubstratumIds[substratumName] = substratumId
+      newSubstratumHistoryIds[substratumId] = inserted.plantingSubzoneHistoryId
     }
 
-    subzoneIds = newSubzoneIds
-    subzoneHistoryIds = newSubzoneHistoryIds
+    substratumIds = newSubstratumIds
+    substratumHistoryIds = newSubstratumHistoryIds
   }
 
   protected fun importPlotsCsv(
@@ -787,24 +791,24 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
       sizeMeters: Int,
   ): MutableMap<String, MonitoringPlotId> {
     return associateCsv("$prefix/Plots.csv") { cols ->
-      val subzoneName = cols[0]
+      val substratumName = cols[0]
       val plotNumber = cols[1]
-      val subzoneId = subzoneIds[subzoneName]!!
-      val subzoneHistoryId = subzoneHistoryIds[subzoneId]!!
+      val substratumId = substratumIds[substratumName]!!
+      val substratumHistoryId = substratumHistoryIds[substratumId]!!
       val isPermanent = cols[2] == "Permanent"
 
       val plotId =
           insertMonitoringPlot(
               insertHistory = false,
-              plantingSubzoneId = subzoneId,
+              plantingSubzoneId = substratumId,
               plotNumber = plotNumber.toLong(),
               sizeMeters = sizeMeters,
               permanentIndex = if (isPermanent) plotNumber.toInt() else null,
           )
       plotHistoryIds[plotId] =
           insertMonitoringPlotHistory(
-              plantingSubzoneId = subzoneId,
-              plantingSubzoneHistoryId = subzoneHistoryId,
+              plantingSubzoneId = substratumId,
+              plantingSubzoneHistoryId = substratumHistoryId,
           )
 
       if (isPermanent) {
@@ -852,8 +856,8 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
       return false
     }
     mapCsv(filePath, 1) { cols ->
-      val zoneName = cols[0]
-      val zoneId = zoneIds[zoneName]!!
+      val stratumName = cols[0]
+      val stratumId = stratumIds[stratumName]!!
 
       var speciesIndex = 0
       while (true) {
@@ -867,7 +871,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             }
         insertPlantingZoneT0TempDensity(
             speciesId = speciesId,
-            plantingZoneId = zoneId,
+            plantingZoneId = stratumId,
             zoneDensity = density.toPlantsPerHectare(),
         )
         speciesIndex++
@@ -1235,14 +1239,14 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
    *
    * @param rowKeys The leftmost column(s) of all the rows that could appear in the CSV. The values
    *   in these columns act as unique keys: they identify which specific set of numbers are included
-   *   in the rest of the row. For example, for the "per zone per species" CSV, the key would be a
-   *   zone name column and a species name column, with one element for each possible permutation of
-   *   zone name and species name.
+   *   in the rest of the row. For example, for the "per stratum per species" CSV, the key would be
+   *   a stratum name column and a species name column, with one element for each possible
+   *   permutation of stratum name and species name.
    * @param columnsFromResult Returns a group of columns for the row with a particular key from a
    *   particular observation. If the observation doesn't have any data for the row, this must
    *   return a list of empty strings. If none of the observations have any data for the row, e.g.,
-   *   it's a "per zone per species" CSV and a particular species wasn't present in a particular
-   *   zone, the row is not included in the generated CSV.
+   *   it's a "per stratum per species" CSV and a particular species wasn't present in a particular
+   *   stratum, the row is not included in the generated CSV.
    */
   protected fun <T> makeActualCsv(
       allResults: List<T>,

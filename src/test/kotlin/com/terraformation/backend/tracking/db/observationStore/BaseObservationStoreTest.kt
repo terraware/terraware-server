@@ -29,7 +29,7 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
-        observationRequestedSubzonesDao,
+        observationRequestedSubstrataDao,
         ParentStore(dslContext),
     )
   }

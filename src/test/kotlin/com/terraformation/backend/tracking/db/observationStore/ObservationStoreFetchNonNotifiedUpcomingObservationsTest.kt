@@ -77,7 +77,7 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
         )
     insertObservationRequestedSubzone()
 
-    // Another planting site with no requested subzones.
+    // Another planting site with no requested substrata.
     insertPlantingSite(timeZone = timeZone)
     insertPlantingZone()
     insertPlantingSubzone()

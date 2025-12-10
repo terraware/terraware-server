@@ -48,8 +48,8 @@ class ObservationTestHelper(
   }
 
   /**
-   * Returns all the plant totals (plot, subzone, zone, site) in the database, suitable for use in
-   * [assertTotals].
+   * Returns all the plant totals (plot, substratum, stratum, site) in the database, suitable for
+   * use in [assertTotals].
    */
   fun fetchAllTotals(): Set<Any> {
     return (dslContext
@@ -71,9 +71,9 @@ class ObservationTestHelper(
    * Adds a series of plots to the current observation, each one with some number of recorded plants
    * for some set of species. The goal is to make the scenarios easy to read in the test code.
    */
-  fun insertObservationScenario(vararg zones: ObservationZone) {
-    zones.forEach { zone ->
-      zone.plots.forEach { plot ->
+  fun insertObservationScenario(vararg strata: ObservationStratum) {
+    strata.forEach { stratum ->
+      stratum.plots.forEach { plot ->
         test.insertObservationPlot(
             claimedBy = effectiveUserId,
             isPermanent = plot.isPermanent,
@@ -84,8 +84,8 @@ class ObservationTestHelper(
 
     observationStore.populateCumulativeDead(test.inserted.observationId)
 
-    zones.forEach { zone ->
-      zone.plots.forEach { plot ->
+    strata.forEach { stratum ->
+      stratum.plots.forEach { plot ->
         val recordedPlantsRows =
             plot.plants.flatMap { plant ->
               (List(plant.live) { RecordedPlantStatus.Live } +
@@ -126,7 +126,7 @@ class ObservationTestHelper(
       numPermanentPlots: Int = 1,
       numTemporaryPlots: Int = 1,
       plantingCreatedTime: Instant = Instant.EPOCH,
-      subzoneCompletedTime: Instant? = null,
+      substratumCompletedTime: Instant? = null,
       timeZone: ZoneId? = null,
   ): PlantingSiteId {
     if (test.inserted.speciesIds.isEmpty()) {
@@ -152,7 +152,7 @@ class ObservationTestHelper(
     )
     test.insertPlantingSubzone(
         height = height,
-        plantingCompletedTime = subzoneCompletedTime,
+        plantingCompletedTime = substratumCompletedTime,
         width = width,
     )
     test.insertNurseryWithdrawal()
@@ -194,8 +194,8 @@ class ObservationTestHelper(
       val isPermanent: Boolean = true,
   )
 
-  data class ObservationZone(
-      val zoneId: StratumId,
+  data class ObservationStratum(
+      val stratumId: StratumId,
       val plots: List<ObservationPlot>,
   )
 }

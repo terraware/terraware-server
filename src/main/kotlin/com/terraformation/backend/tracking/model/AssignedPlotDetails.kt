@@ -16,10 +16,10 @@ data class AssignedPlotDetails(
     val completedByName: String?,
     val elevationMeters: BigDecimal?,
     val isFirstObservation: Boolean,
-    /** Null if the monitoring plot no longer falls within a subzone (due to a map edit). */
-    val plantingSubzoneId: SubstratumId?,
-    val plantingSubzoneName: String,
-    val plantingZoneName: String,
+    /** Null if the monitoring plot no longer falls within a substratum (due to a map edit). */
+    val substratumId: SubstratumId?,
+    val substratumName: String,
+    val stratumName: String,
     val plotNumber: Long,
     val sizeMeters: Int,
 ) {
@@ -33,28 +33,44 @@ data class AssignedPlotDetails(
             boundary.coordinates[SOUTHWEST].y,
             boundary.coordinates[SOUTHWEST].x,
             messages.monitoringPlotSouthwestCorner(plotNumber),
-            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
+            messages.monitoringPlotDescription(
+                plotType,
+                stratumName,
+                substratumName,
+            ),
             plotType,
         ),
         GpxWaypoint(
             boundary.coordinates[SOUTHEAST].y,
             boundary.coordinates[SOUTHEAST].x,
             messages.monitoringPlotSoutheastCorner(plotNumber),
-            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
+            messages.monitoringPlotDescription(
+                plotType,
+                stratumName,
+                substratumName,
+            ),
             plotType,
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHEAST].y,
             boundary.coordinates[NORTHEAST].x,
             messages.monitoringPlotNortheastCorner(plotNumber),
-            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
+            messages.monitoringPlotDescription(
+                plotType,
+                stratumName,
+                substratumName,
+            ),
             plotType,
         ),
         GpxWaypoint(
             boundary.coordinates[NORTHWEST].y,
             boundary.coordinates[NORTHWEST].x,
             messages.monitoringPlotNorthwestCorner(plotNumber),
-            messages.monitoringPlotDescription(plotType, plantingZoneName, plantingSubzoneName),
+            messages.monitoringPlotDescription(
+                plotType,
+                stratumName,
+                substratumName,
+            ),
             plotType,
         ),
     )

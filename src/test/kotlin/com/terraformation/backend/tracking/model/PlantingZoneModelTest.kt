@@ -435,7 +435,7 @@ class PlantingZoneModelTest {
                   ),
           )
 
-      assertThrows<PlantingSubzoneFullException> {
+      assertThrows<SubstratumFullException> {
         model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin)
       }
     }
@@ -727,7 +727,7 @@ class PlantingZoneModelTest {
       plots: List<MonitoringPlotModel> = emptyList(),
       boundary: MultiPolygon = plantingSubzoneBoundary(id, plots.size),
   ) =
-      PlantingSubzoneModel(
+      SubstratumModel(
           areaHa = BigDecimal.ONE,
           boundary = boundary,
           id = SubstratumId(id.toLong()),
@@ -744,7 +744,7 @@ class PlantingZoneModelTest {
    * Returns the boundary for a sample planting zone that contains some number of 51x76 meter
    * subzones laid out west to east.
    */
-  private fun plantingZoneBoundary(subzones: List<ExistingPlantingSubzoneModel>): MultiPolygon {
+  private fun plantingZoneBoundary(subzones: List<ExistingSubstratumModel>): MultiPolygon {
     if (subzones.isEmpty()) {
       return multiPolygon(1)
     }
@@ -758,10 +758,10 @@ class PlantingZoneModelTest {
   private fun plantingZoneModel(
       numTemporaryPlots: Int = 1,
       numPermanentPlots: Int = 1,
-      subzones: List<ExistingPlantingSubzoneModel>,
+      subzones: List<ExistingSubstratumModel>,
       boundary: MultiPolygon = plantingZoneBoundary(subzones),
   ) =
-      ExistingPlantingZoneModel(
+      ExistingStratumModel(
           areaHa = BigDecimal.ONE,
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
@@ -770,7 +770,7 @@ class PlantingZoneModelTest {
           name = "name",
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
-          plantingSubzones = subzones,
+          substrata = subzones,
           stableId = StableId("name"),
           studentsT = BigDecimal.ONE,
           targetPlantingDensity = BigDecimal.ONE,

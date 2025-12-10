@@ -7,11 +7,11 @@ import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
-import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
+import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import com.terraformation.backend.tracking.model.PlantingSubzoneModel
-import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import java.math.BigDecimal
@@ -105,21 +105,21 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           startTime = season1StartDate.toInstant(timeZone),
                       ),
                   ),
-              plantingZones = emptyList(),
+              strata = emptyList(),
               timeZone = timeZone,
           )
 
       val expectedWithZone =
           expectedWithSite.copy(
-              plantingZones =
+              strata =
                   listOf(
-                      ExistingPlantingZoneModel(
+                      ExistingStratumModel(
                           areaHa = BigDecimal.TEN,
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
                           id = plantingZoneId,
                           name = "Z1",
-                          plantingSubzones = emptyList(),
+                          substrata = emptyList(),
                           stableId = StableId("Z1"),
                           targetPlantingDensity = BigDecimal.ONE,
                       ),
@@ -128,12 +128,12 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
 
       val expectedWithSubzone =
           expectedWithZone.copy(
-              plantingZones =
+              strata =
                   listOf(
-                      expectedWithZone.plantingZones[0].copy(
-                          plantingSubzones =
+                      expectedWithZone.strata[0].copy(
+                          substrata =
                               listOf(
-                                  PlantingSubzoneModel(
+                                  SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = plantingSubzoneId,
@@ -174,13 +174,13 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           sizeMeters = 30,
                       )
                   ),
-              plantingZones =
+              strata =
                   listOf(
-                      expectedWithSubzone.plantingZones[0].copy(
-                          plantingSubzones =
+                      expectedWithSubzone.strata[0].copy(
+                          substrata =
                               listOf(
-                                  expectedWithSubzone.plantingZones[0]
-                                      .plantingSubzones[0]
+                                  expectedWithSubzone.strata[0]
+                                      .substrata[0]
                                       .copy(
                                           monitoringPlots =
                                               listOf(
@@ -337,9 +337,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               name = "Site 1",
               organizationId = organizationId,
               plantingSeasons = emptyList(),
-              plantingZones =
+              strata =
                   listOf(
-                      ExistingPlantingZoneModel(
+                      ExistingStratumModel(
                           areaHa = BigDecimal.TEN,
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
@@ -347,9 +347,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                           latestObservationId = observationId2,
                           name = "Z1",
-                          plantingSubzones =
+                          substrata =
                               listOf(
-                                  PlantingSubzoneModel(
+                                  SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = plantingSubzoneId11,
@@ -381,7 +381,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                               ),
                                           ),
                                   ),
-                                  PlantingSubzoneModel(
+                                  SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = plantingSubzoneId12,
@@ -417,7 +417,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           stableId = StableId("Z1"),
                           targetPlantingDensity = BigDecimal.ONE,
                       ),
-                      ExistingPlantingZoneModel(
+                      ExistingStratumModel(
                           areaHa = BigDecimal.TEN,
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
@@ -425,9 +425,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                           latestObservationId = observationId2,
                           name = "Z2",
-                          plantingSubzones =
+                          substrata =
                               listOf(
-                                  PlantingSubzoneModel(
+                                  SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = plantingSubzoneId2,
@@ -499,18 +499,18 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               id = plantingSiteId,
               name = "Site 1",
               organizationId = organizationId,
-              plantingZones =
+              strata =
                   listOf(
-                      PlantingZoneModel(
+                      StratumModel(
                           areaHa = BigDecimal.TEN,
                           boundary = zoneBoundary4326,
                           boundaryModifiedTime = Instant.EPOCH,
                           id = plantingZoneId,
                           name = "Z1",
                           stableId = StableId("Z1"),
-                          plantingSubzones =
+                          substrata =
                               listOf(
-                                  PlantingSubzoneModel(
+                                  SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = subzoneBoundary4326,
                                       id = plantingSubzoneId,

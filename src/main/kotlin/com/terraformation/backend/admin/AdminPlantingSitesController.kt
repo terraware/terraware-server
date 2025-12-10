@@ -33,15 +33,15 @@ import com.terraformation.backend.tracking.db.ShapefilesInvalidException
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
-import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
-import com.terraformation.backend.tracking.edit.PlantingZoneEdit
+import com.terraformation.backend.tracking.edit.StratumEdit
+import com.terraformation.backend.tracking.edit.SubstratumEdit
 import com.terraformation.backend.tracking.mapbox.MapboxService
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
-import com.terraformation.backend.tracking.model.PlantingSubzoneFullException
 import com.terraformation.backend.tracking.model.Shapefile
+import com.terraformation.backend.tracking.model.SubstratumFullException
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.nearlyCoveredBy
 import com.terraformation.backend.util.toMultiPolygon
@@ -101,10 +101,7 @@ class AdminPlantingSitesController(
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
     val reportedPlants = plantingSiteStore.countReportedPlants(plantingSiteId)
     val subzonesById =
-        plantingSite.plantingZones
-            .flatMap { it.plantingSubzones }
-            .sortedBy { it.fullName }
-            .associateBy { it.id }
+        plantingSite.strata.flatMap { it.substrata }.sortedBy { it.fullName }.associateBy { it.id }
 
     val allOrganizations =
         if (currentUser().canMovePlantingSiteToAnyOrg(plantingSiteId)) {
@@ -163,8 +160,11 @@ class AdminPlantingSitesController(
     model.addAttribute("months", months)
     model.addAttribute("nextObservationEnd", nextObservationEnd)
     model.addAttribute("nextObservationStart", nextObservationStart)
-    model.addAttribute("numPlantingZones", plantingSite.plantingZones.size)
-    model.addAttribute("numSubzones", plantingSite.plantingZones.sumOf { it.plantingSubzones.size })
+    model.addAttribute("numPlantingZones", plantingSite.strata.size)
+    model.addAttribute(
+        "numSubzones",
+        plantingSite.strata.sumOf { it.substrata.size },
+    )
     model.addAttribute("numPlots", plotCounts.values.flatMap { it.values }.sum())
     model.addAttribute("observations", observations)
     model.addAttribute("observationMessages", observationMessages)
@@ -213,7 +213,7 @@ class AdminPlantingSitesController(
       mapOf(
           "type" to "FeatureCollection",
           "features" to
-              site.plantingZones.map { zone ->
+              site.strata.map { zone ->
                 mapOf(
                     "type" to "Feature",
                     "properties" to mapOf("name" to zone.name),
@@ -226,8 +226,8 @@ class AdminPlantingSitesController(
       mapOf(
           "type" to "FeatureCollection",
           "features" to
-              site.plantingZones.flatMap { zone ->
-                zone.plantingSubzones.map { subzone ->
+              site.strata.flatMap { zone ->
+                zone.substrata.map { subzone ->
                   mapOf(
                       "type" to "Feature",
                       "properties" to mapOf("name" to subzone.name),
@@ -241,21 +241,19 @@ class AdminPlantingSitesController(
       mapOf(
           "type" to "FeatureCollection",
           "features" to
-              site.plantingZones.flatMap { zone ->
+              site.strata.flatMap { zone ->
                 val numPermanent = zone.numPermanentPlots
 
                 val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
                     try {
                       zone
                           .chooseTemporaryPlots(
-                              site.plantingZones
-                                  .flatMap { zone -> zone.plantingSubzones.map { it.id } }
-                                  .toSet(),
+                              site.strata.flatMap { zone -> zone.substrata.map { it.id } }.toSet(),
                               gridOrigin = site.gridOrigin!!,
                               exclusion = site.exclusion,
                           )
                           .map { boundary -> boundary to zone.findMonitoringPlot(boundary)?.id }
-                    } catch (e: PlantingSubzoneFullException) {
+                    } catch (e: SubstratumFullException) {
                       emptyList()
                     }
                 val temporaryPlotIds = temporaryPlotsAndIds.mapNotNull { (_, id) -> id }.toSet()
@@ -274,7 +272,7 @@ class AdminPlantingSitesController(
                                       "id" to "(new)",
                                       "name" to "New Temporary Plot",
                                       "permanentIndex" to null,
-                                      "subzone" to zone.findPlantingSubzone(plotBoundary)?.name,
+                                      "subzone" to zone.findSubstratum(plotBoundary)?.name,
                                       "type" to "temporary",
                                       "zone" to zone.name,
                                   ),
@@ -282,7 +280,7 @@ class AdminPlantingSitesController(
                         }
 
                 val existingPlots =
-                    zone.plantingSubzones.flatMap { subzone ->
+                    zone.substrata.flatMap { subzone ->
                       val permanentPlotIds =
                           subzone.monitoringPlots
                               .filter {
@@ -688,7 +686,7 @@ class AdminPlantingSitesController(
                   isAdHoc = false,
                   observationType = ObservationType.Monitoring,
                   plantingSiteId = plantingSiteId,
-                  requestedSubzoneIds = requestedSubzoneIds,
+                  requestedSubstratumIds = requestedSubzoneIds,
                   startDate = LocalDate.parse(startDate),
                   state = ObservationState.Upcoming,
               ),
@@ -784,12 +782,12 @@ class AdminPlantingSitesController(
 
   private fun describeSiteEdit(edit: PlantingSiteEdit): List<String> {
     log.info("Site edit ${objectMapper.writeValueAsString(edit)}")
-    val zoneChanges = edit.plantingZoneEdits.flatMap { zoneEdit -> describeZoneEdit(zoneEdit) }
+    val zoneChanges = edit.stratumEdits.flatMap { zoneEdit -> describeZoneEdit(zoneEdit) }
 
     val affectedObservationIds =
         observationStore.fetchActiveObservationIds(
             edit.existingModel.id,
-            edit.plantingZoneEdits.mapNotNull { it.existingModel?.id },
+            edit.stratumEdits.mapNotNull { it.existingModel?.id },
         )
     val affectedObservationsMessage =
         if (affectedObservationIds.isNotEmpty()) {
@@ -806,7 +804,7 @@ class AdminPlantingSitesController(
     ) + zoneChanges
   }
 
-  private fun describeZoneEdit(zoneEdit: PlantingZoneEdit): List<String> {
+  private fun describeZoneEdit(zoneEdit: StratumEdit): List<String> {
     val desiredModel = zoneEdit.desiredModel
     val existingModel = zoneEdit.existingModel
     val existingBoundary = existingModel?.boundary
@@ -822,7 +820,7 @@ class AdminPlantingSitesController(
               }
           "$prefix Create permanent plot index ${plotEdit.permanentIndex} in $existingOrNew area"
         }
-    val subzoneEdits = zoneEdit.plantingSubzoneEdits.flatMap { describeSubzoneEdit(zoneEdit, it) }
+    val subzoneEdits = zoneEdit.substratumEdits.flatMap { describeSubzoneEdit(zoneEdit, it) }
 
     return listOf(
         if (existingModel != null) {
@@ -840,19 +838,19 @@ class AdminPlantingSitesController(
   }
 
   private fun describeSubzoneEdit(
-      zoneEdit: PlantingZoneEdit,
-      subzoneEdit: PlantingSubzoneEdit,
+      zoneEdit: StratumEdit,
+      subzoneEdit: SubstratumEdit,
   ): List<String> {
     val zoneName = zoneEdit.existingModel?.name ?: zoneEdit.desiredModel!!.name
     val subzoneName = subzoneEdit.existingModel?.name ?: subzoneEdit.desiredModel!!.name
     val prefix = "Zone $zoneName subzone $subzoneName:"
     val subzoneEditText =
         when (subzoneEdit) {
-          is PlantingSubzoneEdit.Create ->
+          is SubstratumEdit.Create ->
               "$prefix Create (stable ID ${subzoneEdit.desiredModel.stableId})"
-          is PlantingSubzoneEdit.Delete ->
+          is SubstratumEdit.Delete ->
               "$prefix Delete (stable ID ${subzoneEdit.existingModel.stableId})"
-          is PlantingSubzoneEdit.Update -> {
+          is SubstratumEdit.Update -> {
             val overlapPercent =
                 renderOverlapPercent(
                     subzoneEdit.existingModel.boundary,

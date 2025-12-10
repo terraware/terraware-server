@@ -66,7 +66,7 @@ import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
-import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
+import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
@@ -83,7 +83,7 @@ import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.db.SpeciesInWrongOrganizationException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingZoneEdit
+import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
@@ -155,7 +155,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
-        observationRequestedSubzonesDao,
+        observationRequestedSubstrataDao,
         parentStore,
     )
   }
@@ -216,38 +216,39 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `assigns correct plots to planting zones`() {
+    fun `assigns correct plots to strata`() {
       // Given a planting site with this structure:
       //
-      // Zone 1 (2 permanent, 3 temporary)
-      //   Subzone 1
+      // Stratum 1 (2 permanent, 3 temporary)
+      //   Substratum 1
       //     Plot A - permanent index 1
       //     Plot B - permanent index 3
       //     Plot C
       //     Plot D
-      //   Subzone 2
+      //   Substratum 2
       //     Plot E - permanent index 2
       //     Plot F
       //     Plot G
-      // Zone 2 (2 permanent, 2 temporary)
-      //   Subzone 3
+      // Stratum 2 (2 permanent, 2 temporary)
+      //   Substratum 3
       //     Plot H - permanent 1
       //
-      // When we start an observation with subzone 1 requested, we should get:
-      // - One permanent plot in subzone 1.
-      // - Two temporary plots in subzone 1. The zone is configured for 3 temporary plots. 2 of them
-      //   are spread evenly across the 2 subzones, and the remaining one is placed in the subzone
-      //   with the fewest permanent plots that could potentially be included in the observation.
-      //   Since permanent indexes 1 and 2 are spread evenly across subzones, preference is given
-      //   to requested subzones, meaning subzone 1 is picked.
-      // - Nothing from zone 2 because it was not requested.
+      // When we start an observation with substratum 1 requested, we should get:
+      // - One permanent plot in substratum 1.
+      // - Two temporary plots in substratum 1. The stratum is configured for 3 temporary plots. 2
+      //   of them are spread evenly across the 2 substrata, and the remaining one is placed in the
+      //   substratum with the fewest permanent plots that could potentially be included in the
+      //   observation.
+      //   Since permanent indexes 1 and 2 are spread evenly across substrata, preference is given
+      //   to requested substrata, meaning substratum 1 is picked.
+      // - Nothing from stratum 2 because it was not requested.
 
       insertFacility(type = FacilityType.Nursery)
 
       insertPlantingZone(x = 0, width = 4, height = 1, numPermanentPlots = 2, numTemporaryPlots = 3)
-      val subzone1Boundary =
+      val substratum1Boundary =
           rectangle(width = 4 * MONITORING_PLOT_SIZE, height = MONITORING_PLOT_SIZE)
-      val plantingSubzoneId1 = insertPlantingSubzone(boundary = subzone1Boundary)
+      val substratumId1 = insertPlantingSubzone(boundary = substratum1Boundary)
       insertPermanentPlot(1)
       insertPermanentPlot(3, x = 1, y = 0)
       insertMonitoringPlot(x = 2, y = 0)
@@ -263,7 +264,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPermanentPlot(1, x = 7, y = 0)
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
-      insertObservationRequestedSubzone(plantingSubzoneId = plantingSubzoneId1)
+      insertObservationRequestedSubzone(plantingSubzoneId = substratumId1)
 
       service.startObservation(observationId)
 
@@ -275,9 +276,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       observationPlots.forEach { observationPlot ->
         val plotBoundary = monitoringPlots[observationPlot.monitoringPlotId]!!.boundary!!
-        if (plotBoundary.intersection(subzone1Boundary).area < plotBoundary.area * 0.99999) {
+        if (plotBoundary.intersection(substratum1Boundary).area < plotBoundary.area * 0.99999) {
           fail(
-              "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary"
+              "Plot boundary $plotBoundary does not fall within substratum boundary $substratum1Boundary"
           )
         }
       }
@@ -294,76 +295,76 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `creates new plots in correct zones`() {
+    fun `creates new plots in correct strata`() {
       // Given a planting site with this structure:
       //
-      // Zone 1 (2 permanent, 3 temporary)
-      //   Subzone 1
-      //   Subzone 2
-      // Zone 2 (2 permanent, 2 temporary)
-      //   Subzone 3
+      // Stratum 1 (2 permanent, 3 temporary)
+      //   Substratum 1
+      //   Substratum 2
+      // Stratum 2 (2 permanent, 2 temporary)
+      //   Substratum 3
       //
-      // An observation is started with subzone 1 requested.
+      // An observation is started with substratum 1 requested.
       //
-      // In zone 1, the service should create two permanent plots. The plots might both end up in
-      // subzone 1 or subzone 2, or there might be one plot in each subzone, depending on the random
-      // number generator.
+      // In stratum 1, the service should create two permanent plots. The plots might both end up in
+      // substratum 1 or substratum 2, or there might be one plot in each substratum, depending on
+      // the random number generator.
       //
       // The placement of the permanent plots will also determine how many temporary plots are
       // created and included in the observation.
       //
-      // If both permanent plots are in subzone 1:
+      // If both permanent plots are in substratum 1:
       // - They should both be included in the observation.
-      // - We should get one temporary plot in subzone 1. The zone is configured for 3 temporary
-      //   plots. 2 of them are spread evenly across the 2 subzones, and the remaining one is placed
-      //   in the subzone with the fewest permanent plots, which is subzone 2, but subzone 2's plots
-      //   are excluded because it wasn't requested.
-      // If one permanent plot is in subzone 1 and the other in subzone 2:
-      // - The plot in subzone 1 should be included in the observation, but not the one in subzone
-      //   2, because we only include permanent plots in requested subzones.
-      // - We should get two temporary plots in subzone 1. Two of zone 1's temporary plots are
-      //   spread evenly across the two subzones, and the remaining plot is placed in the subzone
-      //   with the fewest permanent plots, but in this case the subzones have the same number.
-      //   As a tiebreaker, requested subzones are preferred over unrequested ones, which means we
-      //   should choose subzone 1.
-      // If both permanent plots are in subzone 2:
+      // - We should get one temporary plot in substratum 1. The stratum is configured for 3
+      //   temporary plots. 2 of them are spread evenly across the 2 substrata, and the remaining
+      //   one is placed in the substratum with the fewest permanent plots, which is substratum 2,
+      //   but substratum 2's plots are excluded because it wasn't requested.
+      // If one permanent plot is in substratum 1 and the other in substratum 2:
+      // - The plot in substratum 1 should be included in the observation, but not the one in
+      //   substratum 2, because we only include permanent plots in requested substrata.
+      // - We should get two temporary plots in substratum 1. Two of stratum 1's temporary plots are
+      //   spread evenly across the two substrata, and the remaining plot is placed in the
+      //   substratum with the fewest permanent plots, but in this case the substrata have the same
+      //   number. As a tiebreaker, requested substrata are preferred over unrequested ones, which
+      //   means we should choose substratum 1.
+      // If both permanent plots are in substratum 2:
       // - Neither permanent plot should be included in the observation.
-      // - We should get two temporary plots in subzone 1. Two of zone 1's temporary plots are
-      //   spread evenly across the two subzones, and the remaining plot is placed in the subzone
-      //   with the fewest temporary plots, which is subzone 1 in this case.
+      // - We should get two temporary plots in substratum 1. Two of stratum 1's temporary plots are
+      //   spread evenly across the two substrata, and the remaining plot is placed in the
+      //   substratum with the fewest temporary plots, which is substratum 1 in this case.
       //
-      // In zone 2, the service should create two permanent plots, but neither of them should be
-      // included in the observation since they all lie in an unrequested subzone.
+      // In stratum 2, the service should create two permanent plots, but neither of them should be
+      // included in the observation since they all lie in an unrequested substratum.
 
       plantingSiteId = insertPlantingSite(x = 0, width = 14, gridOrigin = point(1))
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
 
       insertPlantingZone(x = 0, width = 6, height = 2, numPermanentPlots = 2, numTemporaryPlots = 3)
-      val subzone1Boundary =
+      val substratum1Boundary =
           rectangle(width = 3 * MONITORING_PLOT_SIZE, height = 2 * MONITORING_PLOT_SIZE)
-      val subzone1Id = insertPlantingSubzone(boundary = subzone1Boundary)
+      val substratum1Id = insertPlantingSubzone(boundary = substratum1Boundary)
 
-      val subzone2Id = insertPlantingSubzone(x = 3, width = 3, height = 2)
+      val substratum2Id = insertPlantingSubzone(x = 3, width = 3, height = 2)
 
       insertPlantingZone(x = 6, width = 8, height = 2, numPermanentPlots = 2, numTemporaryPlots = 2)
       insertPlantingSubzone(x = 6, width = 8, height = 2)
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
-      insertObservationRequestedSubzone(plantingSubzoneId = subzone1Id)
+      insertObservationRequestedSubzone(plantingSubzoneId = substratum1Id)
 
       // Make sure we actually get all the possible plot configurations.
-      var got0PermanentPlotsInSubzone1 = false
-      var got1PermanentPlotInSubzone1 = false
-      var got2PermanentPlotsInSubzone1 = false
+      var got0PermanentPlotsInSubstratum1 = false
+      var got1PermanentPlotInSubstratum1 = false
+      var got2PermanentPlotsInSubstratum1 = false
       val maxTestRuns = 100
       var testRuns = 0
 
       while (
           testRuns++ < maxTestRuns &&
-              !(got0PermanentPlotsInSubzone1 &&
-                  got1PermanentPlotInSubzone1 &&
-                  got2PermanentPlotsInSubzone1)
+              !(got0PermanentPlotsInSubstratum1 &&
+                  got1PermanentPlotInSubstratum1 &&
+                  got2PermanentPlotsInSubstratum1)
       ) {
         dslContext.savepoint("start").execute()
 
@@ -373,32 +374,32 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         val monitoringPlots = monitoringPlotsDao.findAll()
         val monitoringPlotsById = monitoringPlots.associateBy { it.id }
 
-        // All selected plots should be in subzone 1; make sure their boundaries agree with their
-        // subzone numbers.
+        // All selected plots should be in substratum 1; make sure their boundaries agree with their
+        // substratum numbers.
         observationPlots.forEach { observationPlot ->
           val plot = monitoringPlotsById[observationPlot.monitoringPlotId]!!
           val plotBoundary = plot.boundary!!
 
           assertEquals(
-              subzone1Id,
+              substratum1Id,
               plot.substratumId,
-              "Planting subzone ID for plot ${plot.id}",
+              "Substratum ID for plot ${plot.id}",
           )
 
-          if (plotBoundary.intersection(subzone1Boundary).area < plotBoundary.area * 0.99999) {
+          if (plotBoundary.intersection(substratum1Boundary).area < plotBoundary.area * 0.99999) {
             fail(
-                "Plot boundary $plotBoundary does not fall within subzone boundary $subzone1Boundary"
+                "Plot boundary $plotBoundary does not fall within substratum boundary $substratum1Boundary"
             )
           }
         }
 
-        val numPermanentPlotsBySubzone: Map<SubstratumId, Int> =
+        val numPermanentPlotsBySubstratum: Map<SubstratumId, Int> =
             monitoringPlots
                 .filter { it.permanentIndex != null }
                 .groupBy { it.substratumId!! }
                 .mapValues { it.value.size }
-        val numPermanentPlotsInSubzone1 = numPermanentPlotsBySubzone[subzone1Id] ?: 0
-        val numPermanentPlotsInSubzone2 = numPermanentPlotsBySubzone[subzone2Id] ?: 0
+        val numPermanentPlotsInSubstratum1 = numPermanentPlotsBySubstratum[substratum1Id] ?: 0
+        val numPermanentPlotsInSubstratum2 = numPermanentPlotsBySubstratum[substratum2Id] ?: 0
 
         assertEquals(
             4,
@@ -407,19 +408,19 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         )
         assertEquals(
             2,
-            numPermanentPlotsInSubzone1 + numPermanentPlotsInSubzone2,
-            "Number of permanent plots created in zone 1",
+            numPermanentPlotsInSubstratum1 + numPermanentPlotsInSubstratum2,
+            "Number of permanent plots created in stratum 1",
         )
 
         val expectedTemporaryPlots =
-            when (numPermanentPlotsInSubzone1) {
+            when (numPermanentPlotsInSubstratum1) {
               2 -> 1
               1 -> 2
               0 -> 2
               else ->
                   fail(
-                      "Expected 0, 1, or 2 permanent plots in subzone $subzone1Id, but " +
-                          "got $numPermanentPlotsInSubzone1"
+                      "Expected 0, 1, or 2 permanent plots in substratum $substratum1Id, but " +
+                          "got $numPermanentPlotsInSubstratum1"
                   )
             }
 
@@ -439,10 +440,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             ObservationStartedEvent(observationStore.fetchObservationById(observationId))
         )
 
-        when (numPermanentPlotsInSubzone1) {
-          0 -> got0PermanentPlotsInSubzone1 = true
-          1 -> got1PermanentPlotInSubzone1 = true
-          2 -> got2PermanentPlotsInSubzone1 = true
+        when (numPermanentPlotsInSubstratum1) {
+          0 -> got0PermanentPlotsInSubstratum1 = true
+          1 -> got1PermanentPlotInSubstratum1 = true
+          2 -> got2PermanentPlotsInSubstratum1 = true
         }
 
         eventPublisher.clear()
@@ -457,30 +458,30 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `only includes plots in requested subzones`() {
+    fun `only includes plots in requested substrata`() {
       // Given a planting site with this structure:
       //
-      // +---------------------------------------------------------------------+
-      // |                                Zone 1                               |
-      // +-------------+-------------+-------------+-------------+-------------+
-      // |  Subzone 1  |  Subzone 2  |  Subzone 3  |  Subzone 4  |  Subzone 5  |
-      // +-------------+-------------+-------------+-------------+-------------+
+      // +------------------------------------------------------------------------------------+
+      // |                                      Stratum 1                                     |
+      // +----------------+----------------+----------------+----------------+----------------+
+      // |  Substratum 1  |  Substratum 2  |  Substratum 3  |  Substratum 4  |  Substratum 5  |
+      // +----------------+----------------+----------------+----------------+----------------+
       //
-      // Zone 1: 8 permanent plots, 6 temporary plots
-      //   Subzone 2: 2 permanent plots
-      //   Subzone 3: 2 permanent plots
-      //   Subzone 5: 4 permanent plots
+      // Stratum 1: 8 permanent plots, 6 temporary plots
+      //   Substratum 2: 2 permanent plots
+      //   Substratum 3: 2 permanent plots
+      //   Substratum 5: 4 permanent plots
       //
-      // When the observation is requested for subzones 1 and 2, the observation should include
-      // two temporary plots in subzone 1 and one temporary plot in subzone 2:
+      // When the observation is requested for substrata 1 and 2, the observation should include
+      // two temporary plots in substratum 1 and one temporary plot in substratum 2:
       //
-      // - Five temporary plots are allocated evenly across the subzones
-      // - The remaining temporary plot is placed in the subzone with the fewest number of permanent
-      //   plots (this is subzones 1 and 4, with 0 each) with priority to requested subzones (which
-      //   means subzone 1 gets it, for a total of two plots including the one from the "evenly
-      //   allocated across subzones" step).
-      // - Subzones that are not requested are not included in the observation, meaning we only
-      //   include the plots in subzones 1 and 2.
+      // - Five temporary plots are allocated evenly across the substrata
+      // - The remaining temporary plot is placed in the substratum with the fewest number of
+      //   permanent plots (this is substrata 1 and 4, with 0 each) with priority to requested
+      //   substrata (which means substratum 1 gets it, for a total of two plots including the one
+      //   from the "evenly allocated across substrata" step).
+      // - Substrata that are not requested are not included in the observation, meaning we only
+      //   include the plots in substrata 1 and 2.
 
       plantingSiteId = insertPlantingSite(x = 0, width = 15, gridOrigin = point(1))
       insertFacility(type = FacilityType.Nursery)
@@ -493,52 +494,52 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           numPermanentPlots = 8,
           numTemporaryPlots = 6,
       )
-      val subzoneIds =
+      val substratumIds =
           listOf(SubstratumId(0)) +
               (0..4).map { index -> insertPlantingSubzone(x = 3 * index, width = 3) }
 
-      // Pre-existing permanent plots in subzones 2, 3, and 5
+      // Pre-existing permanent plots in substrata 2, 3, and 5
       listOf(5 to 0, 5 to 1, 7 to 0, 7 to 1, 13 to 0, 13 to 1, 14 to 0, 14 to 1).forEachIndexed {
           index,
           (x, y) ->
         insertMonitoringPlot(
             x = x,
             y = y,
-            plantingSubzoneId = subzoneIds[x / 3 + 1],
+            plantingSubzoneId = substratumIds[x / 3 + 1],
             permanentIndex = index + 1,
         )
       }
 
       val observationId = insertObservation(state = ObservationState.Upcoming)
-      insertObservationRequestedSubzone(plantingSubzoneId = subzoneIds[1])
-      insertObservationRequestedSubzone(plantingSubzoneId = subzoneIds[2])
+      insertObservationRequestedSubzone(plantingSubzoneId = substratumIds[1])
+      insertObservationRequestedSubzone(plantingSubzoneId = substratumIds[2])
 
       service.startObservation(observationId)
 
-      val subzoneIdsByMonitoringPlot =
+      val substratumIdsByMonitoringPlot =
           monitoringPlotsDao.findAll().associate { it.id to it.substratumId }
       val observationPlots = observationPlotsDao.findAll()
 
-      val numTemporaryPlotsBySubzone =
+      val numTemporaryPlotsBySubstratum =
           observationPlots
               .filter { !it.isPermanent!! }
-              .groupBy { subzoneIdsByMonitoringPlot[it.monitoringPlotId] }
+              .groupBy { substratumIdsByMonitoringPlot[it.monitoringPlotId] }
               .mapValues { it.value.size }
       assertEquals(
-          mapOf(subzoneIds[1] to 2, subzoneIds[2] to 1),
-          numTemporaryPlotsBySubzone,
-          "Number of temporary plots by subzone",
+          mapOf(substratumIds[1] to 2, substratumIds[2] to 1),
+          numTemporaryPlotsBySubstratum,
+          "Number of temporary plots by substratum",
       )
 
-      val numPermanentPlotsBySubzone =
+      val numPermanentPlotsBySubstratum =
           observationPlots
               .filter { it.isPermanent!! }
-              .groupBy { subzoneIdsByMonitoringPlot[it.monitoringPlotId] }
+              .groupBy { substratumIdsByMonitoringPlot[it.monitoringPlotId] }
               .mapValues { it.value.size }
       assertEquals(
-          mapOf(subzoneIds[2] to 2),
-          numPermanentPlotsBySubzone,
-          "Number of permanent plots by subzone",
+          mapOf(substratumIds[2] to 2),
+          numPermanentPlotsBySubstratum,
+          "Number of permanent plots by substratum",
       )
     }
 
@@ -605,10 +606,10 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if observation has no requested subzones`() {
+    fun `throws exception if observation has no requested substrata`() {
       val observationId = insertObservation(state = ObservationState.Upcoming)
 
-      assertThrows<ObservationHasNoSubzonesException> { service.startObservation(observationId) }
+      assertThrows<ObservationHasNoSubstrataException> { service.startObservation(observationId) }
     }
 
     @Test
@@ -1222,7 +1223,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception scheduling an observation on a site with no plants in subzones`() {
+    fun `throws exception scheduling an observation on a site with no plants in substrata`() {
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
 
@@ -1238,7 +1239,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `schedules a new observation for a site with plantings in subzones`() {
+    fun `schedules a new observation for a site with plantings in substrata`() {
       val startDate = LocalDate.EPOCH
       val endDate = startDate.plusDays(1)
 
@@ -1495,7 +1496,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns site with subzone plantings and no completed observations`() {
+    fun `returns site with substratum plantings and no completed observations`() {
       helper.insertPlantedSite()
 
       assertEquals(
@@ -1530,7 +1531,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns sites with observations completed earlier than two weeks or have sub zone plantings`() {
+    fun `returns sites with observations completed earlier than two weeks or have substratum plantings`() {
       val plantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
 
       insertObservation(
@@ -1582,7 +1583,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns site with subzone plantings planted earlier than 4 weeks and no completed observations`() {
+    fun `returns site with substratum plantings planted earlier than 4 weeks and no completed observations`() {
       helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 4, ChronoUnit.DAYS))
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
@@ -1620,7 +1621,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns sites with observations completed earlier than six weeks or have sub zone plantings`() {
+    fun `returns sites with observations completed earlier than six weeks or have substratum plantings`() {
       val plantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ScheduleObservation)
 
@@ -1673,7 +1674,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns site with subzone plantings planted earlier than 6 weeks and no completed observations`() {
+    fun `returns site with substratum plantings planted earlier than 6 weeks and no completed observations`() {
       helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 6, ChronoUnit.DAYS))
 
       assertEquals(
@@ -1724,7 +1725,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns sites with observations completed earlier than eight weeks or have sub zone plantings`() {
+    fun `returns sites with observations completed earlier than eight weeks or have substratum plantings`() {
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
 
@@ -1783,7 +1784,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns site with subzone plantings planted earlier than 14 weeks and no completed observations`() {
+    fun `returns site with substratum plantings planted earlier than 14 weeks and no completed observations`() {
       helper.insertPlantedSite(plantingCreatedTime = Instant.EPOCH.minus(7 * 14, ChronoUnit.DAYS))
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
@@ -1840,7 +1841,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns sites with observations completed earlier than sixteen weeks or have sub zone plantings`() {
+    fun `returns sites with observations completed earlier than sixteen weeks or have substratum plantings`() {
       val plantingSiteIdWithCompletedObservation = helper.insertPlantedSite()
       insertPlantingSiteNotification(type = NotificationType.ObservationNotScheduledSupport)
 
@@ -1889,7 +1890,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @BeforeEach
     fun setUp() {
-      helper.insertPlantedSite(width = 2, height = 7, subzoneCompletedTime = Instant.EPOCH)
+      helper.insertPlantedSite(width = 2, height = 7, substratumCompletedTime = Instant.EPOCH)
       observationId = insertObservation()
       insertObservationRequestedSubzone()
     }
@@ -2047,7 +2048,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `removes permanent index if replacement plot is in an unrequested subzone`() {
+    fun `removes permanent index if replacement plot is in an unrequested substratum`() {
       insertPlantingZone(numPermanentPlots = 1, width = 1, height = 2)
       insertPlantingSubzone(width = 1, height = 1)
       insertObservationRequestedSubzone()
@@ -2222,7 +2223,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               observationType = ObservationType.Monitoring,
               plantingSiteHistoryId = inserted.plantingSiteHistoryId,
               plantingSiteId = inserted.plantingSiteId,
-              requestedSubzoneIds = setOf(inserted.plantingSubzoneId),
+              requestedSubstratumIds = setOf(inserted.plantingSubzoneId),
               startDate = LocalDate.of(2023, 1, 1),
               state = ObservationState.InProgress,
           )
@@ -2751,43 +2752,43 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `abandons in-progress observations in edited zones`() {
+    fun `abandons in-progress observations in edited strata`() {
       insertPlantingZone(numPermanentPlots = 1, numTemporaryPlots = 1, width = 2, height = 7)
       insertPlantingSubzone()
-      val plotInEditedZone = insertMonitoringPlot(permanentIndex = 1)
+      val plotInEditedStratum = insertMonitoringPlot(permanentIndex = 1)
       insertPlantingZone()
       insertPlantingSubzone()
-      val plotInNonEditedZone = insertMonitoringPlot(permanentIndex = 1)
+      val plotInNonEditedStratum = insertMonitoringPlot(permanentIndex = 1)
 
       val completedObservation = insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(
-          monitoringPlotId = plotInEditedZone,
+          monitoringPlotId = plotInEditedStratum,
           isPermanent = true,
           completedBy = user.userId,
       )
       insertObservationPlot(
-          monitoringPlotId = plotInNonEditedZone,
+          monitoringPlotId = plotInNonEditedStratum,
           isPermanent = true,
           completedBy = user.userId,
       )
-      val activeObservationWithCompletedPlotInEditedZone = insertObservation()
+      val activeObservationWithCompletedPlotInEditedStratum = insertObservation()
       insertObservationPlot(
-          monitoringPlotId = plotInEditedZone,
+          monitoringPlotId = plotInEditedStratum,
           isPermanent = true,
           completedBy = user.userId,
       )
-      insertObservationPlot(monitoringPlotId = plotInNonEditedZone, isPermanent = true)
-      val activeObservationWithCompletedPlotInNonEditedZone = insertObservation()
-      insertObservationPlot(monitoringPlotId = plotInEditedZone, isPermanent = true)
+      insertObservationPlot(monitoringPlotId = plotInNonEditedStratum, isPermanent = true)
+      val activeObservationWithCompletedPlotInNonEditedStratum = insertObservation()
+      insertObservationPlot(monitoringPlotId = plotInEditedStratum, isPermanent = true)
       insertObservationPlot(
-          monitoringPlotId = plotInNonEditedZone,
+          monitoringPlotId = plotInNonEditedStratum,
           isPermanent = true,
           completedBy = user.userId,
       )
       // Active observation with no completed plots; should be deleted
       insertObservation()
-      insertObservationPlot(monitoringPlotId = plotInEditedZone, isPermanent = true)
-      insertObservationPlot(monitoringPlotId = plotInNonEditedZone, isPermanent = true)
+      insertObservationPlot(monitoringPlotId = plotInEditedStratum, isPermanent = true)
+      insertObservationPlot(monitoringPlotId = plotInNonEditedStratum, isPermanent = true)
 
       val event =
           PlantingSiteMapEditedEvent(
@@ -2796,15 +2797,15 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   areaHaDifference = BigDecimal.ONE,
                   desiredModel = plantingSite,
                   existingModel = plantingSite,
-                  plantingZoneEdits =
+                  stratumEdits =
                       listOf(
-                          PlantingZoneEdit.Update(
+                          StratumEdit.Update(
                               addedRegion = rectangle(0),
                               areaHaDifference = BigDecimal.ONE,
-                              desiredModel = plantingSite.plantingZones[0],
-                              existingModel = plantingSite.plantingZones[0],
+                              desiredModel = plantingSite.strata[0],
+                              existingModel = plantingSite.strata[0],
                               monitoringPlotEdits = emptyList(),
-                              plantingSubzoneEdits = emptyList(),
+                              substratumEdits = emptyList(),
                               removedRegion = rectangle(0),
                           )
                       ),
@@ -2817,8 +2818,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           mapOf(
               completedObservation to ObservationState.Completed,
-              activeObservationWithCompletedPlotInEditedZone to ObservationState.InProgress,
-              activeObservationWithCompletedPlotInNonEditedZone to ObservationState.Abandoned,
+              activeObservationWithCompletedPlotInEditedStratum to ObservationState.InProgress,
+              activeObservationWithCompletedPlotInNonEditedStratum to ObservationState.Abandoned,
           ),
           observationsDao.findAll().associate { it.id!! to it.stateId!! },
           "Observation states",
