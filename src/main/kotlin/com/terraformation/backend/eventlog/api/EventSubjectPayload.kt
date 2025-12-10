@@ -240,10 +240,7 @@ data class ObservationPlotMediaSubjectPayload(
       val mediaKind = MediaKind.forMimeType(createEvent.contentType)
       val mediaKindName = mediaKind.getDisplayName(currentUser().locale)
       val fullText =
-          context.subjectFullText<ObservationPlotMediaSubjectPayload>(
-              mediaKindName,
-              event.fileId.value,
-          )
+          context.subjectFullText<ObservationPlotMediaSubjectPayload>(mediaKindName, event.fileId)
 
       return ObservationPlotMediaSubjectPayload(
           deleted = if (deleteEvent != null) true else null,
