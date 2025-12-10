@@ -43,7 +43,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
-        observationRequestedSubzonesDao,
+        observationRequestedSubstrataDao,
         parentStore,
     )
   }
@@ -131,11 +131,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         gen.subzoneFeature(zone2Boundary, zone = "Z2", permanentPlots = 2, temporaryPlots = 3)
 
     val plantingSite = importSite(listOf(subzone1Feature, subzone2Feature, subzone3Feature))
-    val subzone1 =
-        plantingSite.plantingZones
-            .first { it.name == "Z1" }
-            .plantingSubzones
-            .first { it.name == "S1" }
+    val subzone1 = plantingSite.strata.first { it.name == "Z1" }.substrata.first { it.name == "S1" }
 
     val observationId =
         insertObservation(plantingSiteId = plantingSite.id, state = ObservationState.Upcoming)
@@ -145,7 +141,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
 
     observationPlots.forEach { plot ->
-      assertEquals(subzone1.fullName, plot.plantingSubzoneName, "Plot in unexpected subzone")
+      assertEquals(subzone1.fullName, plot.substratumName, "Plot in unexpected subzone")
       if (!plot.boundary.nearlyCoveredBy(subzone1.boundary)) {
         fail("Plot boundary ${plot.boundary} not within subzone boundary ${subzone1.boundary}")
       }
@@ -207,9 +203,9 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
     inserted.plantingSiteIds.add(plantingSiteId)
-    plantingSite.plantingZones.forEach { zone ->
+    plantingSite.strata.forEach { zone ->
       inserted.plantingZoneIds.add(zone.id)
-      zone.plantingSubzones.forEach { subzone ->
+      zone.substrata.forEach { subzone ->
         inserted.plantingSubzoneIds.add(subzone.id)
         subzone.monitoringPlots.forEach { plot -> inserted.monitoringPlotIds.add(plot.id) }
       }

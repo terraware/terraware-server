@@ -4,7 +4,7 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
-import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
+import com.terraformation.backend.tracking.db.SubstrataNotFoundException
 import com.terraformation.backend.tracking.model.NewObservationModel
 import io.mockk.every
 import java.time.Instant
@@ -18,8 +18,8 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
   @Test
   fun `saves fields that are relevant to a new observation`() {
     insertPlantingZone()
-    val subzoneId1 = insertPlantingSubzone()
-    val subzoneId2 = insertPlantingSubzone()
+    val substratumId1 = insertPlantingSubzone()
+    val substratumId2 = insertPlantingSubzone()
     insertPlantingSubzone() // Should not be included in observation
 
     val observationId =
@@ -31,7 +31,7 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
                 isAdHoc = false,
                 observationType = ObservationType.Monitoring,
                 plantingSiteId = plantingSiteId,
-                requestedSubzoneIds = setOf(subzoneId1, subzoneId2),
+                requestedSubstratumIds = setOf(substratumId1, substratumId2),
                 startDate = LocalDate.of(2020, 1, 1),
                 state = ObservationState.Completed,
             )
@@ -55,19 +55,19 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
     assertEquals(expected, actual)
 
     assertSetEquals(
-        setOf(subzoneId1, subzoneId2),
-        observationRequestedSubzonesDao.findAll().map { it.substratumId }.toSet(),
-        "Subzone IDs",
+        setOf(substratumId1, substratumId2),
+        observationRequestedSubstrataDao.findAll().map { it.substratumId }.toSet(),
+        "Substratum IDs",
     )
   }
 
   @Test
-  fun `throws exception if requested subzone is not in correct site`() {
+  fun `throws exception if requested substratum is not in correct site`() {
     insertPlantingSite()
     insertPlantingZone()
-    val otherSiteSubzoneId = insertPlantingSubzone()
+    val otherSiteSubstratumId = insertPlantingSubzone()
 
-    assertThrows<PlantingSubzoneNotFoundException> {
+    assertThrows<SubstrataNotFoundException> {
       store.createObservation(
           NewObservationModel(
               endDate = LocalDate.of(2020, 1, 31),
@@ -75,7 +75,7 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
               isAdHoc = false,
               observationType = ObservationType.Monitoring,
               plantingSiteId = plantingSiteId,
-              requestedSubzoneIds = setOf(otherSiteSubzoneId),
+              requestedSubstratumIds = setOf(otherSiteSubstratumId),
               startDate = LocalDate.of(2020, 1, 1),
               state = ObservationState.Upcoming,
           )
@@ -122,10 +122,10 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
   }
 
   @Test
-  fun `throws exception for ad-hoc observation with requested subzones`() {
+  fun `throws exception for ad-hoc observation with requested substrata`() {
     insertPlantingZone()
-    val subzoneId1 = insertPlantingSubzone()
-    val subzoneId2 = insertPlantingSubzone()
+    val substratumId1 = insertPlantingSubzone()
+    val substratumId2 = insertPlantingSubzone()
     assertThrows<IllegalArgumentException> {
       store.createObservation(
           NewObservationModel(
@@ -134,7 +134,7 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
               isAdHoc = true,
               observationType = ObservationType.Monitoring,
               plantingSiteId = plantingSiteId,
-              requestedSubzoneIds = setOf(subzoneId1, subzoneId2),
+              requestedSubstratumIds = setOf(substratumId1, substratumId2),
               startDate = LocalDate.EPOCH,
               state = ObservationState.Upcoming,
           )

@@ -69,9 +69,9 @@ import com.terraformation.backend.tracking.db.DraftPlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
-import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
-import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotFoundException
+import com.terraformation.backend.tracking.db.StratumNotFoundException
+import com.terraformation.backend.tracking.db.SubstrataNotFoundException
 import io.mockk.CapturingSlot
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -170,9 +170,9 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val plantingSiteId: PlantingSiteId by
       readableId(PlantingSiteNotFoundException::class) { canReadPlantingSite(it) }
   private val plantingSubzoneId: SubstratumId by
-      readableId(PlantingSubzoneNotFoundException::class) { canReadPlantingSubzone(it) }
+      readableId(SubstrataNotFoundException::class) { canReadPlantingSubzone(it) }
   private val plantingZoneId: StratumId by
-      readableId(PlantingZoneNotFoundException::class) { canReadPlantingZone(it) }
+      readableId(StratumNotFoundException::class) { canReadPlantingZone(it) }
   private val projectId: ProjectId by
       readableId(ProjectNotFoundException::class) { canReadProject(it) }
   private val publishedActivityId: ActivityId by

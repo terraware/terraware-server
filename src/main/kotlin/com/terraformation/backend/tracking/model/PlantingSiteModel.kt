@@ -29,8 +29,8 @@ import org.locationtech.jts.geom.Point
 
 data class PlantingSiteModel<
     PSID : PlantingSiteId?,
-    PZID : StratumId?,
-    PSZID : SubstratumId?,
+    SID : StratumId?,
+    SSID : SubstratumId?,
     TIMESTAMP : Instant?,
 >(
     val adHocPlots: List<MonitoringPlotModel> = emptyList(),
@@ -55,7 +55,7 @@ data class PlantingSiteModel<
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
-    val plantingZones: List<PlantingZoneModel<PZID, PSZID, TIMESTAMP>> = emptyList(),
+    val strata: List<StratumModel<SID, SSID, TIMESTAMP>> = emptyList(),
     val projectId: ProjectId? = null,
     val survivalRateIncludesTempPlots: Boolean = false,
     val timeZone: ZoneId? = null,
@@ -76,14 +76,12 @@ data class PlantingSiteModel<
         ?.withDayOfMonth(1)
   }
 
-  /**
-   * Returns the planting zone that contains a monitoring plot, or null if the plot wasn't found.
-   */
-  fun findZoneWithMonitoringPlot(
+  /** Returns the stratum that contains a monitoring plot, or null if the plot wasn't found. */
+  fun findStratumWithMonitoringPlot(
       monitoringPlotId: MonitoringPlotId
-  ): PlantingZoneModel<PZID, PSZID, TIMESTAMP>? {
-    return plantingZones.firstOrNull { zone ->
-      zone.findSubzoneWithMonitoringPlot(monitoringPlotId) != null
+  ): StratumModel<SID, SSID, TIMESTAMP>? {
+    return strata.firstOrNull { stratum ->
+      stratum.findSubstratumWithMonitoringPlot(monitoringPlotId) != null
     }
   }
 
@@ -101,34 +99,37 @@ data class PlantingSiteModel<
         problems.add(PlantingSiteValidationFailure.siteTooLarge())
       }
 
-      plantingZones
+      strata
           .groupBy { it.name.lowercase() }
           .values
           .filter { it.size > 1 }
-          .forEach { problems.add(PlantingSiteValidationFailure.duplicateZoneName(it[0].name)) }
+          .forEach { problems.add(PlantingSiteValidationFailure.duplicateStratumName(it[0].name)) }
 
-      plantingZones.forEachIndexed { index, zone ->
-        if (!zone.boundary.nearlyCoveredBy(boundary)) {
-          problems.add(PlantingSiteValidationFailure.zoneNotInSite(zone.name))
+      strata.forEachIndexed { index, stratum ->
+        if (!stratum.boundary.nearlyCoveredBy(boundary)) {
+          problems.add(PlantingSiteValidationFailure.stratumNotInSite(stratum.name))
         }
 
-        plantingZones.drop(index + 1).forEach { otherZone ->
-          val overlapPercent = zone.boundary.coveragePercent(otherZone.boundary)
+        strata.drop(index + 1).forEach { otherStratum ->
+          val overlapPercent = stratum.boundary.coveragePercent(otherStratum.boundary)
           if (overlapPercent > REGION_OVERLAP_MAX_PERCENT) {
             problems.add(
-                PlantingSiteValidationFailure.zoneBoundaryOverlaps(setOf(otherZone.name), zone.name)
+                PlantingSiteValidationFailure.stratumBoundaryOverlaps(
+                    setOf(otherStratum.name),
+                    stratum.name,
+                )
             )
           }
         }
 
-        problems.addAll(zone.validate(this))
+        problems.addAll(stratum.validate(this))
       }
     } else {
       if (exclusion != null) {
         problems.add(PlantingSiteValidationFailure.exclusionWithoutBoundary())
       }
-      if (plantingZones.isNotEmpty()) {
-        problems.add(PlantingSiteValidationFailure.zonesWithoutSiteBoundary())
+      if (strata.isNotEmpty()) {
+        problems.add(PlantingSiteValidationFailure.strataWithoutSiteBoundary())
       }
     }
 
@@ -151,8 +152,8 @@ data class PlantingSiteModel<
         exteriorPlots.zip(other.exteriorPlots).all { it.first.equals(it.second, tolerance) } &&
         plantingSeasons.size == other.plantingSeasons.size &&
         plantingSeasons.zip(other.plantingSeasons).all { it.first == it.second } &&
-        plantingZones.size == other.plantingZones.size &&
-        plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) }
+        strata.size == other.strata.size &&
+        strata.zip(other.strata).all { it.first.equals(it.second, tolerance) }
   }
 
   fun toNew(): NewPlantingSiteModel =
@@ -167,7 +168,7 @@ data class PlantingSiteModel<
           name = name,
           organizationId = organizationId,
           plantingSeasons = plantingSeasons,
-          plantingZones = plantingZones.map { it.toNew() },
+          strata = strata.map { it.toNew() },
           projectId = projectId,
           survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
           timeZone = timeZone,
@@ -175,7 +176,7 @@ data class PlantingSiteModel<
 
   companion object {
     /**
-     * Maximum percentage of a zone or subzone that can overlap with a neighboring one before
+     * Maximum percentage of a stratum or substratum that can overlap with a neighboring one before
      * tripping the validation check for overlapping areas. This fuzz factor is needed to account
      * for floating-point inaccuracy.
      */
@@ -184,7 +185,7 @@ data class PlantingSiteModel<
     fun of(
         record: Record,
         plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>?,
-        plantingZonesMultiset: Field<List<ExistingPlantingZoneModel>>? = null,
+        strataMultiset: Field<List<ExistingStratumModel>>? = null,
         adHocPlotsField: Field<List<MonitoringPlotModel>>? = null,
         exteriorPlotsMultiset: Field<List<MonitoringPlotModel>>? = null,
         latestObservationIdField: Field<ObservationId?>? = null,
@@ -205,7 +206,7 @@ data class PlantingSiteModel<
             name = record[PLANTING_SITES.NAME]!!,
             organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
             plantingSeasons = plantingSeasonsMultiset?.let { record[it] } ?: emptyList(),
-            plantingZones = plantingZonesMultiset?.let { record[it] } ?: emptyList(),
+            strata = strataMultiset?.let { record[it] } ?: emptyList(),
             projectId = record[PLANTING_SITES.PROJECT_ID],
             survivalRateIncludesTempPlots =
                 record[PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS]!!,
@@ -221,7 +222,7 @@ data class PlantingSiteModel<
         name: String,
         organizationId: OrganizationId,
         plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
-        plantingZones: List<NewPlantingZoneModel> = emptyList(),
+        strata: List<NewStratumModel> = emptyList(),
         projectId: ProjectId? = null,
         timeZone: ZoneId? = null,
     ): NewPlantingSiteModel {
@@ -259,7 +260,7 @@ data class PlantingSiteModel<
           name = name,
           organizationId = organizationId,
           plantingSeasons = plantingSeasons,
-          plantingZones = plantingZones,
+          strata = strata,
           projectId = projectId,
           timeZone = timeZone,
       )

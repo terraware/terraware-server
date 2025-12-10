@@ -25,16 +25,16 @@ data class PlantingSiteEdit(
     /** Existing planting site model. Edits are based on this version of the site. */
     val existingModel: ExistingPlantingSiteModel,
 
-    /** Edits to this site's planting zones. */
-    val plantingZoneEdits: List<PlantingZoneEdit>,
+    /** Edits to this site's strata. */
+    val stratumEdits: List<StratumEdit>,
 ) {
   fun equalsExact(other: PlantingSiteEdit, tolerance: Double = 0.0000001): Boolean =
       javaClass == other.javaClass &&
           areaHaDifference.equalsIgnoreScale(other.areaHaDifference) &&
           desiredModel.equals(other.desiredModel, tolerance) &&
           existingModel.equals(other.existingModel, tolerance) &&
-          plantingZoneEdits.size == other.plantingZoneEdits.size &&
-          plantingZoneEdits.zip(other.plantingZoneEdits).all { (edit, otherEdit) ->
+          stratumEdits.size == other.stratumEdits.size &&
+          stratumEdits.zip(other.stratumEdits).all { (edit, otherEdit) ->
             edit.equalsExact(otherEdit, tolerance)
           }
 }

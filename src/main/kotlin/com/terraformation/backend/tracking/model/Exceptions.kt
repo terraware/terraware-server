@@ -35,12 +35,12 @@ class PlantingSeasonTooLongException(val startDate: LocalDate, val endDate: Loca
 class PlantingSeasonTooShortException(val startDate: LocalDate, val endDate: LocalDate) :
     IllegalArgumentException("Planting season $startDate-$endDate is too short")
 
-class PlantingSubzoneFullException(
-    val plantingSubzoneId: SubstratumId,
+class SubstratumFullException(
+    val substratumId: SubstratumId,
     val plotsNeeded: Int,
     val plotsRemaining: Int,
 ) :
     IllegalStateException(
-        "Planting subzone $plantingSubzoneId needs $plotsNeeded temporary plots but only " +
+        "Substratum $substratumId needs $plotsNeeded temporary plots but only " +
             "$plotsRemaining available"
     )

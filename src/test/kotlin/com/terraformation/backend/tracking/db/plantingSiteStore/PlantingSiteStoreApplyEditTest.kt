@@ -16,7 +16,7 @@ import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorTest
-import com.terraformation.backend.tracking.edit.PlantingZoneEdit
+import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -69,11 +69,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   },
           )
 
-      fun ExistingPlantingSiteModel.allZoneIds(): Set<StratumId> =
-          plantingZones.map { it.id }.toSet()
+      fun ExistingPlantingSiteModel.allZoneIds(): Set<StratumId> = strata.map { it.id }.toSet()
 
       fun ExistingPlantingSiteModel.allSubzoneIds(): Set<SubstratumId> =
-          plantingZones.flatMap { zone -> zone.plantingSubzones.map { it.id } }.toSet()
+          strata.flatMap { zone -> zone.substrata.map { it.id } }.toSet()
 
       assertNull(
           existing.countryCode,
@@ -104,14 +103,14 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   },
           )
 
-      assertEquals(newErrorMargin, edited.plantingZones[0].errorMargin, "Error margin")
-      assertEquals(newStudentsT, edited.plantingZones[0].studentsT, "Student's t")
+      assertEquals(newErrorMargin, edited.strata[0].errorMargin, "Error margin")
+      assertEquals(newStudentsT, edited.strata[0].studentsT, "Student's t")
       assertEquals(
           newTargetPlantingDensity,
-          edited.plantingZones[0].targetPlantingDensity,
+          edited.strata[0].targetPlantingDensity,
           "Target planting density",
       )
-      assertEquals(newVariance, edited.plantingZones[0].variance, "Variance")
+      assertEquals(newVariance, edited.strata[0].variance, "Variance")
     }
 
     @Test
@@ -161,16 +160,16 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       assertEquals(BigDecimal("20.0"), existing.areaHa, "Site area before edit")
       assertEquals(BigDecimal("15.0"), edited.areaHa, "Site area after edit")
-      assertEquals(BigDecimal("20.0"), existing.plantingZones[0].areaHa, "Zone area before edit")
-      assertEquals(BigDecimal("15.0"), edited.plantingZones[0].areaHa, "Zone area after edit")
+      assertEquals(BigDecimal("20.0"), existing.strata[0].areaHa, "Zone area before edit")
+      assertEquals(BigDecimal("15.0"), edited.strata[0].areaHa, "Zone area after edit")
       assertEquals(
           BigDecimal("20.0"),
-          existing.plantingZones[0].plantingSubzones[0].areaHa,
+          existing.strata[0].substrata[0].areaHa,
           "Subzone area before edit",
       )
       assertEquals(
           BigDecimal("15.0"),
-          edited.plantingZones[0].plantingSubzones[0].areaHa,
+          edited.strata[0].substrata[0].areaHa,
           "Subzone area after edit",
       )
     }
@@ -204,11 +203,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
           getSubzonesToMarkIncomplete = { existing ->
             // Ask it to mark just one of the two expanded subzones as incomplete.
-            existing.plantingZones[0]
-                .plantingSubzones
-                .filter { it.name == "S2" }
-                .map { it.id }
-                .toSet()
+            existing.strata[0].substrata.filter { it.name == "S2" }.map { it.id }.toSet()
           },
       )
     }
@@ -242,7 +237,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val results = runScenario(newSite(), newSite(width = 600))
 
       val monitoringPlotIds =
-          results.edited.plantingZones[0].plantingSubzones[0].monitoringPlots.map { it.id }.toSet()
+          results.edited.strata[0].substrata[0].monitoringPlots.map { it.id }.toSet()
 
       eventPublisher.assertEventPublished(
           PlantingSiteMapEditedEvent(
@@ -273,13 +268,13 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 areaHaDifference = BigDecimal.ZERO,
                 desiredModel = existing,
                 existingModel = existing,
-                plantingZoneEdits =
+                stratumEdits =
                     listOf(
-                        PlantingZoneEdit.Update(
+                        StratumEdit.Update(
                             addedRegion = rectangle(0),
                             areaHaDifference = BigDecimal.ZERO,
-                            desiredModel = existing.plantingZones[0],
-                            existingModel = existing.plantingZones[0],
+                            desiredModel = existing.strata[0],
+                            existingModel = existing.strata[0],
                             monitoringPlotEdits =
                                 listOf(
                                     MonitoringPlotEdit.Create(existing.boundary!!, 1),
@@ -287,7 +282,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                                     MonitoringPlotEdit.Create(existing.boundary!!, 2),
                                     MonitoringPlotEdit.Create(existing.boundary!!, 2),
                                 ),
-                            plantingSubzoneEdits = emptyList(),
+                            substratumEdits = emptyList(),
                             removedRegion = rectangle(0),
                         )
                     ),
@@ -452,19 +447,19 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val (edited, existing) = runScenario(initial = initial, desired = desired)
 
-      val existingZones = existing.plantingZones.associateBy { it.name }
+      val existingZones = existing.strata.associateBy { it.name }
 
       assertEquals(
           mapOf("C" to existingZones["A"]!!.id, "D" to existingZones["B"]!!.id),
-          edited.plantingZones.associate { it.name to it.id },
+          edited.strata.associate { it.name to it.id },
           "Zone IDs",
       )
       assertEquals(
           mapOf(
-              "C-Subzone" to existingZones["A"]!!.plantingSubzones.first().id,
-              "D-Subzone" to existingZones["B"]!!.plantingSubzones.first().id,
+              "C-Subzone" to existingZones["A"]!!.substrata.first().id,
+              "D-Subzone" to existingZones["B"]!!.substrata.first().id,
           ),
-          edited.plantingZones.flatMap { it.plantingSubzones }.associate { it.fullName to it.id },
+          edited.strata.flatMap { it.substrata }.associate { it.fullName to it.id },
           "Subzone IDs",
       )
     }
@@ -489,12 +484,12 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       assertEquals(
           mapOf("A" to StableId("B"), "B" to StableId("A")),
-          edited.plantingZones.associate { it.name to it.stableId },
+          edited.strata.associate { it.name to it.stableId },
           "Stable IDs for zone names after name swap",
       )
       assertEquals(
-          existing.plantingZones.associate { it.stableId to it.id },
-          edited.plantingZones.associate { it.stableId to it.id },
+          existing.strata.associate { it.stableId to it.id },
+          edited.strata.associate { it.stableId to it.id },
           "Planting zone IDs by stable ID after name swap",
       )
     }
@@ -519,12 +514,12 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       assertEquals(
           mapOf("S1" to StableId("S2"), "S2" to StableId("S1")),
-          edited.plantingZones.single().plantingSubzones.associate { it.name to it.stableId },
+          edited.strata.single().substrata.associate { it.name to it.stableId },
           "Stable IDs for subzone names after name swap",
       )
       assertEquals(
-          existing.plantingZones.single().plantingSubzones.associate { it.stableId to it.id },
-          edited.plantingZones.single().plantingSubzones.associate { it.stableId to it.id },
+          existing.strata.single().substrata.associate { it.stableId to it.id },
+          edited.strata.single().substrata.associate { it.stableId to it.id },
           "Planting subzone IDs by stable ID after name swap",
       )
     }
@@ -547,8 +542,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val (edited, existing) = runScenario(initial = initial, desired = desired)
 
-      val existingSubzone2 = existing.plantingZones[0].plantingSubzones[1]
-      val editedSubzone2 = edited.plantingZones[1].plantingSubzones[0]
+      val existingSubzone2 = existing.strata[0].substrata[1]
+      val editedSubzone2 = edited.strata[1].substrata[0]
 
       assertEquals(existingSubzone2.id, editedSubzone2.id, "ID of moved subzone")
       assertEquals(
@@ -572,8 +567,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val (edited, existing) = runScenario(initial = initial, desired = desired)
 
-      val existingSubzone = existing.plantingZones[0].plantingSubzones[0]
-      val editedSubzone = edited.plantingZones[0].plantingSubzones[0]
+      val existingSubzone = existing.strata[0].substrata[0]
+      val editedSubzone = edited.strata[0].substrata[0]
 
       assertEquals(existingSubzone.id, editedSubzone.id, "ID of moved subzone")
       assertEquals(
@@ -592,13 +587,11 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           store.createPlantingSite(initial.copy(organizationId = organizationId))
 
       val maxPlotNumber =
-          initial.plantingZones.maxOfOrNull { initialZone ->
-            val existingZone =
-                existingWithoutPlots.plantingZones.single { it.name == initialZone.name }
+          initial.strata.maxOfOrNull { initialZone ->
+            val existingZone = existingWithoutPlots.strata.single { it.name == initialZone.name }
 
-            initialZone.plantingSubzones.maxOfOrNull { initialSubzone ->
-              val existingSubzone =
-                  existingZone.plantingSubzones.single { it.name == initialSubzone.name }
+            initialZone.substrata.maxOfOrNull { initialSubzone ->
+              val existingSubzone = existingZone.substrata.single { it.name == initialSubzone.name }
 
               initialSubzone.monitoringPlots.maxOfOrNull { initialPlot ->
                 insertMonitoringPlot(
@@ -659,11 +652,11 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       fun NewPlantingSiteModel.withoutMonitoringPlots() =
           copy(
-              plantingZones =
-                  plantingZones.map { zone ->
+              strata =
+                  strata.map { zone ->
                     zone.copy(
-                        plantingSubzones =
-                            zone.plantingSubzones.map { subzone ->
+                        substrata =
+                            zone.substrata.map { subzone ->
                               subzone.copy(monitoringPlots = emptyList())
                             }
                     )
@@ -681,8 +674,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       }
 
       val editedMonitoringPlots =
-          edited.plantingZones.flatMap { zone ->
-            zone.plantingSubzones.flatMap { subzone -> subzone.monitoringPlots }
+          edited.strata.flatMap { zone ->
+            zone.substrata.flatMap { subzone -> subzone.monitoringPlots }
           }
 
       if (expectedPlotCounts != null) {
@@ -698,7 +691,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         )
       }
 
-      if (plantingSiteEdit.plantingZoneEdits.isNotEmpty()) {
+      if (plantingSiteEdit.stratumEdits.isNotEmpty()) {
         assertHistories(existing, edited)
       }
 
@@ -759,12 +752,12 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           plantingZoneHistoriesDao.fetchByPlantingSiteHistoryId(editedSiteHistory.id!!)
 
       assertEquals(
-          edited.plantingZones.size,
+          edited.strata.size,
           editedZoneHistories.size,
           "Number of planting zone histories from edit",
       )
       assertEquals(
-          edited.plantingZones
+          edited.strata
               .map { zone ->
                 StratumHistoriesRow(
                     areaHa = zone.areaHa,
@@ -786,9 +779,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           )
 
       assertTableEquals(
-          edited.plantingZones.flatMap { zone ->
+          edited.strata.flatMap { zone ->
             val plantingZoneHistoryId = editedZoneHistories.first { it.stratumId == zone.id }.id
-            zone.plantingSubzones.map { subzone ->
+            zone.substrata.map { subzone ->
               SubstratumHistoriesRecord(
                   areaHa = subzone.areaHa,
                   boundary = subzone.boundary,
@@ -808,15 +801,15 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       )
 
       val subzonePlotIds =
-          edited.plantingZones
+          edited.strata
               .flatMap { zone ->
-                zone.plantingSubzones.flatMap { subzone -> subzone.monitoringPlots.map { it.id } }
+                zone.substrata.flatMap { subzone -> subzone.monitoringPlots.map { it.id } }
               }
               .toSet()
 
       val ejectedPlotHistories =
-          existing.plantingZones.flatMap { zone ->
-            zone.plantingSubzones.flatMap { subzone ->
+          existing.strata.flatMap { zone ->
+            zone.substrata.flatMap { subzone ->
               subzone.monitoringPlots
                   .filter { it.id !in subzonePlotIds }
                   .map { plot ->
@@ -832,8 +825,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           }
 
       val subzonePlotHistories =
-          edited.plantingZones.flatMap { zone ->
-            zone.plantingSubzones.flatMap { subzone ->
+          edited.strata.flatMap { zone ->
+            zone.substrata.flatMap { subzone ->
               val plantingSubzoneHistoryId =
                   editedSubzoneHistories.first { it.substratumId == subzone.id }.id
               subzone.monitoringPlots.map { plot ->
@@ -873,8 +866,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       expected: Map<Int, Geometry>,
   ) {
     val editedMonitoringPlots =
-        edited.plantingZones.flatMap { zone ->
-          zone.plantingSubzones.flatMap { subzone -> subzone.monitoringPlots }
+        edited.strata.flatMap { zone ->
+          zone.substrata.flatMap { subzone -> subzone.monitoringPlots }
         }
     val editedPermanentIndexes = editedMonitoringPlots.mapNotNull { it.permanentIndex }.sorted()
     val expectedPermanentIndexes = expected.keys.sorted()
@@ -904,9 +897,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       expected: Map<String, List<Int?>>,
   ) {
     val actual =
-        site.plantingZones
+        site.strata
             .flatMap { zone ->
-              zone.plantingSubzones.map { subzone ->
+              zone.substrata.map { subzone ->
                 subzone.name to
                     subzone.monitoringPlots
                         .map { it.permanentIndex }
@@ -929,9 +922,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       expected: Map<String, List<Long>>,
   ) {
     val actual =
-        site.plantingZones
+        site.strata
             .flatMap { zone ->
-              zone.plantingSubzones.map { subzone ->
+              zone.substrata.map { subzone ->
                 subzone.name to subzone.monitoringPlots.map { it.plotNumber }.sorted()
               }
             }

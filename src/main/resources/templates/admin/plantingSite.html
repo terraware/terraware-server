@@ -222,7 +222,7 @@
     <th:block th:text="${site.description}"/>
 </th:div>
 
-<th:block th:if="!${site.plantingZones.isEmpty()}">
+<th:block th:if="!${site.strata.isEmpty()}">
 
     <th:block th:if="${canUpdatePlantingSite}">
         <h3>Planting Zone Settings</h3>
@@ -241,7 +241,7 @@
                 <th></th>
             </tr>
 
-            <tr th:each="zone : ${site.plantingZones}">
+            <tr th:each="zone : ${site.strata}">
                 <td th:text="${zone.id}">1</td>
                 <td title="Zone name edits will not show up in the site's map history; they will be applied retroactively, as if they had been the names in the most recently uploaded shapefile. If you want the old names to appear in the map history, upload a new shapefile instead of renaming the zones here.">
                     <input required name="name" th:value="${zone.name}" th:form="|zone-${zone.id}|"/>
@@ -335,14 +335,14 @@
             <th>ID</th>
         </tr>
 
-        <th:block th:each="zone : ${site.plantingZones}">
+        <th:block th:each="zone : ${site.strata}">
             <tr>
                 <td th:text="${zone.name}" colspan="5">Zone</td>
                 <td th:text="${zone.stableId}">SID</td>
                 <td th:text="${zone.id}">1234</td>
             </tr>
 
-            <tr th:each="subzone : ${zone.plantingSubzones}">
+            <tr th:each="subzone : ${zone.substrata}">
                 <td></td>
                 <td th:text="${subzone.name}">Subzone</td>
                 <td th:text="${subzone.areaHa}">123.45</td>
@@ -377,7 +377,7 @@
             <td th:text="${observation.startDate}">2023-01-01</td>
             <td th:text="${observation.endDate}">2023-01-31</td>
             <td>
-                    <div th:each="subzoneId : ${observation.requestedSubzoneIds}"
+                    <div th:each="subzoneId : ${observation.requestedSubstratumIds}"
                         th:text="|${subzonesById.get(subzoneId).fullName} (${subzoneId})|">
                         abc-123 (456)
                     </div>

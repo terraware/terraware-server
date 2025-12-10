@@ -11,14 +11,14 @@ import java.math.BigDecimal
 import java.time.Instant
 import org.locationtech.jts.geom.MultiPolygon
 
-data class PlantingSubzoneModel<PSZID : SubstratumId?>(
+data class SubstratumModel<SSID : SubstratumId?>(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    val id: PSZID,
+    val id: SSID,
     val fullName: String,
-    /** The time of the latest observation, if the planting subzone has completed observations */
+    /** The time of the latest observation, if the substratum has completed observations */
     val latestObservationCompletedTime: Instant? = null,
-    /** The ID of the latest observation, if the planting subzone has completed observations */
+    /** The ID of the latest observation, if the substratum has completed observations */
     val latestObservationId: ObservationId? = null,
     val monitoringPlots: List<MonitoringPlotModel> = emptyList(),
     val name: String,
@@ -30,7 +30,7 @@ data class PlantingSubzoneModel<PSZID : SubstratumId?>(
       monitoringPlots.find { it.id == monitoringPlotId }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
-    return other is PlantingSubzoneModel<*> &&
+    return other is SubstratumModel<*> &&
         id == other.id &&
         fullName == other.fullName &&
         name == other.name &&
@@ -41,8 +41,8 @@ data class PlantingSubzoneModel<PSZID : SubstratumId?>(
         boundary.equalsExact(other.boundary, tolerance)
   }
 
-  fun toNew(): NewPlantingSubzoneModel =
-      NewPlantingSubzoneModel(
+  fun toNew(): NewSubstratumModel =
+      NewSubstratumModel(
           areaHa = areaHa,
           boundary = boundary,
           id = null,
@@ -63,10 +63,10 @@ data class PlantingSubzoneModel<PSZID : SubstratumId?>(
         plantingCompletedTime: Instant? = null,
         monitoringPlots: List<MonitoringPlotModel> = emptyList(),
         stableId: StableId = StableId(fullName),
-    ): NewPlantingSubzoneModel {
+    ): NewSubstratumModel {
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
 
-      return NewPlantingSubzoneModel(
+      return NewSubstratumModel(
           areaHa = areaHa,
           boundary = boundary,
           fullName = fullName,
@@ -80,8 +80,8 @@ data class PlantingSubzoneModel<PSZID : SubstratumId?>(
   }
 }
 
-typealias AnyPlantingSubzoneModel = PlantingSubzoneModel<out SubstratumId?>
+typealias AnySubstratumModel = SubstratumModel<out SubstratumId?>
 
-typealias ExistingPlantingSubzoneModel = PlantingSubzoneModel<SubstratumId>
+typealias ExistingSubstratumModel = SubstratumModel<SubstratumId>
 
-typealias NewPlantingSubzoneModel = PlantingSubzoneModel<Nothing?>
+typealias NewSubstratumModel = SubstratumModel<Nothing?>

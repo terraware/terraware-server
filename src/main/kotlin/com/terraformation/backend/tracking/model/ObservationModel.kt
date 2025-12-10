@@ -20,7 +20,7 @@ data class ObservationModel<ID : ObservationId?>(
     val observationType: ObservationType,
     val plantingSiteHistoryId: PlantingSiteHistoryId? = null,
     val plantingSiteId: PlantingSiteId,
-    val requestedSubzoneIds: Set<SubstratumId> = emptySet(),
+    val requestedSubstratumIds: Set<SubstratumId> = emptySet(),
     val startDate: LocalDate,
     val state: ObservationState,
     val upcomingNotificationSentTime: Instant? = null,
@@ -45,7 +45,7 @@ data class ObservationModel<ID : ObservationId?>(
 
     fun of(
         record: Record,
-        requestedSubzoneIdsField: Field<Set<SubstratumId>>,
+        requestedSubstratumIdsField: Field<Set<SubstratumId>>,
     ): ExistingObservationModel {
       return ObservationModel(
           completedTime = record[OBSERVATIONS.COMPLETED_TIME],
@@ -55,7 +55,7 @@ data class ObservationModel<ID : ObservationId?>(
           observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID]!!,
           plantingSiteHistoryId = record[OBSERVATIONS.PLANTING_SITE_HISTORY_ID],
           plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID]!!,
-          requestedSubzoneIds = record[requestedSubzoneIdsField],
+          requestedSubstratumIds = record[requestedSubstratumIdsField],
           startDate = record[OBSERVATIONS.START_DATE]!!,
           state = record[OBSERVATIONS.STATE_ID]!!,
           upcomingNotificationSentTime = record[OBSERVATIONS.UPCOMING_NOTIFICATION_SENT_TIME],

@@ -64,8 +64,8 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
-import com.terraformation.backend.tracking.edit.PlantingSubzoneEdit
-import com.terraformation.backend.tracking.edit.PlantingZoneEdit
+import com.terraformation.backend.tracking.edit.StratumEdit
+import com.terraformation.backend.tracking.edit.SubstratumEdit
 import com.terraformation.backend.tracking.event.PlantingSeasonEndedEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
@@ -74,20 +74,20 @@ import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEven
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
-import com.terraformation.backend.tracking.model.AnyPlantingSubzoneModel
-import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
+import com.terraformation.backend.tracking.model.AnyStratumModel
+import com.terraformation.backend.tracking.model.AnySubstratumModel
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
-import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
-import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
+import com.terraformation.backend.tracking.model.ExistingStratumModel
+import com.terraformation.backend.tracking.model.ExistingSubstratumModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.MonitoringPlotHistoryModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
-import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
-import com.terraformation.backend.tracking.model.NewPlantingZoneModel
+import com.terraformation.backend.tracking.model.NewStratumModel
+import com.terraformation.backend.tracking.model.NewSubstratumModel
 import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
@@ -425,11 +425,11 @@ class PlantingSiteStore(
         siteHistoryId =
             insertPlantingSiteHistory(newModel, newModel.gridOrigin, now, plantingSiteId)
 
-        newModel.plantingZones.forEach { zone ->
+        newModel.strata.forEach { zone ->
           val zoneId = createPlantingZone(zone, plantingSiteId, now)
           val zoneHistoryId = insertPlantingZoneHistory(zone, siteHistoryId, zoneId)
 
-          zone.plantingSubzones.forEach { subzone ->
+          zone.substrata.forEach { subzone ->
             val subzoneId = createPlantingSubzone(subzone, plantingSiteId, zoneId, now)
             insertPlantingSubzoneHistory(subzone, zoneHistoryId, subzoneId)
           }
@@ -485,7 +485,7 @@ class PlantingSiteStore(
             .set(TIME_ZONE, edited.timeZone)
             .apply {
               // Boundaries can only be updated on simple planting sites.
-              if (initial.plantingZones.isEmpty()) {
+              if (initial.strata.isEmpty()) {
                 set(AREA_HA, editedArea)
                 set(BOUNDARY, edited.boundary)
               }
@@ -560,7 +560,7 @@ class PlantingSiteStore(
       val replacementResults = mutableListOf<ReplacementResult>()
 
       if (
-          plantingSiteEdit.plantingZoneEdits.isEmpty() &&
+          plantingSiteEdit.stratumEdits.isEmpty() &&
               existing.boundary.equalsOrBothNull(plantingSiteEdit.desiredModel.boundary) &&
               existing.exclusion.equalsOrBothNull(plantingSiteEdit.desiredModel.exclusion)
       ) {
@@ -598,7 +598,7 @@ class PlantingSiteStore(
 
       useTemporaryNames(plantingSiteEdit)
 
-      plantingSiteEdit.plantingZoneEdits.forEach {
+      plantingSiteEdit.stratumEdits.forEach {
         replacementResults.add(
             applyPlantingZoneEdit(
                 it,
@@ -612,10 +612,10 @@ class PlantingSiteStore(
 
       // If any zones weren't edited, we still want to include them and their subzones in the site's
       // map history.
-      existing.plantingZones.forEach { zone ->
-        if (plantingSiteEdit.plantingZoneEdits.none { it.existingModel?.id == zone.id }) {
+      existing.strata.forEach { zone ->
+        if (plantingSiteEdit.stratumEdits.none { it.existingModel?.id == zone.id }) {
           val plantingZoneHistoryId = insertPlantingZoneHistory(zone, plantingSiteHistoryId)
-          zone.plantingSubzones.forEach { subzone ->
+          zone.substrata.forEach { subzone ->
             insertPlantingSubzoneHistory(subzone, plantingZoneHistoryId)
           }
         }
@@ -672,7 +672,7 @@ class PlantingSiteStore(
    */
   private fun useTemporaryNames(plantingSiteEdit: PlantingSiteEdit) {
     val zoneIdsToUpdate =
-        plantingSiteEdit.plantingZoneEdits.filterIsInstance<PlantingZoneEdit.Update>().map {
+        plantingSiteEdit.stratumEdits.filterIsInstance<StratumEdit.Update>().map {
           it.existingModel.id
         }
     if (zoneIdsToUpdate.isNotEmpty()) {
@@ -686,9 +686,9 @@ class PlantingSiteStore(
     }
 
     val subzoneIdsToUpdate =
-        plantingSiteEdit.plantingZoneEdits
-            .flatMap { it.plantingSubzoneEdits }
-            .filterIsInstance<PlantingSubzoneEdit.Update>()
+        plantingSiteEdit.stratumEdits
+            .flatMap { it.substratumEdits }
+            .filterIsInstance<SubstratumEdit.Update>()
             .map { it.existingModel.id }
     if (subzoneIdsToUpdate.isNotEmpty()) {
       with(SUBSTRATA) {
@@ -702,7 +702,7 @@ class PlantingSiteStore(
   }
 
   private fun applyPlantingZoneEdit(
-      edit: PlantingZoneEdit,
+      edit: StratumEdit,
       plantingSiteId: PlantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId,
       subzonesToMarkIncomplete: Set<SubstratumId>,
@@ -711,11 +711,11 @@ class PlantingSiteStore(
     val replacementResults = mutableListOf<ReplacementResult>()
 
     when (edit) {
-      is PlantingZoneEdit.Create -> {
+      is StratumEdit.Create -> {
         val plantingZoneId = createPlantingZone(edit.desiredModel.toNew(), plantingSiteId, now)
         val plantingZoneHistoryId =
             insertPlantingZoneHistory(edit.desiredModel, plantingSiteHistoryId, plantingZoneId)
-        edit.plantingSubzoneEdits.forEach {
+        edit.substratumEdits.forEach {
           applyPlantingSubzoneEdit(
               it,
               plantingSiteId,
@@ -726,9 +726,9 @@ class PlantingSiteStore(
           )
         }
       }
-      is PlantingZoneEdit.Delete -> {
+      is StratumEdit.Delete -> {
         replacementResults.addAll(
-            edit.plantingSubzoneEdits.map {
+            edit.substratumEdits.map {
               applyPlantingSubzoneEdit(
                   edit = it,
                   plantingSiteId = plantingSiteId,
@@ -743,10 +743,10 @@ class PlantingSiteStore(
         val rowsDeleted =
             dslContext.deleteFrom(STRATA).where(STRATA.ID.eq(edit.existingModel.id)).execute()
         if (rowsDeleted != 1) {
-          throw PlantingZoneNotFoundException(edit.existingModel.id)
+          throw StratumNotFoundException(edit.existingModel.id)
         }
       }
-      is PlantingZoneEdit.Update -> {
+      is StratumEdit.Update -> {
         with(STRATA) {
           val boundaryChanged =
               !edit.existingModel.boundary.equalsOrBothNull(edit.desiredModel.boundary)
@@ -772,7 +772,7 @@ class PlantingSiteStore(
                   .where(ID.eq(edit.existingModel.id))
                   .execute()
           if (rowsUpdated != 1) {
-            throw PlantingZoneNotFoundException(edit.existingModel.id)
+            throw StratumNotFoundException(edit.existingModel.id)
           }
         }
         val plantingZoneHistoryId =
@@ -783,7 +783,7 @@ class PlantingSiteStore(
             )
 
         replacementResults.addAll(
-            edit.plantingSubzoneEdits.map { subzoneEdit ->
+            edit.substratumEdits.map { subzoneEdit ->
               applyPlantingSubzoneEdit(
                   edit = subzoneEdit,
                   plantingSiteId = plantingSiteId,
@@ -796,11 +796,11 @@ class PlantingSiteStore(
         )
 
         // If any subzones weren't edited, we still want to include them in the site's map history.
-        edit.existingModel.plantingSubzones.forEach { existingSubzone ->
+        edit.existingModel.substrata.forEach { existingSubzone ->
           val subzoneStillInThisZone =
-              edit.desiredModel.plantingSubzones.any { it.name == existingSubzone.name }
+              edit.desiredModel.substrata.any { it.name == existingSubzone.name }
           val noEditForThisSubzone =
-              edit.plantingSubzoneEdits.none { it.existingModel?.id == existingSubzone.id }
+              edit.substratumEdits.none { it.existingModel?.id == existingSubzone.id }
 
           if (subzoneStillInThisZone && noEditForThisSubzone) {
             insertPlantingSubzoneHistory(existingSubzone, plantingZoneHistoryId)
@@ -809,7 +809,7 @@ class PlantingSiteStore(
 
         // Need to create permanent plots using the updated subzones since we need their IDs.
         val updatedSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-        val updatedZone = updatedSite.plantingZones.single { it.id == edit.existingModel.id }
+        val updatedZone = updatedSite.strata.single { it.id == edit.existingModel.id }
 
         edit.monitoringPlotEdits
             .filter { it.permanentIndex != null }
@@ -831,7 +831,7 @@ class PlantingSiteStore(
   }
 
   private fun applyPlantingSubzoneEdit(
-      edit: PlantingSubzoneEdit,
+      edit: SubstratumEdit,
       plantingSiteId: PlantingSiteId,
       plantingZoneId: StratumId,
       plantingZoneHistoryId: StratumHistoryId?,
@@ -841,7 +841,7 @@ class PlantingSiteStore(
     val replacementResults = mutableListOf<ReplacementResult>()
 
     when (edit) {
-      is PlantingSubzoneEdit.Create -> {
+      is SubstratumEdit.Create -> {
         if (plantingZoneHistoryId == null) {
           throw IllegalArgumentException("Subzone creation requires planting zone history ID")
         }
@@ -856,7 +856,7 @@ class PlantingSiteStore(
           )
         }
       }
-      is PlantingSubzoneEdit.Delete -> {
+      is SubstratumEdit.Delete -> {
         // Plots will be deleted by ON DELETE CASCADE. This may legitimately delete 0 rows if the
         // parent zone has already been deleted.
         dslContext.deleteFrom(SUBSTRATA).where(SUBSTRATA.ID.eq(edit.existingModel.id)).execute()
@@ -865,7 +865,7 @@ class PlantingSiteStore(
             ReplacementResult(emptySet(), edit.existingModel.monitoringPlots.map { it.id }.toSet())
         )
       }
-      is PlantingSubzoneEdit.Update -> {
+      is SubstratumEdit.Update -> {
         if (plantingZoneHistoryId == null) {
           throw IllegalArgumentException("Subzone update requires planting zone history ID")
         }
@@ -889,7 +889,7 @@ class PlantingSiteStore(
                   .where(ID.eq(plantingSubzoneId))
                   .execute()
           if (rowsUpdated != 1) {
-            throw PlantingSubzoneNotFoundException(plantingSubzoneId)
+            throw SubstrataNotFoundException(plantingSubzoneId)
           }
         }
 
@@ -1106,7 +1106,7 @@ class PlantingSiteStore(
 
     val initial =
         plantingZonesDao.fetchOneById(plantingZoneId)
-            ?: throw PlantingZoneNotFoundException(plantingZoneId)
+            ?: throw StratumNotFoundException(plantingZoneId)
     val edited = editFunc(initial)
 
     withLockedPlantingSite(initial.plantingSiteId!!) {
@@ -1180,7 +1180,7 @@ class PlantingSiteStore(
 
     val initial =
         plantingSubzonesDao.fetchOneById(plantingSubzoneId)
-            ?: throw PlantingSubzoneNotFoundException(plantingSubzoneId)
+            ?: throw SubstrataNotFoundException(plantingSubzoneId)
 
     val plantingCompletedTime =
         if (completed) initial.plantingCompletedTime ?: clock.instant() else null
@@ -1199,7 +1199,7 @@ class PlantingSiteStore(
   }
 
   private fun createPlantingZone(
-      zone: NewPlantingZoneModel,
+      zone: NewStratumModel,
       plantingSiteId: PlantingSiteId,
       now: Instant = clock.instant(),
   ): StratumId {
@@ -1232,7 +1232,7 @@ class PlantingSiteStore(
   }
 
   private fun createPlantingSubzone(
-      subzone: NewPlantingSubzoneModel,
+      subzone: NewSubstratumModel,
       plantingSiteId: PlantingSiteId,
       plantingZoneId: StratumId,
       now: Instant = clock.instant(),
@@ -1372,7 +1372,7 @@ class PlantingSiteStore(
     )
   }
 
-  fun hasSubzonePlantings(plantingSiteId: PlantingSiteId): Boolean {
+  fun hasSubstratumPlantings(plantingSiteId: PlantingSiteId): Boolean {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext.fetchExists(
@@ -1399,7 +1399,7 @@ class PlantingSiteStore(
         .fetchOne(DSL.min(PLANTINGS.CREATED_TIME))
   }
 
-  fun fetchSitesWithSubzonePlantings(condition: Condition): List<PlantingSiteId> {
+  fun fetchSitesWithSubstratumPlantings(condition: Condition): List<PlantingSiteId> {
     requirePermissions { manageNotifications() }
 
     return dslContext
@@ -1566,11 +1566,11 @@ class PlantingSiteStore(
     return withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val plantingZone =
-          plantingSite.findZoneWithMonitoringPlot(monitoringPlotId)
+          plantingSite.findStratumWithMonitoringPlot(monitoringPlotId)
               ?: throw PlotNotFoundException(monitoringPlotId)
       val plot =
           plantingZone
-              .findSubzoneWithMonitoringPlot(monitoringPlotId)
+              .findSubstratumWithMonitoringPlot(monitoringPlotId)
               ?.findMonitoringPlot(monitoringPlotId)
               ?: throw PlotNotFoundException(monitoringPlotId)
 
@@ -1629,7 +1629,7 @@ class PlantingSiteStore(
     return withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
-      plantingSite.plantingZones.flatMap { plantingZone ->
+      plantingSite.strata.flatMap { plantingZone ->
         val missingPermanentIndexes: List<Int> =
             (1..plantingZone.numPermanentPlots).filterNot { plantingZone.permanentIndexExists(it) }
 
@@ -1751,7 +1751,7 @@ class PlantingSiteStore(
    */
   private fun createPermanentPlots(
       plantingSite: ExistingPlantingSiteModel,
-      plantingZone: ExistingPlantingZoneModel,
+      plantingZone: ExistingStratumModel,
       permanentIndexes: List<Int>,
       searchBoundary: MultiPolygon = plantingZone.boundary,
   ): List<MonitoringPlotId> {
@@ -1788,7 +1788,7 @@ class PlantingSiteStore(
         existingPlot.id
       } else {
         val subzone =
-            plantingZone.findPlantingSubzone(plotBoundary)
+            plantingZone.findSubstratum(plotBoundary)
                 ?: throw IllegalStateException(
                     "Planting zone ${plantingZone.id} not fully covered by subzones"
                 )
@@ -1836,8 +1836,8 @@ class PlantingSiteStore(
     return withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
       val plantingZone =
-          plantingSite.plantingZones.singleOrNull { it.id == plantingZoneId }
-              ?: throw PlantingZoneNotFoundException(plantingZoneId)
+          plantingSite.strata.singleOrNull { it.id == plantingZoneId }
+              ?: throw StratumNotFoundException(plantingZoneId)
 
       val existingPlotId = plantingZone.findMonitoringPlot(plotBoundary)?.id
       if (existingPlotId != null) {
@@ -1849,7 +1849,7 @@ class PlantingSiteStore(
                 NumericIdentifierType.PlotNumber,
             )
         val subzone =
-            plantingZone.findPlantingSubzone(plotBoundary)
+            plantingZone.findSubstratum(plotBoundary)
                 ?: throw IllegalStateException(
                     "Planting zone $plantingZoneId not fully covered by subzones"
                 )
@@ -1925,15 +1925,15 @@ class PlantingSiteStore(
           }
 
           val zone =
-              NewPlantingZoneModel.create(
+              NewStratumModel.create(
                   boundary = boundary,
                   name = zoneName,
-                  plantingSubzones = emptyList(),
+                  substrata = emptyList(),
                   stableId = StableId(zoneName),
               )
           val fullName = "$zoneName-$subzoneName"
           val subzone =
-              NewPlantingSubzoneModel.create(
+              NewSubstratumModel.create(
                   boundary = boundary,
                   fullName = fullName,
                   name = subzoneName,
@@ -2228,7 +2228,7 @@ class PlantingSiteStore(
 
   private fun plantingSubzonesMultiset(
       depth: PlantingSiteDepth
-  ): Field<List<ExistingPlantingSubzoneModel>> {
+  ): Field<List<ExistingSubstratumModel>> {
     val plotsField =
         if (depth == PlantingSiteDepth.Plot)
             monitoringPlotsMultiset(
@@ -2270,7 +2270,7 @@ class PlantingSiteStore(
         )
         .convertFrom { result ->
           result.map { record: Record ->
-            ExistingPlantingSubzoneModel(
+            ExistingSubstratumModel(
                 areaHa = record[SUBSTRATA.AREA_HA]!!,
                 boundary = record[plantingSubzoneBoundaryField]!! as MultiPolygon,
                 id = record[SUBSTRATA.ID]!!,
@@ -2324,9 +2324,7 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plantingZonesMultiset(
-      depth: PlantingSiteDepth
-  ): Field<List<ExistingPlantingZoneModel>> {
+  private fun plantingZonesMultiset(depth: PlantingSiteDepth): Field<List<ExistingStratumModel>> {
     val subzonesField =
         if (depth == PlantingSiteDepth.Subzone || depth == PlantingSiteDepth.Plot) {
           plantingSubzonesMultiset(depth)
@@ -2370,7 +2368,7 @@ class PlantingSiteStore(
         )
         .convertFrom { result ->
           result.map { record: Record ->
-            ExistingPlantingZoneModel(
+            ExistingStratumModel(
                 areaHa = record[STRATA.AREA_HA]!!,
                 boundary = record[plantingZonesBoundaryField]!! as MultiPolygon,
                 boundaryModifiedTime = record[STRATA.BOUNDARY_MODIFIED_TIME]!!,
@@ -2381,7 +2379,7 @@ class PlantingSiteStore(
                 name = record[STRATA.NAME]!!,
                 numPermanentPlots = record[STRATA.NUM_PERMANENT_PLOTS]!!,
                 numTemporaryPlots = record[STRATA.NUM_TEMPORARY_PLOTS]!!,
-                plantingSubzones = subzonesField?.let { record[it] } ?: emptyList(),
+                substrata = subzonesField?.let { record[it] } ?: emptyList(),
                 stableId = record[STRATA.STABLE_ID]!!,
                 studentsT = record[STRATA.STUDENTS_T]!!,
                 targetPlantingDensity = record[STRATA.TARGET_PLANTING_DENSITY]!!,
@@ -2785,7 +2783,7 @@ class PlantingSiteStore(
   }
 
   private fun insertPlantingZoneHistory(
-      model: AnyPlantingZoneModel,
+      model: AnyStratumModel,
       plantingSiteHistoryId: PlantingSiteHistoryId,
       plantingZoneId: StratumId =
           model.id ?: throw IllegalArgumentException("Planting zone missing ID"),
@@ -2807,7 +2805,7 @@ class PlantingSiteStore(
   }
 
   private fun insertPlantingSubzoneHistory(
-      model: AnyPlantingSubzoneModel,
+      model: AnySubstratumModel,
       plantingZoneHistoryId: StratumHistoryId,
       plantingSubzoneId: SubstratumId =
           model.id ?: throw IllegalArgumentException("Planting subzone missing ID"),

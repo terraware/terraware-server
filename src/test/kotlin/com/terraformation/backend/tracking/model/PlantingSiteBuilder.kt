@@ -118,7 +118,7 @@ private constructor(
   private var nextZoneX = x
   private var nextMonitoringPlotX: Int = x + width
   private val exteriorPlots = mutableListOf<MonitoringPlotModel>()
-  private val plantingZones = mutableListOf<ExistingPlantingZoneModel>()
+  private val plantingZones = mutableListOf<ExistingStratumModel>()
 
   fun build(): ExistingPlantingSiteModel {
     return ExistingPlantingSiteModel(
@@ -131,7 +131,7 @@ private constructor(
         id = PlantingSiteId(1),
         name = name,
         organizationId = organizationId,
-        plantingZones = plantingZones.ifEmpty { listOf(zone()) },
+        strata = plantingZones.ifEmpty { listOf(zone()) },
     )
   }
 
@@ -141,11 +141,11 @@ private constructor(
       width: Int = this.width - (x - this.x),
       height: Int = this.height - (y - this.y),
       name: String = "Z$currentZoneId",
-      numPermanent: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
-      numTemporary: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      numPermanent: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
+      numTemporary: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       stableId: StableId = StableId(name),
       func: ZoneBuilder.() -> Unit = {},
-  ): ExistingPlantingZoneModel {
+  ): ExistingStratumModel {
     ++currentZoneId
 
     val builder =
@@ -203,22 +203,22 @@ private constructor(
       private val width: Int,
       private val height: Int,
       private val name: String,
-      private val numPermanentPlots: Int = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
-      private val numTemporaryPlots: Int = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      private val numPermanentPlots: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
+      private val numTemporaryPlots: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       private val stableId: StableId = StableId(name),
   ) {
-    var errorMargin: BigDecimal = PlantingZoneModel.DEFAULT_ERROR_MARGIN
-    var studentsT: BigDecimal = PlantingZoneModel.DEFAULT_STUDENTS_T
-    var targetPlantingDensity: BigDecimal = PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY
-    var variance: BigDecimal = PlantingZoneModel.DEFAULT_VARIANCE
+    var errorMargin: BigDecimal = StratumModel.DEFAULT_ERROR_MARGIN
+    var studentsT: BigDecimal = StratumModel.DEFAULT_STUDENTS_T
+    var targetPlantingDensity: BigDecimal = StratumModel.DEFAULT_TARGET_PLANTING_DENSITY
+    var variance: BigDecimal = StratumModel.DEFAULT_VARIANCE
 
     private val boundary: MultiPolygon = rectangle(width, height, x, y)
     private var nextPermanentIndex = 1
     private var nextSubzoneX = x
-    private val plantingSubzones = mutableListOf<ExistingPlantingSubzoneModel>()
+    private val plantingSubzones = mutableListOf<ExistingSubstratumModel>()
 
-    fun build(): ExistingPlantingZoneModel {
-      return ExistingPlantingZoneModel(
+    fun build(): ExistingStratumModel {
+      return ExistingStratumModel(
           areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
@@ -227,7 +227,7 @@ private constructor(
           name = name,
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
-          plantingSubzones = plantingSubzones.ifEmpty { listOf(subzone()) },
+          substrata = plantingSubzones.ifEmpty { listOf(subzone()) },
           stableId = stableId,
           studentsT = studentsT,
           targetPlantingDensity = targetPlantingDensity,
@@ -244,7 +244,7 @@ private constructor(
         fullName: String = "${this.name}-$name",
         stableId: StableId = StableId(fullName),
         func: SubzoneBuilder.() -> Unit = {},
-    ): ExistingPlantingSubzoneModel {
+    ): ExistingSubstratumModel {
       ++currentSubzoneId
 
       val builder = SubzoneBuilder(x, y, width, height, name, fullName, stableId)
@@ -273,8 +273,8 @@ private constructor(
 
       var plantingCompletedTime: Instant? = null
 
-      fun build(): ExistingPlantingSubzoneModel {
-        return ExistingPlantingSubzoneModel(
+      fun build(): ExistingSubstratumModel {
+        return ExistingSubstratumModel(
             areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
             boundary = boundary,
             fullName = fullName,

@@ -21,7 +21,7 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
     val userId2 = insertUser(firstName = "Second", lastName = "Human")
 
     insertPlantingZone(name = "Z1")
-    val plantingSubzoneId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
+    val substratumId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
 
     // A plot that was observed previously and again in this observation
     val monitoringPlotId11 =
@@ -42,7 +42,7 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
         )
     )
 
-    val plantingSubzoneId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
+    val substratumId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
 
     // This plot is claimed and completed
     val monitoringPlotId21 = insertMonitoringPlot(boundary = polygon(3))
@@ -74,9 +74,9 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             completedByName = null,
             elevationMeters = BigDecimal.TEN,
             isFirstObservation = false,
-            plantingSubzoneId = plantingSubzoneId1,
-            plantingSubzoneName = "Z1-S1",
-            plantingZoneName = "Z1",
+            substratumId = substratumId1,
+            substratumName = "Z1-S1",
+            stratumName = "Z1",
             plotNumber = 1,
             sizeMeters = 30,
         ),
@@ -99,9 +99,9 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             completedByName = null,
             elevationMeters = null,
             isFirstObservation = true,
-            plantingSubzoneId = plantingSubzoneId1,
-            plantingSubzoneName = "Z1-S1",
-            plantingZoneName = "Z1",
+            substratumId = substratumId1,
+            substratumName = "Z1-S1",
+            stratumName = "Z1",
             plotNumber = 2,
             sizeMeters = 30,
         ),
@@ -128,9 +128,9 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             completedByName = "First Person",
             elevationMeters = null,
             isFirstObservation = true,
-            plantingSubzoneId = plantingSubzoneId2,
-            plantingSubzoneName = "Z1-S2",
-            plantingZoneName = "Z1",
+            substratumId = substratumId2,
+            substratumName = "Z1-S2",
+            stratumName = "Z1",
             plotNumber = 3,
             sizeMeters = 30,
         ),

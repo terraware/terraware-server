@@ -144,12 +144,12 @@ import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteBuilder
-import com.terraformation.backend.tracking.model.PlantingSubzoneModel
-import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
+import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
 import freemarker.template.Configuration
 import io.mockk.CapturingSlot
@@ -319,7 +319,7 @@ internal class EmailNotificationServiceTest {
           elevationMeters = BigDecimal.ONE,
       )
   private val plantingSubzone =
-      PlantingSubzoneModel(
+      SubstratumModel(
           id = SubstratumId(1),
           areaHa = BigDecimal.ONE,
           boundary = multiPolygon(1),
@@ -329,14 +329,14 @@ internal class EmailNotificationServiceTest {
           monitoringPlots = listOf(monitoringPlot),
       )
   private val plantingZone =
-      PlantingZoneModel(
+      StratumModel(
           id = StratumId(1),
           areaHa = BigDecimal.ONE,
           boundary = multiPolygon(1),
           boundaryModifiedTime = Instant.EPOCH,
           name = "My Zone",
           stableId = StableId("stableZone"),
-          plantingSubzones = listOf(plantingSubzone),
+          substrata = listOf(plantingSubzone),
       )
 
   private val plantingSite =
@@ -346,7 +346,7 @@ internal class EmailNotificationServiceTest {
           id = PlantingSiteId(1),
           organizationId = organization.id,
           name = "My Site",
-          plantingZones = listOf(plantingZone),
+          strata = listOf(plantingZone),
       )
   private val cohort =
       ExistingCohortModel(
@@ -1786,7 +1786,7 @@ internal class EmailNotificationServiceTest {
                 areaHaDifference = BigDecimal("-13.2"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
-                plantingZoneEdits = emptyList(),
+                stratumEdits = emptyList(),
             ),
             ReplacementResult(emptySet(), emptySet()),
         )
@@ -1822,7 +1822,7 @@ internal class EmailNotificationServiceTest {
                 areaHaDifference = BigDecimal("-13.2"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
-                plantingZoneEdits = emptyList(),
+                stratumEdits = emptyList(),
             ),
             ReplacementResult(emptySet(), emptySet()),
         )
@@ -1860,7 +1860,7 @@ internal class EmailNotificationServiceTest {
                 areaHaDifference = BigDecimal("-13.2"),
                 desiredModel = PlantingSiteBuilder.newSite { name = siteName },
                 existingModel = existingModel,
-                plantingZoneEdits = emptyList(),
+                stratumEdits = emptyList(),
             ),
             ReplacementResult(emptySet(), emptySet()),
         )
