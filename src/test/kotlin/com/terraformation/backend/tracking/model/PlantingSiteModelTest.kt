@@ -23,14 +23,14 @@ class PlantingSiteModelTest {
         zone(width = 250, name = "Duplicate")
       }
 
-      assertHasProblem(site, PlantingSiteValidationFailure.duplicateZoneName("Duplicate"))
+      assertHasProblem(site, PlantingSiteValidationFailure.duplicateStratumName("Duplicate"))
     }
 
     @Test
     fun `checks for zones not covered by site`() {
       val site = newSite(width = 100, height = 100) { zone(width = 200, height = 200) }
 
-      assertHasProblem(site, PlantingSiteValidationFailure.zoneNotInSite("Z1"))
+      assertHasProblem(site, PlantingSiteValidationFailure.stratumNotInSite("Z1"))
     }
 
     @Test
@@ -41,18 +41,22 @@ class PlantingSiteModelTest {
             zone(x = 50, width = 150)
           }
 
-      assertHasProblem(site, PlantingSiteValidationFailure.zoneBoundaryOverlaps(setOf("Z2"), "Z1"))
+      assertHasProblem(
+          site,
+          PlantingSiteValidationFailure.stratumBoundaryOverlaps(setOf("Z2"), "Z1"),
+      )
     }
 
     @Test
     fun `checks that zones have subzones`() {
       val site = newSite()
       val siteWithoutSubzones =
-          site.copy(
-              plantingZones = site.plantingZones.map { it.copy(plantingSubzones = emptyList()) }
-          )
+          site.copy(strata = site.strata.map { it.copy(substrata = emptyList()) })
 
-      assertHasProblem(siteWithoutSubzones, PlantingSiteValidationFailure.zoneHasNoSubzones("Z1"))
+      assertHasProblem(
+          siteWithoutSubzones,
+          PlantingSiteValidationFailure.stratumHasNoSubstrata("Z1"),
+      )
     }
 
     @Test
@@ -66,7 +70,7 @@ class PlantingSiteModelTest {
     fun `checks for subzones not covered by zone`() {
       val site = newSite(width = 100, height = 100) { zone { subzone(width = 200, height = 200) } }
 
-      assertHasProblem(site, PlantingSiteValidationFailure.subzoneNotInZone("S1", "Z1"))
+      assertHasProblem(site, PlantingSiteValidationFailure.substratumNotInStratum("S1", "Z1"))
     }
 
     @Test
@@ -81,7 +85,7 @@ class PlantingSiteModelTest {
 
       assertHasProblem(
           site,
-          PlantingSiteValidationFailure.subzoneBoundaryOverlaps(setOf("S2"), "S1", "Z1"),
+          PlantingSiteValidationFailure.substratumBoundaryOverlaps(setOf("S2"), "S1", "Z1"),
       )
     }
 
@@ -95,14 +99,14 @@ class PlantingSiteModelTest {
         }
       }
 
-      assertHasProblem(site, PlantingSiteValidationFailure.subzoneInExclusionArea("S1", "Z1"))
+      assertHasProblem(site, PlantingSiteValidationFailure.substratumInExclusionArea("S1", "Z1"))
     }
 
     @Test
     fun `checks that zone is big enough for a permanent plot and a temporary plot`() {
       assertHasProblem(
           newSite(width = MONITORING_PLOT_SIZE_INT * 2 - 1, height = MONITORING_PLOT_SIZE_INT),
-          PlantingSiteValidationFailure.zoneTooSmall("Z1"),
+          PlantingSiteValidationFailure.stratumTooSmall("Z1"),
           "Site is big enough for permanent plot but not also for temporary plot",
       )
     }
@@ -119,7 +123,7 @@ class PlantingSiteModelTest {
     fun `checks that site has boundary if it has zones`() {
       assertHasProblem(
           newSite().copy(boundary = null),
-          PlantingSiteValidationFailure.zonesWithoutSiteBoundary(),
+          PlantingSiteValidationFailure.strataWithoutSiteBoundary(),
       )
     }
 

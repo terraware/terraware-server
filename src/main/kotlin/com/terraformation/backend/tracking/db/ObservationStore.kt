@@ -74,8 +74,8 @@ import com.terraformation.backend.tracking.model.ObservationPlotModel
 import com.terraformation.backend.tracking.util.ObservationSpeciesPlot
 import com.terraformation.backend.tracking.util.ObservationSpeciesScope
 import com.terraformation.backend.tracking.util.ObservationSpeciesSite
-import com.terraformation.backend.tracking.util.ObservationSpeciesSubzone
-import com.terraformation.backend.tracking.util.ObservationSpeciesZone
+import com.terraformation.backend.tracking.util.ObservationSpeciesStratum
+import com.terraformation.backend.tracking.util.ObservationSpeciesSubstratum
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import com.terraformation.backend.util.eqOrIsNull
 import jakarta.inject.Named
@@ -103,11 +103,11 @@ class ObservationStore(
     private val observationsDao: ObservationsDao,
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
-    private val observationRequestedSubzonesDao: ObservationRequestedSubstrataDao,
+    private val observationRequestedSubstrataDao: ObservationRequestedSubstrataDao,
     private val parentStore: ParentStore,
 ) {
   companion object {
-    val requestedSubzoneIdsField: Field<Set<SubstratumId>> =
+    val requestedSubstratumIdsField: Field<Set<SubstratumId>> =
         with(OBSERVATION_REQUESTED_SUBSTRATA) {
           DSL.multiset(
                   DSL.select(SUBSTRATUM_ID)
@@ -124,10 +124,10 @@ class ObservationStore(
     requirePermissions { readObservation(observationId) }
 
     return dslContext
-        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
+        .select(OBSERVATIONS.asterisk(), requestedSubstratumIdsField)
         .from(OBSERVATIONS)
         .where(OBSERVATIONS.ID.eq(observationId))
-        .fetchOne { ObservationModel.of(it, requestedSubzoneIdsField) }
+        .fetchOne { ObservationModel.of(it, requestedSubstratumIdsField) }
         ?: throw ObservationNotFoundException(observationId)
   }
 
@@ -138,12 +138,12 @@ class ObservationStore(
     requirePermissions { readOrganization(organizationId) }
 
     return dslContext
-        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
+        .select(OBSERVATIONS.asterisk(), requestedSubstratumIdsField)
         .from(OBSERVATIONS)
         .where(OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId))
         .and(OBSERVATIONS.IS_AD_HOC.eq(isAdHoc))
         .orderBy(OBSERVATIONS.START_DATE, OBSERVATIONS.ID)
-        .fetch { ObservationModel.of(it, requestedSubzoneIdsField) }
+        .fetch { ObservationModel.of(it, requestedSubstratumIdsField) }
   }
 
   fun fetchObservationsByPlantingSite(
@@ -153,12 +153,12 @@ class ObservationStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return dslContext
-        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField)
+        .select(OBSERVATIONS.asterisk(), requestedSubstratumIdsField)
         .from(OBSERVATIONS)
         .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
         .and(OBSERVATIONS.IS_AD_HOC.eq(isAdHoc))
         .orderBy(OBSERVATIONS.START_DATE, OBSERVATIONS.ID)
-        .fetch { ObservationModel.of(it, requestedSubzoneIdsField) }
+        .fetch { ObservationModel.of(it, requestedSubstratumIdsField) }
   }
 
   fun fetchObservationPlotDetails(observationId: ObservationId): List<AssignedPlotDetails> {
@@ -243,12 +243,12 @@ class ObservationStore(
               completedByName = record[completedByNameField],
               elevationMeters = record[OBSERVATION_PLOTS.monitoringPlots.ELEVATION_METERS],
               isFirstObservation = record[isFirstObservationField]!!,
-              plantingSubzoneId =
+              substratumId =
                   record[
                       OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID],
-              plantingSubzoneName =
+              substratumName =
                   record[OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.FULL_NAME]!!,
-              plantingZoneName =
+              stratumName =
                   record[
                       OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
                           .NAME]!!,
@@ -258,8 +258,8 @@ class ObservationStore(
         }
   }
 
-  /** Evaluates to true if an observation has requested subzones. */
-  private val observationHasRequestedSubzones: Condition =
+  /** Evaluates to true if an observation has requested substrata. */
+  private val observationHasRequestedSubstrata: Condition =
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_REQUESTED_SUBSTRATA)
@@ -279,7 +279,7 @@ class ObservationStore(
             OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming),
             OBSERVATIONS.START_DATE.le(maxStartDate),
             OBSERVATIONS.UPCOMING_NOTIFICATION_SENT_TIME.isNull,
-            observationHasRequestedSubzones,
+            observationHasRequestedSubstrata,
         )
     ) { todayAtSite, record ->
       record[OBSERVATIONS.START_DATE]!! <= todayAtSite.plusMonths(1)
@@ -295,7 +295,7 @@ class ObservationStore(
         listOfNotNull(
             OBSERVATIONS.STATE_ID.eq(ObservationState.Upcoming),
             OBSERVATIONS.START_DATE.le(maxStartDate),
-            observationHasRequestedSubzones,
+            observationHasRequestedSubstrata,
             plantingSiteId?.let { OBSERVATIONS.PLANTING_SITE_ID.eq(it) },
         )
     ) { todayAtSite, record ->
@@ -334,7 +334,7 @@ class ObservationStore(
         )
 
     return dslContext
-        .select(OBSERVATIONS.asterisk(), requestedSubzoneIdsField, timeZoneField)
+        .select(OBSERVATIONS.asterisk(), requestedSubstratumIdsField, timeZoneField)
         .from(OBSERVATIONS)
         .where(conditions)
         .orderBy(OBSERVATIONS.ID)
@@ -343,7 +343,7 @@ class ObservationStore(
           val todayAtSite = LocalDate.ofInstant(clock.instant(), timeZone)
 
           if (predicate(todayAtSite, record)) {
-            ObservationModel.of(record, requestedSubzoneIdsField)
+            ObservationModel.of(record, requestedSubstratumIdsField)
           } else {
             null
           }
@@ -353,15 +353,15 @@ class ObservationStore(
 
   /**
    * Returns the IDs of any active assigned observations of a planting site that include unobserved
-   * plots in specific planting zones.
+   * plots in specific strata.
    */
   fun fetchActiveObservationIds(
       plantingSiteId: PlantingSiteId,
-      plantingZoneIds: Collection<StratumId>,
+      stratumIds: Collection<StratumId>,
   ): List<ObservationId> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    if (plantingZoneIds.isEmpty()) {
+    if (stratumIds.isEmpty()) {
       return emptyList()
     }
 
@@ -377,9 +377,7 @@ class ObservationStore(
                   DSL.select(OBSERVATION_PLOTS.OBSERVATION_ID)
                       .from(OBSERVATION_PLOTS)
                       .where(
-                          OBSERVATION_PLOTS.monitoringPlots.substrata.STRATUM_ID.`in`(
-                              plantingZoneIds
-                          )
+                          OBSERVATION_PLOTS.monitoringPlots.substrata.STRATUM_ID.`in`(stratumIds)
                       )
                       .and(
                           OBSERVATION_PLOTS.STATUS_ID.`in`(
@@ -487,23 +485,23 @@ class ObservationStore(
       }
     }
 
-    // Validate that all the requested subzones are part of the requested planting site.
-    if (newModel.requestedSubzoneIds.isNotEmpty()) {
-      val subzonesInRequestedSite =
+    // Validate that all the requested substrata are part of the requested planting site.
+    if (newModel.requestedSubstratumIds.isNotEmpty()) {
+      val substrataInRequestedSite =
           dslContext
               .select(SUBSTRATA.ID)
               .from(SUBSTRATA)
               .where(SUBSTRATA.PLANTING_SITE_ID.eq(newModel.plantingSiteId))
-              .and(SUBSTRATA.ID.`in`(newModel.requestedSubzoneIds))
+              .and(SUBSTRATA.ID.`in`(newModel.requestedSubstratumIds))
               .fetchSet(SUBSTRATA.ID.asNonNullable())
 
-      if (subzonesInRequestedSite != newModel.requestedSubzoneIds) {
-        val missingSubzoneIds = newModel.requestedSubzoneIds - subzonesInRequestedSite
-        throw PlantingSubzoneNotFoundException(missingSubzoneIds.first())
+      if (substrataInRequestedSite != newModel.requestedSubstratumIds) {
+        val missingSubstratumIds = newModel.requestedSubstratumIds - substrataInRequestedSite
+        throw SubstrataNotFoundException(missingSubstratumIds.first())
       }
 
       if (newModel.isAdHoc) {
-        throw IllegalArgumentException("Requested subzones must be empty for ad-hoc observations")
+        throw IllegalArgumentException("Requested substrata must be empty for ad-hoc observations")
       }
     }
 
@@ -521,8 +519,10 @@ class ObservationStore(
 
       observationsDao.insert(row)
 
-      newModel.requestedSubzoneIds.forEach { subzoneId ->
-        observationRequestedSubzonesDao.insert(ObservationRequestedSubstrataRow(row.id, subzoneId))
+      newModel.requestedSubstratumIds.forEach { substratumId ->
+        observationRequestedSubstrataDao.insert(
+            ObservationRequestedSubstrataRow(row.id, substratumId)
+        )
       }
 
       row.id!!
@@ -548,7 +548,7 @@ class ObservationStore(
 
       // If the observation was already in progress, it will have plots, but we want to assign a
       // fresh set on the new start date so that the observation is based on up-to-date information
-      // about which subzones are planted. Delete the existing plots. This is a no-op if the
+      // about which substrata are planted. Delete the existing plots. This is a no-op if the
       // observation hadn't started yet.
       //
       // Rescheduling should only be allowed if there are no completed plots, but for added safety,
@@ -803,7 +803,7 @@ class ObservationStore(
     requirePermissions { updateObservation(observationId) }
 
     dslContext.transaction { _ ->
-      val (plantingSubzoneId, plantingZoneId, plantingSiteId, isAdHoc) =
+      val (substratumId, stratumId, plantingSiteId, isAdHoc) =
           dslContext
               .select(
                   MONITORING_PLOTS.SUBSTRATUM_ID,
@@ -816,7 +816,7 @@ class ObservationStore(
               .fetchOne()!!
 
       // We will be calculating cumulative totals across all observations of a planting site and
-      // across monitoring plots and planting zones; guard against multiple submissions arriving at
+      // across monitoring plots and strata; guard against multiple submissions arriving at
       // once and causing data races.
       val plantingSite =
           dslContext
@@ -873,8 +873,8 @@ class ObservationStore(
       updateSpeciesTotals(
           observationId,
           plantingSite,
-          plantingZoneId,
-          plantingSubzoneId,
+          stratumId,
+          substratumId,
           monitoringPlotId,
           isAdHoc,
           observationPlotsRow.isPermanent!!,
@@ -892,8 +892,8 @@ class ObservationStore(
           )
       )
 
-      if (plantingSubzoneId != null) {
-        updateSubzoneObservedTime(plantingSubzoneId, observedTime)
+      if (substratumId != null) {
+        updateSubstratumObservedTime(substratumId, observedTime)
       }
 
       val allPlotsCompleted =
@@ -912,11 +912,9 @@ class ObservationStore(
     }
   }
 
-  /**
-   * Updates the observed time of a planting subzone if it wasn't already observed more recently.
-   */
-  private fun updateSubzoneObservedTime(
-      plantingSubzoneId: SubstratumId,
+  /** Updates the observed time of a substratum if it wasn't already observed more recently. */
+  private fun updateSubstratumObservedTime(
+      substratumId: SubstratumId,
       observedTime: Instant,
   ) {
     with(SUBSTRATA) {
@@ -925,7 +923,7 @@ class ObservationStore(
           .set(MODIFIED_BY, currentUser().userId)
           .set(MODIFIED_TIME, clock.instant())
           .set(OBSERVED_TIME, observedTime)
-          .where(ID.eq(plantingSubzoneId))
+          .where(ID.eq(substratumId))
           .and(OBSERVED_TIME.isNull.or(OBSERVED_TIME.lt(observedTime)))
           .execute()
     }
@@ -972,7 +970,7 @@ class ObservationStore(
 
     // We need to adjust the plot-level summary statistics for all the sightings of the Other
     // species in this observation. Updating the plot-level statistics will automatically also
-    // update the site- and zone-level ones.
+    // update the site- and stratum-level ones.
     val plotTotals: List<ObservedPlotSpeciesTotalsRecord> =
         with(OBSERVED_PLOT_SPECIES_TOTALS) {
           dslContext
@@ -1001,9 +999,9 @@ class ObservationStore(
               ?: throw PlantingSiteNotFoundException(plantingSiteId)
 
       // Subtract the plot-level live/dead/existing counts from the Other species and add them
-      // to the target species. This propagates the changes up to the zone and site totals.
+      // to the target species. This propagates the changes up to the stratum and site totals.
       // Once this has been done for all the plot-level totals, the end result will be that the
-      // plot, zone, and site totals for the Other species will all be zero.
+      // plot, stratum, and site totals for the Other species will all be zero.
       //
       // We have to cancel out the Other totals rather than just deleting them because the same
       // Other species might appear in later observations, in which case the cumulative dead and
@@ -1298,50 +1296,50 @@ class ObservationStore(
   }
 
   /**
-   * Recalculates the zone- and site-level mortality rates for an observation.
+   * Recalculates the stratum- and site-level mortality rates for an observation.
    *
    * When an observation starts, [populateCumulativeDead] inserts rows into the "observed species
-   * totals" tables for the observation's plots, subzones, zones, and the site as a whole, mostly so
-   * that the cumulative dead plant counts from earlier observations of the same plots can be
+   * totals" tables for the observation's plots, substrata, strata, and the site as a whole, mostly
+   * so that the cumulative dead plant counts from earlier observations of the same plots can be
    * carried forward to the current observation.
    *
    * Those tables are updated incrementally as the observation proceeds, such that after the last
-   * plot is completed, they have correct plot-level and subzone-level mortality rates based on the
-   * plant counts from the just-observed plots.
+   * plot is completed, they have correct plot-level and substratum-level mortality rates based on
+   * the plant counts from the just-observed plots.
    *
-   * However, at the zone and site levels, we want mortality rates to also include plants from
-   * subzones that weren't requested in the current observation but were observed in the past. That
-   * is, the zone- and site-level mortality rates should be based on the most recent observation
-   * data from all the subzones that have ever been observed, not just the ones in the current
+   * However, at the stratum and site levels, we want mortality rates to also include plants from
+   * substrata that weren't requested in the current observation but were observed in the past. That
+   * is, the stratum- and site-level mortality rates should be based on the most recent observation
+   * data from all the substrata that have ever been observed, not just the ones in the current
    * observation.
    *
    * One approach would be to include the cumulative dead and permanent live values for other
-   * subzones in the initial data set that's inserted by [populateCumulativeDead], such that the
+   * substrata in the initial data set that's inserted by [populateCumulativeDead], such that the
    * incremental updates would take the additional plants into account.
    *
    * But that approach wouldn't give us the best available results in the face of concurrent
-   * observations: if each of two subzones has its own active observation at the same time, the
-   * zone- and site-level mortality rates for whichever observation finishes last should incorporate
-   * the plant counts from the other observation. Incorporating those plant counts when the
-   * observation finishes, rather than when it starts, means we can include data from observations
-   * that weren't done yet at the time the current one started.
+   * observations: if each of two substrata has its own active observation at the same time, the
+   * stratum- and site-level mortality rates for whichever observation finishes last should
+   * incorporate the plant counts from the other observation. Incorporating those plant counts when
+   * the observation finishes, rather than when it starts, means we can include data from
+   * observations that weren't done yet at the time the current one started.
    */
   fun recalculateSurvivalMortalityRates(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
   ) {
-    data class SubzoneSpeciesRecord(
+    data class SubstratumSpeciesRecord(
         val certaintyId: RecordedSpeciesCertainty,
         val speciesId: SpeciesId?,
         val speciesName: String?,
-        val plantingZoneId: StratumId,
+        val stratumId: StratumId,
         val permanentLive: Int,
         val cumulativeDead: Int,
         val totalLive: Int,
         val survivalRateIncludesTempPlots: Boolean,
     )
 
-    val liveAndDeadTotals: Map<RecordedSpeciesKey, Map<StratumId, List<SubzoneSpeciesRecord>>> =
+    val liveAndDeadTotals: Map<RecordedSpeciesKey, Map<StratumId, List<SubstratumSpeciesRecord>>> =
         with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
           dslContext
               .select(
@@ -1358,14 +1356,16 @@ class ObservationStore(
               .join(SUBSTRATA)
               .on(SUBSTRATUM_ID.eq(SUBSTRATA.ID))
               .where(SUBSTRATA.PLANTING_SITE_ID.eq(plantingSiteId))
-              .and(OBSERVATION_ID.eq(latestObservationForSubzoneField(DSL.inline(observationId))))
+              .and(
+                  OBSERVATION_ID.eq(latestObservationForSubstratumField(DSL.inline(observationId)))
+              )
               .and(CUMULATIVE_DEAD.plus(PERMANENT_LIVE).plus(TOTAL_LIVE).gt(0))
               .fetch { record ->
-                SubzoneSpeciesRecord(
+                SubstratumSpeciesRecord(
                     certaintyId = record[CERTAINTY_ID.asNonNullable()],
                     speciesId = record[SPECIES_ID],
                     speciesName = record[SPECIES_NAME],
-                    plantingZoneId = record[SUBSTRATA.STRATUM_ID.asNonNullable()],
+                    stratumId = record[SUBSTRATA.STRATUM_ID.asNonNullable()],
                     permanentLive = record[PERMANENT_LIVE.asNonNullable()],
                     cumulativeDead = record[CUMULATIVE_DEAD.asNonNullable()],
                     totalLive = record[TOTAL_LIVE.asNonNullable()],
@@ -1378,17 +1378,15 @@ class ObservationStore(
               .groupBy { record ->
                 RecordedSpeciesKey(record.certaintyId, record.speciesId, record.speciesName)
               }
-              .mapValues { (_, recordsForSpecies) ->
-                recordsForSpecies.groupBy { it.plantingZoneId }
-              }
+              .mapValues { (_, recordsForSpecies) -> recordsForSpecies.groupBy { it.stratumId } }
         }
 
-    liveAndDeadTotals.forEach { (speciesKey, zoneToLiveAndDead) ->
-      zoneToLiveAndDead.forEach { (plantingZoneId, liveAndDeadForZone) ->
-        val totalPermanentLive = liveAndDeadForZone.sumOf { it.permanentLive }
-        val totalLive = liveAndDeadForZone.sumOf { it.totalLive }
-        val totalDead = liveAndDeadForZone.sumOf { it.cumulativeDead }
-        val zoneMortalityRate =
+    liveAndDeadTotals.forEach { (speciesKey, stratumToLiveAndDead) ->
+      stratumToLiveAndDead.forEach { (stratumId, liveAndDeadForStratum) ->
+        val totalPermanentLive = liveAndDeadForStratum.sumOf { it.permanentLive }
+        val totalLive = liveAndDeadForStratum.sumOf { it.totalLive }
+        val totalDead = liveAndDeadForStratum.sumOf { it.cumulativeDead }
+        val stratumMortalityRate =
             if (totalPermanentLive + totalDead > 0) {
               ((totalDead * 100.0) / (totalPermanentLive + totalDead).toDouble()).roundToInt()
             } else {
@@ -1396,7 +1394,7 @@ class ObservationStore(
             }
 
         with(OBSERVED_STRATUM_SPECIES_TOTALS) {
-          val updateScope = ObservationSpeciesZone(plantingZoneId)
+          val updateScope = ObservationSpeciesStratum(stratumId)
           val survivalRatePermanentDenominator =
               getSurvivalRateDenominator(
                   updateScope,
@@ -1416,7 +1414,7 @@ class ObservationStore(
                   survivalRateTempDenominator,
               )
           val survivalRate =
-              if (liveAndDeadForZone.first().survivalRateIncludesTempPlots) {
+              if (liveAndDeadForStratum.first().survivalRateIncludesTempPlots) {
                 getSurvivalRate(DSL.value(totalLive), survivalRateDenominator)
               } else {
                 getSurvivalRate(DSL.value(totalPermanentLive), survivalRateDenominator)
@@ -1427,10 +1425,10 @@ class ObservationStore(
                   .insertInto(OBSERVED_STRATUM_SPECIES_TOTALS)
                   .set(CERTAINTY_ID, speciesKey.certainty)
                   .set(CUMULATIVE_DEAD, totalDead)
-                  .set(MORTALITY_RATE, zoneMortalityRate)
+                  .set(MORTALITY_RATE, stratumMortalityRate)
                   .set(OBSERVATION_ID, observationId)
                   .set(PERMANENT_LIVE, totalPermanentLive)
-                  .set(STRATUM_ID, plantingZoneId)
+                  .set(STRATUM_ID, stratumId)
                   .set(SPECIES_ID, speciesKey.id)
                   .set(SPECIES_NAME, speciesKey.name)
                   .set(SURVIVAL_RATE, survivalRate)
@@ -1440,11 +1438,11 @@ class ObservationStore(
             dslContext
                 .update(OBSERVED_STRATUM_SPECIES_TOTALS)
                 .set(CUMULATIVE_DEAD, totalDead)
-                .set(MORTALITY_RATE, zoneMortalityRate?.let { DSL.inline(it) } ?: MORTALITY_RATE)
+                .set(MORTALITY_RATE, stratumMortalityRate?.let { DSL.inline(it) } ?: MORTALITY_RATE)
                 .set(PERMANENT_LIVE, totalPermanentLive)
                 .set(SURVIVAL_RATE, survivalRate)
                 .where(OBSERVATION_ID.eq(observationId))
-                .and(STRATUM_ID.eq(plantingZoneId))
+                .and(STRATUM_ID.eq(stratumId))
                 .and(CERTAINTY_ID.eq(speciesKey.certainty))
                 .and(SPECIES_ID.eqOrIsNull(speciesKey.id))
                 .and(SPECIES_NAME.eqOrIsNull(speciesKey.name))
@@ -1453,9 +1451,9 @@ class ObservationStore(
         }
       }
 
-      val totalPermanentLive = zoneToLiveAndDead.flatMap { it.value }.sumOf { it.permanentLive }
-      val totalLive = zoneToLiveAndDead.flatMap { it.value }.sumOf { it.totalLive }
-      val totalDead = zoneToLiveAndDead.flatMap { it.value }.sumOf { it.cumulativeDead }
+      val totalPermanentLive = stratumToLiveAndDead.flatMap { it.value }.sumOf { it.permanentLive }
+      val totalLive = stratumToLiveAndDead.flatMap { it.value }.sumOf { it.totalLive }
+      val totalDead = stratumToLiveAndDead.flatMap { it.value }.sumOf { it.cumulativeDead }
       val siteMortalityRate =
           if (totalDead > 0) {
             ((totalDead * 100.0) / (totalPermanentLive + totalDead).toDouble()).roundToInt()
@@ -1484,7 +1482,7 @@ class ObservationStore(
                 survivalRateTempDenominator,
             )
         val survivalRate =
-            if (zoneToLiveAndDead.flatMap { it.value }.first().survivalRateIncludesTempPlots) {
+            if (stratumToLiveAndDead.flatMap { it.value }.first().survivalRateIncludesTempPlots) {
               getSurvivalRate(DSL.value(totalLive), survivalRateDenominator)
             } else {
               getSurvivalRate(DSL.value(totalPermanentLive), survivalRateDenominator)
@@ -1525,15 +1523,15 @@ class ObservationStore(
   fun recalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
     recalculateSurvivalRate(ObservationSpeciesPlot(monitoringPlotId))
 
-    recalculateSurvivalRate(ObservationSpeciesSubzone(monitoringPlotId))
+    recalculateSurvivalRate(ObservationSpeciesSubstratum(monitoringPlotId))
 
-    recalculateSurvivalRate(ObservationSpeciesZone(monitoringPlotId))
+    recalculateSurvivalRate(ObservationSpeciesStratum(monitoringPlotId))
 
     recalculateSurvivalRate(ObservationSpeciesSite(monitoringPlotId))
   }
 
-  fun recalculateSurvivalRates(plantingZoneId: StratumId) {
-    val subzoneGroups: Map<SubstratumId, List<MonitoringPlotId>> =
+  fun recalculateSurvivalRates(stratumId: StratumId) {
+    val substratumGroups: Map<SubstratumId, List<MonitoringPlotId>> =
         with(SUBSTRATUM_HISTORIES) {
           dslContext
               .selectDistinct(
@@ -1543,20 +1541,22 @@ class ObservationStore(
               .from(MONITORING_PLOT_HISTORIES)
               .join(SUBSTRATUM_HISTORIES)
               .on(ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
-              .where(stratumHistories.STRATUM_ID.eq(plantingZoneId))
+              .where(stratumHistories.STRATUM_ID.eq(stratumId))
               .fetchGroups(
                   SUBSTRATUM_ID.asNonNullable(),
                   MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.asNonNullable(),
               )
         }
 
-    subzoneGroups.values.flatten().forEach { recalculateSurvivalRate(ObservationSpeciesPlot(it)) }
+    substratumGroups.values.flatten().forEach {
+      recalculateSurvivalRate(ObservationSpeciesPlot(it))
+    }
 
-    subzoneGroups.keys.forEach { recalculateSurvivalRate(ObservationSpeciesSubzone(it)) }
+    substratumGroups.keys.forEach { recalculateSurvivalRate(ObservationSpeciesSubstratum(it)) }
 
-    recalculateSurvivalRate(ObservationSpeciesZone(plantingZoneId))
+    recalculateSurvivalRate(ObservationSpeciesStratum(stratumId))
 
-    recalculateSurvivalRate(ObservationSpeciesSite(plantingZoneId))
+    recalculateSurvivalRate(ObservationSpeciesSite(stratumId))
   }
 
   private fun <ID : Any> recalculateSurvivalRate(updateScope: ObservationSpeciesScope<ID>) {
@@ -1677,7 +1677,7 @@ class ObservationStore(
    * We only include plants from plots that are marked as permanent in the current observation. If
    * the number of permanent monitoring plots decreases between observations, plants from the plots
    * that used to be marked as permanent, but no longer are, won't be included in the totals. To
-   * make that work, we can't just copy the zone- and site-level totals from the previous
+   * make that work, we can't just copy the stratum- and site-level totals from the previous
    * observation; we have to compute them from scratch using the current observation's list of
    * permanent plots.
    *
@@ -1735,7 +1735,7 @@ class ObservationStore(
       }
 
       // Roll up the just-inserted plot totals (which only include plots that are currently
-      // permanent and that had dead plants previously) to get the subzone totals.
+      // permanent and that had dead plants previously) to get the substratum totals.
 
       with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
         dslContext
@@ -1774,7 +1774,7 @@ class ObservationStore(
             .execute()
       }
 
-      // Roll up the just-inserted subzone totals to get the zone totals.
+      // Roll up the just-inserted substratumstratumstratum totals to get the stratum totals.
 
       with(OBSERVED_STRATUM_SPECIES_TOTALS) {
         dslContext
@@ -1813,7 +1813,7 @@ class ObservationStore(
             .execute()
       }
 
-      // Roll up the just-inserted zone totals to get the site totals.
+      // Roll up the just-inserted stratum totals to get the site totals.
 
       with(OBSERVED_SITE_SPECIES_TOTALS) {
         dslContext
@@ -1929,15 +1929,15 @@ class ObservationStore(
    * Updates the tables that hold the aggregated per-species plant totals from observations.
    *
    * @param cumulativeDeadFromCurrentObservation If true, only use [observationId]'s totals as the
-   *   starting point for the cumulative dead count at the subzone, zone, and site level. If false,
-   *   use the most recently-created observation of the subzone, zone, or site, up to and including
-   *   [observationId].
+   *   starting point for the cumulative dead count at the substratum, stratum, and site level. If
+   *   false, use the most recently-created observation of the substratum, stratum, or site, up to
+   *   and including [observationId].
    */
   private fun updateSpeciesTotals(
       observationId: ObservationId,
       plantingSite: PlantingSitesRow,
-      plantingZoneId: StratumId?,
-      plantingSubzoneId: SubstratumId?,
+      stratumId: StratumId?,
+      substratumId: SubstratumId?,
       monitoringPlotId: MonitoringPlotId?,
       isAdHoc: Boolean,
       isPermanent: Boolean,
@@ -1957,25 +1957,25 @@ class ObservationStore(
       }
 
       if (!isAdHoc) {
-        if (plantingSubzoneId != null) {
+        if (substratumId != null) {
           updateSpeciesTotalsTable(
               observationId,
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
               plantingSite,
-              ObservationSpeciesSubzone(plantingSubzoneId, monitoringPlotId),
+              ObservationSpeciesSubstratum(substratumId, monitoringPlotId),
           )
         }
 
-        if (plantingZoneId != null) {
+        if (stratumId != null) {
           updateSpeciesTotalsTable(
               observationId,
               isPermanent,
               plantCountsBySpecies,
               cumulativeDeadFromCurrentObservation,
               plantingSite,
-              ObservationSpeciesZone(plantingZoneId, monitoringPlotId),
+              ObservationSpeciesStratum(stratumId, monitoringPlotId),
           )
         }
 
@@ -1995,7 +1995,7 @@ class ObservationStore(
    * Updates one of the tables that holds the aggregated per-species plant totals from observations.
    *
    * These tables are all identical with the exception of one column that identifies the scope of
-   * aggregation (monitoring plot, planting zone, or planting site).
+   * aggregation (monitoring plot, stratum, or planting site).
    *
    * @param cumulativeDeadFromCurrentObservation If true, only use [observationId]'s totals as the
    *   starting point for the cumulative dead count. If false, use the most recently-created
@@ -2307,7 +2307,7 @@ class ObservationStore(
                   )
               )
               .where(condition)
-              .and(updateScope.tempZoneCondition(opTemp))
+              .and(updateScope.tempStratumCondition(opTemp))
               .and(strata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
               .and(
                   plotHasCompletedObservations(

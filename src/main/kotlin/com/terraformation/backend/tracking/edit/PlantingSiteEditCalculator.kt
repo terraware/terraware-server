@@ -2,11 +2,11 @@ package com.terraformation.backend.tracking.edit
 
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
-import com.terraformation.backend.tracking.model.AnyPlantingSubzoneModel
-import com.terraformation.backend.tracking.model.AnyPlantingZoneModel
+import com.terraformation.backend.tracking.model.AnyStratumModel
+import com.terraformation.backend.tracking.model.AnySubstratumModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
-import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
-import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
+import com.terraformation.backend.tracking.model.ExistingStratumModel
+import com.terraformation.backend.tracking.model.ExistingSubstratumModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.util.calculateAreaHectares
@@ -33,11 +33,11 @@ class PlantingSiteEditCalculator(
         areaHaDifference = calculateAreaHaDifference(existingSite.boundary, desiredSite.boundary),
         desiredModel = desiredSite,
         existingModel = existingSite,
-        plantingZoneEdits = zoneEdits,
+        stratumEdits = zoneEdits,
     )
   }
 
-  private fun calculateZoneEdits(): List<PlantingZoneEdit> {
+  private fun calculateZoneEdits(): List<StratumEdit> {
     val existingZonesInUse = existingZonesByDesiredZone.values.filterNotNull().toSet()
 
     val createEdits =
@@ -51,22 +51,21 @@ class PlantingSiteEditCalculator(
                       desiredZone.boundary.differenceNullable(desiredSite.exclusion),
                   )
 
-              PlantingZoneEdit.Create(
+              StratumEdit.Create(
                   desiredModel = desiredZone,
                   monitoringPlotEdits =
                       monitoringPlotEdits.filterIsInstance<MonitoringPlotEdit.Create>(),
-                  plantingSubzoneEdits =
-                      calculateSubzoneEdits(null, desiredZone, monitoringPlotEdits),
+                  substratumEdits = calculateSubzoneEdits(null, desiredZone, monitoringPlotEdits),
               )
             }
 
     val deleteEdits =
-        existingSite.plantingZones.toSet().minus(existingZonesInUse).map { existingZone ->
-          val plantingSubzoneEdits =
-              existingZone.plantingSubzones
+        existingSite.strata.toSet().minus(existingZonesInUse).map { existingZone ->
+          val substratumEdits =
+              existingZone.substrata
                   .filter { it !in desiredSubzonesByExistingSubzone }
                   .map { existingSubzone ->
-                    PlantingSubzoneEdit.Delete(
+                    SubstratumEdit.Delete(
                         existingSubzone,
                         existingSubzone.monitoringPlots
                             .filter { desiredSubzonesByMonitoringPlotId[it.id] == null }
@@ -74,9 +73,9 @@ class PlantingSiteEditCalculator(
                     )
                   }
 
-          PlantingZoneEdit.Delete(
+          StratumEdit.Delete(
               existingModel = existingZone,
-              plantingSubzoneEdits = plantingSubzoneEdits,
+              substratumEdits = substratumEdits,
           )
         }
 
@@ -113,7 +112,7 @@ class PlantingSiteEditCalculator(
               ) {
                 null
               } else {
-                PlantingZoneEdit.Update(
+                StratumEdit.Update(
                     addedRegion =
                         desiredUsableBoundary
                             .difference(existingUsableBoundary)
@@ -123,7 +122,7 @@ class PlantingSiteEditCalculator(
                     desiredModel = desiredZone,
                     existingModel = existingZone,
                     monitoringPlotEdits = createMonitoringPlotEdits,
-                    plantingSubzoneEdits = subzoneEdits,
+                    substratumEdits = subzoneEdits,
                     removedRegion =
                         existingUsableBoundary
                             .difference(desiredUsableBoundary)
@@ -136,7 +135,7 @@ class PlantingSiteEditCalculator(
   }
 
   private fun calculateMonitoringPlotEdits(
-      desiredZone: AnyPlantingZoneModel,
+      desiredZone: AnyStratumModel,
       desiredUsableBoundary: Geometry,
       existingUsableBoundary: Geometry = desiredUsableBoundary.factory.createMultiPolygon(),
   ): List<MonitoringPlotEdit> {
@@ -210,17 +209,15 @@ class PlantingSiteEditCalculator(
   }
 
   private fun calculateSubzoneEdits(
-      existingZone: ExistingPlantingZoneModel?,
-      desiredZone: AnyPlantingZoneModel,
+      existingZone: ExistingStratumModel?,
+      desiredZone: AnyStratumModel,
       monitoringPlotEdits: List<MonitoringPlotEdit>,
-  ): List<PlantingSubzoneEdit> {
-    val subzoneMappings: Map<AnyPlantingSubzoneModel, ExistingPlantingSubzoneModel?> =
-        desiredZone.plantingSubzones.associateWith { existingSubzonesByDesiredSubzone[it] }
+  ): List<SubstratumEdit> {
+    val subzoneMappings: Map<AnySubstratumModel, ExistingSubstratumModel?> =
+        desiredZone.substrata.associateWith { existingSubzonesByDesiredSubzone[it] }
     val existingSubzonesInUse =
-        existingZone
-            ?.plantingSubzones
-            ?.filter { desiredSubzonesByExistingSubzone[it] != null }
-            ?.toSet() ?: emptySet()
+        existingZone?.substrata?.filter { desiredSubzonesByExistingSubzone[it] != null }?.toSet()
+            ?: emptySet()
 
     val createEdits =
         subzoneMappings
@@ -232,13 +229,12 @@ class PlantingSiteEditCalculator(
                     it is MonitoringPlotEdit.Adopt &&
                         desiredSubzonesByMonitoringPlotId[it.monitoringPlotId] == newSubzone
                   }
-              PlantingSubzoneEdit.Create(newSubzone, adoptEdits)
+              SubstratumEdit.Create(newSubzone, adoptEdits)
             }
 
     val deleteEdits =
-        existingZone?.plantingSubzones?.toSet()?.minus(existingSubzonesInUse)?.map { existingSubzone
-          ->
-          PlantingSubzoneEdit.Delete(
+        existingZone?.substrata?.toSet()?.minus(existingSubzonesInUse)?.map { existingSubzone ->
+          SubstratumEdit.Delete(
               existingSubzone,
               existingSubzone.monitoringPlots
                   .filter { desiredSubzonesByMonitoringPlotId[it.id] == null }
@@ -284,7 +280,7 @@ class PlantingSiteEditCalculator(
               ) {
                 null
               } else {
-                PlantingSubzoneEdit.Update(
+                SubstratumEdit.Update(
                     addedRegion =
                         desiredUsableBoundary
                             .difference(existingUsableBoundary)
@@ -320,30 +316,29 @@ class PlantingSiteEditCalculator(
   /**
    * The existing version of each desired planting zone, or null if the zone is being newly created.
    */
-  private val existingZonesByDesiredZone:
-      Map<AnyPlantingZoneModel, ExistingPlantingZoneModel?> by lazy {
-    val existingZonesByStableId = existingSite.plantingZones.associateBy { it.stableId }
-    desiredSite.plantingZones.associateWith { existingZonesByStableId[it.stableId] }
+  private val existingZonesByDesiredZone: Map<AnyStratumModel, ExistingStratumModel?> by lazy {
+    val existingZonesByStableId = existingSite.strata.associateBy { it.stableId }
+    desiredSite.strata.associateWith { existingZonesByStableId[it.stableId] }
   }
 
   /**
    * The existing version of each desired planting zone, or null if the zone is being newly created.
    */
   private val existingZonesByExistingSubzone:
-      Map<ExistingPlantingSubzoneModel, ExistingPlantingZoneModel> by lazy {
-    existingSite.plantingZones
-        .flatMap { existingZone -> existingZone.plantingSubzones.map { it to existingZone } }
+      Map<ExistingSubstratumModel, ExistingStratumModel> by lazy {
+    existingSite.strata
+        .flatMap { existingZone -> existingZone.substrata.map { it to existingZone } }
         .toMap()
   }
 
   /** The desired version of each existing subzone that isn't being deleted. */
   private val desiredSubzonesByExistingSubzone:
-      Map<ExistingPlantingSubzoneModel, AnyPlantingSubzoneModel> by lazy {
+      Map<ExistingSubstratumModel, AnySubstratumModel> by lazy {
     val desiredSubzonesByStableId =
-        desiredSite.plantingZones.flatMap { it.plantingSubzones }.associateBy { it.stableId }
+        desiredSite.strata.flatMap { it.substrata }.associateBy { it.stableId }
 
-    existingSite.plantingZones
-        .flatMap { it.plantingSubzones }
+    existingSite.strata
+        .flatMap { it.substrata }
         .mapNotNull { subzone ->
           desiredSubzonesByStableId[subzone.stableId]?.let { subzone to it }
         }
@@ -352,12 +347,12 @@ class PlantingSiteEditCalculator(
 
   /** The existing version of each desired subzone that isn't being newly created. */
   private val existingSubzonesByDesiredSubzone:
-      Map<AnyPlantingSubzoneModel, ExistingPlantingSubzoneModel> by lazy {
+      Map<AnySubstratumModel, ExistingSubstratumModel> by lazy {
     val existingSubzonesByStableId =
-        existingSite.plantingZones.flatMap { it.plantingSubzones }.associateBy { it.stableId }
+        existingSite.strata.flatMap { it.substrata }.associateBy { it.stableId }
 
-    desiredSite.plantingZones
-        .flatMap { it.plantingSubzones }
+    desiredSite.strata
+        .flatMap { it.substrata }
         .mapNotNull { subzone ->
           existingSubzonesByStableId[subzone.stableId]?.let { subzone to it }
         }
@@ -367,8 +362,8 @@ class PlantingSiteEditCalculator(
   /** Flattened list of all the site's monitoring plots. */
   private val existingMonitoringPlots: List<MonitoringPlotModel> by lazy {
     val plotsInSubzones =
-        existingSite.plantingZones.flatMap { plantingZone ->
-          plantingZone.plantingSubzones.flatMap { it.monitoringPlots }
+        existingSite.strata.flatMap { plantingZone ->
+          plantingZone.substrata.flatMap { it.monitoringPlots }
         }
     (plotsInSubzones + existingSite.exteriorPlots).sortedWith(
         compareBy({ it.permanentIndex ?: Int.MAX_VALUE }, { it.plotNumber })
@@ -383,10 +378,10 @@ class PlantingSiteEditCalculator(
    * For each existing monitoring plot, the desired zone that covers it, or null if it isn't covered
    * by any zone. Plots that straddle two zones aren't considered to be in either zone.
    */
-  private val desiredZonesByMonitoringPlotId: Map<MonitoringPlotId, AnyPlantingZoneModel?> by lazy {
+  private val desiredZonesByMonitoringPlotId: Map<MonitoringPlotId, AnyStratumModel?> by lazy {
     existingMonitoringPlots.associate { plot ->
       plot.id to
-          desiredSite.plantingZones.firstOrNull { zone ->
+          desiredSite.strata.firstOrNull { zone ->
             plot.boundary.nearlyCoveredBy(zone.boundary.differenceNullable(desiredSite.exclusion))
           }
     }
@@ -397,11 +392,11 @@ class PlantingSiteEditCalculator(
    * or null if the plot is outside all subzones.
    */
   private val desiredSubzonesByMonitoringPlotId:
-      Map<MonitoringPlotId, AnyPlantingSubzoneModel?> by lazy {
+      Map<MonitoringPlotId, AnySubstratumModel?> by lazy {
     existingMonitoringPlots.associate { plot ->
       plot.id to
           desiredZonesByMonitoringPlotId[plot.id]?.let { desiredZone ->
-            desiredZone.plantingSubzones
+            desiredZone.substrata
                 .mapNotNull { desiredSubzone ->
                   if (desiredSubzone.boundary.intersects(plot.boundary)) {
                     desiredSubzone to desiredSubzone.boundary.intersection(plot.boundary).area
@@ -417,10 +412,10 @@ class PlantingSiteEditCalculator(
 
   /** Which subzone each each existing monitoring plot is in. */
   private val existingSubzonesByMonitoringPlotId:
-      Map<MonitoringPlotId, ExistingPlantingSubzoneModel> by lazy {
-    existingSite.plantingZones
+      Map<MonitoringPlotId, ExistingSubstratumModel> by lazy {
+    existingSite.strata
         .flatMap { zone ->
-          zone.plantingSubzones.flatMap { subzone ->
+          zone.substrata.flatMap { subzone ->
             subzone.monitoringPlots.map { plot -> plot.id to subzone }
           }
         }

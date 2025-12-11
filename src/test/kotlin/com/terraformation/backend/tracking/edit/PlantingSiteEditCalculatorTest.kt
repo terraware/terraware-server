@@ -31,17 +31,15 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("12.5"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Create(
-                        desiredModel = desired.plantingZones[1],
+                    StratumEdit.Create(
+                        desiredModel = desired.strata[1],
                         monitoringPlotEdits =
-                            listOf(MonitoringPlotEdit.Create(desired.plantingZones[1].boundary, 1)),
-                        plantingSubzoneEdits =
+                            listOf(MonitoringPlotEdit.Create(desired.strata[1].boundary, 1)),
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Create(
-                                    desiredModel = desired.plantingZones[1].plantingSubzones[0]
-                                )
+                                SubstratumEdit.Create(desiredModel = desired.strata[1].substrata[0])
                             ),
                     )
                 ),
@@ -79,13 +77,13 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("12.5"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = newSubzoneBoundary,
                         areaHaDifference = BigDecimal("12.5"),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
                                 // Index 1 is already in the existing subzone
@@ -95,20 +93,20 @@ class PlantingSiteEditCalculatorTest {
                                 MonitoringPlotEdit.Create(newSubzoneBoundary, 5),
                                 MonitoringPlotEdit.Create(existingBoundary, 6),
                             ),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Create(
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[1],
+                                SubstratumEdit.Create(
+                                    desiredModel = desired.strata[0].substrata[1],
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(MonitoringPlotId(3)),
                                         ),
                                 ),
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(MonitoringPlotId(2), 3),
@@ -147,15 +145,15 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal.ZERO,
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits = emptyList(),
+                        substratumEdits = emptyList(),
                         removedRegion = rectangle(0),
                     )
                 ),
@@ -175,13 +173,13 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("5.0"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(x = 500, width = 200, height = 500),
                         areaHaDifference = BigDecimal("5.0"),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
                                 MonitoringPlotEdit.Create(
@@ -189,13 +187,13 @@ class PlantingSiteEditCalculatorTest {
                                     1,
                                 )
                             ),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 500, width = 200, height = 500),
                                     areaHaDifference = BigDecimal("5.0"),
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     removedRegion = rectangle(x = 0, width = 100, height = 500),
                                 )
                             ),
@@ -226,22 +224,22 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
                     // Zone B moves to west edge of site and grows from 200m to 500m wide
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(x = 0, width = 500, height = 500),
                         areaHaDifference = BigDecimal(15),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[1],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[1],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 0, width = 500, height = 500),
                                     areaHaDifference = BigDecimal(15),
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[1].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[1].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(MonitoringPlotId(1), 1),
@@ -252,11 +250,11 @@ class PlantingSiteEditCalculatorTest {
                         removedRegion = rectangle(x = 800, width = 200, height = 500),
                     ),
                     // Zone A moves to east edge of site and shrinks from 800m to 500m wide
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(x = 800, width = 200, height = 500),
                         areaHaDifference = BigDecimal(-15),
-                        desiredModel = desired.plantingZones[1],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[1],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
                                 // The permanent plot should be created in the part of the zone that
@@ -266,13 +264,13 @@ class PlantingSiteEditCalculatorTest {
                                     1,
                                 ),
                             ),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 800, width = 200, height = 500),
                                     areaHaDifference = BigDecimal(-15),
-                                    desiredModel = desired.plantingZones[1].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[1].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(
                                             // Plot 2 was in the area that overlapped with the old
@@ -314,10 +312,10 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Create(
-                        desiredModel = desired.plantingZones[1],
+                    StratumEdit.Create(
+                        desiredModel = desired.strata[1],
                         monitoringPlotEdits =
                             listOf(
                                 MonitoringPlotEdit.Create(
@@ -325,13 +323,13 @@ class PlantingSiteEditCalculatorTest {
                                     2,
                                 )
                             ),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[1].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[1],
+                                    desiredModel = desired.strata[1].substrata[0],
+                                    existingModel = existing.strata[0].substrata[1],
                                     monitoringPlotEdits =
                                         listOf(MonitoringPlotEdit.Adopt(MonitoringPlotId(2), 1)),
                                     removedRegion = rectangle(0),
@@ -339,13 +337,13 @@ class PlantingSiteEditCalculatorTest {
                             ),
                     ),
                     // Zone A shrinks
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal("-12.5"),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits = emptyList(),
+                        substratumEdits = emptyList(),
                         removedRegion = rectangle(x = 250, width = 250, height = 500),
                     ),
                 ),
@@ -387,31 +385,31 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
                     // Zone A shrinks
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal("-12.5"),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits = emptyList(),
+                        substratumEdits = emptyList(),
                         removedRegion = rectangle(x = 250, width = 250, height = 500),
                     ),
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(x = 250, width = 250, height = 500),
                         areaHaDifference = BigDecimal("12.5"),
-                        desiredModel = desired.plantingZones[1],
-                        existingModel = existing.plantingZones[1],
+                        desiredModel = desired.strata[1],
+                        existingModel = existing.strata[1],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[1].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[1],
+                                    desiredModel = desired.strata[1].substrata[0],
+                                    existingModel = existing.strata[0].substrata[1],
                                     monitoringPlotEdits =
                                         listOf(MonitoringPlotEdit.Adopt(MonitoringPlotId(3), null)),
                                     removedRegion = rectangle(0),
@@ -449,15 +447,15 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Create(
-                        desiredModel = desired.plantingZones[1],
+                    StratumEdit.Create(
+                        desiredModel = desired.strata[1],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Create(
-                                    desiredModel = desired.plantingZones[1].plantingSubzones[0],
+                                SubstratumEdit.Create(
+                                    desiredModel = desired.strata[1].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
@@ -474,11 +472,11 @@ class PlantingSiteEditCalculatorTest {
                                 )
                             ),
                     ),
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal(-25),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
                                 MonitoringPlotEdit.Create(
@@ -486,13 +484,13 @@ class PlantingSiteEditCalculatorTest {
                                     1,
                                 )
                             ),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal(-25),
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(x = 500, width = 500, height = 500),
                                 )
@@ -540,13 +538,13 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("-25.0"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(x = 500, width = 280, height = 500),
                         areaHaDifference = BigDecimal.ZERO,
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
                                 MonitoringPlotEdit.Create(
@@ -554,13 +552,13 @@ class PlantingSiteEditCalculatorTest {
                                     permanentIndex = 11,
                                 ),
                             ),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 500, width = 280, height = 500),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
@@ -613,12 +611,12 @@ class PlantingSiteEditCalculatorTest {
                             ),
                         removedRegion = rectangle(x = 0, width = 280, height = 500),
                     ),
-                    PlantingZoneEdit.Delete(
-                        existingModel = existing.plantingZones[1],
-                        plantingSubzoneEdits =
+                    StratumEdit.Delete(
+                        existingModel = existing.strata[1],
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Delete(
-                                    existingModel = existing.plantingZones[1].plantingSubzones[0],
+                                SubstratumEdit.Delete(
+                                    existingModel = existing.strata[1].substrata[0],
                                     monitoringPlotEdits = emptyList(),
                                 )
                             ),
@@ -640,21 +638,21 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal(25),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(x = 100, width = 500, height = 500),
                         areaHaDifference = BigDecimal(25),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 100, width = 500, height = 500),
                                     areaHaDifference = BigDecimal(25),
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Adopt(
@@ -693,24 +691,24 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal(5),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         areaHaDifference = BigDecimal(5),
                         addedRegion = rectangle(x = 400, width = 100, height = 500),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
                                 MonitoringPlotEdit.Create(existing.boundary!!, 1),
                             ),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 400, width = 100, height = 500),
                                     areaHaDifference = BigDecimal(5),
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     // The unqualified plots are already in the correct subzone and
                                     // already have null permanent indexes, so no need to update any
                                     // of them.
@@ -746,13 +744,13 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("10.0"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = addedRegion,
                         areaHaDifference = BigDecimal("10.0"),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
                                 // Added region is 200 meters wide; existing region is 700 meters
@@ -769,13 +767,13 @@ class PlantingSiteEditCalculatorTest {
                                 MonitoringPlotEdit.Create(existingRegion, 9),
                                 MonitoringPlotEdit.Create(existingRegion, 10),
                             ),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = addedRegion,
                                     areaHaDifference = BigDecimal("10.0"),
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(0),
                                 )
@@ -806,16 +804,16 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal.ZERO,
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(MonitoringPlotEdit.Create(existing.boundary!!, 3)),
-                        plantingSubzoneEdits = emptyList(),
+                        substratumEdits = emptyList(),
                         removedRegion = rectangle(0),
                     )
                 ),
@@ -843,21 +841,21 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal.ZERO,
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(MonitoringPlotEdit.Adopt(MonitoringPlotId(3), null)),
                                     removedRegion = rectangle(0),
@@ -886,14 +884,14 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("-12.5"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Delete(
-                        existingModel = existing.plantingZones[1],
-                        plantingSubzoneEdits =
+                    StratumEdit.Delete(
+                        existingModel = existing.strata[1],
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Delete(
-                                    existingModel = existing.plantingZones[1].plantingSubzones[0],
+                                SubstratumEdit.Delete(
+                                    existingModel = existing.strata[1].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(MonitoringPlotEdit.Eject(MonitoringPlotId(2))),
                                 )
@@ -922,19 +920,19 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal(-25),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal(-25),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(MonitoringPlotEdit.Create(desired.boundary!!, 1)),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Delete(
-                                    existingModel = existing.plantingZones[0].plantingSubzones[1],
+                                SubstratumEdit.Delete(
+                                    existingModel = existing.strata[0].substrata[1],
                                 )
                             ),
                         removedRegion = rectangle(x = 500, width = 500, height = 500),
@@ -970,41 +968,41 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal.ZERO,
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
                         removedRegion = rectangle(0),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(0),
                                 )
                             ),
                     ),
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal.ZERO,
-                        desiredModel = desired.plantingZones[1],
-                        existingModel = existing.plantingZones[1],
+                        desiredModel = desired.strata[1],
+                        existingModel = existing.strata[1],
                         monitoringPlotEdits = emptyList(),
                         removedRegion = rectangle(0),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[1].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[1].plantingSubzones[0],
+                                    desiredModel = desired.strata[1].substrata[0],
+                                    existingModel = existing.strata[1].substrata[0],
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(0),
                                 )
@@ -1037,24 +1035,24 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Create(
-                        desiredModel = desired.plantingZones[0],
+                    StratumEdit.Create(
+                        desiredModel = desired.strata[0],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(0),
                                 )
                             ),
                     ),
-                    PlantingZoneEdit.Delete(existing.plantingZones[0], emptyList()),
+                    StratumEdit.Delete(existing.strata[0], emptyList()),
                 ),
         ),
         existing,
@@ -1082,21 +1080,21 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("-0.1"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal("-0.1"),
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
                                     areaHaDifference = BigDecimal("-0.1"),
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Eject(MonitoringPlotId(1)),
@@ -1132,21 +1130,21 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal.ZERO,
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits =
+            stratumEdits =
                 listOf(
-                    PlantingZoneEdit.Update(
+                    StratumEdit.Update(
                         addedRegion = rectangle(x = 500, width = 10, height = 500),
                         areaHaDifference = BigDecimal.ZERO,
-                        desiredModel = desired.plantingZones[0],
-                        existingModel = existing.plantingZones[0],
+                        desiredModel = desired.strata[0],
+                        existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
-                        plantingSubzoneEdits =
+                        substratumEdits =
                             listOf(
-                                PlantingSubzoneEdit.Update(
+                                SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 500, width = 10, height = 500),
                                     areaHaDifference = BigDecimal.ZERO,
-                                    desiredModel = desired.plantingZones[0].plantingSubzones[0],
-                                    existingModel = existing.plantingZones[0].plantingSubzones[0],
+                                    desiredModel = desired.strata[0].substrata[0],
+                                    existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Eject(MonitoringPlotId(1)),
@@ -1174,7 +1172,7 @@ class PlantingSiteEditCalculatorTest {
             areaHaDifference = BigDecimal("0.0"),
             desiredModel = desired,
             existingModel = existing,
-            plantingZoneEdits = emptyList(),
+            stratumEdits = emptyList(),
         ),
         existing,
         desired,

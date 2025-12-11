@@ -21,7 +21,7 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
     val userId2 = insertUser(firstName = "Second", lastName = "Human")
 
     insertPlantingZone(name = "Z1")
-    val plantingSubzoneId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
+    val substratumId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
 
     // A plot that was observed previously and again in this observation
     val monitoringPlotId11 =
@@ -42,7 +42,7 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
         )
     )
 
-    val plantingSubzoneId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
+    val substratumId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
 
     // This plot is claimed and completed
     val monitoringPlotId21 = insertMonitoringPlot(boundary = polygon(3))
@@ -75,9 +75,9 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
                 completedByName = null,
                 elevationMeters = BigDecimal.TEN,
                 isFirstObservation = false,
-                plantingSubzoneId = plantingSubzoneId1,
-                plantingSubzoneName = "Z1-S1",
-                plantingZoneName = "Z1",
+                substratumId = substratumId1,
+                substratumName = "Z1-S1",
+                stratumName = "Z1",
                 plotNumber = 1,
                 sizeMeters = 30,
             ),
@@ -95,9 +95,9 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
                 completedByName = null,
                 elevationMeters = null,
                 isFirstObservation = true,
-                plantingSubzoneId = plantingSubzoneId1,
-                plantingSubzoneName = "Z1-S1",
-                plantingZoneName = "Z1",
+                substratumId = substratumId1,
+                substratumName = "Z1-S1",
+                stratumName = "Z1",
                 plotNumber = 2,
                 sizeMeters = 30,
             ),
@@ -119,9 +119,9 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
                 completedByName = "First Person",
                 elevationMeters = null,
                 isFirstObservation = true,
-                plantingSubzoneId = plantingSubzoneId2,
-                plantingSubzoneName = "Z1-S2",
-                plantingZoneName = "Z1",
+                substratumId = substratumId2,
+                substratumName = "Z1-S2",
+                stratumName = "Z1",
                 plotNumber = 3,
                 sizeMeters = 30,
             ),
@@ -133,14 +133,14 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
   }
 
   @Test
-  fun `returns subzone and zone details as they existed at the time of the observation`() {
+  fun `returns substratum and stratum details as they existed at the time of the observation`() {
     insertPlantingZone(name = "Z1")
     insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
     val monitoringPlotId = insertMonitoringPlot(boundary = polygon(1))
     val observationId = insertObservation(completedTime = Instant.EPOCH)
     insertObservationPlot(completedBy = user.userId)
 
-    // Now a map edit removes the subzone the plot used to be in
+    // Now a map edit removes the substratum the plot used to be in
     dslContext.deleteFrom(SUBSTRATA).execute()
 
     val expected =
@@ -161,9 +161,9 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
                 completedByName = "First Last",
                 elevationMeters = null,
                 isFirstObservation = true,
-                plantingSubzoneId = null,
-                plantingSubzoneName = "Z1-S1",
-                plantingZoneName = "Z1",
+                substratumId = null,
+                substratumName = "Z1-S1",
+                stratumName = "Z1",
                 plotNumber = 1,
                 sizeMeters = 30,
             )

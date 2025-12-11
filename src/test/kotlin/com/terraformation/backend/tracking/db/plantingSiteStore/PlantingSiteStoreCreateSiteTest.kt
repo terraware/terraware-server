@@ -22,8 +22,8 @@ import com.terraformation.backend.tracking.model.PlantingSeasonTooLongException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooShortException
 import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteModel
-import com.terraformation.backend.tracking.model.PlantingSubzoneModel
-import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.toInstant
@@ -166,22 +166,22 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               boundary = siteBoundary,
               name = "name",
               organizationId = organizationId,
-              plantingZones =
+              strata =
                   listOf(
-                      PlantingZoneModel.create(
+                      StratumModel.create(
                           boundary = zone1Boundary,
                           errorMargin = BigDecimal(1),
                           name = "Zone 1",
                           numPermanentPlots = 3,
                           numTemporaryPlots = 4,
-                          plantingSubzones =
+                          substrata =
                               listOf(
-                                  PlantingSubzoneModel.create(
+                                  SubstratumModel.create(
                                       boundary = subzone11Boundary,
                                       fullName = "Zone 1-Subzone 1",
                                       name = "Subzone 1",
                                   ),
-                                  PlantingSubzoneModel.create(
+                                  SubstratumModel.create(
                                       boundary = subzone12Boundary,
                                       fullName = "Zone 1-Subzone 2",
                                       name = "Subzone 2",
@@ -191,17 +191,17 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                           targetPlantingDensity = BigDecimal(6),
                           variance = BigDecimal(7),
                       ),
-                      PlantingZoneModel.create(
+                      StratumModel.create(
                           boundary = zone2Boundary,
                           name = "Zone 2",
-                          plantingSubzones =
+                          substrata =
                               listOf(
-                                  PlantingSubzoneModel.create(
+                                  SubstratumModel.create(
                                       boundary = subzone21Boundary,
                                       fullName = "Zone 2-Subzone 1",
                                       name = "Subzone 1",
                                   ),
-                                  PlantingSubzoneModel.create(
+                                  SubstratumModel.create(
                                       boundary = subzone22Boundary,
                                       fullName = "Zone 2-Subzone 2",
                                       name = "Subzone 2",
@@ -264,15 +264,15 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   variance = BigDecimal(7),
               ),
               commonZonesRow.copy(
-                  errorMargin = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
+                  errorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
                   id = actualZones["Zone 2"]?.id,
                   name = "Zone 2",
-                  numPermanentPlots = PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
-                  numTemporaryPlots = PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+                  numPermanentPlots = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
+                  numTemporaryPlots = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
                   stableId = StableId("Zone 2"),
-                  studentsT = PlantingZoneModel.DEFAULT_STUDENTS_T,
-                  targetPlantingDensity = PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY,
-                  variance = PlantingZoneModel.DEFAULT_VARIANCE,
+                  studentsT = StratumModel.DEFAULT_STUDENTS_T,
+                  targetPlantingDensity = StratumModel.DEFAULT_TARGET_PLANTING_DENSITY,
+                  variance = StratumModel.DEFAULT_VARIANCE,
               ),
           ),
           actualZones.values.map { it.copy(boundary = null) }.toSet(),
@@ -393,15 +393,15 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   exclusion = exclusion,
                   name = "site",
                   organizationId = organizationId,
-                  plantingZones =
+                  strata =
                       listOf(
-                          PlantingZoneModel.create(
+                          StratumModel.create(
                               boundary = zoneBoundary,
                               exclusion = exclusion,
                               name = "zone",
-                              plantingSubzones =
+                              substrata =
                                   listOf(
-                                      PlantingSubzoneModel.create(
+                                      SubstratumModel.create(
                                           boundary = subzoneBoundary,
                                           exclusion = exclusion,
                                           fullName = "zone-subzone",
@@ -439,7 +439,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   boundary = zoneBoundary,
                   name = "zone",
                   plantingSiteHistoryId = model.historyId,
-                  stratumId = model.plantingZones.first().id,
+                  stratumId = model.strata.first().id,
                   stableId = StableId("zone"),
               ),
           ),
@@ -454,7 +454,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   boundary = subzoneBoundary,
                   fullName = "zone-subzone",
                   name = "subzone",
-                  substratumId = model.plantingZones.first().plantingSubzones.first().id,
+                  substratumId = model.strata.first().substrata.first().id,
                   stratumHistoryId = zoneHistories.first().id,
                   stableId = StableId("zone-subzone"),
               ),
@@ -559,13 +559,13 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               boundary = boundary,
               name = "name",
               organizationId = organizationId,
-              plantingZones =
+              strata =
                   listOf(
-                      PlantingZoneModel.create(
+                      StratumModel.create(
                           boundary = boundary,
                           name = "name",
                           // Empty subzone list is invalid.
-                          plantingSubzones = emptyList(),
+                          substrata = emptyList(),
                       )
                   ),
           )

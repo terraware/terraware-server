@@ -140,7 +140,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertEquals(
         observedTime,
         plantingSubzonesDao.fetchOneById(inserted.plantingSubzoneId)?.observedTime,
-        "Subzone observed time",
+        "Substratum observed time",
     )
   }
 
@@ -162,9 +162,9 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         speciesId = speciesId3,
         plotDensity = BigDecimal.valueOf(3).toPlantsPerHectare(),
     )
-    val zoneId1 = inserted.plantingZoneId
-    val zone1SubzoneId1 = inserted.plantingSubzoneId
-    val zone1PlotId2 = insertMonitoringPlot()
+    val stratumId1 = inserted.plantingZoneId
+    val stratum1SubstratumId1 = inserted.plantingSubzoneId
+    val stratum1PlotId2 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = false)
     // excluded densities because not permanent
     insertPlotT0Density(
@@ -179,10 +179,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         speciesId = speciesId3,
         plotDensity = BigDecimal.valueOf(6).toPlantsPerHectare(),
     )
-    val zoneId2 = insertPlantingZone()
-    val zone2SubzoneId1 = insertPlantingSubzone()
+    val stratumId2 = insertPlantingZone()
+    val stratum2SubstratumId1 = insertPlantingSubzone()
     insertObservationRequestedSubzone()
-    val zone2PlotId1 = insertMonitoringPlot()
+    val stratum2PlotId1 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
     insertPlotT0Density(
         speciesId = speciesId1,
@@ -290,7 +290,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         ),
     )
 
-    val zone1Plot1Species1Totals =
+    val stratum1Plot1Species1Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId = observationId,
             monitoringPlotId = plotId,
@@ -306,7 +306,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRate = 2 * 100 / 1,
         )
     // Parameter names omitted after this to keep the test method size manageable.
-    val zone1Plot1Species2Totals =
+    val stratum1Plot1Species2Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
             plotId,
@@ -321,7 +321,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone1Plot1Species3Totals =
+    val stratum1Plot1Species3Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
             plotId,
@@ -336,7 +336,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone1Plot1Other1Totals =
+    val stratum1Plot1Other1Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
             plotId,
@@ -350,7 +350,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             1,
         )
-    val zone1Plot1Other2Totals =
+    val stratum1Plot1Other2Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
             plotId,
@@ -364,7 +364,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
         )
-    val zone1Plot1UnknownTotals =
+    val stratum1Plot1UnknownTotals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
             plotId,
@@ -465,10 +465,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
         )
-    var zone1Species1Totals =
+    var stratum1Species1Totals =
         ObservedStratumSpeciesTotalsRow(
             observationId,
-            zoneId1,
+            stratumId1,
             speciesId1,
             null,
             RecordedSpeciesCertainty.Known,
@@ -480,10 +480,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             2,
             2 * 100 / 1,
         )
-    val zone1Species2Totals =
+    val stratum1Species2Totals =
         ObservedStratumSpeciesTotalsRow(
             observationId,
-            zoneId1,
+            stratumId1,
             speciesId2,
             null,
             RecordedSpeciesCertainty.Known,
@@ -495,10 +495,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    var zone1Species3Totals =
+    var stratum1Species3Totals =
         ObservedStratumSpeciesTotalsRow(
             observationId,
-            zoneId1,
+            stratumId1,
             speciesId3,
             null,
             RecordedSpeciesCertainty.Known,
@@ -510,10 +510,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone1Other1Totals =
+    val stratum1Other1Totals =
         ObservedStratumSpeciesTotalsRow(
             observationId,
-            zoneId1,
+            stratumId1,
             null,
             "Other 1",
             RecordedSpeciesCertainty.Other,
@@ -524,10 +524,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             1,
         )
-    val zone1Other2Totals =
+    val stratum1Other2Totals =
         ObservedStratumSpeciesTotalsRow(
             observationId,
-            zoneId1,
+            stratumId1,
             null,
             "Other 2",
             RecordedSpeciesCertainty.Other,
@@ -538,10 +538,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
         )
-    var zone1UnknownTotals =
+    var stratum1UnknownTotals =
         ObservedStratumSpeciesTotalsRow(
             observationId,
-            zoneId1,
+            stratumId1,
             null,
             null,
             RecordedSpeciesCertainty.Unknown,
@@ -552,10 +552,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
         )
-    var zone1Subzone1Species1Totals =
+    var stratum1Substratum1Species1Totals =
         ObservedSubstratumSpeciesTotalsRow(
             observationId,
-            zone1SubzoneId1,
+            stratum1SubstratumId1,
             speciesId1,
             null,
             RecordedSpeciesCertainty.Known,
@@ -567,10 +567,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             2,
             2 * 100 / 1,
         )
-    val zone1Subzone1Species2Totals =
+    val stratum1Substratum1Species2Totals =
         ObservedSubstratumSpeciesTotalsRow(
             observationId,
-            zone1SubzoneId1,
+            stratum1SubstratumId1,
             speciesId2,
             null,
             RecordedSpeciesCertainty.Known,
@@ -582,10 +582,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    var zone1Subzone1Species3Totals =
+    var stratum1Substratum1Species3Totals =
         ObservedSubstratumSpeciesTotalsRow(
             observationId,
-            zone1SubzoneId1,
+            stratum1SubstratumId1,
             speciesId3,
             null,
             RecordedSpeciesCertainty.Known,
@@ -597,10 +597,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone1Subzone1Other1Totals =
+    val stratum1Substratum1Other1Totals =
         ObservedSubstratumSpeciesTotalsRow(
             observationId,
-            zone1SubzoneId1,
+            stratum1SubstratumId1,
             null,
             "Other 1",
             RecordedSpeciesCertainty.Other,
@@ -611,10 +611,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             1,
         )
-    val zone1Subzone1Other2Totals =
+    val stratum1Substratum1Other2Totals =
         ObservedSubstratumSpeciesTotalsRow(
             observationId,
-            zone1SubzoneId1,
+            stratum1SubstratumId1,
             null,
             "Other 2",
             RecordedSpeciesCertainty.Other,
@@ -625,10 +625,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
         )
-    var zone1Subzone1UnknownTotals =
+    var stratum1Substratum1UnknownTotals =
         ObservedSubstratumSpeciesTotalsRow(
             observationId,
-            zone1SubzoneId1,
+            stratum1SubstratumId1,
             null,
             null,
             RecordedSpeciesCertainty.Unknown,
@@ -648,31 +648,31 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             siteSpecies2Totals,
             siteSpecies3Totals,
             siteUnknownTotals,
-            zone1Other1Totals,
-            zone1Other2Totals,
-            zone1Plot1Other1Totals,
-            zone1Plot1Other2Totals,
-            zone1Plot1Species1Totals,
-            zone1Plot1Species2Totals,
-            zone1Plot1Species3Totals,
-            zone1Plot1UnknownTotals,
-            zone1Species1Totals,
-            zone1Species2Totals,
-            zone1Species3Totals,
-            zone1Subzone1Other1Totals,
-            zone1Subzone1Other2Totals,
-            zone1Subzone1Species1Totals,
-            zone1Subzone1Species2Totals,
-            zone1Subzone1Species3Totals,
-            zone1Subzone1UnknownTotals,
-            zone1UnknownTotals,
+            stratum1Other1Totals,
+            stratum1Other2Totals,
+            stratum1Plot1Other1Totals,
+            stratum1Plot1Other2Totals,
+            stratum1Plot1Species1Totals,
+            stratum1Plot1Species2Totals,
+            stratum1Plot1Species3Totals,
+            stratum1Plot1UnknownTotals,
+            stratum1Species1Totals,
+            stratum1Species2Totals,
+            stratum1Species3Totals,
+            stratum1Substratum1Other1Totals,
+            stratum1Substratum1Other2Totals,
+            stratum1Substratum1Species1Totals,
+            stratum1Substratum1Species2Totals,
+            stratum1Substratum1Species3Totals,
+            stratum1Substratum1UnknownTotals,
+            stratum1UnknownTotals,
         ),
         "Totals after first plot completed",
     )
 
     store.completePlot(
         observationId,
-        zone1PlotId2,
+        stratum1PlotId2,
         emptySet(),
         null,
         observedTime,
@@ -698,10 +698,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     // no survival rates here because it's not a permanent plot
-    val zone1Plot2Species1Totals =
+    val stratum1Plot2Species1Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
-            zone1PlotId2,
+            stratum1PlotId2,
             speciesId1,
             null,
             RecordedSpeciesCertainty.Known,
@@ -712,10 +712,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone1Plot2Species3Totals =
+    val stratum1Plot2Species3Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
-            zone1PlotId2,
+            stratum1PlotId2,
             speciesId3,
             null,
             RecordedSpeciesCertainty.Known,
@@ -726,10 +726,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone1Plot2UnknownTotals =
+    val stratum1Plot2UnknownTotals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
-            zone1PlotId2,
+            stratum1PlotId2,
             null,
             null,
             RecordedSpeciesCertainty.Unknown,
@@ -743,12 +743,12 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     siteSpecies1Totals = siteSpecies1Totals.copy(totalLive = 3)
     siteSpecies3Totals = siteSpecies3Totals.copy(totalExisting = 2)
     siteUnknownTotals = siteUnknownTotals.copy(totalLive = 2)
-    zone1Species1Totals = zone1Species1Totals.copy(totalLive = 3)
-    zone1Species3Totals = zone1Species3Totals.copy(totalExisting = 2)
-    zone1UnknownTotals = zone1UnknownTotals.copy(totalLive = 2)
-    zone1Subzone1Species1Totals = zone1Subzone1Species1Totals.copy(totalLive = 3)
-    zone1Subzone1Species3Totals = zone1Subzone1Species3Totals.copy(totalExisting = 2)
-    zone1Subzone1UnknownTotals = zone1Subzone1UnknownTotals.copy(totalLive = 2)
+    stratum1Species1Totals = stratum1Species1Totals.copy(totalLive = 3)
+    stratum1Species3Totals = stratum1Species3Totals.copy(totalExisting = 2)
+    stratum1UnknownTotals = stratum1UnknownTotals.copy(totalLive = 2)
+    stratum1Substratum1Species1Totals = stratum1Substratum1Species1Totals.copy(totalLive = 3)
+    stratum1Substratum1Species3Totals = stratum1Substratum1Species3Totals.copy(totalExisting = 2)
+    stratum1Substratum1UnknownTotals = stratum1Substratum1UnknownTotals.copy(totalLive = 2)
 
     helper.assertTotals(
         setOf(
@@ -758,34 +758,34 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             siteSpecies2Totals,
             siteSpecies3Totals,
             siteUnknownTotals,
-            zone1Other1Totals,
-            zone1Other2Totals,
-            zone1Plot1Other1Totals,
-            zone1Plot1Other2Totals,
-            zone1Plot1Species1Totals,
-            zone1Plot1Species2Totals,
-            zone1Plot1Species3Totals,
-            zone1Plot1UnknownTotals,
-            zone1Plot2Species1Totals,
-            zone1Plot2Species3Totals,
-            zone1Plot2UnknownTotals,
-            zone1Species1Totals,
-            zone1Species2Totals,
-            zone1Species3Totals,
-            zone1Subzone1Other1Totals,
-            zone1Subzone1Other2Totals,
-            zone1Subzone1Species1Totals,
-            zone1Subzone1Species2Totals,
-            zone1Subzone1Species3Totals,
-            zone1Subzone1UnknownTotals,
-            zone1UnknownTotals,
+            stratum1Other1Totals,
+            stratum1Other2Totals,
+            stratum1Plot1Other1Totals,
+            stratum1Plot1Other2Totals,
+            stratum1Plot1Species1Totals,
+            stratum1Plot1Species2Totals,
+            stratum1Plot1Species3Totals,
+            stratum1Plot1UnknownTotals,
+            stratum1Plot2Species1Totals,
+            stratum1Plot2Species3Totals,
+            stratum1Plot2UnknownTotals,
+            stratum1Species1Totals,
+            stratum1Species2Totals,
+            stratum1Species3Totals,
+            stratum1Substratum1Other1Totals,
+            stratum1Substratum1Other2Totals,
+            stratum1Substratum1Species1Totals,
+            stratum1Substratum1Species2Totals,
+            stratum1Substratum1Species3Totals,
+            stratum1Substratum1UnknownTotals,
+            stratum1UnknownTotals,
         ),
         "Totals after additional live plant recorded",
     )
 
     store.completePlot(
         observationId,
-        zone2PlotId1,
+        stratum2PlotId1,
         emptySet(),
         null,
         observedTime,
@@ -811,10 +811,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         ),
     )
 
-    val zone2Plot1Species1Totals =
+    val stratum2Plot1Species1Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
-            zone2PlotId1,
+            stratum2PlotId1,
             speciesId1,
             null,
             RecordedSpeciesCertainty.Known,
@@ -826,10 +826,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone2Plot1Other1Totals =
+    val stratum2Plot1Other1Totals =
         ObservedPlotSpeciesTotalsRow(
             observationId,
-            zone2PlotId1,
+            stratum2PlotId1,
             null,
             "Other 1",
             RecordedSpeciesCertainty.Other,
@@ -840,10 +840,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
         )
-    val zone2Subzone1Species1Totals =
+    val stratum2Substratum1Species1Totals =
         ObservedSubstratumSpeciesTotalsRow(
             observationId,
-            zone2SubzoneId1,
+            stratum2SubstratumId1,
             speciesId1,
             null,
             RecordedSpeciesCertainty.Known,
@@ -855,10 +855,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone2Subzone1Other1Totals =
+    val stratum2Substratum1Other1Totals =
         ObservedSubstratumSpeciesTotalsRow(
             observationId,
-            zone2SubzoneId1,
+            stratum2SubstratumId1,
             null,
             "Other 1",
             RecordedSpeciesCertainty.Other,
@@ -869,10 +869,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
         )
-    val zone2Species1Totals =
+    val stratum2Species1Totals =
         ObservedStratumSpeciesTotalsRow(
             observationId,
-            zoneId2,
+            stratumId2,
             speciesId1,
             null,
             RecordedSpeciesCertainty.Known,
@@ -884,10 +884,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
         )
-    val zone2Other1Totals =
+    val stratum2Other1Totals =
         ObservedStratumSpeciesTotalsRow(
             observationId,
-            zoneId2,
+            stratumId2,
             null,
             "Other 1",
             RecordedSpeciesCertainty.Other,
@@ -917,35 +917,35 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             siteSpecies2Totals,
             siteSpecies3Totals,
             siteUnknownTotals,
-            zone1Other1Totals,
-            zone1Other2Totals,
-            zone1Plot1Other1Totals,
-            zone1Plot1Other2Totals,
-            zone1Plot1UnknownTotals,
-            zone1Plot1Species1Totals,
-            zone1Plot1Species2Totals,
-            zone1Plot1Species3Totals,
-            zone1Plot2Species1Totals,
-            zone1Plot2UnknownTotals,
-            zone1Plot2Species3Totals,
-            zone1Species1Totals,
-            zone1Species2Totals,
-            zone1Subzone1Other1Totals,
-            zone1Subzone1Other2Totals,
-            zone1Subzone1Species1Totals,
-            zone1Subzone1Species2Totals,
-            zone1Subzone1Species3Totals,
-            zone1Subzone1UnknownTotals,
-            zone1UnknownTotals,
-            zone1Species3Totals,
-            zone2Other1Totals,
-            zone2Plot1Other1Totals,
-            zone2Plot1Species1Totals,
-            zone2Species1Totals,
-            zone2Subzone1Other1Totals,
-            zone2Subzone1Species1Totals,
+            stratum1Other1Totals,
+            stratum1Other2Totals,
+            stratum1Plot1Other1Totals,
+            stratum1Plot1Other2Totals,
+            stratum1Plot1UnknownTotals,
+            stratum1Plot1Species1Totals,
+            stratum1Plot1Species2Totals,
+            stratum1Plot1Species3Totals,
+            stratum1Plot2Species1Totals,
+            stratum1Plot2UnknownTotals,
+            stratum1Plot2Species3Totals,
+            stratum1Species1Totals,
+            stratum1Species2Totals,
+            stratum1Substratum1Other1Totals,
+            stratum1Substratum1Other2Totals,
+            stratum1Substratum1Species1Totals,
+            stratum1Substratum1Species2Totals,
+            stratum1Substratum1Species3Totals,
+            stratum1Substratum1UnknownTotals,
+            stratum1UnknownTotals,
+            stratum1Species3Totals,
+            stratum2Other1Totals,
+            stratum2Plot1Other1Totals,
+            stratum2Plot1Species1Totals,
+            stratum2Species1Totals,
+            stratum2Substratum1Other1Totals,
+            stratum2Substratum1Species1Totals,
         ),
-        "Totals after observation in second zone",
+        "Totals after observation in second stratum",
     )
 
     assertTableEquals(
@@ -955,12 +955,12 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertTableEquals(
         StratumPopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 2),
-        "Planting zone total populations should be unchanged",
+        "Stratum total populations should be unchanged",
     )
 
     assertTableEquals(
         SubstratumPopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 1),
-        "Planting subzone total populations should be unchanged",
+        "Substratum total populations should be unchanged",
     )
   }
 
@@ -1012,8 +1012,11 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEmpty(RECORDED_PLANTS, "No plants recorded")
 
     assertTableEmpty(OBSERVED_PLOT_SPECIES_TOTALS, "Observed plot species should be empty")
-    assertTableEmpty(OBSERVED_SUBSTRATUM_SPECIES_TOTALS, "Observed subzone species should be empty")
-    assertTableEmpty(OBSERVED_STRATUM_SPECIES_TOTALS, "Observed zone species should be empty")
+    assertTableEmpty(
+        OBSERVED_SUBSTRATUM_SPECIES_TOTALS,
+        "Observed substratum species should be empty",
+    )
+    assertTableEmpty(OBSERVED_STRATUM_SPECIES_TOTALS, "Observed stratum species should be empty")
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS, "Observed site species should be empty")
 
     assertTableEquals(
@@ -1023,12 +1026,12 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertTableEquals(
         StratumPopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 0),
-        "Planting zone total plants should be unchanged",
+        "Stratum total plants should be unchanged",
     )
 
     assertTableEquals(
         SubstratumPopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 0),
-        "Planting subzone total plants should be unchanged",
+        "Substratum total plants should be unchanged",
     )
   }
 
@@ -1087,7 +1090,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
               .where(OBSERVATION_ID.eq(observationId2))
               .fetchOne(CUMULATIVE_DEAD)
         },
-        "Zone cumulative dead for second observation",
+        "Stratum cumulative dead for second observation",
     )
     assertEquals(
         2,
@@ -1102,9 +1105,9 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
   }
 
-  // SW-6717: This can happen if all of a subzone's monitoring plots move to a new subzone
-  //          thanks to a map edit; the original subzone will have subzone-level species totals
-  //          but we don't want to use them as a starting point for a new observation since
+  // SW-6717: This can happen if all of a substratum's monitoring plots move to a new substratum
+  //          thanks to a map edit; the original substratum will have substratum-level species
+  //          totals but we don't want to use them as a starting point for a new observation since
   //          there are no monitoring plots in common.
   @Test
   fun `does not use cumulative dead from past observations if current observation has no total for a species`() {
@@ -1131,7 +1134,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertObservationRequestedSubzone()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
 
-    // We do not call populateCumulativeDead here, so there is no observed subzone species
+    // We do not call populateCumulativeDead here, so there is no observed substratum species
     // total for this observation even though there's one for the previous observation.
 
     store.completePlot(
@@ -1163,7 +1166,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
               .where(OBSERVATION_ID.eq(observationId2))
               .fetchOne(CUMULATIVE_DEAD)
         },
-        "Subzone cumulative dead for second observation",
+        "Substratum cumulative dead for second observation",
     )
     assertEquals(
         1,
@@ -1174,7 +1177,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
               .where(OBSERVATION_ID.eq(observationId2))
               .fetchOne(CUMULATIVE_DEAD)
         },
-        "Zone cumulative dead for second observation",
+        "Stratum cumulative dead for second observation",
     )
     assertEquals(
         1,
@@ -1215,13 +1218,13 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertEquals(
         listOf(StratumPopulationsRow(inserted.plantingZoneId, speciesId, 2, 0)),
         plantingZonePopulationsDao.findAll(),
-        "Planting zone plants since last observation should have been reset",
+        "Stratum plants since last observation should have been reset",
     )
 
     assertEquals(
         listOf(SubstratumPopulationsRow(inserted.plantingSubzoneId, speciesId, 1, 0)),
         plantingSubzonePopulationsDao.findAll(),
-        "Planting subzone plants since last observation should have been reset",
+        "Substratum plants since last observation should have been reset",
     )
   }
 

@@ -74,9 +74,9 @@ import com.terraformation.backend.tracking.db.DraftPlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
-import com.terraformation.backend.tracking.db.PlantingSubzoneNotFoundException
-import com.terraformation.backend.tracking.db.PlantingZoneNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotFoundException
+import com.terraformation.backend.tracking.db.StratumNotFoundException
+import com.terraformation.backend.tracking.db.SubstrataNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -1176,7 +1176,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readPlantingSubzone(plantingSubzoneId: SubstratumId) {
     user.recordPermissionChecks {
       if (!user.canReadPlantingSubzone(plantingSubzoneId)) {
-        throw PlantingSubzoneNotFoundException(plantingSubzoneId)
+        throw SubstrataNotFoundException(plantingSubzoneId)
       }
     }
   }
@@ -1184,7 +1184,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readPlantingZone(plantingZoneId: StratumId) {
     user.recordPermissionChecks {
       if (!user.canReadPlantingZone(plantingZoneId)) {
-        throw PlantingZoneNotFoundException(plantingZoneId)
+        throw StratumNotFoundException(plantingZoneId)
       }
     }
   }

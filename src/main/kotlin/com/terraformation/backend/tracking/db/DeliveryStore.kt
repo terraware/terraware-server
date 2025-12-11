@@ -90,7 +90,7 @@ class DeliveryStore(
     val userId = currentUser().userId
 
     if (plantingSubzoneId == null && plantingSiteHasSubzones(plantingSiteId)) {
-      throw DeliveryMissingSubzoneException(plantingSiteId)
+      throw DeliveryMissingSubstratumException(plantingSiteId)
     }
 
     val nurseryFacilityId =
@@ -526,8 +526,7 @@ class DeliveryStore(
             .select(SUBSTRATA.STRATUM_ID)
             .from(SUBSTRATA)
             .where(SUBSTRATA.ID.eq(plantingSubzoneId))
-            .fetchOne(SUBSTRATA.STRATUM_ID)
-            ?: throw PlantingSubzoneNotFoundException(plantingSubzoneId)
+            .fetchOne(SUBSTRATA.STRATUM_ID) ?: throw SubstrataNotFoundException(plantingSubzoneId)
 
     with(SUBSTRATUM_POPULATIONS) {
       dslContext

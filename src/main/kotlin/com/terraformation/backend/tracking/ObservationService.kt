@@ -35,7 +35,7 @@ import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
-import com.terraformation.backend.tracking.db.ObservationHasNoSubzonesException
+import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
@@ -66,9 +66,9 @@ import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
-import com.terraformation.backend.tracking.model.PlantingSubzoneFullException
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.SubstratumFullException
 import jakarta.inject.Named
 import java.io.InputStream
 import java.time.Instant
@@ -118,8 +118,8 @@ class ObservationService(
           throw ObservationAlreadyStartedException(observationId)
         }
 
-        if (observation.requestedSubzoneIds.isEmpty()) {
-          throw ObservationHasNoSubzonesException(observationId)
+        if (observation.requestedSubstratumIds.isEmpty()) {
+          throw ObservationHasNoSubstrataException(observationId)
         }
 
         plantingSiteStore.ensurePermanentPlotsExist(observation.plantingSiteId)
@@ -133,22 +133,22 @@ class ObservationService(
         log.info("Starting observation")
 
         try {
-          plantingSite.plantingZones.forEach { plantingZone ->
-            log.withMDC("plantingZoneId" to plantingZone.id) {
-              if (plantingZone.plantingSubzones.any { it.id in observation.requestedSubzoneIds }) {
+          plantingSite.strata.forEach { stratum ->
+            log.withMDC("stratumId" to stratum.id) {
+              if (stratum.substrata.any { it.id in observation.requestedSubstratumIds }) {
                 val permanentPlotIds =
-                    plantingZone.choosePermanentPlots(observation.requestedSubzoneIds)
+                    stratum.choosePermanentPlots(observation.requestedSubstratumIds)
                 val temporaryPlotIds =
-                    plantingZone
+                    stratum
                         .chooseTemporaryPlots(
-                            observation.requestedSubzoneIds,
+                            observation.requestedSubstratumIds,
                             gridOrigin,
                             plantingSite.exclusion,
                         )
                         .map { plotBoundary ->
                           plantingSiteStore.createTemporaryPlot(
                               plantingSite.id,
-                              plantingZone.id,
+                              stratum.id,
                               plotBoundary,
                           )
                         }
@@ -169,7 +169,7 @@ class ObservationService(
                         "temporary plots"
                 )
               } else {
-                log.info("Skipping zone because it has no reported plants")
+                log.info("Skipping stratum because it has no reported plants")
               }
             }
           }
@@ -178,7 +178,7 @@ class ObservationService(
           val startedObservation = observationStore.recordObservationStart(observationId)
 
           eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
-        } catch (e: PlantingSubzoneFullException) {
+        } catch (e: SubstratumFullException) {
           log.info("Unable to start observation $observationId", e)
 
           eventPublisher.publishEvent(
@@ -363,7 +363,7 @@ class ObservationService(
 
     validateSchedule(observation.plantingSiteId, observation.startDate, observation.endDate)
 
-    if (!plantingSiteStore.hasSubzonePlantings(observation.plantingSiteId)) {
+    if (!plantingSiteStore.hasSubstratumPlantings(observation.plantingSiteId)) {
       throw ScheduleObservationWithoutPlantsException(observation.plantingSiteId)
     }
 
@@ -415,7 +415,7 @@ class ObservationService(
     return fetchNonNotifiedSitesForThresholds(
         criteria.completedTimeElapsedWeeks,
         criteria.firstPlantingElapsedWeeks,
-        plantingSiteStore.fetchSitesWithSubzonePlantings(
+        plantingSiteStore.fetchSitesWithSubstratumPlantings(
             criteria.notificationNotCompletedCondition(requirePrevious = true)
         ),
     )
@@ -496,9 +496,9 @@ class ObservationService(
       val gridOrigin =
           plantingSite.gridOrigin
               ?: throw IllegalStateException("Planting site ${plantingSite.id} has no grid origin")
-      val plantingZone = plantingSite.findZoneWithMonitoringPlot(monitoringPlotId)
-      val plantingSubzone =
-          plantingZone?.findSubzoneWithMonitoringPlot(monitoringPlotId)
+      val stratum = plantingSite.findStratumWithMonitoringPlot(monitoringPlotId)
+      val substratum =
+          stratum?.findSubstratumWithMonitoringPlot(monitoringPlotId)
               ?: throw PlotNotFoundException(monitoringPlotId)
       val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
       val observationPlotIds = observationPlots.map { it.model.monitoringPlotId }.toSet()
@@ -533,30 +533,30 @@ class ObservationService(
           }
 
           // At this point we will usually have replaced the plot with a new one in a random place
-          // in the zone that hasn't been used in an observation yet.
+          // in the stratum that hasn't been used in an observation yet.
           //
-          // If this is the first observation, there's a good chance that there are still subzones
+          // If this is the first observation, there's a good chance that there are still substrata
           // that haven't completed planting, and a chance that the replacement plot be in one of
-          // the incomplete subzones. In that case, we want the same behavior as during initial
+          // the incomplete substrata. In that case, we want the same behavior as during initial
           // permanent plot selection: the plot is excluded from the observation even if that means
           // the observation has fewer than the configured number of permanent plots.
-          val addedPlotsInRequestedSubzones =
+          val addedPlotsInRequestedSubstrata =
               if (replacementResult.addedMonitoringPlotIds.isNotEmpty()) {
-                val subzones =
-                    plantingZone.plantingSubzones.filter { subzone ->
-                      subzone.monitoringPlots.any {
+                val substrata =
+                    stratum.substrata.filter { substratum ->
+                      substratum.monitoringPlots.any {
                         it.id in replacementResult.addedMonitoringPlotIds
                       }
                     }
-                if (subzones.all { it.id in observation.requestedSubzoneIds }) {
+                if (substrata.all { it.id in observation.requestedSubstratumIds }) {
                   log.info(
-                      "Replacement permanent plot is in a subzone that has completed planting; " +
+                      "Replacement permanent plot is in a substratum that has completed planting; " +
                           "including the plot in this observation."
                   )
                   replacementResult.addedMonitoringPlotIds
                 } else {
                   log.info(
-                      "Replacement permanent plot is in a subzone that has not completed " +
+                      "Replacement permanent plot is in a substratum that has not completed " +
                           "planting; not including it in this observation."
                   )
                   emptySet()
@@ -571,13 +571,13 @@ class ObservationService(
           )
           removedPlotIds.addAll(replacementResult.removedMonitoringPlotIds)
 
-          if (addedPlotsInRequestedSubzones.isNotEmpty()) {
+          if (addedPlotsInRequestedSubstrata.isNotEmpty()) {
             observationStore.addPlotsToObservation(
                 observationId,
-                addedPlotsInRequestedSubzones,
+                addedPlotsInRequestedSubstrata,
                 isPermanent = true,
             )
-            addedPlotIds.addAll(addedPlotsInRequestedSubzones)
+            addedPlotIds.addAll(addedPlotsInRequestedSubstrata)
           }
         } else {
           log.info(
@@ -594,13 +594,13 @@ class ObservationService(
         }
 
         val replacementPlotBoundary =
-            plantingZone
+            stratum
                 .findUnusedSquares(
                     count = 1,
                     excludePlotIds = observationPlotIds,
                     exclusion = plantingSite.exclusion,
                     gridOrigin = gridOrigin,
-                    searchBoundary = plantingSubzone.boundary,
+                    searchBoundary = substratum.boundary,
                 )
                 .firstOrNull()
 
@@ -608,7 +608,7 @@ class ObservationService(
           val replacementPlotId =
               plantingSiteStore.createTemporaryPlot(
                   plantingSite.id,
-                  plantingZone.id,
+                  stratum.id,
                   replacementPlotBoundary,
               )
           log.info("Adding replacement plot $replacementPlotId")
@@ -619,7 +619,7 @@ class ObservationService(
               isPermanent = false,
           )
         } else {
-          log.info("No other temporary plots available in subzone")
+          log.info("No other temporary plots available in substratum")
         }
       }
 
@@ -683,7 +683,7 @@ class ObservationService(
                   isAdHoc = true,
                   observationType = observationType,
                   plantingSiteId = plantingSiteId,
-                  requestedSubzoneIds = emptySet(),
+                  requestedSubstratumIds = emptySet(),
                   startDate = date,
                   state = ObservationState.Upcoming,
               )
@@ -749,12 +749,12 @@ class ObservationService(
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
     dslContext.transaction { _ ->
-      // Abandon any active observations with incomplete plots in planting zones that are affected
-      // by the edit.
-      val affectedPlantingZoneIds =
-          event.plantingSiteEdit.plantingZoneEdits.mapNotNull { it.existingModel?.id }
+      // Abandon any active observations with incomplete plots in strata that are affected by the
+      // edit.
+      val affectedStratumIds =
+          event.plantingSiteEdit.stratumEdits.mapNotNull { it.existingModel?.id }
       val affectedObservationIds =
-          observationStore.fetchActiveObservationIds(event.edited.id, affectedPlantingZoneIds)
+          observationStore.fetchActiveObservationIds(event.edited.id, affectedStratumIds)
 
       affectedObservationIds.forEach { observationId ->
         observationStore.abandonObservation(observationId)

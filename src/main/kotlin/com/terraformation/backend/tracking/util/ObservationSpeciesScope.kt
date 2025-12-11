@@ -31,7 +31,7 @@ interface ObservationSpeciesScope<ID : Any> {
 
   fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>): Condition
 
-  fun tempZoneCondition(tempZoneTable: ObservationPlots): Condition
+  fun tempStratumCondition(tempStratumTable: ObservationPlots): Condition
 
   fun t0DensityCondition(permPlotsTable: ObservationPlots): Condition
 }
@@ -53,21 +53,21 @@ class ObservationSpeciesPlot(val plotId: MonitoringPlotId) :
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       plotField.eq(plotId)
 
-  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      tempZoneTable.MONITORING_PLOT_ID.eq(plotId)
+  override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
+      tempStratumTable.MONITORING_PLOT_ID.eq(plotId)
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
       PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotId)
 }
 
-class ObservationSpeciesSubzone(
-    val subzoneSelect: Select<Record1<SubstratumId?>>,
+class ObservationSpeciesSubstratum(
+    val substratumSelect: Select<Record1<SubstratumId?>>,
     val plotId: MonitoringPlotId? = null,
 ) : ObservationSpeciesScope<SubstratumId> {
   constructor(
-      subzoneId: SubstratumId,
+      substratumId: SubstratumId,
       plotId: MonitoringPlotId? = null,
-  ) : this(DSL.select(DSL.inline(subzoneId)), plotId)
+  ) : this(DSL.select(DSL.inline(substratumId)), plotId)
 
   constructor(
       plotId: MonitoringPlotId
@@ -81,10 +81,10 @@ class ObservationSpeciesSubzone(
       plotId,
   )
 
-  override val scopeId = subzoneSelect
+  override val scopeId = substratumSelect
 
   override val observedTotalsCondition =
-      OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID.eq(subzoneSelect)
+      OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID.eq(substratumSelect)
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVED_SUBSTRATUM_SPECIES_TOTALS.substrata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
@@ -97,21 +97,21 @@ class ObservationSpeciesSubzone(
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
-  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      tempZoneTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(subzoneSelect)
+  override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
+      tempStratumTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(substratumSelect)
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
-      permPlotsTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(subzoneSelect)
+      permPlotsTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(substratumSelect)
 }
 
-class ObservationSpeciesZone(
-    val zoneSelect: Select<Record1<StratumId?>>,
+class ObservationSpeciesStratum(
+    val stratumSelect: Select<Record1<StratumId?>>,
     val plotId: MonitoringPlotId? = null,
 ) : ObservationSpeciesScope<StratumId> {
   constructor(
-      zoneId: StratumId,
+      stratumId: StratumId,
       plotId: MonitoringPlotId? = null,
-  ) : this(DSL.select(DSL.inline(zoneId)), plotId)
+  ) : this(DSL.select(DSL.inline(stratumId)), plotId)
 
   constructor(
       plotId: MonitoringPlotId
@@ -126,9 +126,9 @@ class ObservationSpeciesZone(
       plotId,
   )
 
-  override val scopeId = zoneSelect
+  override val scopeId = stratumSelect
 
-  override val observedTotalsCondition = OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID.eq(zoneSelect)
+  override val observedTotalsCondition = OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID.eq(stratumSelect)
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVED_STRATUM_SPECIES_TOTALS.strata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
@@ -142,12 +142,12 @@ class ObservationSpeciesZone(
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
-  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
-      STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(zoneSelect)
+  override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
+      STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(stratumSelect)
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
       permPlotsTable.monitoringPlotHistories.substratumHistories.stratumHistories.STRATUM_ID.eq(
-          zoneSelect
+          stratumSelect
       )
 }
 
@@ -170,8 +170,8 @@ class ObservationSpeciesSite(
   )
 
   constructor(
-      zoneId: StratumId
-  ) : this(DSL.select(STRATA.PLANTING_SITE_ID).from(STRATA).where(STRATA.ID.eq(zoneId)))
+      stratumId: StratumId
+  ) : this(DSL.select(STRATA.PLANTING_SITE_ID).from(STRATA).where(STRATA.ID.eq(stratumId)))
 
   override val scopeId = siteSelect
 
@@ -188,7 +188,7 @@ class ObservationSpeciesSite(
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
-  override fun tempZoneCondition(tempZoneTable: ObservationPlots) =
+  override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
       STRATUM_T0_TEMP_DENSITIES.strata.PLANTING_SITE_ID.eq(siteSelect)
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =

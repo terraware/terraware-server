@@ -46,7 +46,7 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
         )
 
     insertPlantingZone()
-    val subzoneId = insertPlantingSubzone()
+    val substratumId = insertPlantingSubzone()
     insertMonitoringPlot()
     insertObservationPlot()
     insertObservationRequestedSubzone()
@@ -64,7 +64,7 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
                 observationType = ObservationType.Monitoring,
                 plantingSiteHistoryId = plantingSiteHistoryId,
                 plantingSiteId = plantingSiteId,
-                requestedSubzoneIds = setOf(subzoneId),
+                requestedSubstratumIds = setOf(substratumId),
                 startDate = startDate1,
                 state = ObservationState.InProgress,
             ),

@@ -1,8 +1,8 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.db.SRID
-import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import com.terraformation.backend.tracking.model.StratumModel
 import java.math.BigDecimal
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Coordinate
@@ -40,9 +40,9 @@ class ShapefileGenerator(
       zone: String = lastZoneName,
       subzoneStableId: String? = null,
       zoneStableId: String? = null,
-      errorMargin: BigDecimal? = PlantingZoneModel.DEFAULT_ERROR_MARGIN,
+      errorMargin: BigDecimal? = StratumModel.DEFAULT_ERROR_MARGIN,
       studentsT: BigDecimal? = null,
-      variance: BigDecimal? = PlantingZoneModel.DEFAULT_VARIANCE,
+      variance: BigDecimal? = StratumModel.DEFAULT_VARIANCE,
       permanentPlots: Int? = defaultPermanentPlots,
       temporaryPlots: Int? = defaultTemporaryPlots,
       targetPlantingDensity: BigDecimal? = null,

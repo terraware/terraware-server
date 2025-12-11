@@ -5,11 +5,11 @@ import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
-import com.terraformation.backend.tracking.model.NewPlantingZoneModel
+import com.terraformation.backend.tracking.model.NewStratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
-import com.terraformation.backend.tracking.model.PlantingSubzoneModel
-import com.terraformation.backend.tracking.model.PlantingZoneModel
 import com.terraformation.backend.tracking.model.Shapefile
+import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import org.locationtech.jts.geom.Coordinate
@@ -140,7 +140,7 @@ class PlantingSiteImporter(
             gridOrigin = gridOrigin,
             name = name,
             organizationId = organizationId,
-            plantingZones = zonesWithSubzones,
+            strata = zonesWithSubzones,
         )
     return newModel
   }
@@ -183,7 +183,7 @@ class PlantingSiteImporter(
       exclusion: MultiPolygon?,
       problems: MutableList<String>,
       requireStableIds: Boolean,
-  ): List<NewPlantingZoneModel> {
+  ): List<NewStratumModel> {
     val validSubzones =
         subzonesFile.features.filter { feature ->
           fun checkProperty(
@@ -267,7 +267,7 @@ class PlantingSiteImporter(
             val stableId =
                 StableId(subzoneFeature.getProperty(subzoneStableIdProperties) ?: fullName)
 
-            PlantingSubzoneModel.create(
+            SubstratumModel.create(
                 boundary = boundary.toMultiPolygon(),
                 exclusion = exclusion,
                 fullName = fullName,
@@ -290,7 +290,7 @@ class PlantingSiteImporter(
       val studentsT =
           subzoneFeatures
               .mapNotNull { it.getProperty(studentsTProperties)?.toBigDecimalOrNull() }
-              .find { it.signum() > 0 } ?: PlantingZoneModel.DEFAULT_STUDENTS_T
+              .find { it.signum() > 0 } ?: StratumModel.DEFAULT_STUDENTS_T
 
       val numPermanentPlots =
           subzoneFeatures.firstNotNullOfOrNull {
@@ -303,17 +303,17 @@ class PlantingSiteImporter(
       val targetPlantingDensity =
           subzoneFeatures.firstNotNullOfOrNull {
             it.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
-          } ?: PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY
+          } ?: StratumModel.DEFAULT_TARGET_PLANTING_DENSITY
 
       if (errorMargin != null && variance != null) {
-        PlantingZoneModel.create(
+        StratumModel.create(
             boundary = zoneBoundary,
             errorMargin = errorMargin,
             exclusion = exclusion,
             name = zoneName,
             numPermanentPlots = numPermanentPlots,
             numTemporaryPlots = numTemporaryPlots,
-            plantingSubzones = subzoneModels,
+            substrata = subzoneModels,
             stableId = stableIdsByZone[zoneName]!!,
             studentsT = studentsT,
             targetPlantingDensity = targetPlantingDensity,
