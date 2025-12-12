@@ -448,6 +448,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedS
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
@@ -469,6 +470,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
@@ -3226,6 +3228,56 @@ abstract class DatabaseBackedTest {
           .set(PERMANENT_LIVE, permanentLive)
           .set(MORTALITY_RATE, mortalityRate)
           .set(SURVIVAL_RATE, survivalRate)
+          .execute()
+    }
+  }
+
+  fun insertObservedSubzoneSpeciesTotals(
+      row: ObservedSubzoneSpeciesTotalsRow = ObservedSubzoneSpeciesTotalsRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      plantingSubzoneId: PlantingSubzoneId = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
+      certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
+      speciesId: SpeciesId? =
+          row.speciesId
+              ?: if (certainty == RecordedSpeciesCertainty.Known) {
+                inserted.speciesId
+              } else {
+                null
+              },
+      speciesName: String? =
+          row.speciesName
+              ?: if (certainty == RecordedSpeciesCertainty.Other) {
+                "Other species"
+              } else {
+                null
+              },
+      totalLive: Int = row.totalLive ?: 0,
+      totalDead: Int = row.totalDead ?: 0,
+      totalExisting: Int = row.totalExisting ?: 0,
+      cumulativeDead: Int = row.cumulativeDead ?: 0,
+      permanentLive: Int = row.permanentLive ?: 0,
+      mortalityRate: Int =
+          row.mortalityRate
+              ?: if (cumulativeDead + permanentLive == 0) {
+                0
+              } else {
+                (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
+              },
+  ) {
+    with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+      dslContext
+          .insertInto(OBSERVED_SUBZONE_SPECIES_TOTALS)
+          .set(OBSERVATION_ID, observationId)
+          .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
+          .set(CERTAINTY_ID, certainty)
+          .set(SPECIES_ID, speciesId)
+          .set(SPECIES_NAME, speciesName)
+          .set(TOTAL_LIVE, totalLive)
+          .set(TOTAL_DEAD, totalDead)
+          .set(TOTAL_EXISTING, totalExisting)
+          .set(CUMULATIVE_DEAD, cumulativeDead)
+          .set(PERMANENT_LIVE, permanentLive)
+          .set(MORTALITY_RATE, mortalityRate)
           .execute()
     }
   }

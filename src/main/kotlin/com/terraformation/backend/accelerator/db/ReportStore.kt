@@ -66,16 +66,19 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
-import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.tracking.db.latestObservationForSubzoneField
+import com.terraformation.backend.tracking.db.observationIdForPlot
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -1530,18 +1533,32 @@ class ReportStore(
   ): Condition =
       DSL.exists(
           DSL.selectOne()
-              .from(OBSERVATION_PLOTS)
-              .where(
-                  OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
-                      .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(isPermanent))
-                      .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
-                      .and(OBSERVATION_PLOTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
+              .from(
+                  DSL.select(OBSERVATION_PLOTS.IS_PERMANENT)
+                      .from(OBSERVATION_PLOTS)
+                      .where(
+                          OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
+                              .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
+                      )
+                      .and(
+                          OBSERVATION_PLOTS.COMPLETED_TIME.le(
+                              DSL.select(OBSERVATIONS.COMPLETED_TIME)
+                                  .from(OBSERVATIONS)
+                                  .where(
+                                      OBSERVATIONS.ID.eq(
+                                          OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID
+                                      )
+                                  )
+                          )
+                      )
+                      .orderBy(
+                          OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
+                          OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
+                      )
+                      .limit(1)
+                      .asTable("most_recent")
               )
-              .orderBy(
-                  OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
-                  OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
-              )
-              .limit(1)
+              .where(DSL.field("most_recent.IS_PERMANENT", Boolean::class.java).eq(isPermanent))
       )
 
   private val survivalRatePermDenominatorField =
@@ -1551,12 +1568,23 @@ class ReportStore(
                     DSL.field(
                         DSL.select(DSL.sum(PLOT_DENSITY))
                             .from(this)
+                            .join(MONITORING_PLOT_HISTORIES)
+                            .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
                             .where(
-                                monitoringPlots.PLANTING_SITE_ID.`in`(
-                                    OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                                MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                                    OBSERVED_SITE_SPECIES_TOTALS.observations
+                                        .PLANTING_SITE_HISTORY_ID
                                 )
                             )
                             .and(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
+                            .and(
+                                observationIdForPlot(
+                                        MONITORING_PLOT_ID,
+                                        OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID,
+                                        true,
+                                    )
+                                    .isNotNull
+                            )
                             .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
                     )
                 ),
@@ -1566,30 +1594,39 @@ class ReportStore(
       }
 
   private val survivalRateTempDenominatorField =
-      with(PLANTING_ZONE_T0_TEMP_DENSITIES) {
+      with(MONITORING_PLOT_HISTORIES) {
         DSL.coalesce(
                 DSL.sum(
                     DSL.field(
-                        DSL.select(DSL.sum(ZONE_DENSITY))
-                            .from(PLANTING_ZONE_T0_TEMP_DENSITIES)
-                            .join(MONITORING_PLOTS)
+                        DSL.select(DSL.sum(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY))
+                            .from(this)
+                            .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
                             .on(
-                                MONITORING_PLOTS.plantingSubzones.PLANTING_ZONE_ID.eq(
-                                    PLANTING_ZONE_ID
+                                PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
+                                    plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID
                                 )
                             )
                             .where(
-                                MONITORING_PLOTS.PLANTING_SITE_ID.`in`(
-                                    OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                                PLANTING_SITE_HISTORY_ID.eq(
+                                    OBSERVED_SITE_SPECIES_TOTALS.observations
+                                        .PLANTING_SITE_HISTORY_ID
                                 )
+                            )
+                            .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
+                            .and(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
+                            .and(
+                                observationIdForPlot(
+                                        MONITORING_PLOT_ID,
+                                        OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID,
+                                        false,
+                                    )
+                                    .isNotNull
                             )
                             .and(
-                                plantingZones.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
-                                    true
+                                PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(
+                                    OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID
                                 )
                             )
-                            .and(plotHasCompletedObservations(MONITORING_PLOTS.ID, false))
-                            .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
                     )
                 ),
                 BigDecimal.ZERO,
@@ -1600,14 +1637,55 @@ class ReportStore(
   private val survivalRateDenominatorField =
       survivalRatePermDenominatorField.plus(survivalRateTempDenominatorField)
 
+  /**
+   * `total_live` only includes the current observation's live and doesn't aggregate all subzones
+   * from past observations, so when `survival_rate_includes_temp_plots` is set to true, this needs
+   * to sum total_live at the subzone level instead of using the stored site's values.
+   */
   private val survivalRateNumeratorField =
-      with(OBSERVED_SITE_SPECIES_TOTALS) {
-        DSL.sum(
-            DSL.case_()
-                .`when`(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, TOTAL_LIVE)
-                .else_(PERMANENT_LIVE)
-        )
-      }
+      DSL.sum(
+          DSL.case_()
+              .`when`(
+                  OBSERVED_SITE_SPECIES_TOTALS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
+                  with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+                    DSL.field(
+                        DSL.select(
+                                DSL.sum(
+                                        DSL.coalesce(
+                                            OBSERVED_SUBZONE_SPECIES_TOTALS.TOTAL_LIVE,
+                                            0,
+                                        )
+                                    )
+                                    .cast(SQLDataType.INTEGER)
+                            )
+                            .from(PLANTING_SUBZONES)
+                            .join(OBSERVED_SUBZONE_SPECIES_TOTALS)
+                            .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
+                            .where(
+                                PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
+                                    OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
+                                )
+                            )
+                            .and(
+                                SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID)
+                                    .or(
+                                        SPECIES_ID.isNull.and(
+                                            OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNull
+                                        )
+                                    )
+                            )
+                            .and(
+                                OBSERVATION_ID.eq(
+                                    latestObservationForSubzoneField(
+                                        OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID
+                                    )
+                                )
+                            )
+                    )
+                  },
+              )
+              .else_(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE)
+      )
 
   // Fetch the latest observations per planting site from the reporting period and calculate the
   // survival rate
