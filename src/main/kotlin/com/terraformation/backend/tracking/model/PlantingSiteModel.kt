@@ -57,8 +57,8 @@ data class PlantingSiteModel<
     val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
     val plantingZones: List<PlantingZoneModel<PZID, PSZID, TIMESTAMP>> = emptyList(),
     val projectId: ProjectId? = null,
-    val timeZone: ZoneId? = null,
     val survivalRateIncludesTempPlots: Boolean = false,
+    val timeZone: ZoneId? = null,
 ) {
   /**
    * Returns the start date of the next observation for this planting site, or null if the planting

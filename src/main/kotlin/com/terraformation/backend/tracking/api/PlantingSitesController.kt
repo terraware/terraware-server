@@ -373,6 +373,7 @@ data class PlantingSitePayload(
     val plantingSeasons: List<PlantingSeasonPayload>,
     val plantingZones: List<PlantingZonePayload>?,
     val projectId: ProjectId? = null,
+    val survivalRateIncludesTempPlots: Boolean?,
     val timeZone: ZoneId?,
 ) {
   constructor(
@@ -392,6 +393,7 @@ data class PlantingSitePayload(
       plantingSeasons = model.plantingSeasons.map { PlantingSeasonPayload(it) },
       plantingZones = model.plantingZones.map { PlantingZonePayload(it) },
       projectId = model.projectId,
+      survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
       timeZone = model.timeZone,
   )
 }
