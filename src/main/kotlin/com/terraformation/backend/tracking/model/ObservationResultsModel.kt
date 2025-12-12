@@ -98,6 +98,41 @@ data class ObservationSpeciesResultsModel(
     val totalPlants: Int,
 )
 
+/**
+ * Common values for monitoring results for different kinds of regions (plots, subzones, planting
+ * zones, planting sites).
+ */
+interface BaseMonitoringResult {
+  /**
+   * Estimated planting density for the region based on the observed planting densities of
+   * monitoring plots.
+   */
+  val plantingDensity: Int
+
+  /** List of species result used for this rollup */
+  val species: List<ObservationSpeciesResultsModel>
+
+  /**
+   * Percentage of plants of all species that were alive in the region's permanent monitoring plots
+   * since the t0 point. Only live plants from the current observation are counted towards this
+   * percentage. Existing plants are not counted because the intent is to track the health of plants
+   * that were introduced to the site.
+   */
+  val survivalRate: Int?
+
+  /**
+   * Total number of plants recorded. Includes all plants, regardless of live/dead status or
+   * species.
+   */
+  val totalPlants: Int
+  /**
+   * Total number of species observed, not counting dead plants. Includes plants with Known and
+   * Other certainties. In the case of Other, each distinct user-supplied species name is counted as
+   * a separate species for purposes of this total.
+   */
+  val totalSpecies: Int
+}
+
 data class ObservationMonitoringPlotResultsModel(
     val boundary: Polygon,
     val claimedByName: String?,
@@ -130,35 +165,35 @@ data class ObservationMonitoringPlotResultsModel(
      * because the intent is to track how many of the plants that were introduced to the site are
      * still alive.
      */
-    val plantingDensity: Int,
+    override val plantingDensity: Int,
     val plants: List<RecordedPlantModel>?,
     val sizeMeters: Int,
-    val species: List<ObservationSpeciesResultsModel>,
+    override val species: List<ObservationSpeciesResultsModel>,
     val status: ObservationPlotStatus,
     /**
      * If this is a permanent monitoring plot in this observation, percentage of plants of all
      * species that have survived since the t0 point. Existing plants are not counted because the
      * intent is to track the health of plants that were introduced to the site.
      */
-    val survivalRate: Int?,
+    override val survivalRate: Int?,
     /**
      * Total number of plants recorded. Includes all plants, regardless of live/dead status or
      * species.
      */
-    val totalPlants: Int,
+    override val totalPlants: Int,
     /**
      * Total number of species observed, not counting dead plants. Includes plants with Known and
      * Other certainties. In the case of Other, each distinct user-supplied species name is counted
      * as a separate species for purposes of this total.
      */
-    val totalSpecies: Int,
-)
+    override val totalSpecies: Int,
+) : BaseMonitoringResult
 
 /**
- * Common values for monitoring results for different kinds of regions (subzones, planting zones,
- * planting sites).
+ * Common values for aggregated monitoring results for different kinds of regions (subzones,
+ * planting zones, planting sites).
  */
-interface BaseMonitoringResult {
+interface BaseAggregatedMonitoringResult : BaseMonitoringResult {
   /**
    * Estimated number of plants in the region based on estimated planting density and area. Only
    * present if all observed subzones in the region have completed planting.
@@ -185,37 +220,8 @@ interface BaseMonitoringResult {
   /** Standard deviation of planting density of plots */
   val plantingDensityStdDev: Int?
 
-  /**
-   * Estimated planting density for the region based on the observed planting densities of
-   * monitoring plots.
-   */
-  val plantingDensity: Int
-
-  /** List of species result used for this rollup */
-  val species: List<ObservationSpeciesResultsModel>
-
-  /**
-   * Percentage of plants of all species that were alive in the region's permanent monitoring plots
-   * since the t0 point. Only live plants from the current observation are counted towards this
-   * percentage. Existing plants are not counted because the intent is to track the health of plants
-   * that were introduced to the site.
-   */
-  val survivalRate: Int?
-
   /** Standard deviation of survival rates of plots */
   val survivalRateStdDev: Int?
-
-  /**
-   * Total number of plants recorded. Includes all plants, regardless of live/dead status or
-   * species.
-   */
-  val totalPlants: Int
-  /**
-   * Total number of species observed, not counting dead plants. Includes plants with Known and
-   * Other certainties. In the case of Other, each distinct user-supplied species name is counted as
-   * a separate species for purposes of this total.
-   */
-  val totalSpecies: Int
 }
 
 data class ObservationPlantingSubzoneResultsModel(
@@ -236,7 +242,7 @@ data class ObservationPlantingSubzoneResultsModel(
     val survivalRateIncludesTempPlots: Boolean,
     override val totalPlants: Int,
     override val totalSpecies: Int,
-) : BaseMonitoringResult
+) : BaseAggregatedMonitoringResult
 
 data class ObservationPlantingZoneResultsModel(
     val areaHa: BigDecimal,
@@ -255,7 +261,7 @@ data class ObservationPlantingZoneResultsModel(
     override val survivalRateStdDev: Int?,
     override val totalPlants: Int,
     override val totalSpecies: Int,
-) : BaseMonitoringResult
+) : BaseAggregatedMonitoringResult
 
 data class ObservationResultsModel(
     val adHocPlot: ObservationMonitoringPlotResultsModel?,
@@ -281,7 +287,7 @@ data class ObservationResultsModel(
     val state: ObservationState,
     override val totalPlants: Int,
     override val totalSpecies: Int,
-) : BaseMonitoringResult
+) : BaseAggregatedMonitoringResult
 
 data class ObservationPlantingZoneRollupResultsModel(
     val areaHa: BigDecimal,
@@ -304,7 +310,7 @@ data class ObservationPlantingZoneRollupResultsModel(
     val survivalRateIncludesTempPlots: Boolean,
     override val totalPlants: Int,
     override val totalSpecies: Int,
-) : BaseMonitoringResult {
+) : BaseAggregatedMonitoringResult {
   companion object {
     fun of(
         areaHa: BigDecimal,
@@ -431,7 +437,7 @@ data class ObservationRollupResultsModel(
     override val survivalRateStdDev: Int?,
     override val totalPlants: Int,
     override val totalSpecies: Int,
-) : BaseMonitoringResult {
+) : BaseAggregatedMonitoringResult {
   companion object {
     fun of(
         plantingSiteId: PlantingSiteId,
