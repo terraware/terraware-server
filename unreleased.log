@@ -1,1 +1,4 @@
+93e867341f6 Update Node dependencies (#3715)
+aa6fafb7160 Update dependency black to v25.12.0 (#3720)
+3708beb8c24 SW-7850 Add survivalRateIncludesTempPlots to planting site payload (#3724)
 c49eac9c425 SW-7853 Fix survival rates in reports (#3722)
