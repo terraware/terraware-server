@@ -276,6 +276,7 @@ data class ObservationResultsModel(
     val plantingZones: List<ObservationPlantingZoneResultsModel>,
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
+    val survivalRateIncludesTempPlots: Boolean,
     override val survivalRateStdDev: Int?,
     val startDate: LocalDate,
     val state: ObservationState,
@@ -561,6 +562,10 @@ fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(
   val numKnownLive =
       if (includeTempPlots) this.sumOf { it.latestLive } else this.sumOf { it.permanentLive }
 
+  return calculateSurvivalRate(numKnownLive, sumDensity)
+}
+
+fun calculateSurvivalRate(numKnownLive: Int, sumDensity: BigDecimal?): Int? {
   val numerator = (numKnownLive * 100.0).toBigDecimal()
 
   return if (sumDensity != null && sumDensity > BigDecimal.ZERO) {

@@ -79,6 +79,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIE
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.db.latestObservationForSubzoneField
 import com.terraformation.backend.tracking.db.observationIdForPlot
+import com.terraformation.backend.tracking.model.calculateSurvivalRate
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -105,6 +106,8 @@ class ReportStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
+    private val observationResultsStore:
+        com.terraformation.backend.tracking.db.ObservationResultsStore,
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
@@ -845,36 +848,61 @@ class ReportStore(
 
     val usersField = reportUsersMultiset()
 
-    return dslContext
-        .select(
-            REPORTS.asterisk(),
-            PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
-            achievementsMultiset,
-            challengesMultiset,
-            photosMultiset,
-            usersField,
-            projectMetricsField,
-            standardMetricsField,
-            systemMetricsField,
-        )
-        .from(REPORTS)
-        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
-        .on(REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
-        .where(condition)
-        .orderBy(REPORTS.START_DATE)
-        .fetch {
-          ReportModel.of(
-              record = it,
-              achievementsField = achievementsMultiset,
-              challengesField = challengesMultiset,
-              photosField = photosMultiset,
-              usersField = usersField,
-              projectMetricsField = projectMetricsField,
-              standardMetricsField = standardMetricsField,
-              systemMetricsField = systemMetricsField,
-          )
+    val reports =
+        dslContext
+            .select(
+                REPORTS.asterisk(),
+                PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
+                achievementsMultiset,
+                challengesMultiset,
+                photosMultiset,
+                usersField,
+                projectMetricsField,
+                standardMetricsField,
+                systemMetricsField,
+            )
+            .from(REPORTS)
+            .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+            .on(REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
+            .where(condition)
+            .orderBy(REPORTS.START_DATE)
+            .fetch {
+              ReportModel.of(
+                  record = it,
+                  achievementsField = achievementsMultiset,
+                  challengesField = challengesMultiset,
+                  photosField = photosMultiset,
+                  usersField = usersField,
+                  projectMetricsField = projectMetricsField,
+                  standardMetricsField = standardMetricsField,
+                  systemMetricsField = systemMetricsField,
+              )
+            }
+            .filter { currentUser().canReadReport(it.id) }
+
+    // Post-process survival rate metrics
+    if (includeMetrics) {
+      return reports.map { report ->
+        val survivalRateMetric =
+            report.systemMetrics.find { it.metric == SystemMetric.SurvivalRate }
+        if (survivalRateMetric != null) {
+          val calculatedSurvivalRate = calculateSurvivalRateForReport(report.id) ?: 0
+          val updatedMetrics =
+              report.systemMetrics.map { metric ->
+                if (metric.metric == SystemMetric.SurvivalRate) {
+                  metric.copy(entry = metric.entry.copy(systemValue = calculatedSurvivalRate))
+                } else {
+                  metric
+                }
+              }
+          report.copy(systemMetrics = updatedMetrics)
+        } else {
+          report
         }
-        .filter { currentUser().canReadReport(it.id) }
+      }
+    }
+
+    return reports
   }
 
   private fun fetchConfigsByCondition(
@@ -1157,9 +1185,15 @@ class ReportStore(
       return 0
     }
 
+    val survivalRate = calculateSurvivalRateForReport(reportId)
+
     // If the report is not submitted, set the system value to null.
     val systemValueField =
-        DSL.`when`(REPORTS.STATUS_ID.`in`(ReportModel.submittedStatuses), systemTerrawareValueField)
+        DSL.`when`(
+                REPORTS.STATUS_ID.`in`(ReportModel.submittedStatuses),
+                DSL.`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate), survivalRate)
+                    .else_(systemTerrawareValueField),
+            )
             .else_(DSL.value(null, REPORT_SYSTEM_METRICS.SYSTEM_VALUE))
     val systemTimeField =
         DSL.`when`(
@@ -1687,30 +1721,52 @@ class ReportStore(
               .else_(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE)
       )
 
-  // Fetch the latest observations per planting site from the reporting period and calculate the
-  // survival rate
-  private val survivalRateField =
-      DSL.field(
-              DSL.select(
-                      DSL.if_(
-                          survivalRateDenominatorField.notEqual(BigDecimal.ZERO),
-                          DSL.round(
-                              (survivalRateNumeratorField * 100.0) / survivalRateDenominatorField
-                          ),
-                          BigDecimal.ZERO,
-                      )
-                  )
-                  .from(OBSERVED_SITE_SPECIES_TOTALS)
-                  .where(
-                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(observationsInReportPeriod)
-                  )
-                  .and(
-                      OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
-                          RecordedSpeciesCertainty.Unknown
-                      )
-                  )
-          )
-          .convertFrom { it.toInt() }
+  // Calculate survival rate by fetching observations from observationResultsStore
+  private fun calculateSurvivalRateForReport(reportId: ReportId): Int? {
+    val observationIds =
+        dslContext
+            .select(OBSERVATIONS.ID)
+            .from(OBSERVATIONS, REPORTS)
+            .where(REPORTS.ID.eq(reportId))
+            .and(OBSERVATIONS.ID.`in`(observationsInReportPeriod))
+            .fetch { it[OBSERVATIONS.ID]!! }
+
+    if (observationIds.isEmpty()) {
+      return null
+    }
+
+    val observationResults = observationIds.mapNotNull { observationResultsStore.fetchOneById(it) }
+
+    val speciesPairs =
+        observationResults
+            .filter { it.survivalRate != null }
+            .map { it.species to it.survivalRateIncludesTempPlots }
+
+    if (speciesPairs.isEmpty()) {
+      return null
+    }
+
+    // Calculate sumDensity and numKnownLive across all observations
+    var sumDensity = BigDecimal.ZERO
+    var numKnownLive = 0
+
+    speciesPairs.forEach { (speciesList, includesTempPlots) ->
+      sumDensity += speciesList.mapNotNull { it.t0Density }.sumOf { it }
+      numKnownLive +=
+          if (includesTempPlots) {
+            speciesList.sumOf { it.latestLive }
+          } else {
+            speciesList.sumOf { it.permanentLive }
+          }
+    }
+
+    return calculateSurvivalRate(numKnownLive, sumDensity)
+  }
+
+  // todo see if we can get rid of this
+  // Survival rate is calculated in Kotlin using calculateSurvivalRateForReport()
+  // and post-processed after fetching reports
+  private val survivalRateField = DSL.value(0)
 
   private val seedsCollectedField =
       with(ACCESSIONS) {
