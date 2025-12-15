@@ -81,6 +81,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             deleted = null,
             fileId = fileId,
             fullText = "Photo $fileId",
+            isOriginal = true,
             mediaKind = MediaKind.Photo,
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,
@@ -173,6 +174,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
             deleted = true, // This will be set on the created action, not just the deleted one
             fileId = fileId,
             fullText = "Photo $fileId",
+            isOriginal = true,
             mediaKind = MediaKind.Photo,
             monitoringPlotId = monitoringPlotId,
             observationId = observationId,

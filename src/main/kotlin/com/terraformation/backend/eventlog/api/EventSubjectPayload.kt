@@ -221,6 +221,12 @@ data class ObservationPlotMediaSubjectPayload(
     override val deleted: Boolean?,
     val fileId: FileId,
     override val fullText: String,
+    @Schema(
+        description =
+            "True if this file was uploaded as part of the original submission of observation " +
+                "data; false if it was uploaded later."
+    )
+    val isOriginal: Boolean,
     val mediaKind: MediaKind,
     val monitoringPlotId: MonitoringPlotId,
     val observationId: ObservationId,
@@ -246,6 +252,7 @@ data class ObservationPlotMediaSubjectPayload(
           deleted = if (deleteEvent != null) true else null,
           fileId = event.fileId,
           fullText = fullText,
+          isOriginal = createEvent.isOriginal,
           mediaKind = mediaKind,
           monitoringPlotId = event.monitoringPlotId,
           observationId = event.observationId,
