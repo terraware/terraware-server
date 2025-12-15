@@ -1516,10 +1516,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                                   .or(
                                       SPECIES_ID.isNull
                                           .and(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNull)
-                                          .and(CERTAINTY_ID.ne(RecordedSpeciesCertainty.Unknown))
+                                          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
                                           .and(
-                                              OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.ne(
-                                                  RecordedSpeciesCertainty.Unknown
+                                              OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.eq(
+                                                  RecordedSpeciesCertainty.Other
                                               )
                                           )
                                   )
