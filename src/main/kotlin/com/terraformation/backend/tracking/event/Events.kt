@@ -426,7 +426,7 @@ data class BiomassDetailsUpdatedEventV1(
               messages.numericValueOrNull(changedTo.salinity),
           ),
           createUpdatedField(
-              "smallTreeCount",
+              "smallTreeCountRange",
               renderSmallTreeCountRange(changedFrom, messages),
               renderSmallTreeCountRange(changedTo, messages),
           ),
