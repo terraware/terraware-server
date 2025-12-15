@@ -1,3 +1,8 @@
+ecd5eb52c1e Update Spring dependencies (#3726)
+9fad0facb71 Update database dependencies (#3721)
+e569bc8dabe Update JamesIves/github-pages-deploy-action action to v4.7.6 (#3725)
+d9af47d4394 Update dependency com.google.apis:google-api-services-drive to v3-rev20251210-2.0.0 (#3727)
+62a9027be79 Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.5.+ (#3728)
 93e867341f6 Update Node dependencies (#3715)
 aa6fafb7160 Update dependency black to v25.12.0 (#3720)
 3708beb8c24 SW-7850 Add survivalRateIncludesTempPlots to planting site payload (#3724)
