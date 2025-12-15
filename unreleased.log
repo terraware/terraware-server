@@ -1,3 +1,5 @@
+d6f2d2e5701 SW-7822 Fix biomass detail edit event log payload (#3731)
+84e6c0c449c SW-7843 Include is-original flag in photo subjects (#3729)
 ecd5eb52c1e Update Spring dependencies (#3726)
 9fad0facb71 Update database dependencies (#3721)
 e569bc8dabe Update JamesIves/github-pages-deploy-action action to v4.7.6 (#3725)
