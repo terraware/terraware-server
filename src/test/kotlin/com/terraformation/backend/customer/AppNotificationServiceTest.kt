@@ -95,6 +95,7 @@ import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
@@ -144,6 +145,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var moduleEventStore: ModuleEventStore
   private lateinit var moduleStore: ModuleStore
   private lateinit var notificationStore: NotificationStore
+  private lateinit var observationResultsStore: ObservationResultsStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private lateinit var participantStore: ParticipantStore
@@ -210,6 +212,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     moduleStore = ModuleStore(dslContext)
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
+    observationResultsStore = ObservationResultsStore(dslContext)
     participantStore = ParticipantStore(clock, dslContext, publisher, participantsDao)
     plantingSiteStore =
         PlantingSiteStore(
@@ -228,7 +231,15 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         )
     projectStore = ProjectStore(clock, dslContext, publisher, parentStore, projectsDao)
     reportStore =
-        ReportStore(clock, dslContext, publisher, messages, reportsDao, SystemUser(usersDao))
+        ReportStore(
+            clock,
+            dslContext,
+            publisher,
+            messages,
+            observationResultsStore,
+            reportsDao,
+            SystemUser(usersDao),
+        )
     speciesStore =
         SpeciesStore(
             clock,

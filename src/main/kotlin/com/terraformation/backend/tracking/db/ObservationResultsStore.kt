@@ -1503,10 +1503,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     val latestLiveField =
         with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
           DSL.field(
-              DSL.select(
-                      DSL.sum(DSL.coalesce(OBSERVED_SUBZONE_SPECIES_TOTALS.TOTAL_LIVE, 0))
-                          .cast(SQLDataType.INTEGER)
-                  )
+              DSL.select(DSL.sum(DSL.coalesce(TOTAL_LIVE, 0)).cast(SQLDataType.INTEGER))
                   .from(PLANTING_SUBZONES)
                   .join(OBSERVED_SUBZONE_SPECIES_TOTALS)
                   .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
@@ -1514,7 +1511,19 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
                               OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
                           )
-                          .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
+                          .and(
+                              SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID)
+                                  .or(
+                                      SPECIES_ID.isNull
+                                          .and(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNull)
+                                          .and(CERTAINTY_ID.eq(RecordedSpeciesCertainty.Other))
+                                          .and(
+                                              OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.eq(
+                                                  RecordedSpeciesCertainty.Other
+                                              )
+                                          )
+                                  )
+                          )
                   )
                   .and(
                       OBSERVATION_ID.eq(
@@ -1701,6 +1710,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
               state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
               survivalRate = survivalRate,
+              survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
               survivalRateStdDev = survivalRateStdDev,
               totalPlants = totalPlants,
               totalSpecies = totalSpecies,

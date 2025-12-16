@@ -62,24 +62,16 @@ import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
-import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_T0_TEMP_DENSITIES
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.tracking.db.latestObservationForSubzoneField
-import com.terraformation.backend.tracking.db.observationIdForPlot
-import com.terraformation.backend.util.HECTARES_PER_PLOT
+import com.terraformation.backend.tracking.model.calculateSurvivalRate
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.net.URI
@@ -105,6 +97,8 @@ class ReportStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
+    private val observationResultsStore:
+        com.terraformation.backend.tracking.db.ObservationResultsStore,
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
@@ -845,36 +839,61 @@ class ReportStore(
 
     val usersField = reportUsersMultiset()
 
-    return dslContext
-        .select(
-            REPORTS.asterisk(),
-            PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
-            achievementsMultiset,
-            challengesMultiset,
-            photosMultiset,
-            usersField,
-            projectMetricsField,
-            standardMetricsField,
-            systemMetricsField,
-        )
-        .from(REPORTS)
-        .leftJoin(PROJECT_ACCELERATOR_DETAILS)
-        .on(REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
-        .where(condition)
-        .orderBy(REPORTS.START_DATE)
-        .fetch {
-          ReportModel.of(
-              record = it,
-              achievementsField = achievementsMultiset,
-              challengesField = challengesMultiset,
-              photosField = photosMultiset,
-              usersField = usersField,
-              projectMetricsField = projectMetricsField,
-              standardMetricsField = standardMetricsField,
-              systemMetricsField = systemMetricsField,
-          )
+    val reports =
+        dslContext
+            .select(
+                REPORTS.asterisk(),
+                PROJECT_ACCELERATOR_DETAILS.DEAL_NAME,
+                achievementsMultiset,
+                challengesMultiset,
+                photosMultiset,
+                usersField,
+                projectMetricsField,
+                standardMetricsField,
+                systemMetricsField,
+            )
+            .from(REPORTS)
+            .leftJoin(PROJECT_ACCELERATOR_DETAILS)
+            .on(REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
+            .where(condition)
+            .orderBy(REPORTS.START_DATE)
+            .fetch {
+              ReportModel.of(
+                  record = it,
+                  achievementsField = achievementsMultiset,
+                  challengesField = challengesMultiset,
+                  photosField = photosMultiset,
+                  usersField = usersField,
+                  projectMetricsField = projectMetricsField,
+                  standardMetricsField = standardMetricsField,
+                  systemMetricsField = systemMetricsField,
+              )
+            }
+            .filter { currentUser().canReadReport(it.id) }
+
+    // Post-process survival rate metrics
+    if (includeMetrics) {
+      return reports.map { report ->
+        val survivalRateMetric =
+            report.systemMetrics.find { it.metric == SystemMetric.SurvivalRate }
+        if (survivalRateMetric != null) {
+          val calculatedSurvivalRate = calculateSurvivalRateForReport(report.id) ?: 0
+          val updatedMetrics =
+              report.systemMetrics.map { metric ->
+                if (metric.metric == SystemMetric.SurvivalRate) {
+                  metric.copy(entry = metric.entry.copy(systemValue = calculatedSurvivalRate))
+                } else {
+                  metric
+                }
+              }
+          report.copy(systemMetrics = updatedMetrics)
+        } else {
+          report
         }
-        .filter { currentUser().canReadReport(it.id) }
+      }
+    }
+
+    return reports
   }
 
   private fun fetchConfigsByCondition(
@@ -1157,9 +1176,20 @@ class ReportStore(
       return 0
     }
 
+    val survivalRate =
+        if (metrics.contains(SystemMetric.SurvivalRate)) {
+          calculateSurvivalRateForReport(reportId)
+        } else {
+          null
+        }
+
     // If the report is not submitted, set the system value to null.
     val systemValueField =
-        DSL.`when`(REPORTS.STATUS_ID.`in`(ReportModel.submittedStatuses), systemTerrawareValueField)
+        DSL.`when`(
+                REPORTS.STATUS_ID.`in`(ReportModel.submittedStatuses),
+                DSL.`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate), survivalRate)
+                    .else_(systemTerrawareValueField),
+            )
             .else_(DSL.value(null, REPORT_SYSTEM_METRICS.SYSTEM_VALUE))
     val systemTimeField =
         DSL.`when`(
@@ -1527,190 +1557,49 @@ class ReportStore(
           )
           .convertFrom { it.toInt() }
 
-  private fun plotHasCompletedObservations(
-      monitoringPlotIdField: Field<MonitoringPlotId?>,
-      isPermanent: Boolean,
-  ): Condition =
-      DSL.exists(
-          DSL.selectOne()
-              .from(
-                  DSL.select(OBSERVATION_PLOTS.IS_PERMANENT)
-                      .from(OBSERVATION_PLOTS)
-                      .where(
-                          OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotIdField)
-                              .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNotNull)
-                      )
-                      .and(
-                          OBSERVATION_PLOTS.COMPLETED_TIME.le(
-                              DSL.select(OBSERVATIONS.COMPLETED_TIME)
-                                  .from(OBSERVATIONS)
-                                  .where(
-                                      OBSERVATIONS.ID.eq(
-                                          OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID
-                                      )
-                                  )
-                          )
-                      )
-                      .orderBy(
-                          OBSERVATION_PLOTS.COMPLETED_TIME.desc(),
-                          OBSERVATION_PLOTS.OBSERVATION_ID.desc(),
-                      )
-                      .limit(1)
-                      .asTable("most_recent")
-              )
-              .where(DSL.field("most_recent.IS_PERMANENT", Boolean::class.java).eq(isPermanent))
-      )
+  // Calculate survival rate by fetching observations from observationResultsStore
+  private fun calculateSurvivalRateForReport(reportId: ReportId): Int? {
+    // retrieve the latest observation for each planting site in the report's project within the
+    // report period. observationsInReportPeriod only returns one observation per planting site.
+    val observationIds =
+        dslContext
+            .select(OBSERVATIONS.ID)
+            .from(OBSERVATIONS, REPORTS)
+            .where(REPORTS.ID.eq(reportId))
+            .and(OBSERVATIONS.ID.`in`(observationsInReportPeriod))
+            .fetch { it[OBSERVATIONS.ID]!! }
 
-  private val survivalRatePermDenominatorField =
-      with(PLOT_T0_DENSITIES) {
-        DSL.coalesce(
-                DSL.sum(
-                    DSL.field(
-                        DSL.select(DSL.sum(PLOT_DENSITY))
-                            .from(this)
-                            .join(MONITORING_PLOT_HISTORIES)
-                            .on(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
-                            .where(
-                                MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                                    OBSERVED_SITE_SPECIES_TOTALS.observations
-                                        .PLANTING_SITE_HISTORY_ID
-                                )
-                            )
-                            .and(plotHasCompletedObservations(MONITORING_PLOT_ID, true))
-                            .and(
-                                observationIdForPlot(
-                                        MONITORING_PLOT_ID,
-                                        OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID,
-                                        true,
-                                    )
-                                    .isNotNull
-                            )
-                            .and(SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID))
-                    )
-                ),
-                BigDecimal.ZERO,
-            )
-            .times(DSL.inline(HECTARES_PER_PLOT))
-      }
+    if (observationIds.isEmpty()) {
+      return null
+    }
 
-  private val survivalRateTempDenominatorField =
-      with(MONITORING_PLOT_HISTORIES) {
-        DSL.coalesce(
-                DSL.sum(
-                    DSL.field(
-                        DSL.select(DSL.sum(PLANTING_ZONE_T0_TEMP_DENSITIES.ZONE_DENSITY))
-                            .from(this)
-                            .join(PLANTING_ZONE_T0_TEMP_DENSITIES)
-                            .on(
-                                PLANTING_ZONE_T0_TEMP_DENSITIES.PLANTING_ZONE_ID.eq(
-                                    plantingSubzoneHistories.plantingZoneHistories.PLANTING_ZONE_ID
-                                )
-                            )
-                            .where(
-                                PLANTING_SITE_HISTORY_ID.eq(
-                                    OBSERVED_SITE_SPECIES_TOTALS.observations
-                                        .PLANTING_SITE_HISTORY_ID
-                                )
-                            )
-                            .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
-                            .and(plotHasCompletedObservations(MONITORING_PLOT_ID, false))
-                            .and(
-                                observationIdForPlot(
-                                        MONITORING_PLOT_ID,
-                                        OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID,
-                                        false,
-                                    )
-                                    .isNotNull
-                            )
-                            .and(
-                                PLANTING_ZONE_T0_TEMP_DENSITIES.SPECIES_ID.eq(
-                                    OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID
-                                )
-                            )
-                    )
-                ),
-                BigDecimal.ZERO,
-            )
-            .times(DSL.inline(HECTARES_PER_PLOT))
-      }
+    val observationResults = observationIds.mapNotNull { observationResultsStore.fetchOneById(it) }
 
-  private val survivalRateDenominatorField =
-      survivalRatePermDenominatorField.plus(survivalRateTempDenominatorField)
+    val speciesPairs =
+        observationResults
+            .filter { it.survivalRate != null }
+            .map { it.species to it.survivalRateIncludesTempPlots }
 
-  /**
-   * `total_live` only includes the current observation's live and doesn't aggregate all subzones
-   * from past observations, so when `survival_rate_includes_temp_plots` is set to true, this needs
-   * to sum total_live at the subzone level instead of using the stored site's values.
-   */
-  private val survivalRateNumeratorField =
-      DSL.sum(
-          DSL.case_()
-              .`when`(
-                  OBSERVED_SITE_SPECIES_TOTALS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
-                  with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
-                    DSL.field(
-                        DSL.select(
-                                DSL.sum(
-                                        DSL.coalesce(
-                                            OBSERVED_SUBZONE_SPECIES_TOTALS.TOTAL_LIVE,
-                                            0,
-                                        )
-                                    )
-                                    .cast(SQLDataType.INTEGER)
-                            )
-                            .from(PLANTING_SUBZONES)
-                            .join(OBSERVED_SUBZONE_SPECIES_TOTALS)
-                            .on(PLANTING_SUBZONE_ID.eq(PLANTING_SUBZONES.ID))
-                            .where(
-                                PLANTING_SUBZONES.PLANTING_SITE_ID.eq(
-                                    OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID
-                                )
-                            )
-                            .and(
-                                SPECIES_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID)
-                                    .or(
-                                        SPECIES_ID.isNull.and(
-                                            OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNull
-                                        )
-                                    )
-                            )
-                            .and(
-                                OBSERVATION_ID.eq(
-                                    latestObservationForSubzoneField(
-                                        OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID
-                                    )
-                                )
-                            )
-                    )
-                  },
-              )
-              .else_(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE)
-      )
+    if (speciesPairs.isEmpty()) {
+      return null
+    }
 
-  // Fetch the latest observations per planting site from the reporting period and calculate the
-  // survival rate
-  private val survivalRateField =
-      DSL.field(
-              DSL.select(
-                      DSL.if_(
-                          survivalRateDenominatorField.notEqual(BigDecimal.ZERO),
-                          DSL.round(
-                              (survivalRateNumeratorField * 100.0) / survivalRateDenominatorField
-                          ),
-                          BigDecimal.ZERO,
-                      )
-                  )
-                  .from(OBSERVED_SITE_SPECIES_TOTALS)
-                  .where(
-                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(observationsInReportPeriod)
-                  )
-                  .and(
-                      OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
-                          RecordedSpeciesCertainty.Unknown
-                      )
-                  )
-          )
-          .convertFrom { it.toInt() }
+    // Calculate sumDensity and numKnownLive across all observations
+    var sumDensity = BigDecimal.ZERO
+    var numKnownLive = 0
+
+    speciesPairs.forEach { (speciesList, includesTempPlots) ->
+      sumDensity += speciesList.mapNotNull { it.t0Density }.sumOf { it }
+      numKnownLive +=
+          if (includesTempPlots) {
+            speciesList.sumOf { it.latestLive }
+          } else {
+            speciesList.sumOf { it.permanentLive }
+          }
+    }
+
+    return calculateSurvivalRate(numKnownLive, sumDensity)
+  }
 
   private val seedsCollectedField =
       with(ACCESSIONS) {
@@ -1815,7 +1704,6 @@ class ReportStore(
       DSL.coalesce(
           DSL.case_()
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.MortalityRate), mortalityRateField)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate), survivalRateField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
               .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), speciesPlantedField)
