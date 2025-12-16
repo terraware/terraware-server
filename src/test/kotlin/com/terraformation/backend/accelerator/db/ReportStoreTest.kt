@@ -4177,6 +4177,171 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     private val fileId1 by lazy { insertFile() }
     private val fileId2 by lazy { insertFile() }
 
+    @BeforeEach
+    fun setupReport() {
+      insertProjectReportConfig()
+      reportId =
+          insertReport(
+              status = ReportStatus.Approved,
+              startDate = LocalDate.of(2030, Month.JANUARY, 1),
+              endDate = LocalDate.of(2030, Month.MARCH, 31),
+              highlights = "Highlights",
+              internalComment = "Internal Comment",
+              feedback = "Feedback",
+              additionalComments = "Additional comments",
+              financialSummaries = "Financial summaries",
+              createdBy = systemUser.userId,
+              createdTime = Instant.ofEpochSecond(4000),
+              modifiedBy = user.userId,
+              modifiedTime = Instant.ofEpochSecond(8000),
+              submittedBy = user.userId,
+              submittedTime = Instant.ofEpochSecond(6000),
+          )
+
+      insertReportAchievement(position = 0, achievement = "Achievement A")
+      insertReportAchievement(position = 1, achievement = "Achievement B")
+      insertReportAchievement(position = 2, achievement = "Achievement C")
+
+      insertReportChallenge(
+          position = 0,
+          challenge = "Challenge A",
+          mitigationPlan = "Plan A",
+      )
+      insertReportChallenge(
+          position = 1,
+          challenge = "Challenge B",
+          mitigationPlan = "Plan B",
+      )
+
+      insertReportPhoto(reportId = reportId, fileId = fileId1, caption = "File Caption 1")
+      insertReportPhoto(reportId = reportId, fileId = fileId2, caption = "File Caption 2")
+      insertReportPhoto(
+          reportId = reportId,
+          fileId = insertFile(),
+          caption = "Deleted File",
+          deleted = true,
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId1,
+          status = ReportMetricStatus.Achieved,
+          target = 10,
+          value = 10,
+          projectsComments = null,
+          progressNotes = "Standard Metric 1 Progress notes",
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricId2,
+          status = ReportMetricStatus.OnTrack,
+          target = 20,
+          value = 19,
+          projectsComments = "Standard Metric 2 Underperformance",
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricNullValueId,
+          target = 999,
+          value = null,
+      )
+
+      insertReportStandardMetric(
+          reportId = reportId,
+          metricId = standardMetricNotPublishableId,
+          target = 999,
+          value = 999,
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricId1,
+          status = ReportMetricStatus.Achieved,
+          target = 30,
+          value = 30,
+          projectsComments = null,
+          progressNotes = "Project Metric 1 Progress notes",
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricId2,
+          status = ReportMetricStatus.Unlikely,
+          target = 40,
+          value = 39,
+          projectsComments = "Project Metric 2 Underperformance",
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricNullValueId,
+          target = 999,
+          value = null,
+      )
+
+      insertReportProjectMetric(
+          reportId = reportId,
+          metricId = projectMetricNotPublishableId,
+          target = 999,
+          value = 999,
+      )
+
+      // Seeds Collected is not publishable
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SeedsCollected,
+          status = ReportMetricStatus.Achieved,
+          target = 999,
+          systemValue = 999,
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.Seedlings,
+          status = ReportMetricStatus.OnTrack,
+          target = 50,
+          overrideValue = 49,
+          systemValue = 39,
+          projectsComments = "Seedlings underperformance justification",
+          progressNotes = "Seedlings progress notes",
+      )
+
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SpeciesPlanted,
+          status = ReportMetricStatus.Achieved,
+          target = 10,
+          systemValue = 10,
+      )
+
+      // Metrics can be published even with no target set
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.TreesPlanted,
+          status = ReportMetricStatus.Achieved,
+          target = null,
+          systemValue = 100,
+      )
+
+      // mortality rate is not publishable
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.MortalityRate,
+          status = ReportMetricStatus.Unlikely,
+          target = 0,
+          systemValue = 50,
+      )
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SurvivalRate,
+          status = ReportMetricStatus.Unlikely,
+          target = 0,
+          systemValue = 51,
+      )
+    }
+
     @Test
     fun `throws exception for non-accelerator admin user`() {
       assertDoesNotThrow(message = "accelerator admin") { store.publishReport(reportId) }
@@ -4329,170 +4494,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
 
-    @BeforeEach
-    fun setupReport() {
-      insertProjectReportConfig()
-      reportId =
-          insertReport(
-              status = ReportStatus.Approved,
-              startDate = LocalDate.of(2030, Month.JANUARY, 1),
-              endDate = LocalDate.of(2030, Month.MARCH, 31),
-              highlights = "Highlights",
-              internalComment = "Internal Comment",
-              feedback = "Feedback",
-              additionalComments = "Additional comments",
-              financialSummaries = "Financial summaries",
-              createdBy = systemUser.userId,
-              createdTime = Instant.ofEpochSecond(4000),
-              modifiedBy = user.userId,
-              modifiedTime = Instant.ofEpochSecond(8000),
-              submittedBy = user.userId,
-              submittedTime = Instant.ofEpochSecond(6000),
-          )
-
-      insertReportAchievement(position = 0, achievement = "Achievement A")
-      insertReportAchievement(position = 1, achievement = "Achievement B")
-      insertReportAchievement(position = 2, achievement = "Achievement C")
-
-      insertReportChallenge(
-          position = 0,
-          challenge = "Challenge A",
-          mitigationPlan = "Plan A",
-      )
-      insertReportChallenge(
-          position = 1,
-          challenge = "Challenge B",
-          mitigationPlan = "Plan B",
-      )
-
-      insertReportPhoto(reportId = reportId, fileId = fileId1, caption = "File Caption 1")
-      insertReportPhoto(reportId = reportId, fileId = fileId2, caption = "File Caption 2")
-      insertReportPhoto(
-          reportId = reportId,
-          fileId = insertFile(),
-          caption = "Deleted File",
-          deleted = true,
-      )
-
-      insertReportStandardMetric(
-          reportId = reportId,
-          metricId = standardMetricId1,
-          status = ReportMetricStatus.Achieved,
-          target = 10,
-          value = 10,
-          projectsComments = null,
-          progressNotes = "Standard Metric 1 Progress notes",
-      )
-
-      insertReportStandardMetric(
-          reportId = reportId,
-          metricId = standardMetricId2,
-          status = ReportMetricStatus.OnTrack,
-          target = 20,
-          value = 19,
-          projectsComments = "Standard Metric 2 Underperformance",
-      )
-
-      insertReportStandardMetric(
-          reportId = reportId,
-          metricId = standardMetricNullValueId,
-          target = 999,
-          value = null,
-      )
-
-      insertReportStandardMetric(
-          reportId = reportId,
-          metricId = standardMetricNotPublishableId,
-          target = 999,
-          value = 999,
-      )
-
-      insertReportProjectMetric(
-          reportId = reportId,
-          metricId = projectMetricId1,
-          status = ReportMetricStatus.Achieved,
-          target = 30,
-          value = 30,
-          projectsComments = null,
-          progressNotes = "Project Metric 1 Progress notes",
-      )
-
-      insertReportProjectMetric(
-          reportId = reportId,
-          metricId = projectMetricId2,
-          status = ReportMetricStatus.Unlikely,
-          target = 40,
-          value = 39,
-          projectsComments = "Project Metric 2 Underperformance",
-      )
-
-      insertReportProjectMetric(
-          reportId = reportId,
-          metricId = projectMetricNullValueId,
-          target = 999,
-          value = null,
-      )
-
-      insertReportProjectMetric(
-          reportId = reportId,
-          metricId = projectMetricNotPublishableId,
-          target = 999,
-          value = 999,
-      )
-
-      // Seeds Collected is not publishable
-      insertReportSystemMetric(
-          reportId = reportId,
-          metric = SystemMetric.SeedsCollected,
-          status = ReportMetricStatus.Achieved,
-          target = 999,
-          systemValue = 999,
-      )
-
-      insertReportSystemMetric(
-          reportId = reportId,
-          metric = SystemMetric.Seedlings,
-          status = ReportMetricStatus.OnTrack,
-          target = 50,
-          overrideValue = 49,
-          systemValue = 39,
-          projectsComments = "Seedlings underperformance justification",
-          progressNotes = "Seedlings progress notes",
-      )
-
-      insertReportSystemMetric(
-          reportId = reportId,
-          metric = SystemMetric.SpeciesPlanted,
-          status = ReportMetricStatus.Achieved,
-          target = 10,
-          systemValue = 10,
-      )
-
-      // Metrics can be published even with no target set
-      insertReportSystemMetric(
-          reportId = reportId,
-          metric = SystemMetric.TreesPlanted,
-          status = ReportMetricStatus.Achieved,
-          target = null,
-          systemValue = 100,
-      )
-
-      insertReportSystemMetric(
-          reportId = reportId,
-          metric = SystemMetric.MortalityRate,
-          status = ReportMetricStatus.Unlikely,
-          target = 0,
-          systemValue = 50,
-      )
-      insertReportSystemMetric(
-          reportId = reportId,
-          metric = SystemMetric.SurvivalRate,
-          status = ReportMetricStatus.Unlikely,
-          target = 0,
-          systemValue = 50,
-      )
-    }
-
     // Helper function to validate the report from setupReport() is in the published reports tables
     private fun assertPublishedReport(publishedBy: UserId, publishedTime: Instant) {
       assertTableEquals(
@@ -4624,10 +4625,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.MortalityRate,
+                  systemMetricId = SystemMetric.SurvivalRate,
                   statusId = ReportMetricStatus.Unlikely,
                   target = 0,
-                  value = 50,
+                  value = 51,
               ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
