@@ -24,7 +24,7 @@ jobs:
 
     - name: Cache dependencies
       id: cache-scripts-python
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: scripts/.venv
         key: 1-${{ hashFiles('scripts/requirements.txt', '.github/workflows/scripts.yml') }}
