@@ -197,4 +197,3 @@ FROM nursery.withdrawals withdrawals
                              FROM tracking.planting_sites ps
                              WHERE ps.id = deliveries.planting_site_id
                                AND withdrawals.purpose_id = 3) dest_sites ON true;
-------

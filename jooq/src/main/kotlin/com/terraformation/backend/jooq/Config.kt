@@ -485,6 +485,8 @@ val ID_WRAPPERS =
                     ),
                 ),
                 IdWrapper("PlantingSiteNotificationId", listOf("planting_site_notifications\\.id")),
+                IdWrapper("RecordedPlantId", listOf("recorded_plants\\.id")),
+                IdWrapper("RecordedTreeId", listOf("recorded_trees\\.id")),
                 IdWrapper(
                     "SubstratumHistoryId",
                     listOf(
@@ -504,8 +506,6 @@ val ID_WRAPPERS =
                     "StratumId",
                     listOf("strata\\.id", ".*\\.stratum_id"),
                 ),
-                IdWrapper("RecordedPlantId", listOf("recorded_plants\\.id")),
-                IdWrapper("RecordedTreeId", listOf("recorded_trees\\.id")),
             ),
     )
 
