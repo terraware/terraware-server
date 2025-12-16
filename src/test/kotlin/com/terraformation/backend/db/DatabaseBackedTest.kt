@@ -448,7 +448,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedS
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
@@ -470,7 +470,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
@@ -3235,9 +3235,9 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertObservedSubzoneSpeciesTotals(
-      row: ObservedSubzoneSpeciesTotalsRow = ObservedSubzoneSpeciesTotalsRow(),
+      row: ObservedSubstratumSpeciesTotalsRow = ObservedSubstratumSpeciesTotalsRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
-      plantingSubzoneId: PlantingSubzoneId = row.plantingSubzoneId ?: inserted.plantingSubzoneId,
+      plantingSubzoneId: SubstratumId = row.substratumId ?: inserted.plantingSubzoneId,
       certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
           row.speciesId
@@ -3266,11 +3266,11 @@ abstract class DatabaseBackedTest {
                 (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
               },
   ) {
-    with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+    with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
       dslContext
-          .insertInto(OBSERVED_SUBZONE_SPECIES_TOTALS)
+          .insertInto(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
           .set(OBSERVATION_ID, observationId)
-          .set(PLANTING_SUBZONE_ID, plantingSubzoneId)
+          .set(SUBSTRATUM_ID, plantingSubzoneId)
           .set(CERTAINTY_ID, certainty)
           .set(SPECIES_ID, speciesId)
           .set(SPECIES_NAME, speciesName)
