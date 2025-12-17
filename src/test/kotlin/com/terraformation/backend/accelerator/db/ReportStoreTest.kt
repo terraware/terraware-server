@@ -5278,7 +5278,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 6,
         totalLive = 6,
-        cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1OldObservationId,
@@ -5289,7 +5288,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         // total live at a site level can be lower than subzone level because of disjoint subzones
         // set this to 0 to ensure that tests use subzone level for temp plots in survival rates
         totalLive = 0,
-        cumulativeDead = 1000,
     )
     insertObservedSubzoneSpeciesTotals(
         observationId = site1OldObservationId,
@@ -5298,7 +5296,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 11,
         totalLive = 11,
-        cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1OldObservationId,
@@ -5307,7 +5304,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 11,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
     insertObservedSubzoneSpeciesTotals(
         observationId = site1OldObservationId,
@@ -5316,7 +5312,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 6,
         totalLive = 6,
-        cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1OldObservationId,
@@ -5325,7 +5320,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 6,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
 
     val site1observation2 =
@@ -5351,7 +5345,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 6,
         totalLive = 6,
-        cumulativeDead = 1,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1observation2,
@@ -5360,7 +5353,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 6,
         totalLive = 0,
-        cumulativeDead = 1,
     )
     insertObservedSubzoneSpeciesTotals(
         observationId = site1observation2,
@@ -5369,7 +5361,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 11,
         totalLive = 11,
-        cumulativeDead = 3,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1observation2,
@@ -5378,7 +5369,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 11,
         totalLive = 0,
-        cumulativeDead = 3,
     )
     insertObservedSubzoneSpeciesTotals(
         observationId = site1observation2,
@@ -5387,7 +5377,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 6,
         totalLive = 6,
-        cumulativeDead = 7,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1observation2,
@@ -5396,7 +5385,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 6,
         totalLive = 0,
-        cumulativeDead = 7,
     )
     // Unknown plants are not counted towards survival rates
     insertObservedSubzoneSpeciesTotals(
@@ -5405,7 +5393,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1observation2,
@@ -5413,7 +5400,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
 
     // future observations are not counted towards survival rates
@@ -5441,7 +5427,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 12,
         totalLive = 12,
-        cumulativeDead = 4,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1FutureObservationId,
@@ -5450,7 +5435,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         permanentLive = 12,
         totalLive = 0,
-        cumulativeDead = 4,
     )
     insertObservedSubzoneSpeciesTotals(
         observationId = site1FutureObservationId,
@@ -5459,7 +5443,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 7,
         totalLive = 7,
-        cumulativeDead = 2,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1FutureObservationId,
@@ -5468,7 +5451,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 7,
         totalLive = 0,
-        cumulativeDead = 2,
     )
     insertObservedSubzoneSpeciesTotals(
         observationId = site1FutureObservationId,
@@ -5477,7 +5459,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 7,
         totalLive = 7,
-        cumulativeDead = 8,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1FutureObservationId,
@@ -5486,7 +5467,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesName = "Other",
         permanentLive = 7,
         totalLive = 0,
-        cumulativeDead = 8,
     )
     // Unknown plants are not counted towards survival rate
     insertObservedSubzoneSpeciesTotals(
@@ -5495,7 +5475,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 1,
         totalLive = 1,
-        cumulativeDead = 100,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site1FutureObservationId,
@@ -5503,7 +5482,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 1,
         totalLive = 10,
-        cumulativeDead = 100,
     )
 
     // Latest observation before the reporting period counts towards survival rate
@@ -5531,7 +5509,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 7,
         totalLive = 7,
-        cumulativeDead = 9,
     )
     insertObservedSiteSpeciesTotals(
         observationId = site2ObservationId,
@@ -5540,7 +5517,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 7,
         totalLive = 0,
-        cumulativeDead = 9,
     )
 
     // Planting sites not part of the project is never counted
@@ -5570,7 +5546,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
     insertObservedSiteSpeciesTotals(
         observationId = otherSiteObservationId,
@@ -5579,7 +5554,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 0,
         totalLive = 0,
-        cumulativeDead = 1000,
     )
     // Total plants: 50
     // Dead plants: 20

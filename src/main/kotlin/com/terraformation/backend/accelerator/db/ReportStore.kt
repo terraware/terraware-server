@@ -63,10 +63,8 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
@@ -1528,35 +1526,6 @@ class ReportStore(
               OBSERVATIONS.PLANTING_SITE_ID,
               OBSERVATIONS.COMPLETED_TIME.desc(),
           )
-
-  private val mortalityRateDenominatorField =
-      with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) + DSL.sum(PERMANENT_LIVE) }
-
-  private val mortalityRateNumeratorField =
-      with(OBSERVED_SITE_SPECIES_TOTALS) { DSL.sum(CUMULATIVE_DEAD) }
-
-  // Fetch the latest observations per planting site from the reporting period, and calculate the
-  // mortality rate
-  private val mortalityRateField =
-      DSL.field(
-              DSL.select(
-                      DSL.if_(
-                          mortalityRateDenominatorField.notEqual(BigDecimal.ZERO),
-                          (mortalityRateNumeratorField * 100.0) / mortalityRateDenominatorField,
-                          BigDecimal.ZERO,
-                      )
-                  )
-                  .from(OBSERVED_SITE_SPECIES_TOTALS)
-                  .where(
-                      OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.`in`(observationsInReportPeriod)
-                  )
-                  .and(
-                      OBSERVED_SITE_SPECIES_TOTALS.CERTAINTY_ID.notEqual(
-                          RecordedSpeciesCertainty.Unknown
-                      )
-                  )
-          )
-          .convertFrom { it.toInt() }
 
   // Calculate survival rate by fetching observations from observationResultsStore
   private fun calculateSurvivalRateForReport(reportId: ReportId): Int? {
