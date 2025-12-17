@@ -11,7 +11,7 @@ data class PlantingModel(
     val id: PlantingId,
     val notes: String? = null,
     val numPlants: Int,
-    val plantingSubzoneId: SubstratumId? = null,
+    val substratumId: SubstratumId? = null,
     val speciesId: SpeciesId,
     val type: PlantingType,
 ) {

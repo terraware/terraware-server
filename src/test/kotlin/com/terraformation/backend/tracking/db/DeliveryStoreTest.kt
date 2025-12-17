@@ -39,8 +39,8 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   private val plantingSiteId by lazy { insertPlantingSite(x = 0) }
-  private val plantingZoneId by lazy { insertStratum(plantingSiteId = plantingSiteId) }
-  private val plantingSubzoneId by lazy { insertSubstratum(stratumId = plantingZoneId) }
+  private val stratumId by lazy { insertStratum(plantingSiteId = plantingSiteId) }
+  private val substratumId by lazy { insertSubstratum(stratumId = stratumId) }
   private val speciesId1 by lazy { insertSpecies() }
   private val speciesId2 by lazy { insertSpecies() }
   private val withdrawalId by lazy { insertNurseryWithdrawal() }
@@ -62,14 +62,14 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates delivery with multiple plantings`() {
       insertPlantingSitePopulation(plantingSiteId, speciesId1, 6, 5)
-      insertStratumPopulation(plantingZoneId, speciesId1, 4, 3)
-      insertSubstratumPopulation(plantingSubzoneId, speciesId1, 2, 1)
+      insertStratumPopulation(stratumId, speciesId1, 4, 3)
+      insertSubstratumPopulation(substratumId, speciesId1, 2, 1)
 
       val deliveryId =
           store.createDelivery(
               withdrawalId,
               plantingSiteId,
-              plantingSubzoneId,
+              substratumId,
               mapOf(speciesId1 to 15, speciesId2 to 20),
           )
 
@@ -98,7 +98,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                   numPlants = 15,
                   plantingSiteId = plantingSiteId,
                   plantingTypeId = PlantingType.Delivery,
-                  substratumId = plantingSubzoneId,
+                  substratumId = substratumId,
                   speciesId = speciesId1,
               ),
               PlantingsRow(
@@ -108,7 +108,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                   numPlants = 20,
                   plantingSiteId = plantingSiteId,
                   plantingTypeId = PlantingType.Delivery,
-                  substratumId = plantingSubzoneId,
+                  substratumId = substratumId,
                   speciesId = speciesId2,
               ),
           ),
@@ -127,20 +127,20 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              StratumPopulationsRow(plantingZoneId, speciesId1, 19, 18),
-              StratumPopulationsRow(plantingZoneId, speciesId2, 20, 20),
+              StratumPopulationsRow(stratumId, speciesId1, 19, 18),
+              StratumPopulationsRow(stratumId, speciesId2, 20, 20),
           ),
           stratumPopulationsDao.findAll().toSet(),
-          "Planting zone populations",
+          "Stratum populations",
       )
 
       assertSetEquals(
           setOf(
-              SubstratumPopulationsRow(plantingSubzoneId, speciesId1, 17, 16),
-              SubstratumPopulationsRow(plantingSubzoneId, speciesId2, 20, 20),
+              SubstratumPopulationsRow(substratumId, speciesId1, 17, 16),
+              SubstratumPopulationsRow(substratumId, speciesId2, 20, 20),
           ),
           substratumPopulationsDao.findAll().toSet(),
-          "Planting subzone populations",
+          "Substratum populations",
       )
     }
 
@@ -154,9 +154,9 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `requires planting subzone ID if planting site has planting subzones`() {
-      // Cause the planting subzone to be inserted by lazy evaluation
-      assertNotNull(plantingSubzoneId)
+    fun `requires substratum ID if planting site has substrata`() {
+      // Cause the substratum to be inserted by lazy evaluation
+      assertNotNull(substratumId)
 
       assertThrows<DeliveryMissingSubstratumException> {
         store.createDelivery(withdrawalId, plantingSiteId, null, mapOf(speciesId1 to 5))
@@ -182,7 +182,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
       store.createDelivery(
           withdrawalId,
           plantingSiteId,
-          plantingSubzoneId,
+          substratumId,
           mapOf(speciesId1 to 100, speciesId2 to 100),
       )
     }
@@ -192,15 +192,13 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     private val species2PlantingId: PlantingId by lazy {
       plantingsDao.fetchByDeliveryId(deliveryId).first { it.speciesId == speciesId2 }.id!!
     }
-    private val otherPlantingSubzoneId: SubstratumId by lazy {
-      insertSubstratum(stratumId = plantingZoneId)
-    }
+    private val otherSubstratumId: SubstratumId by lazy { insertSubstratum(stratumId = stratumId) }
 
     @Test
     fun `creates reassignment plantings`() {
       insertPlantingSitePopulation(plantingSiteId, speciesId1, 6, 5)
-      insertStratumPopulation(plantingZoneId, speciesId1, 4, 3)
-      insertSubstratumPopulation(plantingSubzoneId, speciesId1, 2, 1)
+      insertStratumPopulation(stratumId, speciesId1, 4, 3)
+      insertSubstratumPopulation(substratumId, speciesId1, 2, 1)
 
       store.reassignDelivery(
           deliveryId,
@@ -209,13 +207,13 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                   fromPlantingId = species1PlantingId,
                   numPlants = 1,
                   notes = "notes 1",
-                  toPlantingSubzoneId = otherPlantingSubzoneId,
+                  toSubstratumId = otherSubstratumId,
               ),
               DeliveryStore.Reassignment(
                   fromPlantingId = species2PlantingId,
                   numPlants = 2,
                   notes = "notes 2",
-                  toPlantingSubzoneId = otherPlantingSubzoneId,
+                  toSubstratumId = otherSubstratumId,
               ),
           ),
       )
@@ -232,27 +230,27 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           setOf(
               commonValues.copy(
                   plantingTypeId = PlantingType.ReassignmentFrom,
-                  substratumId = plantingSubzoneId,
+                  substratumId = substratumId,
                   speciesId = speciesId1,
                   numPlants = -1,
               ),
               commonValues.copy(
                   notes = "notes 1",
                   plantingTypeId = PlantingType.ReassignmentTo,
-                  substratumId = otherPlantingSubzoneId,
+                  substratumId = otherSubstratumId,
                   speciesId = speciesId1,
                   numPlants = 1,
               ),
               commonValues.copy(
                   plantingTypeId = PlantingType.ReassignmentFrom,
-                  substratumId = plantingSubzoneId,
+                  substratumId = substratumId,
                   speciesId = speciesId2,
                   numPlants = -2,
               ),
               commonValues.copy(
                   notes = "notes 2",
                   plantingTypeId = PlantingType.ReassignmentTo,
-                  substratumId = otherPlantingSubzoneId,
+                  substratumId = otherSubstratumId,
                   speciesId = speciesId2,
                   numPlants = 2,
               ),
@@ -282,22 +280,22 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              StratumPopulationsRow(plantingZoneId, speciesId1, 104, 103),
-              StratumPopulationsRow(plantingZoneId, speciesId2, 100, 100),
+              StratumPopulationsRow(stratumId, speciesId1, 104, 103),
+              StratumPopulationsRow(stratumId, speciesId2, 100, 100),
           ),
           stratumPopulationsDao.findAll().toSet(),
-          "Planting zone populations",
+          "Stratum populations",
       )
 
       assertSetEquals(
           setOf(
-              SubstratumPopulationsRow(plantingSubzoneId, speciesId1, 101, 100),
-              SubstratumPopulationsRow(plantingSubzoneId, speciesId2, 98, 98),
-              SubstratumPopulationsRow(otherPlantingSubzoneId, speciesId1, 1, 1),
-              SubstratumPopulationsRow(otherPlantingSubzoneId, speciesId2, 2, 2),
+              SubstratumPopulationsRow(substratumId, speciesId1, 101, 100),
+              SubstratumPopulationsRow(substratumId, speciesId2, 98, 98),
+              SubstratumPopulationsRow(otherSubstratumId, speciesId1, 1, 1),
+              SubstratumPopulationsRow(otherSubstratumId, speciesId2, 2, 2),
           ),
           substratumPopulationsDao.findAll().toSet(),
-          "Planting subzone populations",
+          "Substratum populations",
       )
     }
 
@@ -308,7 +306,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           store.createDelivery(
               otherWithdrawalId,
               plantingSiteId,
-              plantingSubzoneId,
+              substratumId,
               mapOf(speciesId1 to 10),
           )
       val otherDeliveryPlantingId = plantingsDao.fetchByDeliveryId(otherDeliveryId).first().id!!
@@ -320,7 +318,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = otherDeliveryPlantingId,
                     numPlants = 1,
-                    toPlantingSubzoneId = otherPlantingSubzoneId,
+                    toSubstratumId = otherSubstratumId,
                 )
             ),
         )
@@ -335,7 +333,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = otherDeliveryPlantingId,
                     numPlants = 1,
-                    toPlantingSubzoneId = otherPlantingSubzoneId,
+                    toSubstratumId = otherSubstratumId,
                 )
             ),
         )
@@ -351,7 +349,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = species1PlantingId,
                     numPlants = 1,
-                    toPlantingSubzoneId = plantingSubzoneId,
+                    toSubstratumId = substratumId,
                 )
             ),
         )
@@ -367,7 +365,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                 DeliveryStore.Reassignment(
                     fromPlantingId = species1PlantingId,
                     numPlants = 10000,
-                    toPlantingSubzoneId = otherPlantingSubzoneId,
+                    toSubstratumId = otherSubstratumId,
                 )
             ),
         )
@@ -380,7 +378,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           DeliveryStore.Reassignment(
               fromPlantingId = species1PlantingId,
               numPlants = 1,
-              toPlantingSubzoneId = otherPlantingSubzoneId,
+              toSubstratumId = otherSubstratumId,
           )
       store.reassignDelivery(deliveryId, listOf(reassignment))
 
@@ -407,7 +405,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           DeliveryStore.Reassignment(
               fromPlantingId = species1PlantingId,
               numPlants = 1,
-              toPlantingSubzoneId = otherPlantingSubzoneId,
+              toSubstratumId = otherSubstratumId,
           )
 
       assertThrows<ReassignmentOfUndoneWithdrawalNotAllowedException> {
@@ -433,7 +431,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
           DeliveryStore.Reassignment(
               fromPlantingId = species1PlantingId,
               numPlants = 1,
-              toPlantingSubzoneId = otherPlantingSubzoneId,
+              toSubstratumId = otherSubstratumId,
           )
 
       assertThrows<ReassignmentOfUndoNotAllowedException> {
@@ -453,7 +451,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                     fromPlantingId = species1PlantingId,
                     numPlants = 1,
                     notes = "notes 1",
-                    toPlantingSubzoneId = otherPlantingSubzoneId,
+                    toSubstratumId = otherSubstratumId,
                 ),
             ),
         )
@@ -466,11 +464,11 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns delivery and plantings`() {
       val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
-      val plantingId1 = insertPlanting(substratumId = plantingSubzoneId, speciesId = speciesId1)
+      val plantingId1 = insertPlanting(substratumId = substratumId, speciesId = speciesId1)
       val plantingId2 =
           insertPlanting(
               numPlants = 2,
-              substratumId = plantingSubzoneId,
+              substratumId = substratumId,
               speciesId = speciesId2,
           )
 
@@ -484,14 +482,14 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
                           id = plantingId1,
                           numPlants = 1,
                           speciesId = speciesId1,
-                          plantingSubzoneId = plantingSubzoneId,
+                          substratumId = substratumId,
                           type = PlantingType.Delivery,
                       ),
                       PlantingModel(
                           id = plantingId2,
                           numPlants = 2,
                           speciesId = speciesId2,
-                          plantingSubzoneId = plantingSubzoneId,
+                          substratumId = substratumId,
                           type = PlantingType.Delivery,
                       ),
                   ),
@@ -526,31 +524,31 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
   inner class UndoDelivery {
     @Test
     fun `creates new delivery that reverses original plantings including reassignments`() {
-      val otherSubzoneId = insertSubstratum(stratumId = plantingZoneId)
+      val otherSubstratumId = insertSubstratum(stratumId = stratumId)
 
       val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
-      insertPlanting(numPlants = 5, substratumId = plantingSubzoneId, speciesId = speciesId1)
-      insertPlanting(numPlants = 2, substratumId = plantingSubzoneId, speciesId = speciesId2)
+      insertPlanting(numPlants = 5, substratumId = substratumId, speciesId = speciesId1)
+      insertPlanting(numPlants = 2, substratumId = substratumId, speciesId = speciesId2)
       insertPlanting(
           numPlants = -1,
-          substratumId = plantingSubzoneId,
+          substratumId = substratumId,
           speciesId = speciesId1,
           plantingTypeId = PlantingType.ReassignmentFrom,
       )
       insertPlanting(
           numPlants = 1,
-          substratumId = otherSubzoneId,
+          substratumId = otherSubstratumId,
           speciesId = speciesId1,
           plantingTypeId = PlantingType.ReassignmentTo,
       )
 
       insertPlantingSitePopulation(plantingSiteId, speciesId1, 10, 9)
       insertPlantingSitePopulation(plantingSiteId, speciesId2, 9, 8)
-      insertStratumPopulation(plantingZoneId, speciesId1, 8, 7)
-      insertStratumPopulation(plantingZoneId, speciesId2, 6, 5)
-      insertSubstratumPopulation(plantingSubzoneId, speciesId1, 7, 6)
-      insertSubstratumPopulation(plantingSubzoneId, speciesId2, 5, 4)
-      insertSubstratumPopulation(otherSubzoneId, speciesId1, 3, 2)
+      insertStratumPopulation(stratumId, speciesId1, 8, 7)
+      insertStratumPopulation(stratumId, speciesId2, 6, 5)
+      insertSubstratumPopulation(substratumId, speciesId1, 7, 6)
+      insertSubstratumPopulation(substratumId, speciesId2, 5, 4)
+      insertSubstratumPopulation(otherSubstratumId, speciesId1, 3, 2)
 
       val undoWithdrawalId =
           insertNurseryWithdrawal(
@@ -565,28 +563,28 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
               PlantingModel(
                   id = dummyPlantingId,
                   numPlants = -5,
-                  plantingSubzoneId = plantingSubzoneId,
+                  substratumId = substratumId,
                   speciesId = speciesId1,
                   type = PlantingType.Undo,
               ),
               PlantingModel(
                   id = dummyPlantingId,
                   numPlants = -2,
-                  plantingSubzoneId = plantingSubzoneId,
+                  substratumId = substratumId,
                   speciesId = speciesId2,
                   type = PlantingType.Undo,
               ),
               PlantingModel(
                   id = dummyPlantingId,
                   numPlants = 1,
-                  plantingSubzoneId = plantingSubzoneId,
+                  substratumId = substratumId,
                   speciesId = speciesId1,
                   type = PlantingType.ReassignmentTo,
               ),
               PlantingModel(
                   id = dummyPlantingId,
                   numPlants = -1,
-                  plantingSubzoneId = otherSubzoneId,
+                  substratumId = otherSubstratumId,
                   speciesId = speciesId1,
                   type = PlantingType.ReassignmentFrom,
               ),
@@ -613,26 +611,26 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              StratumPopulationsRow(plantingZoneId, speciesId1, 3, 2),
-              StratumPopulationsRow(plantingZoneId, speciesId2, 4, 3),
+              StratumPopulationsRow(stratumId, speciesId1, 3, 2),
+              StratumPopulationsRow(stratumId, speciesId2, 4, 3),
           ),
           stratumPopulationsDao.findAll().toSet(),
-          "Planting zone populations",
+          "Stratum populations",
       )
 
       assertSetEquals(
           setOf(
-              SubstratumPopulationsRow(plantingSubzoneId, speciesId1, 3, 2),
-              SubstratumPopulationsRow(plantingSubzoneId, speciesId2, 3, 2),
-              SubstratumPopulationsRow(otherSubzoneId, speciesId1, 2, 1),
+              SubstratumPopulationsRow(substratumId, speciesId1, 3, 2),
+              SubstratumPopulationsRow(substratumId, speciesId2, 3, 2),
+              SubstratumPopulationsRow(otherSubstratumId, speciesId1, 2, 1),
           ),
           substratumPopulationsDao.findAll().toSet(),
-          "Planting subzone populations",
+          "Substratum populations",
       )
     }
 
     @Test
-    fun `undoes delivery that did not specify planting subzones`() {
+    fun `undoes delivery that did not specify substrata`() {
       val deliveryId = insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId)
       insertPlanting(numPlants = 5, speciesId = speciesId1)
       insertPlanting(numPlants = 2, speciesId = speciesId2)

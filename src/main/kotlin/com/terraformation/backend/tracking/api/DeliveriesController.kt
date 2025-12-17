@@ -73,7 +73,7 @@ data class PlantingPayload(
       id = model.id,
       notes = model.notes,
       numPlants = model.numPlants,
-      plantingSubzoneId = model.plantingSubzoneId,
+      plantingSubzoneId = model.substratumId,
       speciesId = model.speciesId,
       type = model.type,
   )
@@ -106,9 +106,9 @@ data class ReassignmentPayload(
     )
     val numPlants: Int,
     val notes: String?,
-    val toPlantingSubzoneId: SubstratumId,
+    val toSubstratumId: SubstratumId,
 ) {
-  fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlantingSubzoneId)
+  fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toSubstratumId)
 }
 
 data class GetDeliveryResponsePayload(val delivery: DeliveryPayload) : SuccessResponsePayload
