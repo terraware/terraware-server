@@ -1,3 +1,4 @@
+1c4b1a6f353 Flip metric publishability of survival/mortality rates (#3733)
 d09cee0723f Update actions/cache action to v5 (#3730)
 a2dbd50abc6 SW-7856 Update to new logic for project level survival rates in reports (#3732)
 d6f2d2e5701 SW-7822 Fix biomass detail edit event log payload (#3731)
