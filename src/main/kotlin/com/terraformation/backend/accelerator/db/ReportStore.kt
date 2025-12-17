@@ -876,7 +876,8 @@ class ReportStore(
       return reports.map { report ->
         val survivalRateMetric =
             report.systemMetrics.find { it.metric == SystemMetric.SurvivalRate }
-        if (survivalRateMetric != null) {
+        // only calculate if systemValue is 0 from the jOOQ
+        if (survivalRateMetric != null && survivalRateMetric.entry.systemValue == 0) {
           val calculatedSurvivalRate = calculateSurvivalRateForReport(report.id) ?: 0
           val updatedMetrics =
               report.systemMetrics.map { metric ->
