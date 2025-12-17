@@ -98,7 +98,9 @@ class ObservationSpeciesSubstratum(
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
   override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
-      tempStratumTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(substratumSelect)
+      tempStratumTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(
+          substratumSelect
+      )
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
       permPlotsTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.eq(substratumSelect)
@@ -128,7 +130,8 @@ class ObservationSpeciesStratum(
 
   override val scopeId = stratumSelect
 
-  override val observedTotalsCondition = OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID.eq(stratumSelect)
+  override val observedTotalsCondition =
+      OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID.eq(stratumSelect)
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVED_STRATUM_SPECIES_TOTALS.strata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
