@@ -110,7 +110,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
     @Test
     fun `ignores boundary updates on detailed planting sites`() {
       val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1))
-      insertPlantingZone()
+      insertStratum()
 
       store.updatePlantingSite(plantingSiteId, emptyList()) { model ->
         model.copy(boundary = multiPolygon(2))

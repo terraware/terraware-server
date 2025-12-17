@@ -132,8 +132,8 @@ internal class SpeciesServiceTest : DatabaseTest(), RunsAsUser {
   fun `deleteSpecies throws exception if species is in use in observation`() {
     val speciesId = insertSpecies("species name")
     insertPlantingSite(x = 0)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertMonitoringPlot()
     insertObservation()
     insertObservationPlot()

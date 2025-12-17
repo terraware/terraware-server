@@ -27,8 +27,8 @@ internal class PlantingSiteStoreDeleteTest : BasePlantingSiteStoreTest() {
       every { user.canDeletePlantingSite(any()) } returns true
 
       val plantingSiteId = insertPlantingSite(x = 0)
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()

@@ -31,8 +31,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
 
   @BeforeEach
   fun insertDetailedPlantingSite() {
-    stratumId = insertPlantingZone()
-    insertPlantingSubzone()
+    stratumId = insertStratum()
+    insertSubstratum()
     monitoringPlotId = insertMonitoringPlot()
 
     every { user.canUpdateSpecies(any()) } returns true
@@ -44,13 +44,13 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     val speciesId = insertSpecies()
 
     val observationId1 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot()
     insertRecordedPlant(speciesName = "Species to merge", gpsCoordinates = gpsCoordinates)
     insertRecordedPlant(speciesName = "Other species", gpsCoordinates = gpsCoordinates)
 
     val observationId2 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot()
     insertRecordedPlant(speciesName = "Species to merge", gpsCoordinates = gpsCoordinates)
 
@@ -99,7 +99,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     insertPlotT0Density(plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare())
 
     val observationId1 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
 
     store.completePlot(
@@ -133,7 +133,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     clock.instant = Instant.ofEpochSecond(1)
 
     val observationId2 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     store.populateCumulativeDead(observationId2)
 
@@ -262,9 +262,9 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     val gpsCoordinates = point(1)
     val speciesId = insertSpecies()
 
-    monitoringPlotId = insertMonitoringPlot(plantingSubzoneId = null, isAdHoc = true)
+    monitoringPlotId = insertMonitoringPlot(substratumId = null, isAdHoc = true)
     val observationId1 = insertObservation(isAdHoc = true)
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
 
     store.completePlot(
@@ -350,7 +350,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
   }
 
   private fun ObservedPlotSpeciesTotalsRecord.toSubstratum(
-      substratumId: SubstratumId = inserted.plantingSubzoneId
+      substratumId: SubstratumId = inserted.substratumId
   ) =
       ObservedSubstratumSpeciesTotalsRecord(
           observationId = observationId,
@@ -367,9 +367,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           survivalRate = survivalRate,
       )
 
-  private fun ObservedPlotSpeciesTotalsRecord.toStratum(
-      stratumId: StratumId = inserted.plantingZoneId
-  ) =
+  private fun ObservedPlotSpeciesTotalsRecord.toStratum(stratumId: StratumId = inserted.stratumId) =
       ObservedStratumSpeciesTotalsRecord(
           observationId = observationId,
           stratumId = stratumId,

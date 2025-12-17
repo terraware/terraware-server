@@ -17,10 +17,10 @@ import org.springframework.security.access.AccessDeniedException
 class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
   @Test
   fun `saves fields that are relevant to a new observation`() {
-    insertPlantingZone()
-    val substratumId1 = insertPlantingSubzone()
-    val substratumId2 = insertPlantingSubzone()
-    insertPlantingSubzone() // Should not be included in observation
+    insertStratum()
+    val substratumId1 = insertSubstratum()
+    val substratumId2 = insertSubstratum()
+    insertSubstratum() // Should not be included in observation
 
     val observationId =
         store.createObservation(
@@ -64,8 +64,8 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
   @Test
   fun `throws exception if requested substratum is not in correct site`() {
     insertPlantingSite()
-    insertPlantingZone()
-    val otherSiteSubstratumId = insertPlantingSubzone()
+    insertStratum()
+    val otherSiteSubstratumId = insertSubstratum()
 
     assertThrows<SubstrataNotFoundException> {
       store.createObservation(
@@ -123,9 +123,9 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
 
   @Test
   fun `throws exception for ad-hoc observation with requested substrata`() {
-    insertPlantingZone()
-    val substratumId1 = insertPlantingSubzone()
-    val substratumId2 = insertPlantingSubzone()
+    insertStratum()
+    val substratumId1 = insertSubstratum()
+    val substratumId2 = insertSubstratum()
     assertThrows<IllegalArgumentException> {
       store.createObservation(
           NewObservationModel(

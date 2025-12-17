@@ -48,11 +48,11 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
   @BeforeEach
   fun insertDetailedSiteAndObservation() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     plotId = insertMonitoringPlot()
     observationId = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
   }
 
   @Test
@@ -62,7 +62,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH)
     insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(
         claimedBy = user.userId,
         claimedTime = Instant.EPOCH,
@@ -139,7 +139,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     assertEquals(
         observedTime,
-        plantingSubzonesDao.fetchOneById(inserted.plantingSubzoneId)?.observedTime,
+        substrataDao.fetchOneById(inserted.substratumId)?.observedTime,
         "Substratum observed time",
     )
   }
@@ -162,8 +162,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         speciesId = speciesId3,
         plotDensity = BigDecimal.valueOf(3).toPlantsPerHectare(),
     )
-    val stratumId1 = inserted.plantingZoneId
-    val stratum1SubstratumId1 = inserted.plantingSubzoneId
+    val stratumId1 = inserted.stratumId
+    val stratum1SubstratumId1 = inserted.substratumId
     val stratum1PlotId2 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = false)
     // excluded densities because not permanent
@@ -179,9 +179,9 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         speciesId = speciesId3,
         plotDensity = BigDecimal.valueOf(6).toPlantsPerHectare(),
     )
-    val stratumId2 = insertPlantingZone()
-    val stratum2SubstratumId1 = insertPlantingSubzone()
-    insertObservationRequestedSubzone()
+    val stratumId2 = insertStratum()
+    val stratum2SubstratumId1 = insertSubstratum()
+    insertObservationRequestedSubstratum()
     val stratum2PlotId1 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
     insertPlotT0Density(
@@ -215,8 +215,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         plotDensity = BigDecimal.valueOf(12).toPlantsPerHectare(),
     )
     insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
-    insertPlantingZonePopulation(totalPlants = 2, plantsSinceLastObservation = 2)
-    insertPlantingSubzonePopulation(totalPlants = 1, plantsSinceLastObservation = 1)
+    insertStratumPopulation(totalPlants = 2, plantsSinceLastObservation = 2)
+    insertSubstratumPopulation(totalPlants = 1, plantsSinceLastObservation = 1)
 
     val observedTime = Instant.ofEpochSecond(1)
     clock.instant = Instant.ofEpochSecond(123)
@@ -954,12 +954,12 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     assertTableEquals(
-        StratumPopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 2),
+        StratumPopulationsRecord(inserted.stratumId, inserted.speciesId, 2, 2),
         "Stratum total populations should be unchanged",
     )
 
     assertTableEquals(
-        SubstratumPopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 1),
+        SubstratumPopulationsRecord(inserted.substratumId, inserted.speciesId, 1, 1),
         "Substratum total populations should be unchanged",
     )
   }
@@ -970,8 +970,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
 
     insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
-    insertPlantingZonePopulation(totalPlants = 2, plantsSinceLastObservation = 2)
-    insertPlantingSubzonePopulation(totalPlants = 1, plantsSinceLastObservation = 1)
+    insertStratumPopulation(totalPlants = 2, plantsSinceLastObservation = 2)
+    insertSubstratumPopulation(totalPlants = 1, plantsSinceLastObservation = 1)
 
     val observedTime = Instant.ofEpochSecond(1)
     clock.instant = Instant.ofEpochSecond(123)
@@ -1025,12 +1025,12 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     assertTableEquals(
-        StratumPopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 0),
+        StratumPopulationsRecord(inserted.stratumId, inserted.speciesId, 2, 0),
         "Stratum total plants should be unchanged",
     )
 
     assertTableEquals(
-        SubstratumPopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 0),
+        SubstratumPopulationsRecord(inserted.substratumId, inserted.speciesId, 1, 0),
         "Substratum total plants should be unchanged",
     )
   }
@@ -1057,7 +1057,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     val observationId2 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     store.populateCumulativeDead(observationId2)
 
@@ -1131,7 +1131,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     val observationId2 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
 
     // We do not call populateCumulativeDead here, so there is no observed substratum species
@@ -1198,8 +1198,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
 
     val speciesId = insertSpecies()
     insertPlantingSitePopulation(totalPlants = 3, plantsSinceLastObservation = 3)
-    insertPlantingZonePopulation(totalPlants = 2, plantsSinceLastObservation = 2)
-    insertPlantingSubzonePopulation(totalPlants = 1, plantsSinceLastObservation = 1)
+    insertStratumPopulation(totalPlants = 2, plantsSinceLastObservation = 2)
+    insertSubstratumPopulation(totalPlants = 1, plantsSinceLastObservation = 1)
 
     clock.instant = Instant.ofEpochSecond(123)
     store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, emptyList())
@@ -1216,14 +1216,14 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     assertEquals(
-        listOf(StratumPopulationsRow(inserted.plantingZoneId, speciesId, 2, 0)),
-        plantingZonePopulationsDao.findAll(),
+        listOf(StratumPopulationsRow(inserted.stratumId, speciesId, 2, 0)),
+        stratumPopulationsDao.findAll(),
         "Stratum plants since last observation should have been reset",
     )
 
     assertEquals(
-        listOf(SubstratumPopulationsRow(inserted.plantingSubzoneId, speciesId, 1, 0)),
-        plantingSubzonePopulationsDao.findAll(),
+        listOf(SubstratumPopulationsRow(inserted.substratumId, speciesId, 1, 0)),
+        substratumPopulationsDao.findAll(),
         "Substratum plants since last observation should have been reset",
     )
   }

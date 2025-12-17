@@ -512,8 +512,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `withdrawals include correct calculated values`() {
       insertPlantingSite()
-      insertPlantingZone()
-
+      insertStratum()
       val facility1Species1BatchId = batchId1
       val facility1Species2BatchId = batchId4
       val facility2Species2BatchId =
@@ -570,7 +569,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
       )
 
       val deliveryId = insertDelivery()
-      insertPlantingSubzone()
+      insertSubstratum()
       insertPlanting(numPlants = 8, speciesId = speciesId1)
       insertPlanting(numPlants = 16, speciesId = speciesId2)
       insertPlanting(
@@ -584,14 +583,14 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           speciesId = speciesId2,
       )
 
-      insertPlantingSubzone()
+      insertSubstratum()
       insertPlanting(
           numPlants = 1,
           plantingTypeId = PlantingType.ReassignmentTo,
           speciesId = speciesId1,
       )
 
-      insertPlantingSubzone()
+      insertSubstratum()
       insertPlanting(
           numPlants = 3,
           plantingTypeId = PlantingType.ReassignmentTo,

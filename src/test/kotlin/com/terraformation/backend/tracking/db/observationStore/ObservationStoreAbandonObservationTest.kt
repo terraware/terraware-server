@@ -27,8 +27,8 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
 
   @Test
   fun `sets an observation to Abandoned and incomplete plots to Not Observed and unclaims`() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val earlierCompletedPlotId = insertMonitoringPlot()
     val laterCompletedPlotId = insertMonitoringPlot()
     val unclaimedPlotId = insertMonitoringPlot()
@@ -121,8 +121,8 @@ class ObservationStoreAbandonObservationTest : BaseObservationStoreTest() {
   fun `throws exception when abandoning an already ended observation`(state: ObservationState) {
     val observationId = insertObservation(completedTime = Instant.EPOCH, state = state)
 
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val completedPlot = insertMonitoringPlot()
 
     insertObservationPlot(

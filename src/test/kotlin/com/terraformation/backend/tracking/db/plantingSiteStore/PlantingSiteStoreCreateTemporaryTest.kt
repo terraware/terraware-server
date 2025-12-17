@@ -24,9 +24,9 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
       val plantingSiteId =
           insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0), insertHistory = false)
       val plantingSiteHistoryId = insertPlantingSiteHistory()
-      val plantingZoneId = insertPlantingZone(boundary = siteBoundary)
-      val plantingSubzoneId = insertPlantingSubzone(boundary = siteBoundary, insertHistory = false)
-      val plantingSubzoneHistoryId = insertPlantingSubzoneHistory()
+      val plantingZoneId = insertStratum(boundary = siteBoundary)
+      val plantingSubzoneId = insertSubstratum(boundary = siteBoundary, insertHistory = false)
+      val plantingSubzoneHistoryId = insertSubstratumHistory()
 
       identifierGenerator.generateNumericIdentifier(
           organizationId,
@@ -76,8 +76,8 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
     fun `returns existing ID if plot boundary already exists`() {
       val siteBoundary = Turtle(point(0)).makeMultiPolygon { square(51) }
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
-      val plantingZoneId = insertPlantingZone(boundary = siteBoundary)
-      insertPlantingSubzone(boundary = siteBoundary)
+      val plantingZoneId = insertStratum(boundary = siteBoundary)
+      insertSubstratum(boundary = siteBoundary)
 
       val existingPlotBoundary = Turtle(point(0)).makePolygon { square(25) }
       val existingPlotId = insertMonitoringPlot(boundary = existingPlotBoundary)
@@ -99,8 +99,8 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
 
       val siteBoundary = Turtle(point(0)).makeMultiPolygon { square(101) }
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
-      val plantingZoneId = insertPlantingZone(boundary = siteBoundary)
-      insertPlantingSubzone(boundary = siteBoundary)
+      val plantingZoneId = insertStratum(boundary = siteBoundary)
+      insertSubstratum(boundary = siteBoundary)
 
       assertThrows<AccessDeniedException> {
         store.createTemporaryPlot(

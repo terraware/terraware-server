@@ -45,7 +45,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               variance = BigDecimal.ZERO,
           )
 
-      val plantingZoneId = insertPlantingZone(initialRow)
+      val plantingZoneId = insertStratum(initialRow)
 
       val newName = "renamed"
       val newErrorMargin = BigDecimal(10)
@@ -89,17 +89,17 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
         )
       }
 
-      assertEquals(expected, plantingZonesDao.fetchOneById(plantingZoneId))
+      assertEquals(expected, strataDao.fetchOneById(plantingZoneId))
     }
 
     @Test
     fun `updates full names of subzones if zone is renamed`() {
       insertPlantingSite(x = 0)
-      val zoneId1 = insertPlantingZone(name = "initial 1")
-      val subzoneId1 = insertPlantingSubzone(name = "sub 1")
-      val subzoneId2 = insertPlantingSubzone(name = "sub 2")
-      insertPlantingZone(name = "initial 2")
-      val subzoneId3 = insertPlantingSubzone(name = "sub 3")
+      val zoneId1 = insertStratum(name = "initial 1")
+      val subzoneId1 = insertSubstratum(name = "sub 1")
+      val subzoneId2 = insertSubstratum(name = "sub 2")
+      insertStratum(name = "initial 2")
+      val subzoneId3 = insertSubstratum(name = "sub 3")
 
       store.updatePlantingZone(zoneId1) { it.copy(name = "renamed") }
 
@@ -109,21 +109,21 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               subzoneId2 to "renamed-sub 2",
               subzoneId3 to "initial 2-sub 3",
           ),
-          plantingSubzonesDao.findAll().associate { it.id to it.fullName },
+          substrataDao.findAll().associate { it.id to it.fullName },
       )
     }
 
     @Test
     fun `updates zone name in current history entry`() {
       insertPlantingSite(x = 0)
-      val plantingZoneId = insertPlantingZone(name = "initial")
-      insertPlantingSubzone(name = "subzone")
+      val plantingZoneId = insertStratum(name = "initial")
+      insertSubstratum(name = "subzone")
 
       clock.instant = Instant.ofEpochSecond(1000)
 
       insertPlantingSiteHistory(createdTime = clock.instant)
-      val newPlantingZoneHistoryId = insertPlantingZoneHistory()
-      val newPlantingSubzoneHistoryId = insertPlantingSubzoneHistory()
+      val newPlantingZoneHistoryId = insertStratumHistory()
+      val newPlantingSubzoneHistoryId = insertSubstratumHistory()
 
       val expectedSiteHistory = dslContext.fetch(PLANTING_SITE_HISTORIES)
       val expectedZoneHistory =
@@ -149,7 +149,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
     @Test
     fun `throws exception if no permission`() {
       insertPlantingSite()
-      val plantingZoneId = insertPlantingZone()
+      val plantingZoneId = insertStratum()
 
       every { user.canUpdatePlantingZone(plantingZoneId) } returns false
 

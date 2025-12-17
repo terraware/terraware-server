@@ -33,8 +33,8 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
 
   @BeforeEach
   fun insertDetailedPlantingSite() {
-    plantingZoneId = insertPlantingZone()
-    insertPlantingSubzone()
+    plantingZoneId = insertStratum()
+    insertSubstratum()
     monitoringPlotId = insertMonitoringPlot()
 
     every { user.canUpdateSpecies(any()) } returns true
@@ -44,7 +44,7 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
   fun `updates entities for biomass observation`() {
     observationId =
         insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
-    monitoringPlotId = insertMonitoringPlot(plantingSubzoneId = null, isAdHoc = true)
+    monitoringPlotId = insertMonitoringPlot(substratumId = null, isAdHoc = true)
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
@@ -270,7 +270,7 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
   fun `makes biomass species refer to target species ID if target was not already in observation`() {
     val observationId =
         insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
-    monitoringPlotId = insertMonitoringPlot(plantingSubzoneId = null, isAdHoc = true)
+    monitoringPlotId = insertMonitoringPlot(substratumId = null, isAdHoc = true)
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
     val speciesId = insertSpecies()
 

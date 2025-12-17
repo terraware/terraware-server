@@ -45,8 +45,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
             ParentStore(dslContext),
             plantingSeasonsDao,
             plantingSitesDao,
-            plantingSubzonesDao,
-            plantingZonesDao,
+            substrataDao,
+            strataDao,
             eventPublisher,
         ),
         SystemUser(usersDao),
@@ -111,7 +111,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `sends reminders about partially-planted sites`() {
       val plantingSiteId = insertPlantingSiteWithSubzone()
-      insertPlantingSubzone(plantingCompletedTime = initialInstant)
+      insertSubstratum(plantingCompletedTime = initialInstant)
 
       assertEventsAtWeekNumber(0, PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, 1))
     }
@@ -119,10 +119,10 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does not send reminders about fully-planted sites`() {
       insertPlantingSite(createdTime = initialInstant)
-      insertPlantingZone()
-      insertPlantingSubzone(plantingCompletedTime = initialInstant)
-      insertPlantingZone()
-      insertPlantingSubzone(plantingCompletedTime = initialInstant)
+      insertStratum()
+      insertSubstratum(plantingCompletedTime = initialInstant)
+      insertStratum()
+      insertSubstratum(plantingCompletedTime = initialInstant)
 
       assertNoEventsAtWeekNumber(52)
     }
@@ -200,7 +200,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `sends reminders about partially-planted sites`() {
       val plantingSiteId = insertPlantingSiteWithSeason()
-      insertPlantingSubzone(plantingCompletedTime = initialInstant)
+      insertSubstratum(plantingCompletedTime = initialInstant)
 
       assertEventsAtWeekNumber(2, PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, 1))
     }
@@ -208,10 +208,10 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does not send reminders about fully-planted sites`() {
       insertPlantingSite(createdTime = initialInstant)
-      insertPlantingZone()
-      insertPlantingSubzone(plantingCompletedTime = initialInstant)
-      insertPlantingZone()
-      insertPlantingSubzone(plantingCompletedTime = initialInstant)
+      insertStratum()
+      insertSubstratum(plantingCompletedTime = initialInstant)
+      insertStratum()
+      insertSubstratum(plantingCompletedTime = initialInstant)
       insertPlantingSeason(
           timeZone = timeZone,
           startDate = initialDate.minusWeeks(6),
@@ -278,8 +278,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
   private fun insertPlantingSiteWithSubzone(): PlantingSiteId {
     val plantingSiteId = insertPlantingSite(createdTime = clock.instant)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
 
     return plantingSiteId
   }

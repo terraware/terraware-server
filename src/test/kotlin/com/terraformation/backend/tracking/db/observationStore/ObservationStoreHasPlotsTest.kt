@@ -18,8 +18,8 @@ class ObservationStoreHasPlotsTest : BaseObservationStoreTest() {
 
   @Test
   fun `returns true if observation has plots`() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertMonitoringPlot()
     val observationId = insertObservation()
     insertObservationPlot()

@@ -13,15 +13,15 @@ import org.junit.jupiter.api.assertThrows
 class ObservationStoreFetchActiveObservationIdsTest : BaseObservationStoreTest() {
   @Test
   fun `returns observations with active plots in requested strata`() {
-    val stratumId1 = insertPlantingZone()
-    insertPlantingSubzone()
+    val stratumId1 = insertStratum()
+    insertSubstratum()
     val stratum1PlotId1 = insertMonitoringPlot()
     val stratum1PlotId2 = insertMonitoringPlot()
-    val stratumId2 = insertPlantingZone()
-    insertPlantingSubzone()
+    val stratumId2 = insertStratum()
+    insertSubstratum()
     val stratum2PlotId1 = insertMonitoringPlot()
-    val stratumId3 = insertPlantingZone()
-    insertPlantingSubzone()
+    val stratumId3 = insertStratum()
+    insertSubstratum()
     val stratum3PlotId1 = insertMonitoringPlot()
 
     val observationId1 = insertObservation()
@@ -55,11 +55,11 @@ class ObservationStoreFetchActiveObservationIdsTest : BaseObservationStoreTest()
 
   @Test
   fun `does not return observation if its plots in the requested strata are completed`() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val monitoringPlotId1 = insertMonitoringPlot()
-    val stratumId2 = insertPlantingZone()
-    insertPlantingSubzone()
+    val stratumId2 = insertStratum()
+    insertSubstratum()
     val monitoringPlotId2 = insertMonitoringPlot()
 
     val observationIdWithActivePlotsInBothStrata = insertObservation()
@@ -86,8 +86,8 @@ class ObservationStoreFetchActiveObservationIdsTest : BaseObservationStoreTest()
 
   @Test
   fun `does not return ad-hoc observation`() {
-    val stratumId = insertPlantingZone()
-    insertPlantingSubzone()
+    val stratumId = insertStratum()
+    insertSubstratum()
     insertMonitoringPlot(isAdHoc = true)
     insertObservation(isAdHoc = true)
     insertObservationPlot()

@@ -246,7 +246,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               plantingSiteId = model.id,
           )
 
-      val actualZones = plantingZonesDao.findAll().associateBy { it.name!! }
+      val actualZones = strataDao.findAll().associateBy { it.name!! }
 
       assertGeometryEquals(zone1Boundary, actualZones["Zone 1"]?.boundary, "Zone 1 boundary")
       assertGeometryEquals(zone2Boundary, actualZones["Zone 2"]?.boundary, "Zone 2 boundary")
@@ -289,7 +289,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               plantingSiteId = model.id,
           )
 
-      val actualSubzones = plantingSubzonesDao.findAll().map { it.copy(id = null) }
+      val actualSubzones = substrataDao.findAll().map { it.copy(id = null) }
 
       assertGeometryEquals(
           subzone11Boundary,
@@ -431,7 +431,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           "Planting site histories",
       )
 
-      val zoneHistories = plantingZoneHistoriesDao.findAll()
+      val zoneHistories = stratumHistoriesDao.findAll()
       assertEquals(
           listOf(
               StratumHistoriesRow(
@@ -459,7 +459,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   stableId = StableId("zone-subzone"),
               ),
           ),
-          plantingSubzoneHistoriesDao.findAll().map { it.copy(id = null) },
+          substratumHistoriesDao.findAll().map { it.copy(id = null) },
           "Planting subzone histories",
       )
 

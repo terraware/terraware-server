@@ -68,32 +68,32 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       val plantingSiteId = insertPlantingSite()
 
       val plantingZoneId1 =
-          insertPlantingZone(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
-      val plantingSubzoneId1a = insertPlantingSubzone()
+          insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val plantingSubzoneId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 2, totalPlants = 5)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
+      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 5)
+      insertStratumPopulation(plantsSinceLastObservation = 3, totalPlants = 10)
       insertPlantingSitePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
-      val plantingSubzoneId1b = insertPlantingSubzone()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 1, totalPlants = 5)
+      val plantingSubzoneId1b = insertSubstratum()
+      insertSubstratumPopulation(plantsSinceLastObservation = 1, totalPlants = 5)
       val speciesId2 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertStratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
 
       val plantingZoneId2 =
-          insertPlantingZone(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
-      val plantingSubzoneId2 = insertPlantingSubzone()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 4, totalPlants = 50)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 4, totalPlants = 40)
+          insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+      val plantingSubzoneId2 = insertSubstratum()
+      insertSubstratumPopulation(plantsSinceLastObservation = 4, totalPlants = 50)
+      insertStratumPopulation(plantsSinceLastObservation = 4, totalPlants = 40)
       insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
       val speciesId3 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 8, totalPlants = 55)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 7, totalPlants = 70)
+      insertSubstratumPopulation(plantsSinceLastObservation = 8, totalPlants = 55)
+      insertStratumPopulation(plantsSinceLastObservation = 7, totalPlants = 70)
       insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
 
       val emptyPlantingZoneId =
-          insertPlantingZone(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
-      val emptyPlantingSubzoneId = insertPlantingSubzone()
+          insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
+      val emptyPlantingSubzoneId = insertSubstratum()
 
       // Note that the zone/subzone/site totals don't all add up correctly here; that's intentional
       // to make sure the values are coming from the right places.
@@ -276,32 +276,32 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       val plantingSiteId = insertPlantingSite()
 
       val plantingZoneId1 =
-          insertPlantingZone(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
-      val plantingSubzoneId1a = insertPlantingSubzone()
+          insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val plantingSubzoneId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 2, totalPlants = 5)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
+      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 5)
+      insertStratumPopulation(plantsSinceLastObservation = 3, totalPlants = 10)
       insertPlantingSitePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
-      val plantingSubzoneId1b = insertPlantingSubzone()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 1, totalPlants = 5)
+      val plantingSubzoneId1b = insertSubstratum()
+      insertSubstratumPopulation(plantsSinceLastObservation = 1, totalPlants = 5)
       val speciesId2 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertStratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
 
       val plantingZoneId2 =
-          insertPlantingZone(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
-      val plantingSubzoneId2 = insertPlantingSubzone()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 4, totalPlants = 50)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 4, totalPlants = 40)
+          insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+      val plantingSubzoneId2 = insertSubstratum()
+      insertSubstratumPopulation(plantsSinceLastObservation = 4, totalPlants = 50)
+      insertStratumPopulation(plantsSinceLastObservation = 4, totalPlants = 40)
       insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
       val speciesId3 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 8, totalPlants = 55)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 7, totalPlants = 70)
+      insertSubstratumPopulation(plantsSinceLastObservation = 8, totalPlants = 55)
+      insertStratumPopulation(plantsSinceLastObservation = 7, totalPlants = 70)
       insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
 
       val emptyPlantingZoneId =
-          insertPlantingZone(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
-      val emptyPlantingSubzoneId = insertPlantingSubzone()
+          insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
+      val emptyPlantingSubzoneId = insertSubstratum()
 
       // planting site in the same organization with no plantings
       val otherPlantingSiteId = insertPlantingSite()
@@ -479,32 +479,32 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
       val plantingSiteId = insertPlantingSite(projectId = projectId)
 
       val plantingZoneId1 =
-          insertPlantingZone(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
-      val plantingSubzoneId1a = insertPlantingSubzone()
+          insertStratum(areaHa = BigDecimal(10), targetPlantingDensity = BigDecimal(2))
+      val plantingSubzoneId1a = insertSubstratum()
       val speciesId1 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 2, totalPlants = 5)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
+      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 5)
+      insertStratumPopulation(plantsSinceLastObservation = 3, totalPlants = 10)
       insertPlantingSitePopulation(plantsSinceLastObservation = 3, totalPlants = 10)
-      val plantingSubzoneId1b = insertPlantingSubzone()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 1, totalPlants = 5)
+      val plantingSubzoneId1b = insertSubstratum()
+      insertSubstratumPopulation(plantsSinceLastObservation = 1, totalPlants = 5)
       val speciesId2 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertSubstratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
+      insertStratumPopulation(plantsSinceLastObservation = 2, totalPlants = 20)
 
       val plantingZoneId2 =
-          insertPlantingZone(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
-      val plantingSubzoneId2 = insertPlantingSubzone()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 4, totalPlants = 50)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 4, totalPlants = 40)
+          insertStratum(areaHa = BigDecimal(101), targetPlantingDensity = BigDecimal(4))
+      val plantingSubzoneId2 = insertSubstratum()
+      insertSubstratumPopulation(plantsSinceLastObservation = 4, totalPlants = 50)
+      insertStratumPopulation(plantsSinceLastObservation = 4, totalPlants = 40)
       insertPlantingSitePopulation(plantsSinceLastObservation = 6, totalPlants = 60)
       val speciesId3 = insertSpecies()
-      insertPlantingSubzonePopulation(plantsSinceLastObservation = 8, totalPlants = 55)
-      insertPlantingZonePopulation(plantsSinceLastObservation = 7, totalPlants = 70)
+      insertSubstratumPopulation(plantsSinceLastObservation = 8, totalPlants = 55)
+      insertStratumPopulation(plantsSinceLastObservation = 7, totalPlants = 70)
       insertPlantingSitePopulation(plantsSinceLastObservation = 8, totalPlants = 80)
 
       val emptyPlantingZoneId =
-          insertPlantingZone(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
-      val emptyPlantingSubzoneId = insertPlantingSubzone()
+          insertStratum(areaHa = BigDecimal(50), targetPlantingDensity = BigDecimal(5))
+      val emptyPlantingSubzoneId = insertSubstratum()
 
       // planting site in the same project with no plantings
       val otherPlantingSiteId = insertPlantingSite(projectId = projectId)
@@ -683,37 +683,37 @@ internal class PlantingSiteStoreCountTest : BasePlantingSiteStoreTest() {
 
       val plantingSiteId = insertPlantingSite()
 
-      insertPlantingZone()
-      val plantingSubzoneId11 = insertPlantingSubzone()
-      val plantingSubzoneId12 = insertPlantingSubzone()
+      insertStratum()
+      val plantingSubzoneId11 = insertSubstratum()
+      val plantingSubzoneId12 = insertSubstratum()
 
-      insertPlantingZone()
-      val plantingSubzoneId21 = insertPlantingSubzone()
+      insertStratum()
+      val plantingSubzoneId21 = insertSubstratum()
 
       // Original delivery to subzone 12, then reassignment to 11, so 12 shouldn't be counted as
       // planted any more.
       insertNurseryWithdrawal(purpose = WithdrawalPurpose.OutPlant)
       insertDelivery()
-      insertPlanting(numPlants = 1, plantingSubzoneId = plantingSubzoneId12)
+      insertPlanting(numPlants = 1, substratumId = plantingSubzoneId12)
       insertPlanting(
           numPlants = -1,
           plantingTypeId = PlantingType.ReassignmentFrom,
-          plantingSubzoneId = plantingSubzoneId12,
+          substratumId = plantingSubzoneId12,
       )
       insertPlanting(
           numPlants = 1,
           plantingTypeId = PlantingType.ReassignmentTo,
-          plantingSubzoneId = plantingSubzoneId11,
+          substratumId = plantingSubzoneId11,
       )
       insertSpecies()
-      insertPlanting(numPlants = 2, plantingSubzoneId = plantingSubzoneId21)
+      insertPlanting(numPlants = 2, substratumId = plantingSubzoneId21)
 
       insertNurseryWithdrawal(purpose = WithdrawalPurpose.OutPlant)
       insertDelivery()
-      insertPlanting(numPlants = 4, plantingSubzoneId = plantingSubzoneId21)
+      insertPlanting(numPlants = 4, substratumId = plantingSubzoneId21)
 
       // Additional planting subzone with no plantings.
-      insertPlantingSubzone()
+      insertSubstratum()
 
       assertEquals(
           mapOf(plantingSubzoneId11 to 1L, plantingSubzoneId21 to 6L),

@@ -76,8 +76,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val gridOrigin = point(1)
     val siteBoundary = multiPolygon(200)
     plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-    stratumId = insertPlantingZone(name = "Stratum 2")
-    substratumId = insertPlantingSubzone()
+    stratumId = insertStratum(name = "Stratum 2")
+    substratumId = insertSubstratum()
     observationId = insertObservation(completedTime = clock.instant())
 
     tempPlotId = insertMonitoringPlot(plotNumber = 10)
@@ -117,17 +117,17 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(speciesId = speciesId2, plotDensity = BigDecimal.valueOf(7))
       val plot2 = insertMonitoringPlot(plotNumber = 1)
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(11))
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1, zoneDensity = BigDecimal.valueOf(101))
-      insertPlantingZoneT0TempDensity(speciesId = speciesId2, zoneDensity = BigDecimal.valueOf(102))
-      val stratum2 = insertPlantingZone(name = "Stratum 1")
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1, zoneDensity = BigDecimal.valueOf(201))
+      insertStratumT0TempDensity(speciesId = speciesId1, stratumDensity = BigDecimal.valueOf(101))
+      insertStratumT0TempDensity(speciesId = speciesId2, stratumDensity = BigDecimal.valueOf(102))
+      val stratum2 = insertStratum(name = "Stratum 1")
+      insertStratumT0TempDensity(speciesId = speciesId1, stratumDensity = BigDecimal.valueOf(201))
       // data from other site not returned
       insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot(plotNumber = 3)
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(20))
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1, zoneDensity = BigDecimal.valueOf(30))
+      insertStratumT0TempDensity(speciesId = speciesId1, stratumDensity = BigDecimal.valueOf(30))
 
       val expected =
           SiteT0DataModel(
@@ -205,7 +205,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `permanent plot has no t0 density set`() {
-      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId1)
 
       assertFalse(
           store.fetchAllT0SiteDataSet(plantingSiteId),
@@ -216,7 +216,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `temp plot has no stratum t0 density set`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
-      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId1)
       insertPlotT0Density(speciesId = speciesId1)
 
       assertFalse(
@@ -228,9 +228,9 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `withdrawal data has other species than t0`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
-      insertPlantingZoneT0TempDensity(speciesId = speciesId2)
+      insertStratumT0TempDensity(speciesId = speciesId2)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
-      insertPlantingSubzonePopulation(speciesId = speciesId2)
+      insertSubstratumPopulation(speciesId = speciesId2)
 
       assertFalse(
           store.fetchAllT0SiteDataSet(plantingSiteId),
@@ -241,7 +241,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `observations have recorded species not in withdrawals or t0 (permanent)`() {
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
-      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId1)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
 
       assertFalse(
@@ -253,9 +253,9 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `observations have recorded species not in withdrawals or t0 (temporary)`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+      insertStratumT0TempDensity(speciesId = speciesId1)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
-      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId1)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
 
       assertFalse(
@@ -297,7 +297,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `no withdrawal data is still all set if plots have t0 data (includes temp)`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+      insertStratumT0TempDensity(speciesId = speciesId1)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
       // Unknown species are excluded in the check:
       insertObservedPlotSpeciesTotals(certainty = RecordedSpeciesCertainty.Unknown, totalLive = 2)
@@ -324,7 +324,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `no permanent plots and temp has t0 data`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       deletePermanentPlots()
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+      insertStratumT0TempDensity(speciesId = speciesId1)
 
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
@@ -337,8 +337,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       insertPlotT0Density(speciesId = speciesId1)
       insertPlotT0Density(speciesId = speciesId2)
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
-      insertMonitoringPlot(plotNumber = 100, permanentIndex = 100, plantingSubzoneId = null)
+      insertStratumT0TempDensity(speciesId = speciesId1)
+      insertMonitoringPlot(plotNumber = 100, permanentIndex = 100, substratumId = null)
       insertObservationPlot(
           claimedTime = clock.instant(),
           claimedBy = user.userId,
@@ -346,7 +346,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           completedBy = user.userId,
           isPermanent = true,
       )
-      insertMonitoringPlot(plotNumber = 101, permanentIndex = null, plantingSubzoneId = null)
+      insertMonitoringPlot(plotNumber = 101, permanentIndex = null, substratumId = null)
       insertObservationPlot(
           claimedTime = clock.instant(),
           claimedBy = user.userId,
@@ -364,7 +364,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `correctly checks all data`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       // ad-hoc plots are excluded
-      insertMonitoringPlot(isAdHoc = true, plotNumber = 100, plantingSubzoneId = null)
+      insertMonitoringPlot(isAdHoc = true, plotNumber = 100, substratumId = null)
       insertObservationPlot(
           claimedTime = clock.instant(),
           claimedBy = user.userId,
@@ -394,11 +394,11 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           totalLive = 1,
       )
 
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
-      insertPlantingZoneT0TempDensity(speciesId = speciesId2)
+      insertStratumT0TempDensity(speciesId = speciesId1)
+      insertStratumT0TempDensity(speciesId = speciesId2)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
       insertPlotT0Density(speciesId = speciesId2, monitoringPlotId = monitoringPlotId)
-      insertPlantingSubzonePopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId1)
 
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
@@ -431,12 +431,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `geometry changes plot permanent to temporary`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       insertPlotT0Density(speciesId = speciesId1, monitoringPlotId = monitoringPlotId)
-      insertPlantingZoneT0TempDensity(speciesId = speciesId1)
+      insertStratumT0TempDensity(speciesId = speciesId1)
 
       // plots that are temporary now and have completed observations but were permanent during the
       // observations are excluded
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot(plotNumber = 104, permanentIndex = null)
       insertObservationPlot(
           claimedTime = clock.instant(),
@@ -493,27 +493,27 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `fetches site species by plot with densities`() {
       val speciesId3 = insertSpecies()
       val speciesId4 = insertSpecies()
-      insertPlantingZone()
-      val substratum1 = insertPlantingSubzone(areaHa = BigDecimal.ONE)
+      insertStratum()
+      val substratum1 = insertSubstratum(areaHa = BigDecimal.ONE)
       val plot1 = insertMonitoringPlot(plotNumber = 3)
       val plot2 = insertMonitoringPlot(plotNumber = 4)
-      val substratum2 = insertPlantingSubzone(areaHa = BigDecimal.TEN)
+      val substratum2 = insertSubstratum(areaHa = BigDecimal.TEN)
       val plot3 = insertMonitoringPlot(plotNumber = 5)
       val plot4 = insertMonitoringPlot(plotNumber = 6)
-      insertPlantingZone()
-      val substratum3 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(5))
+      insertStratum()
+      val substratum3 = insertSubstratum(areaHa = BigDecimal.valueOf(5))
       val plot5 = insertMonitoringPlot(plotNumber = 7)
-      val substratum4 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(2174.6))
+      val substratum4 = insertSubstratum(areaHa = BigDecimal.valueOf(2174.6))
       val plot6 = insertMonitoringPlot(plotNumber = 8)
-      insertPlantingSubzonePopulation(plantingSubzoneId = substratum1, speciesId = speciesId1, 100)
-      insertPlantingSubzonePopulation(plantingSubzoneId = substratum1, speciesId = speciesId2, 200)
-      insertPlantingSubzonePopulation(plantingSubzoneId = substratum2, speciesId = speciesId1, 300)
-      insertPlantingSubzonePopulation(plantingSubzoneId = substratum2, speciesId = speciesId2, 395)
-      insertPlantingSubzonePopulation(plantingSubzoneId = substratum2, speciesId = speciesId3, 500)
-      insertPlantingSubzonePopulation(plantingSubzoneId = substratum3, speciesId = speciesId3, 600)
-      insertPlantingSubzonePopulation(plantingSubzoneId = substratum4, speciesId = speciesId1, 500)
+      insertSubstratumPopulation(substratumId = substratum1, speciesId = speciesId1, 100)
+      insertSubstratumPopulation(substratumId = substratum1, speciesId = speciesId2, 200)
+      insertSubstratumPopulation(substratumId = substratum2, speciesId = speciesId1, 300)
+      insertSubstratumPopulation(substratumId = substratum2, speciesId = speciesId2, 395)
+      insertSubstratumPopulation(substratumId = substratum2, speciesId = speciesId3, 500)
+      insertSubstratumPopulation(substratumId = substratum3, speciesId = speciesId3, 600)
+      insertSubstratumPopulation(substratumId = substratum4, speciesId = speciesId1, 500)
       // should be excluded because <0.05 density
-      insertPlantingSubzonePopulation(plantingSubzoneId = substratum4, speciesId = speciesId2, 108)
+      insertSubstratumPopulation(substratumId = substratum4, speciesId = speciesId2, 108)
 
       // ignored because already in withdrawn
       insertObservedPlotSpeciesTotals(
@@ -676,14 +676,14 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 3, totalDead = 4)
       val speciesId3 = insertSpecies()
       val speciesId4 = insertSpecies()
-      insertPlantingSubzonePopulation(
-          plantingSubzoneId = substratumId,
+      insertSubstratumPopulation(
+          substratumId = substratumId,
           speciesId = speciesId3,
           totalPlants = 1,
       )
       // should be excluded because no plants:
-      insertPlantingSubzonePopulation(
-          plantingSubzoneId = substratumId,
+      insertSubstratumPopulation(
+          substratumId = substratumId,
           speciesId = speciesId4,
           totalPlants = 0,
       )

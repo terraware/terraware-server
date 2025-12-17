@@ -73,8 +73,8 @@ internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() 
     @Test
     fun `returns false when there are no plantings in subzones for a site with subzones`() {
       val plantingSiteId = insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
 
       assertFalse(store.hasSubstratumPlantings(plantingSiteId))
     }
@@ -84,8 +84,8 @@ internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() 
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
       val plantingSiteId = insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting()
