@@ -165,14 +165,6 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertPublishedReportSystemMetric(
           reportId = reportId1,
-          metric = SystemMetric.MortalityRate,
-          target = 0,
-          value = 5,
-          projectsComments = "Some plants had died.",
-          status = ReportMetricStatus.Unlikely,
-      )
-      insertPublishedReportSystemMetric(
-          reportId = reportId1,
           metric = SystemMetric.SurvivalRate,
           target = 6,
           value = 6,
@@ -303,20 +295,6 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, 1, 1),
                   systemMetrics =
                       listOf(
-                          PublishedReportMetricModel(
-                              component = SystemMetric.MortalityRate.componentId,
-                              description = SystemMetric.MortalityRate.description,
-                              metricId = SystemMetric.MortalityRate,
-                              name = SystemMetric.MortalityRate.jsonValue,
-                              reference = SystemMetric.MortalityRate.reference,
-                              status = ReportMetricStatus.Unlikely,
-                              target = 0,
-                              type = SystemMetric.MortalityRate.typeId,
-                              progressNotes = null,
-                              projectsComments = "Some plants had died.",
-                              value = 5,
-                              unit = null,
-                          ),
                           PublishedReportMetricModel(
                               component = SystemMetric.SurvivalRate.componentId,
                               description = SystemMetric.SurvivalRate.description,
