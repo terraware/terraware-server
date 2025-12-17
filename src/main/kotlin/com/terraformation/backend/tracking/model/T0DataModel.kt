@@ -21,7 +21,7 @@ data class SiteT0DataModel(
     val plantingSiteId: PlantingSiteId,
     val survivalRateIncludesTempPlots: Boolean,
     val plots: List<PlotT0DataModel> = emptyList(),
-    val zones: List<ZoneT0TempDataModel> = emptyList(),
+    val strata: List<StratumT0TempDataModel> = emptyList(),
 )
 
 data class PlotSpeciesModel(
@@ -35,8 +35,8 @@ data class PlotT0DataModel(
     val densityData: List<SpeciesDensityModel> = emptyList(),
 )
 
-data class ZoneT0TempDataModel(
-    val plantingZoneId: StratumId,
+data class StratumT0TempDataModel(
+    val stratumId: StratumId,
     val densityData: List<SpeciesDensityModel> = emptyList(),
 )
 
@@ -58,9 +58,9 @@ data class PlotT0DensityChangedModel(
     val speciesDensityChanges: Set<SpeciesDensityChangedModel>,
 )
 
-data class ZoneT0TempDensityChangedModel(
-    val plantingZoneId: StratumId,
-    val zoneName: String? = null,
+data class StratumT0TempDensityChangedModel(
+    val stratumId: StratumId,
+    val stratumName: String? = null,
     val speciesDensityChanges: Set<SpeciesDensityChangedModel>,
 )
 
@@ -87,8 +87,8 @@ data class PlotT0DensityChangedEventModel(
     val speciesDensityChanges: List<SpeciesDensityChangedEventModel>,
 )
 
-data class ZoneT0DensityChangedEventModel(
-    val plantingZoneId: StratumId,
-    val zoneName: String,
+data class StratumT0DensityChangedEventModel(
+    val stratumId: StratumId,
+    val stratumName: String,
     val speciesDensityChanges: List<SpeciesDensityChangedEventModel>,
 )

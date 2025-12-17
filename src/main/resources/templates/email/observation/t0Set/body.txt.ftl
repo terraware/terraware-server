@@ -5,8 +5,8 @@ ${strings("notification.observation.t0Set.email.body", plantingSiteName)}
     Plot ${plot.monitoringPlotNumber}: ${change.speciesScientificName} - <#if change.previousDensity??><#if change.newDensity??>${change.previousDensity} -> ${change.newDensity}<#else>${change.previousDensity} → Removed</#if><#else><#if change.newDensity??>New → ${change.newDensity}<#else>No change</#if></#if> ${strings("plants.per.hectare.parens")}
 </#list></#list>
 
-<#list plantingZones as zone><#list zone.speciesDensityChanges as change>
-    ${zone.zoneName}: ${change.speciesScientificName} - <#if change.previousDensity??><#if change.newDensity??>${change.previousDensity} -> ${change.newDensity}<#else>${change.previousDensity} → Removed</#if><#else><#if change.newDensity??>New → ${change.newDensity}<#else>No change</#if></#if> ${strings("plants.per.hectare.parens")}
+<#list strata as stratum><#list stratum.speciesDensityChanges as change>
+    ${stratum.stratumName}: ${change.speciesScientificName} - <#if change.previousDensity??><#if change.newDensity??>${change.previousDensity} -> ${change.newDensity}<#else>${change.previousDensity} → Removed</#if><#else><#if change.newDensity??>New → ${change.newDensity}<#else>No change</#if></#if> ${strings("plants.per.hectare.parens")}
 </#list></#list>
 
 <#if (previousSiteTempSetting!) != (newSiteTempSetting!)>

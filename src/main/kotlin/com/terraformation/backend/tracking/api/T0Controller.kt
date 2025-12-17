@@ -16,7 +16,7 @@ import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
-import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
+import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import io.swagger.v3.oas.annotations.Operation
 import java.math.BigDecimal
 import org.springframework.web.bind.annotation.GetMapping
@@ -87,7 +87,7 @@ class T0Controller(
   fun assignT0TempSiteData(
       @RequestBody payload: AssignSiteT0TempDataRequestPayload
   ): SimpleSuccessResponsePayload {
-    t0Service.assignT0TempZoneData(payload.zones.map { it.toModel() })
+    t0Service.assignT0TempStratumData(payload.zones.map { it.toModel() })
 
     return SimpleSuccessResponsePayload()
   }
@@ -136,15 +136,15 @@ data class ZoneT0DataPayload(
     val densityData: List<SpeciesDensityPayload> = emptyList(),
 ) {
   constructor(
-      model: ZoneT0TempDataModel
+      model: StratumT0TempDataModel
   ) : this(
-      plantingZoneId = model.plantingZoneId,
+      plantingZoneId = model.stratumId,
       densityData = model.densityData.map { SpeciesDensityPayload(it) },
   )
 
   fun toModel() =
-      ZoneT0TempDataModel(
-          plantingZoneId = plantingZoneId,
+      StratumT0TempDataModel(
+          stratumId = plantingZoneId,
           densityData = densityData.map { it.toModel() },
       )
 }
@@ -161,7 +161,7 @@ data class SiteT0DataResponsePayload(
       plantingSiteId = model.plantingSiteId,
       survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
       plots = model.plots.map { PlotT0DataPayload(it) },
-      zones = model.zones.map { ZoneT0DataPayload(it) },
+      zones = model.strata.map { ZoneT0DataPayload(it) },
   )
 }
 

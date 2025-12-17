@@ -22,7 +22,7 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
-import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
 import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
@@ -30,8 +30,8 @@ import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
-import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
-import com.terraformation.backend.tracking.model.ZoneT0TempDensityChangedModel
+import com.terraformation.backend.tracking.model.StratumT0TempDataModel
+import com.terraformation.backend.tracking.model.StratumT0TempDensityChangedModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -54,14 +54,14 @@ class T0Store(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     val plotMultiset = plotT0Multiset(plantingSiteId)
-    val zoneMultiset = zoneT0TempMultiset(plantingSiteId)
+    val stratumMultiset = stratumT0TempMultiset(plantingSiteId)
 
     return with(PLANTING_SITES) {
       dslContext
           .select(
               SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
               plotMultiset,
-              zoneMultiset,
+              stratumMultiset,
           )
           .from(this)
           .where(ID.eq(plantingSiteId))
@@ -70,7 +70,7 @@ class T0Store(
                 plantingSiteId = plantingSiteId,
                 survivalRateIncludesTempPlots = record[SURVIVAL_RATE_INCLUDES_TEMP_PLOTS]!!,
                 plots = record[plotMultiset]!!,
-                zones = record[zoneMultiset]!!,
+                strata = record[stratumMultiset]!!,
             )
           }
     } ?: throw PlantingSiteNotFoundException(plantingSiteId)
@@ -204,7 +204,7 @@ class T0Store(
               .fetchMap(SPECIES_ID.asNonNullable(), TOTAL_LIVE.plus(TOTAL_DEAD).asNonNullable())
         }
 
-    // Get species withdrawn to this monitoring plot's subzone that weren't in the observation
+    // Get species withdrawn to this monitoring plot's substratum that weren't in the observation
     val withdrawnSpeciesNotInObservation: Set<SpeciesId> =
         with(SUBSTRATUM_POPULATIONS) {
           dslContext
@@ -299,7 +299,8 @@ class T0Store(
               )
         }
 
-        // Any species withdrawn to the subzone that aren't in the observation need a density of 0
+        // Any species withdrawn to the substratum that aren't in the observation need a density of
+        // 0
         speciesNotInObservation.forEach { speciesId ->
           insertQuery =
               insertQuery.values(
@@ -418,22 +419,22 @@ class T0Store(
     )
   }
 
-  fun assignT0TempZoneSpeciesDensities(
-      plantingZoneId: StratumId,
+  fun assignT0TempStratumSpeciesDensities(
+      stratumId: StratumId,
       densities: List<SpeciesDensityModel>,
-  ): ZoneT0TempDensityChangedModel {
-    requirePermissions { updateT0(plantingZoneId) }
+  ): StratumT0TempDensityChangedModel {
+    requirePermissions { updateT0(stratumId) }
 
     val now = clock.instant()
     val currentUserId = currentUser().userId
 
-    val existingDensities = fetchExistingDensities(plantingZoneId)
+    val existingDensities = fetchExistingDensities(stratumId)
 
     dslContext.transaction { _ ->
       with(STRATUM_T0_TEMP_DENSITIES) {
         dslContext
             .deleteFrom(this)
-            .where(STRATUM_ID.eq(plantingZoneId))
+            .where(STRATUM_ID.eq(stratumId))
             .and(SPECIES_ID.notIn(densities.map { it.speciesId }))
             .execute()
 
@@ -451,11 +452,11 @@ class T0Store(
 
         densities.forEach { model ->
           if (model.density < BigDecimal.ZERO) {
-            throw IllegalArgumentException("Zone density must not be negative")
+            throw IllegalArgumentException("Stratum density must not be negative")
           }
           insertQuery =
               insertQuery.values(
-                  plantingZoneId,
+                  stratumId,
                   model.speciesId,
                   model.density,
                   currentUserId,
@@ -473,14 +474,14 @@ class T0Store(
             .execute()
       }
 
-      eventPublisher.publishEvent(T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId))
+      eventPublisher.publishEvent(T0StratumDataAssignedEvent(stratumId = stratumId))
     }
 
     val newDensities = densities.associate { it.speciesId to it.density }
     val speciesDensityChanges = buildSpeciesDensityChangeList(existingDensities, newDensities)
 
-    return ZoneT0TempDensityChangedModel(
-        plantingZoneId = plantingZoneId,
+    return StratumT0TempDensityChangedModel(
+        stratumId = stratumId,
         speciesDensityChanges = speciesDensityChanges,
     )
   }
@@ -579,7 +580,9 @@ class T0Store(
     }
   }
 
-  private fun zoneT0TempMultiset(plantingSiteId: PlantingSiteId): Field<List<ZoneT0TempDataModel>> {
+  private fun stratumT0TempMultiset(
+      plantingSiteId: PlantingSiteId
+  ): Field<List<StratumT0TempDataModel>> {
     return with(STRATUM_T0_TEMP_DENSITIES) {
       DSL.multiset(
               DSL.select(STRATUM_ID, SPECIES_ID, STRATUM_DENSITY)
@@ -590,9 +593,9 @@ class T0Store(
           .convertFrom { records ->
             records
                 .groupBy { it[STRATUM_ID.asNonNullable()] }
-                .map { (plantingZoneId, results) ->
-                  ZoneT0TempDataModel(
-                      plantingZoneId = plantingZoneId,
+                .map { (stratumId, results) ->
+                  StratumT0TempDataModel(
+                      stratumId = stratumId,
                       densityData =
                           results.map { record ->
                             SpeciesDensityModel(
@@ -617,12 +620,12 @@ class T0Store(
             .fetchMap(SPECIES_ID.asNonNullable(), PLOT_DENSITY.asNonNullable())
       }
 
-  private fun fetchExistingDensities(plantingZoneId: StratumId): Map<SpeciesId, BigDecimal> =
+  private fun fetchExistingDensities(stratumId: StratumId): Map<SpeciesId, BigDecimal> =
       with(STRATUM_T0_TEMP_DENSITIES) {
         dslContext
             .select(SPECIES_ID, STRATUM_DENSITY)
             .from(this)
-            .where(STRATUM_ID.eq(plantingZoneId))
+            .where(STRATUM_ID.eq(stratumId))
             .fetchMap(SPECIES_ID.asNonNullable(), STRATUM_DENSITY.asNonNullable())
       }
 

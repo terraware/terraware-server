@@ -894,8 +894,7 @@ class EmailNotificationService(
     if (
         (event.monitoringPlots == null ||
             event.monitoringPlots.all { it.speciesDensityChanges.isEmpty() }) &&
-            (event.plantingZones == null ||
-                event.plantingZones.all { it.speciesDensityChanges.isEmpty() }) &&
+            (event.strata == null || event.strata.all { it.speciesDensityChanges.isEmpty() }) &&
             event.previousSiteTempSetting == event.newSiteTempSetting
     ) {
       // changes were reversed before the event was eventually refired
@@ -915,7 +914,7 @@ class EmailNotificationService(
               newSiteTempSetting = event.newSiteTempSetting,
               plantingSiteId = event.plantingSiteId,
               plantingSiteName = plantingSite.name,
-              plantingZones = event.plantingZones ?: emptyList(),
+              strata = event.strata ?: emptyList(),
               previousSiteTempSetting = event.previousSiteTempSetting,
           )
       emailService.sendOrganizationNotification(

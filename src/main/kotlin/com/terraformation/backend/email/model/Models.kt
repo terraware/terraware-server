@@ -16,7 +16,7 @@ import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
-import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
+import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
 import freemarker.core.HTMLOutputFormat
 import freemarker.ext.beans.ResourceBundleModel
 import freemarker.template.Configuration
@@ -563,7 +563,7 @@ class T0DataSet(
     val organizationName: String,
     val plantingSiteId: PlantingSiteId,
     val plantingSiteName: String,
-    val plantingZones: List<ZoneT0DensityChangedEventModel>,
+    val strata: List<StratumT0DensityChangedEventModel>,
     val previousSiteTempSetting: Boolean?,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
