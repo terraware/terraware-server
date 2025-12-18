@@ -200,7 +200,7 @@ class SpeciesStore(
   }
 
   /**
-   * Returns a list of species that may be present in a given planting substratum.
+   * Returns a list of species that may be present in a given substratum.
    *
    * This is a combined list of all the species that have been planted and observed across the
    * entire planting site. We can't limit the search to the specific substratum because substratum
