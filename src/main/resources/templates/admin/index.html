@@ -223,8 +223,8 @@
         <h3>Migrate Simple Planting Sites</h3>
 
         <p>
-            This adds a zone and a subzone to each planting site that has a site boundary but
-            doesn't have zones or subzones, converting it to a detailed planting site. Planting
+            This adds a stratum and a substratum to each planting site that has a site boundary but
+            doesn't have strata or substrata, converting it to a detailed planting site. Planting
             sites that don't have site boundaries, or have boundaries of 0.05 hectares or less,
             aren't affected by this migration.
         </p>
@@ -238,8 +238,9 @@
         <h3>Recalculate Mortality Rates</h3>
 
         <p>
-            This updates the zone- and site-level mortality rates for a partial observation of a
-            planting site to take into account plants from subzones that weren't observed this time.
+            This updates the stratum- and site-level mortality rates for a partial observation of a
+            planting site to take into account plants from substrata that weren't observed this
+            time.
         </p>
 
         <form method="POST" action="/admin/recalculateMortalityRates">

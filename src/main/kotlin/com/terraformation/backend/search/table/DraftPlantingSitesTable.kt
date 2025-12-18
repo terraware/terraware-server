@@ -44,7 +44,7 @@ class DraftPlantingSitesTable(tables: SearchTables) : SearchTable() {
           idWrapperField("id", DRAFT_PLANTING_SITES.ID) { DraftPlantingSiteId(it) },
           timestampField("modifiedTime", DRAFT_PLANTING_SITES.MODIFIED_TIME),
           textField("name", DRAFT_PLANTING_SITES.NAME),
-          integerField("numPlantingZones", DRAFT_PLANTING_SITES.NUM_STRATA),
+          integerField("numStrata", DRAFT_PLANTING_SITES.NUM_STRATA),
           integerField("numPlantingSubzones", DRAFT_PLANTING_SITES.NUM_SUBSTRATA),
           zoneIdField("timeZone", DRAFT_PLANTING_SITES.TIME_ZONE),
       )

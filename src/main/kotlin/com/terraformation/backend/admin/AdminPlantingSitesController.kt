@@ -100,7 +100,7 @@ class AdminPlantingSitesController(
     val plantCounts = plantingSiteStore.countReportedPlantsInSubstrata(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
     val reportedPlants = plantingSiteStore.countReportedPlants(plantingSiteId)
-    val subzonesById =
+    val substrataById =
         plantingSite.strata.flatMap { it.substrata }.sortedBy { it.fullName }.associateBy { it.id }
 
     val allOrganizations =
@@ -160,9 +160,9 @@ class AdminPlantingSitesController(
     model.addAttribute("months", months)
     model.addAttribute("nextObservationEnd", nextObservationEnd)
     model.addAttribute("nextObservationStart", nextObservationStart)
-    model.addAttribute("numPlantingZones", plantingSite.strata.size)
+    model.addAttribute("numStrata", plantingSite.strata.size)
     model.addAttribute(
-        "numSubzones",
+        "numSubstrata",
         plantingSite.strata.sumOf { it.substrata.size },
     )
     model.addAttribute("numPlots", plotCounts.values.flatMap { it.values }.sum())
@@ -174,7 +174,7 @@ class AdminPlantingSitesController(
     model.addAttribute("plotCounts", plotCounts)
     model.addAttribute("reportedPlants", reportedPlants)
     model.addAttribute("site", plantingSite)
-    model.addAttribute("subzonesById", subzonesById)
+    model.addAttribute("substrataById", substrataById)
 
     return "/admin/plantingSite"
   }
@@ -189,10 +189,10 @@ class AdminPlantingSitesController(
       model.addAttribute("envelope", objectMapper.valueToTree(plantingSite.boundary.envelope))
       model.addAttribute("exclusionGeoJson", objectMapper.valueToTree(plantingSite.exclusion))
       model.addAttribute("siteGeoJson", objectMapper.valueToTree(plantingSite.boundary))
-      model.addAttribute("zonesGeoJson", objectMapper.valueToTree(zonesToGeoJson(plantingSite)))
+      model.addAttribute("strataGeoJson", objectMapper.valueToTree(strataToGeoJson(plantingSite)))
       model.addAttribute(
-          "subzonesGeoJson",
-          objectMapper.valueToTree(subzonesToGeoJson(plantingSite)),
+          "substrataGeoJson",
+          objectMapper.valueToTree(substrataToGeoJson(plantingSite)),
       )
       model.addAttribute("mapboxToken", mapboxService.generateTemporaryToken())
     }
@@ -209,29 +209,29 @@ class AdminPlantingSitesController(
     return plotsToGeoJson(site)
   }
 
-  private fun zonesToGeoJson(site: ExistingPlantingSiteModel) =
+  private fun strataToGeoJson(site: ExistingPlantingSiteModel) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to
-              site.strata.map { zone ->
+              site.strata.map { stratum ->
                 mapOf(
                     "type" to "Feature",
-                    "properties" to mapOf("name" to zone.name),
-                    "geometry" to zone.boundary,
+                    "properties" to mapOf("name" to stratum.name),
+                    "geometry" to stratum.boundary,
                 )
               },
       )
 
-  private fun subzonesToGeoJson(site: ExistingPlantingSiteModel) =
+  private fun substrataToGeoJson(site: ExistingPlantingSiteModel) =
       mapOf(
           "type" to "FeatureCollection",
           "features" to
-              site.strata.flatMap { zone ->
-                zone.substrata.map { subzone ->
+              site.strata.flatMap { stratum ->
+                stratum.substrata.map { substratum ->
                   mapOf(
                       "type" to "Feature",
-                      "properties" to mapOf("name" to subzone.name),
-                      "geometry" to subzone.boundary,
+                      "properties" to mapOf("name" to substratum.name),
+                      "geometry" to substratum.boundary,
                   )
                 }
               },
@@ -241,18 +241,20 @@ class AdminPlantingSitesController(
       mapOf(
           "type" to "FeatureCollection",
           "features" to
-              site.strata.flatMap { zone ->
-                val numPermanent = zone.numPermanentPlots
+              site.strata.flatMap { stratum ->
+                val numPermanent = stratum.numPermanentPlots
 
                 val temporaryPlotsAndIds: List<Pair<Polygon, MonitoringPlotId?>> =
                     try {
-                      zone
+                      stratum
                           .chooseTemporaryPlots(
-                              site.strata.flatMap { zone -> zone.substrata.map { it.id } }.toSet(),
+                              site.strata
+                                  .flatMap { stratum -> stratum.substrata.map { it.id } }
+                                  .toSet(),
                               gridOrigin = site.gridOrigin!!,
                               exclusion = site.exclusion,
                           )
-                          .map { boundary -> boundary to zone.findMonitoringPlot(boundary)?.id }
+                          .map { boundary -> boundary to stratum.findMonitoringPlot(boundary)?.id }
                     } catch (e: SubstratumFullException) {
                       emptyList()
                     }
@@ -272,24 +274,24 @@ class AdminPlantingSitesController(
                                       "id" to "(new)",
                                       "name" to "New Temporary Plot",
                                       "permanentIndex" to null,
-                                      "subzone" to zone.findSubstratum(plotBoundary)?.name,
+                                      "substratum" to stratum.findSubstratum(plotBoundary)?.name,
                                       "type" to "temporary",
-                                      "zone" to zone.name,
+                                      "stratum" to stratum.name,
                                   ),
                           )
                         }
 
                 val existingPlots =
-                    zone.substrata.flatMap { subzone ->
+                    stratum.substrata.flatMap { substratum ->
                       val permanentPlotIds =
-                          subzone.monitoringPlots
+                          substratum.monitoringPlots
                               .filter {
                                 it.permanentIndex != null && it.permanentIndex <= numPermanent
                               }
                               .map { it.id }
                               .toSet()
 
-                      subzone.monitoringPlots.map { plot ->
+                      substratum.monitoringPlots.map { plot ->
                         val plotTypeProperty =
                             when (plot.id) {
                               in permanentPlotIds -> mapOf("type" to "permanent")
@@ -304,8 +306,8 @@ class AdminPlantingSitesController(
                                 "id" to "${plot.id}",
                                 "permanentIndex" to permanentIndex,
                                 "plotNumber" to plot.plotNumber,
-                                "subzone" to subzone.name,
-                                "zone" to zone.name,
+                                "substratum" to substratum.name,
+                                "stratum" to stratum.name,
                             ) + plotTypeProperty
 
                         mapOf(
@@ -383,16 +385,16 @@ class AdminPlantingSitesController(
 
       val siteId =
           if (siteType == "detailed") {
-            val subzonesFile =
+            val substrataFile =
                 Shapefile.fromBoundary(
                     siteBoundary,
                     mapOf(
-                        PlantingSiteImporter.stratumNameProperties.first() to "Zone",
-                        PlantingSiteImporter.substratumNameProperties.first() to "Subzone",
+                        PlantingSiteImporter.stratumNameProperties.first() to "Stratum",
+                        PlantingSiteImporter.substratumNameProperties.first() to "Substratum",
                     ),
                 )
 
-            plantingSiteImporter.import(siteName, null, organizationId, listOf(subzonesFile))
+            plantingSiteImporter.import(siteName, null, organizationId, listOf(substrataFile))
           } else {
             plantingSiteStore
                 .createPlantingSite(
@@ -456,7 +458,7 @@ class AdminPlantingSitesController(
   fun updatePlantingSiteShapefiles(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam dryRun: Boolean,
-      @RequestParam subzoneIdsToMarkIncomplete: String?,
+      @RequestParam substratumIdsToMarkIncomplete: String?,
       @RequestPart zipfile: MultipartFile,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -486,7 +488,7 @@ class AdminPlantingSitesController(
         } else {
           plantingSiteStore.applyPlantingSiteEdit(
               edit,
-              subzoneIdsToMarkIncomplete?.split(",")?.map { SubstratumId(it.trim()) }?.toSet()
+              substratumIdsToMarkIncomplete?.split(",")?.map { SubstratumId(it.trim()) }?.toSet()
                   ?: emptySet(),
           )
           redirectAttributes.successMessage = "Site map updated."
@@ -525,10 +527,10 @@ class AdminPlantingSitesController(
     }
   }
 
-  @PostMapping("/updatePlantingZone")
-  fun updatePlantingZone(
+  @PostMapping("/updateStratum")
+  fun updateStratum(
       @RequestParam plantingSiteId: PlantingSiteId,
-      @RequestParam plantingZoneId: StratumId,
+      @RequestParam stratumId: StratumId,
       @RequestParam name: String,
       @RequestParam variance: BigDecimal,
       @RequestParam errorMargin: BigDecimal,
@@ -539,7 +541,7 @@ class AdminPlantingSitesController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      plantingSiteStore.updateStratum(plantingZoneId) { row ->
+      plantingSiteStore.updateStratum(stratumId) { row ->
         row.copy(
             errorMargin = errorMargin,
             name = name,
@@ -551,10 +553,10 @@ class AdminPlantingSitesController(
         )
       }
 
-      redirectAttributes.successMessage = "Planting zone updated successfully."
+      redirectAttributes.successMessage = "Stratum updated successfully."
     } catch (e: Exception) {
-      log.warn("Planting zone update failed", e)
-      redirectAttributes.failureMessage = "Planting zone update failed: ${e.message}"
+      log.warn("Stratum update failed", e)
+      redirectAttributes.failureMessage = "Stratum update failed: ${e.message}"
     }
 
     return redirectToPlantingSite(plantingSiteId)
@@ -674,7 +676,7 @@ class AdminPlantingSitesController(
       @RequestParam plantingSiteId: PlantingSiteId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
-      @RequestParam requestedSubzoneIds: Set<SubstratumId>,
+      @RequestParam requestedSubstratumIds: Set<SubstratumId>,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
@@ -686,7 +688,7 @@ class AdminPlantingSitesController(
                   isAdHoc = false,
                   observationType = ObservationType.Monitoring,
                   plantingSiteId = plantingSiteId,
-                  requestedSubstratumIds = requestedSubzoneIds,
+                  requestedSubstratumIds = requestedSubstratumIds,
                   startDate = LocalDate.parse(startDate),
                   state = ObservationState.Upcoming,
               ),
@@ -782,7 +784,8 @@ class AdminPlantingSitesController(
 
   private fun describeSiteEdit(edit: PlantingSiteEdit): List<String> {
     log.info("Site edit ${objectMapper.writeValueAsString(edit)}")
-    val zoneChanges = edit.stratumEdits.flatMap { zoneEdit -> describeZoneEdit(zoneEdit) }
+    val stratumChanges =
+        edit.stratumEdits.flatMap { stratumEdit -> describeStratumEdit(stratumEdit) }
 
     val affectedObservationIds =
         observationStore.fetchActiveObservationIds(
@@ -792,7 +795,7 @@ class AdminPlantingSitesController(
     val affectedObservationsMessage =
         if (affectedObservationIds.isNotEmpty()) {
           "The following observations will be abandoned because they have incomplete " +
-              "plots in edited planting zones: " +
+              "plots in edited strata: " +
               affectedObservationIds.joinToString(", ")
         } else {
           null
@@ -801,17 +804,17 @@ class AdminPlantingSitesController(
     return listOfNotNull(
         affectedObservationsMessage,
         "Total change in plantable area: ${edit.areaHaDifference.toPlainString()}ha",
-    ) + zoneChanges
+    ) + stratumChanges
   }
 
-  private fun describeZoneEdit(zoneEdit: StratumEdit): List<String> {
-    val desiredModel = zoneEdit.desiredModel
-    val existingModel = zoneEdit.existingModel
+  private fun describeStratumEdit(stratumEdit: StratumEdit): List<String> {
+    val desiredModel = stratumEdit.desiredModel
+    val existingModel = stratumEdit.existingModel
     val existingBoundary = existingModel?.boundary
-    val zoneName = existingModel?.name ?: desiredModel!!.name
-    val prefix = "Zone $zoneName:"
+    val stratumName = existingModel?.name ?: desiredModel!!.name
+    val prefix = "Stratum $stratumName:"
     val monitoringPlotCreations =
-        zoneEdit.monitoringPlotEdits.map { plotEdit ->
+        stratumEdit.monitoringPlotEdits.map { plotEdit ->
           val existingOrNew =
               if (existingBoundary != null && plotEdit.region.nearlyCoveredBy(existingBoundary)) {
                 "existing"
@@ -820,13 +823,14 @@ class AdminPlantingSitesController(
               }
           "$prefix Create permanent plot index ${plotEdit.permanentIndex} in $existingOrNew area"
         }
-    val subzoneEdits = zoneEdit.substratumEdits.flatMap { describeSubzoneEdit(zoneEdit, it) }
+    val substratumEdits =
+        stratumEdit.substratumEdits.flatMap { describeSubstratumEdit(stratumEdit, it) }
 
     return listOf(
         if (existingModel != null) {
           if (desiredModel != null) {
             val overlapPercent = renderOverlapPercent(existingModel.boundary, desiredModel.boundary)
-            val areaDifference = zoneEdit.areaHaDifference.toPlainString()
+            val areaDifference = stratumEdit.areaHaDifference.toPlainString()
             "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%"
           } else {
             "$prefix Delete (stable ID ${existingModel.stableId})"
@@ -834,39 +838,39 @@ class AdminPlantingSitesController(
         } else {
           "$prefix Create (stable ID ${desiredModel?.stableId})"
         }
-    ) + monitoringPlotCreations + subzoneEdits
+    ) + monitoringPlotCreations + substratumEdits
   }
 
-  private fun describeSubzoneEdit(
-      zoneEdit: StratumEdit,
-      subzoneEdit: SubstratumEdit,
+  private fun describeSubstratumEdit(
+      stratumEdit: StratumEdit,
+      substratumEdit: SubstratumEdit,
   ): List<String> {
-    val zoneName = zoneEdit.existingModel?.name ?: zoneEdit.desiredModel!!.name
-    val subzoneName = subzoneEdit.existingModel?.name ?: subzoneEdit.desiredModel!!.name
-    val prefix = "Zone $zoneName subzone $subzoneName:"
-    val subzoneEditText =
-        when (subzoneEdit) {
+    val stratumName = stratumEdit.existingModel?.name ?: stratumEdit.desiredModel!!.name
+    val substratumName = substratumEdit.existingModel?.name ?: substratumEdit.desiredModel!!.name
+    val prefix = "Stratum $stratumName substratum $substratumName:"
+    val substratumEditText =
+        when (substratumEdit) {
           is SubstratumEdit.Create ->
-              "$prefix Create (stable ID ${subzoneEdit.desiredModel.stableId})"
+              "$prefix Create (stable ID ${substratumEdit.desiredModel.stableId})"
           is SubstratumEdit.Delete ->
-              "$prefix Delete (stable ID ${subzoneEdit.existingModel.stableId})"
+              "$prefix Delete (stable ID ${substratumEdit.existingModel.stableId})"
           is SubstratumEdit.Update -> {
             val overlapPercent =
                 renderOverlapPercent(
-                    subzoneEdit.existingModel.boundary,
-                    subzoneEdit.desiredModel.boundary,
+                    substratumEdit.existingModel.boundary,
+                    substratumEdit.desiredModel.boundary,
                 )
-            val areaDifference = subzoneEdit.areaHaDifference.toPlainString()
+            val areaDifference = substratumEdit.areaHaDifference.toPlainString()
             "$prefix Change in plantable area: ${areaDifference}ha, overlap $overlapPercent%"
           }
         }
     val monitoringPlotEdits =
-        subzoneEdit.monitoringPlotEdits.map { plotEdit ->
+        substratumEdit.monitoringPlotEdits.map { plotEdit ->
           val permanentIndex = plotEdit.permanentIndex
           val plotId = plotEdit.monitoringPlotId
           when (plotEdit) {
             is MonitoringPlotEdit.Create ->
-                "$prefix BUG! Create plot $permanentIndex (should be at zone level)"
+                "$prefix BUG! Create plot $permanentIndex (should be at stratum level)"
             is MonitoringPlotEdit.Adopt ->
                 if (permanentIndex != null) {
                   "$prefix Adopt plot ID $plotId as permanent index $permanentIndex"
@@ -877,7 +881,7 @@ class AdminPlantingSitesController(
           }
         }
 
-    return listOf(subzoneEditText) + monitoringPlotEdits
+    return listOf(substratumEditText) + monitoringPlotEdits
   }
 
   private fun renderOverlapPercent(existing: Geometry, desired: Geometry): String {
