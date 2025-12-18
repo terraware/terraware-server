@@ -351,7 +351,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                             ),
                         ),
                     "name" to "Site 1",
-                    "numStrata" to "1",
+                    "numPlantingZones" to "1",
                     "numPlantingSubzones" to "2",
                     "observations" to
                         listOf(
@@ -749,7 +749,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "monitoringPlots.id",
                 "monitoringPlots.histories.id",
                 "name",
-                "numStrata",
+                "numPlantingZones",
                 "numPlantingSubzones",
                 "observations.completedTime",
                 "observations.createdTime",
