@@ -52,12 +52,12 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canMovePlantingSiteToAnyOrg(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
-    every { user.canReadPlantingSubzone(any()) } returns true
-    every { user.canReadPlantingZone(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
+    every { user.canReadStratum(any()) } returns true
+    every { user.canReadSubstratum(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
-    every { user.canUpdatePlantingSubzoneCompleted(any()) } returns true
-    every { user.canUpdatePlantingZone(any()) } returns true
+    every { user.canUpdateStratum(any()) } returns true
+    every { user.canUpdateSubstratumCompleted(any()) } returns true
   }
 }

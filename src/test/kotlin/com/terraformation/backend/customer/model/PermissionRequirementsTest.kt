@@ -180,13 +180,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val speciesId: SpeciesId by
       readableId(SpeciesNotFoundException::class) { canReadSpecies(it) }
   private val stratumId: StratumId by
-      readableId(StratumNotFoundException::class) { canReadPlantingZone(it) }
+      readableId(StratumNotFoundException::class) { canReadStratum(it) }
   private val subLocationId: SubLocationId by
       readableId(SubLocationNotFoundException::class) { canReadSubLocation(it) }
   private val submissionDocumentId: SubmissionDocumentId by
       readableId(SubmissionDocumentNotFoundException::class) { canReadSubmissionDocument(it) }
   private val substratumId: SubstratumId by
-      readableId(SubstrataNotFoundException::class) { canReadPlantingSubzone(it) }
+      readableId(SubstrataNotFoundException::class) { canReadSubstratum(it) }
   private val uploadId: UploadId by readableId(UploadNotFoundException::class) { canReadUpload(it) }
   private val userId = UserId(1)
   private val viabilityTestId: ViabilityTestId by
@@ -1202,8 +1202,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun updateSpecies() = allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }
 
   @Test
-  fun updateStratum() =
-      allow { updateStratum(stratumId) } ifUser { canUpdatePlantingZone(stratumId) }
+  fun updateStratum() = allow { updateStratum(stratumId) } ifUser { canUpdateStratum(stratumId) }
 
   @Test
   fun updateSubLocation() =
@@ -1220,7 +1219,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun updateSubstratumCompleted() =
       allow { updateSubstratumCompleted(substratumId) } ifUser
           {
-            canUpdatePlantingSubzoneCompleted(substratumId)
+            canUpdateSubstratumCompleted(substratumId)
           }
 
   @Test

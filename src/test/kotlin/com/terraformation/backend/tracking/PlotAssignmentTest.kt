@@ -98,8 +98,8 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     every { user.canReadObservation(any()) } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
-    every { user.canReadPlantingSubzone(any()) } returns true
-    every { user.canReadPlantingZone(any()) } returns true
+    every { user.canReadStratum(any()) } returns true
+    every { user.canReadSubstratum(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
     every { user.canUpdatePlantingSite(any()) } returns true
   }
