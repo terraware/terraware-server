@@ -9,6 +9,7 @@ ALTER TABLE tracking.planting_zones RENAME CONSTRAINT planting_zones_boundary_mo
 ALTER TABLE tracking.planting_zones RENAME CONSTRAINT planting_zones_created_by_fkey TO strata_created_by_fkey;
 ALTER TABLE tracking.planting_zones RENAME CONSTRAINT planting_zones_modified_by_fkey TO strata_modified_by_fkey;
 ALTER TABLE tracking.planting_zones RENAME CONSTRAINT planting_zones_planting_site_id_fkey TO strata_planting_site_id_fkey;
+ALTER SEQUENCE tracking.planting_zones_id_seq RENAME TO strata_id_seq;
 ALTER TABLE tracking.planting_zones RENAME TO strata;
 ------
 ALTER TABLE tracking.planting_zone_histories RENAME COLUMN planting_zone_id TO stratum_id;
@@ -17,6 +18,7 @@ ALTER TABLE tracking.planting_zone_histories RENAME CONSTRAINT planting_zone_his
 ALTER TABLE tracking.planting_zone_histories RENAME CONSTRAINT planting_zone_histories_planting_zone_id_fkey TO stratum_histories_stratum_id_fkey;
 ALTER INDEX tracking.planting_zone_histories_planting_site_history_id_idx RENAME TO stratum_histories_planting_site_history_id_idx;
 ALTER INDEX tracking.planting_zone_histories_planting_zone_id_idx RENAME TO stratum_histories_stratum_id_idx;
+ALTER SEQUENCE tracking.planting_zone_histories_id_seq RENAME TO stratum_histories_id_seq;
 ALTER TABLE tracking.planting_zone_histories RENAME TO stratum_histories;
 ------
 ALTER TABLE tracking.planting_zone_populations RENAME COLUMN planting_zone_id TO stratum_id;
@@ -66,6 +68,7 @@ ALTER TABLE tracking.planting_subzone_histories RENAME CONSTRAINT planting_subzo
 ALTER TABLE tracking.planting_subzone_histories RENAME CONSTRAINT planting_subzone_histories_planting_zone_history_id_fkey TO substratum_histories_stratum_history_id_fkey;
 ALTER INDEX tracking.planting_subzone_histories_planting_subzone_id_idx RENAME TO substratum_histories_substratum_id_idx;
 ALTER INDEX tracking.planting_subzone_histories_planting_zone_history_id_idx RENAME TO substratum_histories_stratum_history_id_idx;
+ALTER SEQUENCE tracking.planting_subzone_histories_id_seq RENAME TO substratum_histories_id_seq;
 ALTER TABLE tracking.planting_subzone_histories RENAME TO substratum_histories;
 ------
 ALTER TABLE tracking.planting_subzone_populations RENAME COLUMN planting_subzone_id TO substratum_id;
