@@ -203,7 +203,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
           getSubstrataToMarkIncomplete = { existing ->
             // Ask it to mark just one of the two expanded substrata as incomplete.
-            existing.strata[0].substrata.filter { it.name == "S2" }.map { it.id }.toSet()
+            existing.strata[0].substrata.filter { it.name == "Sub2" }.map { it.id }.toSet()
           },
       )
     }
@@ -226,10 +226,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val strataRows = strataDao.findAll().associateBy { it.name }
       assertEquals(
           Instant.EPOCH,
-          strataRows["Z1"]?.boundaryModifiedTime,
+          strataRows["S1"]?.boundaryModifiedTime,
           "Stratum with no boundary change",
       )
-      assertEquals(editTime, strataRows["Z2"]?.boundaryModifiedTime, "Stratum with boundary change")
+      assertEquals(editTime, strataRows["S2"]?.boundaryModifiedTime, "Stratum with boundary change")
     }
 
     @Test
@@ -348,7 +348,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val (edited) = runScenario(initial = initial, desired = expected)
 
-      assertSubstratumPermanentIndexes(edited, mapOf("S1" to listOf(1, 3), "S2" to listOf(2, 4)))
+      assertSubstratumPermanentIndexes(
+          edited,
+          mapOf("Sub1" to listOf(1, 3), "Sub2" to listOf(2, 4)),
+      )
     }
 
     @Test
@@ -425,8 +428,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       val (edited) = runScenario(initial = initial, desired = desired)
 
-      assertSubstratumPermanentIndexes(edited, mapOf("S1" to listOf(1), "S2" to listOf(1)))
-      assertSubstratumPlotNumbers(edited, mapOf("S1" to listOf(1L), "S2" to listOf(2L)))
+      assertSubstratumPermanentIndexes(edited, mapOf("Sub1" to listOf(1), "Sub2" to listOf(1)))
+      assertSubstratumPlotNumbers(edited, mapOf("Sub1" to listOf(1L), "Sub2" to listOf(2L)))
     }
 
     @Test
@@ -498,22 +501,22 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     fun `can swap substratum names`() {
       val initial = newSite {
         stratum {
-          substratum(name = "S1", stableId = StableId("S1"), width = 250)
-          substratum(name = "S2", stableId = StableId("S2"))
+          substratum(name = "Sub1", stableId = StableId("Sub1"), width = 250)
+          substratum(name = "Sub2", stableId = StableId("Sub2"))
         }
       }
 
       val desired = newSite {
         stratum {
-          substratum(name = "S1", stableId = StableId("S2"), x = 250, width = 250)
-          substratum(name = "S2", stableId = StableId("S1"), x = 0, width = 250)
+          substratum(name = "Sub1", stableId = StableId("Sub2"), x = 250, width = 250)
+          substratum(name = "Sub2", stableId = StableId("Sub1"), x = 0, width = 250)
         }
       }
 
       val (edited, existing) = runScenario(initial, desired)
 
       assertEquals(
-          mapOf("S1" to StableId("S2"), "S2" to StableId("S1")),
+          mapOf("Sub1" to StableId("Sub2"), "Sub2" to StableId("Sub1")),
           edited.strata.single().substrata.associate { it.name to it.stableId },
           "Stable IDs for substratum names after name swap",
       )

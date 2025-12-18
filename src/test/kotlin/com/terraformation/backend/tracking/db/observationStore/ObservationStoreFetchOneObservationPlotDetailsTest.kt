@@ -20,8 +20,8 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
     val userId1 = insertUser(firstName = "First", lastName = "Person")
     val userId2 = insertUser(firstName = "Second", lastName = "Human")
 
-    insertStratum(name = "Z1")
-    val substratumId1 = insertSubstratum(fullName = "Z1-S1", name = "S1")
+    insertStratum(name = "S1")
+    val substratumId1 = insertSubstratum(fullName = "S1-Sub1", name = "Sub1")
 
     // A plot that was observed previously and again in this observation
     val monitoringPlotId11 =
@@ -42,7 +42,7 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
         )
     )
 
-    val substratumId2 = insertSubstratum(fullName = "Z1-S2", name = "S2")
+    val substratumId2 = insertSubstratum(fullName = "S1-Sub2", name = "Sub2")
 
     // This plot is claimed and completed
     val monitoringPlotId21 = insertMonitoringPlot(boundary = polygon(3))
@@ -75,8 +75,8 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             elevationMeters = BigDecimal.TEN,
             isFirstObservation = false,
             substratumId = substratumId1,
-            substratumName = "Z1-S1",
-            stratumName = "Z1",
+            substratumName = "S1-Sub1",
+            stratumName = "S1",
             plotNumber = 1,
             sizeMeters = 30,
         ),
@@ -100,8 +100,8 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             elevationMeters = null,
             isFirstObservation = true,
             substratumId = substratumId1,
-            substratumName = "Z1-S1",
-            stratumName = "Z1",
+            substratumName = "S1-Sub1",
+            stratumName = "S1",
             plotNumber = 2,
             sizeMeters = 30,
         ),
@@ -129,8 +129,8 @@ class ObservationStoreFetchOneObservationPlotDetailsTest : BaseObservationStoreT
             elevationMeters = null,
             isFirstObservation = true,
             substratumId = substratumId2,
-            substratumName = "Z1-S2",
-            stratumName = "Z1",
+            substratumName = "S1-Sub2",
+            stratumName = "S1",
             plotNumber = 3,
             sizeMeters = 30,
         ),

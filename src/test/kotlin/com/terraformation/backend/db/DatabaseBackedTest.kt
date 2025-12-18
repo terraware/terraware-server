@@ -2320,7 +2320,7 @@ abstract class DatabaseBackedTest {
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-      name: String = row.name ?: "Z${nextStratumNumber++}",
+      name: String = row.name ?: "S${nextStratumNumber++}",
       numPermanentPlots: Int = row.numPermanentPlots ?: StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
       numTemporaryPlots: Int = row.numTemporaryPlots ?: StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       stableId: Any = row.name ?: name,

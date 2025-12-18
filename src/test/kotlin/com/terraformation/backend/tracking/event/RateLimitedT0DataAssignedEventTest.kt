@@ -464,7 +464,7 @@ class RateLimitedT0DataAssignedEventTest {
   private fun stratumChangeModel(stratumId: Int, densities: List<SpeciesDensityChangedEventModel>) =
       StratumT0DensityChangedEventModel(
           stratumId = StratumId(stratumId.toLong()),
-          stratumName = "Z$stratumId",
+          stratumName = "S$stratumId",
           speciesDensityChanges = densities,
       )
 

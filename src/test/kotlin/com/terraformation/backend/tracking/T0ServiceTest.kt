@@ -306,7 +306,7 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   listOf(
                       StratumT0DensityChangedEventModel(
                           stratumId1,
-                          "Z1",
+                          "S1",
                           listOf(
                               SpeciesDensityChangedEventModel(
                                   speciesId1,
@@ -322,7 +322,7 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                       StratumT0DensityChangedEventModel(
                           stratumId2,
-                          "Z2",
+                          "S2",
                           listOf(
                               SpeciesDensityChangedEventModel(
                                   speciesId1,

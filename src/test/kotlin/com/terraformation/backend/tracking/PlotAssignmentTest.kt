@@ -127,7 +127,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     val substratum1Feature =
         gen.substratumFeature(
             substratum1Boundary,
-            stratum = "Z1",
+            stratum = "S1",
             permanentPlots = 2,
             temporaryPlots = 3,
         )
@@ -135,7 +135,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     val substratum3Feature =
         gen.substratumFeature(
             stratum2Boundary,
-            stratum = "Z2",
+            stratum = "S2",
             permanentPlots = 2,
             temporaryPlots = 3,
         )
@@ -143,7 +143,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     val plantingSite =
         importSite(listOf(substratum1Feature, substratum2Feature, substratum3Feature))
     val substratum1 =
-        plantingSite.strata.first { it.name == "Z1" }.substrata.first { it.name == "S1" }
+        plantingSite.strata.first { it.name == "S1" }.substrata.first { it.name == "Sub1" }
 
     val observationId =
         insertObservation(plantingSiteId = plantingSite.id, state = ObservationState.Upcoming)

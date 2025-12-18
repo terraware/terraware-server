@@ -675,7 +675,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "facility_name" to "Nursery",
                       "hasReassignments" to "true",
                       "id" to "$outplantWithdrawalId",
-                      "plantingSubzoneNames" to "Z1-1 (Z1-2, Z1-3)",
+                      "plantingSubzoneNames" to "S1-1 (S1-2, S1-3)",
                       "purpose" to WithdrawalPurpose.OutPlant.getDisplayName(Locale.ENGLISH),
                       "totalWithdrawn" to number(24),
                       "withdrawnDate" to "2023-03-03",

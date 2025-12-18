@@ -32,11 +32,11 @@ class ShapefileGenerator(
 
   private var nextSubstratumNumber = 1
 
-  private var lastStratumName: String = "Z1"
+  private var lastStratumName: String = "S1"
 
   fun substratumFeature(
       boundary: MultiPolygon,
-      name: String = "S${nextSubstratumNumber++}",
+      name: String = "Sub${nextSubstratumNumber++}",
       stratum: String = lastStratumName,
       substratumStableId: String? = null,
       stratumStableId: String? = null,

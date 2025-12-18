@@ -81,7 +81,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             endDate = LocalDate.of(1970, 6, 5),
         )
 
-    val plantingZoneId2 = insertStratum(boundary = plantingZoneGeometry, name = "Z2")
+    val plantingZoneId2 = insertStratum(boundary = plantingZoneGeometry, name = "S2")
     val plantingZoneHistoryId2 = inserted.stratumHistoryId
 
     val plantingSubzoneId3 =
@@ -266,7 +266,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId1",
                                             "numPlants" to "1",
-                                            "plantingSubzone_fullName" to "Z2-3",
+                                            "plantingSubzone_fullName" to "S2-3",
                                             "species_scientificName" to "Species 1",
                                             "type" to "Delivery",
                                         ),
@@ -274,7 +274,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId3",
                                             "numPlants" to "-2",
-                                            "plantingSubzone_fullName" to "Z2-3",
+                                            "plantingSubzone_fullName" to "S2-3",
                                             "species_scientificName" to "Species 1",
                                             "type" to "Reassignment From",
                                         ),
@@ -282,7 +282,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId4",
                                             "numPlants" to "2",
-                                            "plantingSubzone_fullName" to "Z2-4",
+                                            "plantingSubzone_fullName" to "S2-4",
                                             "species_scientificName" to "Species 1",
                                             "type" to "Reassignment To",
                                         ),
@@ -290,7 +290,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId5",
                                             "numPlants" to "8",
-                                            "plantingSubzone_fullName" to "Z2-4",
+                                            "plantingSubzone_fullName" to "S2-4",
                                             "species_scientificName" to "Species 2",
                                             "type" to "Delivery",
                                         ),
@@ -305,7 +305,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "id" to "$plantingId2",
                                             "numPlants" to "4",
-                                            "plantingSubzone_fullName" to "Z2-3",
+                                            "plantingSubzone_fullName" to "S2-3",
                                             "species_scientificName" to "Species 1",
                                             "type" to "Delivery",
                                         ),
@@ -507,19 +507,19 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingZoneGeometry),
                                             "id" to "$plantingZoneHistoryId2",
-                                            "name" to "Z2",
+                                            "name" to "S2",
                                         ),
                                     ),
                                 "id" to "$plantingZoneId2",
                                 "modifiedTime" to "1970-01-01T00:00:00Z",
-                                "name" to "Z2",
+                                "name" to "S2",
                                 "plantingSubzones" to
                                     listOf(
                                         mapOf(
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingSubzoneGeometry3),
                                             "createdTime" to "1970-01-01T00:00:00Z",
-                                            "fullName" to "Z2-3",
+                                            "fullName" to "S2-3",
                                             "histories" to
                                                 listOf(
                                                     mapOf(
@@ -527,7 +527,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                             postgisRenderGeoJson(
                                                                 plantingSubzoneGeometry3,
                                                             ),
-                                                        "fullName" to "Z2-3",
+                                                        "fullName" to "S2-3",
                                                         "id" to "$plantingSubzoneHistoryId3",
                                                         "name" to "3",
                                                         "stableId" to "3",
@@ -598,7 +598,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "boundary" to
                                                 postgisRenderGeoJson(plantingSubzoneGeometry4),
                                             "createdTime" to "1970-01-01T00:00:00Z",
-                                            "fullName" to "Z2-4",
+                                            "fullName" to "S2-4",
                                             "histories" to
                                                 listOf(
                                                     mapOf(
@@ -606,7 +606,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                             postgisRenderGeoJson(
                                                                 plantingSubzoneGeometry4,
                                                             ),
-                                                        "fullName" to "Z2-4",
+                                                        "fullName" to "S2-4",
                                                         "id" to "$plantingSubzoneHistoryId4",
                                                         "name" to "4",
                                                         "stableId" to "4",
