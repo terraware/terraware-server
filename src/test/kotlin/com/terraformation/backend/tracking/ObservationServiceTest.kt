@@ -170,9 +170,9 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         parentStore,
         plantingSeasonsDao,
         plantingSitesDao,
-        substrataDao,
-        strataDao,
         eventPublisher,
+        strataDao,
+        substrataDao,
     )
   }
 

@@ -38,9 +38,9 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
         ParentStore(dslContext),
         plantingSeasonsDao,
         plantingSitesDao,
-        substrataDao,
-        strataDao,
         eventPublisher,
+        strataDao,
+        substrataDao,
     )
   }
 

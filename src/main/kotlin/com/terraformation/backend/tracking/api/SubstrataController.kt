@@ -53,7 +53,7 @@ class SubstrataController(
       @PathVariable id: SubstratumId,
       @RequestBody payload: UpdatePlantingSubzoneRequestPayload,
   ): SimpleSuccessResponsePayload {
-    plantingSiteStore.updatePlantingSubzoneCompleted(id, payload.plantingCompleted)
+    plantingSiteStore.updateSubstratumCompleted(id, payload.plantingCompleted)
 
     return SimpleSuccessResponsePayload()
   }

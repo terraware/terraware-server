@@ -25,7 +25,7 @@ data class PlantingSiteHistoryModel(
     val gridOrigin: Point?,
     val id: PlantingSiteHistoryId,
     val plantingSiteId: PlantingSiteId,
-    val plantingZones: List<PlantingZoneHistoryModel>,
+    val strata: List<StratumHistoryModel>,
 ) {
   fun equals(other: Any?, tolerance: Double = 0.00001): Boolean {
     return other is PlantingSiteHistoryModel &&
@@ -36,51 +36,51 @@ data class PlantingSiteHistoryModel(
         boundary.equalsExact(other.boundary, tolerance) &&
         exclusion.equalsOrBothNull(other.exclusion, tolerance) &&
         gridOrigin.equalsOrBothNull(other.gridOrigin, tolerance) &&
-        plantingZones.size == other.plantingZones.size &&
-        plantingZones.zip(other.plantingZones).all { it.first.equals(it.second, tolerance) }
+        strata.size == other.strata.size &&
+        strata.zip(other.strata).all { it.first.equals(it.second, tolerance) }
   }
 }
 
-data class PlantingZoneHistoryModel(
+data class StratumHistoryModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val id: StratumHistoryId,
     val name: String,
-    val plantingSubzones: List<PlantingSubzoneHistoryModel>,
-    /** ID of planting zone if it currently exists. Null if the zone has been deleted. */
-    val plantingZoneId: StratumId?,
+    val substrata: List<SubstratumHistoryModel>,
+    /** ID of stratum if it currently exists. Null if the stratum has been deleted. */
+    val stratumId: StratumId?,
     val stableId: StableId,
 ) {
   fun equals(other: Any?, tolerance: Double = 0.00001): Boolean {
-    return other is PlantingZoneHistoryModel &&
+    return other is StratumHistoryModel &&
         id == other.id &&
         name == other.name &&
-        plantingZoneId == other.plantingZoneId &&
+        stratumId == other.stratumId &&
         stableId == other.stableId &&
         areaHa == other.areaHa &&
         boundary.equalsExact(other.boundary, tolerance) &&
-        plantingSubzones.size == other.plantingSubzones.size &&
-        plantingSubzones.zip(other.plantingSubzones).all { it.first.equals(it.second, tolerance) }
+        substrata.size == other.substrata.size &&
+        substrata.zip(other.substrata).all { it.first.equals(it.second, tolerance) }
   }
 }
 
-data class PlantingSubzoneHistoryModel(
+data class SubstratumHistoryModel(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val fullName: String,
     val id: SubstratumHistoryId,
     val monitoringPlots: List<MonitoringPlotHistoryModel>,
     val name: String,
-    /** ID of planting subzone if it currently exists. Null if the zone has been deleted. */
-    val plantingSubzoneId: SubstratumId?,
+    /** ID of substratum if it currently exists. Null if the stratum has been deleted. */
+    val substratumId: SubstratumId?,
     val stableId: StableId,
 ) {
   fun equals(other: Any?, tolerance: Double = 0.00001): Boolean {
-    return other is PlantingSubzoneHistoryModel &&
+    return other is SubstratumHistoryModel &&
         fullName == other.fullName &&
         id == other.id &&
         name == other.name &&
-        plantingSubzoneId == other.plantingSubzoneId &&
+        substratumId == other.substratumId &&
         stableId == other.stableId &&
         areaHa == other.areaHa &&
         boundary.equalsExact(other.boundary, tolerance) &&

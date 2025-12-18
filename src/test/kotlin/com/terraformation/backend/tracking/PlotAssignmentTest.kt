@@ -58,9 +58,9 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         parentStore,
         plantingSeasonsDao,
         plantingSitesDao,
-        substrataDao,
-        strataDao,
         eventPublisher,
+        strataDao,
+        substrataDao,
     )
   }
   private val plantingSiteImporter: PlantingSiteImporter by lazy {

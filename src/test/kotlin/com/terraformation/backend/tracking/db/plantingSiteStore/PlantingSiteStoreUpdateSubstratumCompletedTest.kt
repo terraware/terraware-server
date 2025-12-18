@@ -8,24 +8,24 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteStoreTest() {
+internal class PlantingSiteStoreUpdateSubstratumCompletedTest : BasePlantingSiteStoreTest() {
   @Nested
-  inner class UpdatePlantingSubzoneCompleted {
+  inner class UpdateSubstratumCompleted {
     @Test
     fun `sets completed time to current time if not set previously`() {
       insertPlantingSite()
       insertStratum()
-      val plantingSubzoneId = insertSubstratum()
+      val substratumId = insertSubstratum()
 
-      val initial = substrataDao.fetchOneById(plantingSubzoneId)!!
+      val initial = substrataDao.fetchOneById(substratumId)!!
 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
 
-      store.updatePlantingSubzoneCompleted(plantingSubzoneId, true)
+      store.updateSubstratumCompleted(substratumId, true)
 
       val expected = initial.copy(plantingCompletedTime = now, modifiedTime = now)
-      val actual = substrataDao.fetchOneById(plantingSubzoneId)!!
+      val actual = substrataDao.fetchOneById(substratumId)!!
 
       assertEquals(expected, actual)
     }
@@ -36,16 +36,16 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
 
       insertPlantingSite()
       insertStratum()
-      val plantingSubzoneId = insertSubstratum(plantingCompletedTime = initialPlantingCompletedTime)
+      val substratumId = insertSubstratum(plantingCompletedTime = initialPlantingCompletedTime)
 
-      val initial = substrataDao.fetchOneById(plantingSubzoneId)!!
+      val initial = substrataDao.fetchOneById(substratumId)!!
 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
 
-      store.updatePlantingSubzoneCompleted(plantingSubzoneId, true)
+      store.updateSubstratumCompleted(substratumId, true)
 
-      val actual = substrataDao.fetchOneById(plantingSubzoneId)!!
+      val actual = substrataDao.fetchOneById(substratumId)!!
 
       assertEquals(initial, actual)
     }
@@ -54,17 +54,17 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
     fun `clears completed time`() {
       insertPlantingSite()
       insertStratum()
-      val plantingSubzoneId = insertSubstratum(plantingCompletedTime = Instant.ofEpochSecond(5))
+      val substratumId = insertSubstratum(plantingCompletedTime = Instant.ofEpochSecond(5))
 
-      val initial = substrataDao.fetchOneById(plantingSubzoneId)!!
+      val initial = substrataDao.fetchOneById(substratumId)!!
 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
 
-      store.updatePlantingSubzoneCompleted(plantingSubzoneId, false)
+      store.updateSubstratumCompleted(substratumId, false)
 
       val expected = initial.copy(plantingCompletedTime = null, modifiedTime = now)
-      val actual = substrataDao.fetchOneById(plantingSubzoneId)!!
+      val actual = substrataDao.fetchOneById(substratumId)!!
 
       assertEquals(expected, actual)
     }
@@ -73,13 +73,11 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
     fun `throws exception if no permission`() {
       insertPlantingSite()
       insertStratum()
-      val plantingSubzoneId = insertSubstratum()
+      val substratumId = insertSubstratum()
 
       every { user.canUpdatePlantingSubzoneCompleted(any()) } returns false
 
-      assertThrows<AccessDeniedException> {
-        store.updatePlantingSubzoneCompleted(plantingSubzoneId, true)
-      }
+      assertThrows<AccessDeniedException> { store.updateSubstratumCompleted(substratumId, true) }
     }
   }
 }

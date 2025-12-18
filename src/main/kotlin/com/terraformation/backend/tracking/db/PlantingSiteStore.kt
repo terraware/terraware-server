@@ -93,9 +93,9 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
-import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
-import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.tracking.model.StratumHistoryModel
+import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
@@ -134,15 +134,15 @@ class PlantingSiteStore(
     private val parentStore: ParentStore,
     private val plantingSeasonsDao: PlantingSeasonsDao,
     private val plantingSitesDao: PlantingSitesDao,
-    private val plantingSubzonesDao: SubstrataDao,
-    private val plantingZonesDao: StrataDao,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
+    private val strataDao: StrataDao,
+    private val substrataDao: SubstrataDao,
 ) {
   private val log = perClassLogger()
 
   private val monitoringPlotBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
-  private val plantingSubzoneBoundaryField = SUBSTRATA.BOUNDARY.forMultiset()
-  private val plantingZonesBoundaryField = STRATA.BOUNDARY.forMultiset()
+  private val strataBoundaryField = STRATA.BOUNDARY.forMultiset()
+  private val substratumBoundaryField = SUBSTRATA.BOUNDARY.forMultiset()
 
   fun fetchSiteById(
       plantingSiteId: PlantingSiteId,
@@ -203,9 +203,9 @@ class PlantingSiteStore(
       condition: Condition,
       depth: PlantingSiteDepth,
   ): List<ExistingPlantingSiteModel> {
-    val zonesField =
+    val strataField =
         if (depth != PlantingSiteDepth.Site) {
-          plantingZonesMultiset(depth)
+          strataMultiset(depth)
         } else {
           null
         }
@@ -245,7 +245,7 @@ class PlantingSiteStore(
         .select(
             PLANTING_SITES.asterisk(),
             plantingSeasonsMultiset,
-            zonesField,
+            strataField,
             adHocPlotsField,
             exteriorPlotsField,
             latestObservationIdField,
@@ -258,7 +258,7 @@ class PlantingSiteStore(
           PlantingSiteModel.of(
               it,
               plantingSeasonsMultiset,
-              zonesField,
+              strataField,
               adHocPlotsField,
               exteriorPlotsField,
               latestObservationIdField,
@@ -275,9 +275,9 @@ class PlantingSiteStore(
     val exclusionField = PLANTING_SITE_HISTORIES.EXCLUSION.forMultiset()
     val gridOriginField = PLANTING_SITE_HISTORIES.GRID_ORIGIN.forMultiset()
 
-    val zonesField =
+    val strataField =
         if (depth != PlantingSiteDepth.Site) {
-          plantingZoneHistoriesMultiset(depth)
+          stratumHistoriesMultiset(depth)
         } else {
           null
         }
@@ -291,7 +291,7 @@ class PlantingSiteStore(
             boundaryField,
             exclusionField,
             gridOriginField,
-            zonesField,
+            strataField,
         )
         .from(PLANTING_SITE_HISTORIES)
         .where(condition)
@@ -305,7 +305,7 @@ class PlantingSiteStore(
               gridOrigin = record[gridOriginField] as? Point,
               id = record[PLANTING_SITE_HISTORIES.ID]!!,
               plantingSiteId = record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID]!!,
-              plantingZones = zonesField?.let { record[it] } ?: emptyList(),
+              strata = strataField?.let { record[it] } ?: emptyList(),
           )
         }
   }
@@ -313,7 +313,7 @@ class PlantingSiteStore(
   fun countMonitoringPlots(plantingSiteId: PlantingSiteId): Map<StratumId, Map<SubstratumId, Int>> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    val countBySubzoneField =
+    val countBySubstratumField =
         DSL.multiset(
                 DSL.select(SUBSTRATA.ID.asNonNullable(), DSL.count())
                     .from(MONITORING_PLOTS)
@@ -325,19 +325,19 @@ class PlantingSiteStore(
             .convertFrom { results -> results.associate { it.value1() to it.value2() } }
 
     return dslContext
-        .select(STRATA.ID, countBySubzoneField)
+        .select(STRATA.ID, countBySubstratumField)
         .from(STRATA)
         .where(STRATA.PLANTING_SITE_ID.eq(plantingSiteId))
-        .fetchMap(STRATA.ID.asNonNullable(), countBySubzoneField)
+        .fetchMap(STRATA.ID.asNonNullable(), countBySubstratumField)
   }
 
   /**
-   * Returns the number of plants currently known to be planted in the subzones at a planting site.
-   * Subzones that do not currently have any plants are not included in the return value. If subzone
-   * A had a planting but all the plants were late reassigned to subzone B, subzone A will not be
-   * included in the return value.
+   * Returns the number of plants currently known to be planted in the substrata at a planting site.
+   * Substrata that do not currently have any plants are not included in the return value. If
+   * substratum A had a planting but all the plants were late reassigned to substratum B, substratum
+   * A will not be included in the return value.
    */
-  fun countReportedPlantsInSubzones(plantingSiteId: PlantingSiteId): Map<SubstratumId, Long> {
+  fun countReportedPlantsInSubstrata(plantingSiteId: PlantingSiteId): Map<SubstratumId, Long> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     val sumField = DSL.sum(PLANTINGS.NUM_PLANTS)
@@ -425,13 +425,13 @@ class PlantingSiteStore(
         siteHistoryId =
             insertPlantingSiteHistory(newModel, newModel.gridOrigin, now, plantingSiteId)
 
-        newModel.strata.forEach { zone ->
-          val zoneId = createPlantingZone(zone, plantingSiteId, now)
-          val zoneHistoryId = insertPlantingZoneHistory(zone, siteHistoryId, zoneId)
+        newModel.strata.forEach { stratum ->
+          val stratumId = createStratum(stratum, plantingSiteId, now)
+          val stratumHistoryId = insertStratumHistory(stratum, siteHistoryId, stratumId)
 
-          zone.substrata.forEach { subzone ->
-            val subzoneId = createPlantingSubzone(subzone, plantingSiteId, zoneId, now)
-            insertPlantingSubzoneHistory(subzone, zoneHistoryId, subzoneId)
+          stratum.substrata.forEach { substratum ->
+            val substratumId = createSubstratum(substratum, plantingSiteId, stratumId, now)
+            insertSubstratumHistory(substratum, stratumHistoryId, substratumId)
           }
         }
       }
@@ -444,7 +444,7 @@ class PlantingSiteStore(
 
       log.info("Created planting site $plantingSiteId for organization ${newModel.organizationId}")
 
-      fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone).copy(historyId = siteHistoryId)
+      fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum).copy(historyId = siteHistoryId)
     }
   }
 
@@ -455,7 +455,7 @@ class PlantingSiteStore(
   ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
-    val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Zone)
+    val initial = fetchSiteById(plantingSiteId, PlantingSiteDepth.Stratum)
     val edited = editFunc(initial)
 
     if (edited.projectId != null) {
@@ -542,7 +542,7 @@ class PlantingSiteStore(
 
   fun applyPlantingSiteEdit(
       plantingSiteEdit: PlantingSiteEdit,
-      subzonesToMarkIncomplete: Set<SubstratumId> = emptySet(),
+      substrataToMarkIncomplete: Set<SubstratumId> = emptySet(),
   ): ExistingPlantingSiteModel {
     val plantingSiteId = plantingSiteEdit.existingModel.id
 
@@ -600,23 +600,23 @@ class PlantingSiteStore(
 
       plantingSiteEdit.stratumEdits.forEach {
         replacementResults.add(
-            applyPlantingZoneEdit(
+            applyStratumEdit(
                 it,
                 plantingSiteId,
                 plantingSiteHistoryId,
-                subzonesToMarkIncomplete,
+                substrataToMarkIncomplete,
                 now,
             )
         )
       }
 
-      // If any zones weren't edited, we still want to include them and their subzones in the site's
-      // map history.
-      existing.strata.forEach { zone ->
-        if (plantingSiteEdit.stratumEdits.none { it.existingModel?.id == zone.id }) {
-          val plantingZoneHistoryId = insertPlantingZoneHistory(zone, plantingSiteHistoryId)
-          zone.substrata.forEach { subzone ->
-            insertPlantingSubzoneHistory(subzone, plantingZoneHistoryId)
+      // If any strata weren't edited, we still want to include them and their substrata in the
+      // site's map history.
+      existing.strata.forEach { stratum ->
+        if (plantingSiteEdit.stratumEdits.none { it.existingModel?.id == stratum.id }) {
+          val stratumHistoryId = insertStratumHistory(stratum, plantingSiteHistoryId)
+          stratum.substrata.forEach { substratum ->
+            insertSubstratumHistory(substratum, stratumHistoryId)
           }
         }
       }
@@ -635,8 +635,8 @@ class PlantingSiteStore(
                   .and(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
           )
           .fetch()
-          .forEach { (monitoringPlotId, plantingSubzoneId) ->
-            insertMonitoringPlotHistory(monitoringPlotId, plantingSiteId, plantingSubzoneId)
+          .forEach { (monitoringPlotId, substratumId) ->
+            insertMonitoringPlotHistory(monitoringPlotId, plantingSiteId, substratumId)
           }
 
       sanityCheckAfterEdit(plantingSiteId)
@@ -656,71 +656,71 @@ class PlantingSiteStore(
   }
 
   /**
-   * Gives unique temporary names to all the zones and subzones that are being updated. This is done
-   * before applying the actual zone and subzone edits.
+   * Gives unique temporary names to all the strata and substrata that are being updated. This is
+   * done before applying the actual stratum and substratum edits.
    *
    * Using temporary names avoids potential unique constraint violations.
    *
-   * Suppose you have a site with zones A and B. You realize you mislabeled them and you really want
-   * the zones to be named B and C. Without the temporary names, the system might first try to
-   * rename zone B to "C". That would bomb out with a database constraint violation because zone
-   * names are required to be unique within planting sites.
+   * Suppose you have a site with strata A and B. You realize you mislabeled them and you really
+   * want the strata to be named B and C. Without the temporary names, the system might first try to
+   * rename stratum B to "C". That would bomb out with a database constraint violation because
+   * stratum names are required to be unique within planting sites.
    *
    * Instead, we do it in two steps. We rename both A and B to random UUID names. Then we apply the
    * edits, which set the names to "B" and "C", neither of which collides with any of the UUIDs no
    * matter which order the updates are applied.
    */
   private fun useTemporaryNames(plantingSiteEdit: PlantingSiteEdit) {
-    val zoneIdsToUpdate =
+    val stratumIdsToUpdate =
         plantingSiteEdit.stratumEdits.filterIsInstance<StratumEdit.Update>().map {
           it.existingModel.id
         }
-    if (zoneIdsToUpdate.isNotEmpty()) {
+    if (stratumIdsToUpdate.isNotEmpty()) {
       with(STRATA) {
         dslContext
             .update(STRATA)
             .set(NAME, DSL.uuid().cast(SQLDataType.VARCHAR))
-            .where(ID.`in`(zoneIdsToUpdate))
+            .where(ID.`in`(stratumIdsToUpdate))
             .execute()
       }
     }
 
-    val subzoneIdsToUpdate =
+    val substratumIdsToUpdate =
         plantingSiteEdit.stratumEdits
             .flatMap { it.substratumEdits }
             .filterIsInstance<SubstratumEdit.Update>()
             .map { it.existingModel.id }
-    if (subzoneIdsToUpdate.isNotEmpty()) {
+    if (substratumIdsToUpdate.isNotEmpty()) {
       with(SUBSTRATA) {
         dslContext
             .update(SUBSTRATA)
             .set(NAME, DSL.uuid().cast(SQLDataType.VARCHAR))
-            .where(ID.`in`(subzoneIdsToUpdate))
+            .where(ID.`in`(substratumIdsToUpdate))
             .execute()
       }
     }
   }
 
-  private fun applyPlantingZoneEdit(
+  private fun applyStratumEdit(
       edit: StratumEdit,
       plantingSiteId: PlantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId,
-      subzonesToMarkIncomplete: Set<SubstratumId>,
+      substrataToMarkIncomplete: Set<SubstratumId>,
       now: Instant,
   ): ReplacementResult {
     val replacementResults = mutableListOf<ReplacementResult>()
 
     when (edit) {
       is StratumEdit.Create -> {
-        val plantingZoneId = createPlantingZone(edit.desiredModel.toNew(), plantingSiteId, now)
-        val plantingZoneHistoryId =
-            insertPlantingZoneHistory(edit.desiredModel, plantingSiteHistoryId, plantingZoneId)
+        val stratumId = createStratum(edit.desiredModel.toNew(), plantingSiteId, now)
+        val stratumHistoryId =
+            insertStratumHistory(edit.desiredModel, plantingSiteHistoryId, stratumId)
         edit.substratumEdits.forEach {
-          applyPlantingSubzoneEdit(
+          applySubstratumEdit(
               it,
               plantingSiteId,
-              plantingZoneId,
-              plantingZoneHistoryId,
+              stratumId,
+              stratumHistoryId,
               emptySet(),
               now,
           )
@@ -729,12 +729,12 @@ class PlantingSiteStore(
       is StratumEdit.Delete -> {
         replacementResults.addAll(
             edit.substratumEdits.map {
-              applyPlantingSubzoneEdit(
+              applySubstratumEdit(
                   edit = it,
                   plantingSiteId = plantingSiteId,
-                  plantingZoneId = edit.existingModel.id,
-                  plantingZoneHistoryId = null,
-                  subzonesToMarkIncomplete = emptySet(),
+                  stratumId = edit.existingModel.id,
+                  stratumHistoryId = null,
+                  substrataToMarkIncomplete = emptySet(),
                   now = now,
               )
             }
@@ -775,41 +775,41 @@ class PlantingSiteStore(
             throw StratumNotFoundException(edit.existingModel.id)
           }
         }
-        val plantingZoneHistoryId =
-            insertPlantingZoneHistory(
+        val stratumHistoryId =
+            insertStratumHistory(
                 edit.desiredModel,
                 plantingSiteHistoryId,
                 edit.existingModel.id,
             )
 
         replacementResults.addAll(
-            edit.substratumEdits.map { subzoneEdit ->
-              applyPlantingSubzoneEdit(
-                  edit = subzoneEdit,
+            edit.substratumEdits.map { substratumEdit ->
+              applySubstratumEdit(
+                  edit = substratumEdit,
                   plantingSiteId = plantingSiteId,
-                  plantingZoneId = edit.existingModel.id,
-                  plantingZoneHistoryId = plantingZoneHistoryId,
-                  subzonesToMarkIncomplete = subzonesToMarkIncomplete,
+                  stratumId = edit.existingModel.id,
+                  stratumHistoryId = stratumHistoryId,
+                  substrataToMarkIncomplete = substrataToMarkIncomplete,
                   now = now,
               )
             }
         )
 
-        // If any subzones weren't edited, we still want to include them in the site's map history.
-        edit.existingModel.substrata.forEach { existingSubzone ->
-          val subzoneStillInThisZone =
-              edit.desiredModel.substrata.any { it.name == existingSubzone.name }
-          val noEditForThisSubzone =
-              edit.substratumEdits.none { it.existingModel?.id == existingSubzone.id }
+        // If any substrata weren't edited, we still want to include them in the site's map history.
+        edit.existingModel.substrata.forEach { existingSubstratum ->
+          val substratumStillInThisStratum =
+              edit.desiredModel.substrata.any { it.name == existingSubstratum.name }
+          val noEditForThisSubstratum =
+              edit.substratumEdits.none { it.existingModel?.id == existingSubstratum.id }
 
-          if (subzoneStillInThisZone && noEditForThisSubzone) {
-            insertPlantingSubzoneHistory(existingSubzone, plantingZoneHistoryId)
+          if (substratumStillInThisStratum && noEditForThisSubstratum) {
+            insertSubstratumHistory(existingSubstratum, stratumHistoryId)
           }
         }
 
-        // Need to create permanent plots using the updated subzones since we need their IDs.
+        // Need to create permanent plots using the updated substrata since we need their IDs.
         val updatedSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-        val updatedZone = updatedSite.strata.single { it.id == edit.existingModel.id }
+        val updatedStratum = updatedSite.strata.single { it.id == edit.existingModel.id }
 
         edit.monitoringPlotEdits
             .filter { it.permanentIndex != null }
@@ -818,7 +818,7 @@ class PlantingSiteStore(
               val newPlotIds =
                   createPermanentPlots(
                       updatedSite,
-                      updatedZone,
+                      updatedStratum,
                       plotEdits.map { it.permanentIndex!! },
                       region,
                   )
@@ -830,35 +830,35 @@ class PlantingSiteStore(
     return ReplacementResult.merge(replacementResults)
   }
 
-  private fun applyPlantingSubzoneEdit(
+  private fun applySubstratumEdit(
       edit: SubstratumEdit,
       plantingSiteId: PlantingSiteId,
-      plantingZoneId: StratumId,
-      plantingZoneHistoryId: StratumHistoryId?,
-      subzonesToMarkIncomplete: Set<SubstratumId>,
+      stratumId: StratumId,
+      stratumHistoryId: StratumHistoryId?,
+      substrataToMarkIncomplete: Set<SubstratumId>,
       now: Instant,
   ): ReplacementResult {
     val replacementResults = mutableListOf<ReplacementResult>()
 
     when (edit) {
       is SubstratumEdit.Create -> {
-        if (plantingZoneHistoryId == null) {
-          throw IllegalArgumentException("Subzone creation requires planting zone history ID")
+        if (stratumHistoryId == null) {
+          throw IllegalArgumentException("Substratum creation requires stratum history ID")
         }
 
-        val plantingSubzoneId =
-            createPlantingSubzone(edit.desiredModel.toNew(), plantingSiteId, plantingZoneId, now)
-        insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
+        val substratumId =
+            createSubstratum(edit.desiredModel.toNew(), plantingSiteId, stratumId, now)
+        insertSubstratumHistory(edit.desiredModel, stratumHistoryId, substratumId)
 
         edit.monitoringPlotEdits.forEach { plotEdit ->
           replacementResults.add(
-              applyMonitoringPlotEdit(plotEdit, plantingSiteId, plantingSubzoneId, now)
+              applyMonitoringPlotEdit(plotEdit, plantingSiteId, substratumId, now)
           )
         }
       }
       is SubstratumEdit.Delete -> {
         // Plots will be deleted by ON DELETE CASCADE. This may legitimately delete 0 rows if the
-        // parent zone has already been deleted.
+        // parent stratum has already been deleted.
         dslContext.deleteFrom(SUBSTRATA).where(SUBSTRATA.ID.eq(edit.existingModel.id)).execute()
 
         replacementResults.add(
@@ -866,13 +866,12 @@ class PlantingSiteStore(
         )
       }
       is SubstratumEdit.Update -> {
-        if (plantingZoneHistoryId == null) {
-          throw IllegalArgumentException("Subzone update requires planting zone history ID")
+        if (stratumHistoryId == null) {
+          throw IllegalArgumentException("Substratum update requires stratum history ID")
         }
 
-        val plantingSubzoneId = edit.existingModel.id
-        val markIncomplete =
-            !edit.addedRegion.isEmpty && plantingSubzoneId in subzonesToMarkIncomplete
+        val substratumId = edit.existingModel.id
+        val markIncomplete = !edit.addedRegion.isEmpty && substratumId in substrataToMarkIncomplete
 
         with(SUBSTRATA) {
           val rowsUpdated =
@@ -885,19 +884,19 @@ class PlantingSiteStore(
                   .set(MODIFIED_TIME, now)
                   .set(NAME, edit.desiredModel.name)
                   .let { if (markIncomplete) it.setNull(PLANTING_COMPLETED_TIME) else it }
-                  .set(STRATUM_ID, plantingZoneId)
-                  .where(ID.eq(plantingSubzoneId))
+                  .set(STRATUM_ID, stratumId)
+                  .where(ID.eq(substratumId))
                   .execute()
           if (rowsUpdated != 1) {
-            throw SubstrataNotFoundException(plantingSubzoneId)
+            throw SubstrataNotFoundException(substratumId)
           }
         }
 
-        insertPlantingSubzoneHistory(edit.desiredModel, plantingZoneHistoryId, plantingSubzoneId)
+        insertSubstratumHistory(edit.desiredModel, stratumHistoryId, substratumId)
 
         edit.monitoringPlotEdits.forEach { plotEdit ->
           replacementResults.add(
-              applyMonitoringPlotEdit(plotEdit, plantingSiteId, plantingSubzoneId, now)
+              applyMonitoringPlotEdit(plotEdit, plantingSiteId, substratumId, now)
           )
         }
       }
@@ -909,7 +908,7 @@ class PlantingSiteStore(
   private fun applyMonitoringPlotEdit(
       edit: MonitoringPlotEdit,
       plantingSiteId: PlantingSiteId,
-      plantingSubzoneId: SubstratumId,
+      substratumId: SubstratumId,
       now: Instant,
   ): ReplacementResult {
     return when (edit) {
@@ -918,21 +917,21 @@ class PlantingSiteStore(
           dslContext
               .update(MONITORING_PLOTS)
               .set(PERMANENT_INDEX, edit.permanentIndex)
-              .set(SUBSTRATUM_ID, plantingSubzoneId)
+              .set(SUBSTRATUM_ID, substratumId)
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, now)
               .where(ID.eq(edit.monitoringPlotId))
               .execute()
         }
 
-        insertMonitoringPlotHistory(edit.monitoringPlotId, plantingSiteId, plantingSubzoneId)
+        insertMonitoringPlotHistory(edit.monitoringPlotId, plantingSiteId, substratumId)
 
         ReplacementResult(emptySet(), emptySet())
       }
 
       is MonitoringPlotEdit.Create ->
           throw IllegalStateException(
-              "BUG! Monitoring plot creation should be handled at zone level"
+              "BUG! Monitoring plot creation should be handled at stratum level"
           )
 
       is MonitoringPlotEdit.Eject -> {
@@ -961,10 +960,10 @@ class PlantingSiteStore(
    * @throws IllegalStateException A sanity check failed.
    */
   private fun sanityCheckAfterEdit(plantingSiteId: PlantingSiteId) {
-    // Make sure we haven't assigned the same permanent index to two plots in a planting zone. We
-    // don't enforce this with a database constraint because duplicate indexes are a valid
-    // intermediate state while a complex edit is being applied.
-    val zonesWithDuplicatePermanentIndexes =
+    // Make sure we haven't assigned the same permanent index to two plots in a stratum. We don't
+    // enforce this with a database constraint because duplicate indexes are a valid intermediate
+    // state while a complex edit is being applied.
+    val strataWithDuplicatePermanentIndexes =
         dslContext
             .select(STRATA.ID, STRATA.NAME, MONITORING_PLOTS.PERMANENT_INDEX)
             .from(STRATA)
@@ -977,11 +976,11 @@ class PlantingSiteStore(
             .groupBy(STRATA.ID, STRATA.NAME, MONITORING_PLOTS.PERMANENT_INDEX)
             .having(DSL.count().gt(1))
             .fetch { record ->
-              "planting zone ${record[STRATA.ID]} (${record[STRATA.NAME]}) " +
+              "stratum ${record[STRATA.ID]} (${record[STRATA.NAME]}) " +
                   "index ${record[MONITORING_PLOTS.PERMANENT_INDEX]}"
             }
-    if (zonesWithDuplicatePermanentIndexes.isNotEmpty()) {
-      val details = zonesWithDuplicatePermanentIndexes.joinToString()
+    if (strataWithDuplicatePermanentIndexes.isNotEmpty()) {
+      val details = strataWithDuplicatePermanentIndexes.joinToString()
       throw IllegalStateException("BUG! Edit resulted in duplicate permanent indexes: $details")
     }
   }
@@ -1098,15 +1097,13 @@ class PlantingSiteStore(
     }
   }
 
-  fun updatePlantingZone(
-      plantingZoneId: StratumId,
+  fun updateStratum(
+      stratumId: StratumId,
       editFunc: (StrataRow) -> StrataRow,
   ) {
-    requirePermissions { updatePlantingZone(plantingZoneId) }
+    requirePermissions { updatePlantingZone(stratumId) }
 
-    val initial =
-        plantingZonesDao.fetchOneById(plantingZoneId)
-            ?: throw StratumNotFoundException(plantingZoneId)
+    val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
     val edited = editFunc(initial)
 
     withLockedPlantingSite(initial.plantingSiteId!!) {
@@ -1122,7 +1119,7 @@ class PlantingSiteStore(
             .set(STUDENTS_T, edited.studentsT)
             .set(TARGET_PLANTING_DENSITY, edited.targetPlantingDensity)
             .set(VARIANCE, edited.variance)
-            .where(ID.eq(plantingZoneId))
+            .where(ID.eq(stratumId))
             .execute()
       }
 
@@ -1133,16 +1130,16 @@ class PlantingSiteStore(
               .set(FULL_NAME, DSL.concat("${edited.name}-", NAME))
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, clock.instant())
-              .where(STRATUM_ID.eq(plantingZoneId))
+              .where(STRATUM_ID.eq(stratumId))
               .execute()
         }
 
         with(STRATUM_HISTORIES) {
-          val plantingZoneHistoryId =
+          val stratumHistoryId =
               dslContext
                   .select(ID)
                   .from(STRATUM_HISTORIES)
-                  .where(STRATUM_ID.eq(plantingZoneId))
+                  .where(STRATUM_ID.eq(stratumId))
                   .orderBy(ID.desc())
                   .limit(1)
                   .fetchSingle(ID)
@@ -1150,14 +1147,14 @@ class PlantingSiteStore(
           dslContext
               .update(STRATUM_HISTORIES)
               .set(NAME, edited.name)
-              .where(ID.eq(plantingZoneHistoryId))
+              .where(ID.eq(stratumHistoryId))
               .execute()
 
           with(SUBSTRATUM_HISTORIES) {
             dslContext
                 .update(SUBSTRATUM_HISTORIES)
                 .set(FULL_NAME, DSL.concat("${edited.name}-", NAME))
-                .where(STRATUM_HISTORY_ID.eq(plantingZoneHistoryId))
+                .where(STRATUM_HISTORY_ID.eq(stratumHistoryId))
                 .execute()
           }
         }
@@ -1166,8 +1163,8 @@ class PlantingSiteStore(
   }
 
   /**
-   * Marks a planting subzone as having completed planting or not. The "planting completed time"
-   * value, though it's a timestamp, is treated as a flag:
+   * Marks a substratum as having completed planting or not. The "planting completed time" value,
+   * though it's a timestamp, is treated as a flag:
    * - If the existing planting completed time is null and [completed] is true, the planting
    *   completed time in the database is set to the current time.
    * - If the existing planting completed time is non-null and [completed] is false, the planting
@@ -1175,12 +1172,11 @@ class PlantingSiteStore(
    * - Otherwise, the existing value is left as-is. That is, repeatedly calling this function with
    *   [completed] == true will not cause the planting completed time in the database to change.
    */
-  fun updatePlantingSubzoneCompleted(plantingSubzoneId: SubstratumId, completed: Boolean) {
-    requirePermissions { updatePlantingSubzoneCompleted(plantingSubzoneId) }
+  fun updateSubstratumCompleted(substratumId: SubstratumId, completed: Boolean) {
+    requirePermissions { updatePlantingSubzoneCompleted(substratumId) }
 
     val initial =
-        plantingSubzonesDao.fetchOneById(plantingSubzoneId)
-            ?: throw SubstrataNotFoundException(plantingSubzoneId)
+        substrataDao.fetchOneById(substratumId) ?: throw SubstrataNotFoundException(substratumId)
 
     val plantingCompletedTime =
         if (completed) initial.plantingCompletedTime ?: clock.instant() else null
@@ -1192,72 +1188,72 @@ class PlantingSiteStore(
             .set(PLANTING_COMPLETED_TIME, plantingCompletedTime)
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
-            .where(ID.eq(plantingSubzoneId))
+            .where(ID.eq(substratumId))
             .execute()
       }
     }
   }
 
-  private fun createPlantingZone(
-      zone: NewStratumModel,
+  private fun createStratum(
+      stratum: NewStratumModel,
       plantingSiteId: PlantingSiteId,
       now: Instant = clock.instant(),
   ): StratumId {
     val userId = currentUser().userId
 
-    val zonesRow =
+    val strataRow =
         StrataRow(
-            areaHa = zone.areaHa,
-            boundary = zone.boundary,
+            areaHa = stratum.areaHa,
+            boundary = stratum.boundary,
             boundaryModifiedBy = userId,
             boundaryModifiedTime = now,
             createdBy = userId,
             createdTime = now,
-            errorMargin = zone.errorMargin,
+            errorMargin = stratum.errorMargin,
             modifiedBy = userId,
             modifiedTime = now,
-            name = zone.name,
-            numPermanentPlots = zone.numPermanentPlots,
-            numTemporaryPlots = zone.numTemporaryPlots,
+            name = stratum.name,
+            numPermanentPlots = stratum.numPermanentPlots,
+            numTemporaryPlots = stratum.numTemporaryPlots,
             plantingSiteId = plantingSiteId,
-            stableId = zone.stableId,
-            studentsT = zone.studentsT,
-            targetPlantingDensity = zone.targetPlantingDensity,
-            variance = zone.variance,
+            stableId = stratum.stableId,
+            studentsT = stratum.studentsT,
+            targetPlantingDensity = stratum.targetPlantingDensity,
+            variance = stratum.variance,
         )
 
-    plantingZonesDao.insert(zonesRow)
+    strataDao.insert(strataRow)
 
-    return zonesRow.id!!
+    return strataRow.id!!
   }
 
-  private fun createPlantingSubzone(
-      subzone: NewSubstratumModel,
+  private fun createSubstratum(
+      substratum: NewSubstratumModel,
       plantingSiteId: PlantingSiteId,
-      plantingZoneId: StratumId,
+      stratumId: StratumId,
       now: Instant = clock.instant(),
   ): SubstratumId {
     val userId = currentUser().userId
 
-    val plantingSubzonesRow =
+    val substrataRow =
         SubstrataRow(
-            areaHa = subzone.areaHa,
-            boundary = subzone.boundary,
+            areaHa = substratum.areaHa,
+            boundary = substratum.boundary,
             createdBy = userId,
             createdTime = now,
-            fullName = subzone.fullName,
+            fullName = substratum.fullName,
             modifiedBy = userId,
             modifiedTime = now,
-            name = subzone.name,
-            plantingCompletedTime = subzone.plantingCompletedTime,
+            name = substratum.name,
+            plantingCompletedTime = substratum.plantingCompletedTime,
             plantingSiteId = plantingSiteId,
-            stratumId = plantingZoneId,
-            stableId = subzone.stableId,
+            stratumId = stratumId,
+            stableId = substratum.stableId,
         )
 
-    plantingSubzonesDao.insert(plantingSubzonesRow)
+    substrataDao.insert(substrataRow)
 
-    return plantingSubzonesRow.id!!
+    return substrataRow.id!!
   }
 
   private fun setMonitoringPlotPermanentIndex(
@@ -1360,8 +1356,8 @@ class PlantingSiteStore(
   }
 
   /**
-   * Returns true if the ID refers to a detailed planting site, that is, a site with planting zones
-   * and subzones.
+   * Returns true if the ID refers to a detailed planting site, that is, a site with strata and
+   * substrata.
    */
   fun isDetailed(plantingSiteId: PlantingSiteId): Boolean {
     requirePermissions { readPlantingSite(plantingSiteId) }
@@ -1544,7 +1540,7 @@ class PlantingSiteStore(
    * replaced.
    *
    * If there are no existing unused permanent plots, tries to create a new one at a random location
-   * in the zone.
+   * in the stratum.
    *
    * If the monitoring plot has no permanent index, or there are no available places to put a new
    * permanent plot, does nothing.
@@ -1565,11 +1561,11 @@ class PlantingSiteStore(
 
     return withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-      val plantingZone =
+      val stratum =
           plantingSite.findStratumWithMonitoringPlot(monitoringPlotId)
               ?: throw PlotNotFoundException(monitoringPlotId)
       val plot =
-          plantingZone
+          stratum
               .findSubstratumWithMonitoringPlot(monitoringPlotId)
               ?.findMonitoringPlot(monitoringPlotId)
               ?: throw PlotNotFoundException(monitoringPlotId)
@@ -1579,12 +1575,12 @@ class PlantingSiteStore(
         return@withLockedPlantingSite ReplacementResult(emptySet(), emptySet())
       }
 
-      val unusedPermanentIndex = fetchUnusedPermanentIndex(plantingZone.id)
+      val unusedPermanentIndex = fetchUnusedPermanentIndex(stratum.id)
       val replacementPlotId =
-          fetchPermanentPlotId(plantingZone.id, unusedPermanentIndex)
+          fetchPermanentPlotId(stratum.id, unusedPermanentIndex)
               ?: run {
                 log.debug("Creating new permanent plot to use as replacement")
-                createPermanentPlots(plantingSite, plantingZone, listOf(unusedPermanentIndex))
+                createPermanentPlots(plantingSite, stratum, listOf(unusedPermanentIndex))
                     .firstOrNull()
               }
 
@@ -1618,8 +1614,8 @@ class PlantingSiteStore(
   }
 
   /**
-   * Ensures that the required number of permanent plots exists in each of a planting site's zones.
-   * There need to be plots with numbers from 1 to the zone's permanent plot count.
+   * Ensures that the required number of permanent plots exists in each of a planting site's strata.
+   * There need to be plots with numbers from 1 to the stratum's permanent plot count.
    *
    * @return The IDs of any newly-created monitoring plots.
    */
@@ -1629,11 +1625,11 @@ class PlantingSiteStore(
     return withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
-      plantingSite.strata.flatMap { plantingZone ->
+      plantingSite.strata.flatMap { stratum ->
         val missingPermanentIndexes: List<Int> =
-            (1..plantingZone.numPermanentPlots).filterNot { plantingZone.permanentIndexExists(it) }
+            (1..stratum.numPermanentPlots).filterNot { stratum.permanentIndexExists(it) }
 
-        createPermanentPlots(plantingSite, plantingZone, missingPermanentIndexes)
+        createPermanentPlots(plantingSite, stratum, missingPermanentIndexes)
       }
     }
   }
@@ -1751,9 +1747,9 @@ class PlantingSiteStore(
    */
   private fun createPermanentPlots(
       plantingSite: ExistingPlantingSiteModel,
-      plantingZone: ExistingStratumModel,
+      stratum: ExistingStratumModel,
       permanentIndexes: List<Int>,
-      searchBoundary: MultiPolygon = plantingZone.boundary,
+      searchBoundary: MultiPolygon = stratum.boundary,
   ): List<MonitoringPlotId> {
     val userId = currentUser().userId
     val now = clock.instant()
@@ -1764,7 +1760,7 @@ class PlantingSiteStore(
 
     // List of [boundary, permanent index]
     val plotBoundaries: List<Pair<Polygon, Int>> =
-        plantingZone
+        stratum
             .findUnusedSquares(
                 count = permanentIndexes.size,
                 excludeAllPermanentPlots = true,
@@ -1776,7 +1772,7 @@ class PlantingSiteStore(
             .zip(permanentIndexes)
 
     return plotBoundaries.map { (plotBoundary, permanentIndex) ->
-      val existingPlot = plantingZone.findMonitoringPlot(plotBoundary)
+      val existingPlot = stratum.findMonitoringPlot(plotBoundary)
 
       if (existingPlot != null) {
         if (existingPlot.permanentIndex != null) {
@@ -1787,10 +1783,10 @@ class PlantingSiteStore(
 
         existingPlot.id
       } else {
-        val subzone =
-            plantingZone.findSubstratum(plotBoundary)
+        val substratum =
+            stratum.findSubstratum(plotBoundary)
                 ?: throw IllegalStateException(
-                    "Planting zone ${plantingZone.id} not fully covered by subzones"
+                    "Stratum ${stratum.id} not fully covered by substrata"
                 )
         val plotNumber =
             identifierGenerator.generateNumericIdentifier(
@@ -1809,7 +1805,7 @@ class PlantingSiteStore(
                 organizationId = plantingSite.organizationId,
                 permanentIndex = permanentIndex,
                 plantingSiteId = plantingSite.id,
-                substratumId = subzone.id,
+                substratumId = substratum.id,
                 plotNumber = plotNumber,
                 sizeMeters = MONITORING_PLOT_SIZE_INT,
             )
@@ -1825,7 +1821,7 @@ class PlantingSiteStore(
 
   fun createTemporaryPlot(
       plantingSiteId: PlantingSiteId,
-      plantingZoneId: StratumId,
+      stratumId: StratumId,
       plotBoundary: Polygon,
   ): MonitoringPlotId {
     requirePermissions { updatePlantingSite(plantingSiteId) }
@@ -1835,11 +1831,11 @@ class PlantingSiteStore(
 
     return withLockedPlantingSite(plantingSiteId) {
       val plantingSite = fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
-      val plantingZone =
-          plantingSite.strata.singleOrNull { it.id == plantingZoneId }
-              ?: throw StratumNotFoundException(plantingZoneId)
+      val stratum =
+          plantingSite.strata.singleOrNull { it.id == stratumId }
+              ?: throw StratumNotFoundException(stratumId)
 
-      val existingPlotId = plantingZone.findMonitoringPlot(plotBoundary)?.id
+      val existingPlotId = stratum.findMonitoringPlot(plotBoundary)?.id
       if (existingPlotId != null) {
         existingPlotId
       } else {
@@ -1848,11 +1844,9 @@ class PlantingSiteStore(
                 plantingSite.organizationId,
                 NumericIdentifierType.PlotNumber,
             )
-        val subzone =
-            plantingZone.findSubstratum(plotBoundary)
-                ?: throw IllegalStateException(
-                    "Planting zone $plantingZoneId not fully covered by subzones"
-                )
+        val substratum =
+            stratum.findSubstratum(plotBoundary)
+                ?: throw IllegalStateException("Stratum $stratumId not fully covered by substrata")
 
         val monitoringPlotsRow =
             MonitoringPlotsRow(
@@ -1864,7 +1858,7 @@ class PlantingSiteStore(
                 modifiedTime = now,
                 organizationId = plantingSite.organizationId,
                 plantingSiteId = plantingSiteId,
-                substratumId = subzone.id,
+                substratumId = substratum.id,
                 plotNumber = plotNumber,
                 sizeMeters = MONITORING_PLOT_SIZE_INT,
             )
@@ -1882,9 +1876,9 @@ class PlantingSiteStore(
       addFailureMessage: (String) -> Unit,
   ) {
     // These are the names we use in terraware-web when creating a new planting site without
-    // specifying zones or subzones. They are not translated into the user's language.
-    val zoneName = "Zone 01"
-    val subzoneName = "Subzone A"
+    // specifying strata or substrata. They are not translated into the user's language.
+    val stratumName = "Stratum 01"
+    val substratumName = "Substratum A"
 
     dslContext.transaction { _ ->
       val simplePlantingSiteIds =
@@ -1924,19 +1918,19 @@ class PlantingSiteStore(
             continue
           }
 
-          val zone =
+          val stratum =
               NewStratumModel.create(
                   boundary = boundary,
-                  name = zoneName,
+                  name = stratumName,
                   substrata = emptyList(),
-                  stableId = StableId(zoneName),
+                  stableId = StableId(stratumName),
               )
-          val fullName = "$zoneName-$subzoneName"
-          val subzone =
+          val fullName = "$stratumName-$substratumName"
+          val substratum =
               NewSubstratumModel.create(
                   boundary = boundary,
                   fullName = fullName,
-                  name = subzoneName,
+                  name = substratumName,
                   stableId = StableId(fullName),
               )
 
@@ -1952,10 +1946,10 @@ class PlantingSiteStore(
           }
 
           val siteHistoryId = insertPlantingSiteHistory(newSite, newSite.gridOrigin!!, now, siteId)
-          val zoneId = createPlantingZone(zone, siteId)
-          val zoneHistoryId = insertPlantingZoneHistory(zone, siteHistoryId, zoneId)
-          val subzoneId = createPlantingSubzone(subzone, siteId, zoneId)
-          insertPlantingSubzoneHistory(subzone, zoneHistoryId, subzoneId)
+          val stratumId = createStratum(stratum, siteId)
+          val stratumHistoryId = insertStratumHistory(stratum, siteHistoryId, stratumId)
+          val substratumId = createSubstratum(substratum, siteId, stratumId)
+          insertSubstratumHistory(substratum, stratumHistoryId, substratumId)
 
           addSuccessMessage("Migrated planting site $siteId (${existingSite.name})")
         } catch (e: Exception) {
@@ -1971,12 +1965,12 @@ class PlantingSiteStore(
   }
 
   private fun migrateSimplePlantingSitePopulations() {
-    // When plants are withdrawn to a detailed planting site, we update the site, zone, and
-    // subzone populations. When they're withdrawn to a simple planting site, we only update the
-    // site populations since there are no zones or subzones.
+    // When plants are withdrawn to a detailed planting site, we update the site, stratum, and
+    // substratum populations. When they're withdrawn to a simple planting site, we only update the
+    // site populations since there are no strata or substrata.
     //
     // After converting a simple planting site to a detailed one, there will be values in
-    // planting_site_populations but no values for any of the site's zones or subzones in the
+    // planting_site_populations but no values for any of the site's strata or substrata in the
     // corresponding tables. So we want to copy the site values down to those two tables.
 
     dslContext.transaction { _ ->
@@ -2026,7 +2020,7 @@ class PlantingSiteStore(
                 )
                 .execute()
 
-        log.info("Inserted $rowsInserted planting zone populations")
+        log.info("Inserted $rowsInserted stratum populations")
       }
 
       with(SUBSTRATUM_POPULATIONS) {
@@ -2079,17 +2073,17 @@ class PlantingSiteStore(
                 )
                 .execute()
 
-        log.info("Inserted $rowsInserted planting subzone populations")
+        log.info("Inserted $rowsInserted substratum populations")
       }
     }
   }
 
   private fun migrateSimplePlantingSitePlantings() {
     // Outplanting withdrawals to simple planting sites result in rows in the plantings table
-    // with the planting site ID populated but the planting subzone ID set to null. Withdrawals to
-    // detailed planting sites are required to have a subzone ID. So we want to fill in the subzone
-    // ID for any plantings that have null subzone IDs but where the planting site has a subzone,
-    // since those will be the sites whose zones and subzones we've just created.
+    // with the planting site ID populated but the substratum ID set to null. Withdrawals to
+    // detailed planting sites are required to have a substratum ID. So we want to fill in the
+    // substratum ID for any plantings that have null substratum IDs but where the planting site has
+    // a substratum, since those will be the sites whose strata and substrata we've just created.
     val rowsUpdated =
         dslContext
             .update(PLANTINGS)
@@ -2115,7 +2109,7 @@ class PlantingSiteStore(
             )
             .execute()
 
-    log.info("Populated planting subzones for $rowsUpdated plantings")
+    log.info("Populated substrata for $rowsUpdated plantings")
   }
 
   private val plantingSeasonsMultiset =
@@ -2226,9 +2220,7 @@ class PlantingSiteStore(
             }
           }
 
-  private fun plantingSubzonesMultiset(
-      depth: PlantingSiteDepth
-  ): Field<List<ExistingSubstratumModel>> {
+  private fun substrataMultiset(depth: PlantingSiteDepth): Field<List<ExistingSubstratumModel>> {
     val plotsField =
         if (depth == PlantingSiteDepth.Plot)
             monitoringPlotsMultiset(
@@ -2259,7 +2251,7 @@ class PlantingSiteStore(
                     SUBSTRATA.OBSERVED_TIME,
                     SUBSTRATA.PLANTING_COMPLETED_TIME,
                     SUBSTRATA.STABLE_ID,
-                    plantingSubzoneBoundaryField,
+                    substratumBoundaryField,
                     latestObservationIdField,
                     latestObservationTimeField,
                     plotsField,
@@ -2272,7 +2264,7 @@ class PlantingSiteStore(
           result.map { record: Record ->
             ExistingSubstratumModel(
                 areaHa = record[SUBSTRATA.AREA_HA]!!,
-                boundary = record[plantingSubzoneBoundaryField]!! as MultiPolygon,
+                boundary = record[substratumBoundaryField]!! as MultiPolygon,
                 id = record[SUBSTRATA.ID]!!,
                 fullName = record[SUBSTRATA.FULL_NAME]!!,
                 monitoringPlots = plotsField?.let { record[it] } ?: emptyList(),
@@ -2287,9 +2279,9 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plantingSubzoneHistoriesMultiset(
+  private fun substratumHistoriesMultiset(
       depth: PlantingSiteDepth
-  ): Field<List<PlantingSubzoneHistoryModel>> {
+  ): Field<List<SubstratumHistoryModel>> {
     val plotsField = if (depth == PlantingSiteDepth.Plot) monitoringPlotHistoriesMultiset else null
     val boundaryField = SUBSTRATUM_HISTORIES.BOUNDARY.forMultiset()
 
@@ -2310,7 +2302,7 @@ class PlantingSiteStore(
         )
         .convertFrom { result ->
           result.map { record: Record ->
-            PlantingSubzoneHistoryModel(
+            SubstratumHistoryModel(
                 record[SUBSTRATUM_HISTORIES.AREA_HA]!!,
                 record[boundaryField] as MultiPolygon,
                 record[SUBSTRATUM_HISTORIES.FULL_NAME]!!,
@@ -2324,10 +2316,10 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plantingZonesMultiset(depth: PlantingSiteDepth): Field<List<ExistingStratumModel>> {
-    val subzonesField =
-        if (depth == PlantingSiteDepth.Subzone || depth == PlantingSiteDepth.Plot) {
-          plantingSubzonesMultiset(depth)
+  private fun strataMultiset(depth: PlantingSiteDepth): Field<List<ExistingStratumModel>> {
+    val substrataField =
+        if (depth == PlantingSiteDepth.Substratum || depth == PlantingSiteDepth.Plot) {
+          substrataMultiset(depth)
         } else {
           null
         }
@@ -2357,10 +2349,10 @@ class PlantingSiteStore(
                     STRATA.STUDENTS_T,
                     STRATA.TARGET_PLANTING_DENSITY,
                     STRATA.VARIANCE,
-                    plantingZonesBoundaryField,
+                    strataBoundaryField,
                     latestObservationIdField,
                     latestObservationTimeField,
-                    subzonesField,
+                    substrataField,
                 )
                 .from(STRATA)
                 .where(PLANTING_SITES.ID.eq(STRATA.PLANTING_SITE_ID))
@@ -2370,7 +2362,7 @@ class PlantingSiteStore(
           result.map { record: Record ->
             ExistingStratumModel(
                 areaHa = record[STRATA.AREA_HA]!!,
-                boundary = record[plantingZonesBoundaryField]!! as MultiPolygon,
+                boundary = record[strataBoundaryField]!! as MultiPolygon,
                 boundaryModifiedTime = record[STRATA.BOUNDARY_MODIFIED_TIME]!!,
                 errorMargin = record[STRATA.ERROR_MARGIN]!!,
                 id = record[STRATA.ID]!!,
@@ -2379,7 +2371,7 @@ class PlantingSiteStore(
                 name = record[STRATA.NAME]!!,
                 numPermanentPlots = record[STRATA.NUM_PERMANENT_PLOTS]!!,
                 numTemporaryPlots = record[STRATA.NUM_TEMPORARY_PLOTS]!!,
-                substrata = subzonesField?.let { record[it] } ?: emptyList(),
+                substrata = substrataField?.let { record[it] } ?: emptyList(),
                 stableId = record[STRATA.STABLE_ID]!!,
                 studentsT = record[STRATA.STUDENTS_T]!!,
                 targetPlantingDensity = record[STRATA.TARGET_PLANTING_DENSITY]!!,
@@ -2389,13 +2381,11 @@ class PlantingSiteStore(
         }
   }
 
-  private fun plantingZoneHistoriesMultiset(
-      depth: PlantingSiteDepth
-  ): Field<List<PlantingZoneHistoryModel>> {
+  private fun stratumHistoriesMultiset(depth: PlantingSiteDepth): Field<List<StratumHistoryModel>> {
     val boundaryField = STRATUM_HISTORIES.BOUNDARY.forMultiset()
-    val subzonesField =
-        if (depth == PlantingSiteDepth.Subzone || depth == PlantingSiteDepth.Plot) {
-          plantingSubzoneHistoriesMultiset(depth)
+    val substrataField =
+        if (depth == PlantingSiteDepth.Substratum || depth == PlantingSiteDepth.Plot) {
+          substratumHistoriesMultiset(depth)
         } else {
           null
         }
@@ -2408,7 +2398,7 @@ class PlantingSiteStore(
                     STRATUM_HISTORIES.STRATUM_ID,
                     STRATUM_HISTORIES.STABLE_ID,
                     boundaryField,
-                    subzonesField,
+                    substrataField,
                 )
                 .from(STRATUM_HISTORIES)
                 .where(PLANTING_SITE_HISTORIES.ID.eq(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID))
@@ -2416,12 +2406,12 @@ class PlantingSiteStore(
         )
         .convertFrom { result ->
           result.map { record: Record ->
-            PlantingZoneHistoryModel(
+            StratumHistoryModel(
                 record[STRATUM_HISTORIES.AREA_HA]!!,
                 record[boundaryField] as MultiPolygon,
                 record[STRATUM_HISTORIES.ID]!!,
                 record[STRATUM_HISTORIES.NAME]!!,
-                subzonesField?.let { record[it]!! } ?: emptyList(),
+                substrataField?.let { record[it]!! } ?: emptyList(),
                 record[STRATUM_HISTORIES.STRATUM_ID],
                 record[STRATUM_HISTORIES.STABLE_ID]!!,
             )
@@ -2430,7 +2420,7 @@ class PlantingSiteStore(
   }
 
   private fun fetchPermanentPlotId(
-      plantingZoneId: StratumId,
+      stratumId: StratumId,
       permanentIndex: Int,
   ): MonitoringPlotId? {
     return dslContext
@@ -2438,7 +2428,7 @@ class PlantingSiteStore(
         .from(MONITORING_PLOTS)
         .join(SUBSTRATA)
         .on(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
-        .where(SUBSTRATA.STRATUM_ID.eq(plantingZoneId))
+        .where(SUBSTRATA.STRATUM_ID.eq(stratumId))
         .and(MONITORING_PLOTS.PERMANENT_INDEX.eq(permanentIndex))
         .fetchOne(MONITORING_PLOTS.ID)
   }
@@ -2448,7 +2438,7 @@ class PlantingSiteStore(
    * existing permanent indexes have already been used, returns a number 1 greater than the current
    * maximum permanent index; the caller will have to create the plot.
    */
-  private fun fetchUnusedPermanentIndex(plantingZoneId: StratumId): Int {
+  private fun fetchUnusedPermanentIndex(stratumId: StratumId): Int {
     val previouslyUsedField =
         DSL.exists(
                 DSL.selectOne()
@@ -2464,11 +2454,11 @@ class PlantingSiteStore(
             .from(MONITORING_PLOTS)
             .join(SUBSTRATA)
             .on(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
-            .where(SUBSTRATA.STRATUM_ID.eq(plantingZoneId))
+            .where(SUBSTRATA.STRATUM_ID.eq(stratumId))
             .and(MONITORING_PLOTS.PERMANENT_INDEX.isNotNull)
             .orderBy(MONITORING_PLOTS.PERMANENT_INDEX.desc(), previouslyUsedField.desc())
             .limit(1)
-            .fetchOne() ?: throw IllegalStateException("Could not query zone's permanent plots")
+            .fetchOne() ?: throw IllegalStateException("Could not query stratum's permanent plots")
 
     return if (maxIndexWasPreviouslyUsed) {
       maxIndex + 1
@@ -2510,27 +2500,27 @@ class PlantingSiteStore(
   }
 
   private fun fetchReportedPlants(condition: Condition): List<PlantingSiteReportedPlantTotals> {
-    val subzoneSpeciesField =
+    val substratumSpeciesField =
         speciesCountMultiset(
             SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID,
             SUBSTRATA.ID,
         )
 
-    val subzonesField =
+    val substrataField =
         DSL.multiset(
-                DSL.select(SUBSTRATA.ID, subzoneSpeciesField)
+                DSL.select(SUBSTRATA.ID, substratumSpeciesField)
                     .from(SUBSTRATA)
                     .where(SUBSTRATA.STRATUM_ID.eq(STRATA.ID))
                     .orderBy(SUBSTRATA.ID)
             )
             .convertFrom { result ->
               result.map { record ->
-                val species = record[subzoneSpeciesField]
+                val species = record[substratumSpeciesField]
                 val plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation }
                 val totalPlants = species.sumOf { it.totalPlants }
                 val totalSpecies = species.size
 
-                PlantingSiteReportedPlantTotals.PlantingSubzone(
+                PlantingSiteReportedPlantTotals.Substratum(
                     record[SUBSTRATA.ID]!!,
                     plantsSinceLastObservation = plantsSinceLastObservation,
                     species = species,
@@ -2540,15 +2530,15 @@ class PlantingSiteStore(
               }
             }
 
-    val zoneSpeciesField = speciesCountMultiset(STRATUM_POPULATIONS.STRATUM_ID, STRATA.ID)
-    val zonesField =
+    val stratumSpeciesField = speciesCountMultiset(STRATUM_POPULATIONS.STRATUM_ID, STRATA.ID)
+    val strataField =
         DSL.multiset(
                 DSL.select(
                         STRATA.ID,
                         STRATA.AREA_HA,
                         STRATA.TARGET_PLANTING_DENSITY,
-                        zoneSpeciesField,
-                        subzonesField,
+                        stratumSpeciesField,
+                        substrataField,
                     )
                     .from(STRATA)
                     .where(STRATA.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
@@ -2560,15 +2550,15 @@ class PlantingSiteStore(
                     record[STRATA.AREA_HA.asNonNullable()] *
                         record[STRATA.TARGET_PLANTING_DENSITY.asNonNullable()]
 
-                val species = record[zoneSpeciesField]
+                val species = record[stratumSpeciesField]
                 val plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation }
                 val totalPlants = species.sumOf { it.totalPlants }
                 val totalSpecies = species.size
 
-                PlantingSiteReportedPlantTotals.PlantingZone(
+                PlantingSiteReportedPlantTotals.Stratum(
                     id = record[STRATA.ID.asNonNullable()],
                     plantsSinceLastObservation = plantsSinceLastObservation,
-                    plantingSubzones = record[subzonesField] ?: emptyList(),
+                    substrata = record[substrataField] ?: emptyList(),
                     species = species,
                     targetPlants = targetPlants.toInt(),
                     totalPlants = totalPlants,
@@ -2581,7 +2571,7 @@ class PlantingSiteStore(
         speciesCountMultiset(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID, PLANTING_SITES.ID)
 
     return dslContext
-        .select(PLANTING_SITES.ID, siteSpeciesField, zonesField)
+        .select(PLANTING_SITES.ID, siteSpeciesField, strataField)
         .from(PLANTING_SITES)
         .where(condition)
         .orderBy(PLANTING_SITES.ID)
@@ -2589,7 +2579,7 @@ class PlantingSiteStore(
           val species = record[siteSpeciesField]
           PlantingSiteReportedPlantTotals(
               id = record[PLANTING_SITES.ID]!!,
-              plantingZones = record[zonesField],
+              strata = record[strataField],
               plantsSinceLastObservation = species.sumOf { it.plantsSinceLastObservation },
               species = record[siteSpeciesField],
               totalPlants = species.sumOf { it.totalPlants },
@@ -2782,11 +2772,10 @@ class PlantingSiteStore(
     return historiesRecord.id!!
   }
 
-  private fun insertPlantingZoneHistory(
+  private fun insertStratumHistory(
       model: AnyStratumModel,
       plantingSiteHistoryId: PlantingSiteHistoryId,
-      plantingZoneId: StratumId =
-          model.id ?: throw IllegalArgumentException("Planting zone missing ID"),
+      stratumId: StratumId = model.id ?: throw IllegalArgumentException("Stratum missing ID"),
   ): StratumHistoryId {
     val historiesRecord =
         StratumHistoriesRecord(
@@ -2794,7 +2783,7 @@ class PlantingSiteStore(
                 boundary = model.boundary,
                 name = model.name,
                 plantingSiteHistoryId = plantingSiteHistoryId,
-                stratumId = plantingZoneId,
+                stratumId = stratumId,
                 stableId = model.stableId,
             )
             .attach(dslContext)
@@ -2804,11 +2793,11 @@ class PlantingSiteStore(
     return historiesRecord.id!!
   }
 
-  private fun insertPlantingSubzoneHistory(
+  private fun insertSubstratumHistory(
       model: AnySubstratumModel,
-      plantingZoneHistoryId: StratumHistoryId,
-      plantingSubzoneId: SubstratumId =
-          model.id ?: throw IllegalArgumentException("Planting subzone missing ID"),
+      stratumHistoryId: StratumHistoryId,
+      substratumId: SubstratumId =
+          model.id ?: throw IllegalArgumentException("Substratum missing ID"),
   ): SubstratumHistoryId {
     val historiesRecord =
         SubstratumHistoriesRecord(
@@ -2816,8 +2805,8 @@ class PlantingSiteStore(
                 boundary = model.boundary,
                 fullName = model.fullName,
                 name = model.name,
-                substratumId = plantingSubzoneId,
-                stratumHistoryId = plantingZoneHistoryId,
+                substratumId = substratumId,
+                stratumHistoryId = stratumHistoryId,
                 stableId = model.stableId,
             )
             .attach(dslContext)
@@ -2838,7 +2827,7 @@ class PlantingSiteStore(
   private fun insertMonitoringPlotHistory(
       monitoringPlotId: MonitoringPlotId,
       plantingSiteId: PlantingSiteId,
-      plantingSubzoneId: SubstratumId?,
+      substratumId: SubstratumId?,
   ): MonitoringPlotHistoryId {
     return with(MONITORING_PLOT_HISTORIES) {
       dslContext
@@ -2857,9 +2846,9 @@ class PlantingSiteStore(
               SUBSTRATUM_HISTORY_ID,
               DSL.select(DSL.max(SUBSTRATUM_HISTORIES.ID))
                   .from(SUBSTRATUM_HISTORIES)
-                  .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(plantingSubzoneId)),
+                  .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(substratumId)),
           )
-          .set(SUBSTRATUM_ID, plantingSubzoneId)
+          .set(SUBSTRATUM_ID, substratumId)
           .returning(ID)
           .fetchOne(ID)!!
     }
