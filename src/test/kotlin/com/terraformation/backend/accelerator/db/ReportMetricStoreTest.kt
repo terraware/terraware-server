@@ -51,6 +51,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "degrees",
             )
 
         assertEquals(
@@ -62,6 +63,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "degrees",
             ),
             store.fetchOneStandardMetric(metricId),
         )
@@ -83,6 +85,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "%",
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
@@ -104,6 +107,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "%",
             )
 
         val standardMetricId2 =
@@ -113,6 +117,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Community Metric",
                 reference = "5.0",
                 type = MetricType.Outcome,
+                unit = "meters",
             )
 
         val standardMetricId3 =
@@ -123,6 +128,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Project Objectives Metric",
                 reference = "3.0",
                 type = MetricType.Impact,
+                unit = "cm",
             )
 
         assertEquals(
@@ -136,6 +142,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Climate Standard Metric",
                     reference = "3.0",
                     type = MetricType.Activity,
+                    unit = "%",
                 ),
                 ExistingStandardMetricModel(
                     id = standardMetricId3,
@@ -145,6 +152,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Project Objectives Metric",
                     reference = "3.0",
                     type = MetricType.Impact,
+                    unit = "cm",
                 ),
                 ExistingStandardMetricModel(
                     id = standardMetricId2,
@@ -154,6 +162,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Community Metric",
                     reference = "5.0",
                     type = MetricType.Outcome,
+                    unit = "meters",
                 ),
             ),
             store.fetchAllStandardMetrics(),
@@ -428,6 +437,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "%",
             )
 
         val model =
@@ -439,6 +449,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Project Objectives Metric",
                 reference = "1.0",
                 type = MetricType.Impact,
+                unit = "meters",
             )
 
         val newMetricId = store.createStandardMetric(model)
@@ -453,6 +464,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Climate Standard Metric",
                     reference = "3.0",
                     typeId = MetricType.Activity,
+                    unit = "%",
                 ),
                 StandardMetricsRecord(
                     id = newMetricId,
@@ -462,6 +474,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Project Objectives Metric",
                     reference = "1.0",
                     typeId = MetricType.Impact,
+                    unit = "meters",
                 ),
             )
         )
@@ -478,6 +491,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Project Objectives Metric",
                 reference = "1.0",
                 type = MetricType.Impact,
+                unit = "%",
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
@@ -582,6 +596,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "%",
             )
 
         val updated =
@@ -593,6 +608,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Project Objectives Metric",
                 reference = "1.0",
                 type = MetricType.Impact,
+                unit = "meters",
             )
 
         store.updateStandardMetric(existingMetricId) { updated }
@@ -607,6 +623,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Project Objectives Metric",
                     reference = "1.0",
                     typeId = MetricType.Impact,
+                    unit = "meters",
                 )
             )
         )
@@ -621,6 +638,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 reference = "3.0",
                 type = MetricType.Activity,
+                unit = "%",
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)

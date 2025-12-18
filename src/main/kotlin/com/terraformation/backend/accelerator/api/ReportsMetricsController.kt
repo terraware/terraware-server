@@ -10,6 +10,7 @@ import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
 import io.swagger.v3.oas.annotations.Operation
+import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -34,7 +35,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   @PutMapping("/standardMetrics")
   @Operation(summary = "Insert standard metric, that projects will report on all future reports.")
   fun createStandardMetric(
-      @RequestBody payload: CreateStandardMetricRequestPayload,
+      @RequestBody @Valid payload: CreateStandardMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
     metricStore.createStandardMetric(payload.metric.toStandardMetricModel())
     return SimpleSuccessResponsePayload()
@@ -69,7 +70,7 @@ data class SystemMetricPayload(
     val reference: String = metric.reference,
 )
 
-data class CreateStandardMetricRequestPayload(val metric: NewMetricPayload)
+data class CreateStandardMetricRequestPayload(@field:Valid val metric: NewMetricPayload)
 
 data class ListStandardMetricsResponsePayload(val metrics: List<ExistingStandardMetricPayload>) :
     SuccessResponsePayload
@@ -77,4 +78,6 @@ data class ListStandardMetricsResponsePayload(val metrics: List<ExistingStandard
 data class ListSystemMetricsResponsePayload(val metrics: List<SystemMetricPayload>) :
     SuccessResponsePayload
 
-data class UpdateStandardMetricRequestPayload(val metric: ExistingStandardMetricPayload)
+data class UpdateStandardMetricRequestPayload(
+    @field:Valid val metric: ExistingStandardMetricPayload
+)
