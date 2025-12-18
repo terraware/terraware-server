@@ -131,8 +131,8 @@ class SpeciesStore(
                   .from(OBSERVATION_BIOMASS_SPECIES)
                   .where(OBSERVATION_BIOMASS_SPECIES.SPECIES_ID.eq(SPECIES.ID))
           ),
-          // Observed site, zone, subzone, and plot totals have the same species, so checking one
-          // of them is sufficient.
+          // Observed site, stratum, substratum, and plot totals have the same species, so checking
+          // one of them is sufficient.
           DSL.exists(
               DSL.selectOne()
                   .from(OBSERVED_PLOT_SPECIES_TOTALS)
@@ -200,17 +200,15 @@ class SpeciesStore(
   }
 
   /**
-   * Returns a list of species that may be present in a given planting subzone.
+   * Returns a list of species that may be present in a given planting substratum.
    *
    * This is a combined list of all the species that have been planted and observed across the
-   * entire planting site. We can't limit the search to the specific subzone because subzone
-   * boundaries can change over time; a plant that was in subzone 1 in the past may be in subzone 2
-   * now due to a subsequent map edit.
+   * entire planting site. We can't limit the search to the specific substratum because substratum
+   * boundaries can change over time; a plant that was in substratum 1 in the past may be in
+   * substratum 2 now due to a subsequent map edit.
    */
-  fun fetchSiteSpeciesByPlantingSubzoneId(
-      plantingSubzoneId: SubstratumId
-  ): List<ExistingSpeciesModel> {
-    requirePermissions { readSubstratum(plantingSubzoneId) }
+  fun fetchSiteSpeciesBySubstratumId(substratumId: SubstratumId): List<ExistingSpeciesModel> {
+    requirePermissions { readSubstratum(substratumId) }
 
     return dslContext
         .select(
@@ -227,7 +225,7 @@ class SpeciesStore(
                     .from(PLANTINGS)
                     .join(SUBSTRATA)
                     .on(PLANTINGS.PLANTING_SITE_ID.eq(SUBSTRATA.PLANTING_SITE_ID))
-                    .where(SUBSTRATA.ID.eq(plantingSubzoneId))
+                    .where(SUBSTRATA.ID.eq(substratumId))
                     .union(
                         DSL.select(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID)
                             .from(OBSERVED_SITE_SPECIES_TOTALS)
@@ -237,7 +235,7 @@ class SpeciesStore(
                                     SUBSTRATA.PLANTING_SITE_ID
                                 )
                             )
-                            .where(SUBSTRATA.ID.eq(plantingSubzoneId))
+                            .where(SUBSTRATA.ID.eq(substratumId))
                             .and(OBSERVED_SITE_SPECIES_TOTALS.SPECIES_ID.isNotNull)
                     )
             )

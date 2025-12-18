@@ -262,9 +262,9 @@ class Messages {
 
   fun monitoringPlotDescription(
       plotType: String,
-      plantingZoneName: String,
-      plantingSubzoneName: String,
-  ) = getMessage("monitoringPlotDescription", plotType, plantingZoneName, plantingSubzoneName)
+      stratumName: String,
+      substratumName: String,
+  ) = getMessage("monitoringPlotDescription", plotType, stratumName, substratumName)
 
   fun monitoringPlotTypePermanent() = getMessage("monitoringPlotTypePermanent")
 
