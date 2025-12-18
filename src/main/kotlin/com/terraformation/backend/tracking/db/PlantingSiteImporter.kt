@@ -28,18 +28,18 @@ class PlantingSiteImporter(
     private val plantingSiteStore: PlantingSiteStore,
 ) {
   companion object {
-    val subzoneNameProperties = setOf("planting_1", "subzone")
-    val subzoneStableIdProperties = setOf("stable_sz", "stable_sub")
+    val substratumNameProperties = setOf("planting_1", "subzone", "substratum")
+    val substratumStableIdProperties = setOf("stable_sz", "stable_sub", "stable_ss")
     val targetPlantingDensityProperties = setOf("plan_dens", "density")
-    val zoneNameProperties = setOf("planting_z", "zone")
-    val zoneStableIdProperties = setOf("stable_z", "stable_zon")
+    val stratumNameProperties = setOf("planting_z", "zone", "stratum")
+    val stratumStableIdProperties = setOf("stable_z", "stable_zon", "stable_s", "stable_str")
 
-    // Zone-level properties to control number of monitoring plots
+    // Stratum-level properties to control number of monitoring plots
     val errorMarginProperties = setOf("error_marg")
     val studentsTProperties = setOf("students_t")
     val varianceProperties = setOf("variance")
 
-    // Optional zone-level properties to set initial plot counts; mostly for testing
+    // Optional stratum-level properties to set initial plot counts; mostly for testing
     val permanentPlotCountProperties = setOf("permanent")
     val temporaryPlotCountProperties = setOf("temporary")
   }
@@ -47,7 +47,7 @@ class PlantingSiteImporter(
   /**
    * When importing, use fixed-precision coordinates with 8 decimal digits rather than the default
    * floating-point precision. This helps avoid introducing slight errors to calculated geometries
-   * such as when zone boundaries are derived from subzone boundaries.
+   * such as when stratum boundaries are derived from substratum boundaries.
    *
    * 8 decimal digits works out to a resolution of less than 1 centimeter.
    */
@@ -77,11 +77,11 @@ class PlantingSiteImporter(
   ): NewPlantingSiteModel {
     if (shapefiles.isEmpty() || shapefiles.size > 2) {
       throw ShapefilesInvalidException(
-          "Expected subzones and optionally exclusions but found ${shapefiles.size} shapefiles"
+          "Expected substrata and optionally exclusions but found ${shapefiles.size} shapefiles"
       )
     }
 
-    var subzonesFile: Shapefile? = null
+    var substrataFile: Shapefile? = null
     var exclusionsFile: Shapefile? = null
 
     shapefiles.forEach { shapefile ->
@@ -89,8 +89,8 @@ class PlantingSiteImporter(
         throw ShapefilesInvalidException("Shapefiles must contain geometries")
       }
 
-      if (shapefile.features.all { it.hasProperty(subzoneNameProperties) }) {
-        subzonesFile = shapefile
+      if (shapefile.features.all { it.hasProperty(substratumNameProperties) }) {
+        substrataFile = shapefile
       } else {
         exclusionsFile = shapefile
       }
@@ -100,10 +100,10 @@ class PlantingSiteImporter(
         name,
         description,
         organizationId,
-        subzonesFile
+        substrataFile
             ?: throw ShapefilesInvalidException(
-                "Subzones shapefile features must include one of these properties: " +
-                    subzoneNameProperties.joinToString()
+                "Substrata shapefile features must include one of these properties: " +
+                    substratumNameProperties.joinToString()
             ),
         exclusionsFile,
         gridOrigin,
@@ -115,7 +115,7 @@ class PlantingSiteImporter(
       name: String,
       description: String?,
       organizationId: OrganizationId,
-      subzonesFile: Shapefile,
+      substrataFile: Shapefile,
       exclusionsFile: Shapefile?,
       gridOrigin: Point? = null,
       requireStableIds: Boolean = false,
@@ -123,14 +123,14 @@ class PlantingSiteImporter(
     val problems = mutableListOf<String>()
 
     val exclusion = getExclusion(exclusionsFile, problems)
-    val zonesWithSubzones =
-        getZonesWithSubzones(subzonesFile, exclusion, problems, requireStableIds)
+    val strataWithSubstrata =
+        getStrataWithSubstrata(substrataFile, exclusion, problems, requireStableIds)
 
     if (problems.isNotEmpty()) {
       throw ShapefilesInvalidException(problems)
     }
 
-    val siteBoundary = mergeToMultiPolygon(zonesWithSubzones.map { it.boundary })
+    val siteBoundary = mergeToMultiPolygon(strataWithSubstrata.map { it.boundary })
 
     val newModel =
         PlantingSiteModel.create(
@@ -140,7 +140,7 @@ class PlantingSiteImporter(
             gridOrigin = gridOrigin,
             name = name,
             organizationId = organizationId,
-            strata = zonesWithSubzones,
+            strata = strataWithSubstrata,
         )
     return newModel
   }
@@ -178,23 +178,23 @@ class PlantingSiteImporter(
         .createMultiPolygon(allPolygons.toTypedArray())
   }
 
-  private fun getZonesWithSubzones(
-      subzonesFile: Shapefile,
+  private fun getStrataWithSubstrata(
+      substrataFile: Shapefile,
       exclusion: MultiPolygon?,
       problems: MutableList<String>,
       requireStableIds: Boolean,
   ): List<NewStratumModel> {
-    val validSubzones =
-        subzonesFile.features.filter { feature ->
+    val validSubstrata =
+        substrataFile.features.filter { feature ->
           fun checkProperty(
               description: String,
               properties: Set<String>,
               require: Boolean = true,
           ): String? {
             return if (require && feature.getProperty(properties).isNullOrBlank()) {
-              val subzoneName = feature.getProperty(subzoneNameProperties) ?: "<no name>"
+              val substratumName = feature.getProperty(substratumNameProperties) ?: "<no name>"
 
-              "Subzone $subzoneName is missing $description properties: " +
+              "Substratum $substratumName is missing $description properties: " +
                   properties.joinToString()
             } else {
               null
@@ -203,69 +203,74 @@ class PlantingSiteImporter(
 
           val featureProblems =
               listOfNotNull(
-                  checkProperty("subzone name", subzoneNameProperties),
-                  checkProperty("zone name", zoneNameProperties),
-                  checkProperty("subzone stable ID", subzoneStableIdProperties, requireStableIds),
-                  checkProperty("zone stable ID", zoneStableIdProperties, requireStableIds),
+                  checkProperty("substratum name", substratumNameProperties),
+                  checkProperty("stratum name", stratumNameProperties),
+                  checkProperty(
+                      "substratum stable ID",
+                      substratumStableIdProperties,
+                      requireStableIds,
+                  ),
+                  checkProperty("stratum stable ID", stratumStableIdProperties, requireStableIds),
               )
 
           problems += featureProblems
           featureProblems.isEmpty()
         }
 
-    validSubzones
-        .groupBy { subzone ->
-          subzone.getProperty(subzoneStableIdProperties)
-              ?: (subzone.getProperty(zoneNameProperties) +
+    validSubstrata
+        .groupBy { substratum ->
+          substratum.getProperty(substratumStableIdProperties)
+              ?: (substratum.getProperty(stratumNameProperties) +
                   "-" +
-                  subzone.getProperty(subzoneNameProperties))
+                  substratum.getProperty(substratumNameProperties))
         }
-        .forEach { (stableId, subzones) ->
-          if (subzones.size > 1) {
-            val subzoneNames =
-                subzones.joinToString(", ") { it.getProperty(subzoneNameProperties)!! }
-            problems += "Duplicate stable ID $stableId on subzones: $subzoneNames"
+        .forEach { (stableId, substrata) ->
+          if (substrata.size > 1) {
+            val substratumNames =
+                substrata.joinToString(", ") { it.getProperty(substratumNameProperties)!! }
+            problems += "Duplicate stable ID $stableId on substrata: $substratumNames"
           }
         }
 
-    val stableIdsByZone = mutableMapOf<String, StableId>()
-    val zonesByStableId = mutableMapOf<StableId, String>()
+    val stableIdsByStratum = mutableMapOf<String, StableId>()
+    val strataByStableId = mutableMapOf<StableId, String>()
 
-    validSubzones.forEach { feature ->
-      val zoneName = feature.getProperty(zoneNameProperties)!!
-      val stableId = StableId(feature.getProperty(zoneStableIdProperties) ?: zoneName)
-      val existingZoneName = zonesByStableId[stableId]
-      val existingStableId = stableIdsByZone[zoneName]
+    validSubstrata.forEach { feature ->
+      val stratumName = feature.getProperty(stratumNameProperties)!!
+      val stableId = StableId(feature.getProperty(stratumStableIdProperties) ?: stratumName)
+      val existingStratumName = strataByStableId[stableId]
+      val existingStableId = stableIdsByStratum[stratumName]
 
       if (existingStableId != null) {
         if (existingStableId != stableId) {
-          problems += "Inconsistent stable IDs for zone $zoneName: $existingStableId, $stableId"
+          problems +=
+              "Inconsistent stable IDs for stratum $stratumName: $existingStableId, $stableId"
         }
       } else {
-        stableIdsByZone[zoneName] = stableId
+        stableIdsByStratum[stratumName] = stableId
       }
 
-      if (existingZoneName != null) {
-        if (existingZoneName != zoneName) {
+      if (existingStratumName != null) {
+        if (existingStratumName != stratumName) {
           problems +=
-              "Inconsistent zone names for stable ID $stableId: $existingZoneName, $zoneName"
+              "Inconsistent stratum names for stable ID $stableId: $existingStratumName, $stratumName"
         }
       } else {
-        zonesByStableId[stableId] = zoneName
+        strataByStableId[stableId] = stratumName
       }
     }
 
-    val subzonesByZone =
-        validSubzones.groupBy { feature -> feature.getProperty(zoneNameProperties)!! }
+    val substrataByStratum =
+        validSubstrata.groupBy { feature -> feature.getProperty(stratumNameProperties)!! }
 
-    return subzonesByZone.mapNotNull { (zoneName, subzoneFeatures) ->
-      val subzoneModels =
-          subzoneFeatures.map { subzoneFeature ->
-            val boundary = convertToXY(subzoneFeature.geometry)
-            val name = subzoneFeature.getProperty(subzoneNameProperties)!!
-            val fullName = "$zoneName-$name"
+    return substrataByStratum.mapNotNull { (stratumName, substratumFeatures) ->
+      val substratumModels =
+          substratumFeatures.map { substratumFeature ->
+            val boundary = convertToXY(substratumFeature.geometry)
+            val name = substratumFeature.getProperty(substratumNameProperties)!!
+            val fullName = "$stratumName-$name"
             val stableId =
-                StableId(subzoneFeature.getProperty(subzoneStableIdProperties) ?: fullName)
+                StableId(substratumFeature.getProperty(substratumStableIdProperties) ?: fullName)
 
             SubstratumModel.create(
                 boundary = boundary.toMultiPolygon(),
@@ -276,45 +281,46 @@ class PlantingSiteImporter(
             )
           }
 
-      val zoneBoundary = mergeToMultiPolygon(subzoneModels.map { it.boundary })
+      val stratumBoundary = mergeToMultiPolygon(substratumModels.map { it.boundary })
 
-      // Zone settings only need to appear on one subzone; take the first valid values we find.
+      // Stratum settings only need to appear on one substratum; take the first valid values we
+      // find.
       val errorMargin =
-          subzoneFeatures
+          substratumFeatures
               .mapNotNull { it.getProperty(errorMarginProperties)?.toBigDecimalOrNull() }
               .find { it.signum() > 0 }
       val variance =
-          subzoneFeatures
+          substratumFeatures
               .mapNotNull { it.getProperty(varianceProperties)?.toBigDecimalOrNull() }
               .find { it.signum() > 0 }
       val studentsT =
-          subzoneFeatures
+          substratumFeatures
               .mapNotNull { it.getProperty(studentsTProperties)?.toBigDecimalOrNull() }
               .find { it.signum() > 0 } ?: StratumModel.DEFAULT_STUDENTS_T
 
       val numPermanentPlots =
-          subzoneFeatures.firstNotNullOfOrNull {
+          substratumFeatures.firstNotNullOfOrNull {
             it.getProperty(permanentPlotCountProperties)?.toIntOrNull()
           }
       val numTemporaryPlots =
-          subzoneFeatures.firstNotNullOfOrNull {
+          substratumFeatures.firstNotNullOfOrNull {
             it.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
           }
       val targetPlantingDensity =
-          subzoneFeatures.firstNotNullOfOrNull {
+          substratumFeatures.firstNotNullOfOrNull {
             it.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()
           } ?: StratumModel.DEFAULT_TARGET_PLANTING_DENSITY
 
       if (errorMargin != null && variance != null) {
         StratumModel.create(
-            boundary = zoneBoundary,
+            boundary = stratumBoundary,
             errorMargin = errorMargin,
             exclusion = exclusion,
-            name = zoneName,
+            name = stratumName,
             numPermanentPlots = numPermanentPlots,
             numTemporaryPlots = numTemporaryPlots,
-            substrata = subzoneModels,
-            stableId = stableIdsByZone[zoneName]!!,
+            substrata = substratumModels,
+            stableId = stableIdsByStratum[stratumName]!!,
             studentsT = studentsT,
             targetPlantingDensity = targetPlantingDensity,
             variance = variance,
@@ -322,12 +328,12 @@ class PlantingSiteImporter(
       } else {
         if (errorMargin == null) {
           problems +=
-              "Zone $zoneName has no subzone with positive value for properties: " +
+              "Stratum $stratumName has no substratum with positive value for properties: " +
                   errorMarginProperties.joinToString()
         }
         if (variance == null) {
           problems +=
-              "Zone $zoneName has no subzone with positive value for properties: " +
+              "Stratum $stratumName has no substratum with positive value for properties: " +
                   varianceProperties.joinToString()
         }
 

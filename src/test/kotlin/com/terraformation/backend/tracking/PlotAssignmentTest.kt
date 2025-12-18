@@ -125,10 +125,20 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     val stratum2Boundary = gen.multiRectangle(230 to 0, 326 to 101)
 
     val substratum1Feature =
-        gen.subzoneFeature(substratum1Boundary, zone = "Z1", permanentPlots = 2, temporaryPlots = 3)
-    val substratum2Feature = gen.subzoneFeature(substratum2Boundary)
+        gen.substratumFeature(
+            substratum1Boundary,
+            stratum = "Z1",
+            permanentPlots = 2,
+            temporaryPlots = 3,
+        )
+    val substratum2Feature = gen.substratumFeature(substratum2Boundary)
     val substratum3Feature =
-        gen.subzoneFeature(stratum2Boundary, zone = "Z2", permanentPlots = 2, temporaryPlots = 3)
+        gen.substratumFeature(
+            stratum2Boundary,
+            stratum = "Z2",
+            permanentPlots = 2,
+            temporaryPlots = 3,
+        )
 
     val plantingSite =
         importSite(listOf(substratum1Feature, substratum2Feature, substratum3Feature))

@@ -17,12 +17,12 @@ class ShapefileGenerator(
     /** Coordinate system to use for polygons. */
     srid: Int = SRID.UTM_20S,
     /**
-     * Number of permanent plots to specify in zone shapefile features by default. Null means
+     * Number of permanent plots to specify in stratum shapefile features by default. Null means
      * ShapefileImporter will calculate the number of plots.
      */
     private val defaultPermanentPlots: Int? = null,
     /**
-     * Number of temporary plots to specify in zone shapefile features by default. Null means
+     * Number of temporary plots to specify in stratum shapefile features by default. Null means
      * ShapefileImporter will calculate the number of plots.
      */
     private val defaultTemporaryPlots: Int? = null,
@@ -30,16 +30,16 @@ class ShapefileGenerator(
   private val crs = CRS.decode("EPSG:$srid", true)
   private val geometryFactory = GeometryFactory(PrecisionModel(), srid)
 
-  private var nextSubzoneNumber = 1
+  private var nextSubstratumNumber = 1
 
-  private var lastZoneName: String = "Z1"
+  private var lastStratumName: String = "Z1"
 
-  fun subzoneFeature(
+  fun substratumFeature(
       boundary: MultiPolygon,
-      name: String = "S${nextSubzoneNumber++}",
-      zone: String = lastZoneName,
-      subzoneStableId: String? = null,
-      zoneStableId: String? = null,
+      name: String = "S${nextSubstratumNumber++}",
+      stratum: String = lastStratumName,
+      substratumStableId: String? = null,
+      stratumStableId: String? = null,
       errorMargin: BigDecimal? = StratumModel.DEFAULT_ERROR_MARGIN,
       studentsT: BigDecimal? = null,
       variance: BigDecimal? = StratumModel.DEFAULT_VARIANCE,
@@ -47,16 +47,16 @@ class ShapefileGenerator(
       temporaryPlots: Int? = defaultTemporaryPlots,
       targetPlantingDensity: BigDecimal? = null,
   ): ShapefileFeature {
-    lastZoneName = zone
+    lastStratumName = stratum
 
     return ShapefileFeature(
         boundary,
         listOfNotNull(
-                "subzone" to name,
-                "zone" to zone,
+                "substratum" to name,
+                "stratum" to stratum,
                 "density" to "1200",
-                subzoneStableId?.let { "stable_sz" to it },
-                zoneStableId?.let { "stable_z" to it },
+                substratumStableId?.let { "stable_sz" to it },
+                stratumStableId?.let { "stable_z" to it },
                 errorMargin?.let { "error_marg" to "$it" },
                 studentsT?.let { "students_t" to "$it" },
                 variance?.let { "variance" to "$it" },
