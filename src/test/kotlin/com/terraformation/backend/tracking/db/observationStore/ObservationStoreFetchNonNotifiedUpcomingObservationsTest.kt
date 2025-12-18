@@ -41,7 +41,7 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
   }
 
   @Test
-  fun `does not returns observations with no requested subzones`() {
+  fun `does not returns observations with no requested substrata`() {
     val timeZone = ZoneId.of("America/Denver")
     val startDate = LocalDate.of(2023, 4, 1)
     val endDate = LocalDate.of(2023, 4, 30)
@@ -60,7 +60,7 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
   }
 
   @Test
-  fun `only returns observations with requested subzones`() {
+  fun `only returns observations with requested substrata`() {
     val timeZone = ZoneId.of("America/Denver")
     val startDate = LocalDate.of(2023, 4, 1)
     val endDate = LocalDate.of(2023, 4, 30)
