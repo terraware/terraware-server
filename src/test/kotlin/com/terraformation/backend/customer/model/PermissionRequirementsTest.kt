@@ -169,10 +169,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(PlantingNotFoundException::class) { canReadPlanting(it) }
   private val plantingSiteId: PlantingSiteId by
       readableId(PlantingSiteNotFoundException::class) { canReadPlantingSite(it) }
-  private val plantingSubzoneId: SubstratumId by
-      readableId(SubstrataNotFoundException::class) { canReadPlantingSubzone(it) }
-  private val plantingZoneId: StratumId by
-      readableId(StratumNotFoundException::class) { canReadPlantingZone(it) }
   private val projectId: ProjectId by
       readableId(ProjectNotFoundException::class) { canReadProject(it) }
   private val publishedActivityId: ActivityId by
@@ -183,10 +179,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val role = Role.Contributor
   private val speciesId: SpeciesId by
       readableId(SpeciesNotFoundException::class) { canReadSpecies(it) }
+  private val stratumId: StratumId by
+      readableId(StratumNotFoundException::class) { canReadPlantingZone(it) }
   private val subLocationId: SubLocationId by
       readableId(SubLocationNotFoundException::class) { canReadSubLocation(it) }
   private val submissionDocumentId: SubmissionDocumentId by
       readableId(SubmissionDocumentNotFoundException::class) { canReadSubmissionDocument(it) }
+  private val substratumId: SubstratumId by
+      readableId(SubstrataNotFoundException::class) { canReadPlantingSubzone(it) }
   private val uploadId: UploadId by readableId(UploadNotFoundException::class) { canReadUpload(it) }
   private val userId = UserId(1)
   private val viabilityTestId: ViabilityTestId by
@@ -811,10 +811,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readPlantingSite() = testRead { readPlantingSite(plantingSiteId) }
 
-  @Test fun readPlantingSubzone() = testRead { readPlantingSubzone(plantingSubzoneId) }
-
-  @Test fun readPlantingZone() = testRead { readPlantingZone(plantingZoneId) }
-
   @Test fun readProject() = testRead { readProject(projectId) }
 
   @Test
@@ -908,9 +904,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun readSpecies() = testRead { readSpecies(speciesId) }
 
+  @Test fun readStratum() = testRead { readStratum(stratumId) }
+
   @Test fun readSubLocation() = testRead { readSubLocation(subLocationId) }
 
   @Test fun readSubmissionDocument() = testRead { readSubmissionDocument(submissionDocumentId) }
+
+  @Test fun readSubstratum() = testRead { readSubstratum(substratumId) }
 
   @Test fun readUser() = testRead { readUser(otherUserId) }
 
@@ -1161,17 +1161,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
-  fun updatePlantingSubzoneCompleted() =
-      allow { updatePlantingSubzoneCompleted(plantingSubzoneId) } ifUser
-          {
-            canUpdatePlantingSubzoneCompleted(plantingSubzoneId)
-          }
-
-  @Test
-  fun updatePlantingZone() =
-      allow { updatePlantingZone(plantingZoneId) } ifUser { canUpdatePlantingZone(plantingZoneId) }
-
-  @Test
   fun updateProject() = allow { updateProject(projectId) } ifUser { canUpdateProject(projectId) }
 
   @Test
@@ -1213,6 +1202,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun updateSpecies() = allow { updateSpecies(speciesId) } ifUser { canUpdateSpecies(speciesId) }
 
   @Test
+  fun updateStratum() =
+      allow { updateStratum(stratumId) } ifUser { canUpdatePlantingZone(stratumId) }
+
+  @Test
   fun updateSubLocation() =
       allow { updateSubLocation(subLocationId) } ifUser { canUpdateSubLocation(subLocationId) }
 
@@ -1224,10 +1217,16 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
-  fun updateT0Plot() = allow { updateT0(monitoringPlotId) } ifUser { canUpdateT0(monitoringPlotId) }
+  fun updateSubstratumCompleted() =
+      allow { updateSubstratumCompleted(substratumId) } ifUser
+          {
+            canUpdatePlantingSubzoneCompleted(substratumId)
+          }
 
   @Test
-  fun updateT0Zone() = allow { updateT0(plantingZoneId) } ifUser { canUpdateT0(plantingZoneId) }
+  fun updateT0Plot() = allow { updateT0(monitoringPlotId) } ifUser { canUpdateT0(monitoringPlotId) }
+
+  @Test fun updateT0() = allow { updateT0(stratumId) } ifUser { canUpdateT0(stratumId) }
 
   @Test fun updateUpload() = allow { updateUpload(uploadId) } ifUser { canUpdateUpload(uploadId) }
 

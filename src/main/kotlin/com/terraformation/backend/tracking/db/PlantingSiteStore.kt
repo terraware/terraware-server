@@ -1101,7 +1101,7 @@ class PlantingSiteStore(
       stratumId: StratumId,
       editFunc: (StrataRow) -> StrataRow,
   ) {
-    requirePermissions { updatePlantingZone(stratumId) }
+    requirePermissions { updateStratum(stratumId) }
 
     val initial = strataDao.fetchOneById(stratumId) ?: throw StratumNotFoundException(stratumId)
     val edited = editFunc(initial)
@@ -1173,7 +1173,7 @@ class PlantingSiteStore(
    *   [completed] == true will not cause the planting completed time in the database to change.
    */
   fun updateSubstratumCompleted(substratumId: SubstratumId, completed: Boolean) {
-    requirePermissions { updatePlantingSubzoneCompleted(substratumId) }
+    requirePermissions { updateSubstratumCompleted(substratumId) }
 
     val initial =
         substrataDao.fetchOneById(substratumId) ?: throw SubstrataNotFoundException(substratumId)

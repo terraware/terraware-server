@@ -1173,22 +1173,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readPlantingSubzone(plantingSubzoneId: SubstratumId) {
-    user.recordPermissionChecks {
-      if (!user.canReadPlantingSubzone(plantingSubzoneId)) {
-        throw SubstrataNotFoundException(plantingSubzoneId)
-      }
-    }
-  }
-
-  fun readPlantingZone(plantingZoneId: StratumId) {
-    user.recordPermissionChecks {
-      if (!user.canReadPlantingZone(plantingZoneId)) {
-        throw StratumNotFoundException(plantingZoneId)
-      }
-    }
-  }
-
   fun readProject(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canReadProject(projectId)) {
@@ -1328,6 +1312,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readStratum(stratumId: StratumId) {
+    user.recordPermissionChecks {
+      if (!user.canReadPlantingZone(stratumId)) {
+        throw StratumNotFoundException(stratumId)
+      }
+    }
+  }
+
   fun readSubLocation(subLocationId: SubLocationId) {
     user.recordPermissionChecks {
       if (!user.canReadSubLocation(subLocationId)) {
@@ -1348,6 +1340,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canReadSubmissionDocument(documentId)) {
         throw SubmissionDocumentNotFoundException(documentId)
+      }
+    }
+  }
+
+  fun readSubstratum(substratumId: SubstratumId) {
+    user.recordPermissionChecks {
+      if (!user.canReadPlantingSubzone(substratumId)) {
+        throw SubstrataNotFoundException(substratumId)
       }
     }
   }
@@ -1821,20 +1821,20 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updatePlantingSubzoneCompleted(plantingSubzoneId: SubstratumId) {
+  fun updateSubstratumCompleted(substratumId: SubstratumId) {
     user.recordPermissionChecks {
-      if (!user.canUpdatePlantingSubzoneCompleted(plantingSubzoneId)) {
-        readPlantingSubzone(plantingSubzoneId)
-        throw AccessDeniedException("No permission to update planting subzone $plantingSubzoneId")
+      if (!user.canUpdatePlantingSubzoneCompleted(substratumId)) {
+        readSubstratum(substratumId)
+        throw AccessDeniedException("No permission to update substratum $substratumId")
       }
     }
   }
 
-  fun updatePlantingZone(plantingZoneId: StratumId) {
+  fun updateStratum(stratumId: StratumId) {
     user.recordPermissionChecks {
-      if (!user.canUpdatePlantingZone(plantingZoneId)) {
-        readPlantingZone(plantingZoneId)
-        throw AccessDeniedException("No permission to update planting zone $plantingZoneId")
+      if (!user.canUpdatePlantingZone(stratumId)) {
+        readStratum(stratumId)
+        throw AccessDeniedException("No permission to update stratum $stratumId")
       }
     }
   }
@@ -1987,11 +1987,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun updateT0(plantingZoneId: StratumId) {
+  fun updateT0(stratumId: StratumId) {
     user.recordPermissionChecks {
-      if (!user.canUpdateT0(plantingZoneId)) {
-        readPlantingZone(plantingZoneId)
-        throw AccessDeniedException("No permission to update T0 for planting zone $plantingZoneId")
+      if (!user.canUpdateT0(stratumId)) {
+        readStratum(stratumId)
+        throw AccessDeniedException("No permission to update T0 for stratum $stratumId")
       }
     }
   }
