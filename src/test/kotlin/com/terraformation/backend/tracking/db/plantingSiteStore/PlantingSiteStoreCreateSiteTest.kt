@@ -137,24 +137,24 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
     fun `inserts detailed planting site`() {
       val gridOrigin = point(0.0, 51.0) // Southeastern Great Britain
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(200, 150) }
-      val zone1Boundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(100, 150) }
-      val subzone11Boundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(100, 75) }
-      val subzone12Boundary =
+      val stratum1Boundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(100, 150) }
+      val substratum11Boundary = Turtle(gridOrigin).makeMultiPolygon { rectangle(100, 75) }
+      val substratum12Boundary =
           Turtle(gridOrigin).makeMultiPolygon {
             north(75)
             rectangle(100, 75)
           }
-      val zone2Boundary =
+      val stratum2Boundary =
           Turtle(gridOrigin).makeMultiPolygon {
             east(100)
             rectangle(100, 150)
           }
-      val subzone21Boundary =
+      val substratum21Boundary =
           Turtle(gridOrigin).makeMultiPolygon {
             east(100)
             rectangle(100, 75)
           }
-      val subzone22Boundary =
+      val substratum22Boundary =
           Turtle(gridOrigin).makeMultiPolygon {
             east(100)
             north(75)
@@ -169,22 +169,22 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               strata =
                   listOf(
                       StratumModel.create(
-                          boundary = zone1Boundary,
+                          boundary = stratum1Boundary,
                           errorMargin = BigDecimal(1),
-                          name = "Zone 1",
+                          name = "Stratum 1",
                           numPermanentPlots = 3,
                           numTemporaryPlots = 4,
                           substrata =
                               listOf(
                                   SubstratumModel.create(
-                                      boundary = subzone11Boundary,
-                                      fullName = "Zone 1-Subzone 1",
-                                      name = "Subzone 1",
+                                      boundary = substratum11Boundary,
+                                      fullName = "Stratum 1-Substratum 1",
+                                      name = "Substratum 1",
                                   ),
                                   SubstratumModel.create(
-                                      boundary = subzone12Boundary,
-                                      fullName = "Zone 1-Subzone 2",
-                                      name = "Subzone 2",
+                                      boundary = substratum12Boundary,
+                                      fullName = "Stratum 1-Substratum 2",
+                                      name = "Substratum 2",
                                   ),
                               ),
                           studentsT = BigDecimal(5),
@@ -192,19 +192,19 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                           variance = BigDecimal(7),
                       ),
                       StratumModel.create(
-                          boundary = zone2Boundary,
-                          name = "Zone 2",
+                          boundary = stratum2Boundary,
+                          name = "Stratum 2",
                           substrata =
                               listOf(
                                   SubstratumModel.create(
-                                      boundary = subzone21Boundary,
-                                      fullName = "Zone 2-Subzone 1",
-                                      name = "Subzone 1",
+                                      boundary = substratum21Boundary,
+                                      fullName = "Stratum 2-Substratum 1",
+                                      name = "Substratum 1",
                                   ),
                                   SubstratumModel.create(
-                                      boundary = subzone22Boundary,
-                                      fullName = "Zone 2-Subzone 2",
-                                      name = "Subzone 2",
+                                      boundary = substratum22Boundary,
+                                      fullName = "Stratum 2-Substratum 2",
+                                      name = "Substratum 2",
                                   ),
                               ),
                       ),
@@ -234,7 +234,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           "Planting site",
       )
 
-      val commonZonesRow =
+      val commonStrataRow =
           StrataRow(
               areaHa = BigDecimal("1.5"),
               boundaryModifiedBy = user.userId,
@@ -246,40 +246,48 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               plantingSiteId = model.id,
           )
 
-      val actualZones = strataDao.findAll().associateBy { it.name!! }
+      val actualStrata = strataDao.findAll().associateBy { it.name!! }
 
-      assertGeometryEquals(zone1Boundary, actualZones["Zone 1"]?.boundary, "Zone 1 boundary")
-      assertGeometryEquals(zone2Boundary, actualZones["Zone 2"]?.boundary, "Zone 2 boundary")
+      assertGeometryEquals(
+          stratum1Boundary,
+          actualStrata["Stratum 1"]?.boundary,
+          "Stratum 1 boundary",
+      )
+      assertGeometryEquals(
+          stratum2Boundary,
+          actualStrata["Stratum 2"]?.boundary,
+          "Stratum 2 boundary",
+      )
       assertSetEquals(
           setOf(
-              commonZonesRow.copy(
+              commonStrataRow.copy(
                   errorMargin = BigDecimal(1),
-                  id = actualZones["Zone 1"]?.id,
-                  name = "Zone 1",
+                  id = actualStrata["Stratum 1"]?.id,
+                  name = "Stratum 1",
                   numPermanentPlots = 3,
                   numTemporaryPlots = 4,
-                  stableId = StableId("Zone 1"),
+                  stableId = StableId("Stratum 1"),
                   studentsT = BigDecimal(5),
                   targetPlantingDensity = BigDecimal(6),
                   variance = BigDecimal(7),
               ),
-              commonZonesRow.copy(
+              commonStrataRow.copy(
                   errorMargin = StratumModel.DEFAULT_ERROR_MARGIN,
-                  id = actualZones["Zone 2"]?.id,
-                  name = "Zone 2",
+                  id = actualStrata["Stratum 2"]?.id,
+                  name = "Stratum 2",
                   numPermanentPlots = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
                   numTemporaryPlots = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
-                  stableId = StableId("Zone 2"),
+                  stableId = StableId("Stratum 2"),
                   studentsT = StratumModel.DEFAULT_STUDENTS_T,
                   targetPlantingDensity = StratumModel.DEFAULT_TARGET_PLANTING_DENSITY,
                   variance = StratumModel.DEFAULT_VARIANCE,
               ),
           ),
-          actualZones.values.map { it.copy(boundary = null) }.toSet(),
-          "Planting zones",
+          actualStrata.values.map { it.copy(boundary = null) }.toSet(),
+          "Strata",
       )
 
-      val commonSubzonesRow =
+      val commonSubstrataRow =
           SubstrataRow(
               areaHa = BigDecimal("0.8"),
               createdBy = user.userId,
@@ -289,57 +297,57 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               plantingSiteId = model.id,
           )
 
-      val actualSubzones = substrataDao.findAll().map { it.copy(id = null) }
+      val actualSubstrata = substrataDao.findAll().map { it.copy(id = null) }
 
       assertGeometryEquals(
-          subzone11Boundary,
-          actualSubzones.single { it.fullName == "Zone 1-Subzone 1" }.boundary,
+          substratum11Boundary,
+          actualSubstrata.single { it.fullName == "Stratum 1-Substratum 1" }.boundary,
           "Z1S1 boundary",
       )
       assertGeometryEquals(
-          subzone12Boundary,
-          actualSubzones.single { it.fullName == "Zone 1-Subzone 2" }.boundary,
+          substratum12Boundary,
+          actualSubstrata.single { it.fullName == "Stratum 1-Substratum 2" }.boundary,
           "Z1S2 boundary",
       )
       assertGeometryEquals(
-          subzone21Boundary,
-          actualSubzones.single { it.fullName == "Zone 2-Subzone 1" }.boundary,
+          substratum21Boundary,
+          actualSubstrata.single { it.fullName == "Stratum 2-Substratum 1" }.boundary,
           "Z2S1 boundary",
       )
       assertGeometryEquals(
-          subzone22Boundary,
-          actualSubzones.single { it.fullName == "Zone 2-Subzone 2" }.boundary,
+          substratum22Boundary,
+          actualSubstrata.single { it.fullName == "Stratum 2-Substratum 2" }.boundary,
           "Z2S2 boundary",
       )
       assertSetEquals(
           setOf(
-              commonSubzonesRow.copy(
-                  fullName = "Zone 1-Subzone 1",
-                  name = "Subzone 1",
-                  stratumId = actualZones["Zone 1"]?.id,
-                  stableId = StableId("Zone 1-Subzone 1"),
+              commonSubstrataRow.copy(
+                  fullName = "Stratum 1-Substratum 1",
+                  name = "Substratum 1",
+                  stratumId = actualStrata["Stratum 1"]?.id,
+                  stableId = StableId("Stratum 1-Substratum 1"),
               ),
-              commonSubzonesRow.copy(
-                  fullName = "Zone 1-Subzone 2",
-                  name = "Subzone 2",
-                  stratumId = actualZones["Zone 1"]?.id,
-                  stableId = StableId("Zone 1-Subzone 2"),
+              commonSubstrataRow.copy(
+                  fullName = "Stratum 1-Substratum 2",
+                  name = "Substratum 2",
+                  stratumId = actualStrata["Stratum 1"]?.id,
+                  stableId = StableId("Stratum 1-Substratum 2"),
               ),
-              commonSubzonesRow.copy(
-                  fullName = "Zone 2-Subzone 1",
-                  name = "Subzone 1",
-                  stratumId = actualZones["Zone 2"]?.id,
-                  stableId = StableId("Zone 2-Subzone 1"),
+              commonSubstrataRow.copy(
+                  fullName = "Stratum 2-Substratum 1",
+                  name = "Substratum 1",
+                  stratumId = actualStrata["Stratum 2"]?.id,
+                  stableId = StableId("Stratum 2-Substratum 1"),
               ),
-              commonSubzonesRow.copy(
-                  fullName = "Zone 2-Subzone 2",
-                  name = "Subzone 2",
-                  stratumId = actualZones["Zone 2"]?.id,
-                  stableId = StableId("Zone 2-Subzone 2"),
+              commonSubstrataRow.copy(
+                  fullName = "Stratum 2-Substratum 2",
+                  name = "Substratum 2",
+                  stratumId = actualStrata["Stratum 2"]?.id,
+                  stableId = StableId("Stratum 2-Substratum 2"),
               ),
           ),
-          actualSubzones.map { it.copy(boundary = null) }.toSet(),
-          "Planting subzones",
+          actualSubstrata.map { it.copy(boundary = null) }.toSet(),
+          "Substrata",
       )
     }
 
@@ -382,8 +390,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
     fun `creates initial history entries for detailed site`() {
       val gridOrigin = point(1)
       val siteBoundary = Turtle(gridOrigin).makeMultiPolygon { square(200) }
-      val zoneBoundary = Turtle(gridOrigin).makeMultiPolygon { square(199.9) }
-      val subzoneBoundary = Turtle(gridOrigin).makeMultiPolygon { square(199.8) }
+      val stratumBoundary = Turtle(gridOrigin).makeMultiPolygon { square(199.9) }
+      val substratumBoundary = Turtle(gridOrigin).makeMultiPolygon { square(199.8) }
       val exclusion = Turtle(gridOrigin).makeMultiPolygon { square(5) }
 
       val model =
@@ -396,16 +404,16 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   strata =
                       listOf(
                           StratumModel.create(
-                              boundary = zoneBoundary,
+                              boundary = stratumBoundary,
                               exclusion = exclusion,
-                              name = "zone",
+                              name = "stratum",
                               substrata =
                                   listOf(
                                       SubstratumModel.create(
-                                          boundary = subzoneBoundary,
+                                          boundary = substratumBoundary,
                                           exclusion = exclusion,
-                                          fullName = "zone-subzone",
-                                          name = "subzone",
+                                          fullName = "stratum-substratum",
+                                          name = "substratum",
                                       )
                                   ),
                           )
@@ -431,36 +439,36 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
           "Planting site histories",
       )
 
-      val zoneHistories = stratumHistoriesDao.findAll()
+      val stratumHistories = stratumHistoriesDao.findAll()
       assertEquals(
           listOf(
               StratumHistoriesRow(
                   areaHa = BigDecimal("4.0"),
-                  boundary = zoneBoundary,
-                  name = "zone",
+                  boundary = stratumBoundary,
+                  name = "stratum",
                   plantingSiteHistoryId = model.historyId,
                   stratumId = model.strata.first().id,
-                  stableId = StableId("zone"),
+                  stableId = StableId("stratum"),
               ),
           ),
-          zoneHistories.map { it.copy(id = null) },
-          "Planting zone histories",
+          stratumHistories.map { it.copy(id = null) },
+          "Stratum histories",
       )
 
       assertEquals(
           listOf(
               SubstratumHistoriesRow(
                   areaHa = BigDecimal("4.0"),
-                  boundary = subzoneBoundary,
-                  fullName = "zone-subzone",
-                  name = "subzone",
+                  boundary = substratumBoundary,
+                  fullName = "stratum-substratum",
+                  name = "substratum",
                   substratumId = model.strata.first().substrata.first().id,
-                  stratumHistoryId = zoneHistories.first().id,
-                  stableId = StableId("zone-subzone"),
+                  stratumHistoryId = stratumHistories.first().id,
+                  stableId = StableId("stratum-substratum"),
               ),
           ),
           substratumHistoriesDao.findAll().map { it.copy(id = null) },
-          "Planting subzone histories",
+          "Substratum histories",
       )
 
       assertTableEmpty(MONITORING_PLOT_HISTORIES)
@@ -564,7 +572,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                       StratumModel.create(
                           boundary = boundary,
                           name = "name",
-                          // Empty subzone list is invalid.
+                          // Empty substratum list is invalid.
                           substrata = emptyList(),
                       )
                   ),

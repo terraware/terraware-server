@@ -24,9 +24,9 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
       val plantingSiteId =
           insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0), insertHistory = false)
       val plantingSiteHistoryId = insertPlantingSiteHistory()
-      val plantingZoneId = insertStratum(boundary = siteBoundary)
-      val plantingSubzoneId = insertSubstratum(boundary = siteBoundary, insertHistory = false)
-      val plantingSubzoneHistoryId = insertSubstratumHistory()
+      val stratumId = insertStratum(boundary = siteBoundary)
+      val substratumId = insertSubstratum(boundary = siteBoundary, insertHistory = false)
+      val substratumHistoryId = insertSubstratumHistory()
 
       identifierGenerator.generateNumericIdentifier(
           organizationId,
@@ -34,7 +34,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
       )
 
       val plotBoundary = Turtle(point(0)).makePolygon { square(25) }
-      val newPlotId = store.createTemporaryPlot(plantingSiteId, plantingZoneId, plotBoundary)
+      val newPlotId = store.createTemporaryPlot(plantingSiteId, stratumId, plotBoundary)
 
       val expected =
           MonitoringPlotsRow(
@@ -47,7 +47,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
               modifiedTime = clock.instant,
               organizationId = organizationId,
               plantingSiteId = plantingSiteId,
-              substratumId = plantingSubzoneId,
+              substratumId = substratumId,
               plotNumber = 2,
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           )
@@ -65,8 +65,8 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
                   monitoringPlotId = newPlotId,
                   plantingSiteHistoryId = plantingSiteHistoryId,
                   plantingSiteId = plantingSiteId,
-                  substratumHistoryId = plantingSubzoneHistoryId,
-                  substratumId = plantingSubzoneId,
+                  substratumHistoryId = substratumHistoryId,
+                  substratumId = substratumId,
               )
           )
       )
@@ -76,7 +76,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
     fun `returns existing ID if plot boundary already exists`() {
       val siteBoundary = Turtle(point(0)).makeMultiPolygon { square(51) }
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
-      val plantingZoneId = insertStratum(boundary = siteBoundary)
+      val stratumId = insertStratum(boundary = siteBoundary)
       insertSubstratum(boundary = siteBoundary)
 
       val existingPlotBoundary = Turtle(point(0)).makePolygon { square(25) }
@@ -88,7 +88,7 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
             north(1)
             square(25)
           }
-      val newPlotId = store.createTemporaryPlot(plantingSiteId, plantingZoneId, newPlotBoundary)
+      val newPlotId = store.createTemporaryPlot(plantingSiteId, stratumId, newPlotBoundary)
 
       assertEquals(existingPlotId, newPlotId, "Should have returned existing plot ID")
     }
@@ -99,13 +99,13 @@ internal class PlantingSiteStoreCreateTemporaryTest : BasePlantingSiteStoreTest(
 
       val siteBoundary = Turtle(point(0)).makeMultiPolygon { square(101) }
       val plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = point(0))
-      val plantingZoneId = insertStratum(boundary = siteBoundary)
+      val stratumId = insertStratum(boundary = siteBoundary)
       insertSubstratum(boundary = siteBoundary)
 
       assertThrows<AccessDeniedException> {
         store.createTemporaryPlot(
             plantingSiteId,
-            plantingZoneId,
+            stratumId,
             Turtle(point(0)).makePolygon { square(25) },
         )
       }

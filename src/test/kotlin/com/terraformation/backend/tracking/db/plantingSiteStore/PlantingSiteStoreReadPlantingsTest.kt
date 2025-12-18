@@ -48,7 +48,7 @@ internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() 
   }
 
   @Nested
-  inner class HasSubzonePlantings {
+  inner class HasSubstratumPlantings {
     @BeforeEach
     fun setUp() {
       every { user.canReadPlantingSite(any()) } returns true
@@ -64,14 +64,14 @@ internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() 
     }
 
     @Test
-    fun `returns false when there are no plantings in subzones for a site without subzones`() {
+    fun `returns false when there are no plantings in substrata for a site without substrata`() {
       val plantingSiteId = insertPlantingSite()
 
       assertFalse(store.hasSubstratumPlantings(plantingSiteId))
     }
 
     @Test
-    fun `returns false when there are no plantings in subzones for a site with subzones`() {
+    fun `returns false when there are no plantings in substrata for a site with substrata`() {
       val plantingSiteId = insertPlantingSite()
       insertStratum()
       insertSubstratum()
@@ -80,7 +80,7 @@ internal class PlantingSiteStoreReadPlantingsTest : BasePlantingSiteStoreTest() 
     }
 
     @Test
-    fun `returns true when there are plantings in subzones`() {
+    fun `returns true when there are plantings in substrata`() {
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
       val plantingSiteId = insertPlantingSite()

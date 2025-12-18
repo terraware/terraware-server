@@ -17,28 +17,28 @@ class PlantingSiteModelTest {
     }
 
     @Test
-    fun `checks for duplicate zone names`() {
+    fun `checks for duplicate stratum names`() {
       val site = newSite {
-        zone(width = 250, name = "Duplicate")
-        zone(width = 250, name = "Duplicate")
+        stratum(width = 250, name = "Duplicate")
+        stratum(width = 250, name = "Duplicate")
       }
 
       assertHasProblem(site, PlantingSiteValidationFailure.duplicateStratumName("Duplicate"))
     }
 
     @Test
-    fun `checks for zones not covered by site`() {
-      val site = newSite(width = 100, height = 100) { zone(width = 200, height = 200) }
+    fun `checks for strata not covered by site`() {
+      val site = newSite(width = 100, height = 100) { stratum(width = 200, height = 200) }
 
       assertHasProblem(site, PlantingSiteValidationFailure.stratumNotInSite("Z1"))
     }
 
     @Test
-    fun `checks for overlapping zone boundaries`() {
+    fun `checks for overlapping stratum boundaries`() {
       val site =
           newSite(width = 200) {
-            zone(width = 100)
-            zone(x = 50, width = 150)
+            stratum(width = 100)
+            stratum(x = 50, width = 150)
           }
 
       assertHasProblem(
@@ -48,38 +48,39 @@ class PlantingSiteModelTest {
     }
 
     @Test
-    fun `checks that zones have subzones`() {
+    fun `checks that strata have substrata`() {
       val site = newSite()
-      val siteWithoutSubzones =
+      val siteWithoutSubstrata =
           site.copy(strata = site.strata.map { it.copy(substrata = emptyList()) })
 
       assertHasProblem(
-          siteWithoutSubzones,
+          siteWithoutSubstrata,
           PlantingSiteValidationFailure.stratumHasNoSubstrata("Z1"),
       )
     }
 
     @Test
-    fun `allows zone that is only big enough for two plots`() {
+    fun `allows stratum that is only big enough for two plots`() {
       val site = newSite(width = MONITORING_PLOT_SIZE_INT, height = MONITORING_PLOT_SIZE_INT * 2)
 
       assertHasNoProblems(site)
     }
 
     @Test
-    fun `checks for subzones not covered by zone`() {
-      val site = newSite(width = 100, height = 100) { zone { subzone(width = 200, height = 200) } }
+    fun `checks for substrata not covered by stratum`() {
+      val site =
+          newSite(width = 100, height = 100) { stratum { substratum(width = 200, height = 200) } }
 
       assertHasProblem(site, PlantingSiteValidationFailure.substratumNotInStratum("S1", "Z1"))
     }
 
     @Test
-    fun `checks for overlapping subzone boundaries`() {
+    fun `checks for overlapping substratum boundaries`() {
       val site =
           newSite(width = 200) {
-            zone {
-              subzone(width = 100)
-              subzone(x = 50, width = 150)
+            stratum {
+              substratum(width = 100)
+              substratum(x = 50, width = 150)
             }
           }
 
@@ -90,12 +91,12 @@ class PlantingSiteModelTest {
     }
 
     @Test
-    fun `checks that no subzones are completely covered by exclusion area`() {
+    fun `checks that no substrata are completely covered by exclusion area`() {
       val site = newSite {
         exclusion = rectangle(width = 200, height = 500)
-        zone {
-          subzone(width = 150)
-          subzone()
+        stratum {
+          substratum(width = 150)
+          substratum()
         }
       }
 
@@ -103,7 +104,7 @@ class PlantingSiteModelTest {
     }
 
     @Test
-    fun `checks that zone is big enough for a permanent plot and a temporary plot`() {
+    fun `checks that stratum is big enough for a permanent plot and a temporary plot`() {
       assertHasProblem(
           newSite(width = MONITORING_PLOT_SIZE_INT * 2 - 1, height = MONITORING_PLOT_SIZE_INT),
           PlantingSiteValidationFailure.stratumTooSmall("Z1"),
@@ -120,7 +121,7 @@ class PlantingSiteModelTest {
     }
 
     @Test
-    fun `checks that site has boundary if it has zones`() {
+    fun `checks that site has boundary if it has strata`() {
       assertHasProblem(
           newSite().copy(boundary = null),
           PlantingSiteValidationFailure.strataWithoutSiteBoundary(),

@@ -18,12 +18,13 @@ import org.junit.jupiter.api.assertThrows
 
 class PlantingSiteEditCalculatorTest {
   @Test
-  fun `returns create edits for newly added zone and subzone`() {
-    val existing = existingSite(width = 500) { zone(numPermanent = 1) { subzone { permanent() } } }
+  fun `returns create edits for newly added stratum and substratum`() {
+    val existing =
+        existingSite(width = 500) { stratum(numPermanent = 1) { substratum { permanent() } } }
     val desired =
         newSite(width = 750) {
-          zone(width = 500, numPermanent = 1)
-          zone(width = 250, numPermanent = 1)
+          stratum(width = 500, numPermanent = 1)
+          stratum(width = 250, numPermanent = 1)
         }
 
     assertEditResult(
@@ -50,13 +51,13 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `returns zone update and subzone create for expansion of zone with new subzone`() {
-    val newSubzoneBoundary = rectangle(x = 500, width = 250, height = 500)
+  fun `returns stratum update and substratum create for expansion of stratum with new substratum`() {
+    val newSubstratumBoundary = rectangle(x = 500, width = 250, height = 500)
 
     val existing =
         existingSite(width = 500) {
-          zone {
-            subzone {
+          stratum {
+            substratum {
               permanent()
               permanent()
               plot(x = 600, isAdHoc = true)
@@ -66,9 +67,9 @@ class PlantingSiteEditCalculatorTest {
     val existingBoundary = existing.boundary!!
     val desired =
         newSite(width = 750) {
-          zone(numPermanent = 6) {
-            subzone(width = 500)
-            subzone()
+          stratum(numPermanent = 6) {
+            substratum(width = 500)
+            substratum()
           }
         }
 
@@ -80,17 +81,17 @@ class PlantingSiteEditCalculatorTest {
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
-                        addedRegion = newSubzoneBoundary,
+                        addedRegion = newSubstratumBoundary,
                         areaHaDifference = BigDecimal("12.5"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
-                                // Index 1 is already in the existing subzone
-                                MonitoringPlotEdit.Create(newSubzoneBoundary, 2),
-                                // Index 3 will be the old index 2 from the existing subzone
+                                // Index 1 is already in the existing substratum
+                                MonitoringPlotEdit.Create(newSubstratumBoundary, 2),
+                                // Index 3 will be the old index 2 from the existing substratum
                                 MonitoringPlotEdit.Create(existingBoundary, 4),
-                                MonitoringPlotEdit.Create(newSubzoneBoundary, 5),
+                                MonitoringPlotEdit.Create(newSubstratumBoundary, 5),
                                 MonitoringPlotEdit.Create(existingBoundary, 6),
                             ),
                         substratumEdits =
@@ -124,15 +125,15 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `returns zone update for settings change`() {
+  fun `returns stratum update for settings change`() {
     val newErrorMargin = BigDecimal(101)
     val newStudentsT = BigDecimal("1.646")
     val newTargetPlantingDensity = BigDecimal(1100)
     val newVariance = BigDecimal(40001)
 
-    val existing = existingSite { zone { subzone { repeat(8) { permanent() } } } }
+    val existing = existingSite { stratum { substratum { repeat(8) { permanent() } } } }
     val desired = newSite {
-      zone {
+      stratum {
         errorMargin = newErrorMargin
         studentsT = newStudentsT
         targetPlantingDensity = newTargetPlantingDensity
@@ -166,7 +167,7 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `returns updates with both added and removed regions if boundary change was not a simple expansion`() {
     val existing = existingSite(x = 0, width = 500, height = 500)
-    val desired = newSite(x = 100, width = 600, height = 500) { zone(numPermanent = 1) }
+    val desired = newSite(x = 100, width = 600, height = 500) { stratum(numPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -207,16 +208,16 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `matches existing and new zones based on names, not locations`() {
+  fun `matches existing and new strata based on names, not locations`() {
     val existing =
         existingSite(width = 1000, height = 500) {
-          zone(name = "A", width = 800) { subzone(name = "A-1") { permanent() } }
-          zone(name = "B", width = 200) { subzone(name = "B-1") { permanent() } }
+          stratum(name = "A", width = 800) { substratum(name = "A-1") { permanent() } }
+          stratum(name = "B", width = 200) { substratum(name = "B-1") { permanent() } }
         }
     val desired =
         newSite(width = 1000, height = 500) {
-          zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "B-1") }
-          zone(name = "A", width = 500, numPermanent = 1) { subzone(name = "A-1") }
+          stratum(name = "B", width = 500, numPermanent = 1) { substratum(name = "B-1") }
+          stratum(name = "A", width = 500, numPermanent = 1) { substratum(name = "A-1") }
         }
 
     assertEditResult(
@@ -226,7 +227,7 @@ class PlantingSiteEditCalculatorTest {
             existingModel = existing,
             stratumEdits =
                 listOf(
-                    // Zone B moves to west edge of site and grows from 200m to 500m wide
+                    // Stratum B moves to west edge of site and grows from 200m to 500m wide
                     StratumEdit.Update(
                         addedRegion = rectangle(x = 0, width = 500, height = 500),
                         areaHaDifference = BigDecimal(15),
@@ -249,7 +250,7 @@ class PlantingSiteEditCalculatorTest {
                             ),
                         removedRegion = rectangle(x = 800, width = 200, height = 500),
                     ),
-                    // Zone A moves to east edge of site and shrinks from 800m to 500m wide
+                    // Stratum A moves to east edge of site and shrinks from 800m to 500m wide
                     StratumEdit.Update(
                         addedRegion = rectangle(x = 800, width = 200, height = 500),
                         areaHaDifference = BigDecimal(-15),
@@ -257,8 +258,8 @@ class PlantingSiteEditCalculatorTest {
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
                             listOf(
-                                // The permanent plot should be created in the part of the zone that
-                                // overlaps with its old boundary.
+                                // The permanent plot should be created in the part of the stratum
+                                // that overlaps with its old boundary.
                                 MonitoringPlotEdit.Create(
                                     rectangle(x = 500, width = 300, height = 500),
                                     1,
@@ -274,7 +275,7 @@ class PlantingSiteEditCalculatorTest {
                                     monitoringPlotEdits =
                                         listOf(
                                             // Plot 2 was in the area that overlapped with the old
-                                            // area of the zone, which is smaller than the newly
+                                            // area of the stratum, which is smaller than the newly
                                             // added area, so it is removed from the permanent
                                             // plot list.
                                             MonitoringPlotEdit.Adopt(MonitoringPlotId(2), null),
@@ -292,18 +293,18 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `moves existing subzones to new zones`() {
+  fun `moves existing substrata to new strata`() {
     val existing = existingSite {
-      zone(name = "A", numPermanent = 2) {
-        subzone(name = "Subzone 1", width = 250) { permanent() }
-        subzone(name = "Subzone 2", width = 250) { permanent() }
+      stratum(name = "A", numPermanent = 2) {
+        substratum(name = "Substratum 1", width = 250) { permanent() }
+        substratum(name = "Substratum 2", width = 250) { permanent() }
       }
     }
 
     val desired = newSite {
-      zone(name = "A", numPermanent = 1, width = 250) { subzone(name = "Subzone 1") }
-      zone(name = "B", numPermanent = 2, width = 250) {
-        subzone(name = "Subzone 2", stableId = StableId("A-Subzone 2"))
+      stratum(name = "A", numPermanent = 1, width = 250) { substratum(name = "Substratum 1") }
+      stratum(name = "B", numPermanent = 2, width = 250) {
+        substratum(name = "Substratum 2", stableId = StableId("A-Substratum 2"))
       }
     }
 
@@ -336,7 +337,7 @@ class PlantingSiteEditCalculatorTest {
                                 )
                             ),
                     ),
-                    // Zone A shrinks
+                    // Stratum A shrinks
                     StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal("-12.5"),
@@ -354,29 +355,29 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `moves existing subzones between existing zones`() {
+  fun `moves existing substrata between existing strata`() {
     val existing =
         existingSite(width = 750) {
-          zone(name = "A", width = 500, numPermanent = 3) {
-            subzone(name = "Subzone 1", width = 250) { permanent() }
-            subzone(name = "Subzone 2", width = 250) {
+          stratum(name = "A", width = 500, numPermanent = 3) {
+            substratum(name = "Substratum 1", width = 250) { permanent() }
+            substratum(name = "Substratum 2", width = 250) {
               permanent()
               permanent()
             }
           }
-          zone(name = "B", width = 250, numPermanent = 1) {
-            subzone(name = "Subzone 3", width = 250) { permanent() }
+          stratum(name = "B", width = 250, numPermanent = 1) {
+            substratum(name = "Substratum 3", width = 250) { permanent() }
           }
         }
 
     val desired =
         newSite(width = 750) {
-          zone(name = "A", numPermanent = 1, width = 250) {
-            subzone(name = "Subzone 1", width = 250)
+          stratum(name = "A", numPermanent = 1, width = 250) {
+            substratum(name = "Substratum 1", width = 250)
           }
-          zone(name = "B", numPermanent = 2, width = 500) {
-            subzone(name = "Subzone 2", stableId = StableId("A-Subzone 2"), width = 250)
-            subzone(name = "Subzone 3", width = 250)
+          stratum(name = "B", numPermanent = 2, width = 500) {
+            substratum(name = "Substratum 2", stableId = StableId("A-Substratum 2"), width = 250)
+            substratum(name = "Substratum 3", width = 250)
           }
         }
 
@@ -387,7 +388,7 @@ class PlantingSiteEditCalculatorTest {
             existingModel = existing,
             stratumEdits =
                 listOf(
-                    // Zone A shrinks
+                    // Stratum A shrinks
                     StratumEdit.Update(
                         addedRegion = rectangle(0),
                         areaHaDifference = BigDecimal("-12.5"),
@@ -425,11 +426,11 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `moves monitoring plots to new subzones`() {
+  fun `moves monitoring plots to new substrata`() {
     val existing =
         existingSite(width = 1000, height = 500) {
-          zone(name = "A") {
-            subzone(name = "A-1") {
+          stratum(name = "A") {
+            substratum(name = "A-1") {
               plot(x = 600, plotNumber = 1, permanentIndex = 1)
               plot(x = 630, plotNumber = 2)
               plot(x = 660, plotNumber = 3, isAdHoc = true)
@@ -438,8 +439,8 @@ class PlantingSiteEditCalculatorTest {
         }
     val desired =
         newSite(width = 1000, height = 500) {
-          zone(name = "A", width = 500, numPermanent = 1) { subzone(name = "A-1") }
-          zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "B-1") }
+          stratum(name = "A", width = 500, numPermanent = 1) { substratum(name = "A-1") }
+          stratum(name = "B", width = 500, numPermanent = 1) { substratum(name = "B-1") }
         }
 
     assertEditResult(
@@ -505,19 +506,19 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `adopts existing permanent plots proportionally when combining zones`() {
+  fun `adopts existing permanent plots proportionally when combining strata`() {
     val existing =
         existingSite(x = 0, width = 1000) {
-          zone(name = "A", x = 0, width = 500) {
-            subzone {
+          stratum(name = "A", x = 0, width = 500) {
+            substratum {
               permanent(plotNumber = 1, x = 300, y = 0)
               permanent(plotNumber = 2, x = 300, y = 30)
               permanent(plotNumber = 4, x = 300, y = 60)
               permanent(plotNumber = 7, x = 300, y = 90)
             }
           }
-          zone(name = "B", x = 500, width = 500) {
-            subzone {
+          stratum(name = "B", x = 500, width = 500) {
+            substratum {
               permanent(plotNumber = 16, x = 600, y = 0)
               permanent(plotNumber = 18, x = 600, y = 30)
               permanent(plotNumber = 19, x = 600, y = 60)
@@ -529,9 +530,9 @@ class PlantingSiteEditCalculatorTest {
           }
         }
 
-    // 44% overlaps with old zone A, 56% doesn't.
+    // 44% overlaps with old stratum A, 56% doesn't.
     val desired =
-        newSite(x = 280, width = 500) { zone(name = "A", numPermanent = 11, numTemporary = 3) }
+        newSite(x = 280, width = 500) { stratum(name = "A", numPermanent = 11, numTemporary = 3) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -631,7 +632,7 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `adopts existing exterior plots when site expands to cover them`() {
     val existing = existingSite(width = 100) { exteriorPlot(x = 500) }
-    val desired = newSite(width = 600) { zone(numPermanent = 1) }
+    val desired = newSite(width = 600) { stratum(numPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -676,15 +677,15 @@ class PlantingSiteEditCalculatorTest {
   fun `does not adopt 25-meter, ad-hoc, or unavailable plots as new permanent plots`() {
     val existing =
         existingSite(width = 400) {
-          zone {
-            subzone {
+          stratum {
+            substratum {
               plot(size = 25)
               plot(isAdHoc = true)
               plot(isAvailable = false)
             }
           }
         }
-    val desired = newSite(width = 500) { zone(numPermanent = 1) }
+    val desired = newSite(width = 500) { stratum(numPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -709,9 +710,9 @@ class PlantingSiteEditCalculatorTest {
                                     areaHaDifference = BigDecimal(5),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
-                                    // The unqualified plots are already in the correct subzone and
-                                    // already have null permanent indexes, so no need to update any
-                                    // of them.
+                                    // The unqualified plots are already in the correct substratum
+                                    // and already have null permanent indexes, so no need to update
+                                    // any of them.
                                     monitoringPlotEdits = emptyList(),
                                     removedRegion = rectangle(0),
                                 ),
@@ -734,7 +735,7 @@ class PlantingSiteEditCalculatorTest {
     val desired =
         newSite(width = 1000, height = 500) {
           exclusion = rectangle(width = 100, height = 500)
-          zone(numPermanent = 10)
+          stratum(numPermanent = 10)
         }
     val addedRegion = rectangle(x = 100, width = 200, height = 500)
     val existingRegion = rectangle(x = 300, width = 700, height = 500)
@@ -790,14 +791,14 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `increases number of permanent plots even if geometry stayed the same`() {
     val existing = existingSite {
-      zone(numPermanent = 2) {
-        subzone {
+      stratum(numPermanent = 2) {
+        substratum {
           permanent()
           permanent()
         }
       }
     }
-    val desired = newSite { zone(numPermanent = 3) }
+    val desired = newSite { stratum(numPermanent = 3) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -826,15 +827,15 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `reduces number of permanent plots even if geometry stayed the same`() {
     val existing = existingSite {
-      zone(numPermanent = 3) {
-        subzone {
+      stratum(numPermanent = 3) {
+        substratum {
           permanent()
           permanent()
           permanent()
         }
       }
     }
-    val desired = newSite { zone(numPermanent = 2) }
+    val desired = newSite { stratum(numPermanent = 2) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -871,13 +872,13 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `returns deletion of zone that no longer exists`() {
+  fun `returns deletion of stratum that no longer exists`() {
     val existing =
         existingSite(width = 1000) {
-          zone(width = 750, numPermanent = 1) { subzone { permanent() } }
-          zone(width = 250, numPermanent = 1) { subzone { permanent() } }
+          stratum(width = 750, numPermanent = 1) { substratum { permanent() } }
+          stratum(width = 250, numPermanent = 1) { substratum { permanent() } }
         }
-    val desired = newSite(width = 750) { zone(numPermanent = 1) }
+    val desired = newSite(width = 750) { stratum(numPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -905,15 +906,15 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `returns deletion of subzone that no longer exists`() {
+  fun `returns deletion of substratum that no longer exists`() {
     val existing =
         existingSite(width = 1000) {
-          zone {
-            subzone(width = 500)
-            subzone(width = 500)
+          stratum {
+            substratum(width = 500)
+            substratum(width = 500)
           }
         }
-    val desired = newSite(width = 500) { zone(numPermanent = 1) }
+    val desired = newSite(width = 500) { stratum(numPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -945,21 +946,25 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `detects renames of zones and subzones`() {
+  fun `detects renames of strata and substrata`() {
     val existing =
         existingSite(width = 1000) {
-          zone(name = "A", width = 500, numPermanent = 1) { subzone(name = "1") { permanent() } }
-          zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "2") { permanent() } }
+          stratum(name = "A", width = 500, numPermanent = 1) {
+            substratum(name = "1") { permanent() }
+          }
+          stratum(name = "B", width = 500, numPermanent = 1) {
+            substratum(name = "2") { permanent() }
+          }
         }
 
-    // Swap the names; the subzones should stay in their original zones.
+    // Swap the names; the substrata should stay in their original strata.
     val desired =
         newSite(width = 1000) {
-          zone(name = "B", stableId = StableId("A"), width = 500, numPermanent = 1) {
-            subzone(name = "2", stableId = StableId("A-1"))
+          stratum(name = "B", stableId = StableId("A"), width = 500, numPermanent = 1) {
+            substratum(name = "2", stableId = StableId("A-1"))
           }
-          zone(name = "A", stableId = StableId("B"), width = 500, numPermanent = 1) {
-            subzone(name = "1", stableId = StableId("B-2"))
+          stratum(name = "A", stableId = StableId("B"), width = 500, numPermanent = 1) {
+            substratum(name = "1", stableId = StableId("B-2"))
           }
         }
 
@@ -1016,18 +1021,22 @@ class PlantingSiteEditCalculatorTest {
   }
 
   @Test
-  fun `updates existing subzone if original zone is deleted and new zone has a subzone with its stable ID`() {
+  fun `updates existing substratum if original stratum is deleted and new stratum has a substratum with its stable ID`() {
     val existing =
         existingSite(width = 1000) {
-          zone(name = "A", width = 500, numPermanent = 1) { subzone(name = "1") { permanent() } }
-          zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "2") { permanent() } }
+          stratum(name = "A", width = 500, numPermanent = 1) {
+            substratum(name = "1") { permanent() }
+          }
+          stratum(name = "B", width = 500, numPermanent = 1) {
+            substratum(name = "2") { permanent() }
+          }
         }
     val desired =
         newSite(width = 1000) {
-          zone(name = "C", width = 500, numPermanent = 1) {
-            subzone(name = "1", stableId = StableId("A-1"))
+          stratum(name = "C", width = 500, numPermanent = 1) {
+            substratum(name = "1", stableId = StableId("A-1"))
           }
-          zone(name = "B", width = 500, numPermanent = 1) { subzone(name = "2") }
+          stratum(name = "B", width = 500, numPermanent = 1) { substratum(name = "2") }
         }
 
     assertEditResult(
@@ -1063,8 +1072,8 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `ejects monitoring plots that overlap with added exclusion area`() {
     val existing = existingSite {
-      zone {
-        subzone {
+      stratum {
+        substratum {
           plot(permanentIndex = 2)
           plot(permanentIndex = 1)
         }
@@ -1072,7 +1081,7 @@ class PlantingSiteEditCalculatorTest {
     }
     val desired = newSite {
       exclusion = rectangle(25)
-      zone(numPermanent = 1)
+      stratum(numPermanent = 1)
     }
 
     assertEditResult(
@@ -1098,8 +1107,8 @@ class PlantingSiteEditCalculatorTest {
                                     monitoringPlotEdits =
                                         listOf(
                                             MonitoringPlotEdit.Eject(MonitoringPlotId(1)),
-                                            // Plot ID 2 is already in the correct subzone with the
-                                            // correct permanent index.
+                                            // Plot ID 2 is already in the correct substratum with
+                                            // the correct permanent index.
                                         ),
                                     removedRegion = rectangle(25),
                                 ),
@@ -1116,14 +1125,14 @@ class PlantingSiteEditCalculatorTest {
   @Test
   fun `ejects monitoring plots that no longer lie in site`() {
     val existing = existingSite {
-      zone(numPermanent = 1) {
-        subzone {
+      stratum(numPermanent = 1) {
+        substratum {
           plot(permanentIndex = 1)
           plot(permanentIndex = 2)
         }
       }
     }
-    val desired = newSite(x = 10) { zone(numPermanent = 1) }
+    val desired = newSite(x = 10) { stratum(numPermanent = 1) }
 
     assertEditResult(
         PlantingSiteEdit(
@@ -1164,7 +1173,7 @@ class PlantingSiteEditCalculatorTest {
 
   @Test
   fun `returns empty list of edits if nothing changed`() {
-    val existing = existingSite { zone(numPermanent = 1) { subzone { permanent() } } }
+    val existing = existingSite { stratum(numPermanent = 1) { substratum { permanent() } } }
     val desired = existing.toNew()
 
     assertEditResult(

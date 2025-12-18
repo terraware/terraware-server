@@ -69,17 +69,17 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                   },
           )
 
-      fun ExistingPlantingSiteModel.allZoneIds(): Set<StratumId> = strata.map { it.id }.toSet()
+      fun ExistingPlantingSiteModel.allStratumIds(): Set<StratumId> = strata.map { it.id }.toSet()
 
-      fun ExistingPlantingSiteModel.allSubzoneIds(): Set<SubstratumId> =
-          strata.flatMap { zone -> zone.substrata.map { it.id } }.toSet()
+      fun ExistingPlantingSiteModel.allSubstratumIds(): Set<SubstratumId> =
+          strata.flatMap { stratum -> stratum.substrata.map { it.id } }.toSet()
 
       assertNull(
           existing.countryCode,
           "Initial boundary spans 2 countries so country code should be null",
       )
-      assertEquals(existing.allZoneIds(), edited.allZoneIds(), "Planting zone IDs")
-      assertEquals(existing.allSubzoneIds(), edited.allSubzoneIds(), "Planting subzone IDs")
+      assertEquals(existing.allStratumIds(), edited.allStratumIds(), "Stratum IDs")
+      assertEquals(existing.allSubstratumIds(), edited.allSubstratumIds(), "Substratum IDs")
     }
 
     @Test
@@ -94,7 +94,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               initial = newSite(),
               desired =
                   newSite {
-                    zone {
+                    stratum {
                       errorMargin = newErrorMargin
                       studentsT = newStudentsT
                       targetPlantingDensity = newTargetPlantingDensity
@@ -114,36 +114,36 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
-    fun `creates new zones`() {
+    fun `creates new strata`() {
       runScenario(
           newSite(width = 500),
           newSite(width = 750) {
-            zone(width = 500)
-            zone()
+            stratum(width = 500)
+            stratum()
           },
       )
     }
 
     @Test
-    fun `deletes existing zones`() {
+    fun `deletes existing strata`() {
       runScenario(
           initial =
               newSite(width = 750) {
-                zone(width = 500)
-                zone()
+                stratum(width = 500)
+                stratum()
               },
           desired = newSite(width = 500),
       )
     }
 
     @Test
-    fun `deletes existing subzones`() {
+    fun `deletes existing substrata`() {
       runScenario(
           initial =
               newSite(width = 750) {
-                zone(width = 750) {
-                  subzone(width = 500)
-                  subzone()
+                stratum(width = 750) {
+                  substratum(width = 500)
+                  substratum()
                 }
               },
           desired = newSite(width = 500),
@@ -160,76 +160,76 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
 
       assertEquals(BigDecimal("20.0"), existing.areaHa, "Site area before edit")
       assertEquals(BigDecimal("15.0"), edited.areaHa, "Site area after edit")
-      assertEquals(BigDecimal("20.0"), existing.strata[0].areaHa, "Zone area before edit")
-      assertEquals(BigDecimal("15.0"), edited.strata[0].areaHa, "Zone area after edit")
+      assertEquals(BigDecimal("20.0"), existing.strata[0].areaHa, "Stratum area before edit")
+      assertEquals(BigDecimal("15.0"), edited.strata[0].areaHa, "Stratum area after edit")
       assertEquals(
           BigDecimal("20.0"),
           existing.strata[0].substrata[0].areaHa,
-          "Subzone area before edit",
+          "Substratum area before edit",
       )
       assertEquals(
           BigDecimal("15.0"),
           edited.strata[0].substrata[0].areaHa,
-          "Subzone area after edit",
+          "Substratum area after edit",
       )
     }
 
     @Test
-    fun `optionally marks expanded subzones as not complete`() {
+    fun `optionally marks expanded substrata as not complete`() {
       runScenario(
           initial =
               newSite {
-                zone(numPermanent = 1) {
-                  subzone(width = 250) {
+                stratum(numPermanent = 1) {
+                  substratum(width = 250) {
                     plantingCompletedTime = Instant.EPOCH
                     permanent()
                   }
-                  subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
+                  substratum(width = 250) { plantingCompletedTime = Instant.EPOCH }
                 }
               },
           desired =
               newSite(height = 600) {
-                zone(numPermanent = 1) {
-                  subzone(width = 250)
-                  subzone(width = 250)
+                stratum(numPermanent = 1) {
+                  substratum(width = 250)
+                  substratum(width = 250)
                 }
               },
           expected =
               newSite(height = 600) {
-                zone(numPermanent = 1) {
-                  subzone(width = 250) { plantingCompletedTime = Instant.EPOCH }
-                  subzone(width = 250) { plantingCompletedTime = null }
+                stratum(numPermanent = 1) {
+                  substratum(width = 250) { plantingCompletedTime = Instant.EPOCH }
+                  substratum(width = 250) { plantingCompletedTime = null }
                 }
               },
-          getSubzonesToMarkIncomplete = { existing ->
-            // Ask it to mark just one of the two expanded subzones as incomplete.
+          getSubstrataToMarkIncomplete = { existing ->
+            // Ask it to mark just one of the two expanded substrata as incomplete.
             existing.strata[0].substrata.filter { it.name == "S2" }.map { it.id }.toSet()
           },
       )
     }
 
     @Test
-    fun `updates zone boundary modified time if geometry changed`() {
+    fun `updates stratum boundary modified time if geometry changed`() {
       runScenario(
           initial =
               newSite(width = 1000) {
-                zone(width = 500)
-                zone(width = 500)
+                stratum(width = 500)
+                stratum(width = 500)
               },
           desired =
               newSite(width = 1100) {
-                zone(width = 500)
-                zone(width = 600)
+                stratum(width = 500)
+                stratum(width = 600)
               },
       )
 
-      val zonesRows = strataDao.findAll().associateBy { it.name }
+      val strataRows = strataDao.findAll().associateBy { it.name }
       assertEquals(
           Instant.EPOCH,
-          zonesRows["Z1"]?.boundaryModifiedTime,
-          "Zone with no boundary change",
+          strataRows["Z1"]?.boundaryModifiedTime,
+          "Stratum with no boundary change",
       )
-      assertEquals(editTime, zonesRows["Z2"]?.boundaryModifiedTime, "Zone with boundary change")
+      assertEquals(editTime, strataRows["Z2"]?.boundaryModifiedTime, "Stratum with boundary change")
     }
 
     @Test
@@ -251,8 +251,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `does not publish event if edit was a no-op`() {
       runScenario(
-          initial = newSite { zone(numPermanent = 1) { subzone { permanent() } } },
-          desired = newSite { zone(numPermanent = 1) },
+          initial = newSite { stratum(numPermanent = 1) { substratum { permanent() } } },
+          desired = newSite { stratum(numPermanent = 1) },
       )
 
       eventPublisher.assertEventNotPublished<PlantingSiteMapEditedEvent>()
@@ -305,7 +305,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     @Test
     fun `creates new monitoring plots in requested regions`() {
       val initial = newSite(width = 501)
-      val expected = newSite(width = 1000) { zone(numPermanent = 4) }
+      val expected = newSite(width = 1000) { stratum(numPermanent = 4) }
       val existingArea = initial.boundary!!
       val newArea = rectangle(x = 500, width = 500, height = 500)
 
@@ -328,10 +328,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
-    fun `moves existing monitoring plots between subzones`() {
+    fun `moves existing monitoring plots between substrata`() {
       val initial = newSite {
-        zone {
-          subzone {
+        stratum {
+          substratum {
             permanent(x = 0)
             permanent(x = 300)
             permanent(x = 30)
@@ -340,15 +340,15 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         }
       }
       val expected = newSite {
-        zone(numPermanent = 4) {
-          subzone(width = 250)
-          subzone(width = 250)
+        stratum(numPermanent = 4) {
+          substratum(width = 250)
+          substratum(width = 250)
         }
       }
 
       val (edited) = runScenario(initial = initial, desired = expected)
 
-      assertSubzonePermanentIndexes(edited, mapOf("S1" to listOf(1, 3), "S2" to listOf(2, 4)))
+      assertSubstratumPermanentIndexes(edited, mapOf("S1" to listOf(1, 3), "S2" to listOf(2, 4)))
     }
 
     @Test
@@ -357,16 +357,16 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       // PlantingSiteEditCalculatorV2Test.
       val initial =
           newSite(x = 0, width = 1000) {
-            zone(name = "A", x = 0, width = 500) {
-              subzone {
+            stratum(name = "A", x = 0, width = 500) {
+              substratum {
                 permanent(plotNumber = 1, x = 300, y = 0)
                 permanent(plotNumber = 2, x = 300, y = 30)
                 permanent(plotNumber = 4, x = 300, y = 60)
                 permanent(plotNumber = 7, x = 300, y = 90)
               }
             }
-            zone(name = "B", x = 500, width = 500) {
-              subzone {
+            stratum(name = "B", x = 500, width = 500) {
+              substratum {
                 permanent(plotNumber = 16, x = 600, y = 0)
                 permanent(plotNumber = 18, x = 600, y = 30)
                 permanent(plotNumber = 19, x = 600, y = 60)
@@ -378,11 +378,11 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
             }
           }
 
-      // 44% overlaps with old zone A, 56% doesn't.
+      // 44% overlaps with old stratum A, 56% doesn't.
       val desired =
           newSite(x = 280, width = 500) {
             gridOrigin = point(1)
-            zone(name = "A", numPermanent = 11, numTemporary = 3) {}
+            stratum(name = "A", numPermanent = 11, numTemporary = 3) {}
           }
 
       runScenario(initial = initial, desired = desired)
@@ -408,10 +408,10 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
     }
 
     @Test
-    fun `moves existing monitoring plots between planting zones`() {
+    fun `moves existing monitoring plots between strata`() {
       val initial = newSite {
-        zone(name = "A") {
-          subzone {
+        stratum(name = "A") {
+          substratum {
             permanent(plotNumber = 1, x = 100)
             permanent(plotNumber = 2, x = 400)
           }
@@ -419,64 +419,64 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       }
 
       val desired = newSite {
-        zone(width = 300, name = "A", numPermanent = 1)
-        zone(name = "B", numPermanent = 1)
+        stratum(width = 300, name = "A", numPermanent = 1)
+        stratum(name = "B", numPermanent = 1)
       }
 
       val (edited) = runScenario(initial = initial, desired = desired)
 
-      assertSubzonePermanentIndexes(edited, mapOf("S1" to listOf(1), "S2" to listOf(1)))
-      assertSubzonePlotNumbers(edited, mapOf("S1" to listOf(1L), "S2" to listOf(2L)))
+      assertSubstratumPermanentIndexes(edited, mapOf("S1" to listOf(1), "S2" to listOf(1)))
+      assertSubstratumPlotNumbers(edited, mapOf("S1" to listOf(1L), "S2" to listOf(2L)))
     }
 
     @Test
-    fun `retains zone and subzone IDs on rename`() {
+    fun `retains stratum and substratum IDs on rename`() {
       val initial = newSite {
-        zone(name = "A", numPermanent = 1, width = 250) { subzone(name = "Subzone") }
-        zone(name = "B", numPermanent = 1, width = 250) { subzone(name = "Subzone") }
+        stratum(name = "A", numPermanent = 1, width = 250) { substratum(name = "Substratum") }
+        stratum(name = "B", numPermanent = 1, width = 250) { substratum(name = "Substratum") }
       }
 
       val desired = newSite {
-        zone(name = "C", stableId = StableId("A"), numPermanent = 1, width = 250) {
-          subzone(name = "Subzone", stableId = StableId("A-Subzone"))
+        stratum(name = "C", stableId = StableId("A"), numPermanent = 1, width = 250) {
+          substratum(name = "Substratum", stableId = StableId("A-Substratum"))
         }
-        zone(name = "D", stableId = StableId("B"), numPermanent = 1, width = 250) {
-          subzone(name = "Subzone", stableId = StableId("B-Subzone"))
+        stratum(name = "D", stableId = StableId("B"), numPermanent = 1, width = 250) {
+          substratum(name = "Substratum", stableId = StableId("B-Substratum"))
         }
       }
 
       val (edited, existing) = runScenario(initial = initial, desired = desired)
 
-      val existingZones = existing.strata.associateBy { it.name }
+      val existingStrata = existing.strata.associateBy { it.name }
 
       assertEquals(
-          mapOf("C" to existingZones["A"]!!.id, "D" to existingZones["B"]!!.id),
+          mapOf("C" to existingStrata["A"]!!.id, "D" to existingStrata["B"]!!.id),
           edited.strata.associate { it.name to it.id },
-          "Zone IDs",
+          "Stratum IDs",
       )
       assertEquals(
           mapOf(
-              "C-Subzone" to existingZones["A"]!!.substrata.first().id,
-              "D-Subzone" to existingZones["B"]!!.substrata.first().id,
+              "C-Substratum" to existingStrata["A"]!!.substrata.first().id,
+              "D-Substratum" to existingStrata["B"]!!.substrata.first().id,
           ),
           edited.strata.flatMap { it.substrata }.associate { it.fullName to it.id },
-          "Subzone IDs",
+          "Substratum IDs",
       )
     }
 
     @Test
-    fun `can swap zone names`() {
+    fun `can swap stratum names`() {
       val initial = newSite {
-        zone(name = "A", width = 250)
-        zone(name = "B")
+        stratum(name = "A", width = 250)
+        stratum(name = "B")
       }
 
       val desired = newSite {
-        zone(name = "A", stableId = StableId("B"), x = 250, width = 250) {
-          subzone(stableId = StableId("B-S2"))
+        stratum(name = "A", stableId = StableId("B"), x = 250, width = 250) {
+          substratum(stableId = StableId("B-S2"))
         }
-        zone(name = "B", stableId = StableId("A"), x = 0, width = 250) {
-          subzone(stableId = StableId("A-S1"))
+        stratum(name = "B", stableId = StableId("A"), x = 0, width = 250) {
+          substratum(stableId = StableId("A-S1"))
         }
       }
 
@@ -485,28 +485,28 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           mapOf("A" to StableId("B"), "B" to StableId("A")),
           edited.strata.associate { it.name to it.stableId },
-          "Stable IDs for zone names after name swap",
+          "Stable IDs for stratum names after name swap",
       )
       assertEquals(
           existing.strata.associate { it.stableId to it.id },
           edited.strata.associate { it.stableId to it.id },
-          "Planting zone IDs by stable ID after name swap",
+          "Stratum IDs by stable ID after name swap",
       )
     }
 
     @Test
-    fun `can swap subzone names`() {
+    fun `can swap substratum names`() {
       val initial = newSite {
-        zone {
-          subzone(name = "S1", stableId = StableId("S1"), width = 250)
-          subzone(name = "S2", stableId = StableId("S2"))
+        stratum {
+          substratum(name = "S1", stableId = StableId("S1"), width = 250)
+          substratum(name = "S2", stableId = StableId("S2"))
         }
       }
 
       val desired = newSite {
-        zone {
-          subzone(name = "S1", stableId = StableId("S2"), x = 250, width = 250)
-          subzone(name = "S2", stableId = StableId("S1"), x = 0, width = 250)
+        stratum {
+          substratum(name = "S1", stableId = StableId("S2"), x = 250, width = 250)
+          substratum(name = "S2", stableId = StableId("S1"), x = 0, width = 250)
         }
       }
 
@@ -515,66 +515,66 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       assertEquals(
           mapOf("S1" to StableId("S2"), "S2" to StableId("S1")),
           edited.strata.single().substrata.associate { it.name to it.stableId },
-          "Stable IDs for subzone names after name swap",
+          "Stable IDs for substratum names after name swap",
       )
       assertEquals(
           existing.strata.single().substrata.associate { it.stableId to it.id },
           edited.strata.single().substrata.associate { it.stableId to it.id },
-          "Planting subzone IDs by stable ID after name swap",
+          "Substratum IDs by stable ID after name swap",
       )
     }
 
     @Test
-    fun `moves existing subzones between zones`() {
+    fun `moves existing substrata between strata`() {
       val initial = newSite {
-        zone(name = "A", numPermanent = 2) {
-          subzone(name = "Subzone 1", width = 250) { permanent() }
-          subzone(name = "Subzone 2", width = 250) { permanent() }
+        stratum(name = "A", numPermanent = 2) {
+          substratum(name = "Substratum 1", width = 250) { permanent() }
+          substratum(name = "Substratum 2", width = 250) { permanent() }
         }
       }
 
       val desired = newSite {
-        zone(name = "A", numPermanent = 1, width = 250) { subzone(name = "Subzone 1") }
-        zone(name = "B", numPermanent = 1, width = 250) {
-          subzone(name = "Subzone 2", stableId = StableId("A-Subzone 2"))
+        stratum(name = "A", numPermanent = 1, width = 250) { substratum(name = "Substratum 1") }
+        stratum(name = "B", numPermanent = 1, width = 250) {
+          substratum(name = "Substratum 2", stableId = StableId("A-Substratum 2"))
         }
       }
 
       val (edited, existing) = runScenario(initial = initial, desired = desired)
 
-      val existingSubzone2 = existing.strata[0].substrata[1]
-      val editedSubzone2 = edited.strata[1].substrata[0]
+      val existingSubstratum2 = existing.strata[0].substrata[1]
+      val editedSubstratum2 = edited.strata[1].substrata[0]
 
-      assertEquals(existingSubzone2.id, editedSubzone2.id, "ID of moved subzone")
+      assertEquals(existingSubstratum2.id, editedSubstratum2.id, "ID of moved substratum")
       assertEquals(
-          existingSubzone2.monitoringPlots[0].copy(permanentIndex = 1),
-          editedSubzone2.monitoringPlots[0],
-          "Monitoring plot in moved subzone",
+          existingSubstratum2.monitoringPlots[0].copy(permanentIndex = 1),
+          editedSubstratum2.monitoringPlots[0],
+          "Monitoring plot in moved substratum",
       )
     }
 
     @Test
-    fun `moves subzone from deleted zone to new one, perhaps because the zone was renamed`() {
+    fun `moves substratum from deleted stratum to new one, perhaps because the stratum was renamed`() {
       val initial = newSite {
-        zone(name = "A", numPermanent = 1) { subzone(name = "Subzone") { permanent() } }
+        stratum(name = "A", numPermanent = 1) { substratum(name = "Substratum") { permanent() } }
       }
 
       val desired = newSite {
-        zone(name = "B", numPermanent = 1) {
-          subzone(name = "Subzone", stableId = StableId("A-Subzone"))
+        stratum(name = "B", numPermanent = 1) {
+          substratum(name = "Substratum", stableId = StableId("A-Substratum"))
         }
       }
 
       val (edited, existing) = runScenario(initial = initial, desired = desired)
 
-      val existingSubzone = existing.strata[0].substrata[0]
-      val editedSubzone = edited.strata[0].substrata[0]
+      val existingSubstratum = existing.strata[0].substrata[0]
+      val editedSubstratum = edited.strata[0].substrata[0]
 
-      assertEquals(existingSubzone.id, editedSubzone.id, "ID of moved subzone")
+      assertEquals(existingSubstratum.id, editedSubstratum.id, "ID of moved substratum")
       assertEquals(
-          existingSubzone.monitoringPlots[0].copy(permanentIndex = 1),
-          editedSubzone.monitoringPlots[0],
-          "Monitoring plot in moved subzone",
+          existingSubstratum.monitoringPlots[0].copy(permanentIndex = 1),
+          editedSubstratum.monitoringPlots[0],
+          "Monitoring plot in moved substratum",
       )
     }
 
@@ -587,19 +587,21 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           store.createPlantingSite(initial.copy(organizationId = organizationId))
 
       val maxPlotNumber =
-          initial.strata.maxOfOrNull { initialZone ->
-            val existingZone = existingWithoutPlots.strata.single { it.name == initialZone.name }
+          initial.strata.maxOfOrNull { initialStratum ->
+            val existingStratum =
+                existingWithoutPlots.strata.single { it.name == initialStratum.name }
 
-            initialZone.substrata.maxOfOrNull { initialSubzone ->
-              val existingSubzone = existingZone.substrata.single { it.name == initialSubzone.name }
+            initialStratum.substrata.maxOfOrNull { initialSubstratum ->
+              val existingSubstratum =
+                  existingStratum.substrata.single { it.name == initialSubstratum.name }
 
-              initialSubzone.monitoringPlots.maxOfOrNull { initialPlot ->
+              initialSubstratum.monitoringPlots.maxOfOrNull { initialPlot ->
                 insertMonitoringPlot(
                     boundary = initialPlot.boundary,
                     isAvailable = initialPlot.isAvailable,
                     permanentIndex = initialPlot.permanentIndex,
                     plantingSiteId = existingWithoutPlots.id,
-                    substratumId = existingSubzone.id,
+                    substratumId = existingSubstratum.id,
                     plotNumber = initialPlot.plotNumber,
                 )
 
@@ -638,7 +640,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
         desired: NewPlantingSiteModel,
         expected: NewPlantingSiteModel = desired,
         expectedPlotCounts: List<Pair<Geometry, Int>>? = null,
-        getSubzonesToMarkIncomplete: (ExistingPlantingSiteModel) -> Set<SubstratumId> = {
+        getSubstrataToMarkIncomplete: (ExistingPlantingSiteModel) -> Set<SubstratumId> = {
           emptySet()
         },
     ): ScenarioResults {
@@ -647,17 +649,17 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       val plantingSiteEdit = calculateSiteEdit(existing, desired)
 
       clock.instant = editTime
-      val subzonesToMarkIncomplete = getSubzonesToMarkIncomplete(existing)
-      val edited = store.applyPlantingSiteEdit(plantingSiteEdit, subzonesToMarkIncomplete)
+      val substrataToMarkIncomplete = getSubstrataToMarkIncomplete(existing)
+      val edited = store.applyPlantingSiteEdit(plantingSiteEdit, substrataToMarkIncomplete)
 
       fun NewPlantingSiteModel.withoutMonitoringPlots() =
           copy(
               strata =
-                  strata.map { zone ->
-                    zone.copy(
+                  strata.map { stratum ->
+                    stratum.copy(
                         substrata =
-                            zone.substrata.map { subzone ->
-                              subzone.copy(monitoringPlots = emptyList())
+                            stratum.substrata.map { substratum ->
+                              substratum.copy(monitoringPlots = emptyList())
                             }
                     )
                   }
@@ -674,8 +676,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       }
 
       val editedMonitoringPlots =
-          edited.strata.flatMap { zone ->
-            zone.substrata.flatMap { subzone -> subzone.monitoringPlots }
+          edited.strata.flatMap { stratum ->
+            stratum.substrata.flatMap { substratum -> substratum.monitoringPlots }
           }
 
       if (expectedPlotCounts != null) {
@@ -748,70 +750,70 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           "Edited site history",
       )
 
-      val editedZoneHistories =
+      val editedStratumHistories =
           stratumHistoriesDao.fetchByPlantingSiteHistoryId(editedSiteHistory.id!!)
 
       assertEquals(
           edited.strata.size,
-          editedZoneHistories.size,
-          "Number of planting zone histories from edit",
+          editedStratumHistories.size,
+          "Number of stratum histories from edit",
       )
       assertEquals(
           edited.strata
-              .map { zone ->
+              .map { stratum ->
                 StratumHistoriesRow(
-                    areaHa = zone.areaHa,
-                    boundary = zone.boundary,
-                    name = zone.name,
+                    areaHa = stratum.areaHa,
+                    boundary = stratum.boundary,
+                    name = stratum.name,
                     plantingSiteHistoryId = editedSiteHistory.id,
-                    stratumId = zone.id,
-                    stableId = zone.stableId,
+                    stratumId = stratum.id,
+                    stableId = stratum.stableId,
                 )
               }
               .toSet(),
-          editedZoneHistories.map { it.copy(id = null) }.toSet(),
-          "Planting zone histories from edit",
+          editedStratumHistories.map { it.copy(id = null) }.toSet(),
+          "Stratum histories from edit",
       )
 
-      val editedSubzoneHistories =
+      val editedSubstratumHistories =
           substratumHistoriesDao.fetchByStratumHistoryId(
-              *editedZoneHistories.map { it.id!! }.toTypedArray()
+              *editedStratumHistories.map { it.id!! }.toTypedArray()
           )
 
       assertTableEquals(
-          edited.strata.flatMap { zone ->
-            val plantingZoneHistoryId = editedZoneHistories.first { it.stratumId == zone.id }.id
-            zone.substrata.map { subzone ->
+          edited.strata.flatMap { stratum ->
+            val stratumHistoryId = editedStratumHistories.first { it.stratumId == stratum.id }.id
+            stratum.substrata.map { substratum ->
               SubstratumHistoriesRecord(
-                  areaHa = subzone.areaHa,
-                  boundary = subzone.boundary,
-                  fullName = subzone.fullName,
-                  name = subzone.name,
-                  substratumId = subzone.id,
-                  stratumHistoryId = plantingZoneHistoryId,
-                  stableId = subzone.stableId,
+                  areaHa = substratum.areaHa,
+                  boundary = substratum.boundary,
+                  fullName = substratum.fullName,
+                  name = substratum.name,
+                  substratumId = substratum.id,
+                  stratumHistoryId = stratumHistoryId,
+                  stableId = substratum.stableId,
               )
             }
           },
-          "Planting subzone histories from edit",
+          "Substratum histories from edit",
           where =
               SUBSTRATUM_HISTORIES.stratumHistories.PLANTING_SITE_HISTORY_ID.eq(
                   editedSiteHistory.id
               ),
       )
 
-      val subzonePlotIds =
+      val substratumPlotIds =
           edited.strata
-              .flatMap { zone ->
-                zone.substrata.flatMap { subzone -> subzone.monitoringPlots.map { it.id } }
+              .flatMap { stratum ->
+                stratum.substrata.flatMap { substratum -> substratum.monitoringPlots.map { it.id } }
               }
               .toSet()
 
       val ejectedPlotHistories =
-          existing.strata.flatMap { zone ->
-            zone.substrata.flatMap { subzone ->
-              subzone.monitoringPlots
-                  .filter { it.id !in subzonePlotIds }
+          existing.strata.flatMap { stratum ->
+            stratum.substrata.flatMap { substratum ->
+              substratum.monitoringPlots
+                  .filter { it.id !in substratumPlotIds }
                   .map { plot ->
                     MonitoringPlotHistoriesRecord(
                         createdBy = user.userId,
@@ -824,26 +826,26 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
             }
           }
 
-      val subzonePlotHistories =
-          edited.strata.flatMap { zone ->
-            zone.substrata.flatMap { subzone ->
-              val plantingSubzoneHistoryId =
-                  editedSubzoneHistories.first { it.substratumId == subzone.id }.id
-              subzone.monitoringPlots.map { plot ->
+      val substratumPlotHistories =
+          edited.strata.flatMap { stratum ->
+            stratum.substrata.flatMap { substratum ->
+              val substratumHistoryId =
+                  editedSubstratumHistories.first { it.substratumId == substratum.id }.id
+              substratum.monitoringPlots.map { plot ->
                 MonitoringPlotHistoriesRecord(
                     createdBy = user.userId,
                     createdTime = editTime,
                     monitoringPlotId = plot.id,
                     plantingSiteHistoryId = editedSiteHistory.id,
                     plantingSiteId = edited.id,
-                    substratumHistoryId = plantingSubzoneHistoryId,
-                    substratumId = subzone.id,
+                    substratumHistoryId = substratumHistoryId,
+                    substratumId = substratum.id,
                 )
               }
             }
           }
 
-      val expectedPlotHistories = ejectedPlotHistories + subzonePlotHistories
+      val expectedPlotHistories = ejectedPlotHistories + substratumPlotHistories
 
       if (expectedPlotHistories.isNotEmpty()) {
         assertTableEquals(
@@ -866,8 +868,8 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       expected: Map<Int, Geometry>,
   ) {
     val editedMonitoringPlots =
-        edited.strata.flatMap { zone ->
-          zone.substrata.flatMap { subzone -> subzone.monitoringPlots }
+        edited.strata.flatMap { stratum ->
+          stratum.substrata.flatMap { substratum -> substratum.monitoringPlots }
         }
     val editedPermanentIndexes = editedMonitoringPlots.mapNotNull { it.permanentIndex }.sorted()
     val expectedPermanentIndexes = expected.keys.sorted()
@@ -886,51 +888,51 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
   }
 
   /**
-   * Asserts that each subzone contains the expected list of permanent indexes and non-permanent
-   * plots. Requires that subzone names be unique across zones.
+   * Asserts that each substratum contains the expected list of permanent indexes and non-permanent
+   * plots. Requires that substratum names be unique across strata.
    *
-   * @param expected Map of subzone names to sorted lists of expected permanent indexes. Use nulls
-   *   to expect non-permanent plots.
+   * @param expected Map of substratum names to sorted lists of expected permanent indexes. Use
+   *   nulls to expect non-permanent plots.
    */
-  private fun assertSubzonePermanentIndexes(
+  private fun assertSubstratumPermanentIndexes(
       site: AnyPlantingSiteModel,
       expected: Map<String, List<Int?>>,
   ) {
     val actual =
         site.strata
-            .flatMap { zone ->
-              zone.substrata.map { subzone ->
-                subzone.name to
-                    subzone.monitoringPlots
+            .flatMap { stratum ->
+              stratum.substrata.map { substratum ->
+                substratum.name to
+                    substratum.monitoringPlots
                         .map { it.permanentIndex }
                         .sortedBy { it ?: Int.MAX_VALUE }
               }
             }
             .toMap()
 
-    assertEquals(expected, actual, "Permanent indexes in each subzone")
+    assertEquals(expected, actual, "Permanent indexes in each substratum")
   }
 
   /**
-   * Asserts that each subzone contains the expected list of plot numbers. Requires that subzone
-   * names be unique across zones.
+   * Asserts that each substratum contains the expected list of plot numbers. Requires that
+   * substratum names be unique across strata.
    *
-   * @param expected Map of subzone names to sorted lists of expected plot numbers.
+   * @param expected Map of substratum names to sorted lists of expected plot numbers.
    */
-  private fun assertSubzonePlotNumbers(
+  private fun assertSubstratumPlotNumbers(
       site: AnyPlantingSiteModel,
       expected: Map<String, List<Long>>,
   ) {
     val actual =
         site.strata
-            .flatMap { zone ->
-              zone.substrata.map { subzone ->
-                subzone.name to subzone.monitoringPlots.map { it.plotNumber }.sorted()
+            .flatMap { stratum ->
+              stratum.substrata.map { substratum ->
+                substratum.name to substratum.monitoringPlots.map { it.plotNumber }.sorted()
               }
             }
             .toMap()
 
-    assertEquals(expected, actual, "Plot numbers in each subzone")
+    assertEquals(expected, actual, "Plot numbers in each substratum")
   }
 
   private data class ScenarioResults(

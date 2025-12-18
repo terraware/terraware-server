@@ -19,50 +19,51 @@ import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.PrecisionModel
 
 /**
- * DSL for building planting site models with simple maps to test operations on site/zone/subzone
- * geometry. The different layers of the map are all rectangular and are laid out horizontally
- * starting at the southwest corner of the parent area.
+ * DSL for building planting site models with simple maps to test operations on
+ * site/stratum/substratum geometry. The different layers of the map are all rectangular and are
+ * laid out horizontally starting at the southwest corner of the parent area.
  *
  * The DSL aims for succinctness and will try to build a simple but complete site if the caller
  * doesn't specify otherwise.
  *
- * By default, each layer fills the remaining area of its parent. If a site has no zones, one is
- * created by default, and if a zone has no subzones, one is created by default.
+ * By default, each layer fills the remaining area of its parent. If a site has no strata, one is
+ * created by default, and if a stratum has no substrata, one is created by default.
  *
  * Intended usage is to import the [existingSite] and/or [newSite] functions and optionally pass
  * lambda functions to them to configure the child areas. Simple usage:
  *
  *     existingSite()
  *
- * Returns a planting site 500 by 500 meters, with a single zone 500 by 500 meters, with a single
- * subzone 500 by 500 meters.
+ * Returns a planting site 500 by 500 meters, with a single stratum 500 by 500 meters, with a single
+ * substratum 500 by 500 meters.
  *
  * More complex usage:
  *
  *     existingSite(width = 1000) {
- *       zone(width = 400) {
- *         subzone(width = 150) {
+ *       stratum(width = 400) {
+ *         substratum(width = 150) {
  *           permanent()
  *           plot()
  *         }
- *         subzone()
+ *         substratum()
  *       }
- *       zone()
+ *       stratum()
  *     }
  *
  * Returns a planting site with:
  * - A boundary of 1000 by 500 meters
- * - Zone Z1 with a boundary of 400 by 500 meters whose southwest corner is the southwest corner of
- *   the site's boundary
- *     - Subzone S1 with a boundary of 150 by 500 meters whose southwest corner is the southwest
- *       corner of the zone (and thus of the site)
+ * - Stratum Z1 with a boundary of 400 by 500 meters whose southwest corner is the southwest corner
+ *   of the site's boundary
+ *     - Substratum S1 with a boundary of 150 by 500 meters whose southwest corner is the southwest
+ *       corner of the stratum (and thus of the site)
  *         - Plot 1 with permanent index 1
  *         - Plot 2 immediately to the east of plot 1, that is, at coordinates (30,0) relative to
- *           the subzone's southwest corner
- *     - Subzone S2 with a boundary of 250 by 500 meters, filling the remaining space in Z1
- * - Zone Z2 with a boundary of 600 by 500 meters (filling the remaining space in the site)
- *   immediately east of Z1, that is at coordinates (400,0) relative to the zone's southwest corner
- *     - Subzone S3 with the same boundary as Z2
+ *           the substratum's southwest corner
+ *     - Substratum S2 with a boundary of 250 by 500 meters, filling the remaining space in Z1
+ * - Stratum Z2 with a boundary of 600 by 500 meters (filling the remaining space in the site)
+ *   immediately east of Z1, that is at coordinates (400,0) relative to the stratum's southwest
+ *   corner
+ *     - Substratum S3 with the same boundary as Z2
  */
 class PlantingSiteBuilder
 private constructor(
@@ -113,12 +114,12 @@ private constructor(
   var organizationId: OrganizationId = OrganizationId(-1)
   var nextPlotNumber: Long = 1
 
-  private var currentSubzoneId: Long = 1
-  private var currentZoneId: Long = 1
-  private var nextZoneX = x
+  private var currentStratumId: Long = 1
+  private var currentSubstratumId: Long = 1
+  private var nextStratumX = x
   private var nextMonitoringPlotX: Int = x + width
   private val exteriorPlots = mutableListOf<MonitoringPlotModel>()
-  private val plantingZones = mutableListOf<ExistingStratumModel>()
+  private val strata = mutableListOf<ExistingStratumModel>()
 
   fun build(): ExistingPlantingSiteModel {
     return ExistingPlantingSiteModel(
@@ -131,25 +132,25 @@ private constructor(
         id = PlantingSiteId(1),
         name = name,
         organizationId = organizationId,
-        strata = plantingZones.ifEmpty { listOf(zone()) },
+        strata = strata.ifEmpty { listOf(stratum()) },
     )
   }
 
-  fun zone(
-      x: Int = nextZoneX,
+  fun stratum(
+      x: Int = nextStratumX,
       y: Int = this.y,
       width: Int = this.width - (x - this.x),
       height: Int = this.height - (y - this.y),
-      name: String = "Z$currentZoneId",
+      name: String = "Z$currentStratumId",
       numPermanent: Int = StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
       numTemporary: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       stableId: StableId = StableId(name),
-      func: ZoneBuilder.() -> Unit = {},
+      func: StratumBuilder.() -> Unit = {},
   ): ExistingStratumModel {
-    ++currentZoneId
+    ++currentStratumId
 
     val builder =
-        ZoneBuilder(
+        StratumBuilder(
             x = x,
             y = y,
             width = width,
@@ -161,11 +162,11 @@ private constructor(
         )
     builder.func()
 
-    nextZoneX = x + width
+    nextStratumX = x + width
 
-    val newZone = builder.build()
-    plantingZones.add(newZone)
-    return newZone
+    val newStratum = builder.build()
+    strata.add(newStratum)
+    return newStratum
   }
 
   fun exteriorPlot(
@@ -197,7 +198,7 @@ private constructor(
     return plot
   }
 
-  inner class ZoneBuilder(
+  inner class StratumBuilder(
       private val x: Int,
       private val y: Int,
       private val width: Int,
@@ -214,8 +215,8 @@ private constructor(
 
     private val boundary: MultiPolygon = rectangle(width, height, x, y)
     private var nextPermanentIndex = 1
-    private var nextSubzoneX = x
-    private val plantingSubzones = mutableListOf<ExistingSubstratumModel>()
+    private var nextSubstratumX = x
+    private val substrata = mutableListOf<ExistingSubstratumModel>()
 
     fun build(): ExistingStratumModel {
       return ExistingStratumModel(
@@ -223,11 +224,11 @@ private constructor(
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
           errorMargin = errorMargin,
-          id = StratumId(currentZoneId),
+          id = StratumId(currentStratumId),
           name = name,
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
-          substrata = plantingSubzones.ifEmpty { listOf(subzone()) },
+          substrata = substrata.ifEmpty { listOf(substratum()) },
           stableId = stableId,
           studentsT = studentsT,
           targetPlantingDensity = targetPlantingDensity,
@@ -235,29 +236,29 @@ private constructor(
       )
     }
 
-    fun subzone(
-        x: Int = nextSubzoneX,
+    fun substratum(
+        x: Int = nextSubstratumX,
         y: Int = this.y,
         width: Int = this.width - (x - this.x),
         height: Int = this.height - (y - this.y),
-        name: String = "S$currentSubzoneId",
+        name: String = "S$currentSubstratumId",
         fullName: String = "${this.name}-$name",
         stableId: StableId = StableId(fullName),
-        func: SubzoneBuilder.() -> Unit = {},
+        func: SubstratumBuilder.() -> Unit = {},
     ): ExistingSubstratumModel {
-      ++currentSubzoneId
+      ++currentSubstratumId
 
-      val builder = SubzoneBuilder(x, y, width, height, name, fullName, stableId)
+      val builder = SubstratumBuilder(x, y, width, height, name, fullName, stableId)
       builder.func()
 
-      nextSubzoneX = x + width
+      nextSubstratumX = x + width
 
-      val newSubzone = builder.build()
-      plantingSubzones.add(newSubzone)
-      return newSubzone
+      val newSubstratum = builder.build()
+      substrata.add(newSubstratum)
+      return newSubstratum
     }
 
-    inner class SubzoneBuilder(
+    inner class SubstratumBuilder(
         x: Int,
         private val y: Int,
         width: Int,
@@ -278,7 +279,7 @@ private constructor(
             areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
             boundary = boundary,
             fullName = fullName,
-            id = SubstratumId(currentSubzoneId),
+            id = SubstratumId(currentSubstratumId),
             monitoringPlots = monitoringPlots,
             name = name,
             plantingCompletedTime = plantingCompletedTime,
