@@ -51,6 +51,7 @@ class ReportMetricStore(
           .set(TYPE_ID, model.type)
           .set(REFERENCE, model.reference)
           .set(IS_PUBLISHABLE, model.isPublishable)
+          .set(UNIT, model.unit)
           .returning(ID)
           .fetchOne(ID)!!
     }
@@ -74,6 +75,7 @@ class ReportMetricStore(
           .set(TYPE_ID, new.type)
           .set(REFERENCE, new.reference)
           .set(IS_PUBLISHABLE, new.isPublishable)
+          .set(UNIT, new.unit)
           .where(ID.eq(metricId))
           .execute()
     }

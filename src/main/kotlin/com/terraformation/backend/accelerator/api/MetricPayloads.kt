@@ -117,6 +117,7 @@ data class NewMetricPayload(
         type = type,
         reference = reference,
         isPublishable = isPublishable,
+        unit = unit,
     )
   }
 }

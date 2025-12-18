@@ -2868,6 +2868,7 @@ abstract class DatabaseBackedTest {
       name: String = row.name ?: "Metric name",
       reference: String = row.reference ?: "1.1",
       type: MetricType = row.typeId ?: MetricType.Impact,
+      unit: String? = row.unit,
   ): StandardMetricId {
     val rowWithDefaults =
         row.copy(
@@ -2877,6 +2878,7 @@ abstract class DatabaseBackedTest {
             name = name,
             reference = reference,
             typeId = type,
+            unit = unit,
         )
 
     standardMetricsDao.insert(rowWithDefaults)

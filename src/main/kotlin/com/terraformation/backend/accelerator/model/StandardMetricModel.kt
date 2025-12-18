@@ -14,6 +14,7 @@ data class StandardMetricModel<ID : StandardMetricId?>(
     val type: MetricType,
     val reference: String,
     val isPublishable: Boolean,
+    val unit: String? = null,
 ) {
   companion object {
     fun of(record: Record): ExistingStandardMetricModel {
@@ -26,6 +27,7 @@ data class StandardMetricModel<ID : StandardMetricId?>(
             type = record[TYPE_ID]!!,
             reference = record[REFERENCE]!!,
             isPublishable = record[IS_PUBLISHABLE]!!,
+            unit = record[UNIT],
         )
       }
     }
