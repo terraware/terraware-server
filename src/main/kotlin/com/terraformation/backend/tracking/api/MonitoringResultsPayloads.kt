@@ -239,7 +239,49 @@ data class ObservationMonitoringPlotResultsPayload(
     get() = media
 }
 
+@Schema(description = "Use ObservationSubstratumResultsPayload instead", deprecated = true)
 data class ObservationPlantingSubzoneResultsPayload(
+    val areaHa: BigDecimal,
+    val completedTime: Instant?,
+    val estimatedPlants: Int?,
+    val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
+    val mortalityRate: Int?,
+    val mortalityRateStdDev: Int?,
+    val name: String,
+    val plantingDensity: Int,
+    val plantingDensityStdDev: Int?,
+    val plantingSubzoneId: PlantingSubzoneId?,
+    val species: List<ObservationSpeciesResultsPayload>,
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
+    val totalPlants: Int,
+    val totalSpecies: Int,
+) {
+  constructor(
+      model: ObservationPlantingSubzoneResultsModel
+  ) : this(
+      areaHa = model.areaHa,
+      completedTime = model.completedTime,
+      estimatedPlants = model.estimatedPlants,
+      monitoringPlots = model.monitoringPlots.map { ObservationMonitoringPlotResultsPayload(it) },
+      mortalityRate = model.mortalityRate,
+      mortalityRateStdDev = model.mortalityRateStdDev,
+      name = model.name,
+      plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
+      plantingSubzoneId = model.plantingSubzoneId,
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              .map { ObservationSpeciesResultsPayload(it) },
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
+  )
+}
+
+data class ObservationSubstratumResultsPayload(
     @Schema(description = "Area of this planting subzone in hectares.") //
     val areaHa: BigDecimal,
     val completedTime: Instant?,
@@ -345,6 +387,7 @@ data class ObservationPlantingZoneResultsPayload(
             "Percentage of plants of all species in this zone's permanent monitoring plots that " +
                 "have survived since the t0 point."
     )
+    val substrata: List<ObservationSubstratumResultsPayload>,
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
     @Schema(
@@ -379,6 +422,7 @@ data class ObservationPlantingZoneResultsPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      substrata = model.plantingSubzones.map { ObservationSubstratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
@@ -485,7 +529,7 @@ data class PlantingZoneObservationSummaryPayload(
     )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
-    @Schema(description = "List of subzone observations used in this summary.")
+    @Schema(description = "Use substrata instead", deprecated = true)
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     val plantingZoneId: PlantingZoneId,
     @Schema(
@@ -493,6 +537,8 @@ data class PlantingZoneObservationSummaryPayload(
             "Combined list of observed species and their statuses from the latest observation of each subzone."
     )
     val species: List<ObservationSpeciesResultsPayload>,
+    @Schema(description = "List of subzone observations used in this summary.")
+    val substrata: List<ObservationSubstratumResultsPayload>,
     @Schema(
         description =
             "Percentage of plants of all species in this zone's permanent monitoring plots that " +
@@ -531,6 +577,7 @@ data class PlantingZoneObservationSummaryPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      substrata = model.plantingSubzones.map { ObservationSubstratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
