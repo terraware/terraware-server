@@ -118,14 +118,14 @@
 <text text-anchor="start" x="73" y="-2053.8" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="12,-2027.6 12,-2045.6 112,-2045.6 112,-2027.6 12,-2027.6"/>
 <text text-anchor="start" x="15" y="-2033.8" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="12,-2009.6 12,-2027.6 55,-2027.6 55,-2009.6 12,-2009.6"/>
-<polygon fill="none" stroke="black" points="12,-2009.6 12,-2027.6 55,-2027.6 55,-2009.6 12,-2009.6"/>
+<polygon fill="#ffffff" stroke="transparent" points="12,-2009.6 12,-2027.6 36,-2027.6 36,-2009.6 12,-2009.6"/>
+<polygon fill="none" stroke="black" points="12,-2009.6 12,-2027.6 36,-2027.6 36,-2009.6 12,-2009.6"/>
 <text text-anchor="start" x="15" y="-2015.8" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="55,-2009.6 55,-2027.6 79,-2027.6 79,-2009.6 55,-2009.6"/>
-<polygon fill="none" stroke="black" points="55,-2009.6 55,-2027.6 79,-2027.6 79,-2009.6 55,-2009.6"/>
-<text text-anchor="start" x="69" y="-2015.8" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="79,-2009.6 79,-2027.6 112,-2027.6 112,-2009.6 79,-2009.6"/>
-<polygon fill="none" stroke="black" points="79,-2009.6 79,-2027.6 112,-2027.6 112,-2009.6 79,-2009.6"/>
+<polygon fill="#ffffff" stroke="transparent" points="36,-2009.6 36,-2027.6 89,-2027.6 89,-2009.6 36,-2009.6"/>
+<polygon fill="none" stroke="black" points="36,-2009.6 36,-2027.6 89,-2027.6 89,-2009.6 36,-2009.6"/>
+<text text-anchor="start" x="40" y="-2015.8" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="89,-2009.6 89,-2027.6 112,-2027.6 112,-2009.6 89,-2009.6"/>
+<polygon fill="none" stroke="black" points="89,-2009.6 89,-2027.6 112,-2027.6 112,-2009.6 89,-2009.6"/>
 <text text-anchor="start" x="93" y="-2015.8" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>

@@ -219,8 +219,8 @@
             <parent column="id" foreignKey="published_report_photos_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="report_id" foreignKey="published_report_photos_report_id_file_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_photos"/>
             <parent column="report_id" foreignKey="published_report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_reports"/>
+            <parent column="report_id" foreignKey="published_report_photos_report_id_file_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_photos"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="caption" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="file_id" sequenceNumberInPK="1"/>
