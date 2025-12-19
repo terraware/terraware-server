@@ -59,6 +59,7 @@ data class ExistingStandardMetricPayload(
     val type: MetricType,
     val reference: String,
     val isPublishable: Boolean,
+    @field:Size(max = 25) val unit: String? = null,
 ) {
   constructor(
       model: ExistingStandardMetricModel
@@ -70,6 +71,7 @@ data class ExistingStandardMetricPayload(
       type = model.type,
       reference = model.reference,
       isPublishable = model.isPublishable,
+      unit = model.unit,
   )
 
   fun toModel(): ExistingStandardMetricModel {
@@ -81,6 +83,7 @@ data class ExistingStandardMetricPayload(
         type = type,
         reference = reference,
         isPublishable = isPublishable,
+        unit = unit,
     )
   }
 }
