@@ -28,10 +28,10 @@ class PlantingSiteImporter(
     private val plantingSiteStore: PlantingSiteStore,
 ) {
   companion object {
-    val substratumNameProperties = setOf("planting_1", "subzone", "substratum")
+    val substratumNameProperties = setOf("planting_1", "subzone", "substratum", "substrata")
     val substratumStableIdProperties = setOf("stable_sz", "stable_sub", "stable_ss")
     val targetPlantingDensityProperties = setOf("plan_dens", "density")
-    val stratumNameProperties = setOf("planting_z", "zone", "stratum")
+    val stratumNameProperties = setOf("planting_z", "zone", "stratum", "strata")
     val stratumStableIdProperties = setOf("stable_z", "stable_zon", "stable_s", "stable_str")
 
     // Stratum-level properties to control number of monitoring plots
