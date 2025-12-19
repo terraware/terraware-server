@@ -352,7 +352,50 @@ data class ObservationSubstratumResultsPayload(
   )
 }
 
+@Schema(description = "Use ObservationStratumResultsPayload instead", deprecated = true)
 data class ObservationPlantingZoneResultsPayload(
+    val areaHa: BigDecimal,
+    val completedTime: Instant?,
+    val estimatedPlants: Int?,
+    val mortalityRate: Int?,
+    val mortalityRateStdDev: Int?,
+    val name: String,
+    val plantingDensity: Int,
+    val plantingDensityStdDev: Int?,
+    val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
+    val plantingZoneId: PlantingZoneId?,
+    val species: List<ObservationSpeciesResultsPayload>,
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
+    val totalPlants: Int,
+    val totalSpecies: Int,
+) {
+  constructor(
+      model: ObservationPlantingZoneResultsModel
+  ) : this(
+      areaHa = model.areaHa,
+      completedTime = model.completedTime,
+      estimatedPlants = model.estimatedPlants,
+      mortalityRate = model.mortalityRate,
+      mortalityRateStdDev = model.mortalityRateStdDev,
+      name = model.name,
+      plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
+      plantingSubzones =
+          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
+      plantingZoneId = model.plantingZoneId,
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              .map { ObservationSpeciesResultsPayload(it) },
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
+  )
+}
+
+data class ObservationStratumResultsPayload(
     @Schema(description = "Area of this planting zone in hectares.") //
     val areaHa: BigDecimal,
     val completedTime: Instant?,
@@ -378,7 +421,6 @@ data class ObservationPlantingZoneResultsPayload(
     )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
-    val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     @Schema(description = "ID of the zone. Absent if the zone was deleted after the observation.")
     val plantingZoneId: PlantingZoneId?,
     val species: List<ObservationSpeciesResultsPayload>,
@@ -415,8 +457,6 @@ data class ObservationPlantingZoneResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzones =
-          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
       plantingZoneId = model.plantingZoneId,
       species =
           model.species
@@ -464,6 +504,7 @@ data class ObservationResultsPayload(
     val species: List<ObservationSpeciesResultsPayload>,
     val startDate: LocalDate,
     val state: ObservationState,
+    val strata: List<ObservationStratumResultsPayload>,
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
     val totalPlants: Int,
@@ -493,6 +534,7 @@ data class ObservationResultsPayload(
               .map { ObservationSpeciesResultsPayload(it) },
       startDate = model.startDate,
       state = model.state,
+      strata = model.plantingZones.map { ObservationStratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
