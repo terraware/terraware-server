@@ -40,9 +40,7 @@ class DeliveriesController(
     return GetDeliveryResponsePayload(DeliveryPayload(model))
   }
 
-  @Operation(
-      summary = "Reassigns some of the seedlings from a delivery to a different planting subzone."
-  )
+  @Operation(summary = "Reassigns some of the seedlings from a delivery to a different substratum.")
   @PostMapping("/{id}/reassign")
   fun reassignDelivery(
       @PathVariable("id") deliveryId: DeliveryId,
@@ -63,7 +61,7 @@ data class PlantingPayload(
                 "will be negative."
     )
     val numPlants: Int,
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val substratumId: PlantingSubzoneId?,
     val speciesId: SpeciesId,
     val type: PlantingType,
 ) {
@@ -73,10 +71,14 @@ data class PlantingPayload(
       id = model.id,
       notes = model.notes,
       numPlants = model.numPlants,
-      plantingSubzoneId = model.plantingSubzoneId,
+      substratumId = model.plantingSubzoneId,
       speciesId = model.speciesId,
       type = model.type,
   )
+
+  @Deprecated("Use substratumId instead")
+  val plantingSubzoneId: PlantingSubzoneId?
+    get() = substratumId
 }
 
 data class DeliveryPayload(
@@ -101,14 +103,27 @@ data class ReassignmentPayload(
     @Min(1)
     @Schema(
         description =
-            "Number of plants to reassign from the planting's original subzone to the new one. " +
+            "Number of plants to reassign from the planting's original substratum to the new one. " +
                 "Must be less than or equal to the number of plants in the original planting."
     )
     val numPlants: Int,
     val notes: String?,
-    val toPlantingSubzoneId: PlantingSubzoneId,
+    // remove the optional flag on this once toSubstratumId is gone
+    val toSubstratumId: PlantingSubzoneId?,
+    @Schema(deprecated = true, description = "Use toSubstratumId instead")
+    val toPlantingSubzoneId: PlantingSubzoneId?,
 ) {
-  fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlantingSubzoneId)
+  fun toModel() =
+      DeliveryStore.Reassignment(
+          fromPlantingId,
+          numPlants,
+          notes,
+          toSubstratumId
+              ?: toPlantingSubzoneId
+              ?: throw IllegalArgumentException(
+                  "Must specify either toSubstratumId or toPlantingSubzoneId"
+              ),
+      )
 }
 
 data class GetDeliveryResponsePayload(val delivery: DeliveryPayload) : SuccessResponsePayload
