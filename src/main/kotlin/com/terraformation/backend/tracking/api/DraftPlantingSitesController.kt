@@ -47,8 +47,8 @@ class DraftPlantingSitesController(
             data = payload.data,
             description = payload.description,
             name = payload.name,
-            numPlantingSubzones = payload.numPlantingSubzones,
-            numPlantingZones = payload.numPlantingZones,
+            numPlantingSubzones = payload.numSubstrata ?: payload.numPlantingSubzones,
+            numPlantingZones = payload.numStrata ?: payload.numPlantingZones,
             organizationId = payload.organizationId,
             projectId = payload.projectId,
             timeZone = payload.timeZone,
@@ -97,15 +97,14 @@ data class DraftPlantingSitePayload(
     val name: String,
     @Schema(
         description =
-            "If the user has started defining planting subzones, the number of subzones defined " +
-                "so far."
+            "If the user has started defining strata, the number of strata defined so far."
     )
-    val numPlantingSubzones: Int?,
+    val numStrata: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far."
+            "If the user has started defining substrata, the number of substrata defined so far."
     )
-    val numPlantingZones: Int?,
+    val numSubstrata: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
@@ -114,19 +113,27 @@ data class DraftPlantingSitePayload(
   constructor(
       record: DraftPlantingSitesRecord
   ) : this(
-      record.createdBy!!,
-      record.createdTime!!,
-      record.data!!,
-      record.description,
-      record.id!!,
-      record.modifiedTime!!,
-      record.name!!,
-      record.numPlantingSubzones,
-      record.numPlantingZones,
-      record.organizationId!!,
-      record.projectId,
-      record.timeZone,
+      createdBy = record.createdBy!!,
+      createdTime = record.createdTime!!,
+      data = record.data!!,
+      description = record.description,
+      id = record.id!!,
+      modifiedTime = record.modifiedTime!!,
+      name = record.name!!,
+      numSubstrata = record.numPlantingSubzones,
+      numStrata = record.numPlantingZones,
+      organizationId = record.organizationId!!,
+      projectId = record.projectId,
+      timeZone = record.timeZone,
   )
+
+  @Deprecated("Use numSubstrata instead")
+  val numPlantingSubzones: Int?
+    get() = numSubstrata
+
+  @Deprecated("Use numStrata instead")
+  val numPlantingZones: Int?
+    get() = numStrata
 }
 
 data class GetDraftPlantingSiteResponsePayload(val site: DraftPlantingSitePayload) :
@@ -143,17 +150,19 @@ data class CreateDraftPlantingSiteRequestPayload(
     val data: ArbitraryJsonObject,
     val description: String?,
     val name: String,
-    @Schema(
-        description =
-            "If the user has started defining planting subzones, the number of subzones defined " +
-                "so far."
-    )
+    @Schema(description = "Use numSubstrata instead", deprecated = true)
     val numPlantingSubzones: Int?,
+    @Schema(description = "Use numStrata instead", deprecated = true) val numPlantingZones: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far."
+            "If the user has started defining strata, the number of strata defined so far."
     )
-    val numPlantingZones: Int?,
+    val numStrata: Int?,
+    @Schema(
+        description =
+            "If the user has started defining substrata, the number of substrata defined so far."
+    )
+    val numSubstrata: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
@@ -172,17 +181,19 @@ data class UpdateDraftPlantingSiteRequestPayload(
     val data: ArbitraryJsonObject,
     val description: String?,
     val name: String,
-    @Schema(
-        description =
-            "If the user has started defining planting subzones, the number of subzones defined " +
-                "so far."
-    )
+    @Schema(description = "Use numSubstrata instead", deprecated = true)
     val numPlantingSubzones: Int?,
+    @Schema(description = "Use numStrata instead", deprecated = true) val numPlantingZones: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far."
+            "If the user has started defining strata, the number of strata defined so far."
     )
-    val numPlantingZones: Int?,
+    val numStrata: Int?,
+    @Schema(
+        description =
+            "If the user has started defining substrata, the number of substrata defined so far."
+    )
+    val numSubstrata: Int?,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
     val timeZone: ZoneId?,
@@ -191,8 +202,8 @@ data class UpdateDraftPlantingSiteRequestPayload(
     record.data = data
     record.description = description
     record.name = name
-    record.numPlantingSubzones = numPlantingSubzones
-    record.numPlantingZones = numPlantingZones
+    record.numPlantingSubzones = numSubstrata ?: numPlantingSubzones
+    record.numPlantingZones = numStrata ?: numPlantingZones
     record.projectId = projectId
     record.timeZone = timeZone
   }

@@ -153,7 +153,10 @@ data class ObservationMonitoringPlotResultsPayload(
     val isPermanent: Boolean,
     val media: List<ObservationMonitoringPlotMediaPayload>,
     val monitoringPlotId: MonitoringPlotId,
-    @Schema(description = "Full name of this monitoring plot, including zone and subzone prefixes.")
+    @Schema(
+        description =
+            "Full name of this monitoring plot, including stratum and substratum prefixes."
+    )
     val monitoringPlotName: String,
     @Schema(description = "Organization-unique number of this monitoring plot.")
     val monitoringPlotNumber: Long,
@@ -282,18 +285,18 @@ data class ObservationPlantingSubzoneResultsPayload(
 }
 
 data class ObservationSubstratumResultsPayload(
-    @Schema(description = "Area of this planting subzone in hectares.") //
+    @Schema(description = "Area of this substratum in hectares.") //
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     @Schema(
         description =
-            "Estimated number of plants in planting subzone based on estimated planting density " +
-                "and subzone area. Only present if the subzone has completed planting."
+            "Estimated number of plants in substratum based on estimated planting density " +
+                "and substratum area. Only present if the substratum has completed planting."
     )
     val estimatedPlants: Int?,
     @Schema(
         description =
-            "Percentage of plants of all species that were dead in this subzone's permanent " +
+            "Percentage of plants of all species that were dead in this substratum's permanent " +
                 "monitoring plots."
     )
     val monitoringPlots: List<ObservationMonitoringPlotResultsPayload>,
@@ -302,15 +305,16 @@ data class ObservationSubstratumResultsPayload(
     val name: String,
     @Schema(
         description =
-            "Estimated planting density for the subzone based on the observed planting densities " +
+            "Estimated planting density for the substratum based on the observed planting densities " +
                 "of monitoring plots."
     )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     @Schema(
-        description = "ID of the subzone. Absent if the subzone was deleted after the observation."
+        description =
+            "ID of the substratum. Absent if the substratum was deleted after the observation."
     )
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val substratumId: PlantingSubzoneId?,
     val species: List<ObservationSpeciesResultsPayload>,
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
@@ -340,7 +344,7 @@ data class ObservationSubstratumResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzoneId = model.plantingSubzoneId,
+      substratumId = model.plantingSubzoneId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -350,6 +354,9 @@ data class ObservationSubstratumResultsPayload(
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
   )
+
+  val plantingSubzoneId: PlantingSubzoneId?
+    get() = substratumId
 }
 
 @Schema(description = "Use ObservationStratumResultsPayload instead", deprecated = true)
@@ -396,19 +403,19 @@ data class ObservationPlantingZoneResultsPayload(
 }
 
 data class ObservationStratumResultsPayload(
-    @Schema(description = "Area of this planting zone in hectares.") //
+    @Schema(description = "Area of this stratum in hectares.") //
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     @Schema(
         description =
-            "Estimated number of plants in planting zone based on estimated planting density and " +
-                "planting zone area. Only present if all the subzones in the zone have been " +
+            "Estimated number of plants in stratum based on estimated planting density and " +
+                "stratum area. Only present if all the substrata in the stratum have been " +
                 "marked as having completed planting."
     )
     val estimatedPlants: Int?,
     @Schema(
         description =
-            "Percentage of plants of all species that were dead in this zone's permanent " +
+            "Percentage of plants of all species that were dead in this stratum's permanent " +
                 "monitoring plots."
     )
     val mortalityRate: Int?,
@@ -416,17 +423,19 @@ data class ObservationStratumResultsPayload(
     val name: String,
     @Schema(
         description =
-            "Estimated planting density for the zone based on the observed planting densities " +
+            "Estimated planting density for the stratum based on the observed planting densities " +
                 "of monitoring plots."
     )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
-    @Schema(description = "ID of the zone. Absent if the zone was deleted after the observation.")
-    val plantingZoneId: PlantingZoneId?,
+    @Schema(
+        description = "ID of the stratum. Absent if the stratum was deleted after the observation."
+    )
+    val stratumId: PlantingZoneId?,
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
-            "Percentage of plants of all species in this zone's permanent monitoring plots that " +
+            "Percentage of plants of all species in this stratum's permanent monitoring plots that " +
                 "have survived since the t0 point."
     )
     val substrata: List<ObservationSubstratumResultsPayload>,
@@ -457,7 +466,7 @@ data class ObservationStratumResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingZoneId = model.plantingZoneId,
+      stratumId = model.plantingZoneId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -468,6 +477,9 @@ data class ObservationStratumResultsPayload(
       totalPlants = model.totalPlants,
       totalSpecies = model.totalSpecies,
   )
+
+  val plantingZoneId: PlantingZoneId?
+    get() = stratumId
 }
 
 data class ObservationResultsPayload(
@@ -478,7 +490,7 @@ data class ObservationResultsPayload(
     @Schema(
         description =
             "Estimated total number of live plants at the site, based on the estimated planting " +
-                "density and site size. Only present if all the subzones in the site have been " +
+                "density and site size. Only present if all the substrata in the site have been " +
                 "marked as having completed planting."
     )
     val estimatedPlants: Int?,
@@ -543,62 +555,24 @@ data class ObservationResultsPayload(
   )
 }
 
+@Schema(description = "Use StratumObservationSummaryPayload instead", deprecated = true)
 data class PlantingZoneObservationSummaryPayload(
-    @Schema(description = "Area of this planting zone in hectares.") //
     val areaHa: BigDecimal,
-    @Schema(description = "The earliest time of the observations used in this summary.")
     val earliestObservationTime: Instant,
-    @Schema(
-        description =
-            "Estimated number of plants in planting zone based on estimated planting density and " +
-                "planting zone area. Only present if all the subzones in the zone have been " +
-                "marked as having completed planting."
-    )
     val estimatedPlants: Int?,
-    @Schema(description = "The latest time of the observations used in this summary.")
     val latestObservationTime: Instant,
-    @Schema(
-        description =
-            "Percentage of plants of all species that were dead in this zone's permanent " +
-                "monitoring plots."
-    )
     val mortalityRate: Int?,
     val mortalityRateStdDev: Int?,
-    @Schema(
-        description =
-            "Estimated planting density for the zone based on the observed planting densities " +
-                "of monitoring plots."
-    )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     @Schema(description = "Use substrata instead", deprecated = true)
     val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
     val plantingZoneId: PlantingZoneId,
-    @Schema(
-        description =
-            "Combined list of observed species and their statuses from the latest observation of each subzone."
-    )
     val species: List<ObservationSpeciesResultsPayload>,
-    @Schema(description = "List of subzone observations used in this summary.")
     val substrata: List<ObservationSubstratumResultsPayload>,
-    @Schema(
-        description =
-            "Percentage of plants of all species in this zone's permanent monitoring plots that " +
-                "have survived since the t0 point."
-    )
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
-    @Schema(
-        description =
-            "Total number of plants recorded from the latest observations of each subzone. Includes all plants, regardless of live/dead status or species."
-    )
     val totalPlants: Int,
-    @Schema(
-        description =
-            "Total number of species observed, not counting dead plants. Includes plants with " +
-                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
-                "species name is counted as a separate species for purposes of this total."
-    )
     val totalSpecies: Int,
 ) {
   constructor(
@@ -627,13 +601,93 @@ data class PlantingZoneObservationSummaryPayload(
   )
 }
 
+data class StratumObservationSummaryPayload(
+    @Schema(description = "Area of this stratum in hectares.") //
+    val areaHa: BigDecimal,
+    @Schema(description = "The earliest time of the observations used in this summary.")
+    val earliestObservationTime: Instant,
+    @Schema(
+        description =
+            "Estimated number of plants in stratum based on estimated planting density and " +
+                "stratum area. Only present if all the substrata in the stratum have been " +
+                "marked as having completed planting."
+    )
+    val estimatedPlants: Int?,
+    @Schema(description = "The latest time of the observations used in this summary.")
+    val latestObservationTime: Instant,
+    @Schema(
+        description =
+            "Percentage of plants of all species that were dead in this stratum's permanent " +
+                "monitoring plots."
+    )
+    val mortalityRate: Int?,
+    val mortalityRateStdDev: Int?,
+    @Schema(
+        description =
+            "Estimated planting density for the stratum based on the observed planting densities " +
+                "of monitoring plots."
+    )
+    val plantingDensity: Int,
+    val plantingDensityStdDev: Int?,
+    val stratumId: PlantingZoneId,
+    @Schema(
+        description =
+            "Combined list of observed species and their statuses from the latest observation of each substratum."
+    )
+    val species: List<ObservationSpeciesResultsPayload>,
+    @Schema(description = "List of substratum observations used in this summary.")
+    val substrata: List<ObservationSubstratumResultsPayload>,
+    @Schema(
+        description =
+            "Percentage of plants of all species in this stratum's permanent monitoring plots that " +
+                "have survived since the t0 point."
+    )
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
+    @Schema(
+        description =
+            "Total number of plants recorded from the latest observations of each substratum. Includes all plants, regardless of live/dead status or species."
+    )
+    val totalPlants: Int,
+    @Schema(
+        description =
+            "Total number of species observed, not counting dead plants. Includes plants with " +
+                "Known and Other certainties. In the case of Other, each distinct user-supplied " +
+                "species name is counted as a separate species for purposes of this total."
+    )
+    val totalSpecies: Int,
+) {
+  constructor(
+      model: ObservationPlantingZoneRollupResultsModel
+  ) : this(
+      areaHa = model.areaHa,
+      earliestObservationTime = model.earliestCompletedTime,
+      estimatedPlants = model.estimatedPlants,
+      latestObservationTime = model.latestCompletedTime,
+      mortalityRate = model.mortalityRate,
+      mortalityRateStdDev = model.mortalityRateStdDev,
+      plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
+      stratumId = model.plantingZoneId,
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              .map { ObservationSpeciesResultsPayload(it) },
+      substrata = model.plantingSubzones.map { ObservationSubstratumResultsPayload(it) },
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
+  )
+}
+
 data class PlantingSiteObservationSummaryPayload(
     @Schema(description = "The earliest time of the observations used in this summary.")
     val earliestObservationTime: Instant,
     @Schema(
         description =
             "Estimated total number of live plants at the site, based on the estimated planting " +
-                "density and site size. Only present if all the subzones in the site have been " +
+                "density and site size. Only present if all the substrata in the site have been " +
                 "marked as having completed planting."
     )
     val estimatedPlants: Int?,
@@ -654,12 +708,14 @@ data class PlantingSiteObservationSummaryPayload(
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     val plantingSiteId: PlantingSiteId,
+    @Schema(description = "Use strata instead", deprecated = true)
     val plantingZones: List<PlantingZoneObservationSummaryPayload>,
     @Schema(
         description =
-            "Combined list of observed species and their statuses from the latest observation of each subzone within each zone."
+            "Combined list of observed species and their statuses from the latest observation of each substratum within each stratum."
     )
     val species: List<ObservationSpeciesResultsPayload>,
+    val strata: List<StratumObservationSummaryPayload>,
     @Schema(
         description =
             "Percentage of plants of all species in this site's permanent monitoring plots that " +
@@ -669,7 +725,7 @@ data class PlantingSiteObservationSummaryPayload(
     val survivalRateStdDev: Int?,
     @Schema(
         description =
-            "Total number of plants recorded from the latest observations of each subzone within each zone. Includes all plants, regardless of live/dead status or species."
+            "Total number of plants recorded from the latest observations of each substratum within each stratum. Includes all plants, regardless of live/dead status or species."
     )
     val totalPlants: Int,
     @Schema(
@@ -696,6 +752,7 @@ data class PlantingSiteObservationSummaryPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      strata = model.plantingZones.map { StratumObservationSummaryPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
