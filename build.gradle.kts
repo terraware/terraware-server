@@ -24,7 +24,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "8.0.7"
   id("com.diffplug.spotless") version "8.1.0"
-  id("org.springframework.boot") version "3.5.8"
+  id("org.springframework.boot") version "3.5.9"
   id("io.spring.dependency-management") version "1.1.7"
 
   // Add the build target to generate Swagger docs
