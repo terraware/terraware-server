@@ -580,9 +580,9 @@ header-case@^2.0.4:
     tslib "^2.0.3"
 
 html-minifier-next@^4.0.0:
-  version "4.8.3"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-4.8.3.tgz#ce8ae1dac9daaa8c3abac27e212e058836127a04"
-  integrity sha512-JeSrrjTsL3iWTur07Cyb81drqsI61nSx1sfcjbLgpn+041RL+AabrYuPQBt7cpYSkrD7gsR9vCN/Ph/MkPvuCw==
+  version "4.14.3"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-4.14.3.tgz#cd7fdd6b87c83561164d30512b649c34db2155cb"
+  integrity sha512-1HIdsTSkZA33FHaS9vJAFti2sE7AuY6k3s+EQW9sKP/biYJf/tHzqCpwpnK9WwFRf6JPxtizAJZr6lAp2WDIUg==
   dependencies:
     "@types/relateurl" "^0.2.33"
     change-case "^4.1.2"
