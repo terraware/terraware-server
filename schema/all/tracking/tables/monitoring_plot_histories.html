@@ -166,7 +166,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="planting_subzone_id">planting_subzone_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="substratum_id">substratum_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title='nullable'>√</td>
@@ -179,8 +179,8 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="monitoring_plot_histories.planting_subzone_id references planting_subzones.id via monitoring_plot_histories_planting_subzone_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">monitoring_plot_histories_planting_subzone_id_fkey</td>
+                                                <td title="monitoring_plot_histories.substratum_id references substrata.id via monitoring_plot_histories_substratum_id_fkey"><a href='substrata.html'>substrata</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">monitoring_plot_histories_substratum_id_fkey</td>
                                                 <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
@@ -210,7 +210,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="planting_subzone_history_id">planting_subzone_history_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="substratum_history_id">substratum_history_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title='nullable'>√</td>
@@ -223,8 +223,8 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="monitoring_plot_histories.planting_subzone_history_id references planting_subzone_histories.id via monitoring_plot_histories_planting_subzone_history_id_fkey"><a href='planting_subzone_histories.html'>planting_subzone_histories</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">monitoring_plot_histories_planting_subzone_history_id_fkey</td>
+                                                <td title="monitoring_plot_histories.substratum_history_id references substratum_histories.id via monitoring_plot_histories_substratum_history_id_fkey"><a href='substratum_histories.html'>substratum_histories</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">monitoring_plot_histories_substratum_history_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
@@ -290,7 +290,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>When the monitoring plot was created, edited, or associated with a new planting site history record. May differ from the time when the subzone or planting site was created or edited since plots can be created when observations start.</p></td>
+                                    <td><p>When the monitoring plot was created, edited, or associated with a new planting site history record. May differ from the time when the substratum or planting site was created or edited since plots can be created when observations start.</p></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -353,16 +353,16 @@
                                     <td>planting_site_id</td>
                                 </tr>
                                 <tr>
-                                    <td title='Indexed'>monitoring_plot_histories_planting_subzone_history_id_idx</td>
+                                    <td title='Indexed'>monitoring_plot_histories_substratum_history_id_idx</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>planting_subzone_history_id</td>
+                                    <td>substratum_history_id</td>
                                 </tr>
                                 <tr>
-                                    <td title='Indexed'>monitoring_plot_histories_planting_subzone_id_idx</td>
+                                    <td title='Indexed'>monitoring_plot_histories_substratum_id_idx</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>planting_subzone_id</td>
+                                    <td>substratum_id</td>
                                 </tr>
                                 </tbody>
                             </table>

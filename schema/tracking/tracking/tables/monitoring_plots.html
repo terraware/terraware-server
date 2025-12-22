@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Regions within planting subzones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any monitoring plot in a subzone is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same subzone.</p>
+                            <p>Regions within substrata that can be comprehensively surveyed in order to extrapolate results for the entire stratum. Any monitoring plot in a substratum is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same substratum.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -219,7 +219,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="planting_subzone_id">planting_subzone_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="substratum_id">substratum_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
                                     <td title='nullable'>√</td>
@@ -232,13 +232,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="monitoring_plots.planting_subzone_id references planting_subzones.id via monitoring_plots_planting_subzone_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">monitoring_plots_planting_subzone_id_fkey</td>
+                                                <td title="monitoring_plots.substratum_id references substrata.id via monitoring_plots_substratum_id_fkey"><a href='substrata.html'>substrata</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">monitoring_plots_substratum_id_fkey</td>
                                                 <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>Which planting subzone this monitoring plot is currently part of, if any. May be null if the subzone was edited or removed after the plot was created, or if the plot was created outside the site boundary.</p></td>
+                                    <td><p>Which substratum this monitoring plot is currently part of, if any. May be null if the substratum was edited or removed after the plot was created, or if the plot was created outside the site boundary.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="created_by">created_by</span></td>
@@ -340,7 +340,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the planting zone. Starts at 1 for each planting zone. If null, this plot is not currently a candidate for selection as a permanent plot but may still be chosen as a temporary plot.</p></td>
+                                    <td><p>If this plot is a candidate to be a permanent monitoring plot, its position in the randomized list of plots for the stratum. Starts at 1 for each stratum. If null, this plot is not currently a candidate for selection as a permanent plot but may still be chosen as a temporary plot.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="is_available">is_available</span></td>
@@ -515,10 +515,10 @@
                                     <td>planting_site_id</td>
                                 </tr>
                                 <tr>
-                                    <td title='Indexed'>monitoring_plots_planting_subzone_id_idx</td>
+                                    <td title='Indexed'>monitoring_plots_substratum_id_idx</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>planting_subzone_id</td>
+                                    <td>substratum_id</td>
                                 </tr>
                                 </tbody>
                             </table>

@@ -133,28 +133,28 @@
 <text text-anchor="start" x="151" y="-419.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="45,-389 45,-411 190,-411 190,-389 45,-389"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-406"/>
-<text text-anchor="start" x="67" y="-397.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="75" y="-397.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-367 45,-389 190,-389 190,-367 45,-367"/>
 <polygon fill="none" stroke="black" points="45,-367 45,-389 190,-389 190,-367 45,-367"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-384"/>
-<text text-anchor="start" x="67" y="-375.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_subzone_id</text>
+<text text-anchor="start" x="75" y="-375.2" font-family="Helvetica,sans-Serif" font-size="11.00">substratum_id</text>
 <polygon fill="none" stroke="black" points="45,-345 45,-367 190,-367 190,-345 45,-345"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-362"/>
-<text text-anchor="start" x="67" y="-353.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="75" y="-353.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="45,-323 45,-345 190,-345 190,-323 45,-323"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-340"/>
-<text text-anchor="start" x="67" y="-331.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="75" y="-331.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-301 45,-323 190,-323 190,-301 45,-301"/>
 <polygon fill="none" stroke="black" points="45,-301 45,-323 190,-323 190,-301 45,-301"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-318"/>
-<text text-anchor="start" x="67" y="-309.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
+<text text-anchor="start" x="75" y="-309.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-279 45,-301 190,-301 190,-279 45,-279"/>
 <polygon fill="none" stroke="black" points="45,-279 45,-301 190,-301 190,-279 45,-279"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-296"/>
-<text text-anchor="start" x="67" y="-287.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<text text-anchor="start" x="75" y="-287.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-257 45,-279 190,-279 190,-257 45,-257"/>
 <polygon fill="none" stroke="black" points="45,-257 45,-279 190,-279 190,-257 45,-257"/>
-<text text-anchor="start" x="67" y="-265.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_number</text>
+<text text-anchor="start" x="75" y="-265.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_number</text>
 <polygon fill="none" stroke="black" points="45,-239 45,-257 190,-257 190,-239 45,-239"/>
 <text text-anchor="start" x="48" y="-245.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-221 45,-239 108,-239 108,-221 45,-221"/>

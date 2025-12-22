@@ -182,15 +182,15 @@
             <child column="species_id" foreignKey="observation_biomass_species_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_species"/>
             <child column="species_id" foreignKey="observed_plot_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_species_totals"/>
             <child column="species_id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
-            <child column="species_id" foreignKey="observed_subzone_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_subzone_species_totals"/>
-            <child column="species_id" foreignKey="observed_zone_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_zone_species_totals"/>
+            <child column="species_id" foreignKey="observed_stratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_stratum_species_totals"/>
+            <child column="species_id" foreignKey="observed_substratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_substratum_species_totals"/>
             <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
-            <child column="species_id" foreignKey="planting_subzone_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_subzone_populations"/>
-            <child column="species_id" foreignKey="planting_zone_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zone_populations"/>
-            <child column="species_id" foreignKey="planting_zone_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_zone_t0_temp_densities"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="species_id" foreignKey="plot_t0_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_densities"/>
             <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
+            <child column="species_id" foreignKey="stratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_populations"/>
+            <child column="species_id" foreignKey="stratum_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_t0_temp_densities"/>
+            <child column="species_id" foreignKey="substratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_populations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="organization_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="species_organization_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="organizations"/>

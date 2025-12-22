@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Top-level information about entire planting sites. Every planting site has at least one planting zone.</p>
+                            <p>Top-level information about entire planting sites. Every planting site has at least one stratum.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -176,18 +176,18 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="planting_subzones.planting_site_id references planting_sites.id via plots_planting_site_id_fkey"><a href='planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">plots_planting_site_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_zones.planting_site_id references planting_sites.id via planting_zones_planting_site_id_fkey"><a href='planting_zones.html'>planting_zones</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">planting_zones_planting_site_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="plantings.planting_site_id references planting_sites.id via plantings_planting_site_id_fkey"><a href='plantings.html'>plantings</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">plantings_planting_site_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="strata.planting_site_id references planting_sites.id via strata_planting_site_id_fkey"><a href='strata.html'>strata</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">strata_planting_site_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="substrata.planting_site_id references planting_sites.id via substrata_planting_site_id_fkey"><a href='substrata.html'>substrata</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">substrata_planting_site_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
@@ -264,7 +264,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Boundary of the entire planting site. Planting zones will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).</p></td>
+                                    <td><p>Boundary of the entire planting site. strata will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="created_by">created_by</span></td>

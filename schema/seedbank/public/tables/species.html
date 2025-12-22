@@ -161,33 +161,18 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="observed_subzone_species_totals.species_id references species.id via observed_subzone_species_totals_species_id_fkey"><a href='../../tracking/tables/observed_subzone_species_totals.html'>observed_subzone_species_totals</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">observed_subzone_species_totals_species_id_fkey</td>
+                                                <td title="observed_stratum_species_totals.species_id references species.id via observed_stratum_species_totals_species_id_fkey"><a href='../../tracking/tables/observed_stratum_species_totals.html'>observed_stratum_species_totals</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">observed_stratum_species_totals_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="observed_zone_species_totals.species_id references species.id via observed_zone_species_totals_species_id_fkey"><a href='../../tracking/tables/observed_zone_species_totals.html'>observed_zone_species_totals</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">observed_zone_species_totals_species_id_fkey</td>
+                                                <td title="observed_substratum_species_totals.species_id references species.id via observed_substratum_species_totals_species_id_fkey"><a href='../../tracking/tables/observed_substratum_species_totals.html'>observed_substratum_species_totals</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">observed_substratum_species_totals_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="planting_site_populations.species_id references species.id via planting_site_populations_species_id_fkey"><a href='../../tracking/tables/planting_site_populations.html'>planting_site_populations</a><span class='relatedKey'>.species_id</span></td>
                                                 <td class="constraint detail">planting_site_populations_species_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_subzone_populations.species_id references species.id via planting_subzone_populations_species_id_fkey"><a href='../../tracking/tables/planting_subzone_populations.html'>planting_subzone_populations</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">planting_subzone_populations_species_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_zone_populations.species_id references species.id via planting_zone_populations_species_id_fkey"><a href='../../tracking/tables/planting_zone_populations.html'>planting_zone_populations</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">planting_zone_populations_species_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_zone_t0_temp_densities.species_id references species.id via planting_zone_t0_temp_densities_species_id_fkey"><a href='../../tracking/tables/planting_zone_t0_temp_densities.html'>planting_zone_t0_temp_densities</a><span class='relatedKey'>.species_id</span></td>
-                                                <td class="constraint detail">planting_zone_t0_temp_densities_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -204,6 +189,21 @@
                                                 <td title="recorded_plants.species_id references species.id via recorded_plants_species_id_fkey"><a href='../../tracking/tables/recorded_plants.html'>recorded_plants</a><span class='relatedKey'>.species_id</span></td>
                                                 <td class="constraint detail">recorded_plants_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="stratum_populations.species_id references species.id via stratum_populations_species_id_fkey"><a href='../../tracking/tables/stratum_populations.html'>stratum_populations</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">stratum_populations_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="stratum_t0_temp_densities.species_id references species.id via stratum_t0_temp_densities_species_id_fkey"><a href='../../tracking/tables/stratum_t0_temp_densities.html'>stratum_t0_temp_densities</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">stratum_t0_temp_densities_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="substratum_populations.species_id references species.id via substratum_populations_species_id_fkey"><a href='../../tracking/tables/substratum_populations.html'>substratum_populations</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">substratum_populations_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -731,12 +731,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>species_common_name_check</td>
-                                    <td>(common_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>species_family_name_check</td>
                                     <td>(family_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>species_common_name_check</td>
+                                    <td>(common_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

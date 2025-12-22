@@ -731,41 +731,6 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="planting_subzones.created_by references users.id via plots_created_by_fkey"><a href='../../tracking/tables/planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.created_by</span></td>
-                                                <td class="constraint detail">plots_created_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_subzones.modified_by references users.id via plots_modified_by_fkey"><a href='../../tracking/tables/planting_subzones.html'>planting_subzones</a><span class='relatedKey'>.modified_by</span></td>
-                                                <td class="constraint detail">plots_modified_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_zone_t0_temp_densities.created_by references users.id via planting_zone_t0_temp_densities_created_by_fkey"><a href='../../tracking/tables/planting_zone_t0_temp_densities.html'>planting_zone_t0_temp_densities</a><span class='relatedKey'>.created_by</span></td>
-                                                <td class="constraint detail">planting_zone_t0_temp_densities_created_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_zone_t0_temp_densities.modified_by references users.id via planting_zone_t0_temp_densities_modified_by_fkey"><a href='../../tracking/tables/planting_zone_t0_temp_densities.html'>planting_zone_t0_temp_densities</a><span class='relatedKey'>.modified_by</span></td>
-                                                <td class="constraint detail">planting_zone_t0_temp_densities_modified_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_zones.boundary_modified_by references users.id via planting_zones_boundary_modified_by_fkey"><a href='../../tracking/tables/planting_zones.html'>planting_zones</a><span class='relatedKey'>.boundary_modified_by</span></td>
-                                                <td class="constraint detail">planting_zones_boundary_modified_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_zones.created_by references users.id via planting_zones_created_by_fkey"><a href='../../tracking/tables/planting_zones.html'>planting_zones</a><span class='relatedKey'>.created_by</span></td>
-                                                <td class="constraint detail">planting_zones_created_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="planting_zones.modified_by references users.id via planting_zones_modified_by_fkey"><a href='../../tracking/tables/planting_zones.html'>planting_zones</a><span class='relatedKey'>.modified_by</span></td>
-                                                <td class="constraint detail">planting_zones_modified_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="plantings.created_by references users.id via plantings_created_by_fkey"><a href='../../tracking/tables/plantings.html'>plantings</a><span class='relatedKey'>.created_by</span></td>
                                                 <td class="constraint detail">plantings_created_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -788,6 +753,41 @@
                                             <tr>
                                                 <td title="plot_t0_observations.modified_by references users.id via plot_t0_observations_modified_by_fkey"><a href='../../tracking/tables/plot_t0_observations.html'>plot_t0_observations</a><span class='relatedKey'>.modified_by</span></td>
                                                 <td class="constraint detail">plot_t0_observations_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="strata.boundary_modified_by references users.id via strata_boundary_modified_by_fkey"><a href='../../tracking/tables/strata.html'>strata</a><span class='relatedKey'>.boundary_modified_by</span></td>
+                                                <td class="constraint detail">strata_boundary_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="strata.created_by references users.id via strata_created_by_fkey"><a href='../../tracking/tables/strata.html'>strata</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">strata_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="strata.modified_by references users.id via strata_modified_by_fkey"><a href='../../tracking/tables/strata.html'>strata</a><span class='relatedKey'>.modified_by</span></td>
+                                                <td class="constraint detail">strata_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="stratum_t0_temp_densities.created_by references users.id via stratum_t0_temp_densities_created_by_fkey"><a href='../../tracking/tables/stratum_t0_temp_densities.html'>stratum_t0_temp_densities</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">stratum_t0_temp_densities_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="stratum_t0_temp_densities.modified_by references users.id via stratum_t0_temp_densities_modified_by_fkey"><a href='../../tracking/tables/stratum_t0_temp_densities.html'>stratum_t0_temp_densities</a><span class='relatedKey'>.modified_by</span></td>
+                                                <td class="constraint detail">stratum_t0_temp_densities_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="substrata.created_by references users.id via substrata_created_by_fkey"><a href='../../tracking/tables/substrata.html'>substrata</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">substrata_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="substrata.modified_by references users.id via substrata_modified_by_fkey"><a href='../../tracking/tables/substrata.html'>substrata</a><span class='relatedKey'>.modified_by</span></td>
+                                                <td class="constraint detail">substrata_modified_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>

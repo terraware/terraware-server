@@ -14,12 +14,12 @@ digraph "twoDegreesRelationshipsDiagram" {
   "monitoring_plot_histories":"elipses":w -> "monitoring_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_histories":"elipses":w -> "planting_site_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_histories":"elipses":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "monitoring_plot_histories":"elipses":w -> "planting_subzones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "monitoring_plot_histories":"elipses":w -> "substrata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"elipses":w -> "public.organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"elipses":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "monitoring_plots":"elipses":w -> "planting_subzones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "monitoring_plots":"elipses":w -> "substrata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plots":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plots":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plots":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -33,24 +33,12 @@ digraph "twoDegreesRelationshipsDiagram" {
   "planting_sites":"elipses":w -> "public.organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_sites":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_sites":"elipses":w -> "public.time_zones":"time_zone":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"elipses":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"elipses":w -> "planting_zones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"elipses":w -> "planting_zones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_t0_temp_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_t0_temp_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_t0_temp_densities":"elipses":w -> "planting_zones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zones":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zones":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zones":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zones":"elipses":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"elipses":w -> "deliveries":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"elipses":w -> "deliveries":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"elipses":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "plantings":"elipses":w -> "planting_subzones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "plantings":"elipses":w -> "planting_subzones":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "plantings":"elipses":w -> "substrata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "plantings":"elipses":w -> "substrata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_densities":"elipses":w -> "monitoring_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -59,6 +47,18 @@ digraph "twoDegreesRelationshipsDiagram" {
   "plot_t0_observations":"elipses":w -> "monitoring_plots":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "plot_t0_observations":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "plot_t0_observations":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strata":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strata":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strata":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strata":"elipses":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_t0_temp_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_t0_temp_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_t0_temp_densities":"elipses":w -> "strata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"elipses":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"elipses":w -> "strata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"elipses":w -> "strata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "public.organizations" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -118,19 +118,19 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="4"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16"><B>draft_planting_sites</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">id</TD></TR></TABLE></TD><TD PORT="id.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD PORT="organization_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">organization_id</TD></TR></TABLE></TD><TD PORT="organization_id.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">project_id</TD></TR></TABLE></TD><TD PORT="project_id.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD PORT="name" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">name</TD></TR></TABLE></TD><TD PORT="name.type" ALIGN="LEFT">text[2147483647]</TD></TR>
-      <TR><TD PORT="description" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">description</TD></TR></TABLE></TD><TD PORT="description.type" ALIGN="LEFT">text[2147483647]</TD></TR>
-      <TR><TD PORT="time_zone" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">time_zone</TD></TR></TABLE></TD><TD PORT="time_zone.type" ALIGN="LEFT">text[2147483647]</TD></TR>
-      <TR><TD PORT="num_planting_zones" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">num_planting_zones</TD></TR></TABLE></TD><TD PORT="num_planting_zones.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="num_planting_subzones" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">num_planting_subzones</TD></TR></TABLE></TD><TD PORT="num_planting_subzones.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD PORT="data" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">data</TD></TR></TABLE></TD><TD PORT="data.type" ALIGN="LEFT">jsonb[2147483647]</TD></TR>
-      <TR><TD PORT="created_by" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">created_by</TD></TR></TABLE></TD><TD PORT="created_by.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD PORT="created_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">created_time</TD></TR></TABLE></TD><TD PORT="created_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
-      <TR><TD PORT="modified_by" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">modified_by</TD></TR></TABLE></TD><TD PORT="modified_by.type" ALIGN="LEFT">int8[19]</TD></TR>
-      <TR><TD PORT="modified_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="143" HEIGHT="16">modified_time</TD></TR></TABLE></TD><TD PORT="modified_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
+      <TR><TD PORT="id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">id</TD></TR></TABLE></TD><TD PORT="id.type" ALIGN="LEFT">int8[19]</TD></TR>
+      <TR><TD PORT="organization_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">organization_id</TD></TR></TABLE></TD><TD PORT="organization_id.type" ALIGN="LEFT">int8[19]</TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="2" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">project_id</TD></TR></TABLE></TD><TD PORT="project_id.type" ALIGN="LEFT">int8[19]</TD></TR>
+      <TR><TD PORT="name" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">name</TD></TR></TABLE></TD><TD PORT="name.type" ALIGN="LEFT">text[2147483647]</TD></TR>
+      <TR><TD PORT="description" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">description</TD></TR></TABLE></TD><TD PORT="description.type" ALIGN="LEFT">text[2147483647]</TD></TR>
+      <TR><TD PORT="time_zone" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">time_zone</TD></TR></TABLE></TD><TD PORT="time_zone.type" ALIGN="LEFT">text[2147483647]</TD></TR>
+      <TR><TD PORT="num_strata" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">num_strata</TD></TR></TABLE></TD><TD PORT="num_strata.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="num_substrata" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">num_substrata</TD></TR></TABLE></TD><TD PORT="num_substrata.type" ALIGN="LEFT">int4[10]</TD></TR>
+      <TR><TD PORT="data" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">data</TD></TR></TABLE></TD><TD PORT="data.type" ALIGN="LEFT">jsonb[2147483647]</TD></TR>
+      <TR><TD PORT="created_by" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">created_by</TD></TR></TABLE></TD><TD PORT="created_by.type" ALIGN="LEFT">int8[19]</TD></TR>
+      <TR><TD PORT="created_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">created_time</TD></TR></TABLE></TD><TD PORT="created_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
+      <TR><TD PORT="modified_by" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">modified_by</TD></TR></TABLE></TD><TD PORT="modified_by.type" ALIGN="LEFT">int8[19]</TD></TR>
+      <TR><TD PORT="modified_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16">modified_time</TD></TR></TABLE></TD><TD PORT="modified_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/draft_planting_sites.html"
@@ -192,39 +192,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="planting_sites"
   ];
-  "planting_subzones" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="110" HEIGHT="16"><B>planting_subzones</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">8 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_subzones.html"
-    target="_top"
-    tooltip="planting_subzones"
-  ];
-  "planting_zone_t0_temp_densities" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="195" HEIGHT="16"><B>planting_zone_t0_temp_densities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_zone_t0_temp_densities.html"
-    target="_top"
-    tooltip="planting_zone_t0_temp_densities"
-  ];
-  "planting_zones" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16"><B>planting_zones</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_zones.html"
-    target="_top"
-    tooltip="planting_zones"
-  ];
   "plantings" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -257,5 +224,38 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/plot_t0_observations.html"
     target="_top"
     tooltip="plot_t0_observations"
+  ];
+  "strata" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="36" HEIGHT="16"><B>strata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/strata.html"
+    target="_top"
+    tooltip="strata"
+  ];
+  "stratum_t0_temp_densities" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="161" HEIGHT="16"><B>stratum_t0_temp_densities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/stratum_t0_temp_densities.html"
+    target="_top"
+    tooltip="stratum_t0_temp_densities"
+  ];
+  "substrata" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="57" HEIGHT="16"><B>substrata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">8 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/substrata.html"
+    target="_top"
+    tooltip="substrata"
   ];
 }

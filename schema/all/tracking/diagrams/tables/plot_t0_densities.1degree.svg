@@ -21,28 +21,28 @@
 <text text-anchor="start" x="279.5" y="-394.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="173.5,-364 173.5,-386 318.5,-386 318.5,-364 173.5,-364"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="178.5" y="-381"/>
-<text text-anchor="start" x="195.5" y="-372.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="203.5" y="-372.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="#ffffff" stroke="transparent" points="173.5,-342 173.5,-364 318.5,-364 318.5,-342 173.5,-342"/>
 <polygon fill="none" stroke="black" points="173.5,-342 173.5,-364 318.5,-364 318.5,-342 173.5,-342"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="178.5" y="-359"/>
-<text text-anchor="start" x="195.5" y="-350.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_subzone_id</text>
+<text text-anchor="start" x="203.5" y="-350.2" font-family="Helvetica,sans-Serif" font-size="11.00">substratum_id</text>
 <polygon fill="none" stroke="black" points="173.5,-320 173.5,-342 318.5,-342 318.5,-320 173.5,-320"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="178.5" y="-337"/>
-<text text-anchor="start" x="195.5" y="-328.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="203.5" y="-328.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="173.5,-298 173.5,-320 318.5,-320 318.5,-298 173.5,-298"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="178.5" y="-315"/>
-<text text-anchor="start" x="195.5" y="-306.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="203.5" y="-306.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="#ffffff" stroke="transparent" points="173.5,-276 173.5,-298 318.5,-298 318.5,-276 173.5,-276"/>
 <polygon fill="none" stroke="black" points="173.5,-276 173.5,-298 318.5,-298 318.5,-276 173.5,-276"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="178.5" y="-293"/>
-<text text-anchor="start" x="195.5" y="-284.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
+<text text-anchor="start" x="203.5" y="-284.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="173.5,-254 173.5,-276 318.5,-276 318.5,-254 173.5,-254"/>
 <polygon fill="none" stroke="black" points="173.5,-254 173.5,-276 318.5,-276 318.5,-254 173.5,-254"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="178.5" y="-271"/>
-<text text-anchor="start" x="195.5" y="-262.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<text text-anchor="start" x="203.5" y="-262.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="173.5,-232 173.5,-254 318.5,-254 318.5,-232 173.5,-232"/>
 <polygon fill="none" stroke="black" points="173.5,-232 173.5,-254 318.5,-254 318.5,-232 173.5,-232"/>
-<text text-anchor="start" x="195.5" y="-240.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_number</text>
+<text text-anchor="start" x="203.5" y="-240.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_number</text>
 <polygon fill="none" stroke="black" points="173.5,-214 173.5,-232 318.5,-232 318.5,-214 173.5,-214"/>
 <text text-anchor="start" x="176.5" y="-220.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="173.5,-196 173.5,-214 236.5,-214 236.5,-196 173.5,-196"/>

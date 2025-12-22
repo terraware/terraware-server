@@ -1,3 +1,8 @@
+a008cf61ac0 SW-7827 Rename variables in Observation-related files for Zone -> Strata/Stratum (#3718)
+c0ae9eaa173 Update plugin org.springframework.boot to v3.5.9 (#3754)
+79ddb94f246 Update dependency mypy to v1.19.1 (#3753)
+37b06c2e9fa Update database dependencies (#3752)
+f7b4bfbea83 SW-7826 Rename all db related items for Zone -> Strata/Stratum (#3716)
 b39cbab88cd SW-7829 Rename request and response payloads for zone->strata (#3750)
 438d7d2c54f SW-7883 Add unit field to update standard metric payload (#3749)
 babad5571f3 SW-7883 Add optional unit field to standard metrics (#3747)

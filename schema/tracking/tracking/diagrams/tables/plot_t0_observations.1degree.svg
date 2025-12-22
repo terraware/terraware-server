@@ -57,21 +57,21 @@
 <text text-anchor="start" x="151" y="-381.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="45,-351 45,-373 190,-373 190,-351 45,-351"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-368"/>
-<text text-anchor="start" x="67" y="-359.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="75" y="-359.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-329 45,-351 190,-351 190,-329 45,-329"/>
 <polygon fill="none" stroke="black" points="45,-329 45,-351 190,-351 190,-329 45,-329"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-346"/>
-<text text-anchor="start" x="67" y="-337.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_subzone_id</text>
+<text text-anchor="start" x="75" y="-337.2" font-family="Helvetica,sans-Serif" font-size="11.00">substratum_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-307 45,-329 190,-329 190,-307 45,-307"/>
 <polygon fill="none" stroke="black" points="45,-307 45,-329 190,-329 190,-307 45,-307"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="50" y="-324"/>
-<text text-anchor="start" x="67" y="-315.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
+<text text-anchor="start" x="75" y="-315.2" font-family="Helvetica,sans-Serif" font-size="11.00">planting_site_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-285 45,-307 190,-307 190,-285 45,-285"/>
 <polygon fill="none" stroke="black" points="45,-285 45,-307 190,-307 190,-285 45,-285"/>
-<text text-anchor="start" x="67" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<text text-anchor="start" x="75" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-263 45,-285 190,-285 190,-263 45,-263"/>
 <polygon fill="none" stroke="black" points="45,-263 45,-285 190,-285 190,-263 45,-263"/>
-<text text-anchor="start" x="67" y="-271.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_number</text>
+<text text-anchor="start" x="75" y="-271.2" font-family="Helvetica,sans-Serif" font-size="11.00">plot_number</text>
 <polygon fill="none" stroke="black" points="45,-245 45,-263 190,-263 190,-245 45,-245"/>
 <text text-anchor="start" x="48" y="-251.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="45,-227 45,-245 108,-245 108,-227 45,-227"/>

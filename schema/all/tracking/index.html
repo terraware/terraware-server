@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware.tracking</h4>
-                                <p>Generated on Fri Dec 19 23:54 GMT 2025</p>
+                                <p>Generated on Mon Dec 22 17:52 GMT 2025</p>
                             </div>
                         </div>
                     </div>
@@ -197,15 +197,6 @@
                                 </thead>
                                 <tbody>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observation_requested_subzones.html">observation_requested_subzones</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>If an observation should only cover a specific set of subzones, the subzone IDs are stored here. If an observation is of the entire site (the default), there will be no rows for that observation in this table.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/plot_t0_observations.html">plot_t0_observations</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">6</td>
@@ -269,15 +260,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types for forest in a biomass observation.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/planting_subzone_populations.html">planting_subzone_populations</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Total number of plants of each species in each subzone.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_plots.html">observation_plots</a></td>
                                         <td class="detail" align="right">10</td>
                                         <td class="detail" align="right">8</td>
@@ -287,22 +269,22 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about monitoring plots that are required to be surveyed as part of observations. This is not populated until the scheduled start time of the observation.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/substratum_populations.html">substratum_populations</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Total number of plants of each species in each substratum.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/monitoring_plots.html">monitoring_plots</a></td>
                                         <td class="detail" align="right">16</td>
                                         <td class="detail" align="right">5</td>
                                         <td class="detail" align="right">15</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Regions within planting subzones that can be comprehensively surveyed in order to extrapolate results for the entire zone. Any monitoring plot in a subzone is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same subzone.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/planting_subzone_histories.html">planting_subzone_histories</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Versions of planting subzone maps over time. Each time a planting site map changes, its subzones&rsquo; maps are inserted into this table.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Regions within substrata that can be comprehensively surveyed in order to extrapolate results for the entire stratum. Any monitoring plot in a substratum is expected to have roughly the same number of plants of the same species as any other monitoring plot in the same substratum.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/plantings.html">plantings</a></td>
@@ -312,6 +294,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Details about plants that were planted or reassigned as part of a delivery. There is one plantings row per species in a delivery.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/stratum_histories.html">stratum_histories</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Versions of stratum maps over time. Each time a planting site map changes, its strata&rsquo; maps are inserted into this table.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_plot_positions.html">observation_plot_positions</a></td>
@@ -332,13 +323,22 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Aggregated per-monitoring-plot, per-species totals of plants recorded during observations.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/planting_zone_t0_temp_densities.html">planting_zone_t0_temp_densities</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
+                                        <td class="detail"><a href="tables/strata.html">strata</a></td>
                                         <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">18</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Density for a zone per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the zone&rsquo;s planting site.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/stratum_populations.html">stratum_populations</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Total number of plants of each species in each stratum.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/planting_seasons.html">planting_seasons</a></td>
@@ -348,6 +348,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Start and end dates of planting seasons for planting sites.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observation_requested_substrata.html">observation_requested_substrata</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>If an observation should only cover a specific set of substrata, the substratum IDs are stored here. If an observation is of the entire site (the default), there will be no rows for that observation in this table.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_media_files.html">observation_media_files</a></td>
@@ -366,24 +375,6 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Recorded data for a biomass observation.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observed_zone_species_totals.html">observed_zone_species_totals</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">12</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Aggregated per-planting-zone, per-species totals of plants recorded during observations.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/planting_subzones.html">planting_subzones</a></td>
-                                        <td class="detail" align="right">9</td>
-                                        <td class="detail" align="right">6</td>
-                                        <td class="detail" align="right">14</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Regions within planting zones that are a convenient size for a planting operation. Typically &lt;10Ha.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/plot_t0_densities.html">plot_t0_densities</a></td>
@@ -428,7 +419,7 @@
                                         <td class="detail" align="right">16</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Top-level information about entire planting sites. Every planting site has at least one planting zone.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Top-level information about entire planting sites. Every planting site has at least one stratum.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/recorded_plants.html">recorded_plants</a></td>
@@ -440,15 +431,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about individual plants observed in monitoring plots.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observed_plot_coordinates.html">observed_plot_coordinates</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">5</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observations.html">observations</a></td>
                                         <td class="detail" align="right">16</td>
                                         <td class="detail" align="right">4</td>
@@ -456,6 +438,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Scheduled observations of planting sites. This table may contain rows describing future observations as well as current and past ones.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observed_plot_coordinates.html">observed_plot_coordinates</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">5</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Observed GPS coordinates in monitoring plots. Does not include photo coordinates or coordinates of recorded plants.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/recorded_plant_statuses.html">recorded_plant_statuses</a></td>
@@ -503,6 +494,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Conditions that can be observed in a monitoring plot.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/substrata.html">substrata</a></td>
+                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">14</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Regions within strata that are a convenient size for a planting operation. Typically &lt;10Ha.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/observation_media_types.html">observation_media_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -519,6 +519,24 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Type of observation, currently only used for ad hoc observations.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/substratum_histories.html">substratum_histories</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Versions of substratum maps over time. Each time a planting site map changes, its substrata&rsquo; maps are inserted into this table.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/observed_stratum_species_totals.html">observed_stratum_species_totals</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">12</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Aggregated per-stratum, per-species totals of plants recorded during observations.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/planting_site_notifications.html">planting_site_notifications</a></td>
@@ -539,13 +557,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>List of conditions observed in each monitoring plot.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/observed_subzone_species_totals.html">observed_subzone_species_totals</a></td>
+                                        <td class="detail"><a href="tables/observed_substratum_species_totals.html">observed_substratum_species_totals</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">12</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Aggregated per-planting-subzone, per-species totals of plants recorded during observations.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Aggregated per-substratum, per-species totals of plants recorded during observations.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/deliveries.html">deliveries</a></td>
@@ -555,24 +573,6 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Incoming deliveries of new seedlings to a planting site. Mostly exists to link plantings and nursery withdrawals.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/planting_zones.html">planting_zones</a></td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">18</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Regions within planting sites that have a consistent set of conditions such that survey results from any part of the zone can be extrapolated to the entire zone. Planting zones are subdivided into plots. Every planting zone has at least one plot.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/planting_zone_populations.html">planting_zone_populations</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Total number of plants of each species in each zone.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/draft_planting_sites.html">draft_planting_sites</a></td>
@@ -602,15 +602,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Details of a biomass observation at each quadrat of a monitoring plot.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/planting_zone_histories.html">planting_zone_histories</a></td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Versions of planting zone maps over time. Each time a planting site map changes, its zones&rsquo; maps are inserted into this table.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/recorded_trees.html">recorded_trees</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">7</td>
@@ -618,6 +609,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Recorded trees or shrubs of a biomass observation.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/stratum_t0_temp_densities.html">stratum_t0_temp_densities</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Density for a stratum per species, in plants per hectare. Only applies to temporary plots and only if survival_rate_includes_temp_plots is set to true for the stratum&rsquo;s planting site.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/monitoring_plot_histories.html">monitoring_plot_histories</a></td>

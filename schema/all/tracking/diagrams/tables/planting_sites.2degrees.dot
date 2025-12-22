@@ -15,15 +15,15 @@ digraph "twoDegreesRelationshipsDiagram" {
   "monitoring_plot_histories":"monitoring_plot_id":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_histories":"planting_site_history_id":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_histories":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "monitoring_plot_histories":"planting_subzone_history_id":w -> "planting_subzone_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "monitoring_plot_histories":"planting_subzone_id":w -> "planting_subzones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "monitoring_plot_histories":"substratum_history_id":w -> "substratum_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "monitoring_plot_histories":"substratum_id":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_overlaps":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plot_overlaps":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"organization_id":w -> "public.organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "monitoring_plots":"planting_subzone_id":w -> "planting_subzones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "monitoring_plots":"substratum_id":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_details":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_details":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_details":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -58,8 +58,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observation_plots":"elipses":w -> "monitoring_plot_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plots":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plots":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_requested_subzones":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_requested_subzones":"elipses":w -> "planting_subzones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_requested_substrata":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_requested_substrata":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observations":"observation_type_id":w -> "observation_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observations":"planting_site_history_id":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observations":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -76,14 +76,14 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observed_site_species_totals":"observation_id":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_site_species_totals":"species_id":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_subzone_species_totals":"elipses":w -> "recorded_species_certainties":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_subzone_species_totals":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_subzone_species_totals":"elipses":w -> "planting_subzones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_subzone_species_totals":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_zone_species_totals":"elipses":w -> "recorded_species_certainties":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_zone_species_totals":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_zone_species_totals":"elipses":w -> "planting_zones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_zone_species_totals":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_stratum_species_totals":"elipses":w -> "recorded_species_certainties":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_stratum_species_totals":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_stratum_species_totals":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_stratum_species_totals":"elipses":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_substratum_species_totals":"elipses":w -> "recorded_species_certainties":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_substratum_species_totals":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_substratum_species_totals":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_substratum_species_totals":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_seasons":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_histories":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_histories":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -97,35 +97,14 @@ digraph "twoDegreesRelationshipsDiagram" {
   "planting_sites":"organization_id":w -> "public.organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_sites":"project_id":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_sites":"time_zone":w -> "public.time_zones":"time_zone":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzone_histories":"elipses":w -> "planting_subzones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzone_histories":"elipses":w -> "planting_zone_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzone_populations":"elipses":w -> "planting_subzones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzone_populations":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"planting_site_id":w -> "planting_zones":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_subzones":"planting_zone_id":w -> "planting_zones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_histories":"elipses":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_histories":"elipses":w -> "planting_zones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_populations":"elipses":w -> "planting_zones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_populations":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_t0_temp_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_t0_temp_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_t0_temp_densities":"elipses":w -> "planting_zones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zone_t0_temp_densities":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zones":"boundary_modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zones":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zones":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "planting_zones":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"delivery_id":w -> "deliveries":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"planting_site_id":w -> "deliveries":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "plantings":"planting_site_id":w -> "planting_subzones":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "plantings":"planting_subzone_id":w -> "planting_subzones":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "plantings":"planting_site_id":w -> "substrata":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"planting_type_id":w -> "planting_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "plantings":"species_id":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "plantings":"substratum_id":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_densities":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -147,6 +126,27 @@ digraph "twoDegreesRelationshipsDiagram" {
   "recorded_trees":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strata":"boundary_modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strata":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strata":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "strata":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_histories":"elipses":w -> "planting_site_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_histories":"elipses":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_populations":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_populations":"elipses":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_t0_temp_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_t0_temp_densities":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_t0_temp_densities":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "stratum_t0_temp_densities":"elipses":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"planting_site_id":w -> "strata":"planting_site_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substrata":"stratum_id":w -> "strata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substratum_histories":"elipses":w -> "stratum_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substratum_histories":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substratum_populations":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "substratum_populations":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.withdrawals" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -367,16 +367,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="observation_plots"
   ];
-  "observation_requested_subzones" [
+  "observation_requested_substrata" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="198" HEIGHT="16"><B>observation_requested_subzones</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="200" HEIGHT="16"><B>observation_requested_substrata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/observation_requested_subzones.html"
+    URL="../../tables/observation_requested_substrata.html"
     target="_top"
-    tooltip="observation_requested_subzones"
+    tooltip="observation_requested_substrata"
   ];
   "observation_states" [
    label=<
@@ -444,27 +444,27 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="observed_site_species_totals"
   ];
-  "observed_subzone_species_totals" [
+  "observed_stratum_species_totals" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16"><B>observed_subzone_species_totals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="196" HEIGHT="16"><B>observed_stratum_species_totals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/observed_subzone_species_totals.html"
+    URL="../../tables/observed_stratum_species_totals.html"
     target="_top"
-    tooltip="observed_subzone_species_totals"
+    tooltip="observed_stratum_species_totals"
   ];
-  "observed_zone_species_totals" [
+  "observed_substratum_species_totals" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="176" HEIGHT="16"><B>observed_zone_species_totals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="218" HEIGHT="16"><B>observed_substratum_species_totals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/observed_zone_species_totals.html"
+    URL="../../tables/observed_substratum_species_totals.html"
     target="_top"
-    tooltip="observed_zone_species_totals"
+    tooltip="observed_substratum_species_totals"
   ];
   "planting_seasons" [
    label=<
@@ -547,39 +547,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="planting_sites"
   ];
-  "planting_subzone_histories" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="161" HEIGHT="16"><B>planting_subzone_histories</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_subzone_histories.html"
-    target="_top"
-    tooltip="planting_subzone_histories"
-  ];
-  "planting_subzone_populations" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="181" HEIGHT="16"><B>planting_subzone_populations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_subzone_populations.html"
-    target="_top"
-    tooltip="planting_subzone_populations"
-  ];
-  "planting_subzones" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="110" HEIGHT="16"><B>planting_subzones</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">8 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_subzones.html"
-    target="_top"
-    tooltip="planting_subzones"
-  ];
   "planting_types" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -590,50 +557,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/planting_types.html"
     target="_top"
     tooltip="planting_types"
-  ];
-  "planting_zone_histories" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="140" HEIGHT="16"><B>planting_zone_histories</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_zone_histories.html"
-    target="_top"
-    tooltip="planting_zone_histories"
-  ];
-  "planting_zone_populations" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16"><B>planting_zone_populations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_zone_populations.html"
-    target="_top"
-    tooltip="planting_zone_populations"
-  ];
-  "planting_zone_t0_temp_densities" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="195" HEIGHT="16"><B>planting_zone_t0_temp_densities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_zone_t0_temp_densities.html"
-    target="_top"
-    tooltip="planting_zone_t0_temp_densities"
-  ];
-  "planting_zones" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="89" HEIGHT="16"><B>planting_zones</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/planting_zones.html"
-    target="_top"
-    tooltip="planting_zones"
   ];
   "plantings" [
    label=<
@@ -700,5 +623,82 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/recorded_trees.html"
     target="_top"
     tooltip="recorded_trees"
+  ];
+  "strata" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="36" HEIGHT="16"><B>strata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/strata.html"
+    target="_top"
+    tooltip="strata"
+  ];
+  "stratum_histories" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="106" HEIGHT="16"><B>stratum_histories</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/stratum_histories.html"
+    target="_top"
+    tooltip="stratum_histories"
+  ];
+  "stratum_populations" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="125" HEIGHT="16"><B>stratum_populations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/stratum_populations.html"
+    target="_top"
+    tooltip="stratum_populations"
+  ];
+  "stratum_t0_temp_densities" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="161" HEIGHT="16"><B>stratum_t0_temp_densities</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/stratum_t0_temp_densities.html"
+    target="_top"
+    tooltip="stratum_t0_temp_densities"
+  ];
+  "substrata" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="57" HEIGHT="16"><B>substrata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">8 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/substrata.html"
+    target="_top"
+    tooltip="substrata"
+  ];
+  "substratum_histories" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="127" HEIGHT="16"><B>substratum_histories</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/substratum_histories.html"
+    target="_top"
+    tooltip="substratum_histories"
+  ];
+  "substratum_populations" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="146" HEIGHT="16"><B>substratum_populations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/substratum_populations.html"
+    target="_top"
+    tooltip="substratum_populations"
   ];
 }

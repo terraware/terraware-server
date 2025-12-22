@@ -995,18 +995,18 @@
             <child column="created_by" foreignKey="planting_site_histories_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_site_histories"/>
             <child column="created_by" foreignKey="planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
-            <child column="created_by" foreignKey="plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
-            <child column="modified_by" foreignKey="plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_subzones"/>
-            <child column="created_by" foreignKey="planting_zone_t0_temp_densities_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zone_t0_temp_densities"/>
-            <child column="modified_by" foreignKey="planting_zone_t0_temp_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zone_t0_temp_densities"/>
-            <child column="boundary_modified_by" foreignKey="planting_zones_boundary_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
-            <child column="created_by" foreignKey="planting_zones_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
-            <child column="modified_by" foreignKey="planting_zones_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_zones"/>
             <child column="created_by" foreignKey="plantings_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="created_by" foreignKey="plot_t0_densities_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_densities"/>
             <child column="modified_by" foreignKey="plot_t0_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_densities"/>
             <child column="created_by" foreignKey="plot_t0_observations_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_observations"/>
             <child column="modified_by" foreignKey="plot_t0_observations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_observations"/>
+            <child column="boundary_modified_by" foreignKey="strata_boundary_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
+            <child column="created_by" foreignKey="strata_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
+            <child column="modified_by" foreignKey="strata_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
+            <child column="created_by" foreignKey="stratum_t0_temp_densities_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="stratum_t0_temp_densities"/>
+            <child column="modified_by" foreignKey="stratum_t0_temp_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="stratum_t0_temp_densities"/>
+            <child column="created_by" foreignKey="substrata_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="substrata"/>
+            <child column="modified_by" foreignKey="substrata_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="substrata"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auth_id" nullable="true" remarks="Unique identifier of the user in the authentication system. Currently, this is a Keycloak user ID." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="email" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>

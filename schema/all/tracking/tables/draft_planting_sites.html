@@ -152,14 +152,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="draft_planting_sites.organization_id references public.organizations.id via draft_planting_sites_organization_id_fkey"><a href='../../public/tables/organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">draft_planting_sites_organization_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="draft_planting_sites.[organization_id, project_id] references public.projects.[organization_id, id] via draft_planting_sites_organization_id_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.organization_id</span></td>
                                                 <td class="constraint detail">draft_planting_sites_organization_id_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="draft_planting_sites.organization_id references public.organizations.id via draft_planting_sites_organization_id_fkey"><a href='../../public/tables/organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">draft_planting_sites_organization_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -244,7 +244,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="num_planting_zones">num_planting_zones</span></td>
+                                    <td><span id="num_strata">num_strata</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title='nullable'>√</td>
@@ -258,10 +258,10 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Number of planting zones defined so far.</p></td>
+                                    <td><p>Number of strata defined so far.</p></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="num_planting_subzones">num_planting_subzones</span></td>
+                                    <td><span id="num_substrata">num_substrata</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title='nullable'>√</td>
@@ -275,7 +275,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>Number of planting subzones defined so far.</p></td>
+                                    <td><p>Number of substrata defined so far.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="data">data</span></td>
