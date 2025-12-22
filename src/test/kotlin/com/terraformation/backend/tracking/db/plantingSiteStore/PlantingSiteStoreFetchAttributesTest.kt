@@ -18,14 +18,14 @@ internal class PlantingSiteStoreFetchAttributesTest : BasePlantingSiteStoreTest(
     }
 
     @Test
-    fun `returns false when site has no subzones`() {
+    fun `returns false when site has no substrata`() {
       val plantingSiteId = insertPlantingSite()
 
       assertFalse(store.isDetailed(plantingSiteId))
     }
 
     @Test
-    fun `returns true when site has a subzone`() {
+    fun `returns true when site has a substratum`() {
       val plantingSiteId = insertPlantingSite()
       insertStratum()
       insertSubstratum()
