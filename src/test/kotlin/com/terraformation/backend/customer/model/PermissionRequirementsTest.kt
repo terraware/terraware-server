@@ -71,7 +71,7 @@ import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.StratumNotFoundException
-import com.terraformation.backend.tracking.db.SubstrataNotFoundException
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import io.mockk.CapturingSlot
 import io.mockk.MockKMatcherScope
 import io.mockk.every
@@ -186,7 +186,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val submissionDocumentId: SubmissionDocumentId by
       readableId(SubmissionDocumentNotFoundException::class) { canReadSubmissionDocument(it) }
   private val substratumId: SubstratumId by
-      readableId(SubstrataNotFoundException::class) { canReadSubstratum(it) }
+      readableId(SubstratumNotFoundException::class) { canReadSubstratum(it) }
   private val uploadId: UploadId by readableId(UploadNotFoundException::class) { canReadUpload(it) }
   private val userId = UserId(1)
   private val viabilityTestId: ViabilityTestId by

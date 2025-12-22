@@ -32,7 +32,7 @@ import com.terraformation.backend.db.tracking.tables.records.ObservedSiteSpecies
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.species.model.NewSpeciesModel
-import com.terraformation.backend.tracking.db.SubstrataNotFoundException
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
@@ -684,7 +684,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canReadSubstratum(subzoneId) } returns false
 
-      assertThrows<SubstrataNotFoundException> { store.fetchSiteSpeciesBySubstratumId(subzoneId) }
+      assertThrows<SubstratumNotFoundException> { store.fetchSiteSpeciesBySubstratumId(subzoneId) }
     }
   }
 

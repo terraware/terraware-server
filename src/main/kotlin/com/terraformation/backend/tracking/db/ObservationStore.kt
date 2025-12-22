@@ -497,7 +497,7 @@ class ObservationStore(
 
       if (substrataInRequestedSite != newModel.requestedSubstratumIds) {
         val missingSubstratumIds = newModel.requestedSubstratumIds - substrataInRequestedSite
-        throw SubstrataNotFoundException(missingSubstratumIds.first())
+        throw SubstratumNotFoundException(missingSubstratumIds.first())
       }
 
       if (newModel.isAdHoc) {

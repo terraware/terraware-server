@@ -888,7 +888,7 @@ class PlantingSiteStore(
                   .where(ID.eq(substratumId))
                   .execute()
           if (rowsUpdated != 1) {
-            throw SubstrataNotFoundException(substratumId)
+            throw SubstratumNotFoundException(substratumId)
           }
         }
 
@@ -1176,7 +1176,7 @@ class PlantingSiteStore(
     requirePermissions { updateSubstratumCompleted(substratumId) }
 
     val initial =
-        substrataDao.fetchOneById(substratumId) ?: throw SubstrataNotFoundException(substratumId)
+        substrataDao.fetchOneById(substratumId) ?: throw SubstratumNotFoundException(substratumId)
 
     val plantingCompletedTime =
         if (completed) initial.plantingCompletedTime ?: clock.instant() else null

@@ -526,7 +526,7 @@ class DeliveryStore(
             .select(SUBSTRATA.STRATUM_ID)
             .from(SUBSTRATA)
             .where(SUBSTRATA.ID.eq(substratumId))
-            .fetchOne(SUBSTRATA.STRATUM_ID) ?: throw SubstrataNotFoundException(substratumId)
+            .fetchOne(SUBSTRATA.STRATUM_ID) ?: throw SubstratumNotFoundException(substratumId)
 
     with(SUBSTRATUM_POPULATIONS) {
       dslContext
