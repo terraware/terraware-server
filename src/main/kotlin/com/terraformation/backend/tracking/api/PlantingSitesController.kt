@@ -23,13 +23,13 @@ import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
-import com.terraformation.backend.tracking.model.ExistingPlantingSubzoneModel
-import com.terraformation.backend.tracking.model.ExistingPlantingZoneModel
+import com.terraformation.backend.tracking.model.ExistingStratumModel
+import com.terraformation.backend.tracking.model.ExistingSubstratumModel
 import com.terraformation.backend.tracking.model.MonitoringPlotHistoryModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
-import com.terraformation.backend.tracking.model.NewPlantingSubzoneModel
-import com.terraformation.backend.tracking.model.NewPlantingZoneModel
+import com.terraformation.backend.tracking.model.NewStratumModel
+import com.terraformation.backend.tracking.model.NewSubstratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -37,9 +37,9 @@ import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureType
 import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
-import com.terraformation.backend.tracking.model.PlantingSubzoneModel
 import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
-import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
@@ -287,7 +287,7 @@ data class PlantingSubzonePayload(
     val plantingCompletedTime: Instant?,
 ) {
   constructor(
-      model: ExistingPlantingSubzoneModel
+      model: ExistingSubstratumModel
   ) : this(
       areaHa = model.areaHa,
       boundary = model.boundary,
@@ -323,7 +323,7 @@ data class PlantingZonePayload(
     val targetPlantingDensity: BigDecimal,
 ) {
   constructor(
-      model: ExistingPlantingZoneModel
+      model: ExistingStratumModel
   ) : this(
       model.areaHa,
       model.boundary,
@@ -334,7 +334,7 @@ data class PlantingZonePayload(
       model.name,
       model.numPermanentPlots,
       model.numTemporaryPlots,
-      model.plantingSubzones.map { PlantingSubzonePayload(it) },
+      model.substrata.map { PlantingSubzonePayload(it) },
       model.targetPlantingDensity,
   )
 }
@@ -391,7 +391,7 @@ data class PlantingSitePayload(
       name = model.name,
       organizationId = model.organizationId,
       plantingSeasons = model.plantingSeasons.map { PlantingSeasonPayload(it) },
-      plantingZones = model.plantingZones.map { PlantingZonePayload(it) },
+      plantingZones = model.strata.map { PlantingZonePayload(it) },
       projectId = model.projectId,
       survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
       timeZone = model.timeZone,
@@ -576,8 +576,8 @@ data class NewPlantingSubzonePayload(
     }
   }
 
-  fun toModel(zoneName: String, exclusion: MultiPolygon?): NewPlantingSubzoneModel {
-    return PlantingSubzoneModel.create(
+  fun toModel(zoneName: String, exclusion: MultiPolygon?): NewSubstratumModel {
+    return SubstratumModel.create(
         boundary = boundary.toMultiPolygon(),
         exclusion = exclusion,
         fullName = "$zoneName-$name",
@@ -606,14 +606,14 @@ data class NewPlantingZonePayload(
     plantingSubzones?.forEach { it.validate() }
   }
 
-  fun toModel(exclusion: MultiPolygon?): NewPlantingZoneModel {
-    return PlantingZoneModel.create(
+  fun toModel(exclusion: MultiPolygon?): NewStratumModel {
+    return StratumModel.create(
         boundary = boundary.toMultiPolygon(),
         exclusion = exclusion,
         name = name,
         targetPlantingDensity =
-            targetPlantingDensity ?: PlantingZoneModel.DEFAULT_TARGET_PLANTING_DENSITY,
-        plantingSubzones = plantingSubzones?.map { it.toModel(name, exclusion) } ?: emptyList(),
+            targetPlantingDensity ?: StratumModel.DEFAULT_TARGET_PLANTING_DENSITY,
+        substrata = plantingSubzones?.map { it.toModel(name, exclusion) } ?: emptyList(),
     )
   }
 }
@@ -642,7 +642,7 @@ data class PlantingSiteValidationProblemPayload(
 ) {
   constructor(
       model: PlantingSiteValidationFailure
-  ) : this(model.conflictsWith, model.zoneName, model.subzoneName, model.type)
+  ) : this(model.conflictsWith, model.stratumName, model.substratumName, model.type)
 }
 
 data class CreatePlantingSiteRequestPayload(
@@ -684,7 +684,7 @@ data class CreatePlantingSiteRequestPayload(
         exclusion = exclusionMultiPolygon,
         name = name,
         organizationId = organizationId,
-        plantingZones = plantingZones?.map { it.toModel(exclusionMultiPolygon) } ?: emptyList(),
+        strata = plantingZones?.map { it.toModel(exclusionMultiPolygon) } ?: emptyList(),
         projectId = projectId,
         timeZone = timeZone,
     )

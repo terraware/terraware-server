@@ -2,20 +2,23 @@ package com.terraformation.backend.tracking.model
 
 data class PlantingSiteValidationFailure(
     val type: PlantingSiteValidationFailureType,
-    val zoneName: String? = null,
-    val subzoneName: String? = null,
+    val stratumName: String? = null,
+    val substratumName: String? = null,
     val conflictsWith: Set<String>? = null,
 ) {
   companion object {
-    fun duplicateSubzoneName(subzoneName: String, zoneName: String) =
+    fun duplicateSubstratumName(substratumName: String, stratumName: String) =
         PlantingSiteValidationFailure(
-            PlantingSiteValidationFailureType.DuplicateSubzoneName,
-            zoneName,
-            subzoneName,
+            PlantingSiteValidationFailureType.DuplicateSubstratumName,
+            stratumName,
+            substratumName,
         )
 
-    fun duplicateZoneName(zoneName: String) =
-        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.DuplicateZoneName, zoneName)
+    fun duplicateStratumName(stratumName: String) =
+        PlantingSiteValidationFailure(
+            PlantingSiteValidationFailureType.DuplicateStratumName,
+            stratumName,
+        )
 
     fun exclusionWithoutBoundary() =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ExclusionWithoutBoundary)
@@ -23,45 +26,58 @@ data class PlantingSiteValidationFailure(
     fun siteTooLarge() =
         PlantingSiteValidationFailure(PlantingSiteValidationFailureType.SiteTooLarge)
 
-    fun subzoneBoundaryOverlaps(conflictsWith: Set<String>, subzoneName: String, zoneName: String) =
+    fun substratumBoundaryOverlaps(
+        conflictsWith: Set<String>,
+        substratumName: String,
+        stratumName: String,
+    ) =
         PlantingSiteValidationFailure(
-            PlantingSiteValidationFailureType.SubzoneBoundaryOverlaps,
-            zoneName,
-            subzoneName,
+            PlantingSiteValidationFailureType.SubstratumBoundaryOverlaps,
+            stratumName,
+            substratumName,
             conflictsWith,
         )
 
-    fun subzoneInExclusionArea(subzoneName: String, zoneName: String) =
+    fun substratumInExclusionArea(substratumName: String, stratumName: String) =
         PlantingSiteValidationFailure(
-            PlantingSiteValidationFailureType.SubzoneInExclusionArea,
-            zoneName,
-            subzoneName,
+            PlantingSiteValidationFailureType.SubstratumInExclusionArea,
+            stratumName,
+            substratumName,
         )
 
-    fun subzoneNotInZone(subzoneName: String, zoneName: String) =
+    fun substratumNotInStratum(substratumName: String, stratumName: String) =
         PlantingSiteValidationFailure(
-            PlantingSiteValidationFailureType.SubzoneNotInZone,
-            zoneName,
-            subzoneName,
+            PlantingSiteValidationFailureType.SubstratumNotInStratum,
+            stratumName,
+            substratumName,
         )
 
-    fun zoneBoundaryOverlaps(conflictsWith: Set<String>, zoneName: String) =
+    fun stratumBoundaryOverlaps(conflictsWith: Set<String>, stratumName: String) =
         PlantingSiteValidationFailure(
-            PlantingSiteValidationFailureType.ZoneBoundaryOverlaps,
-            zoneName,
+            PlantingSiteValidationFailureType.StratumBoundaryOverlaps,
+            stratumName,
             conflictsWith = conflictsWith,
         )
 
-    fun zoneHasNoSubzones(zoneName: String) =
-        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ZoneHasNoSubzones, zoneName)
+    fun stratumHasNoSubstrata(stratumName: String) =
+        PlantingSiteValidationFailure(
+            PlantingSiteValidationFailureType.StratumHasNoSubstrata,
+            stratumName,
+        )
 
-    fun zoneNotInSite(zoneName: String) =
-        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ZoneNotInSite, zoneName)
+    fun stratumNotInSite(stratumName: String) =
+        PlantingSiteValidationFailure(
+            PlantingSiteValidationFailureType.StratumNotInSite,
+            stratumName,
+        )
 
-    fun zonesWithoutSiteBoundary() =
-        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ZonesWithoutSiteBoundary)
+    fun strataWithoutSiteBoundary() =
+        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.StrataWithoutSiteBoundary)
 
-    fun zoneTooSmall(zoneName: String) =
-        PlantingSiteValidationFailure(PlantingSiteValidationFailureType.ZoneTooSmall, zoneName)
+    fun stratumTooSmall(stratumName: String) =
+        PlantingSiteValidationFailure(
+            PlantingSiteValidationFailureType.StratumTooSmall,
+            stratumName,
+        )
   }
 }

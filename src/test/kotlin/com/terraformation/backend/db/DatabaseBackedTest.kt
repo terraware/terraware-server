@@ -484,7 +484,7 @@ import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
-import com.terraformation.backend.tracking.model.PlantingZoneModel
+import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
@@ -658,7 +658,7 @@ abstract class DatabaseBackedTest {
   protected val observationMediaFilesDao: ObservationMediaFilesDao by lazyDao()
   protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
-  protected val observationRequestedSubzonesDao: ObservationRequestedSubstrataDao by lazyDao()
+  protected val observationRequestedSubstrataDao: ObservationRequestedSubstrataDao by lazyDao()
   protected val observationsDao: ObservationsDao by lazyDao()
   protected val observedPlotCoordinatesDao: ObservedPlotCoordinatesDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
@@ -2318,19 +2318,17 @@ abstract class DatabaseBackedTest {
               ),
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      errorMargin: BigDecimal = row.errorMargin ?: PlantingZoneModel.DEFAULT_ERROR_MARGIN,
+      errorMargin: BigDecimal = row.errorMargin ?: StratumModel.DEFAULT_ERROR_MARGIN,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       name: String = row.name ?: "Z${nextPlantingZoneNumber++}",
-      numPermanentPlots: Int =
-          row.numPermanentPlots ?: PlantingZoneModel.DEFAULT_NUM_PERMANENT_PLOTS,
-      numTemporaryPlots: Int =
-          row.numTemporaryPlots ?: PlantingZoneModel.DEFAULT_NUM_TEMPORARY_PLOTS,
+      numPermanentPlots: Int = row.numPermanentPlots ?: StratumModel.DEFAULT_NUM_PERMANENT_PLOTS,
+      numTemporaryPlots: Int = row.numTemporaryPlots ?: StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       stableId: Any = row.name ?: name,
-      studentsT: BigDecimal = row.studentsT ?: PlantingZoneModel.DEFAULT_STUDENTS_T,
+      studentsT: BigDecimal = row.studentsT ?: StratumModel.DEFAULT_STUDENTS_T,
       targetPlantingDensity: BigDecimal? = row.targetPlantingDensity,
-      variance: BigDecimal = row.variance ?: PlantingZoneModel.DEFAULT_VARIANCE,
+      variance: BigDecimal = row.variance ?: StratumModel.DEFAULT_VARIANCE,
       insertHistory: Boolean = true,
       boundaryModifiedBy: UserId = row.boundaryModifiedBy ?: modifiedBy,
       boundaryModifiedTime: Instant = row.boundaryModifiedTime ?: modifiedTime,
@@ -3161,7 +3159,7 @@ abstract class DatabaseBackedTest {
       observationId: ObservationId = inserted.observationId,
       plantingSubzoneId: SubstratumId = inserted.plantingSubzoneId,
   ) {
-    observationRequestedSubzonesDao.insert(
+    observationRequestedSubstrataDao.insert(
         ObservationRequestedSubstrataRow(observationId, plantingSubzoneId)
     )
   }

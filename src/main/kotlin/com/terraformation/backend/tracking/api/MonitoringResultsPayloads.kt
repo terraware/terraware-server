@@ -19,12 +19,12 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
-import com.terraformation.backend.tracking.model.ObservationPlantingSubzoneResultsModel
-import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
-import com.terraformation.backend.tracking.model.ObservationPlantingZoneRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
+import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
+import com.terraformation.backend.tracking.model.ObservationStratumRollupResultsModel
+import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
@@ -258,7 +258,7 @@ data class ObservationPlantingSubzoneResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingSubzoneResultsModel
+      model: ObservationSubstratumResultsModel
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
@@ -269,7 +269,7 @@ data class ObservationPlantingSubzoneResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzoneId = model.plantingSubzoneId,
+      plantingSubzoneId = model.substratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -329,7 +329,7 @@ data class ObservationSubstratumResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingSubzoneResultsModel
+      model: ObservationSubstratumResultsModel
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
@@ -340,7 +340,7 @@ data class ObservationSubstratumResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzoneId = model.plantingSubzoneId,
+      plantingSubzoneId = model.substratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -371,7 +371,7 @@ data class ObservationPlantingZoneResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingZoneResultsModel
+      model: ObservationStratumResultsModel
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
@@ -381,9 +381,8 @@ data class ObservationPlantingZoneResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzones =
-          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
-      plantingZoneId = model.plantingZoneId,
+      plantingSubzones = model.substrata.map { ObservationPlantingSubzoneResultsPayload(it) },
+      plantingZoneId = model.stratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -447,7 +446,7 @@ data class ObservationStratumResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingZoneResultsModel
+      model: ObservationStratumResultsModel
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
@@ -457,12 +456,12 @@ data class ObservationStratumResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingZoneId = model.plantingZoneId,
+      plantingZoneId = model.stratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
-      substrata = model.plantingSubzones.map { ObservationSubstratumResultsPayload(it) },
+      substrata = model.substrata.map { ObservationSubstratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
@@ -527,14 +526,14 @@ data class ObservationResultsPayload(
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSiteHistoryId = model.plantingSiteHistoryId,
       plantingSiteId = model.plantingSiteId,
-      plantingZones = model.plantingZones.map { ObservationPlantingZoneResultsPayload(it) },
+      plantingZones = model.strata.map { ObservationPlantingZoneResultsPayload(it) },
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
       startDate = model.startDate,
       state = model.state,
-      strata = model.plantingZones.map { ObservationStratumResultsPayload(it) },
+      strata = model.strata.map { ObservationStratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
@@ -602,7 +601,7 @@ data class PlantingZoneObservationSummaryPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingZoneRollupResultsModel
+      model: ObservationStratumRollupResultsModel
   ) : this(
       areaHa = model.areaHa,
       earliestObservationTime = model.earliestCompletedTime,
@@ -612,14 +611,13 @@ data class PlantingZoneObservationSummaryPayload(
       mortalityRateStdDev = model.mortalityRateStdDev,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzones =
-          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
-      plantingZoneId = model.plantingZoneId,
+      plantingSubzones = model.substrata.map { ObservationPlantingSubzoneResultsPayload(it) },
+      plantingZoneId = model.stratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
-      substrata = model.plantingSubzones.map { ObservationSubstratumResultsPayload(it) },
+      substrata = model.substrata.map { ObservationSubstratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
@@ -691,7 +689,7 @@ data class PlantingSiteObservationSummaryPayload(
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSiteId = model.plantingSiteId,
-      plantingZones = model.plantingZones.map { PlantingZoneObservationSummaryPayload(it) },
+      plantingZones = model.strata.map { PlantingZoneObservationSummaryPayload(it) },
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }

@@ -59,7 +59,7 @@ data class ObservationSpeciesResultsModel(
     val cumulativeDead: Int,
     /**
      * Number of live plants observed in monitoring plots in the latest observations. If this is for
-     * a zone or site, it may also include past observations (excluding ad-hoc) if the latest
+     * a stratum or site, it may also include past observations (excluding ad-hoc) if the latest
      * observation doesn't include all subareas.
      */
     val latestLive: Int,
@@ -155,13 +155,13 @@ data class ObservationMonitoringPlotResultsModel(
 )
 
 /**
- * Common values for monitoring results for different kinds of regions (subzones, planting zones,
- * planting sites).
+ * Common values for monitoring results for different kinds of regions (substrata, strata, planting
+ * sites).
  */
 interface BaseMonitoringResult {
   /**
    * Estimated number of plants in the region based on estimated planting density and area. Only
-   * present if all observed subzones in the region have completed planting.
+   * present if all observed substrata in the region have completed planting.
    */
   val estimatedPlants: Int?
 
@@ -177,7 +177,7 @@ interface BaseMonitoringResult {
   val mortalityRateStdDev: Int?
 
   /**
-   * Whether planting has completed. Planting is considered completed if all subzones in the region
+   * Whether planting has completed. Planting is considered completed if all substrata in the region
    * have completed planting.
    */
   val plantingCompleted: Boolean
@@ -218,7 +218,7 @@ interface BaseMonitoringResult {
   val totalSpecies: Int
 }
 
-data class ObservationPlantingSubzoneResultsModel(
+data class ObservationSubstratumResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
@@ -229,7 +229,7 @@ data class ObservationPlantingSubzoneResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
-    val plantingSubzoneId: SubstratumId?,
+    val substratumId: SubstratumId?,
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
@@ -238,7 +238,7 @@ data class ObservationPlantingSubzoneResultsModel(
     override val totalSpecies: Int,
 ) : BaseMonitoringResult
 
-data class ObservationPlantingZoneResultsModel(
+data class ObservationStratumResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
@@ -248,8 +248,8 @@ data class ObservationPlantingZoneResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
-    val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
-    val plantingZoneId: StratumId?,
+    val substrata: List<ObservationSubstratumResultsModel>,
+    val stratumId: StratumId?,
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
@@ -273,7 +273,7 @@ data class ObservationResultsModel(
     override val plantingDensityStdDev: Int?,
     val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
-    val plantingZones: List<ObservationPlantingZoneResultsModel>,
+    val strata: List<ObservationStratumResultsModel>,
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     val survivalRateIncludesTempPlots: Boolean,
@@ -284,7 +284,7 @@ data class ObservationResultsModel(
     override val totalSpecies: Int,
 ) : BaseMonitoringResult
 
-data class ObservationPlantingZoneRollupResultsModel(
+data class ObservationStratumRollupResultsModel(
     val areaHa: BigDecimal,
     /** Time when the earliest observation in this rollup was completed. */
     val earliestCompletedTime: Instant,
@@ -296,9 +296,9 @@ data class ObservationPlantingZoneRollupResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
-    /** List of subzone observation results used for this rollup */
-    val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
-    val plantingZoneId: StratumId,
+    /** List of substratum observation results used for this rollup */
+    val substrata: List<ObservationSubstratumResultsModel>,
+    val stratumId: StratumId,
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
@@ -309,25 +309,25 @@ data class ObservationPlantingZoneRollupResultsModel(
   companion object {
     fun of(
         areaHa: BigDecimal,
-        plantingZoneId: StratumId,
-        /** Must include every subzone in the planting zone */
-        subzoneResults: Map<SubstratumId, ObservationPlantingSubzoneResultsModel?>,
-    ): ObservationPlantingZoneRollupResultsModel? {
-      val nonNullSubzoneResults = subzoneResults.values.filterNotNull()
-      if (nonNullSubzoneResults.isEmpty()) {
+        stratumId: StratumId,
+        /** Must include every substratum in the stratum */
+        substratumResults: Map<SubstratumId, ObservationSubstratumResultsModel?>,
+    ): ObservationStratumRollupResultsModel? {
+      val nonNullSubstratumResults = substratumResults.values.filterNotNull()
+      if (nonNullSubstratumResults.isEmpty()) {
         return null
       }
       val survivalRateIncludesTempPlots =
-          nonNullSubzoneResults.first().survivalRateIncludesTempPlots
+          nonNullSubstratumResults.first().survivalRateIncludesTempPlots
 
-      val plantingCompleted = subzoneResults.values.none { it == null || !it.plantingCompleted }
+      val plantingCompleted = substratumResults.values.none { it == null || !it.plantingCompleted }
 
       val completedMonitoringPlots =
-          nonNullSubzoneResults
+          nonNullSubstratumResults
               .flatMap { it.monitoringPlots }
               .filter { it.status == ObservationPlotStatus.Completed }
       val species =
-          nonNullSubzoneResults
+          nonNullSubstratumResults
               .map { it.species }
               .reduce { acc, species -> acc.unionSpecies(species, survivalRateIncludesTempPlots) }
 
@@ -366,14 +366,14 @@ data class ObservationPlantingZoneRollupResultsModel(
                 }
               }
               .calculateWeightedStandardDeviation()
-      val survivalRateSubzones =
-          nonNullSubzoneResults.filter { subzone ->
-            subzone.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
+      val survivalRateSubstrata =
+          nonNullSubstratumResults.filter { substratum ->
+            substratum.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
           }
       val survivalRate =
           if (
-              survivalRateSubzones.isNotEmpty() &&
-                  survivalRateSubzones.all { it.survivalRate != null }
+              survivalRateSubstrata.isNotEmpty() &&
+                  survivalRateSubstrata.all { it.survivalRate != null }
           )
               species.calculateSurvivalRate(survivalRateIncludesTempPlots)
           else null
@@ -389,7 +389,7 @@ data class ObservationPlantingZoneRollupResultsModel(
                   .calculateWeightedStandardDeviation()
           else null
 
-      return ObservationPlantingZoneRollupResultsModel(
+      return ObservationStratumRollupResultsModel(
           areaHa = areaHa,
           earliestCompletedTime = completedMonitoringPlots.minOf { it.completedTime!! },
           estimatedPlants = estimatedPlants?.roundToInt(),
@@ -399,8 +399,8 @@ data class ObservationPlantingZoneRollupResultsModel(
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
           plantingDensityStdDev = plantingDensityStdDev,
-          plantingSubzones = nonNullSubzoneResults,
-          plantingZoneId = plantingZoneId,
+          substrata = nonNullSubstratumResults,
+          stratumId = stratumId,
           species = species,
           survivalRate = survivalRate,
           survivalRateStdDev = survivalRateStdDev,
@@ -424,8 +424,8 @@ data class ObservationRollupResultsModel(
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     val plantingSiteId: PlantingSiteId,
-    /** List of subzone observation results used for this rollup */
-    val plantingZones: List<ObservationPlantingZoneRollupResultsModel>,
+    /** List of substratum observation results used for this rollup */
+    val strata: List<ObservationStratumRollupResultsModel>,
     /** List of species result used for this rollup */
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
@@ -436,23 +436,24 @@ data class ObservationRollupResultsModel(
   companion object {
     fun of(
         plantingSiteId: PlantingSiteId,
-        /** Must include every zone in the planting site */
-        zoneResults: Map<StratumId, ObservationPlantingZoneRollupResultsModel?>,
+        /** Must include every stratum in the planting site */
+        stratumResults: Map<StratumId, ObservationStratumRollupResultsModel?>,
     ): ObservationRollupResultsModel? {
-      val nonNullZoneResults = zoneResults.values.filterNotNull()
-      if (nonNullZoneResults.isEmpty()) {
+      val nonNullStratumResults = stratumResults.values.filterNotNull()
+      if (nonNullStratumResults.isEmpty()) {
         return null
       }
-      val survivalRateIncludesTempPlots = nonNullZoneResults.first().survivalRateIncludesTempPlots
+      val survivalRateIncludesTempPlots =
+          nonNullStratumResults.first().survivalRateIncludesTempPlots
 
-      val plantingCompleted = zoneResults.values.none { it == null || !it.plantingCompleted }
+      val plantingCompleted = stratumResults.values.none { it == null || !it.plantingCompleted }
 
       val monitoringPlots =
-          nonNullZoneResults.flatMap { zone ->
-            zone.plantingSubzones.flatMap { it.monitoringPlots }
+          nonNullStratumResults.flatMap { stratum ->
+            stratum.substrata.flatMap { it.monitoringPlots }
           }
       val species =
-          nonNullZoneResults
+          nonNullStratumResults
               .map { it.species }
               .reduce { acc, species -> acc.unionSpecies(species, survivalRateIncludesTempPlots) }
 
@@ -476,7 +477,7 @@ data class ObservationRollupResultsModel(
 
       val estimatedPlants =
           if (plantingCompleted) {
-            nonNullZoneResults.sumOf { it.estimatedPlants ?: 0 }
+            nonNullStratumResults.sumOf { it.estimatedPlants ?: 0 }
           } else {
             null
           }
@@ -495,7 +496,7 @@ data class ObservationRollupResultsModel(
               }
               .calculateWeightedStandardDeviation()
       val survivalRate =
-          if (nonNullZoneResults.all { it.survivalRate != null })
+          if (nonNullStratumResults.all { it.survivalRate != null })
               species.calculateSurvivalRate(survivalRateIncludesTempPlots)
           else null
       val survivalRateStdDev =
@@ -511,16 +512,16 @@ data class ObservationRollupResultsModel(
           else null
 
       return ObservationRollupResultsModel(
-          earliestCompletedTime = nonNullZoneResults.minOf { it.earliestCompletedTime },
+          earliestCompletedTime = nonNullStratumResults.minOf { it.earliestCompletedTime },
           estimatedPlants = estimatedPlants,
-          latestCompletedTime = nonNullZoneResults.maxOf { it.latestCompletedTime },
+          latestCompletedTime = nonNullStratumResults.maxOf { it.latestCompletedTime },
           mortalityRate = mortalityRate,
           mortalityRateStdDev = mortalityRateStdDev,
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
           plantingDensityStdDev = plantingDensityStdDev,
           plantingSiteId = plantingSiteId,
-          plantingZones = nonNullZoneResults,
+          strata = nonNullStratumResults,
           species = species,
           survivalRate = survivalRate,
           survivalRateStdDev = survivalRateStdDev,

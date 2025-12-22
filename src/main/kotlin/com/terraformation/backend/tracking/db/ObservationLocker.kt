@@ -23,12 +23,12 @@ class ObservationLocker(val dslContext: DSLContext) {
     return dslContext.transactionResult { _ ->
       val model =
           dslContext
-              .select(OBSERVATIONS.asterisk(), ObservationStore.requestedSubzoneIdsField)
+              .select(OBSERVATIONS.asterisk(), ObservationStore.requestedSubstratumIdsField)
               .from(OBSERVATIONS)
               .where(OBSERVATIONS.ID.eq(observationId))
               .forUpdate()
               .of(OBSERVATIONS)
-              .fetchOne { ObservationModel.of(it, ObservationStore.requestedSubzoneIdsField) }
+              .fetchOne { ObservationModel.of(it, ObservationStore.requestedSubstratumIdsField) }
               ?: throw ObservationNotFoundException(observationId)
 
       func(model)

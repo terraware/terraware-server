@@ -22,24 +22,24 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
-data class PlantingZoneModel<
-    PZID : StratumId?,
-    PSZID : SubstratumId?,
+data class StratumModel<
+    SID : StratumId?,
+    SSID : SubstratumId?,
     TIMESTAMP : Instant?,
 >(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val boundaryModifiedTime: TIMESTAMP,
     val errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
-    val id: PZID,
-    /** The time of the latest observation, if the planting zone has completed observations */
+    val id: SID,
+    /** The time of the latest observation, if the stratum has completed observations */
     val latestObservationCompletedTime: Instant? = null,
-    /** The ID of the latest observation, if the planting zone has completed observations */
+    /** The ID of the latest observation, if the stratum has completed observations */
     val latestObservationId: ObservationId? = null,
     val name: String,
     val numPermanentPlots: Int = DEFAULT_NUM_PERMANENT_PLOTS,
     val numTemporaryPlots: Int = DEFAULT_NUM_TEMPORARY_PLOTS,
-    val plantingSubzones: List<PlantingSubzoneModel<PSZID>>,
+    val substrata: List<SubstratumModel<SSID>>,
     val stableId: StableId,
     val studentsT: BigDecimal = DEFAULT_STUDENTS_T,
     val targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
@@ -49,24 +49,23 @@ data class PlantingZoneModel<
    * Chooses a set of plots to act as permanent monitoring plots. The number of plots is determined
    * by [numPermanentPlots].
    *
-   * Only plots in requested subzones are returned, meaning there may be fewer plots than
+   * Only plots in requested substrata are returned, meaning there may be fewer plots than
    * configured, or none at all.
    */
-  fun choosePermanentPlots(requestedSubzoneIds: Set<SubstratumId>): Set<MonitoringPlotId> {
-    if (plantingSubzones.isEmpty()) {
-      throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
+  fun choosePermanentPlots(requestedSubstratumIds: Set<SubstratumId>): Set<MonitoringPlotId> {
+    if (substrata.isEmpty()) {
+      throw IllegalArgumentException("No substrata found for stratum $id (wrong fetch depth?)")
     }
 
-    val requestedSubzones =
-        plantingSubzones.filter { it.id != null && it.id in requestedSubzoneIds }
-    val plotsInRequestedSubzones =
-        requestedSubzones.flatMap { subzone ->
-          subzone.monitoringPlots.filter { plot ->
+    val requestedSubstrata = substrata.filter { it.id != null && it.id in requestedSubstratumIds }
+    val plotsInRequestedSubstrata =
+        requestedSubstrata.flatMap { substratum ->
+          substratum.monitoringPlots.filter { plot ->
             plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
           }
         }
 
-    return plotsInRequestedSubzones.map { it.id }.toSet()
+    return plotsInRequestedSubstrata.map { it.id }.toSet()
   }
 
   /**
@@ -75,71 +74,72 @@ data class PlantingZoneModel<
    *
    * This follows some rules:
    * - Plots that are already selected as permanent plots aren't eligible.
-   * - Plots that span subzone boundaries aren't eligible.
-   * - Plots in subzones that were not requested for the observation aren't eligible.
-   * - Plots must be spread across subzones as evenly as possible: the number of temporary plots
-   *   can't vary by more than 1 between subzones. This even spreading doesn't take eligibility into
-   *   account.
-   * - If plots can't be exactly evenly spread across subzones (that is, [numTemporaryPlots] is not
-   *   a multiple of the number of subzones), the subzones for the remaining plots are determined
+   * - Plots that span substratum boundaries aren't eligible.
+   * - Plots in substrata that were not requested for the observation aren't eligible.
+   * - Plots must be spread across substrata as evenly as possible: the number of temporary plots
+   *   can't vary by more than 1 between substrata. This even spreading doesn't take eligibility
+   *   into account.
+   * - If plots can't be exactly evenly spread across substrata (that is, [numTemporaryPlots] is not
+   *   a multiple of the number of substrata), the substrata for the remaining plots are determined
    *   using the following criteria in order (with the later criteria used as a tiebreaker if more
-   *   than one subzone matches the earlier ones):
-   *     - Subzones with the fewest number of permanent plots.
-   *     - Subzones that were requested for the observation.
-   *     - Subzones with the lowest subzone IDs. Note that it is possible for unrequested subzones
-   *       to still be high enough on the priority list to have plots allocated to them; see the
-   *       next point.
-   * - Only subzones that have been requested should have temporary plots. However, they should be
+   *   than one substratum matches the earlier ones):
+   *     - Substrata with the fewest number of permanent plots.
+   *     - Substrata that were requested for the observation.
+   *     - Substrata with the lowest substratum IDs. Note that it is possible for unrequested
+   *       substrata to still be high enough on the priority list to have plots allocated to them;
+   *       see the next point.
+   * - Only substrata that have been requested should have temporary plots. However, they should be
    *   excluded only after all the preceding rules have been followed. That is, we want to choose
-   *   plots based on the rules above, and then filter out plots in unrequested subzones, as opposed
-   *   to only spreading plots across requested subzones. Otherwise, for an observation with a small
-   *   number of requested subzones, we would end up piling the entire planting zone's worth of
-   *   temporary plots into a handful of subzones.
+   *   plots based on the rules above, and then filter out plots in unrequested substrata, as
+   *   opposed to only spreading plots across requested substrata. Otherwise, for an observation
+   *   with a small number of requested substrata, we would end up piling the entire stratum's worth
+   *   of temporary plots into a handful of substrata.
    *
    * @return A collection of plot boundaries. These may or may not be the boundaries of plots that
    *   already exist in the database; callers can use [findMonitoringPlot] to check whether they
    *   already exist.
    * @throws IllegalArgumentException The number of temporary plots hasn't been configured or the
-   *   planting zone has no subzones.
-   * @throws PlantingSubzoneFullException There weren't enough eligible plots available in a subzone
+   *   stratum has no substrata.
+   * @throws SubstratumFullException There weren't enough eligible plots available in a substratum
    *   to choose the required number.
    */
   fun chooseTemporaryPlots(
-      requestedSubzoneIds: Set<SubstratumId>,
+      requestedSubstratumIds: Set<SubstratumId>,
       gridOrigin: Point,
       exclusion: MultiPolygon? = null,
   ): Collection<Polygon> {
-    if (plantingSubzones.isEmpty()) {
-      throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
+    if (substrata.isEmpty()) {
+      throw IllegalArgumentException("No substrata found for stratum $id (wrong fetch depth?)")
     }
 
-    // We will assign as many plots as possible evenly across all subzones, eligible or not.
-    val numEvenlySpreadPlotsPerSubzone = numTemporaryPlots / plantingSubzones.size
-    val numExcessPlots = numTemporaryPlots.rem(plantingSubzones.size)
+    // We will assign as many plots as possible evenly across all substrata, eligible or not.
+    val numEvenlySpreadPlotsPerSubstratum = numTemporaryPlots / substrata.size
+    val numExcessPlots = numTemporaryPlots.rem(substrata.size)
 
-    // Any plots that can't be spread evenly will be placed in the subzones with the smallest
-    // number of permanent plots, with priority given to subzones that are requested, and subzone ID
+    // Any plots that can't be spread evenly will be placed in the substrata with the smallest
+    // number of permanent plots, with priority given to substrata that are requested, and
+    // substratum ID
     // used as a tie-breaker.
     //
-    // If we sort the subzones by those criteria, this means we can assign one extra plot each to
-    // the first N subzones on that sorted list where N is the number of excess plots.
-    return plantingSubzones
+    // If we sort the substrata by those criteria, this means we can assign one extra plot each to
+    // the first N substrata on that sorted list where N is the number of excess plots.
+    return substrata
         .sortedWith(
-            compareBy { subzone: PlantingSubzoneModel<PSZID> ->
-                  subzone.monitoringPlots.count { plot ->
+            compareBy { substratum: SubstratumModel<SSID> ->
+                  substratum.monitoringPlots.count { plot ->
                     plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
                   }
                 }
-                .thenBy { if (it.id != null && it.id in requestedSubzoneIds) 0 else 1 }
+                .thenBy { if (it.id != null && it.id in requestedSubstratumIds) 0 else 1 }
                 .thenBy { it.id?.value ?: 0L }
         )
-        .flatMapIndexed { index, subzone ->
-          if (subzone.id != null && subzone.id in requestedSubzoneIds) {
+        .flatMapIndexed { index, substratum ->
+          if (substratum.id != null && substratum.id in requestedSubstratumIds) {
             val numPlots =
                 if (index < numExcessPlots) {
-                  numEvenlySpreadPlotsPerSubzone + 1
+                  numEvenlySpreadPlotsPerSubstratum + 1
                 } else {
-                  numEvenlySpreadPlotsPerSubzone
+                  numEvenlySpreadPlotsPerSubstratum
                 }
 
             val squares =
@@ -147,48 +147,46 @@ data class PlantingZoneModel<
                     count = numPlots,
                     exclusion = exclusion,
                     gridOrigin = gridOrigin,
-                    searchBoundary = subzone.boundary,
+                    searchBoundary = substratum.boundary,
                 )
 
             if (squares.size < numPlots) {
-              throw PlantingSubzoneFullException(subzone.id, numPlots, squares.size)
+              throw SubstratumFullException(substratum.id, numPlots, squares.size)
             }
 
             squares
           } else {
-            // This subzone has no plants or wasn't requested, so it gets no temporary plots.
+            // This substratum has no plants or wasn't requested, so it gets no temporary plots.
             emptyList()
           }
         }
   }
 
   /**
-   * Returns the planting subzone that contains a monitoring plot, or null if the plot isn't in any
-   * of the subzones.
+   * Returns the substratum that contains a monitoring plot, or null if the plot isn't in any of the
+   * substrata.
    */
-  fun findSubzoneWithMonitoringPlot(
-      monitoringPlotId: MonitoringPlotId
-  ): PlantingSubzoneModel<PSZID>? {
-    return plantingSubzones.firstOrNull { subzone ->
-      subzone.monitoringPlots.any { it.id == monitoringPlotId }
+  fun findSubstratumWithMonitoringPlot(monitoringPlotId: MonitoringPlotId): SubstratumModel<SSID>? {
+    return substrata.firstOrNull { substratum ->
+      substratum.monitoringPlots.any { it.id == monitoringPlotId }
     }
   }
 
-  /** Returns true if the zone contains a permanent plot with the supplied index. */
+  /** Returns true if the stratum contains a permanent plot with the supplied index. */
   fun permanentIndexExists(permanentIndex: Int): Boolean {
-    return plantingSubzones.any { subzone ->
-      subzone.monitoringPlots.any { it.permanentIndex == permanentIndex }
+    return substrata.any { substratum ->
+      substratum.monitoringPlots.any { it.permanentIndex == permanentIndex }
     }
   }
 
   /**
-   * Returns a square Polygon of the requested width/height that is completely contained in the zone
-   * and does not intersect with an exclusion area.
+   * Returns a square Polygon of the requested width/height that is completely contained in the
+   * stratum and does not intersect with an exclusion area.
    *
    * The square will be positioned a whole multiple of [sizeMeters] meters from the specified
    * origin.
    *
-   * @param exclusion Areas to exclude from the zone, or null if the whole zone is available.
+   * @param exclusion Areas to exclude from the stratum, or null if the whole stratum is available.
    * @return The unused square, or null if no suitable area could be found.
    */
   fun findUnusedSquare(
@@ -202,7 +200,7 @@ data class PlantingZoneModel<
 
   /**
    * Returns a list of square Polygons of the requested width/height that are completely contained
-   * in the zone and does not intersect with existing permanent plots or with each other.
+   * in the stratum and does not intersect with existing permanent plots or with each other.
    *
    * The squares will all be positioned whole multiples of [sizeMeters] from the specified origin.
    *
@@ -210,7 +208,7 @@ data class PlantingZoneModel<
    *   plots. If false, only exclude the boundaries of permanent monitoring plots that will be
    *   candidates for inclusion in the next observation (that is, ignore permanent plots that were
    *   used in previous observations but won't be used in the next one).
-   * @param exclusion Areas to exclude from the zone, or null if the whole zone is available.
+   * @param exclusion Areas to exclude from the stratum, or null if the whole stratum is available.
    * @return List of unused squares. If there is not enough room for the requested number of
    *   squares, this may be shorter than [count] elements; if there's no room for even a single
    *   square, the list will be empty.
@@ -272,11 +270,11 @@ data class PlantingZoneModel<
   }
 
   /**
-   * Returns the subzone that contains the largest portion of a shape, or null if the shape does not
-   * overlap with any subzone.
+   * Returns the substratum that contains the largest portion of a shape, or null if the shape does
+   * not overlap with any substratum.
    */
-  fun findPlantingSubzone(geometry: Geometry): PlantingSubzoneModel<PSZID>? {
-    return plantingSubzones
+  fun findSubstratum(geometry: Geometry): SubstratumModel<SSID>? {
+    return substrata
         .filter { it.boundary.intersects(geometry) }
         .maxByOrNull { it.boundary.intersection(geometry).area }
   }
@@ -288,8 +286,8 @@ data class PlantingZoneModel<
   fun findMonitoringPlot(geometry: Geometry): MonitoringPlotModel? {
     val centroid = geometry.centroid
 
-    return plantingSubzones.firstNotNullOfOrNull { subzone ->
-      subzone.monitoringPlots.firstOrNull { plot ->
+    return substrata.firstNotNullOfOrNull { substratum ->
+      substratum.monitoringPlots.firstOrNull { plot ->
         plot.boundary.contains(centroid) && plot.sizeMeters == MONITORING_PLOT_SIZE_INT
       }
     }
@@ -307,37 +305,37 @@ data class PlantingZoneModel<
         )
 
     if (plotBoundaries.size < 2) {
-      problems.add(PlantingSiteValidationFailure.zoneTooSmall(name))
+      problems.add(PlantingSiteValidationFailure.stratumTooSmall(name))
     }
 
-    plantingSubzones
+    substrata
         .groupBy { it.name.lowercase() }
         .values
         .filter { it.size > 1 }
         .forEach {
-          problems.add(PlantingSiteValidationFailure.duplicateSubzoneName(it[0].name, name))
+          problems.add(PlantingSiteValidationFailure.duplicateSubstratumName(it[0].name, name))
         }
 
-    if (plantingSubzones.isEmpty()) {
-      problems.add(PlantingSiteValidationFailure.zoneHasNoSubzones(name))
+    if (substrata.isEmpty()) {
+      problems.add(PlantingSiteValidationFailure.stratumHasNoSubstrata(name))
     }
 
-    plantingSubzones.forEachIndexed { index, subzone ->
-      if (!subzone.boundary.nearlyCoveredBy(boundary)) {
-        problems.add(PlantingSiteValidationFailure.subzoneNotInZone(subzone.name, name))
+    substrata.forEachIndexed { index, substratum ->
+      if (!substratum.boundary.nearlyCoveredBy(boundary)) {
+        problems.add(PlantingSiteValidationFailure.substratumNotInStratum(substratum.name, name))
       }
 
-      if (newModel.exclusion != null && subzone.boundary.nearlyCoveredBy(newModel.exclusion)) {
-        problems.add(PlantingSiteValidationFailure.subzoneInExclusionArea(subzone.name, name))
+      if (newModel.exclusion != null && substratum.boundary.nearlyCoveredBy(newModel.exclusion)) {
+        problems.add(PlantingSiteValidationFailure.substratumInExclusionArea(substratum.name, name))
       }
 
-      plantingSubzones.drop(index + 1).forEach { otherSubzone ->
-        val overlapPercent = subzone.boundary.coveragePercent(otherSubzone.boundary)
+      substrata.drop(index + 1).forEach { otherSubstratum ->
+        val overlapPercent = substratum.boundary.coveragePercent(otherSubstratum.boundary)
         if (overlapPercent > PlantingSiteModel.REGION_OVERLAP_MAX_PERCENT) {
           problems.add(
-              PlantingSiteValidationFailure.subzoneBoundaryOverlaps(
-                  setOf(otherSubzone.name),
-                  subzone.name,
+              PlantingSiteValidationFailure.substratumBoundaryOverlaps(
+                  setOf(otherSubstratum.name),
+                  substratum.name,
                   name,
               )
           )
@@ -349,8 +347,8 @@ data class PlantingZoneModel<
   }
 
   /**
-   * Returns a MultiPolygon that contains polygons in each of the zone's permanent monitoring plots,
-   * its unavailable plots, and plots with particular IDs. Returns null if there are no plots
+   * Returns a MultiPolygon that contains polygons in each of the stratum's permanent monitoring
+   * plots, its unavailable plots, and plots with particular IDs. Returns null if there are no plots
    * matching any of the criteria.
    *
    * @param includeAll If true, include the boundaries of all permanent monitoring plots. If false,
@@ -362,7 +360,7 @@ data class PlantingZoneModel<
       excludePlotIds: Set<MonitoringPlotId>,
   ): MultiPolygon? {
     val relevantPlots =
-        plantingSubzones
+        substrata
             .flatMap { it.monitoringPlots }
             .filter { plot ->
               !plot.isAvailable ||
@@ -383,7 +381,7 @@ data class PlantingZoneModel<
   }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
-    return other is AnyPlantingZoneModel &&
+    return other is AnyStratumModel &&
         id == other.id &&
         name == other.name &&
         boundaryModifiedTime == other.boundaryModifiedTime &&
@@ -394,12 +392,12 @@ data class PlantingZoneModel<
         studentsT.equalsIgnoreScale(other.studentsT) &&
         variance.equalsIgnoreScale(other.variance) &&
         targetPlantingDensity.equalsIgnoreScale(other.targetPlantingDensity) &&
-        plantingSubzones.zip(other.plantingSubzones).all { (a, b) -> a.equals(b, tolerance) } &&
+        substrata.zip(other.substrata).all { (a, b) -> a.equals(b, tolerance) } &&
         boundary.equalsExact(other.boundary, tolerance)
   }
 
-  fun toNew(): NewPlantingZoneModel =
-      NewPlantingZoneModel(
+  fun toNew(): NewStratumModel =
+      NewStratumModel(
           areaHa = areaHa,
           boundary = boundary,
           boundaryModifiedTime = null,
@@ -408,7 +406,7 @@ data class PlantingZoneModel<
           name = name,
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
-          plantingSubzones = plantingSubzones.map { it.toNew() },
+          substrata = substrata.map { it.toNew() },
           stableId = stableId,
           studentsT = studentsT,
           targetPlantingDensity = targetPlantingDensity,
@@ -419,7 +417,7 @@ data class PlantingZoneModel<
     // Default values of the three parameters that determine how many monitoring plots should be
     // required in each observation. The "Student's t" value is a constant based on a 90%
     // confidence level and should rarely need to change, but the other two will be adjusted by
-    // admins based on the conditions at the planting site. These defaults mean that planting zones
+    // admins based on the conditions at the planting site. These defaults mean that strata
     // will have 11 permanent plots and 14 temporary plots.
     val DEFAULT_ERROR_MARGIN = BigDecimal(100)
     val DEFAULT_STUDENTS_T = BigDecimal("1.645")
@@ -427,13 +425,13 @@ data class PlantingZoneModel<
     const val DEFAULT_NUM_PERMANENT_PLOTS = 8
     const val DEFAULT_NUM_TEMPORARY_PLOTS = 3
 
-    /** Target planting density to use if not included in zone properties. */
+    /** Target planting density to use if not included in stratum properties. */
     val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
 
     fun create(
         boundary: MultiPolygon,
         name: String,
-        plantingSubzones: List<NewPlantingSubzoneModel>,
+        substrata: List<NewSubstratumModel>,
         exclusion: MultiPolygon? = null,
         errorMargin: BigDecimal = DEFAULT_ERROR_MARGIN,
         numPermanentPlots: Int? = null,
@@ -442,7 +440,7 @@ data class PlantingZoneModel<
         studentsT: BigDecimal = DEFAULT_STUDENTS_T,
         targetPlantingDensity: BigDecimal = DEFAULT_TARGET_PLANTING_DENSITY,
         variance: BigDecimal = DEFAULT_VARIANCE,
-    ): NewPlantingZoneModel {
+    ): NewStratumModel {
       val areaHa: BigDecimal = boundary.differenceNullable(exclusion).calculateAreaHectares()
       val defaultTotalPlots =
           (studentsT * studentsT * variance / errorMargin / errorMargin)
@@ -451,7 +449,7 @@ data class PlantingZoneModel<
       val defaultPermanentPlots = max((defaultTotalPlots * 0.75).roundToInt(), 1)
       val defaultTemporaryPlots = max(defaultTotalPlots - defaultPermanentPlots, 1)
 
-      return NewPlantingZoneModel(
+      return NewStratumModel(
           areaHa = areaHa,
           boundary = boundary,
           boundaryModifiedTime = null,
@@ -460,7 +458,7 @@ data class PlantingZoneModel<
           name = name,
           numPermanentPlots = numPermanentPlots ?: defaultPermanentPlots,
           numTemporaryPlots = numTemporaryPlots ?: defaultTemporaryPlots,
-          plantingSubzones = plantingSubzones,
+          substrata = substrata,
           stableId = stableId,
           studentsT = studentsT,
           targetPlantingDensity = targetPlantingDensity,
@@ -470,8 +468,8 @@ data class PlantingZoneModel<
   }
 }
 
-typealias AnyPlantingZoneModel = PlantingZoneModel<out StratumId?, out SubstratumId?, out Instant?>
+typealias AnyStratumModel = StratumModel<out StratumId?, out SubstratumId?, out Instant?>
 
-typealias ExistingPlantingZoneModel = PlantingZoneModel<StratumId, SubstratumId, Instant>
+typealias ExistingStratumModel = StratumModel<StratumId, SubstratumId, Instant>
 
-typealias NewPlantingZoneModel = PlantingZoneModel<Nothing?, Nothing?, Nothing?>
+typealias NewStratumModel = StratumModel<Nothing?, Nothing?, Nothing?>

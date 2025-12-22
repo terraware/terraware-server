@@ -18,7 +18,7 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
   }
 
   @Test
-  fun `only returns observations with requested subzones`() {
+  fun `only returns observations with requested substrata`() {
     val timeZone = ZoneId.of("America/Denver")
     val startDate = LocalDate.of(2023, 4, 1)
     val endDate = LocalDate.of(2023, 4, 30)
@@ -35,7 +35,7 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
         )
     insertObservationRequestedSubzone()
 
-    // Another planting site with no requested subzone.
+    // Another planting site with no requested substratum.
     insertPlantingSite(timeZone = timeZone)
     insertPlantingZone()
     insertPlantingSubzone()
@@ -48,8 +48,8 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
   }
 
   @Test
-  fun `honors planting site time zones`() {
-    // Three adjacent time zones, 1 hour apart
+  fun `honors planting site time strata`() {
+    // Three adjacent time strata, 1 hour apart
     val zone1 = ZoneId.of("America/Los_Angeles")
     val zone2 = ZoneId.of("America/Denver")
     val zone3 = ZoneId.of("America/Chicago")

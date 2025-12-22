@@ -26,12 +26,12 @@ import org.junit.jupiter.api.Test
 
 @Suppress("DEPRECATION")
 class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
-  private lateinit var plantingZoneId: StratumId
+  private lateinit var stratumId: StratumId
   private lateinit var monitoringPlotId: MonitoringPlotId
 
   @BeforeEach
   fun insertDetailedPlantingSite() {
-    plantingZoneId = insertPlantingZone()
+    stratumId = insertPlantingZone()
     insertPlantingSubzone()
     monitoringPlotId = insertMonitoringPlot()
 
@@ -224,8 +224,8 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsBeforeMerge, "Before merge")
-    assertTableEquals(expectedPlotsBeforeMerge.map { it.toSubzone() }, "Before merge")
-    assertTableEquals(expectedPlotsBeforeMerge.map { it.toZone() }, "Before merge")
+    assertTableEquals(expectedPlotsBeforeMerge.map { it.toSubstratum() }, "Before merge")
+    assertTableEquals(expectedPlotsBeforeMerge.map { it.toStratum() }, "Before merge")
     assertTableEquals(expectedPlotsBeforeMerge.map { it.toSite() }, "Before merge")
 
     store.mergeOtherSpeciesForMonitoring(observationId1, plantingSiteId, false, "Merge", speciesId)
@@ -252,13 +252,13 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         )
 
     assertTableEquals(expectedPlotsAfterMerge, "After merge")
-    assertTableEquals(expectedPlotsAfterMerge.map { it.toSubzone() }, "After merge")
-    assertTableEquals(expectedPlotsAfterMerge.map { it.toZone() }, "After merge")
+    assertTableEquals(expectedPlotsAfterMerge.map { it.toSubstratum() }, "After merge")
+    assertTableEquals(expectedPlotsAfterMerge.map { it.toStratum() }, "After merge")
     assertTableEquals(expectedPlotsAfterMerge.map { it.toSite() }, "After merge")
   }
 
   @Test
-  fun `does not update zone or site species totals for ad-hoc observation`() {
+  fun `does not update stratum or site species totals for ad-hoc observation`() {
     val gpsCoordinates = point(1)
     val speciesId = insertSpecies()
 
@@ -349,12 +349,12 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS)
   }
 
-  private fun ObservedPlotSpeciesTotalsRecord.toSubzone(
-      plantingSubzoneId: SubstratumId = inserted.plantingSubzoneId
+  private fun ObservedPlotSpeciesTotalsRecord.toSubstratum(
+      substratumId: SubstratumId = inserted.plantingSubzoneId
   ) =
       ObservedSubstratumSpeciesTotalsRecord(
           observationId = observationId,
-          substratumId = plantingSubzoneId,
+          substratumId = substratumId,
           speciesId = speciesId,
           speciesName = speciesName,
           certaintyId = certaintyId,
@@ -367,12 +367,12 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           survivalRate = survivalRate,
       )
 
-  private fun ObservedPlotSpeciesTotalsRecord.toZone(
-      plantingZoneId: StratumId = inserted.plantingZoneId
+  private fun ObservedPlotSpeciesTotalsRecord.toStratum(
+      stratumId: StratumId = inserted.plantingZoneId
   ) =
       ObservedStratumSpeciesTotalsRecord(
           observationId = observationId,
-          stratumId = plantingZoneId,
+          stratumId = stratumId,
           speciesId = speciesId,
           speciesName = speciesName,
           certaintyId = certaintyId,

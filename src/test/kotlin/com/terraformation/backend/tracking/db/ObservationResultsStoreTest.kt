@@ -26,9 +26,9 @@ import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
-import com.terraformation.backend.tracking.model.ObservationPlantingZoneResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.RecordedPlantModel
 import io.mockk.every
@@ -90,12 +90,12 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
       assertEquals(
           emptyList<RecordedPlantModel>(),
-          plantResults[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].plants,
+          plantResults[0].strata[0].substrata[0].monitoringPlots[0].plants,
           "Plant depth",
       )
 
       assertNull(
-          plotResults[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].plants,
+          plotResults[0].strata[0].substrata[0].monitoringPlots[0].plants,
           "Plot depth",
       )
     }
@@ -127,7 +127,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
                   type = ObservationMediaType.Plot,
               )
           ),
-          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].media,
+          results[0].strata[0].substrata[0].monitoringPlots[0].media,
       )
     }
 
@@ -160,20 +160,20 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     }
 
     @Test
-    fun `associates monitoring plots with the subzones they were in at the time of the observation`() {
-      // Plot starts off in subzone 1
+    fun `associates monitoring plots with the substrata they were in at the time of the observation`() {
+      // Plot starts off in substratum 1
       insertPlantingZone()
-      val subzoneId1 = insertPlantingSubzone()
+      val substratumId1 = insertPlantingSubzone()
       val plotId = insertMonitoringPlot()
       insertObservation(completedTime = Instant.ofEpochSecond(1))
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      // Then there's a map edit and the plot moves to subzone 2
+      // Then there's a map edit and the plot moves to substratum 2
       insertPlantingSiteHistory()
       insertPlantingZone()
-      val subzoneId2 = insertPlantingSubzone()
+      val substratumId2 = insertPlantingSubzone()
       monitoringPlotsDao.update(
-          monitoringPlotsDao.fetchOneById(plotId)!!.copy(substratumId = subzoneId2)
+          monitoringPlotsDao.fetchOneById(plotId)!!.copy(substratumId = substratumId2)
       )
       insertMonitoringPlotHistory()
 
@@ -184,34 +184,38 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
       // Results are in reverse chronological order
       assertEquals(
-          listOf(subzoneId2),
-          results[0].plantingZones.flatMap { zone ->
-            zone.plantingSubzones
-                .filter { subzone -> subzone.monitoringPlots.any { it.monitoringPlotId == plotId } }
-                .map { it.plantingSubzoneId }
+          listOf(substratumId2),
+          results[0].strata.flatMap { stratum ->
+            stratum.substrata
+                .filter { substratum ->
+                  substratum.monitoringPlots.any { it.monitoringPlotId == plotId }
+                }
+                .map { it.substratumId }
           },
-          "Subzone of monitoring plot in second observation",
+          "Substratum of monitoring plot in second observation",
       )
       assertEquals(
-          listOf(subzoneId1),
-          results[1].plantingZones.flatMap { zone ->
-            zone.plantingSubzones
-                .filter { subzone -> subzone.monitoringPlots.any { it.monitoringPlotId == plotId } }
-                .map { it.plantingSubzoneId }
+          listOf(substratumId1),
+          results[1].strata.flatMap { stratum ->
+            stratum.substrata
+                .filter { substratum ->
+                  substratum.monitoringPlots.any { it.monitoringPlotId == plotId }
+                }
+                .map { it.substratumId }
           },
-          "Subzone of monitoring plot in first observation",
+          "Substratum of monitoring plot in first observation",
       )
     }
 
     @Test
-    fun `includes monitoring plots in subzones that have subsequently been deleted`() {
+    fun `includes monitoring plots in substrata that have subsequently been deleted`() {
       insertPlantingZone()
-      val subzoneId = insertPlantingSubzone()
+      val substratumId = insertPlantingSubzone()
       val plotId = insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      plantingSubzonesDao.deleteById(subzoneId)
+      plantingSubzonesDao.deleteById(substratumId)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
@@ -222,9 +226,9 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       )
       assertEquals(
           listOf(plotId),
-          results[0].plantingZones.flatMap { zone ->
-            zone.plantingSubzones.flatMap { subzone ->
-              subzone.monitoringPlots.map { it.monitoringPlotId }
+          results[0].strata.flatMap { stratum ->
+            stratum.substrata.flatMap { substratum ->
+              substratum.monitoringPlots.map { it.monitoringPlotId }
             }
           },
           "Monitoring plot IDs in observation",
@@ -232,14 +236,14 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     }
 
     @Test
-    fun `includes monitoring plots in zones that have subsequently been deleted`() {
-      val zoneId = insertPlantingZone()
+    fun `includes monitoring plots in strata that have subsequently been deleted`() {
+      val stratumId = insertPlantingZone()
       insertPlantingSubzone()
       val plotId = insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      plantingZonesDao.deleteById(zoneId)
+      plantingZonesDao.deleteById(stratumId)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
@@ -250,9 +254,9 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       )
       assertEquals(
           listOf(plotId),
-          results[0].plantingZones.flatMap { zone ->
-            zone.plantingSubzones.flatMap { subzone ->
-              subzone.monitoringPlots.map { it.monitoringPlotId }
+          results[0].strata.flatMap { stratum ->
+            stratum.substrata.flatMap { substratum ->
+              substratum.monitoringPlots.map { it.monitoringPlotId }
             }
           },
           "Monitoring plot IDs in observation",
@@ -289,8 +293,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
-      val actualCoordinates =
-          results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0].coordinates
+      val actualCoordinates = results[0].strata[0].substrata[0].monitoringPlots[0].coordinates
 
       assertEquals(
           listOf(
@@ -303,48 +306,48 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     }
 
     @Test
-    fun `returns zone and subzone names even for zones that have subsequently been deleted`() {
+    fun `returns stratum and substratum names even for strata that have subsequently been deleted`() {
       insertObservation(completedTime = Instant.EPOCH)
-      insertPlantingZone(name = "Zone 1")
-      insertPlantingSubzone(name = "Subzone 1")
+      insertPlantingZone(name = "Stratum 1")
+      insertPlantingSubzone(name = "Substratum 1")
       insertMonitoringPlot()
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertObservationPlotCondition(condition = ObservableCondition.AnimalDamage)
-      val zoneId2 = insertPlantingZone(name = "Zone 2")
-      insertPlantingSubzone(name = "Subzone 2")
+      val stratumId2 = insertPlantingZone(name = "Stratum 2")
+      insertPlantingSubzone(name = "Substratum 2")
       insertMonitoringPlot()
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertObservationPlotCondition(condition = ObservableCondition.Pests)
 
-      plantingZonesDao.deleteById(zoneId2)
+      plantingZonesDao.deleteById(stratumId2)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
-      val zone1Result =
-          results[0].plantingZones.single { zone ->
-            zone.plantingSubzones.any { subzone ->
-              subzone.monitoringPlots.any { ObservableCondition.AnimalDamage in it.conditions }
+      val stratum1Result =
+          results[0].strata.single { stratum ->
+            stratum.substrata.any { substratum ->
+              substratum.monitoringPlots.any { ObservableCondition.AnimalDamage in it.conditions }
             }
           }
-      val zone2Result =
-          results[0].plantingZones.single { zone ->
-            zone.plantingSubzones.any { subzone ->
-              subzone.monitoringPlots.any { ObservableCondition.Pests in it.conditions }
+      val stratum2Result =
+          results[0].strata.single { stratum ->
+            stratum.substrata.any { substratum ->
+              substratum.monitoringPlots.any { ObservableCondition.Pests in it.conditions }
             }
           }
 
-      assertEquals("Zone 1", zone1Result.name)
-      assertEquals("Zone 2", zone2Result.name)
-      assertNull(zone2Result.plantingZoneId, "ID of deleted planting zone")
+      assertEquals("Stratum 1", stratum1Result.name)
+      assertEquals("Stratum 2", stratum2Result.name)
+      assertNull(stratum2Result.stratumId, "ID of deleted stratum")
       assertEquals(
-          listOf("Subzone 1"),
-          zone1Result.plantingSubzones.map { it.name },
-          "Names of all subzones in zone 1",
+          listOf("Substratum 1"),
+          stratum1Result.substrata.map { it.name },
+          "Names of all substrata in stratum 1",
       )
       assertEquals(
-          listOf("Subzone 2"),
-          zone2Result.plantingSubzones.map { it.name },
-          "Names of all subzones in zone 2",
+          listOf("Substratum 2"),
+          stratum2Result.substrata.map { it.name },
+          "Names of all substrata in stratum 2",
       )
     }
 
@@ -373,8 +376,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       assertNull(observationResults.mortalityRate, "Observation mortality rate with no plants")
       assertNull(observationResults.survivalRate, "Observation survival rate with no plants")
 
-      val plotResults =
-          observationResults.plantingZones.first().plantingSubzones.first().monitoringPlots.first()
+      val plotResults = observationResults.strata.first().substrata.first().monitoringPlots.first()
       assertEquals(inserted.monitoringPlotId, plotResults.monitoringPlotId, "Plot ID")
       assertFalse(plotResults.isAdHoc, "Plot Is Ad Hoc")
       assertEquals(2L, plotResults.monitoringPlotNumber, "Plot number")
@@ -784,9 +786,9 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       )
       assertTrue(observationResults.isAdHoc, "Observation Is Ad Hoc")
       assertEquals(
-          emptyList<ObservationPlantingZoneResultsModel>(),
-          observationResults.plantingZones,
-          "No zone in observation",
+          emptyList<ObservationStratumResultsModel>(),
+          observationResults.strata,
+          "No stratum in observation",
       )
 
       assertEquals(expectedBiomassModel, observationResults.biomassDetails, "Biomass details")
@@ -816,7 +818,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       insertMonitoringPlotOverlap(monitoringPlotId = newPlotId2, overlapsPlotId = currentPlotId)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
-      val plotResults = results[0].plantingZones[0].plantingSubzones[0].monitoringPlots[0]
+      val plotResults = results[0].strata[0].substrata[0].monitoringPlots[0]
 
       assertSetEquals(
           setOf(oldPlotId1, oldPlotId2),
@@ -878,27 +880,27 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       observationStore.abandonObservation(inserted.observationId)
 
       val results = resultsStore.fetchOneById(inserted.observationId)
-      val zoneResults = results.plantingZones[0]
-      val subzoneResults = zoneResults.plantingSubzones[0]
+      val stratumResults = results.strata[0]
+      val substratumResults = stratumResults.substrata[0]
       val incompletePlotResults =
-          subzoneResults.monitoringPlots.first { it.monitoringPlotId == incompletePlotId }
+          substratumResults.monitoringPlots.first { it.monitoringPlotId == incompletePlotId }
       val completePlotResults =
-          subzoneResults.monitoringPlots.first { it.monitoringPlotId == completePlotId }
+          substratumResults.monitoringPlots.first { it.monitoringPlotId == completePlotId }
 
       assertEquals(ObservationState.Abandoned, results.state, "Observation state")
       assertEquals(11, results.plantingDensity, "Site Planting Density")
       assertEquals(null, results.plantingDensityStdDev, "Site Planting Density Standard Deviation")
-      assertEquals(11, zoneResults.plantingDensity, "Zone Planting Density")
+      assertEquals(11, stratumResults.plantingDensity, "Stratum Planting Density")
       assertEquals(
           null,
-          zoneResults.plantingDensityStdDev,
-          "Zone Planting Density Standard Deviation",
+          stratumResults.plantingDensityStdDev,
+          "Stratum Planting Density Standard Deviation",
       )
-      assertEquals(11, subzoneResults.plantingDensity, "Subzone Planting Density")
+      assertEquals(11, substratumResults.plantingDensity, "Substratum Planting Density")
       assertEquals(
           null,
-          subzoneResults.plantingDensityStdDev,
-          "Subzone Planting Density Standard Deviation",
+          substratumResults.plantingDensityStdDev,
+          "Substratum Planting Density Standard Deviation",
       )
 
       assertEquals(11, completePlotResults.plantingDensity, "Completed Plot Planting Density")
@@ -916,20 +918,20 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     }
 
     @Test
-    fun `planting site summary only considers subzones with completed plots`() {
+    fun `planting site summary only considers substrata with completed plots`() {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       insertPlantingZone()
 
-      // Each subzone only has one plot
-      val subzoneId1 = insertPlantingSubzone()
+      // Each substratum only has one plot
+      val substratumId1 = insertPlantingSubzone()
       val plotId1 = insertMonitoringPlot()
-      val subzoneId2 = insertPlantingSubzone()
+      val substratumId2 = insertPlantingSubzone()
       val plotId2 = insertMonitoringPlot()
-      val subzoneId3 = insertPlantingSubzone()
+      val substratumId3 = insertPlantingSubzone()
       val plotId3 = insertMonitoringPlot()
 
-      val neverObservedPlotId = insertMonitoringPlot(plantingSubzoneId = subzoneId3)
+      val neverObservedPlotId = insertMonitoringPlot(plantingSubzoneId = substratumId3)
 
       // For the first observation, plot1 and plot2 are both assigned and completed.
       clock.instant = Instant.ofEpochSecond(300)
@@ -1004,7 +1006,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
           claimedBy = user.userId,
       )
 
-      // Add a second plot to subzone 3, to test for if subzone has no completed time yet.
+      // Add a second plot to substratum 3, to test for if substratum has no completed time yet.
       insertObservationPlot(observationId = observationId2, monitoringPlotId = neverObservedPlotId)
 
       observationStore.populateCumulativeDead(observationId2)
@@ -1019,60 +1021,56 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       observationStore.abandonObservation(observationId2)
 
       val results1 = resultsStore.fetchOneById(observationId1)
-      val observation1Subzone1Result =
-          results1.plantingZones
-              .flatMap { it.plantingSubzones }
-              .first { it.plantingSubzoneId == subzoneId1 }
-      val observation1Subzone2Result =
-          results1.plantingZones
-              .flatMap { it.plantingSubzones }
-              .first { it.plantingSubzoneId == subzoneId2 }
+      val observation1Substratum1Result =
+          results1.strata.flatMap { it.substrata }.first { it.substratumId == substratumId1 }
+      val observation1Substratum2Result =
+          results1.strata.flatMap { it.substrata }.first { it.substratumId == substratumId2 }
 
       val results2 = resultsStore.fetchOneById(observationId2)
-      val observation2Subzone2Result =
-          results2.plantingZones
-              .flatMap { it.plantingSubzones }
-              .first { it.plantingSubzoneId == subzoneId2 }
-      val observation2Subzone3Result =
-          results2.plantingZones
-              .flatMap { it.plantingSubzones }
-              .first { it.plantingSubzoneId == subzoneId3 }
+      val observation2Substratum2Result =
+          results2.strata.flatMap { it.substrata }.first { it.substratumId == substratumId2 }
+      val observation2Substratum3Result =
+          results2.strata.flatMap { it.substrata }.first { it.substratumId == substratumId3 }
 
       assertEquals(
           ObservationPlotStatus.Completed,
-          observation1Subzone1Result.monitoringPlots[0].status,
-          "Plot status in observation 1 subzone 1",
+          observation1Substratum1Result.monitoringPlots[0].status,
+          "Plot status in observation 1 substratum 1",
       )
       assertEquals(
           ObservationPlotStatus.Completed,
-          observation1Subzone2Result.monitoringPlots[0].status,
-          "Plot status in observation 1 subzone 2",
+          observation1Substratum2Result.monitoringPlots[0].status,
+          "Plot status in observation 1 substratum 2",
       )
       assertEquals(
           ObservationPlotStatus.NotObserved,
-          observation2Subzone2Result.monitoringPlots[0].status,
-          "Plot status in observation 2 subzone 2",
+          observation2Substratum2Result.monitoringPlots[0].status,
+          "Plot status in observation 2 substratum 2",
       )
       assertEquals(
           ObservationPlotStatus.Completed,
-          observation2Subzone3Result.monitoringPlots
+          observation2Substratum3Result.monitoringPlots
               .first { it.monitoringPlotId == plotId3 }
               .status,
-          "Plot status in observation 2 subzone 3",
+          "Plot status in observation 2 substratum 3",
       )
       assertEquals(
           ObservationPlotStatus.NotObserved,
-          observation2Subzone3Result.monitoringPlots
+          observation2Substratum3Result.monitoringPlots
               .first { it.monitoringPlotId == neverObservedPlotId }
               .status,
-          "Plot status in observation 2 subzone 3",
+          "Plot status in observation 2 substratum 3",
       )
 
       val summary = resultsStore.fetchSummariesForPlantingSite(inserted.plantingSiteId, 1).first()
       assertSetEquals(
-          setOf(observation1Subzone1Result, observation1Subzone2Result, observation2Subzone3Result),
-          summary.plantingZones.flatMap { it.plantingSubzones }.toSet(),
-          "Planting subzones used for summary did not include the Incomplete subzone result",
+          setOf(
+              observation1Substratum1Result,
+              observation1Substratum2Result,
+              observation2Substratum3Result,
+          ),
+          summary.strata.flatMap { it.substrata }.toSet(),
+          "Substrata used for summary did not include the Incomplete substratum result",
       )
     }
   }
@@ -1090,7 +1088,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     }
 
     @Test
-    fun `partial observations of disjoint subzone lists`() {
+    fun `partial observations of disjoint substratum lists`() {
       runScenario(
           "/tracking/observation/DisjointSubzones",
           numObservations = 3,
