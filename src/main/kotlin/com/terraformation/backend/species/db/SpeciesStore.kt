@@ -210,7 +210,7 @@ class SpeciesStore(
   fun fetchSiteSpeciesByPlantingSubzoneId(
       plantingSubzoneId: SubstratumId
   ): List<ExistingSpeciesModel> {
-    requirePermissions { readPlantingSubzone(plantingSubzoneId) }
+    requirePermissions { readSubstratum(plantingSubzoneId) }
 
     return dslContext
         .select(
