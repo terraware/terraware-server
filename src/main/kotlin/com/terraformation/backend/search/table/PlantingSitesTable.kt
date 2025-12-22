@@ -91,6 +91,8 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           textField("name", PLANTING_SITE_SUMMARIES.NAME),
           longField("numPlantingZones", PLANTING_SITE_SUMMARIES.NUM_STRATA),
           longField("numPlantingSubzones", PLANTING_SITE_SUMMARIES.NUM_SUBSTRATA),
+          longField("numStrata", PLANTING_SITE_SUMMARIES.NUM_STRATA),
+          longField("numSubstrata", PLANTING_SITE_SUMMARIES.NUM_SUBSTRATA),
           zoneIdField("timeZone", PLANTING_SITE_SUMMARIES.TIME_ZONE),
           bigDecimalField(
               "totalPlants",

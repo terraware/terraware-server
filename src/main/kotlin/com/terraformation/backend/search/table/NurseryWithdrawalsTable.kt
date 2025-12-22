@@ -59,6 +59,7 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
           textField("notes", WITHDRAWAL_SUMMARIES.NOTES),
           textField("plantingSubzoneNames", WITHDRAWAL_SUMMARIES.SUBSTRATUM_NAMES),
           enumField("purpose", WITHDRAWAL_SUMMARIES.PURPOSE_ID),
+          textField("substratumNames", WITHDRAWAL_SUMMARIES.SUBSTRATUM_NAMES),
           longField("totalWithdrawn", WITHDRAWAL_SUMMARIES.TOTAL_WITHDRAWN),
           dateField("withdrawnDate", WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE),
           dateField("undoesWithdrawalDate", WITHDRAWAL_SUMMARIES.UNDOES_WITHDRAWAL_DATE),
