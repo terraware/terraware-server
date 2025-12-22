@@ -1,3 +1,5 @@
+88b141b1c9c SW-7827 Rename zone->strata in the admin site (#3748)
+cd6b155e51a SW-7827 Rename variables in files outside of the tracking folder for Zone -> Strata/Stratum (#3746)
 f37c6edf1e1 SW-7892 Support tiny substrata (#3756)
 6998cce6d2b SW-7827 Rename shorthand references in tests for Zone -> Strata/Stratum (#3745)
 cb635f307b0 SW-7827 Rename variables in PlantingSiteImporter for Zone -> Strata/Stratum (#3744)
