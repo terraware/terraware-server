@@ -192,20 +192,20 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       val plantingSiteId = insertPlantingSite()
-      val plantingStratumId1 = insertStratum()
-      val plantingSubstratumId11 = insertSubstratum()
-      val plantingSubstratumId12 = insertSubstratum()
-      val plantingStratumId2 = insertStratum()
-      val plantingSubstratumId21 = insertSubstratum()
+      val stratumId1 = insertStratum()
+      val substratumId11 = insertSubstratum()
+      val substratumId12 = insertSubstratum()
+      val stratumId2 = insertStratum()
+      val substratumId21 = insertSubstratum()
 
-      insertSubstratumPopulation(plantingSubstratumId11, speciesId1, 10, 1)
-      insertSubstratumPopulation(plantingSubstratumId12, speciesId1, 20, 2)
-      insertSubstratumPopulation(plantingSubstratumId12, speciesId2, 40, 4)
-      insertSubstratumPopulation(plantingSubstratumId21, speciesId1, 80, 8)
+      insertSubstratumPopulation(substratumId11, speciesId1, 10, 1)
+      insertSubstratumPopulation(substratumId12, speciesId1, 20, 2)
+      insertSubstratumPopulation(substratumId12, speciesId2, 40, 4)
+      insertSubstratumPopulation(substratumId21, speciesId1, 80, 8)
 
       // Stratum populations should be completely replaced
-      insertStratumPopulation(plantingStratumId1, speciesId1, 160, 16)
-      insertStratumPopulation(plantingStratumId2, speciesId2, 320, 32)
+      insertStratumPopulation(stratumId1, speciesId1, 160, 16)
+      insertStratumPopulation(stratumId2, speciesId2, 320, 32)
 
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
 
@@ -227,19 +227,19 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       assertTableEquals(
           listOf(
               StratumPopulationsRecord(
-                  stratumId = plantingStratumId1,
+                  stratumId = stratumId1,
                   plantsSinceLastObservation = 3,
                   speciesId = speciesId1,
                   totalPlants = 30,
               ),
               StratumPopulationsRecord(
-                  stratumId = plantingStratumId1,
+                  stratumId = stratumId1,
                   plantsSinceLastObservation = 4,
                   speciesId = speciesId2,
                   totalPlants = 40,
               ),
               StratumPopulationsRecord(
-                  stratumId = plantingStratumId2,
+                  stratumId = stratumId2,
                   plantsSinceLastObservation = 8,
                   speciesId = speciesId1,
                   totalPlants = 80,
