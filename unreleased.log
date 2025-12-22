@@ -1,3 +1,5 @@
+efee057f367 SW-7827 Rename variables in Delivery-related files for Zone -> Strata/Stratum (#3737)
+df5444a990e Update dependency html-minifier-next to v4.14.3 (#3735)
 36004b85a1c SW-7827 Rename zones-strata in DatabaseBackedTest (#3736)
 dcfe84136c5 SW-7827 Rename variables in T0-related files for Zone -> Strata/Stratum (#3734)
 a008cf61ac0 SW-7827 Rename variables in Observation-related files for Zone -> Strata/Stratum (#3718)
