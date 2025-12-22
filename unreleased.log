@@ -1,3 +1,4 @@
+dcfe84136c5 SW-7827 Rename variables in T0-related files for Zone -> Strata/Stratum (#3734)
 a008cf61ac0 SW-7827 Rename variables in Observation-related files for Zone -> Strata/Stratum (#3718)
 c0ae9eaa173 Update plugin org.springframework.boot to v3.5.9 (#3754)
 79ddb94f246 Update dependency mypy to v1.19.1 (#3753)
