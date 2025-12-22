@@ -96,8 +96,8 @@ class DraftPlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
               name = "Name",
               organizationId = organizationId,
               description = "Description",
-              numPlantingSubzones = 2,
-              numPlantingZones = 1,
+              numSubstrata = 2,
+              numStrata = 1,
               projectId = inserted.projectId,
               timeZone = timeZone,
           )

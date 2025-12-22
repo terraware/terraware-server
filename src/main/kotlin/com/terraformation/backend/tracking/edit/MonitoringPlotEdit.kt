@@ -5,8 +5,8 @@ import com.terraformation.backend.util.equalsOrBothNull
 import org.locationtech.jts.geom.MultiPolygon
 
 /**
- * Represents the changes that need to be made to a monitoring plot to make it match the zones and
- * subzones in an updated version of a planting site.
+ * Represents the changes that need to be made to a monitoring plot to make it match the strata and
+ * substrata in an updated version of a planting site.
  */
 sealed interface MonitoringPlotEdit {
   /**
@@ -32,11 +32,11 @@ sealed interface MonitoringPlotEdit {
           region.equalsOrBothNull(other.region, tolerance)
 
   /**
-   * Represents a monitoring plot that needs to move from one subzone to another, or change its
-   * permanent index, because the subzone boundaries have changed out from under the plot.
+   * Represents a monitoring plot that needs to move from one substratum to another, or change its
+   * permanent index, because the substratum boundaries have changed out from under the plot.
    *
-   * This will always be on the list of monitoring plot edits for the plot's _new_ subzone, never on
-   * its existing subzone.
+   * This will always be on the list of monitoring plot edits for the plot's _new_ substratum, never
+   * on its existing substratum.
    *
    * The plot may have a different permanent index, or none at all, in its new home.
    */
@@ -47,7 +47,7 @@ sealed interface MonitoringPlotEdit {
 
   /**
    * Represents a monitoring plot that needs to be created in a specific region. This can happen
-   * when the containing zone covers area that wasn't covered by the previous version of the
+   * when the containing stratum covers area that wasn't covered by the previous version of the
    * planting site.
    *
    * This always creates permanent plots. If [permanentIndex] is null, an index is chosen at random.
@@ -61,10 +61,10 @@ sealed interface MonitoringPlotEdit {
   }
 
   /**
-   * Represents a monitoring plot that should no longer be associated with any subzone at all. This
-   * happens when the plot's area is no longer within the site boundary.
+   * Represents a monitoring plot that should no longer be associated with any substratum at all.
+   * This happens when the plot's area is no longer within the site boundary.
    *
-   * This will always be on the list of monitoring plot edits for the plot's existing subzone.
+   * This will always be on the list of monitoring plot edits for the plot's existing substratum.
    */
   data class Eject(override val monitoringPlotId: MonitoringPlotId) : MonitoringPlotEdit {
     override val permanentIndex: Int?

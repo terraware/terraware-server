@@ -108,71 +108,76 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   // the small size of the planting site, should be enough that a typical test run will fail at
   // least once if there's a bug.
   @RepeatedTest(10)
-  fun `assigns plots to correct locations based on planting status of subzones`() {
+  fun `assigns plots to correct locations based on planting status of substrata`() {
     // Import a planting site with this structure, with 1m margin to account for rounding during
     // coordinate system conversion:
     //
-    //                    Zone 1                      Zone 2
-    //     +-------------------------------------|-------------+
-    //     |                    |                |             |
-    //     | Subzone 1          | Subzone 2      | Subzone 3   | 100m tall
-    //     |                    |                |             |
-    //     +-------------------------------------|-------------+
-    //     |   |   |   |   |   |   |   |   |   |   |   |   |   | (plot borders)
+    //                   Stratum 1                  Stratum 2
+    //     +-------------------------------------|--------------+
+    //     |                    |                |              |
+    //     | Substratum 1       | Substratum 2   | Substratum 3 | 100m tall
+    //     |                    |                |              |
+    //     +-------------------------------------|--------------+
+    //     |   |   |   |   |    |   |   |   |   |   |   |   |   | (plot borders)
 
-    val subzone1Boundary = gen.multiRectangle(0 to 0, 130 to 101)
-    val subzone2Boundary = gen.multiRectangle(130 to 0, 230 to 101)
-    val zone2Boundary = gen.multiRectangle(230 to 0, 326 to 101)
+    val substratum1Boundary = gen.multiRectangle(0 to 0, 130 to 101)
+    val substratum2Boundary = gen.multiRectangle(130 to 0, 230 to 101)
+    val stratum2Boundary = gen.multiRectangle(230 to 0, 326 to 101)
 
-    val subzone1Feature =
-        gen.subzoneFeature(subzone1Boundary, zone = "Z1", permanentPlots = 2, temporaryPlots = 3)
-    val subzone2Feature = gen.subzoneFeature(subzone2Boundary)
-    val subzone3Feature =
-        gen.subzoneFeature(zone2Boundary, zone = "Z2", permanentPlots = 2, temporaryPlots = 3)
+    val substratum1Feature =
+        gen.subzoneFeature(substratum1Boundary, zone = "Z1", permanentPlots = 2, temporaryPlots = 3)
+    val substratum2Feature = gen.subzoneFeature(substratum2Boundary)
+    val substratum3Feature =
+        gen.subzoneFeature(stratum2Boundary, zone = "Z2", permanentPlots = 2, temporaryPlots = 3)
 
-    val plantingSite = importSite(listOf(subzone1Feature, subzone2Feature, subzone3Feature))
-    val subzone1 = plantingSite.strata.first { it.name == "Z1" }.substrata.first { it.name == "S1" }
+    val plantingSite =
+        importSite(listOf(substratum1Feature, substratum2Feature, substratum3Feature))
+    val substratum1 =
+        plantingSite.strata.first { it.name == "Z1" }.substrata.first { it.name == "S1" }
 
     val observationId =
         insertObservation(plantingSiteId = plantingSite.id, state = ObservationState.Upcoming)
-    insertObservationRequestedSubstratum(substratumId = subzone1.id)
+    insertObservationRequestedSubstratum(substratumId = substratum1.id)
     observationService.startObservation(observationId)
 
     val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
 
     observationPlots.forEach { plot ->
-      assertEquals(subzone1.fullName, plot.substratumName, "Plot in unexpected subzone")
-      if (!plot.boundary.nearlyCoveredBy(subzone1.boundary)) {
-        fail("Plot boundary ${plot.boundary} not within subzone boundary ${subzone1.boundary}")
+      assertEquals(substratum1.fullName, plot.substratumName, "Plot in unexpected substratum")
+      if (!plot.boundary.nearlyCoveredBy(substratum1.boundary)) {
+        fail(
+            "Plot boundary ${plot.boundary} not within substratum boundary ${substratum1.boundary}"
+        )
       }
     }
 
-    // Subzones 1 and 2 will always get one temporary plot each. The third temporary plot could
+    // Substrata 1 and 2 will always get one temporary plot each. The third temporary plot could
     // go in either one of them depending on where the permanent plots ended up. Any temporary
-    // plots that ended up in subzone 2 will be discarded because subzone 2 has no plants.
+    // plots that ended up in substratum 2 will be discarded because substratum 2 has no plants.
 
     val numPermanentPlots = observationPlots.count { it.model.isPermanent }
     val numTemporaryPlots = observationPlots.count { !it.model.isPermanent }
 
     when (numPermanentPlots) {
       0 -> {
-        // Subzone 1 has no permanent plots, so it should get the extra plot; either subzone 2 has
-        // more permanent plots or all of them were disqualified for being partially in an
-        // unrequested subzone, in which case subzone 1 gets the extra plot because it's requested.
+        // Substratum 1 has no permanent plots, so it should get the extra plot; either substratum 2
+        // has more permanent plots or all of them were disqualified for being partially in an
+        // unrequested substratum, in which case substratum 1 gets the extra plot because it's
+        // requested.
         assertEquals(2, numTemporaryPlots, "Temporary plots with 0 permanent")
       }
       1 -> {
-        // Subzone 1 has one permanent plot, but we can't tell if the other permanent plot would
-        // have been in subzone 2 (in which case the extra plot would go to subzone 1 since it's
-        // requested) or straddles the subzone boundary (in which case it'd be eliminated and the
-        // extra plot would go to subzone 2 for having fewer permanent plots).
+        // Substratum 1 has one permanent plot, but we can't tell if the other permanent plot would
+        // have been in substratum 2 (in which case the extra plot would go to substratum 1 since
+        // it's requested) or straddles the substratum boundary (in which case it'd be eliminated
+        // and the extra plot would go to substratum 2 for having fewer permanent plots).
         if (numTemporaryPlots < 1 || numTemporaryPlots > 2) {
           // This will always fail but will give a nice assertion failure message.
           assertEquals("either 1 or 2", "$numTemporaryPlots", "Temporary plots with 1 permanent")
         }
       }
       2 -> {
-        // Subzone 1 has both permanent plots, so subzone 2 will get the extra plot.
+        // Substratum 1 has both permanent plots, so substratum 2 will get the extra plot.
         assertEquals(1, numTemporaryPlots, "Temporary plots with 2 permanent")
       }
       else -> {
@@ -182,11 +187,12 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   }
 
   /**
-   * Imports a site from shapefile data. Records the site, zone, and subzone IDs in [DatabaseTest]'s
-   * list of inserted IDs so they will be used as default values by [insertDelivery] and such.
+   * Imports a site from shapefile data. Records the site, stratum, and substratum IDs in
+   * [DatabaseTest]'s list of inserted IDs so they will be used as default values by
+   * [insertDelivery] and such.
    */
   private fun importSite(
-      subzoneFeatures: List<ShapefileFeature>,
+      substratumFeatures: List<ShapefileFeature>,
       exclusionFeature: ShapefileFeature? = null,
   ): ExistingPlantingSiteModel {
     val plantingSiteId =
@@ -195,7 +201,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
             organizationId = organizationId,
             shapefiles =
                 listOfNotNull(
-                    Shapefile(subzoneFeatures),
+                    Shapefile(substratumFeatures),
                     exclusionFeature?.let { Shapefile(listOf(it)) },
                 ),
         )
@@ -203,11 +209,11 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
     val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Plot)
 
     inserted.plantingSiteIds.add(plantingSiteId)
-    plantingSite.strata.forEach { zone ->
-      inserted.stratumIds.add(zone.id)
-      zone.substrata.forEach { subzone ->
-        inserted.substratumIds.add(subzone.id)
-        subzone.monitoringPlots.forEach { plot -> inserted.monitoringPlotIds.add(plot.id) }
+    plantingSite.strata.forEach { stratum ->
+      inserted.stratumIds.add(stratum.id)
+      stratum.substrata.forEach { substratum ->
+        inserted.substratumIds.add(substratum.id)
+        substratum.monitoringPlots.forEach { plot -> inserted.monitoringPlotIds.add(plot.id) }
       }
     }
 

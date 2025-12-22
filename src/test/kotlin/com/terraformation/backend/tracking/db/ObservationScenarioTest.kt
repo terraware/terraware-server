@@ -126,7 +126,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     )
 
     val hasT0DensitiesSpecified = importT0DensitiesCsv(prefix)
-    importT0ZoneDensitiesCsv(prefix)
+    importT0StratumDensitiesCsv(prefix)
 
     val observationTimes =
         List(numObservations) {
@@ -850,7 +850,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     return true
   }
 
-  fun importT0ZoneDensitiesCsv(prefix: String): Boolean {
+  fun importT0StratumDensitiesCsv(prefix: String): Boolean {
     val filePath = "$prefix/T0ZoneDensities.csv"
     if (javaClass.getResource(filePath) == null) {
       return false

@@ -16,22 +16,22 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
-/** Finds an unused grid-aligned square within a zone boundary. */
+/** Finds an unused grid-aligned square within a stratum boundary. */
 class UnusedSquareFinder(
-    zoneBoundary: MultiPolygon,
+    stratumBoundary: MultiPolygon,
     private val gridOrigin: Point,
     private val sizeMeters: Number,
-    /** Areas to exclude from the zone, or null if the whole zone is available. */
+    /** Areas to exclude from the stratum, or null if the whole stratum is available. */
     exclusion: MultiPolygon? = null,
 ) {
-  private val geometryFactory = zoneBoundary.factory
-  private val boundaryCrs = CRS.decode("EPSG:${zoneBoundary.srid}", true)
+  private val geometryFactory = stratumBoundary.factory
+  private val boundaryCrs = CRS.decode("EPSG:${stratumBoundary.srid}", true)
   private val calculator = GeodeticCalculator(boundaryCrs)
   private val gridInterval: Double = sizeMeters.toDouble()
 
-  /** The geometry of the zone's available area (minus exclusion and existing plots). */
-  private val zoneGeometry =
-      zoneBoundary
+  /** The geometry of the stratum's available area (minus exclusion and existing plots). */
+  private val stratumGeometry =
+      stratumBoundary
           .fixIfNeeded()
           .let { if (exclusion != null) it.difference(exclusion.fixIfNeeded()) else it }
           .fixIfNeeded()
@@ -41,8 +41,8 @@ class UnusedSquareFinder(
   }
 
   /**
-   * Returns a square Polygon of the requested width/height that is completely contained in the zone
-   * and does not intersect with an exclusion area.
+   * Returns a square Polygon of the requested width/height that is completely contained in the
+   * stratum and does not intersect with an exclusion area.
    *
    * The square will be positioned a whole multiple of [gridInterval] meters from the specified
    * origin.
@@ -50,15 +50,15 @@ class UnusedSquareFinder(
    * @return The unused square, or null if no suitable area could be found.
    */
   fun findUnusedSquare(): Polygon? {
-    // The envelope of the zone geometry may be wider on the north edge than on the south or vice
+    // The envelope of the stratum geometry may be wider on the north edge than on the south or vice
     // versa because degrees of longitude represent different distances depending on latitude.
     // So we convert all 4 corners of the envelope to meter offsets from the origin, and use the
     // minimum and maximum values to determine the meter-based search region.
-    val zoneEnvelope = zoneGeometry.envelope
-    val zoneEnvelopeMeters = zoneEnvelope.coordinates.map { getMeterOffsets(it) }
+    val stratumEnvelope = stratumGeometry.envelope
+    val stratumEnvelopeMeters = stratumEnvelope.coordinates.map { getMeterOffsets(it) }
 
-    // Extend the initial search area beyond the actual zone envelope so that we're equally likely
-    // to choose an edge location as an interior location.
+    // Extend the initial search area beyond the actual stratum envelope so that we're equally
+    // likely to choose an edge location as an interior location.
     //
     // If we don't do this, then the interior grid lines are chosen when a random position is within
     // (sizeMeters / 2) in either direction, whereas an edge location is only chosen when the
@@ -68,12 +68,12 @@ class UnusedSquareFinder(
 
     return findInRegion(
         Coordinate(
-            zoneEnvelopeMeters.minOf { it.x } - margin,
-            zoneEnvelopeMeters.minOf { it.y } - margin,
+            stratumEnvelopeMeters.minOf { it.x } - margin,
+            stratumEnvelopeMeters.minOf { it.y } - margin,
         ),
         Coordinate(
-            zoneEnvelopeMeters.maxOf { it.x } + margin,
-            zoneEnvelopeMeters.maxOf { it.y } + margin,
+            stratumEnvelopeMeters.maxOf { it.x } + margin,
+            stratumEnvelopeMeters.maxOf { it.y } + margin,
         ),
     )
   }
@@ -119,22 +119,23 @@ class UnusedSquareFinder(
   }
 
   /**
-   * Returns true if a polygon is sufficiently covered by the zone geometry. If an edge of the site
-   * geometry is axis-aligned, rounding errors can cause a polygon on the edge to test as not
-   * completely covered by the zone. So instead we test that the polygon is at least 99.9% covered.
+   * Returns true if a polygon is sufficiently covered by the stratum geometry. If an edge of the
+   * site geometry is axis-aligned, rounding errors can cause a polygon on the edge to test as not
+   * completely covered by the stratum. So instead we test that the polygon is at least 99.9%
+   * covered.
    */
-  private fun coveredByZone(polygon: Geometry): Boolean {
-    return polygon.nearlyCoveredBy(zoneGeometry, 99.9)
+  private fun coveredByStratum(polygon: Geometry): Boolean {
+    return polygon.nearlyCoveredBy(stratumGeometry, 99.9)
   }
 
   /**
-   * Attempts to find an available square within a rectangular region of the zone. First tries to
+   * Attempts to find an available square within a rectangular region of the stratum. First tries to
    * pick a few random points, and if none of them works, divides the region into four quadrants and
    * searches them in area-weighted random order until it finds a match.
    *
-   * The idea is that for a typical zone, the initial random probe will most likely work and we'll
-   * return a result quickly, but for an odd-shaped zone, we keep drilling down until we've done an
-   * exhaustive search for matches.
+   * The idea is that for a typical stratum, the initial random probe will most likely work and
+   * we'll return a result quickly, but for an odd-shaped stratum, we keep drilling down until we've
+   * done an exhaustive search for matches.
    */
   private fun findInRegion(southwest: Coordinate, northeast: Coordinate): Polygon? {
     val regionWidth = northeast.x - southwest.x
@@ -146,7 +147,7 @@ class UnusedSquareFinder(
     if (regionWidth < gridInterval && regionHeight < gridInterval) {
       val polygon = gridAlignedSquare(southwest.x, southwest.y)
 
-      return if (coveredByZone(polygon)) {
+      return if (coveredByStratum(polygon)) {
         polygon
       } else {
         null
@@ -163,13 +164,13 @@ class UnusedSquareFinder(
               Random.nextDouble(southwest.y, northeast.y),
           )
 
-      if (coveredByZone(polygon)) {
+      if (coveredByStratum(polygon)) {
         return polygon
       }
     }
 
     // No luck. This might be a sparse site map. Split the region into smaller areas and search them
-    // in random order but with the ones that cover the most zone area more likely to come first.
+    // in random order but with the ones that cover the most stratum area more likely to come first.
     //
     // The subdivided areas have some overlap; otherwise there can be scenarios where the only
     // available result straddles the border of two subdivided areas and thus can't be found in
@@ -205,9 +206,9 @@ class UnusedSquareFinder(
             .map { quadrant ->
               val quadrantPolygon =
                   meterOffsetRectangle(quadrant.coordinates[0], quadrant.coordinates[2])
-              quadrant to zoneGeometry.intersection(quadrantPolygon).area
+              quadrant to stratumGeometry.intersection(quadrantPolygon).area
             }
-            // Exclude quadrants that don't cover any zone area at all.
+            // Exclude quadrants that don't cover any stratum area at all.
             .filter { it.second > 0 }
             .toMutableList()
 

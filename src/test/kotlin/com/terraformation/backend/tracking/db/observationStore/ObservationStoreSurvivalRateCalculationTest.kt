@@ -1087,7 +1087,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     importSiteFromCsvFile(prefix, 30)
     observationId = insertObservation()
     importT0DensitiesCsv(prefix)
-    importT0ZoneDensitiesCsv(prefix)
+    importT0StratumDensitiesCsv(prefix)
     importObservationsCsv(prefix, numSpecies, 0, Instant.EPOCH, false)
 
     val expectedRates = loadExpectedSurvivalRates(prefix, numSpecies)

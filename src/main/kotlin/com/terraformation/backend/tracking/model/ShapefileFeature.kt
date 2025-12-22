@@ -53,7 +53,7 @@ data class ShapefileFeature(
       val properties =
           feature.properties
               .filter { property ->
-                // Ignore non-scalar properties; we only want labels such as zone and plot names.
+                // Ignore non-scalar properties; we only want labels such as stratum and plot names.
                 property.type.binding == String::class.java ||
                     Number::class.java.isAssignableFrom(property.type.binding)
               }

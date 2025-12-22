@@ -27,13 +27,13 @@ import org.junit.jupiter.api.Test
 
 @Suppress("DEPRECATION")
 class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
-  private lateinit var plantingZoneId: StratumId
+  private lateinit var stratumId: StratumId
   private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var observationId: ObservationId
 
   @BeforeEach
   fun insertDetailedPlantingSite() {
-    plantingZoneId = insertStratum()
+    stratumId = insertStratum()
     insertSubstratum()
     monitoringPlotId = insertMonitoringPlot()
 
