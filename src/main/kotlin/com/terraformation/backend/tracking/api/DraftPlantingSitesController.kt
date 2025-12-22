@@ -97,13 +97,12 @@ data class DraftPlantingSitePayload(
     val name: String,
     @Schema(
         description =
-            "If the user has started defining planting subzones, the number of subzones defined " +
-                "so far."
+            "If the user has started defining substrata, the number of substrata defined so far."
     )
     val numPlantingSubzones: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far."
+            "If the user has started defining strata, the number of strata defined so far."
     )
     val numPlantingZones: Int?,
     val organizationId: OrganizationId,
@@ -145,13 +144,13 @@ data class CreateDraftPlantingSiteRequestPayload(
     val name: String,
     @Schema(
         description =
-            "If the user has started defining planting subzones, the number of subzones defined " +
+            "If the user has started defining substrata, the number of substrata defined " +
                 "so far."
     )
     val numPlantingSubzones: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far."
+            "If the user has started defining strata, the number of strata defined so far."
     )
     val numPlantingZones: Int?,
     val organizationId: OrganizationId,
@@ -174,13 +173,13 @@ data class UpdateDraftPlantingSiteRequestPayload(
     val name: String,
     @Schema(
         description =
-            "If the user has started defining planting subzones, the number of subzones defined " +
+            "If the user has started defining substrata, the number of substrata defined " +
                 "so far."
     )
     val numPlantingSubzones: Int?,
     @Schema(
         description =
-            "If the user has started defining planting zones, the number of zones defined so far."
+            "If the user has started defining strata, the number of strata defined so far."
     )
     val numPlantingZones: Int?,
     @Schema(description = "If the draft is associated with a project, its ID.")

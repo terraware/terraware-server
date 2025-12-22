@@ -776,7 +776,8 @@ data class ObservationPayload(
     @ArraySchema(
         arraySchema =
             Schema(
-                description = "If specific subzones were requested for this observation, their IDs."
+                description =
+                    "If specific substrata were requested for this observation, their IDs."
             )
     )
     val requestedSubzoneIds: Set<SubstratumId>?,
@@ -1047,7 +1048,7 @@ data class ScheduleObservationRequestPayload(
     @field:NotEmpty
     @ArraySchema(
         arraySchema =
-            Schema(description = "The IDs of the subzones this observation should cover."),
+            Schema(description = "The IDs of the substrata this observation should cover."),
         minItems = 1,
     )
     val requestedSubzoneIds: Set<SubstratumId>,
