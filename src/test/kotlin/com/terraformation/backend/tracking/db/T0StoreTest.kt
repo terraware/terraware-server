@@ -29,7 +29,7 @@ import com.terraformation.backend.point
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
-import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
 import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
@@ -37,8 +37,8 @@ import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
-import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
-import com.terraformation.backend.tracking.model.ZoneT0TempDensityChangedModel
+import com.terraformation.backend.tracking.model.StratumT0TempDataModel
+import com.terraformation.backend.tracking.model.StratumT0TempDensityChangedModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import kotlin.IllegalArgumentException
@@ -61,8 +61,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val store: T0Store by lazy { T0Store(clock, dslContext, eventPublisher) }
 
   private lateinit var plantingSiteId: PlantingSiteId
-  private lateinit var plantingZoneId: StratumId
-  private lateinit var plantingSubzoneId: SubstratumId
+  private lateinit var stratumId: StratumId
+  private lateinit var substratumId: SubstratumId
   private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var tempPlotId: MonitoringPlotId
   private lateinit var observationId: ObservationId
@@ -76,8 +76,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val gridOrigin = point(1)
     val siteBoundary = multiPolygon(200)
     plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
-    plantingZoneId = insertPlantingZone(name = "Zone 2")
-    plantingSubzoneId = insertPlantingSubzone()
+    stratumId = insertPlantingZone(name = "Stratum 2")
+    substratumId = insertPlantingSubzone()
     observationId = insertObservation(completedTime = clock.instant())
 
     tempPlotId = insertMonitoringPlot(plotNumber = 10)
@@ -119,7 +119,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(speciesId = speciesId1, plotDensity = BigDecimal.valueOf(11))
       insertPlantingZoneT0TempDensity(speciesId = speciesId1, zoneDensity = BigDecimal.valueOf(101))
       insertPlantingZoneT0TempDensity(speciesId = speciesId2, zoneDensity = BigDecimal.valueOf(102))
-      val zone2 = insertPlantingZone(name = "Zone 1")
+      val stratum2 = insertPlantingZone(name = "Stratum 1")
       insertPlantingZoneT0TempDensity(speciesId = speciesId1, zoneDensity = BigDecimal.valueOf(201))
       // data from other site not returned
       insertPlantingSite()
@@ -161,10 +161,10 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               ),
                       ),
                   ),
-              zones =
+              strata =
                   listOf(
-                      ZoneT0TempDataModel(
-                          plantingZoneId = zone2,
+                      StratumT0TempDataModel(
+                          stratumId = stratum2,
                           densityData =
                               listOf(
                                   SpeciesDensityModel(
@@ -173,8 +173,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   ),
                               ),
                       ),
-                      ZoneT0TempDataModel(
-                          plantingZoneId = plantingZoneId,
+                      StratumT0TempDataModel(
+                          stratumId = stratumId,
                           densityData =
                               listOf(
                                   SpeciesDensityModel(
@@ -214,7 +214,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `temp plot has no zone t0 density set`() {
+    fun `temp plot has no stratum t0 density set`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       insertPlantingSubzonePopulation(speciesId = speciesId1)
       insertPlotT0Density(speciesId = speciesId1)
@@ -289,7 +289,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
-          "No withdrawn data is ok if all plots/zones have t0 data",
+          "No withdrawn data is ok if all plots/strata have t0 data",
       )
     }
 
@@ -305,7 +305,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
-          "No withdrawn data is ok if all plots/zones have t0 data including temp",
+          "No withdrawn data is ok if all plots/strata have t0 data including temp",
       )
     }
 
@@ -333,7 +333,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `plots require subzones to be included in all set`() {
+    fun `plots require substrata to be included in all set`() {
       includeTempPlotsInSurvivalRates(plantingSiteId)
       insertPlotT0Density(speciesId = speciesId1)
       insertPlotT0Density(speciesId = speciesId2)
@@ -356,7 +356,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
-          "Plots without subzones are excluded",
+          "Plots without substrata are excluded",
       )
     }
 
@@ -494,26 +494,26 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val speciesId3 = insertSpecies()
       val speciesId4 = insertSpecies()
       insertPlantingZone()
-      val subzone1 = insertPlantingSubzone(areaHa = BigDecimal.ONE)
+      val substratum1 = insertPlantingSubzone(areaHa = BigDecimal.ONE)
       val plot1 = insertMonitoringPlot(plotNumber = 3)
       val plot2 = insertMonitoringPlot(plotNumber = 4)
-      val subzone2 = insertPlantingSubzone(areaHa = BigDecimal.TEN)
+      val substratum2 = insertPlantingSubzone(areaHa = BigDecimal.TEN)
       val plot3 = insertMonitoringPlot(plotNumber = 5)
       val plot4 = insertMonitoringPlot(plotNumber = 6)
       insertPlantingZone()
-      val subzone3 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(5))
+      val substratum3 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(5))
       val plot5 = insertMonitoringPlot(plotNumber = 7)
-      val subzone4 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(2174.6))
+      val substratum4 = insertPlantingSubzone(areaHa = BigDecimal.valueOf(2174.6))
       val plot6 = insertMonitoringPlot(plotNumber = 8)
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone1, speciesId = speciesId1, 100)
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone1, speciesId = speciesId2, 200)
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = speciesId1, 300)
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = speciesId2, 395)
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone2, speciesId = speciesId3, 500)
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone3, speciesId = speciesId3, 600)
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone4, speciesId = speciesId1, 500)
+      insertPlantingSubzonePopulation(plantingSubzoneId = substratum1, speciesId = speciesId1, 100)
+      insertPlantingSubzonePopulation(plantingSubzoneId = substratum1, speciesId = speciesId2, 200)
+      insertPlantingSubzonePopulation(plantingSubzoneId = substratum2, speciesId = speciesId1, 300)
+      insertPlantingSubzonePopulation(plantingSubzoneId = substratum2, speciesId = speciesId2, 395)
+      insertPlantingSubzonePopulation(plantingSubzoneId = substratum2, speciesId = speciesId3, 500)
+      insertPlantingSubzonePopulation(plantingSubzoneId = substratum3, speciesId = speciesId3, 600)
+      insertPlantingSubzonePopulation(plantingSubzoneId = substratum4, speciesId = speciesId1, 500)
       // should be excluded because <0.05 density
-      insertPlantingSubzonePopulation(plantingSubzoneId = subzone4, speciesId = speciesId2, 108)
+      insertPlantingSubzonePopulation(plantingSubzoneId = substratum4, speciesId = speciesId2, 108)
 
       // ignored because already in withdrawn
       insertObservedPlotSpeciesTotals(
@@ -677,13 +677,13 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val speciesId3 = insertSpecies()
       val speciesId4 = insertSpecies()
       insertPlantingSubzonePopulation(
-          plantingSubzoneId = plantingSubzoneId,
+          plantingSubzoneId = substratumId,
           speciesId = speciesId3,
           totalPlants = 1,
       )
       // should be excluded because no plants:
       insertPlantingSubzonePopulation(
-          plantingSubzoneId = plantingSubzoneId,
+          plantingSubzoneId = substratumId,
           speciesId = speciesId4,
           totalPlants = 0,
       )
@@ -1160,33 +1160,33 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class AssignT0TempZoneSpeciesDensities {
+  inner class AssignT0TempStratumSpeciesDensities {
     @Test
     fun `throws exception when user lacks permission`() {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
       assertThrows<AccessDeniedException> {
-        store.assignT0TempZoneSpeciesDensities(
-            plantingZoneId,
+        store.assignT0TempStratumSpeciesDensities(
+            stratumId,
             listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
         )
       }
     }
 
     @Test
-    fun `inserts new T0 zone record with species and density`() {
+    fun `inserts new T0 stratum record with species and density`() {
       val density = BigDecimal.valueOf(12)
 
       val changedModel =
-          store.assignT0TempZoneSpeciesDensities(
-              plantingZoneId,
+          store.assignT0TempStratumSpeciesDensities(
+              stratumId,
               listOf(SpeciesDensityModel(speciesId1, density)),
           )
 
       assertEquals(
-          ZoneT0TempDensityChangedModel(
-              plantingZoneId = plantingZoneId,
+          StratumT0TempDensityChangedModel(
+              stratumId = stratumId,
               speciesDensityChanges =
                   setOf(SpeciesDensityChangedModel(speciesId1, newDensity = density)),
           ),
@@ -1195,21 +1195,21 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(zoneDensityRecord(plantingZoneId, speciesId1, density)),
+          listOf(stratumDensityRecord(stratumId, speciesId1, density)),
           "Should have inserted density",
       )
 
-      eventPublisher.assertEventPublished(T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId))
+      eventPublisher.assertEventPublished(T0StratumDataAssignedEvent(stratumId = stratumId))
     }
 
     @Test
-    fun `updates existing T0 zone record when planting zone and species already exist`() {
+    fun `updates existing T0 stratum record when stratum and species already exist`() {
       val initialDensity = BigDecimal.TEN
       val updatedDensity = BigDecimal.valueOf(15)
 
       clock.instant = clock.instant().minusSeconds(42)
-      store.assignT0TempZoneSpeciesDensities(
-          plantingZoneId,
+      store.assignT0TempStratumSpeciesDensities(
+          stratumId,
           listOf(
               SpeciesDensityModel(speciesId1, initialDensity),
               SpeciesDensityModel(speciesId2, initialDensity),
@@ -1217,8 +1217,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       clock.instant = clock.instant().plusSeconds(60)
       val changedModel =
-          store.assignT0TempZoneSpeciesDensities(
-              plantingZoneId,
+          store.assignT0TempStratumSpeciesDensities(
+              stratumId,
               listOf(
                   SpeciesDensityModel(speciesId1, updatedDensity),
                   SpeciesDensityModel(speciesId2, initialDensity),
@@ -1227,8 +1227,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       // speciesId2 should not be in the changed model since density was the same
       assertEquals(
-          ZoneT0TempDensityChangedModel(
-              plantingZoneId = plantingZoneId,
+          StratumT0TempDensityChangedModel(
+              stratumId = stratumId,
               speciesDensityChanges =
                   setOf(
                       SpeciesDensityChangedModel(
@@ -1245,7 +1245,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           listOf(
               StratumT0TempDensitiesRecord(
-                  plantingZoneId,
+                  stratumId,
                   speciesId1,
                   updatedDensity,
                   createdBy = user.userId,
@@ -1254,7 +1254,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = clock.instant(),
               ),
               StratumT0TempDensitiesRecord(
-                  plantingZoneId,
+                  stratumId,
                   speciesId2,
                   initialDensity,
                   createdBy = user.userId,
@@ -1268,30 +1268,30 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventsPublished(
           listOf(
-              T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId),
-              T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId),
+              T0StratumDataAssignedEvent(stratumId = stratumId),
+              T0StratumDataAssignedEvent(stratumId = stratumId),
           )
       )
     }
 
     @Test
-    fun `deletes existing densities in the zone`() {
+    fun `deletes existing densities in the stratum`() {
       val density1 = BigDecimal.TEN
       val density2 = BigDecimal.valueOf(15)
 
-      store.assignT0TempZoneSpeciesDensities(
-          plantingZoneId,
+      store.assignT0TempStratumSpeciesDensities(
+          stratumId,
           listOf(SpeciesDensityModel(speciesId1, density1)),
       )
       val changedModel =
-          store.assignT0TempZoneSpeciesDensities(
-              plantingZoneId,
+          store.assignT0TempStratumSpeciesDensities(
+              stratumId,
               listOf(SpeciesDensityModel(speciesId2, density2)),
           )
 
       assertEquals(
-          ZoneT0TempDensityChangedModel(
-              plantingZoneId = plantingZoneId,
+          StratumT0TempDensityChangedModel(
+              stratumId = stratumId,
               speciesDensityChanges =
                   setOf(
                       SpeciesDensityChangedModel(speciesId2, newDensity = density2),
@@ -1303,34 +1303,34 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
-          listOf(zoneDensityRecord(plantingZoneId, speciesId2, density2)),
-          "Should have deleted existing density in zone",
+          listOf(stratumDensityRecord(stratumId, speciesId2, density2)),
+          "Should have deleted existing density in stratum",
       )
 
       eventPublisher.assertEventsPublished(
           listOf(
-              T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId),
-              T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId),
+              T0StratumDataAssignedEvent(stratumId = stratumId),
+              T0StratumDataAssignedEvent(stratumId = stratumId),
           )
       )
     }
 
     @Test
     fun `allows for zero density values`() {
-      store.assignT0TempZoneSpeciesDensities(
-          plantingZoneId,
+      store.assignT0TempStratumSpeciesDensities(
+          stratumId,
           listOf(SpeciesDensityModel(speciesId1, BigDecimal.ZERO)),
       )
-      assertTableEquals(listOf(zoneDensityRecord(plantingZoneId, speciesId1, BigDecimal.ZERO)))
+      assertTableEquals(listOf(stratumDensityRecord(stratumId, speciesId1, BigDecimal.ZERO)))
 
-      eventPublisher.assertEventPublished(T0ZoneDataAssignedEvent(plantingZoneId = plantingZoneId))
+      eventPublisher.assertEventPublished(T0StratumDataAssignedEvent(stratumId = stratumId))
     }
 
     @Test
     fun `throws exception for negative density values`() {
       assertThrows<IllegalArgumentException> {
-        store.assignT0TempZoneSpeciesDensities(
-            plantingZoneId,
+        store.assignT0TempStratumSpeciesDensities(
+            stratumId,
             listOf(SpeciesDensityModel(speciesId1, BigDecimal.valueOf(-1))),
         )
       }
@@ -1442,13 +1442,13 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = clock.instant(),
       )
 
-  private fun zoneDensityRecord(
-      zoneId: StratumId,
+  private fun stratumDensityRecord(
+      stratumId: StratumId,
       speciesId: SpeciesId,
       density: BigDecimal,
   ) =
       StratumT0TempDensitiesRecord(
-          stratumId = zoneId,
+          stratumId = stratumId,
           speciesId = speciesId,
           stratumDensity = density,
           createdBy = user.userId,

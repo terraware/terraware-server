@@ -62,7 +62,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
-import com.terraformation.backend.tracking.event.T0ZoneDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
 import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
@@ -1620,8 +1620,8 @@ class ObservationStore(
   }
 
   @EventListener
-  fun on(event: T0ZoneDataAssignedEvent) {
-    recalculateSurvivalRates(event.plantingZoneId)
+  fun on(event: T0StratumDataAssignedEvent) {
+    recalculateSurvivalRates(event.stratumId)
   }
 
   private fun deleteObservation(observationId: ObservationId) {

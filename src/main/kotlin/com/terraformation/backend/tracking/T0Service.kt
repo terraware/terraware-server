@@ -16,9 +16,9 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
-import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
-import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
-import com.terraformation.backend.tracking.model.ZoneT0TempDensityChangedModel
+import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
+import com.terraformation.backend.tracking.model.StratumT0TempDataModel
+import com.terraformation.backend.tracking.model.StratumT0TempDensityChangedModel
 import jakarta.inject.Named
 import org.jooq.DSLContext
 
@@ -34,8 +34,8 @@ class T0Service(
       val plantingSiteId: PlantingSiteId,
   )
 
-  private data class ZoneEventDetailsModel(
-      val zoneName: String,
+  private data class StratumEventDetailsModel(
+      val stratumName: String,
       val organizationId: OrganizationId,
       val plantingSiteId: PlantingSiteId,
   )
@@ -91,36 +91,36 @@ class T0Service(
     )
   }
 
-  fun assignT0TempZoneData(zonesList: List<ZoneT0TempDataModel>) {
-    val zoneIds = zonesList.map { it.plantingZoneId }
-    val zoneMap = getZoneInfo(zoneIds)
-    val plantingSiteIds = zoneMap.values.map { it.plantingSiteId }.toSet()
-    require(plantingSiteIds.size == 1) { "Cannot assign T0 data to zones from multiple sites." }
+  fun assignT0TempStratumData(strataList: List<StratumT0TempDataModel>) {
+    val stratumIds = strataList.map { it.stratumId }
+    val stratumMap = getStratumInfo(stratumIds)
+    val plantingSiteIds = stratumMap.values.map { it.plantingSiteId }.toSet()
+    require(plantingSiteIds.size == 1) { "Cannot assign T0 data to strata from multiple sites." }
 
-    val zonesChangeList = mutableListOf<ZoneT0TempDensityChangedModel>()
+    val strataChangeList = mutableListOf<StratumT0TempDensityChangedModel>()
     dslContext.transaction { _ ->
-      zonesList.forEach { model ->
-        zonesChangeList.add(
-            t0Store.assignT0TempZoneSpeciesDensities(model.plantingZoneId, model.densityData)
+      strataList.forEach { model ->
+        strataChangeList.add(
+            t0Store.assignT0TempStratumSpeciesDensities(model.stratumId, model.densityData)
         )
       }
     }
 
     val speciesToFetch =
-        zonesChangeList.flatMap { it.speciesDensityChanges.map { it.speciesId } }.toSet()
+        strataChangeList.flatMap { it.speciesDensityChanges.map { it.speciesId } }.toSet()
     val speciesNames = getSpeciesNames(speciesToFetch)
-    val orgIds = zoneMap.values.map { it.organizationId }.toSet()
+    val orgIds = stratumMap.values.map { it.organizationId }.toSet()
 
     rateLimitedEventPublisher.publishEvent(
         RateLimitedT0DataAssignedEvent(
             organizationId = orgIds.first(),
             plantingSiteId = plantingSiteIds.first(),
-            plantingZones =
-                zonesChangeList
+            strata =
+                strataChangeList
                     .map { changedModel ->
-                      ZoneT0DensityChangedEventModel(
-                          plantingZoneId = changedModel.plantingZoneId,
-                          zoneName = zoneMap[changedModel.plantingZoneId]!!.zoneName,
+                      StratumT0DensityChangedEventModel(
+                          stratumId = changedModel.stratumId,
+                          stratumName = stratumMap[changedModel.stratumId]!!.stratumName,
                           speciesDensityChanges =
                               changedModel.speciesDensityChanges
                                   .map {
@@ -132,7 +132,7 @@ class T0Service(
                                   .sortedBy { it.speciesScientificName },
                       )
                     }
-                    .sortedBy { it.zoneName },
+                    .sortedBy { it.stratumName },
         )
     )
   }
@@ -157,17 +157,19 @@ class T0Service(
             )
       }
 
-  private fun getZoneInfo(zoneIds: Collection<StratumId>): Map<StratumId, ZoneEventDetailsModel> =
+  private fun getStratumInfo(
+      stratumIds: Collection<StratumId>
+  ): Map<StratumId, StratumEventDetailsModel> =
       with(STRATA) {
         dslContext
             .select(ID, NAME, plantingSites.ORGANIZATION_ID, PLANTING_SITE_ID)
             .from(this)
-            .where(ID.`in`(zoneIds.toSet()))
+            .where(ID.`in`(stratumIds.toSet()))
             .fetchMap(
                 ID.asNonNullable(),
                 { record ->
-                  ZoneEventDetailsModel(
-                      zoneName = record[NAME.asNonNullable()],
+                  StratumEventDetailsModel(
+                      stratumName = record[NAME.asNonNullable()],
                       organizationId = record[plantingSites.ORGANIZATION_ID.asNonNullable()],
                       plantingSiteId = record[PLANTING_SITE_ID.asNonNullable()],
                   )

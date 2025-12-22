@@ -7,7 +7,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
-import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
+import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
@@ -161,39 +161,41 @@ class RateLimitedT0DataAssignedEventTest {
   }
 
   @Nested
-  inner class CombineZones {
+  inner class CombineStrata {
     @Test
-    fun `combine for different planting zones`() {
+    fun `combine for different strata`() {
       val existingEvent =
-          event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
 
-      val newEvent = event(zones = listOf(zoneChangeModel(2, listOf(speciesChangeModel(1, 1, 2)))))
+      val newEvent =
+          event(strata = listOf(stratumChangeModel(2, listOf(speciesChangeModel(1, 1, 2)))))
 
       assertEquals(
           event(
-              zones =
+              strata =
                   listOf(
-                      zoneChangeModel(1, listOf(speciesChangeModel(1, 1, 2))),
-                      zoneChangeModel(2, listOf(speciesChangeModel(1, 1, 2))),
+                      stratumChangeModel(1, listOf(speciesChangeModel(1, 1, 2))),
+                      stratumChangeModel(2, listOf(speciesChangeModel(1, 1, 2))),
                   )
           ),
           newEvent.combine(existingEvent),
-          "Should add different zone",
+          "Should add different stratum",
       )
     }
 
     @Test
-    fun `combine for same zone, diff species`() {
+    fun `combine for same stratum, diff species`() {
       val existingEvent =
-          event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
 
-      val newEvent = event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(2, 3, 4)))))
+      val newEvent =
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(2, 3, 4)))))
 
       assertEquals(
           event(
-              zones =
+              strata =
                   listOf(
-                      zoneChangeModel(
+                      stratumChangeModel(
                           1,
                           listOf(speciesChangeModel(1, 1, 2), speciesChangeModel(2, 3, 4)),
                       ),
@@ -205,14 +207,15 @@ class RateLimitedT0DataAssignedEventTest {
     }
 
     @Test
-    fun `combine for same zone, same species`() {
+    fun `combine for same stratum, same species`() {
       val existingEvent =
-          event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
 
-      val newEvent = event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))))
+      val newEvent =
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))))
 
       assertEquals(
-          event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, 4))))),
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 1, 4))))),
           newEvent.combine(existingEvent),
           "Should modify newDensity on species",
       )
@@ -221,12 +224,13 @@ class RateLimitedT0DataAssignedEventTest {
     @Test
     fun `combine with changes that are reverted`() {
       val existingEvent =
-          event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
 
-      val newEvent = event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 2, 1)))))
+      val newEvent =
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 2, 1)))))
 
       assertEquals(
-          event(zones = listOf(zoneChangeModel(1, emptyList()))),
+          event(strata = listOf(stratumChangeModel(1, emptyList()))),
           newEvent.combine(existingEvent),
           "Should leave densities as empty list because change was reverted",
       )
@@ -235,13 +239,13 @@ class RateLimitedT0DataAssignedEventTest {
     @Test
     fun `combine with species that were removed`() {
       val existingEvent =
-          event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
 
       val newEvent =
-          event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 2, null)))))
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 2, null)))))
 
       assertEquals(
-          event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 1, null))))),
+          event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 1, null))))),
           newEvent.combine(existingEvent),
           "Should show species as removed",
       )
@@ -251,10 +255,10 @@ class RateLimitedT0DataAssignedEventTest {
     fun `combine with lots of data`() {
       val existingEvent =
           event(
-              zones =
+              strata =
                   listOf(
-                      zoneChangeModel(1, listOf(speciesChangeModel(1, 10, 20))),
-                      zoneChangeModel(
+                      stratumChangeModel(1, listOf(speciesChangeModel(1, 10, 20))),
+                      stratumChangeModel(
                           2,
                           listOf(speciesChangeModel(1, 1, 2), speciesChangeModel(2, 3, 4)),
                       ),
@@ -263,13 +267,13 @@ class RateLimitedT0DataAssignedEventTest {
 
       val newEvent =
           event(
-              zones =
+              strata =
                   listOf(
-                      zoneChangeModel(
+                      stratumChangeModel(
                           2,
                           listOf(speciesChangeModel(2, 4, 5), speciesChangeModel(3, 6, 7)),
                       ),
-                      zoneChangeModel(
+                      stratumChangeModel(
                           3,
                           listOf(speciesChangeModel(1, 8, 9), speciesChangeModel(4, 11, 12)),
                       ),
@@ -278,10 +282,10 @@ class RateLimitedT0DataAssignedEventTest {
 
       assertEquals(
           event(
-              zones =
+              strata =
                   listOf(
-                      zoneChangeModel(1, listOf(speciesChangeModel(1, 10, 20))),
-                      zoneChangeModel(
+                      stratumChangeModel(1, listOf(speciesChangeModel(1, 10, 20))),
+                      stratumChangeModel(
                           2,
                           listOf(
                               speciesChangeModel(1, 1, 2),
@@ -289,7 +293,7 @@ class RateLimitedT0DataAssignedEventTest {
                               speciesChangeModel(3, 6, 7),
                           ),
                       ),
-                      zoneChangeModel(
+                      stratumChangeModel(
                           3,
                           listOf(speciesChangeModel(1, 8, 9), speciesChangeModel(4, 11, 12)),
                       ),
@@ -321,7 +325,7 @@ class RateLimitedT0DataAssignedEventTest {
       val existingEvent =
           event(
               plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))),
-              zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
+              strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
           )
 
       val newEvent = event(previousSiteTempSetting = false, newSiteTempSetting = true)
@@ -329,12 +333,12 @@ class RateLimitedT0DataAssignedEventTest {
       assertEquals(
           event(
               plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))),
-              zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
+              strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
               previousSiteTempSetting = false,
               newSiteTempSetting = true,
           ),
           newEvent.combine(existingEvent),
-          "Shouldn't change plots and zones when changing site temp setting",
+          "Shouldn't change plots and strata when changing site temp setting",
       )
     }
 
@@ -418,25 +422,26 @@ class RateLimitedT0DataAssignedEventTest {
   }
 
   @Test
-  fun `combines both plots and zones`() {
+  fun `combines both plots and strata`() {
     val existingEvent =
         event(plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))))
 
-    val newEvent = event(zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))))
+    val newEvent =
+        event(strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))))
 
     assertEquals(
         event(
             plots = listOf(plotChangeModel(1, listOf(speciesChangeModel(1, 1, 2)))),
-            zones = listOf(zoneChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
+            strata = listOf(stratumChangeModel(1, listOf(speciesChangeModel(1, 3, 4)))),
         ),
         newEvent.combine(existingEvent),
-        "Should include both plots and zones after combine",
+        "Should include both plots and strata after combine",
     )
   }
 
   private fun event(
       plots: List<PlotT0DensityChangedEventModel> = emptyList(),
-      zones: List<ZoneT0DensityChangedEventModel> = emptyList(),
+      strata: List<StratumT0DensityChangedEventModel> = emptyList(),
       previousSiteTempSetting: Boolean? = null,
       newSiteTempSetting: Boolean? = null,
   ): RateLimitedT0DataAssignedEvent =
@@ -444,7 +449,7 @@ class RateLimitedT0DataAssignedEventTest {
           organizationId = organizationId,
           plantingSiteId = plantingSiteId,
           monitoringPlots = plots,
-          plantingZones = zones,
+          strata = strata,
           previousSiteTempSetting = previousSiteTempSetting,
           newSiteTempSetting = newSiteTempSetting,
       )
@@ -456,10 +461,10 @@ class RateLimitedT0DataAssignedEventTest {
           speciesDensityChanges = densities,
       )
 
-  private fun zoneChangeModel(zoneId: Int, densities: List<SpeciesDensityChangedEventModel>) =
-      ZoneT0DensityChangedEventModel(
-          plantingZoneId = StratumId(zoneId.toLong()),
-          zoneName = "Z$zoneId",
+  private fun stratumChangeModel(stratumId: Int, densities: List<SpeciesDensityChangedEventModel>) =
+      StratumT0DensityChangedEventModel(
+          stratumId = StratumId(stratumId.toLong()),
+          stratumName = "Z$stratumId",
           speciesDensityChanges = densities,
       )
 

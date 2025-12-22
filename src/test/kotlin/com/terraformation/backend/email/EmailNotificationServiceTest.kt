@@ -149,8 +149,8 @@ import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SubstratumModel
-import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
 import freemarker.template.Configuration
 import io.mockk.CapturingSlot
 import io.mockk.every
@@ -1493,11 +1493,11 @@ internal class EmailNotificationServiceTest {
                             ),
                     )
                 ),
-            plantingZones =
+            strata =
                 listOf(
-                    ZoneT0DensityChangedEventModel(
+                    StratumT0DensityChangedEventModel(
                         plantingZone.id,
-                        zoneName = "This Zone",
+                        stratumName = "This Zone",
                         speciesDensityChanges =
                             listOf(
                                 SpeciesDensityChangedEventModel(
@@ -1534,7 +1534,7 @@ internal class EmailNotificationServiceTest {
             organizationId = organization.id,
             plantingSiteId = plantingSite.id,
             monitoringPlots = emptyList(),
-            plantingZones = emptyList(),
+            strata = emptyList(),
             previousSiteTempSetting = false,
             newSiteTempSetting = true,
         )
@@ -1569,16 +1569,16 @@ internal class EmailNotificationServiceTest {
                         speciesDensityChanges = emptyList(),
                     ),
                 ),
-            plantingZones =
+            strata =
                 listOf(
-                    ZoneT0DensityChangedEventModel(
+                    StratumT0DensityChangedEventModel(
                         plantingZone.id,
-                        zoneName = plantingZone.name,
+                        stratumName = plantingZone.name,
                         speciesDensityChanges = emptyList(),
                     ),
-                    ZoneT0DensityChangedEventModel(
+                    StratumT0DensityChangedEventModel(
                         StratumId(2),
-                        zoneName = "Z2",
+                        stratumName = "Z2",
                         speciesDensityChanges = emptyList(),
                     ),
                 ),
@@ -1595,16 +1595,16 @@ internal class EmailNotificationServiceTest {
             organizationId = organization.id,
             plantingSiteId = plantingSite.id,
             monitoringPlots = emptyList(),
-            plantingZones =
+            strata =
                 listOf(
-                    ZoneT0DensityChangedEventModel(
+                    StratumT0DensityChangedEventModel(
                         plantingZone.id,
-                        zoneName = plantingZone.name,
+                        stratumName = plantingZone.name,
                         speciesDensityChanges = emptyList(),
                     ),
-                    ZoneT0DensityChangedEventModel(
+                    StratumT0DensityChangedEventModel(
                         StratumId(2),
-                        zoneName = "Z2",
+                        stratumName = "Z2",
                         speciesDensityChanges = emptyList(),
                     ),
                 ),
@@ -1621,7 +1621,7 @@ internal class EmailNotificationServiceTest {
             organizationId = organization.id,
             plantingSiteId = plantingSite.id,
             monitoringPlots = emptyList(),
-            plantingZones = emptyList(),
+            strata = emptyList(),
         )
     )
 

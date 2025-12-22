@@ -21,8 +21,8 @@ import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
-import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
-import com.terraformation.backend.tracking.model.ZoneT0TempDataModel
+import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
+import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
 import org.junit.jupiter.api.BeforeEach
@@ -43,8 +43,8 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private lateinit var monitoringPlotId1: MonitoringPlotId
   private lateinit var monitoringPlotId2: MonitoringPlotId
-  private lateinit var plantingZoneId1: StratumId
-  private lateinit var plantingZoneId2: StratumId
+  private lateinit var stratumId1: StratumId
+  private lateinit var stratumId2: StratumId
   private lateinit var observationId: ObservationId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
@@ -58,13 +58,13 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     val siteBoundary = multiPolygon(200)
     insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
     insertPlantingSiteHistory()
-    plantingZoneId1 = insertPlantingZone()
+    stratumId1 = insertPlantingZone()
     insertPlantingSubzone()
     monitoringPlotId1 = insertMonitoringPlot(permanentIndex = 1)
     observationId = insertObservation()
     insertObservationPlot()
     monitoringPlotId2 = insertMonitoringPlot(permanentIndex = 2)
-    plantingZoneId2 = insertPlantingZone()
+    stratumId2 = insertPlantingZone()
     speciesId1 = insertSpecies()
     speciesId2 = insertSpecies()
     speciesId3 = insertSpecies()
@@ -222,22 +222,22 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class AssignT0TempZoneData {
+  inner class AssignT0TempStratumData {
     @Test
     fun `throws exception if from multiple orgs`() {
       insertOrganization()
       insertPlantingSite()
-      val otherPlantingZoneId = insertPlantingZone()
+      val otherStratumId = insertPlantingZone()
 
       assertThrows<IllegalArgumentException> {
-        service.assignT0TempZoneData(
+        service.assignT0TempStratumData(
             listOf(
-                ZoneT0TempDataModel(
-                    plantingZoneId1,
+                StratumT0TempDataModel(
+                    stratumId1,
                     densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
                 ),
-                ZoneT0TempDataModel(
-                    otherPlantingZoneId,
+                StratumT0TempDataModel(
+                    otherStratumId,
                     densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
                 ),
             )
@@ -248,17 +248,17 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception if from multiple sites`() {
       insertPlantingSite()
-      val otherPlantingZoneId = insertPlantingZone()
+      val otherStratumId = insertPlantingZone()
 
       assertThrows<IllegalArgumentException> {
-        service.assignT0TempZoneData(
+        service.assignT0TempStratumData(
             listOf(
-                ZoneT0TempDataModel(
-                    plantingZoneId1,
+                StratumT0TempDataModel(
+                    stratumId1,
                     densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
                 ),
-                ZoneT0TempDataModel(
-                    otherPlantingZoneId,
+                StratumT0TempDataModel(
+                    otherStratumId,
                     densityData = listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
                 ),
             )
@@ -267,18 +267,18 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `assigns all zones in list`() {
-      service.assignT0TempZoneData(
+    fun `assigns all strata in list`() {
+      service.assignT0TempStratumData(
           listOf(
-              ZoneT0TempDataModel(
-                  plantingZoneId1,
+              StratumT0TempDataModel(
+                  stratumId1,
                   listOf(
                       SpeciesDensityModel(speciesId1, BigDecimal.valueOf(100)),
                       SpeciesDensityModel(speciesId2, BigDecimal.valueOf(200)),
                   ),
               ),
-              ZoneT0TempDataModel(
-                  plantingZoneId2,
+              StratumT0TempDataModel(
+                  stratumId2,
                   densityData =
                       listOf(
                           SpeciesDensityModel(speciesId1, BigDecimal.valueOf(300)),
@@ -290,10 +290,10 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              zoneDensityRecord(plantingZoneId1, speciesId1, BigDecimal.valueOf(100)),
-              zoneDensityRecord(plantingZoneId1, speciesId2, BigDecimal.valueOf(200)),
-              zoneDensityRecord(plantingZoneId2, speciesId1, BigDecimal.valueOf(300)),
-              zoneDensityRecord(plantingZoneId2, speciesId2, BigDecimal.valueOf(400)),
+              stratumDensityRecord(stratumId1, speciesId1, BigDecimal.valueOf(100)),
+              stratumDensityRecord(stratumId1, speciesId2, BigDecimal.valueOf(200)),
+              stratumDensityRecord(stratumId2, speciesId1, BigDecimal.valueOf(300)),
+              stratumDensityRecord(stratumId2, speciesId2, BigDecimal.valueOf(400)),
           ),
           "Should have inserted species densities",
       )
@@ -302,10 +302,10 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           RateLimitedT0DataAssignedEvent(
               organizationId = inserted.organizationId,
               plantingSiteId = inserted.plantingSiteId,
-              plantingZones =
+              strata =
                   listOf(
-                      ZoneT0DensityChangedEventModel(
-                          plantingZoneId1,
+                      StratumT0DensityChangedEventModel(
+                          stratumId1,
                           "Z1",
                           listOf(
                               SpeciesDensityChangedEventModel(
@@ -320,8 +320,8 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                               ),
                           ),
                       ),
-                      ZoneT0DensityChangedEventModel(
-                          plantingZoneId2,
+                      StratumT0DensityChangedEventModel(
+                          stratumId2,
                           "Z2",
                           listOf(
                               SpeciesDensityChangedEventModel(
@@ -357,13 +357,13 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = clock.instant(),
       )
 
-  private fun zoneDensityRecord(
-      zoneId: StratumId,
+  private fun stratumDensityRecord(
+      stratumId: StratumId,
       speciesId: SpeciesId,
       density: BigDecimal,
   ) =
       StratumT0TempDensitiesRecord(
-          stratumId = zoneId,
+          stratumId = stratumId,
           speciesId = speciesId,
           stratumDensity = density,
           createdBy = user.userId,

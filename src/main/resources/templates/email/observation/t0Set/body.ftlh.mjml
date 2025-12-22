@@ -43,12 +43,12 @@
             </mj-raw>
 
             <mj-raw>
-                <#list plantingZones as zone>
-                    <#list zone.speciesDensityChanges as change>
+                <#list strata as stratum>
+                    <#list stratum.speciesDensityChanges as change>
             </mj-raw>
                         <mj-text mj-class="text-body01-regular" padding-top="4px">
                             <strong>
-                                ${zone.zoneName}:
+                                ${stratum.stratumName}:
                                 ${change.speciesScientificName}&nbsp;-&nbsp;
                             </strong>
                             <mj-raw>

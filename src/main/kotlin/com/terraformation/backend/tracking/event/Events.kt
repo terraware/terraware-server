@@ -33,7 +33,7 @@ import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.SpeciesDensityChangedEventModel
-import com.terraformation.backend.tracking.model.ZoneT0DensityChangedEventModel
+import com.terraformation.backend.tracking.model.StratumT0DensityChangedEventModel
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.Instant
@@ -154,7 +154,7 @@ data class T0PlotDataAssignedEvent(
     val observationId: ObservationId? = null,
 )
 
-data class T0ZoneDataAssignedEvent(val plantingZoneId: StratumId)
+data class T0StratumDataAssignedEvent(val stratumId: StratumId)
 
 data class RateLimitedT0DataAssignedEvent(
     val organizationId: OrganizationId,
@@ -162,7 +162,7 @@ data class RateLimitedT0DataAssignedEvent(
     val previousSiteTempSetting: Boolean? = null,
     val newSiteTempSetting: Boolean? = null,
     val monitoringPlots: List<PlotT0DensityChangedEventModel>? = null,
-    val plantingZones: List<ZoneT0DensityChangedEventModel>? = null,
+    val strata: List<StratumT0DensityChangedEventModel>? = null,
 ) : RateLimitedEvent<RateLimitedT0DataAssignedEvent> {
   companion object {
     private fun combineSpeciesChanges(
@@ -220,20 +220,20 @@ data class RateLimitedT0DataAssignedEvent(
       }
     }
 
-    val zonesMap = mutableMapOf<StratumId, ZoneT0DensityChangedEventModel>()
-    existing.plantingZones?.forEach { zone -> zonesMap[zone.plantingZoneId] = zone }
-    // Merge current zones, combining speciesDensityChanges if zone already exists
-    plantingZones?.forEach { newZone ->
-      val existingZone = zonesMap[newZone.plantingZoneId]
-      if (existingZone == null) {
-        zonesMap[newZone.plantingZoneId] = newZone
+    val strataMap = mutableMapOf<StratumId, StratumT0DensityChangedEventModel>()
+    existing.strata?.forEach { stratum -> strataMap[stratum.stratumId] = stratum }
+    // Merge current strata, combining speciesDensityChanges if stratum already exists
+    strata?.forEach { newStratum ->
+      val existingStratum = strataMap[newStratum.stratumId]
+      if (existingStratum == null) {
+        strataMap[newStratum.stratumId] = newStratum
       } else {
-        zonesMap[newZone.plantingZoneId] =
-            newZone.copy(
+        strataMap[newStratum.stratumId] =
+            newStratum.copy(
                 speciesDensityChanges =
                     combineSpeciesChanges(
-                        existingZone.speciesDensityChanges,
-                        newZone.speciesDensityChanges,
+                        existingStratum.speciesDensityChanges,
+                        newStratum.speciesDensityChanges,
                     )
             )
       }
@@ -246,8 +246,7 @@ data class RateLimitedT0DataAssignedEvent(
         newSiteTempSetting = newSiteTempSetting ?: existing.newSiteTempSetting,
         monitoringPlots =
             if (monitoringPlots != null) plotsMap.values.toList() else existing.monitoringPlots,
-        plantingZones =
-            if (plantingZones != null) zonesMap.values.toList() else existing.plantingZones,
+        strata = if (strata != null) strataMap.values.toList() else existing.strata,
     )
   }
 }
