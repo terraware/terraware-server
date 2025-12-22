@@ -37,13 +37,8 @@ class SubstrataController(
   )
   fun listSubstratumSpecies(
       @PathVariable id: SubstratumId,
-<<<<<<< HEAD:src/main/kotlin/com/terraformation/backend/tracking/api/SubstrataController.kt
   ): ListSubstratumSpeciesResponsePayload {
-    val species = speciesStore.fetchSiteSpeciesByPlantingSubzoneId(id)
-=======
-  ): ListPlantingSubzoneSpeciesResponsePayload {
     val species = speciesStore.fetchSiteSpeciesBySubstratumId(id)
->>>>>>> 5c471a999c1 (SW-7827 Rename variables files outside of the tracking folder for Zone -> Strata/Stratum):src/main/kotlin/com/terraformation/backend/tracking/api/PlantingSubzonesController.kt
 
     return ListSubstratumSpeciesResponsePayload(species.map { SubstratumSpeciesPayload(it) })
   }
