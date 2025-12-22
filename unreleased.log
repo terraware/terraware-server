@@ -1,3 +1,4 @@
+9443dbda70a SW-7827 Rename variables in PlantingSiteStore tests for Zone -> Strata/Stratum (#3742)
 c94bc792bf2 SW-7827 Rename variables in User-related files for Zone -> Strata/Stratum (#3741)
 0a22e7d378b SW-7827 Rename variables in PermissionRequirements-related files for Zone -> Strata/Stratum (#3740)
 5d49d3e9dde SW-7827 Rename variables in PlantingSiteStore-related files for Zone -> Strata/Stratum (#3739)
