@@ -67,7 +67,7 @@ import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.model.calculateSurvivalRate
 import jakarta.inject.Named
@@ -1491,7 +1491,7 @@ class ReportStore(
   }
 
   private val hectaresPlantedField =
-      with(PLANTING_SUBZONES) {
+      with(SUBSTRATA) {
         DSL.field(
                 DSL.select(DSL.sum(AREA_HA))
                     .from(this)

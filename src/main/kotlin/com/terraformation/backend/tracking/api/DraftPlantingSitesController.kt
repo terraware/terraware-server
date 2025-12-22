@@ -121,8 +121,8 @@ data class DraftPlantingSitePayload(
       record.id!!,
       record.modifiedTime!!,
       record.name!!,
-      record.numPlantingSubzones,
-      record.numPlantingZones,
+      record.numSubstrata,
+      record.numStrata,
       record.organizationId!!,
       record.projectId,
       record.timeZone,
@@ -191,8 +191,8 @@ data class UpdateDraftPlantingSiteRequestPayload(
     record.data = data
     record.description = description
     record.name = name
-    record.numPlantingSubzones = numPlantingSubzones
-    record.numPlantingZones = numPlantingZones
+    record.numSubstrata = numPlantingSubzones
+    record.numStrata = numPlantingZones
     record.projectId = projectId
     record.timeZone = timeZone
   }

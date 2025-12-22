@@ -73,7 +73,7 @@ class PlantingSiteStoreCreateAdHocMonitoringPlotsTest : DatabaseTest(), RunsAsDa
               modifiedTime = clock.instant,
               organizationId = inserted.organizationId,
               plantingSiteId = plantingSiteId,
-              plantingSubzoneId = null,
+              substratumId = null,
               plotNumber = 1,
               sizeMeters = MONITORING_PLOT_SIZE_INT,
           )

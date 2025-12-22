@@ -3,8 +3,8 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.coveragePercent
 import com.terraformation.backend.util.differenceNullable
@@ -23,8 +23,8 @@ import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 
 data class PlantingZoneModel<
-    PZID : PlantingZoneId?,
-    PSZID : PlantingSubzoneId?,
+    PZID : StratumId?,
+    PSZID : SubstratumId?,
     TIMESTAMP : Instant?,
 >(
     val areaHa: BigDecimal,
@@ -52,7 +52,7 @@ data class PlantingZoneModel<
    * Only plots in requested subzones are returned, meaning there may be fewer plots than
    * configured, or none at all.
    */
-  fun choosePermanentPlots(requestedSubzoneIds: Set<PlantingSubzoneId>): Set<MonitoringPlotId> {
+  fun choosePermanentPlots(requestedSubzoneIds: Set<SubstratumId>): Set<MonitoringPlotId> {
     if (plantingSubzones.isEmpty()) {
       throw IllegalArgumentException("No subzones found for planting zone $id (wrong fetch depth?)")
     }
@@ -105,7 +105,7 @@ data class PlantingZoneModel<
    *   to choose the required number.
    */
   fun chooseTemporaryPlots(
-      requestedSubzoneIds: Set<PlantingSubzoneId>,
+      requestedSubzoneIds: Set<SubstratumId>,
       gridOrigin: Point,
       exclusion: MultiPolygon? = null,
   ): Collection<Polygon> {
@@ -470,9 +470,8 @@ data class PlantingZoneModel<
   }
 }
 
-typealias AnyPlantingZoneModel =
-    PlantingZoneModel<out PlantingZoneId?, out PlantingSubzoneId?, out Instant?>
+typealias AnyPlantingZoneModel = PlantingZoneModel<out StratumId?, out SubstratumId?, out Instant?>
 
-typealias ExistingPlantingZoneModel = PlantingZoneModel<PlantingZoneId, PlantingSubzoneId, Instant>
+typealias ExistingPlantingZoneModel = PlantingZoneModel<StratumId, SubstratumId, Instant>
 
 typealias NewPlantingZoneModel = PlantingZoneModel<Nothing?, Nothing?, Nothing?>

@@ -5,7 +5,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import java.time.Instant
 import java.time.LocalDate
@@ -20,7 +20,7 @@ data class ObservationModel<ID : ObservationId?>(
     val observationType: ObservationType,
     val plantingSiteHistoryId: PlantingSiteHistoryId? = null,
     val plantingSiteId: PlantingSiteId,
-    val requestedSubzoneIds: Set<PlantingSubzoneId> = emptySet(),
+    val requestedSubzoneIds: Set<SubstratumId> = emptySet(),
     val startDate: LocalDate,
     val state: ObservationState,
     val upcomingNotificationSentTime: Instant? = null,
@@ -45,7 +45,7 @@ data class ObservationModel<ID : ObservationId?>(
 
     fun of(
         record: Record,
-        requestedSubzoneIdsField: Field<Set<PlantingSubzoneId>>,
+        requestedSubzoneIdsField: Field<Set<SubstratumId>>,
     ): ExistingObservationModel {
       return ObservationModel(
           completedTime = record[OBSERVATIONS.COMPLETED_TIME],

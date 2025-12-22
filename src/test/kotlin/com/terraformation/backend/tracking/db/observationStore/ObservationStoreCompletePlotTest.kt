@@ -12,21 +12,21 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotCondit
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubzoneSpeciesTotalsRow
-import com.terraformation.backend.db.tracking.tables.pojos.ObservedZoneSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSubzonePopulationsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingZonePopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
+import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotConditionsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSitePopulationsRecord
-import com.terraformation.backend.db.tracking.tables.records.PlantingSubzonePopulationsRecord
-import com.terraformation.backend.db.tracking.tables.records.PlantingZonePopulationsRecord
+import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsRecord
+import com.terraformation.backend.db.tracking.tables.records.SubstratumPopulationsRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBZONE_SPECIES_TOTALS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_ZONE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
@@ -466,7 +466,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
         )
     var zone1Species1Totals =
-        ObservedZoneSpeciesTotalsRow(
+        ObservedStratumSpeciesTotalsRow(
             observationId,
             zoneId1,
             speciesId1,
@@ -481,7 +481,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             2 * 100 / 1,
         )
     val zone1Species2Totals =
-        ObservedZoneSpeciesTotalsRow(
+        ObservedStratumSpeciesTotalsRow(
             observationId,
             zoneId1,
             speciesId2,
@@ -496,7 +496,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
         )
     var zone1Species3Totals =
-        ObservedZoneSpeciesTotalsRow(
+        ObservedStratumSpeciesTotalsRow(
             observationId,
             zoneId1,
             speciesId3,
@@ -511,7 +511,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
         )
     val zone1Other1Totals =
-        ObservedZoneSpeciesTotalsRow(
+        ObservedStratumSpeciesTotalsRow(
             observationId,
             zoneId1,
             null,
@@ -525,7 +525,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
         )
     val zone1Other2Totals =
-        ObservedZoneSpeciesTotalsRow(
+        ObservedStratumSpeciesTotalsRow(
             observationId,
             zoneId1,
             null,
@@ -539,7 +539,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
         )
     var zone1UnknownTotals =
-        ObservedZoneSpeciesTotalsRow(
+        ObservedStratumSpeciesTotalsRow(
             observationId,
             zoneId1,
             null,
@@ -553,7 +553,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
         )
     var zone1Subzone1Species1Totals =
-        ObservedSubzoneSpeciesTotalsRow(
+        ObservedSubstratumSpeciesTotalsRow(
             observationId,
             zone1SubzoneId1,
             speciesId1,
@@ -568,7 +568,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             2 * 100 / 1,
         )
     val zone1Subzone1Species2Totals =
-        ObservedSubzoneSpeciesTotalsRow(
+        ObservedSubstratumSpeciesTotalsRow(
             observationId,
             zone1SubzoneId1,
             speciesId2,
@@ -583,7 +583,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
         )
     var zone1Subzone1Species3Totals =
-        ObservedSubzoneSpeciesTotalsRow(
+        ObservedSubstratumSpeciesTotalsRow(
             observationId,
             zone1SubzoneId1,
             speciesId3,
@@ -598,7 +598,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
         )
     val zone1Subzone1Other1Totals =
-        ObservedSubzoneSpeciesTotalsRow(
+        ObservedSubstratumSpeciesTotalsRow(
             observationId,
             zone1SubzoneId1,
             null,
@@ -612,7 +612,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
         )
     val zone1Subzone1Other2Totals =
-        ObservedSubzoneSpeciesTotalsRow(
+        ObservedSubstratumSpeciesTotalsRow(
             observationId,
             zone1SubzoneId1,
             null,
@@ -626,7 +626,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
         )
     var zone1Subzone1UnknownTotals =
-        ObservedSubzoneSpeciesTotalsRow(
+        ObservedSubstratumSpeciesTotalsRow(
             observationId,
             zone1SubzoneId1,
             null,
@@ -841,7 +841,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
         )
     val zone2Subzone1Species1Totals =
-        ObservedSubzoneSpeciesTotalsRow(
+        ObservedSubstratumSpeciesTotalsRow(
             observationId,
             zone2SubzoneId1,
             speciesId1,
@@ -856,7 +856,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
         )
     val zone2Subzone1Other1Totals =
-        ObservedSubzoneSpeciesTotalsRow(
+        ObservedSubstratumSpeciesTotalsRow(
             observationId,
             zone2SubzoneId1,
             null,
@@ -870,7 +870,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
         )
     val zone2Species1Totals =
-        ObservedZoneSpeciesTotalsRow(
+        ObservedStratumSpeciesTotalsRow(
             observationId,
             zoneId2,
             speciesId1,
@@ -885,7 +885,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
         )
     val zone2Other1Totals =
-        ObservedZoneSpeciesTotalsRow(
+        ObservedStratumSpeciesTotalsRow(
             observationId,
             zoneId2,
             null,
@@ -954,12 +954,12 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     assertTableEquals(
-        PlantingZonePopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 2),
+        StratumPopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 2),
         "Planting zone total populations should be unchanged",
     )
 
     assertTableEquals(
-        PlantingSubzonePopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 1),
+        SubstratumPopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 1),
         "Planting subzone total populations should be unchanged",
     )
   }
@@ -1012,8 +1012,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEmpty(RECORDED_PLANTS, "No plants recorded")
 
     assertTableEmpty(OBSERVED_PLOT_SPECIES_TOTALS, "Observed plot species should be empty")
-    assertTableEmpty(OBSERVED_SUBZONE_SPECIES_TOTALS, "Observed subzone species should be empty")
-    assertTableEmpty(OBSERVED_ZONE_SPECIES_TOTALS, "Observed zone species should be empty")
+    assertTableEmpty(OBSERVED_SUBSTRATUM_SPECIES_TOTALS, "Observed subzone species should be empty")
+    assertTableEmpty(OBSERVED_STRATUM_SPECIES_TOTALS, "Observed zone species should be empty")
     assertTableEmpty(OBSERVED_SITE_SPECIES_TOTALS, "Observed site species should be empty")
 
     assertTableEquals(
@@ -1022,12 +1022,12 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     assertTableEquals(
-        PlantingZonePopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 0),
+        StratumPopulationsRecord(inserted.plantingZoneId, inserted.speciesId, 2, 0),
         "Planting zone total plants should be unchanged",
     )
 
     assertTableEquals(
-        PlantingSubzonePopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 0),
+        SubstratumPopulationsRecord(inserted.plantingSubzoneId, inserted.speciesId, 1, 0),
         "Planting subzone total plants should be unchanged",
     )
   }
@@ -1080,7 +1080,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertEquals(
         2,
-        with(OBSERVED_ZONE_SPECIES_TOTALS) {
+        with(OBSERVED_STRATUM_SPECIES_TOTALS) {
           dslContext
               .select(CUMULATIVE_DEAD)
               .from(this)
@@ -1156,7 +1156,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertEquals(
         1,
-        with(OBSERVED_SUBZONE_SPECIES_TOTALS) {
+        with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
           dslContext
               .select(CUMULATIVE_DEAD)
               .from(this)
@@ -1167,7 +1167,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
     assertEquals(
         1,
-        with(OBSERVED_ZONE_SPECIES_TOTALS) {
+        with(OBSERVED_STRATUM_SPECIES_TOTALS) {
           dslContext
               .select(CUMULATIVE_DEAD)
               .from(this)
@@ -1213,13 +1213,13 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     )
 
     assertEquals(
-        listOf(PlantingZonePopulationsRow(inserted.plantingZoneId, speciesId, 2, 0)),
+        listOf(StratumPopulationsRow(inserted.plantingZoneId, speciesId, 2, 0)),
         plantingZonePopulationsDao.findAll(),
         "Planting zone plants since last observation should have been reset",
     )
 
     assertEquals(
-        listOf(PlantingSubzonePopulationsRow(inserted.plantingSubzoneId, speciesId, 1, 0)),
+        listOf(SubstratumPopulationsRow(inserted.plantingSubzoneId, speciesId, 1, 0)),
         plantingSubzonePopulationsDao.findAll(),
         "Planting subzone plants since last observation should have been reset",
     )

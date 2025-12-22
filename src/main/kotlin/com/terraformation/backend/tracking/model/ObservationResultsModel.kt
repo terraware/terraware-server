@@ -14,11 +14,11 @@ import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -229,7 +229,7 @@ data class ObservationPlantingSubzoneResultsModel(
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
-    val plantingSubzoneId: PlantingSubzoneId?,
+    val plantingSubzoneId: SubstratumId?,
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
@@ -249,7 +249,7 @@ data class ObservationPlantingZoneResultsModel(
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
-    val plantingZoneId: PlantingZoneId?,
+    val plantingZoneId: StratumId?,
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
@@ -298,7 +298,7 @@ data class ObservationPlantingZoneRollupResultsModel(
     override val plantingDensityStdDev: Int?,
     /** List of subzone observation results used for this rollup */
     val plantingSubzones: List<ObservationPlantingSubzoneResultsModel>,
-    val plantingZoneId: PlantingZoneId,
+    val plantingZoneId: StratumId,
     override val species: List<ObservationSpeciesResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
@@ -309,9 +309,9 @@ data class ObservationPlantingZoneRollupResultsModel(
   companion object {
     fun of(
         areaHa: BigDecimal,
-        plantingZoneId: PlantingZoneId,
+        plantingZoneId: StratumId,
         /** Must include every subzone in the planting zone */
-        subzoneResults: Map<PlantingSubzoneId, ObservationPlantingSubzoneResultsModel?>,
+        subzoneResults: Map<SubstratumId, ObservationPlantingSubzoneResultsModel?>,
     ): ObservationPlantingZoneRollupResultsModel? {
       val nonNullSubzoneResults = subzoneResults.values.filterNotNull()
       if (nonNullSubzoneResults.isEmpty()) {
@@ -437,7 +437,7 @@ data class ObservationRollupResultsModel(
     fun of(
         plantingSiteId: PlantingSiteId,
         /** Must include every zone in the planting site */
-        zoneResults: Map<PlantingZoneId, ObservationPlantingZoneRollupResultsModel?>,
+        zoneResults: Map<StratumId, ObservationPlantingZoneRollupResultsModel?>,
     ): ObservationRollupResultsModel? {
       val nonNullZoneResults = zoneResults.values.filterNotNull()
       if (nonNullZoneResults.isEmpty()) {

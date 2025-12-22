@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.equalsIgnoreScale
@@ -11,7 +11,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import org.locationtech.jts.geom.MultiPolygon
 
-data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
+data class PlantingSubzoneModel<PSZID : SubstratumId?>(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val id: PSZID,
@@ -80,8 +80,8 @@ data class PlantingSubzoneModel<PSZID : PlantingSubzoneId?>(
   }
 }
 
-typealias AnyPlantingSubzoneModel = PlantingSubzoneModel<out PlantingSubzoneId?>
+typealias AnyPlantingSubzoneModel = PlantingSubzoneModel<out SubstratumId?>
 
-typealias ExistingPlantingSubzoneModel = PlantingSubzoneModel<PlantingSubzoneId>
+typealias ExistingPlantingSubzoneModel = PlantingSubzoneModel<SubstratumId>
 
 typealias NewPlantingSubzoneModel = PlantingSubzoneModel<Nothing?>

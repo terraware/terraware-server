@@ -12,8 +12,8 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.tracking.tables.records.PlantingZonePopulationsRecord
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsRecord
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
@@ -208,7 +208,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
 
-      val existingSubzonePopulations = dslContext.selectFrom(PLANTING_SUBZONE_POPULATIONS).fetch()
+      val existingSubzonePopulations = dslContext.selectFrom(SUBSTRATUM_POPULATIONS).fetch()
 
       service.on(
           PlantingSiteMapEditedEvent(
@@ -222,20 +222,20 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
       assertTableEquals(
           listOf(
-              PlantingZonePopulationsRecord(
-                  plantingZoneId = plantingZoneId1,
+              StratumPopulationsRecord(
+                  stratumId = plantingZoneId1,
                   plantsSinceLastObservation = 3,
                   speciesId = speciesId1,
                   totalPlants = 30,
               ),
-              PlantingZonePopulationsRecord(
-                  plantingZoneId = plantingZoneId1,
+              StratumPopulationsRecord(
+                  stratumId = plantingZoneId1,
                   plantsSinceLastObservation = 4,
                   speciesId = speciesId2,
                   totalPlants = 40,
               ),
-              PlantingZonePopulationsRecord(
-                  plantingZoneId = plantingZoneId2,
+              StratumPopulationsRecord(
+                  stratumId = plantingZoneId2,
                   plantsSinceLastObservation = 8,
                   speciesId = speciesId1,
                   totalPlants = 80,

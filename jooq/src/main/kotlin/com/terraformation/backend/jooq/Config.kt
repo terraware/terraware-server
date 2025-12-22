@@ -485,21 +485,27 @@ val ID_WRAPPERS =
                     ),
                 ),
                 IdWrapper("PlantingSiteNotificationId", listOf("planting_site_notifications\\.id")),
-                IdWrapper(
-                    "PlantingSubzoneHistoryId",
-                    listOf("planting_subzone_histories\\.id", ".*\\.planting_subzone_history_id"),
-                ),
-                IdWrapper(
-                    "PlantingSubzoneId",
-                    listOf("planting_subzones\\.id", ".*\\.planting_subzone_id"),
-                ),
-                IdWrapper(
-                    "PlantingZoneHistoryId",
-                    listOf("planting_zone_histories\\.id", ".*\\.planting_zone_history_id"),
-                ),
-                IdWrapper("PlantingZoneId", listOf("planting_zones\\.id", ".*\\.planting_zone_id")),
                 IdWrapper("RecordedPlantId", listOf("recorded_plants\\.id")),
                 IdWrapper("RecordedTreeId", listOf("recorded_trees\\.id")),
+                IdWrapper(
+                    "SubstratumHistoryId",
+                    listOf(
+                        "substratum_histories\\.id",
+                        ".*\\.substratum_history_id",
+                    ),
+                ),
+                IdWrapper(
+                    "SubstratumId",
+                    listOf("substrata\\.id", ".*\\.substratum_id"),
+                ),
+                IdWrapper(
+                    "StratumHistoryId",
+                    listOf("stratum_histories\\.id", ".*\\.stratum_history_id"),
+                ),
+                IdWrapper(
+                    "StratumId",
+                    listOf("strata\\.id", ".*\\.stratum_id"),
+                ),
             ),
     )
 
@@ -572,9 +578,9 @@ val EMBEDDABLES =
             .withTables("tracking.planting_site_populations")
             .withColumns("planting_site_id", "species_id"),
         EmbeddableDefinitionType()
-            .withName("planting_subzone_population_id")
-            .withTables("tracking.planting_subzone_populations")
-            .withColumns("planting_subzone_id", "species_id"),
+            .withName("substratum_population_id")
+            .withTables("tracking.substratum_populations")
+            .withColumns("substratum_id", "species_id"),
         EmbeddableDefinitionType()
             .withName("project_deliverable_id")
             .withTables("project_deliverables")

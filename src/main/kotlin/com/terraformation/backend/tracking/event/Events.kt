@@ -16,8 +16,8 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingZoneId
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
@@ -154,7 +154,7 @@ data class T0PlotDataAssignedEvent(
     val observationId: ObservationId? = null,
 )
 
-data class T0ZoneDataAssignedEvent(val plantingZoneId: PlantingZoneId)
+data class T0ZoneDataAssignedEvent(val plantingZoneId: StratumId)
 
 data class RateLimitedT0DataAssignedEvent(
     val organizationId: OrganizationId,
@@ -220,7 +220,7 @@ data class RateLimitedT0DataAssignedEvent(
       }
     }
 
-    val zonesMap = mutableMapOf<PlantingZoneId, ZoneT0DensityChangedEventModel>()
+    val zonesMap = mutableMapOf<StratumId, ZoneT0DensityChangedEventModel>()
     existing.plantingZones?.forEach { zone -> zonesMap[zone.plantingZoneId] = zone }
     // Merge current zones, combining speciesDensityChanges if zone already exists
     plantingZones?.forEach { newZone ->

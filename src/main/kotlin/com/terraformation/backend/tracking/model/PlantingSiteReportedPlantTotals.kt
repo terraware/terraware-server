@@ -2,8 +2,8 @@ package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import kotlin.math.roundToInt
 
 data class PlantingSiteReportedPlantTotals(
@@ -29,7 +29,7 @@ data class PlantingSiteReportedPlantTotals(
     }
 
   data class PlantingZone(
-      val id: PlantingZoneId,
+      val id: StratumId,
       val plantsSinceLastObservation: Int,
       val plantingSubzones: List<PlantingSubzone>,
       val species: List<Species>,
@@ -48,7 +48,7 @@ data class PlantingSiteReportedPlantTotals(
   }
 
   data class PlantingSubzone(
-      val id: PlantingSubzoneId,
+      val id: SubstratumId,
       val plantsSinceLastObservation: Int,
       val species: List<Species>,
       val totalPlants: Int,

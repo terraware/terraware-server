@@ -4,7 +4,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -30,7 +30,7 @@ class PlantingSiteHistoriesTable(private val tables: SearchTables) : SearchTable
           ),
           plantingZoneHistories.asMultiValueSublist(
               "plantingZoneHistories",
-              PLANTING_SITE_HISTORIES.ID.eq(PLANTING_ZONE_HISTORIES.PLANTING_SITE_HISTORY_ID),
+              PLANTING_SITE_HISTORIES.ID.eq(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID),
           ),
       )
     }

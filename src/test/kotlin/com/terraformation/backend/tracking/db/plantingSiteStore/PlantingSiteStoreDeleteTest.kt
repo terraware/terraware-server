@@ -8,9 +8,9 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SUBZONES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_ZONES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import io.mockk.every
 import java.time.Instant
@@ -43,8 +43,8 @@ internal class PlantingSiteStoreDeleteTest : BasePlantingSiteStoreTest() {
       store.deletePlantingSite(plantingSiteId)
 
       assertTableEmpty(PLANTING_SITES)
-      assertTableEmpty(PLANTING_ZONES)
-      assertTableEmpty(PLANTING_SUBZONES)
+      assertTableEmpty(STRATA)
+      assertTableEmpty(SUBSTRATA)
       assertTableEmpty(MONITORING_PLOTS)
       assertTableEmpty(DELIVERIES)
       assertTableEmpty(PLANTINGS)

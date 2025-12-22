@@ -741,9 +741,7 @@ class ObservationService(
   @EventListener
   fun on(event: PlantingSiteDeletionStartedEvent) {
     deleteMediaWhere(
-        OBSERVATION_MEDIA_FILES.monitoringPlots.plantingSubzones.PLANTING_SITE_ID.eq(
-            event.plantingSiteId
-        )
+        OBSERVATION_MEDIA_FILES.monitoringPlots.substrata.PLANTING_SITE_ID.eq(event.plantingSiteId)
     )
   }
 

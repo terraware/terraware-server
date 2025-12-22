@@ -4,7 +4,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
 import java.math.BigDecimal
 
 data class SpeciesDensityModel(
@@ -36,7 +36,7 @@ data class PlotT0DataModel(
 )
 
 data class ZoneT0TempDataModel(
-    val plantingZoneId: PlantingZoneId,
+    val plantingZoneId: StratumId,
     val densityData: List<SpeciesDensityModel> = emptyList(),
 )
 
@@ -59,7 +59,7 @@ data class PlotT0DensityChangedModel(
 )
 
 data class ZoneT0TempDensityChangedModel(
-    val plantingZoneId: PlantingZoneId,
+    val plantingZoneId: StratumId,
     val zoneName: String? = null,
     val speciesDensityChanges: Set<SpeciesDensityChangedModel>,
 )
@@ -88,7 +88,7 @@ data class PlotT0DensityChangedEventModel(
 )
 
 data class ZoneT0DensityChangedEventModel(
-    val plantingZoneId: PlantingZoneId,
+    val plantingZoneId: StratumId,
     val zoneName: String,
     val speciesDensityChanges: List<SpeciesDensityChangedEventModel>,
 )

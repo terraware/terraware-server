@@ -5,8 +5,8 @@ import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.PlantingSubzoneId
-import com.terraformation.backend.db.tracking.PlantingZoneId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.util.calculateAreaHectares
@@ -223,7 +223,7 @@ private constructor(
           boundary = boundary,
           boundaryModifiedTime = Instant.EPOCH,
           errorMargin = errorMargin,
-          id = PlantingZoneId(currentZoneId),
+          id = StratumId(currentZoneId),
           name = name,
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
@@ -278,7 +278,7 @@ private constructor(
             areaHa = boundary.differenceNullable(exclusion).calculateAreaHectares(),
             boundary = boundary,
             fullName = fullName,
-            id = PlantingSubzoneId(currentSubzoneId),
+            id = SubstratumId(currentSubzoneId),
             monitoringPlots = monitoringPlots,
             name = name,
             plantingCompletedTime = plantingCompletedTime,
