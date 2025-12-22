@@ -1,6 +1,7 @@
 package com.terraformation.backend.util
 
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.point
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -87,6 +88,18 @@ class ExtensionsTest {
           )
 
       assertEquals(BigDecimal("101.8"), geometry.calculateAreaHectares())
+    }
+
+    @Test
+    fun `uses additional decimal places for small areas`() {
+      listOf(
+              11.0 to BigDecimal("0.01"),
+              .00201 to BigDecimal("0.0000000004"),
+          )
+          .forEach { (length, expectedArea) ->
+            val geometry = Turtle(point(0)).makePolygon { square(length) }
+            assertEquals(expectedArea, geometry.calculateAreaHectares(), "Square of length $length")
+          }
     }
   }
 

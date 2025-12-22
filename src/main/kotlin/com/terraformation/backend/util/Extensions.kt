@@ -14,6 +14,8 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Optional
+import kotlin.math.ceil
+import kotlin.math.log10
 import org.geotools.api.referencing.FactoryException
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
@@ -193,7 +195,7 @@ fun Geometry.fixIfNeeded(): Geometry {
  */
 fun Geometry.calculateAreaHectares(originalCrs: CoordinateReferenceSystem? = null): BigDecimal {
   if (isEmpty) {
-    return BigDecimal.ZERO.setScale(1)
+    return BigDecimal.ZERO.setScale(HECTARES_SCALE)
   }
 
   val crs = originalCrs ?: CRS.decode("EPSG:$srid", true)
@@ -219,8 +221,18 @@ fun Geometry.calculateAreaHectares(originalCrs: CoordinateReferenceSystem? = nul
         JTS.transform(this, CRS.findMathTransform(crs, utmCrs))
       }
 
-  return BigDecimal(utmGeometry.area / SQUARE_METERS_PER_HECTARE)
-      .setScale(HECTARES_SCALE, RoundingMode.HALF_EVEN)
+  val hectares = utmGeometry.area / SQUARE_METERS_PER_HECTARE
+
+  // Use a default number of decimal places unless the area is very small, in which case use as
+  // many decimal places as needed to capture the first significant digit.
+  val scale =
+      if (hectares > 0 && hectares < 0.1) {
+        ceil(-log10(hectares)).toInt()
+      } else {
+        HECTARES_SCALE
+      }
+
+  return BigDecimal(hectares).setScale(scale, RoundingMode.HALF_EVEN)
 }
 
 /** Returns the percentage of this geometry that is covered by another one. */
