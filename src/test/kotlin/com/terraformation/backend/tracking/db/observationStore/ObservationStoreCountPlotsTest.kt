@@ -15,8 +15,8 @@ import org.junit.jupiter.api.assertThrows
 class ObservationStoreCountPlotsTest : BaseObservationStoreTest() {
   @BeforeEach
   fun insertDetailedSite() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
   }
 
   @Nested
@@ -48,8 +48,8 @@ class ObservationStoreCountPlotsTest : BaseObservationStoreTest() {
 
       // Make sure we're actually filtering by planting site
       insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       insertObservation()
       insertObservationPlot()
@@ -182,8 +182,8 @@ class ObservationStoreCountPlotsTest : BaseObservationStoreTest() {
       insertObservationPlot(monitoringPlotId = insertMonitoringPlot())
 
       insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
 
       val observationId2 = insertObservation()
       insertObservationPlot(monitoringPlotId = insertMonitoringPlot(), claimedBy = user.userId)
@@ -192,8 +192,8 @@ class ObservationStoreCountPlotsTest : BaseObservationStoreTest() {
       // Make sure we're actually filtering by planting site
       insertOrganization()
       insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       insertObservation()
       insertObservationPlot()

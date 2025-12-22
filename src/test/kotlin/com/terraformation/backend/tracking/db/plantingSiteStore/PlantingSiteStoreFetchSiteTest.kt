@@ -40,12 +40,12 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           )
       val boundaryModifiedTime = Instant.ofEpochSecond(5001)
       val plantingZoneId =
-          insertPlantingZone(
+          insertStratum(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
               targetPlantingDensity = BigDecimal.ONE,
           )
-      val plantingSubzoneId = insertPlantingSubzone(boundary = multiPolygon(1.0))
+      val plantingSubzoneId = insertSubstratum(boundary = multiPolygon(1.0))
       val monitoringPlotId =
           insertMonitoringPlot(boundary = polygon(0.1), elevationMeters = BigDecimal.TEN)
       insertMonitoringPlot(boundary = polygon(0.1), isAdHoc = true)
@@ -70,11 +70,11 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       val adHocPlotId =
           insertMonitoringPlot(
               boundary = polygon(0.4),
-              plantingSubzoneId = null,
+              substratumId = null,
               isAdHoc = true,
               isAvailable = false,
           )
-      val exteriorPlotId = insertMonitoringPlot(boundary = polygon(0.2), plantingSubzoneId = null)
+      val exteriorPlotId = insertMonitoringPlot(boundary = polygon(0.2), substratumId = null)
 
       val expectedWithSite =
           ExistingPlantingSiteModel(
@@ -226,27 +226,27 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           )
       val boundaryModifiedTime = Instant.ofEpochSecond(5001)
       val plantingZoneId1 =
-          insertPlantingZone(
+          insertStratum(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
               targetPlantingDensity = BigDecimal.ONE,
           )
-      val plantingSubzoneId11 = insertPlantingSubzone(boundary = multiPolygon(1.0))
+      val plantingSubzoneId11 = insertSubstratum(boundary = multiPolygon(1.0))
       val monitoringPlotId111 = insertMonitoringPlot(boundary = polygon(0.1))
       val monitoringPlotId112 = insertMonitoringPlot(boundary = polygon(0.1))
 
-      val plantingSubzoneId12 = insertPlantingSubzone(boundary = multiPolygon(1.0))
+      val plantingSubzoneId12 = insertSubstratum(boundary = multiPolygon(1.0))
       val monitoringPlotId121 = insertMonitoringPlot(boundary = polygon(0.1))
       val monitoringPlotId122 = insertMonitoringPlot(boundary = polygon(0.1))
 
       val plantingZoneId2 =
-          insertPlantingZone(
+          insertStratum(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
               targetPlantingDensity = BigDecimal.ONE,
           )
       val plantingSubzoneId2 =
-          insertPlantingSubzone(boundary = multiPolygon(1.0), fullName = "Z2-1", name = "1")
+          insertSubstratum(boundary = multiPolygon(1.0), fullName = "Z2-1", name = "1")
       val monitoringPlotId2 = insertMonitoringPlot(boundary = polygon(0.1))
 
       val plotHistoryIds =
@@ -487,8 +487,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
 
       val plantingSiteId =
           insertPlantingSite(boundary = siteBoundary3857, exclusion = exclusion3857)
-      val plantingZoneId = insertPlantingZone(boundary = zoneBoundary3857)
-      val plantingSubzoneId = insertPlantingSubzone(boundary = subzoneBoundary3857)
+      val plantingZoneId = insertStratum(boundary = zoneBoundary3857)
+      val plantingSubzoneId = insertSubstratum(boundary = subzoneBoundary3857)
       val monitoringPlotId = insertMonitoringPlot(boundary = monitoringPlotBoundary3857)
 
       val expected =

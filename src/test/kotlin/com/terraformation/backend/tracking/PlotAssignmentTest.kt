@@ -58,8 +58,8 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         parentStore,
         plantingSeasonsDao,
         plantingSitesDao,
-        plantingSubzonesDao,
-        plantingZonesDao,
+        substrataDao,
+        strataDao,
         eventPublisher,
     )
   }
@@ -135,7 +135,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
     val observationId =
         insertObservation(plantingSiteId = plantingSite.id, state = ObservationState.Upcoming)
-    insertObservationRequestedSubzone(plantingSubzoneId = subzone1.id)
+    insertObservationRequestedSubstratum(substratumId = subzone1.id)
     observationService.startObservation(observationId)
 
     val observationPlots = observationStore.fetchObservationPlotDetails(observationId)
@@ -204,9 +204,9 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
     inserted.plantingSiteIds.add(plantingSiteId)
     plantingSite.strata.forEach { zone ->
-      inserted.plantingZoneIds.add(zone.id)
+      inserted.stratumIds.add(zone.id)
       zone.substrata.forEach { subzone ->
-        inserted.plantingSubzoneIds.add(subzone.id)
+        inserted.substratumIds.add(subzone.id)
         subzone.monitoringPlots.forEach { plot -> inserted.monitoringPlotIds.add(plot.id) }
       }
     }

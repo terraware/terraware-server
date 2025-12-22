@@ -15,8 +15,8 @@ import org.springframework.security.access.AccessDeniedException
 class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
   @BeforeEach
   fun setUpRecordedTree() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertMonitoringPlot(isAdHoc = true)
     insertObservation(isAdHoc = true, observationType = ObservationType.BiomassMeasurements)
     insertObservationPlot(completedBy = user.userId)

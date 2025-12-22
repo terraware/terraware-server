@@ -737,9 +737,9 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
       val areaHa = BigDecimal(cols[2])
 
       val stratumId =
-          insertPlantingZone(areaHa = areaHa, boundary = squareWithArea(areaHa), name = stratumName)
+          insertStratum(areaHa = areaHa, boundary = squareWithArea(areaHa), name = stratumName)
       newStratumIds[stratumName] = stratumId
-      newStratumHistoryIds[stratumId] = inserted.plantingZoneHistoryId
+      newStratumHistoryIds[stratumId] = inserted.stratumHistoryId
     }
 
     stratumIds = newStratumIds
@@ -767,19 +767,19 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
           }
 
       val substratumId =
-          insertPlantingSubzone(
+          insertSubstratum(
               areaHa = substratumArea,
               boundary = squareWithArea(substratumArea),
               plantingCompletedTime = plantingCompletedTime,
               fullName = substratumName,
               insertHistory = false,
               name = substratumName,
-              plantingZoneId = stratumId,
+              stratumId = stratumId,
           )
-      insertPlantingSubzoneHistory(plantingZoneHistoryId = stratumHistoryId)
+      insertSubstratumHistory(stratumHistoryId = stratumHistoryId)
 
       newSubstratumIds[substratumName] = substratumId
-      newSubstratumHistoryIds[substratumId] = inserted.plantingSubzoneHistoryId
+      newSubstratumHistoryIds[substratumId] = inserted.substratumHistoryId
     }
 
     substratumIds = newSubstratumIds
@@ -800,15 +800,15 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
       val plotId =
           insertMonitoringPlot(
               insertHistory = false,
-              plantingSubzoneId = substratumId,
+              substratumId = substratumId,
               plotNumber = plotNumber.toLong(),
               sizeMeters = sizeMeters,
               permanentIndex = if (isPermanent) plotNumber.toInt() else null,
           )
       plotHistoryIds[plotId] =
           insertMonitoringPlotHistory(
-              plantingSubzoneId = substratumId,
-              plantingSubzoneHistoryId = substratumHistoryId,
+              substratumId = substratumId,
+              substratumHistoryId = substratumHistoryId,
           )
 
       if (isPermanent) {
@@ -869,10 +869,10 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             speciesIds.computeIfAbsent("Species $speciesIndex") { _ ->
               insertSpecies(scientificName = "Species $speciesIndex")
             }
-        insertPlantingZoneT0TempDensity(
+        insertStratumT0TempDensity(
             speciesId = speciesId,
-            plantingZoneId = stratumId,
-            zoneDensity = density.toPlantsPerHectare(),
+            stratumId = stratumId,
+            stratumDensity = density.toPlantsPerHectare(),
         )
         speciesIndex++
       }

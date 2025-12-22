@@ -543,9 +543,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       insertFacility(type = FacilityType.Nursery)
       insertPlantingSite()
-      insertPlantingZone()
+      insertStratum()
 
-      val subzoneId = insertPlantingSubzone()
+      val subzoneId = insertSubstratum()
       insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId1)
@@ -556,7 +556,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       // Deleted species should not be included
       insertPlanting(speciesId = speciesId4)
 
-      insertPlantingSubzone()
+      insertSubstratum()
       insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId2)
@@ -564,8 +564,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       // Species at other planting sites should not be included
       insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId5)
@@ -615,8 +615,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       insertFacility(type = FacilityType.Nursery)
       insertPlantingSite(x = 0)
-      insertPlantingZone()
-      val subzoneId = insertPlantingSubzone()
+      insertStratum()
+      val subzoneId = insertSubstratum()
       insertMonitoringPlot()
 
       insertNurseryWithdrawal()
@@ -679,8 +679,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception if no permission to read subzone`() {
       insertPlantingSite()
-      insertPlantingZone()
-      val subzoneId = insertPlantingSubzone()
+      insertStratum()
+      val subzoneId = insertSubstratum()
 
       every { user.canReadPlantingSubzone(subzoneId) } returns false
 
@@ -831,8 +831,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
     insertPlantingSite(x = 0)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertMonitoringPlot()
     insertObservation()
     insertObservationPlot()
@@ -855,8 +855,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
     // create plantings with 'other' species
     insertFacility()
     insertPlantingSite()
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertNurseryWithdrawal()
     insertDelivery()
     insertPlanting(speciesId = created)
@@ -867,8 +867,8 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         store.createSpecies(NewSpeciesModel(organizationId = otherOrgId, scientificName = "other"))
     insertFacility()
     insertPlantingSite()
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertNurseryWithdrawal()
     insertDelivery()
     insertPlanting(speciesId = other)

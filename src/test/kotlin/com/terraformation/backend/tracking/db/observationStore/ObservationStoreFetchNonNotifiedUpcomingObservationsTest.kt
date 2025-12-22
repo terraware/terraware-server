@@ -50,8 +50,8 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
     clock.instant = now
 
     insertPlantingSite(timeZone = timeZone)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
     val actual = store.fetchNonNotifiedUpcomingObservations()
@@ -75,12 +75,12 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
             startDate = startDate,
             state = ObservationState.Upcoming,
         )
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Another planting site with no requested substrata.
     insertPlantingSite(timeZone = timeZone)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
     val expected = setOf(startableObservationId)
@@ -115,7 +115,7 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
             startDate = startDate,
             state = ObservationState.Upcoming,
         )
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Start date plus 1 month is an hour ago.
     helper.insertPlantedSite(timeZone = zone3)
@@ -125,12 +125,12 @@ class ObservationStoreFetchNonNotifiedUpcomingObservationsTest : BaseObservation
             startDate = startDate,
             state = ObservationState.Upcoming,
         )
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Start date plus 1 month hasn't arrived yet in the site's time zone.
     helper.insertPlantedSite(timeZone = zone1)
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     val expected = setOf(observationId1, observationId2)
     val actual = store.fetchNonNotifiedUpcomingObservations().map { it.id }.toSet()

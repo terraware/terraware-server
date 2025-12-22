@@ -54,11 +54,12 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         parentStore,
         plantingSeasonsDao,
         plantingSitesDao,
-        plantingSubzonesDao,
-        plantingZonesDao,
+        substrataDao,
+        strataDao,
         eventPublisher,
     )
   }
+
   private val service by lazy {
     PlantingSiteService(deliveryStore, eventPublisher, plantingSiteStore)
   }
@@ -191,20 +192,20 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       val plantingSiteId = insertPlantingSite()
-      val plantingZoneId1 = insertPlantingZone()
-      val plantingSubzoneId11 = insertPlantingSubzone()
-      val plantingSubzoneId12 = insertPlantingSubzone()
-      val plantingZoneId2 = insertPlantingZone()
-      val plantingSubzoneId21 = insertPlantingSubzone()
+      val plantingZoneId1 = insertStratum()
+      val plantingSubzoneId11 = insertSubstratum()
+      val plantingSubzoneId12 = insertSubstratum()
+      val plantingZoneId2 = insertStratum()
+      val plantingSubzoneId21 = insertSubstratum()
 
-      insertPlantingSubzonePopulation(plantingSubzoneId11, speciesId1, 10, 1)
-      insertPlantingSubzonePopulation(plantingSubzoneId12, speciesId1, 20, 2)
-      insertPlantingSubzonePopulation(plantingSubzoneId12, speciesId2, 40, 4)
-      insertPlantingSubzonePopulation(plantingSubzoneId21, speciesId1, 80, 8)
+      insertSubstratumPopulation(plantingSubzoneId11, speciesId1, 10, 1)
+      insertSubstratumPopulation(plantingSubzoneId12, speciesId1, 20, 2)
+      insertSubstratumPopulation(plantingSubzoneId12, speciesId2, 40, 4)
+      insertSubstratumPopulation(plantingSubzoneId21, speciesId1, 80, 8)
 
       // Zone populations should be completely replaced
-      insertPlantingZonePopulation(plantingZoneId1, speciesId1, 160, 16)
-      insertPlantingZonePopulation(plantingZoneId2, speciesId2, 320, 32)
+      insertStratumPopulation(plantingZoneId1, speciesId1, 160, 16)
+      insertStratumPopulation(plantingZoneId2, speciesId2, 320, 32)
 
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
 

@@ -386,7 +386,7 @@ internal class PermissionTest : DatabaseTest() {
     plantingZoneIds.forEach { plantingZoneId ->
       putDatabaseId(
           plantingZoneId,
-          insertPlantingZone(
+          insertStratum(
               createdBy = userId,
               plantingSiteId = getDatabaseId(PlantingSiteId(plantingZoneId.value)),
           ),
@@ -396,10 +396,10 @@ internal class PermissionTest : DatabaseTest() {
     plantingSubzoneIds.forEach { plantingSubzoneId ->
       putDatabaseId(
           plantingSubzoneId,
-          insertPlantingSubzone(
+          insertSubstratum(
               createdBy = userId,
               plantingSiteId = getDatabaseId(PlantingSiteId(plantingSubzoneId.value)),
-              plantingZoneId = getDatabaseId(StratumId(plantingSubzoneId.value)),
+              stratumId = getDatabaseId(StratumId(plantingSubzoneId.value)),
           ),
       )
     }
@@ -410,7 +410,7 @@ internal class PermissionTest : DatabaseTest() {
           insertMonitoringPlot(
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(monitoringPlotId.value / 1000)),
-              plantingSubzoneId = getDatabaseId(SubstratumId(monitoringPlotId.value)),
+              substratumId = getDatabaseId(SubstratumId(monitoringPlotId.value)),
           ),
       )
     }

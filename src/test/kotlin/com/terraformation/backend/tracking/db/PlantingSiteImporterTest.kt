@@ -44,8 +44,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             ParentStore(dslContext),
             plantingSeasonsDao,
             plantingSitesDao,
-            plantingSubzonesDao,
-            plantingZonesDao,
+            substrataDao,
+            strataDao,
             eventPublisher,
         )
     )
@@ -109,7 +109,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import("site", null, organizationId, listOf(Shapefile(listOf(subzoneFeature))))
 
-      val plantingZonesRow = plantingZonesDao.findAll().first()
+      val plantingZonesRow = strataDao.findAll().first()
       assertEquals(expectedPermanent, plantingZonesRow.numPermanentPlots, "Permanent plots")
       assertEquals(expectedTemporary, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }
@@ -141,7 +141,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
 
-      val plantingZonesRow = plantingZonesDao.findAll().first()
+      val plantingZonesRow = strataDao.findAll().first()
       assertEquals(32, plantingZonesRow.numPermanentPlots, "Permanent plots")
       assertEquals(10, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }
@@ -163,7 +163,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
 
-      val plantingZonesRow = plantingZonesDao.findAll().first()
+      val plantingZonesRow = strataDao.findAll().first()
       assertEquals(15, plantingZonesRow.numPermanentPlots, "Permanent plots")
       assertEquals(4, plantingZonesRow.numTemporaryPlots, "Temporary plots")
     }

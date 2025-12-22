@@ -20,8 +20,8 @@ class ObservationStoreClaimPlotTest : BaseObservationStoreTest() {
 
   @BeforeEach
   fun insertDetailedSiteAndObservation() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     plotId = insertMonitoringPlot()
     observationId = insertObservation()
   }

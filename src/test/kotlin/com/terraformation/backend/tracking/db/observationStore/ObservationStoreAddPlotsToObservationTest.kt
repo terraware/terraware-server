@@ -11,8 +11,8 @@ import org.springframework.security.access.AccessDeniedException
 class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
   @Test
   fun `honors isPermanent flag`() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val permanentPlotId = insertMonitoringPlot(permanentIndex = 1)
     val permanentPlotHistoryId = inserted.monitoringPlotHistoryId
     val temporaryPlotId = insertMonitoringPlot(permanentIndex = 2)
@@ -53,8 +53,8 @@ class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
 
   @Test
   fun `throws exception if same plot is added twice`() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val plotId = insertMonitoringPlot()
     val observationId = insertObservation()
 
@@ -70,8 +70,8 @@ class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
     val observationId = insertObservation()
 
     insertPlantingSite()
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val otherSitePlotId = insertMonitoringPlot()
 
     assertThrows<IllegalStateException> {
@@ -83,8 +83,8 @@ class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
   fun `throws exception for an ad-hoc observation`() {
     val observationId = insertObservation(isAdHoc = true)
 
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val plotId = insertMonitoringPlot()
 
     assertThrows<IllegalStateException> {
@@ -96,8 +96,8 @@ class ObservationStoreAddPlotsToObservationTest : BaseObservationStoreTest() {
   fun `throws exception for an an-hoc plot`() {
     val observationId = insertObservation()
 
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val plotId = insertMonitoringPlot(isAdHoc = true)
 
     assertThrows<IllegalStateException> {

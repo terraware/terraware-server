@@ -81,17 +81,17 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             endDate = LocalDate.of(1970, 6, 5),
         )
 
-    val plantingZoneId2 = insertPlantingZone(boundary = plantingZoneGeometry, name = "Z2")
-    val plantingZoneHistoryId2 = inserted.plantingZoneHistoryId
+    val plantingZoneId2 = insertStratum(boundary = plantingZoneGeometry, name = "Z2")
+    val plantingZoneHistoryId2 = inserted.stratumHistoryId
 
     val plantingSubzoneId3 =
-        insertPlantingSubzone(
+        insertSubstratum(
             boundary = plantingSubzoneGeometry3,
             name = "3",
             observedTime = Instant.ofEpochSecond(1),
             stableId = "3",
         )
-    val plantingSubzoneHistoryId3 = inserted.plantingSubzoneHistoryId
+    val plantingSubzoneHistoryId3 = inserted.substratumHistoryId
 
     val monitoringPlotId5 = insertMonitoringPlot(boundary = monitoringPlotGeometry5)
     val monitoringPlotHistoryId5 = inserted.monitoringPlotHistoryId
@@ -100,13 +100,13 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotHistoryId6 = inserted.monitoringPlotHistoryId
 
     val plantingSubzoneId4 =
-        insertPlantingSubzone(
+        insertSubstratum(
             boundary = plantingSubzoneGeometry4,
             plantingCompletedTime = Instant.ofEpochSecond(1),
             name = "4",
             stableId = "4",
         )
-    val plantingSubzoneHistoryId4 = inserted.plantingSubzoneHistoryId
+    val plantingSubzoneHistoryId4 = inserted.substratumHistoryId
 
     val monitoringPlotId7 = insertMonitoringPlot(boundary = monitoringPlotGeometry7)
     val monitoringPlotHistoryId7 = inserted.monitoringPlotHistoryId
@@ -115,7 +115,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotHistoryId8 = inserted.monitoringPlotHistoryId
 
     val exteriorPlotId9 =
-        insertMonitoringPlot(boundary = exteriorPlotGeometry9, plantingSubzoneId = null)
+        insertMonitoringPlot(boundary = exteriorPlotGeometry9, substratumId = null)
     val exteriorPlotHistoryId9 = inserted.monitoringPlotHistoryId
 
     val speciesId1 = insertSpecies()
@@ -130,7 +130,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val plantingId1 =
         insertPlanting(
             numPlants = 1,
-            plantingSubzoneId = plantingSubzoneId3,
+            substratumId = plantingSubzoneId3,
             speciesId = speciesId1,
         )
 
@@ -138,27 +138,27 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         insertPlanting(
             numPlants = -2,
             plantingTypeId = PlantingType.ReassignmentFrom,
-            plantingSubzoneId = plantingSubzoneId3,
+            substratumId = plantingSubzoneId3,
             speciesId = speciesId1,
         )
     val plantingId4 =
         insertPlanting(
             numPlants = 2,
             plantingTypeId = PlantingType.ReassignmentTo,
-            plantingSubzoneId = plantingSubzoneId4,
+            substratumId = plantingSubzoneId4,
             speciesId = speciesId1,
         )
     val plantingId5 =
         insertPlanting(
             numPlants = 8,
-            plantingSubzoneId = plantingSubzoneId4,
+            substratumId = plantingSubzoneId4,
             speciesId = speciesId2,
         )
     val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId)
     val plantingId2 =
         insertPlanting(
             numPlants = 4,
-            plantingSubzoneId = plantingSubzoneId3,
+            substratumId = plantingSubzoneId3,
             speciesId = speciesId1,
         )
 
@@ -166,11 +166,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     // searches are querying the right columns from the right tables.
     insertPlantingSitePopulation(plantingSiteId, speciesId1, 2, 1)
     insertPlantingSitePopulation(plantingSiteId, speciesId2, 4, 3)
-    insertPlantingZonePopulation(plantingZoneId2, speciesId1, 6, 5)
-    insertPlantingZonePopulation(plantingZoneId2, speciesId2, 8, 7)
-    insertPlantingSubzonePopulation(plantingSubzoneId3, speciesId1, 10, 9)
-    insertPlantingSubzonePopulation(plantingSubzoneId4, speciesId1, 12, 11)
-    insertPlantingSubzonePopulation(plantingSubzoneId4, speciesId2, 14, 13)
+    insertStratumPopulation(plantingZoneId2, speciesId1, 6, 5)
+    insertStratumPopulation(plantingZoneId2, speciesId2, 8, 7)
+    insertSubstratumPopulation(plantingSubzoneId3, speciesId1, 10, 9)
+    insertSubstratumPopulation(plantingSubzoneId4, speciesId1, 12, 11)
+    insertSubstratumPopulation(plantingSubzoneId4, speciesId2, 14, 13)
 
     val observationId1 =
         insertObservation(
@@ -857,8 +857,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
   fun `search for plots excludes planting sites in other organizations`() {
     insertOrganization()
     insertPlantingSite()
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
 
     val prefix = SearchFieldPrefix(root = searchTables.plantingSubzones)
 

@@ -33,12 +33,12 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
             startDate = startDate,
             state = ObservationState.Upcoming,
         )
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Another planting site with no requested substratum.
     insertPlantingSite(timeZone = timeZone)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
 
     val expected = setOf(startableObservationId)
@@ -73,7 +73,7 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
             startDate = startDate,
             state = ObservationState.Upcoming,
         )
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Start date is an hour ago.
     helper.insertPlantedSite(timeZone = zone3)
@@ -83,17 +83,17 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
             startDate = startDate,
             state = ObservationState.Upcoming,
         )
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Start date hasn't arrived yet in the site's time zone.
     helper.insertPlantedSite(timeZone = zone1)
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Observation already in progress; shouldn't be started
     helper.insertPlantedSite(timeZone = zone3)
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.InProgress)
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Start date is still in the future.
     helper.insertPlantedSite(timeZone = zone3)
@@ -102,7 +102,7 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
         startDate = startDate.plusDays(1),
         state = ObservationState.Upcoming,
     )
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     val expected = setOf(observationId1, observationId2)
     val actual = store.fetchStartableObservations().map { it.id }.toSet()
@@ -127,13 +127,13 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
             startDate = startDate,
             state = ObservationState.Upcoming,
         )
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     insertPlantingSite(timeZone = timeZone)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertObservation(endDate = endDate, startDate = startDate, state = ObservationState.Upcoming)
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     val expected = setOf(observationId)
     val actual = store.fetchStartableObservations(plantingSiteId).map { it.id }.toSet()

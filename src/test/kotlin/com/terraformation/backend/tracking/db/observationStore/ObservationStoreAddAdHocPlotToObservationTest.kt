@@ -13,8 +13,8 @@ import org.springframework.security.access.AccessDeniedException
 class ObservationStoreAddAdHocPlotToObservationTest : BaseObservationStoreTest() {
   @Test
   fun `inserts a non-permanent observation plot`() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val plotId = insertMonitoringPlot(isAdHoc = true)
     val observationId = insertObservation(isAdHoc = true)
 
@@ -56,8 +56,8 @@ class ObservationStoreAddAdHocPlotToObservationTest : BaseObservationStoreTest()
     val observationId = insertObservation(isAdHoc = true)
 
     insertPlantingSite()
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val otherSitePlotId = insertMonitoringPlot(isAdHoc = true)
 
     assertThrows<IllegalStateException> {
@@ -69,8 +69,8 @@ class ObservationStoreAddAdHocPlotToObservationTest : BaseObservationStoreTest()
   fun `throws exception for a non-ad-hoc observation`() {
     val observationId = insertObservation(isAdHoc = false)
 
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val plotId = insertMonitoringPlot(isAdHoc = true)
 
     assertThrows<IllegalStateException> { store.addAdHocPlotToObservation(observationId, plotId) }
@@ -80,8 +80,8 @@ class ObservationStoreAddAdHocPlotToObservationTest : BaseObservationStoreTest()
   fun `throws exception for a non-ad-hoc plot`() {
     val observationId = insertObservation(isAdHoc = true)
 
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val plotId = insertMonitoringPlot(isAdHoc = false)
 
     assertThrows<IllegalStateException> { store.addAdHocPlotToObservation(observationId, plotId) }
@@ -93,8 +93,8 @@ class ObservationStoreAddAdHocPlotToObservationTest : BaseObservationStoreTest()
 
     val observationId = insertObservation(isAdHoc = true)
 
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val plotId = insertMonitoringPlot(isAdHoc = false)
 
     assertThrows<AccessDeniedException> { store.addAdHocPlotToObservation(observationId, plotId) }

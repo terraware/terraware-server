@@ -45,8 +45,8 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
         ParentStore(dslContext),
         plantingSeasonsDao,
         plantingSitesDao,
-        plantingSubzonesDao,
-        plantingZonesDao,
+        substrataDao,
+        strataDao,
         eventPublisher,
     )
   }
@@ -80,15 +80,15 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
         )
     val plantingSiteHistoryId1 = inserted.plantingSiteHistoryId
     val plantingZoneId1 =
-        insertPlantingZone(areaHa = BigDecimal(100), boundary = zoneBoundary1, name = "Zone 1")
-    val plantingZoneHistoryId1 = inserted.plantingZoneHistoryId
+        insertStratum(areaHa = BigDecimal(100), boundary = zoneBoundary1, name = "Zone 1")
+    val plantingZoneHistoryId1 = inserted.stratumHistoryId
     val plantingSubzoneId1 =
-        insertPlantingSubzone(
+        insertSubstratum(
             areaHa = BigDecimal(70),
             boundary = subzoneBoundary1,
             name = "Subzone 1",
         )
-    val subzoneHistoryId1 = inserted.plantingSubzoneHistoryId
+    val subzoneHistoryId1 = inserted.substratumHistoryId
     val monitoringPlotId1 = insertMonitoringPlot(boundary = monitoringPlotBoundary1)
     val monitoringPlotHistoryId1 = inserted.monitoringPlotHistoryId
 
@@ -100,36 +100,36 @@ internal class PlantingSiteStoreFetchSiteHistoriesTest : DatabaseTest(), RunsAsD
             createdTime = Instant.ofEpochSecond(2000),
         )
     val plantingZoneHistoryId2 =
-        insertPlantingZoneHistory(areaHa = BigDecimal(150), boundary = zoneBoundary2)
+        insertStratumHistory(areaHa = BigDecimal(150), boundary = zoneBoundary2)
     val subzoneHistoryId2 =
-        insertPlantingSubzoneHistory(
+        insertSubstratumHistory(
             areaHa = BigDecimal(120),
             boundary = subzoneBoundary2,
-            plantingSubzoneId = plantingSubzoneId1,
+            substratumId = plantingSubzoneId1,
         )
     val monitoringPlotHistoryId2 =
         insertMonitoringPlotHistory(
-            plantingSubzoneId = plantingSubzoneId1,
+            substratumId = plantingSubzoneId1,
             monitoringPlotId = monitoringPlotId1,
         )
 
     // A subzone that was deleted after a monitoring plot was added to it, in the second set of
     // history records
     val deletedSubzoneId =
-        insertPlantingSubzone(
+        insertSubstratum(
             areaHa = BigDecimal(180),
             boundary = deletedSubzoneBoundary,
             name = "Subzone 2",
         )
-    val deletedSubzoneHistoryId = inserted.plantingSubzoneHistoryId
+    val deletedSubzoneHistoryId = inserted.substratumHistoryId
     val deletedMonitoringPlotId = insertMonitoringPlot(boundary = deletedMonitoringPlotBoundary)
     val deletedMonitoringPlotHistoryId = inserted.monitoringPlotHistoryId
-    plantingSubzonesDao.deleteById(deletedSubzoneId)
+    substrataDao.deleteById(deletedSubzoneId)
 
     // A second site with its own history.
     insertPlantingSite(boundary = siteBoundary2, name = "Site 2")
-    insertPlantingZone(name = "Site 2 Zone")
-    insertPlantingSubzone(name = "Site 2 Subzone")
+    insertStratum(name = "Site 2 Zone")
+    insertSubstratum(name = "Site 2 Subzone")
     insertMonitoringPlot()
 
     val expected =

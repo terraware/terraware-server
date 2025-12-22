@@ -27,8 +27,8 @@ class EventLogPayloadContextTest : DatabaseTest(), RunsAsDatabaseUser {
     fun setUp() {
       insertOrganization()
       insertPlantingSite(boundary = polygon(1))
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       insertObservation()
       insertObservationPlot()

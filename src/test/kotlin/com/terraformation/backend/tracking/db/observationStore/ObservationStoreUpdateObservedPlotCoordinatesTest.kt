@@ -9,8 +9,8 @@ import org.junit.jupiter.api.Test
 class ObservationStoreUpdateObservedPlotCoordinatesTest : BaseObservationStoreTest() {
   @Test
   fun `can add and remove observed coordinates`() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertMonitoringPlot()
     insertObservation()
     insertObservationPlot(completedBy = user.userId)

@@ -144,13 +144,13 @@ class ObservationTestHelper(
             width = width,
             x = 0,
         )
-    test.insertPlantingZone(
+    test.insertStratum(
         height = height,
         numPermanentPlots = numPermanentPlots,
         numTemporaryPlots = numTemporaryPlots,
         width = width,
     )
-    test.insertPlantingSubzone(
+    test.insertSubstratum(
         height = height,
         plantingCompletedTime = substratumCompletedTime,
         width = width,

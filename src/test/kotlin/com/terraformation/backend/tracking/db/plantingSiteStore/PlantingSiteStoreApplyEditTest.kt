@@ -223,7 +223,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
       )
 
-      val zonesRows = plantingZonesDao.findAll().associateBy { it.name }
+      val zonesRows = strataDao.findAll().associateBy { it.name }
       assertEquals(
           Instant.EPOCH,
           zonesRows["Z1"]?.boundaryModifiedTime,
@@ -599,7 +599,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                     isAvailable = initialPlot.isAvailable,
                     permanentIndex = initialPlot.permanentIndex,
                     plantingSiteId = existingWithoutPlots.id,
-                    plantingSubzoneId = existingSubzone.id,
+                    substratumId = existingSubzone.id,
                     plotNumber = initialPlot.plotNumber,
                 )
 
@@ -749,7 +749,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       )
 
       val editedZoneHistories =
-          plantingZoneHistoriesDao.fetchByPlantingSiteHistoryId(editedSiteHistory.id!!)
+          stratumHistoriesDao.fetchByPlantingSiteHistoryId(editedSiteHistory.id!!)
 
       assertEquals(
           edited.strata.size,
@@ -774,7 +774,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       )
 
       val editedSubzoneHistories =
-          plantingSubzoneHistoriesDao.fetchByStratumHistoryId(
+          substratumHistoriesDao.fetchByStratumHistoryId(
               *editedZoneHistories.map { it.id!! }.toTypedArray()
           )
 

@@ -42,11 +42,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   @BeforeEach
   fun setUp() {
-    stratumId = insertPlantingZone()
-    substratumId = insertPlantingSubzone()
+    stratumId = insertStratum()
+    substratumId = insertSubstratum()
     plotId = insertMonitoringPlot(permanentIndex = 1)
     observationId = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
   }
 
@@ -395,26 +395,26 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   @Test
   fun `survival rate is recalculated correctly for a substratum that has only temp plots`() {
     val plantingSiteId = insertPlantingSite(survivalRateIncludesTempPlots = true, x = 0, y = 0)
-    val stratumId = insertPlantingZone()
-    val substratum1 = insertPlantingSubzone()
+    val stratumId = insertStratum()
+    val substratum1 = insertSubstratum()
     val observationId1 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     val tempPlot1 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
     val observationId2 = insertObservation()
-    val substratum2 = insertPlantingSubzone()
-    insertObservationRequestedSubzone()
+    val substratum2 = insertSubstratum()
+    insertObservationRequestedSubstratum()
     val tempPlot2 = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
-    insertPlantingZoneT0TempDensity(
+    insertStratumT0TempDensity(
         speciesId = speciesId1,
-        zoneDensity = BigDecimal.valueOf(15).toPlantsPerHectare(),
+        stratumDensity = BigDecimal.valueOf(15).toPlantsPerHectare(),
     )
-    insertPlantingZoneT0TempDensity(
+    insertStratumT0TempDensity(
         speciesId = speciesId2,
-        zoneDensity = BigDecimal.valueOf(30).toPlantsPerHectare(),
+        stratumDensity = BigDecimal.valueOf(30).toPlantsPerHectare(),
     )
 
     every { user.canReadObservation(any()) } returns true
@@ -507,7 +507,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
     val tempPlotRemoved = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
-    insertPlantingZoneT0TempDensity(zoneDensity = BigDecimal.valueOf(20).toPlantsPerHectare())
+    insertStratumT0TempDensity(stratumDensity = BigDecimal.valueOf(20).toPlantsPerHectare())
 
     val obs1Plots = listOf(plotId, permanentPlotRemoved, tempPlot, tempPlotRemoved)
     val obs2Plots = listOf(plotId, tempPlot)
@@ -566,8 +566,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     // update planting site
     insertPlantingSiteHistory()
-    insertPlantingZoneHistory()
-    insertPlantingSubzoneHistory()
+    insertStratumHistory()
+    insertSubstratumHistory()
     dslContext
         .update(MONITORING_PLOTS)
         .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
@@ -582,14 +582,14 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     removedPlots.forEach {
       insertMonitoringPlotHistory(
           monitoringPlotId = it,
-          plantingSubzoneId = null,
-          plantingSubzoneHistoryId = null,
+          substratumId = null,
+          substratumHistoryId = null,
       )
     }
     // end planting site update
 
     val observationId2 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(
         claimedBy = user.userId,
         monitoringPlotId = plotId,
@@ -704,7 +704,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     assertSurvivalRates(expected1, "Survival rates for all species - observation 1")
 
     val observation2 = insertObservation()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     observationStore.completePlot(
         observation2,
@@ -814,31 +814,31 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       insertPlantingSiteHistory()
       val stratum1 = stratumIds["Zone1"]!!
       val stratum2 = stratumIds["Zone2"]!!
-      val newStratum1History = insertPlantingZoneHistory(plantingZoneId = stratum1)
-      val newStratum2History = insertPlantingZoneHistory(plantingZoneId = stratum2)
+      val newStratum1History = insertStratumHistory(stratumId = stratum1)
+      val newStratum2History = insertStratumHistory(stratumId = stratum2)
       val substratum1 = substratumIds["Subzone1"]!!
       val substratum2 = substratumIds["Subzone2"]!!
       val substratum3 = substratumIds["Subzone3"]!!
       val newSubstratum1History =
-          insertPlantingSubzoneHistory(
-              plantingSubzoneId = substratum1,
-              plantingZoneHistoryId = newStratum1History,
+          insertSubstratumHistory(
+              substratumId = substratum1,
+              stratumHistoryId = newStratum1History,
           )
       val newSubstratum2History =
-          insertPlantingSubzoneHistory(
-              plantingSubzoneId = substratum2,
-              plantingZoneHistoryId = newStratum1History,
+          insertSubstratumHistory(
+              substratumId = substratum2,
+              stratumHistoryId = newStratum1History,
           )
       val newSubstratum3History =
-          insertPlantingSubzoneHistory(
-              plantingSubzoneId = substratum3,
-              plantingZoneHistoryId = newStratum2History,
+          insertSubstratumHistory(
+              substratumId = substratum3,
+              stratumHistoryId = newStratum2History,
           )
       plotHistoryIds[plotIds["111"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["111"]!!,
-              plantingSubzoneId = substratum1,
-              plantingSubzoneHistoryId = newSubstratum1History,
+              substratumId = substratum1,
+              substratumHistoryId = newSubstratum1History,
           )
       val plot112 = plotIds["112"]!!
       dslContext
@@ -849,14 +849,14 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       plotHistoryIds[plot112] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plot112,
-              plantingSubzoneId = substratum2,
-              plantingSubzoneHistoryId = newSubstratum2History,
+              substratumId = substratum2,
+              substratumHistoryId = newSubstratum2History,
           )
       plotHistoryIds[plotIds["211"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["211"]!!,
-              plantingSubzoneId = substratum2,
-              plantingSubzoneHistoryId = newSubstratum2History,
+              substratumId = substratum2,
+              substratumHistoryId = newSubstratum2History,
           )
       val plot212 = plotIds["212"]!!
       dslContext
@@ -867,8 +867,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       plotHistoryIds[plot212] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plot212,
-              plantingSubzoneId = substratum2,
-              plantingSubzoneHistoryId = newSubstratum2History,
+              substratumId = substratum2,
+              substratumHistoryId = newSubstratum2History,
           )
       permanentPlotNumbers.remove("212")
       permanentPlotIds.remove(plot212)
@@ -885,30 +885,30 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       plotHistoryIds[plot213] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plot213,
-              plantingSubzoneId = null,
-              plantingSubzoneHistoryId = null,
+              substratumId = null,
+              substratumHistoryId = null,
           )
       permanentPlotNumbers.remove("213")
       permanentPlotIds.remove(plot213)
       plotHistoryIds[plotIds["311"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["311"]!!,
-              plantingSubzoneId = substratum3,
-              plantingSubzoneHistoryId = newSubstratum3History,
+              substratumId = substratum3,
+              substratumHistoryId = newSubstratum3History,
           )
 
       val newPlotId =
           insertMonitoringPlot(
               insertHistory = false,
-              plantingSubzoneId = substratum3,
+              substratumId = substratum3,
               plotNumber = 312,
               sizeMeters = 30,
               permanentIndex = 312,
           )
       plotHistoryIds[newPlotId] =
           insertMonitoringPlotHistory(
-              plantingSubzoneId = substratum3,
-              plantingSubzoneHistoryId = newSubstratum3History,
+              substratumId = substratum3,
+              substratumHistoryId = newSubstratum3History,
           )
       permanentPlotNumbers.add("312")
       permanentPlotIds.add(newPlotId)
@@ -959,31 +959,31 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       insertPlantingSiteHistory()
       val stratum1 = stratumIds["Zone1"]!!
       val stratum2 = stratumIds["Zone2"]!!
-      val newStratum1History = insertPlantingZoneHistory(plantingZoneId = stratum1)
-      val newStratum2History = insertPlantingZoneHistory(plantingZoneId = stratum2)
+      val newStratum1History = insertStratumHistory(stratumId = stratum1)
+      val newStratum2History = insertStratumHistory(stratumId = stratum2)
       val substratum1 = substratumIds["Subzone1"]!!
       val substratum2 = substratumIds["Subzone2"]!!
       val substratum3 = substratumIds["Subzone3"]!!
       val newSubstratum1History =
-          insertPlantingSubzoneHistory(
-              plantingSubzoneId = substratum1,
-              plantingZoneHistoryId = newStratum1History,
+          insertSubstratumHistory(
+              substratumId = substratum1,
+              stratumHistoryId = newStratum1History,
           )
       val newSubstratum2History =
-          insertPlantingSubzoneHistory(
-              plantingSubzoneId = substratum2,
-              plantingZoneHistoryId = newStratum1History,
+          insertSubstratumHistory(
+              substratumId = substratum2,
+              stratumHistoryId = newStratum1History,
           )
       val newSubstratum3History =
-          insertPlantingSubzoneHistory(
-              plantingSubzoneId = substratum3,
-              plantingZoneHistoryId = newStratum2History,
+          insertSubstratumHistory(
+              substratumId = substratum3,
+              stratumHistoryId = newStratum2History,
           )
       plotHistoryIds[plotIds["111"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["111"]!!,
-              plantingSubzoneId = substratum1,
-              plantingSubzoneHistoryId = newSubstratum1History,
+              substratumId = substratum1,
+              substratumHistoryId = newSubstratum1History,
           )
       val plot2 = plotIds["112"]!!
       dslContext
@@ -994,8 +994,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       plotHistoryIds[plot2] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plot2,
-              plantingSubzoneId = substratum1,
-              plantingSubzoneHistoryId = newSubstratum1History,
+              substratumId = substratum1,
+              substratumHistoryId = newSubstratum1History,
           )
       permanentPlotNumbers.add("112")
       permanentPlotIds.add(plot2)
@@ -1014,8 +1014,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       plotHistoryIds[plotIds["211"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["211"]!!,
-              plantingSubzoneId = substratum2,
-              plantingSubzoneHistoryId = newSubstratum2History,
+              substratumId = substratum2,
+              substratumHistoryId = newSubstratum2History,
           )
       val plot212 = plotIds["212"]!!
       dslContext
@@ -1029,28 +1029,28 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       plotHistoryIds[plot212] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plot212,
-              plantingSubzoneId = null,
-              plantingSubzoneHistoryId = null,
+              substratumId = null,
+              substratumHistoryId = null,
           )
       plotHistoryIds[plotIds["311"]!!] =
           insertMonitoringPlotHistory(
               monitoringPlotId = plotIds["311"]!!,
-              plantingSubzoneId = substratum3,
-              plantingSubzoneHistoryId = newSubstratum3History,
+              substratumId = substratum3,
+              substratumHistoryId = newSubstratum3History,
           )
 
       val newPlotId =
           insertMonitoringPlot(
               insertHistory = false,
-              plantingSubzoneId = substratum3,
+              substratumId = substratum3,
               plotNumber = 312,
               sizeMeters = 30,
               permanentIndex = null,
           )
       plotHistoryIds[newPlotId] =
           insertMonitoringPlotHistory(
-              plantingSubzoneId = substratum3,
-              plantingSubzoneHistoryId = newSubstratum3History,
+              substratumId = substratum3,
+              substratumHistoryId = newSubstratum3History,
           )
       plotIds["312"] = newPlotId
     }

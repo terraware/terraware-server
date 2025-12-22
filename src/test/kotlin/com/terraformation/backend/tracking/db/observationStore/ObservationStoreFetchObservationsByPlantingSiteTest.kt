@@ -45,11 +45,11 @@ class ObservationStoreFetchObservationsByPlantingSiteTest : BaseObservationStore
             startDate = startDate1,
         )
 
-    insertPlantingZone()
-    val substratumId = insertPlantingSubzone()
+    insertStratum()
+    val substratumId = insertSubstratum()
     insertMonitoringPlot()
     insertObservationPlot()
-    insertObservationRequestedSubzone()
+    insertObservationRequestedSubstratum()
 
     // Observation in a different planting site
     insertPlantingSite()

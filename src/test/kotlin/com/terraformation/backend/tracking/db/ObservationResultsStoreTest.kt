@@ -77,8 +77,8 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
     @Test
     fun `respects depth`() {
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       insertObservation(completedTime = Instant.ofEpochSecond(1))
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
@@ -105,8 +105,8 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       val gpsCoordinates = point(2, 3)
       val position = ObservationPlotPosition.NortheastCorner
 
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
@@ -162,16 +162,16 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     @Test
     fun `associates monitoring plots with the substrata they were in at the time of the observation`() {
       // Plot starts off in substratum 1
-      insertPlantingZone()
-      val substratumId1 = insertPlantingSubzone()
+      insertStratum()
+      val substratumId1 = insertSubstratum()
       val plotId = insertMonitoringPlot()
       insertObservation(completedTime = Instant.ofEpochSecond(1))
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
       // Then there's a map edit and the plot moves to substratum 2
       insertPlantingSiteHistory()
-      insertPlantingZone()
-      val substratumId2 = insertPlantingSubzone()
+      insertStratum()
+      val substratumId2 = insertSubstratum()
       monitoringPlotsDao.update(
           monitoringPlotsDao.fetchOneById(plotId)!!.copy(substratumId = substratumId2)
       )
@@ -209,13 +209,13 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
     @Test
     fun `includes monitoring plots in substrata that have subsequently been deleted`() {
-      insertPlantingZone()
-      val substratumId = insertPlantingSubzone()
+      insertStratum()
+      val substratumId = insertSubstratum()
       val plotId = insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      plantingSubzonesDao.deleteById(substratumId)
+      substrataDao.deleteById(substratumId)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
@@ -237,13 +237,13 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
     @Test
     fun `includes monitoring plots in strata that have subsequently been deleted`() {
-      val stratumId = insertPlantingZone()
-      insertPlantingSubzone()
+      val stratumId = insertStratum()
+      insertSubstratum()
       val plotId = insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      plantingZonesDao.deleteById(stratumId)
+      strataDao.deleteById(stratumId)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
@@ -265,8 +265,8 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
     @Test
     fun `returns observed coordinates in counterclockwise position order`() {
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
@@ -308,18 +308,18 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     @Test
     fun `returns stratum and substratum names even for strata that have subsequently been deleted`() {
       insertObservation(completedTime = Instant.EPOCH)
-      insertPlantingZone(name = "Stratum 1")
-      insertPlantingSubzone(name = "Substratum 1")
+      insertStratum(name = "Stratum 1")
+      insertSubstratum(name = "Substratum 1")
       insertMonitoringPlot()
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertObservationPlotCondition(condition = ObservableCondition.AnimalDamage)
-      val stratumId2 = insertPlantingZone(name = "Stratum 2")
-      insertPlantingSubzone(name = "Substratum 2")
+      val stratumId2 = insertStratum(name = "Stratum 2")
+      insertSubstratum(name = "Substratum 2")
       insertMonitoringPlot()
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
       insertObservationPlotCondition(condition = ObservableCondition.Pests)
 
-      plantingZonesDao.deleteById(stratumId2)
+      strataDao.deleteById(stratumId2)
 
       val results = resultsStore.fetchByPlantingSiteId(plantingSiteId)
 
@@ -358,8 +358,8 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       val adHocObservationId = insertObservation(completedTime = Instant.EPOCH, isAdHoc = true)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
@@ -399,13 +399,13 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
       val treeSpeciesId2 = insertSpecies()
 
       // Assigned observation is omitted
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertMonitoringPlot()
       val assignedObservationId = insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot(claimedBy = user.userId, completedBy = user.userId)
 
-      val plotId = insertMonitoringPlot(isAdHoc = true, plantingSubzoneId = null)
+      val plotId = insertMonitoringPlot(isAdHoc = true, substratumId = null)
       val observationId =
           insertObservation(
               completedTime = Instant.EPOCH,
@@ -801,8 +801,8 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
     @Test
     fun `returns plot overlaps in both directions`() {
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertObservation(completedTime = Instant.EPOCH)
       val oldPlotId1 = insertMonitoringPlot()
       val oldPlotId2 = insertMonitoringPlot()
@@ -847,8 +847,8 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     @Test
     fun `planting density calculations only consider completed plots`() {
       insertSpecies()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       insertObservation()
 
       // Plot with one plant
@@ -921,17 +921,17 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     fun `planting site summary only considers substrata with completed plots`() {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
-      insertPlantingZone()
+      insertStratum()
 
       // Each substratum only has one plot
-      val substratumId1 = insertPlantingSubzone()
+      val substratumId1 = insertSubstratum()
       val plotId1 = insertMonitoringPlot()
-      val substratumId2 = insertPlantingSubzone()
+      val substratumId2 = insertSubstratum()
       val plotId2 = insertMonitoringPlot()
-      val substratumId3 = insertPlantingSubzone()
+      val substratumId3 = insertSubstratum()
       val plotId3 = insertMonitoringPlot()
 
-      val neverObservedPlotId = insertMonitoringPlot(plantingSubzoneId = substratumId3)
+      val neverObservedPlotId = insertMonitoringPlot(substratumId = substratumId3)
 
       // For the first observation, plot1 and plot2 are both assigned and completed.
       clock.instant = Instant.ofEpochSecond(300)

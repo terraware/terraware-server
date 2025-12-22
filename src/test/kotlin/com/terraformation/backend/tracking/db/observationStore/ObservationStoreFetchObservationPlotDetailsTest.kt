@@ -20,8 +20,8 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
     val userId1 = insertUser(firstName = "First", lastName = "Person")
     val userId2 = insertUser(firstName = "Second", lastName = "Human")
 
-    insertPlantingZone(name = "Z1")
-    val substratumId1 = insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
+    insertStratum(name = "Z1")
+    val substratumId1 = insertSubstratum(fullName = "Z1-S1", name = "S1")
 
     // A plot that was observed previously and again in this observation
     val monitoringPlotId11 =
@@ -42,7 +42,7 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
         )
     )
 
-    val substratumId2 = insertPlantingSubzone(fullName = "Z1-S2", name = "S2")
+    val substratumId2 = insertSubstratum(fullName = "Z1-S2", name = "S2")
 
     // This plot is claimed and completed
     val monitoringPlotId21 = insertMonitoringPlot(boundary = polygon(3))
@@ -134,8 +134,8 @@ class ObservationStoreFetchObservationPlotDetailsTest : BaseObservationStoreTest
 
   @Test
   fun `returns substratum and stratum details as they existed at the time of the observation`() {
-    insertPlantingZone(name = "Z1")
-    insertPlantingSubzone(fullName = "Z1-S1", name = "S1")
+    insertStratum(name = "Z1")
+    insertSubstratum(fullName = "Z1-S1", name = "S1")
     val monitoringPlotId = insertMonitoringPlot(boundary = polygon(1))
     val observationId = insertObservation(completedTime = Instant.EPOCH)
     insertObservationPlot(completedBy = user.userId)

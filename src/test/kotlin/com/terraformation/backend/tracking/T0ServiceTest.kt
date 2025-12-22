@@ -58,13 +58,13 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     val siteBoundary = multiPolygon(200)
     insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
     insertPlantingSiteHistory()
-    stratumId1 = insertPlantingZone()
-    insertPlantingSubzone()
+    stratumId1 = insertStratum()
+    insertSubstratum()
     monitoringPlotId1 = insertMonitoringPlot(permanentIndex = 1)
     observationId = insertObservation()
     insertObservationPlot()
     monitoringPlotId2 = insertMonitoringPlot(permanentIndex = 2)
-    stratumId2 = insertPlantingZone()
+    stratumId2 = insertStratum()
     speciesId1 = insertSpecies()
     speciesId2 = insertSpecies()
     speciesId3 = insertSpecies()
@@ -76,8 +76,8 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if from multiple orgs`() {
       insertOrganization()
       insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       val otherSitePlotId = insertMonitoringPlot(permanentIndex = 3)
 
       assertThrows<IllegalArgumentException> {
@@ -96,8 +96,8 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception if from multiple sites`() {
       insertPlantingSite()
-      insertPlantingZone()
-      insertPlantingSubzone()
+      insertStratum()
+      insertSubstratum()
       val otherSitePlotId = insertMonitoringPlot(permanentIndex = 4)
 
       assertThrows<IllegalArgumentException> {
@@ -227,7 +227,7 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if from multiple orgs`() {
       insertOrganization()
       insertPlantingSite()
-      val otherStratumId = insertPlantingZone()
+      val otherStratumId = insertStratum()
 
       assertThrows<IllegalArgumentException> {
         service.assignT0TempStratumData(
@@ -248,7 +248,7 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception if from multiple sites`() {
       insertPlantingSite()
-      val otherStratumId = insertPlantingZone()
+      val otherStratumId = insertStratum()
 
       assertThrows<IllegalArgumentException> {
         service.assignT0TempStratumData(

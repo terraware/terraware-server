@@ -23,16 +23,16 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
 
   @BeforeEach
   fun insertDetailedSite() {
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     plotId = insertMonitoringPlot()
   }
 
   @Test
   fun `does not insert anything if this is the first observation of a site`() {
     insertPlantingSite(x = 0)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertMonitoringPlot()
     val otherSiteObservationId = insertObservation()
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
@@ -55,8 +55,8 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
     val totalsForOtherSite = helper.fetchAllTotals()
 
     insertPlantingSite(x = 0)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertMonitoringPlot()
     val observationId = insertObservation()
     insertObservationPlot(isPermanent = true)
@@ -77,8 +77,8 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
         )
 
     insertPlantingSite(x = 0)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     val plotId1 = insertMonitoringPlot()
     val plotId2 = insertMonitoringPlot()
 
@@ -152,7 +152,7 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
             ),
             ObservedStratumSpeciesTotalsRow(
                 observationId = observationId,
-                stratumId = inserted.plantingZoneId,
+                stratumId = inserted.stratumId,
                 speciesName = "Species name",
                 certaintyId = RecordedSpeciesCertainty.Other,
                 totalLive = 0,
@@ -164,7 +164,7 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
             ),
             ObservedSubstratumSpeciesTotalsRow(
                 observationId = observationId,
-                substratumId = inserted.plantingSubzoneId,
+                substratumId = inserted.substratumId,
                 speciesName = "Species name",
                 certaintyId = RecordedSpeciesCertainty.Other,
                 totalLive = 0,
@@ -190,8 +190,8 @@ class ObservationStorePopulateCumulativeDeadTest : BaseObservationStoreTest() {
         )
 
     insertPlantingSite(x = 0)
-    insertPlantingZone()
-    insertPlantingSubzone()
+    insertStratum()
+    insertSubstratum()
     insertMonitoringPlot()
 
     val previousObservationId = insertObservation()

@@ -14,10 +14,10 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
     @Test
     fun `sets completed time to current time if not set previously`() {
       insertPlantingSite()
-      insertPlantingZone()
-      val plantingSubzoneId = insertPlantingSubzone()
+      insertStratum()
+      val plantingSubzoneId = insertSubstratum()
 
-      val initial = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+      val initial = substrataDao.fetchOneById(plantingSubzoneId)!!
 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
@@ -25,7 +25,7 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
       store.updatePlantingSubzoneCompleted(plantingSubzoneId, true)
 
       val expected = initial.copy(plantingCompletedTime = now, modifiedTime = now)
-      val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+      val actual = substrataDao.fetchOneById(plantingSubzoneId)!!
 
       assertEquals(expected, actual)
     }
@@ -35,18 +35,17 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
       val initialPlantingCompletedTime = Instant.ofEpochSecond(5)
 
       insertPlantingSite()
-      insertPlantingZone()
-      val plantingSubzoneId =
-          insertPlantingSubzone(plantingCompletedTime = initialPlantingCompletedTime)
+      insertStratum()
+      val plantingSubzoneId = insertSubstratum(plantingCompletedTime = initialPlantingCompletedTime)
 
-      val initial = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+      val initial = substrataDao.fetchOneById(plantingSubzoneId)!!
 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
 
       store.updatePlantingSubzoneCompleted(plantingSubzoneId, true)
 
-      val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+      val actual = substrataDao.fetchOneById(plantingSubzoneId)!!
 
       assertEquals(initial, actual)
     }
@@ -54,11 +53,10 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
     @Test
     fun `clears completed time`() {
       insertPlantingSite()
-      insertPlantingZone()
-      val plantingSubzoneId =
-          insertPlantingSubzone(plantingCompletedTime = Instant.ofEpochSecond(5))
+      insertStratum()
+      val plantingSubzoneId = insertSubstratum(plantingCompletedTime = Instant.ofEpochSecond(5))
 
-      val initial = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+      val initial = substrataDao.fetchOneById(plantingSubzoneId)!!
 
       val now = Instant.ofEpochSecond(5000)
       clock.instant = now
@@ -66,7 +64,7 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
       store.updatePlantingSubzoneCompleted(plantingSubzoneId, false)
 
       val expected = initial.copy(plantingCompletedTime = null, modifiedTime = now)
-      val actual = plantingSubzonesDao.fetchOneById(plantingSubzoneId)!!
+      val actual = substrataDao.fetchOneById(plantingSubzoneId)!!
 
       assertEquals(expected, actual)
     }
@@ -74,8 +72,8 @@ internal class PlantingSiteStoreUpdateSubzoneCompletedTest : BasePlantingSiteSto
     @Test
     fun `throws exception if no permission`() {
       insertPlantingSite()
-      insertPlantingZone()
-      val plantingSubzoneId = insertPlantingSubzone()
+      insertStratum()
+      val plantingSubzoneId = insertSubstratum()
 
       every { user.canUpdatePlantingSubzoneCompleted(any()) } returns false
 
