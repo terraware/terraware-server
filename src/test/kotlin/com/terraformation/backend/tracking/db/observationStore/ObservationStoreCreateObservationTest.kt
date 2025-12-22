@@ -4,7 +4,7 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
-import com.terraformation.backend.tracking.db.SubstrataNotFoundException
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import com.terraformation.backend.tracking.model.NewObservationModel
 import io.mockk.every
 import java.time.Instant
@@ -67,7 +67,7 @@ class ObservationStoreCreateObservationTest : BaseObservationStoreTest() {
     insertStratum()
     val otherSiteSubstratumId = insertSubstratum()
 
-    assertThrows<SubstrataNotFoundException> {
+    assertThrows<SubstratumNotFoundException> {
       store.createObservation(
           NewObservationModel(
               endDate = LocalDate.of(2020, 1, 31),

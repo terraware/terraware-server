@@ -76,7 +76,7 @@ import com.terraformation.backend.tracking.db.PlantingNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlotNotFoundException
 import com.terraformation.backend.tracking.db.StratumNotFoundException
-import com.terraformation.backend.tracking.db.SubstrataNotFoundException
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import org.springframework.security.access.AccessDeniedException
 
 /**
@@ -1347,7 +1347,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun readSubstratum(substratumId: SubstratumId) {
     user.recordPermissionChecks {
       if (!user.canReadSubstratum(substratumId)) {
-        throw SubstrataNotFoundException(substratumId)
+        throw SubstratumNotFoundException(substratumId)
       }
     }
   }

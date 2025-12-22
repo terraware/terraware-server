@@ -92,12 +92,6 @@ class PlantingSiteNotDetailedException(val plantingSiteId: PlantingSiteId) :
 class PlantingSiteNotFoundException(val plantingSiteId: PlantingSiteId) :
     EntityNotFoundException("Planting site $plantingSiteId not found")
 
-class SubstrataNotFoundException(val substratumId: SubstratumId) :
-    EntityNotFoundException("Substratum $substratumId not found")
-
-class StratumNotFoundException(val stratumId: StratumId) :
-    EntityNotFoundException("Stratum $stratumId not found")
-
 class PlantingSiteMapInvalidException(val problems: List<PlantingSiteValidationFailure>) :
     RuntimeException("Found problems in planting site edit")
 
@@ -178,6 +172,12 @@ class ShapefilesInvalidException(val problems: List<String>) :
 
 class SpeciesInWrongOrganizationException(val speciesId: SpeciesId) :
     MismatchedStateException("Species $speciesId is in the wrong organization")
+
+class StratumNotFoundException(val stratumId: StratumId) :
+    EntityNotFoundException("Stratum $stratumId not found")
+
+class SubstratumNotFoundException(val substratumId: SubstratumId) :
+    EntityNotFoundException("Substratum $substratumId not found")
 
 class WithdrawalNotUndoException(val withdrawalId: WithdrawalId) :
     MismatchedStateException("Withdrawal $withdrawalId is not an undo withdrawal")
