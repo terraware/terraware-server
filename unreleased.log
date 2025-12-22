@@ -1,3 +1,4 @@
+5d49d3e9dde SW-7827 Rename variables in PlantingSiteStore-related files for Zone -> Strata/Stratum (#3739)
 efee057f367 SW-7827 Rename variables in Delivery-related files for Zone -> Strata/Stratum (#3737)
 df5444a990e Update dependency html-minifier-next to v4.14.3 (#3735)
 36004b85a1c SW-7827 Rename zones-strata in DatabaseBackedTest (#3736)
