@@ -40,9 +40,7 @@ class DeliveriesController(
     return GetDeliveryResponsePayload(DeliveryPayload(model))
   }
 
-  @Operation(
-      summary = "Reassigns some of the seedlings from a delivery to a different planting subzone."
-  )
+  @Operation(summary = "Reassigns some of the seedlings from a delivery to a different substratum.")
   @PostMapping("/{id}/reassign")
   fun reassignDelivery(
       @PathVariable("id") deliveryId: DeliveryId,

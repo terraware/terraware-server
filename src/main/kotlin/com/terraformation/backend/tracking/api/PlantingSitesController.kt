@@ -73,8 +73,7 @@ class PlantingSitesController(
   @GetMapping
   @Operation(
       summary = "Gets a list of an organization's planting sites.",
-      description =
-          "The list can optionally contain information about planting zones and subzones.",
+      description = "The list can optionally contain information about strata and substrata.",
   )
   fun listPlantingSites(
       @RequestParam //
@@ -83,7 +82,7 @@ class PlantingSitesController(
       projectId: ProjectId? = null,
       @RequestParam
       @Schema(
-          description = "If true, include planting zones and subzones for each site.",
+          description = "If true, include strata and substrata for each site.",
           defaultValue = "false",
       )
       full: Boolean?,
@@ -104,7 +103,7 @@ class PlantingSitesController(
   @GetMapping("/{id}")
   @Operation(
       summary = "Gets information about a specific planting site.",
-      description = "Includes information about the site's planting zones and subzones.",
+      description = "Includes information about the site's strata and substrata.",
   )
   fun getPlantingSite(
       @PathVariable("id") id: PlantingSiteId,
@@ -134,8 +133,7 @@ class PlantingSitesController(
 
   @GetMapping("/reportedPlants")
   @Operation(
-      summary =
-          "Lists the total number of plants planted at a planting site and in each planting zone.",
+      summary = "Lists the total number of plants planted at a planting site and in each stratum.",
       description = "The totals are based on nursery withdrawals.",
   )
   fun listPlantingSiteReportedPlants(
@@ -160,8 +158,7 @@ class PlantingSitesController(
 
   @GetMapping("/{id}/reportedPlants")
   @Operation(
-      summary =
-          "Gets the total number of plants planted at a planting site and in each planting zone.",
+      summary = "Gets the total number of plants planted at a planting site and in each stratum.",
       description = "The totals are based on nursery withdrawals.",
   )
   fun getPlantingSiteReportedPlants(
@@ -269,7 +266,7 @@ data class MonitoringPlotHistoryPayload(
 }
 
 data class PlantingSubzonePayload(
-    @Schema(description = "Area of planting subzone in hectares.") //
+    @Schema(description = "Area of substratum in hectares.") //
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val fullName: String,
@@ -278,12 +275,10 @@ data class PlantingSubzonePayload(
     val latestObservationId: ObservationId?,
     val monitoringPlots: List<MonitoringPlotPayload>,
     val name: String,
-    @Schema(
-        description = "When any monitoring plot in the planting subzone was most recently observed."
-    )
+    @Schema(description = "When any monitoring plot in the substratum was most recently observed.")
     val observedTime: Instant?,
     val plantingCompleted: Boolean,
-    @Schema(description = "When planting of the planting subzone was marked as completed.")
+    @Schema(description = "When planting of the substratum was marked as completed.")
     val plantingCompletedTime: Instant?,
 ) {
   constructor(
@@ -304,13 +299,13 @@ data class PlantingSubzonePayload(
 }
 
 data class PlantingZonePayload(
-    @Schema(description = "Area of planting zone in hectares.") //
+    @Schema(description = "Area of stratum in hectares.") //
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     @Schema(
         description =
-            "When the boundary of this planting zone was last modified. Modifications of other " +
-                "attributes of the planting zone do not cause this timestamp to change."
+            "When the boundary of this stratum was last modified. Modifications of other " +
+                "attributes of the stratum do not cause this timestamp to change."
     )
     val boundaryModifiedTime: Instant,
     val id: StratumId,
@@ -356,10 +351,7 @@ data class PlantingSeasonPayload(
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class PlantingSitePayload(
     val adHocPlots: List<MonitoringPlotPayload>,
-    @Schema(
-        description =
-            "Area of planting site in hectares. Only present if the site has planting zones."
-    )
+    @Schema(description = "Area of planting site in hectares. Only present if the site has strata.")
     val areaHa: BigDecimal?,
     val boundary: MultiPolygon?,
     val countryCode: String?,
@@ -405,7 +397,7 @@ data class PlantingSubzoneHistoryPayload(
     val id: SubstratumHistoryId,
     val monitoringPlots: List<MonitoringPlotHistoryPayload>,
     val name: String,
-    @Schema(description = "ID of planting subzone if it exists in the current version of the site.")
+    @Schema(description = "ID of substratum if it exists in the current version of the site.")
     val plantingSubzoneId: SubstratumId?,
 ) {
   constructor(
@@ -427,7 +419,7 @@ data class PlantingZoneHistoryPayload(
     val id: StratumHistoryId,
     val name: String,
     val plantingSubzones: List<PlantingSubzoneHistoryPayload>,
-    @Schema(description = "ID of planting zone if it exists in the current version of the site.")
+    @Schema(description = "ID of stratum if it exists in the current version of the site.")
     val plantingZoneId: StratumId?,
 ) {
   constructor(
@@ -563,15 +555,14 @@ data class NewPlantingSubzonePayload(
     val boundary: Geometry,
     @Schema(
         description =
-            "Name of this planting subzone. Two subzones in the same planting zone may not have " +
-                "the same name, but using the same subzone name in different planting zones is " +
-                "valid."
+            "Name of this substratum. Two substrata in the same stratum may not have the same name, " +
+                "but using the same substratum name in different strata is valid."
     )
     val name: String,
 ) {
   fun validate() {
     if (boundary !is MultiPolygon && boundary !is Polygon) {
-      throw IllegalArgumentException("Planting subzone boundaries must be Polygon or MultiPolygon")
+      throw IllegalArgumentException("Substratum boundaries must be Polygon or MultiPolygon")
     }
   }
 
@@ -590,8 +581,7 @@ data class NewPlantingZonePayload(
     val boundary: Geometry,
     @Schema(
         description =
-            "Name of this planting zone. Two zones in the same planting site may not have the " +
-                "same name."
+            "Name of this stratum. Two strata in the same planting site may not have the same name."
     )
     val name: String,
     val plantingSubzones: List<NewPlantingSubzonePayload>?,
@@ -599,7 +589,7 @@ data class NewPlantingZonePayload(
 ) {
   fun validate() {
     if (boundary !is MultiPolygon && boundary !is Polygon) {
-      throw IllegalArgumentException("Planting zone boundaries must be Polygon or MultiPolygon")
+      throw IllegalArgumentException("Stratum boundaries must be Polygon or MultiPolygon")
     }
 
     plantingSubzones?.forEach { it.validate() }
@@ -623,18 +613,18 @@ data class PlantingSiteValidationProblemPayload(
         arraySchema =
             Schema(
                 description =
-                    "If the problem is a conflict between two planting zones or two subzones, " +
-                        "the list of the conflicting zone or subzone names."
+                    "If the problem is a conflict between two strata or two substrata, " +
+                        "the list of the conflicting stratum or substratum names."
             )
     )
     val conflictsWith: Set<String>?,
-    @Schema(description = "If the problem relates to a particular planting zone, its name.")
+    @Schema(description = "If the problem relates to a particular stratum, its name.")
     val plantingZone: String?,
     @Schema(
         description =
-            "If the problem relates to a particular subzone, its name. If this is present, " +
-                "plantingZone will also be present and will be the name of the zone that " +
-                "contains this subzone."
+            "If the problem relates to a particular substratum, its name. If this is present, " +
+                "plantingZone will also be present and will be the name of the stratum that " +
+                "contains this substratum."
     )
     val plantingSubzone: String?,
     val problemType: PlantingSiteValidationFailureType,
@@ -655,7 +645,7 @@ data class CreatePlantingSiteRequestPayload(
     val plantingSeasons: List<NewPlantingSeasonPayload>? = null,
     @Schema(
         description =
-            "List of planting zones to create. If present and not empty, \"boundary\" must also " +
+            "List of strata to create. If present and not empty, \"boundary\" must also " +
                 "be specified."
     )
     val plantingZones: List<NewPlantingZonePayload>? = null,

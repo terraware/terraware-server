@@ -58,7 +58,7 @@ class T0Controller(
               "observations (if not withdrawn).",
       description =
           "Species with densities are species that were withdrawn, species with null densities are " +
-              "species that were recorded in observations but not withdrawn to the plot's subzone.",
+              "species that were recorded in observations but not withdrawn to the plot's substratum.",
   )
   fun getT0SpeciesForPlantingSite(
       @PathVariable("plantingSiteId") plantingSiteId: PlantingSiteId
