@@ -99,39 +99,39 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     ) {
       val gen = ShapefileGenerator()
       val siteBoundary = gen.multiRectangle(0 to 0, 1000 to 1000)
-      val subzoneFeature =
-          gen.subzoneFeature(
+      val substratumFeature =
+          gen.substratumFeature(
               siteBoundary,
               errorMargin = errorMargin,
               studentsT = studentsT,
               variance = variance,
           )
 
-      importer.import("site", null, organizationId, listOf(Shapefile(listOf(subzoneFeature))))
+      importer.import("site", null, organizationId, listOf(Shapefile(listOf(substratumFeature))))
 
-      val plantingZonesRow = strataDao.findAll().first()
-      assertEquals(expectedPermanent, plantingZonesRow.numPermanentPlots, "Permanent plots")
-      assertEquals(expectedTemporary, plantingZonesRow.numTemporaryPlots, "Temporary plots")
+      val strataRow = strataDao.findAll().first()
+      assertEquals(expectedPermanent, strataRow.numPermanentPlots, "Permanent plots")
+      assertEquals(expectedTemporary, strataRow.numTemporaryPlots, "Temporary plots")
     }
 
     @Test
-    fun `allows statistical properties to appear on any subzone`() {
+    fun `allows statistical properties to appear on any substratum`() {
       val gen = ShapefileGenerator()
-      val subzoneFeatures =
+      val substratumFeatures =
           listOf(
-              gen.subzoneFeature(
+              gen.substratumFeature(
                   gen.multiRectangle(0 to 0, 100 to 100),
                   errorMargin = BigDecimal(70),
                   studentsT = null,
                   variance = null,
               ),
-              gen.subzoneFeature(
+              gen.substratumFeature(
                   gen.multiRectangle(100 to 0, 200 to 100),
                   errorMargin = null,
                   studentsT = BigDecimal(1.7),
                   variance = null,
               ),
-              gen.subzoneFeature(
+              gen.substratumFeature(
                   gen.multiRectangle(200 to 0, 300 to 100),
                   errorMargin = null,
                   studentsT = null,
@@ -139,19 +139,19 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
+      importer.import("site", null, organizationId, listOf(Shapefile(substratumFeatures)))
 
-      val plantingZonesRow = strataDao.findAll().first()
-      assertEquals(32, plantingZonesRow.numPermanentPlots, "Permanent plots")
-      assertEquals(10, plantingZonesRow.numTemporaryPlots, "Temporary plots")
+      val strataRow = strataDao.findAll().first()
+      assertEquals(32, strataRow.numPermanentPlots, "Permanent plots")
+      assertEquals(10, strataRow.numTemporaryPlots, "Temporary plots")
     }
 
     @Test
     fun `can override temporary and permanent plot counts`() {
       val gen = ShapefileGenerator()
-      val subzoneFeatures =
+      val substratumFeatures =
           listOf(
-              gen.subzoneFeature(
+              gen.substratumFeature(
                   gen.multiRectangle(0 to 0, 100 to 100),
                   errorMargin = BigDecimal(70),
                   studentsT = BigDecimal(1.7),
@@ -161,11 +161,11 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
               )
           )
 
-      importer.import("site", null, organizationId, listOf(Shapefile(subzoneFeatures)))
+      importer.import("site", null, organizationId, listOf(Shapefile(substratumFeatures)))
 
-      val plantingZonesRow = strataDao.findAll().first()
-      assertEquals(15, plantingZonesRow.numPermanentPlots, "Permanent plots")
-      assertEquals(4, plantingZonesRow.numTemporaryPlots, "Temporary plots")
+      val strataRow = strataDao.findAll().first()
+      assertEquals(15, strataRow.numPermanentPlots, "Permanent plots")
+      assertEquals(4, strataRow.numTemporaryPlots, "Temporary plots")
     }
   }
 
@@ -173,7 +173,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
   inner class Validation {
     @Test
     fun `detects too few shapefiles`() {
-      assertHasProblem("Expected subzones and optionally exclusions but found 0 shapefiles") {
+      assertHasProblem("Expected substrata and optionally exclusions but found 0 shapefiles") {
         importer.import(
             "name",
             "description",
@@ -189,51 +189,36 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val gen = ShapefileGenerator()
       val siteBoundary =
           gen.multiRectangle(0 to 0, MONITORING_PLOT_SIZE_INT - 1 to MONITORING_PLOT_SIZE_INT)
-      val subzoneFeature =
+      val substratumFeature =
           when (property) {
-            "error_marg" -> gen.subzoneFeature(siteBoundary, errorMargin = null)
-            "variance" -> gen.subzoneFeature(siteBoundary, variance = null)
+            "error_marg" -> gen.substratumFeature(siteBoundary, errorMargin = null)
+            "variance" -> gen.substratumFeature(siteBoundary, variance = null)
             else -> throw IllegalArgumentException("Test bug: unknown field $property")
           }
 
-      assertHasProblem("Zone Z1 has no subzone with positive value for properties: $property") {
+      assertHasProblem(
+          "Stratum Z1 has no substratum with positive value for properties: $property"
+      ) {
         importer.import(
             "name",
             "description",
             organizationId,
-            listOf(Shapefile(listOf(subzoneFeature))),
+            listOf(Shapefile(listOf(substratumFeature))),
         )
       }
     }
 
     @Test
-    fun `can detect missing zone stable IDs`() {
+    fun `can detect missing stratum stable IDs`() {
       val gen = ShapefileGenerator()
-      val subzoneFeature =
-          gen.subzoneFeature(gen.multiRectangle(0 to 0, 500 to 500), subzoneStableId = "x")
-
-      assertHasProblem("Subzone S1 is missing zone stable ID properties: stable_z, stable_zon") {
-        importer.shapefilesToModel(
-            listOf(Shapefile(listOf(subzoneFeature))),
-            "test",
-            "description",
-            organizationId,
-            requireStableIds = true,
-        )
-      }
-    }
-
-    @Test
-    fun `can detect missing subzone stable IDs`() {
-      val gen = ShapefileGenerator()
-      val subzoneFeature =
-          gen.subzoneFeature(gen.multiRectangle(0 to 0, 500 to 500), zoneStableId = "x")
+      val substratumFeature =
+          gen.substratumFeature(gen.multiRectangle(0 to 0, 500 to 500), substratumStableId = "x")
 
       assertHasProblem(
-          "Subzone S1 is missing subzone stable ID properties: stable_sz, stable_sub"
+          "Substratum S1 is missing stratum stable ID properties: stable_z, stable_zon, stable_s, stable_str"
       ) {
         importer.shapefilesToModel(
-            listOf(Shapefile(listOf(subzoneFeature))),
+            listOf(Shapefile(listOf(substratumFeature))),
             "test",
             "description",
             organizationId,
@@ -243,77 +228,99 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `detects duplicate subzone stable IDs`() {
+    fun `can detect missing substratum stable IDs`() {
       val gen = ShapefileGenerator()
-      val subzoneFeatures =
-          listOf(
-              gen.subzoneFeature(gen.multiRectangle(0 to 0, 500 to 250), subzoneStableId = "Z1-S1"),
-              gen.subzoneFeature(
-                  gen.multiRectangle(0 to 250, 500 to 500),
-                  subzoneStableId = "Z1-S1",
-              ),
-          )
+      val substratumFeature =
+          gen.substratumFeature(gen.multiRectangle(0 to 0, 500 to 500), stratumStableId = "x")
 
-      assertHasProblem("Duplicate stable ID Z1-S1 on subzones: S1, S2") {
-        importer.import(
-            "Test Site",
+      assertHasProblem(
+          "Substratum S1 is missing substratum stable ID properties: stable_sz, stable_sub, stable_ss"
+      ) {
+        importer.shapefilesToModel(
+            listOf(Shapefile(listOf(substratumFeature))),
+            "test",
             "description",
             organizationId,
-            listOf(Shapefile(subzoneFeatures)),
+            requireStableIds = true,
         )
       }
     }
 
     @Test
-    fun `detects inconsistent zone stable IDs`() {
+    fun `detects duplicate substratum stable IDs`() {
       val gen = ShapefileGenerator()
-      val subzoneFeatures =
+      val substratumFeatures =
           listOf(
-              gen.subzoneFeature(
+              gen.substratumFeature(
                   gen.multiRectangle(0 to 0, 500 to 250),
-                  zone = "A",
-                  zoneStableId = "A",
+                  substratumStableId = "Z1-S1",
               ),
-              gen.subzoneFeature(
+              gen.substratumFeature(
                   gen.multiRectangle(0 to 250, 500 to 500),
-                  zone = "A",
-                  zoneStableId = "B",
+                  substratumStableId = "Z1-S1",
               ),
           )
 
-      assertHasProblem("Inconsistent stable IDs for zone A: A, B") {
+      assertHasProblem("Duplicate stable ID Z1-S1 on substrata: S1, S2") {
         importer.import(
             "Test Site",
             "description",
             organizationId,
-            listOf(Shapefile(subzoneFeatures)),
+            listOf(Shapefile(substratumFeatures)),
         )
       }
     }
 
     @Test
-    fun `detects inconsistent zone names`() {
+    fun `detects inconsistent stratum stable IDs`() {
       val gen = ShapefileGenerator()
-      val subzoneFeatures =
+      val substratumFeatures =
           listOf(
-              gen.subzoneFeature(
+              gen.substratumFeature(
                   gen.multiRectangle(0 to 0, 500 to 250),
-                  zone = "A",
-                  zoneStableId = "A",
+                  stratum = "A",
+                  stratumStableId = "A",
               ),
-              gen.subzoneFeature(
+              gen.substratumFeature(
                   gen.multiRectangle(0 to 250, 500 to 500),
-                  zone = "B",
-                  zoneStableId = "A",
+                  stratum = "A",
+                  stratumStableId = "B",
               ),
           )
 
-      assertHasProblem("Inconsistent zone names for stable ID A: A, B") {
+      assertHasProblem("Inconsistent stable IDs for stratum A: A, B") {
         importer.import(
             "Test Site",
             "description",
             organizationId,
-            listOf(Shapefile(subzoneFeatures)),
+            listOf(Shapefile(substratumFeatures)),
+        )
+      }
+    }
+
+    @Test
+    fun `detects inconsistent stratum names`() {
+      val gen = ShapefileGenerator()
+      val substratumFeatures =
+          listOf(
+              gen.substratumFeature(
+                  gen.multiRectangle(0 to 0, 500 to 250),
+                  stratum = "A",
+                  stratumStableId = "A",
+              ),
+              gen.substratumFeature(
+                  gen.multiRectangle(0 to 250, 500 to 500),
+                  stratum = "B",
+                  stratumStableId = "A",
+              ),
+          )
+
+      assertHasProblem("Inconsistent stratum names for stable ID A: A, B") {
+        importer.import(
+            "Test Site",
+            "description",
+            organizationId,
+            listOf(Shapefile(substratumFeatures)),
         )
       }
     }
@@ -325,7 +332,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
       val gen = ShapefileGenerator()
       val siteBoundary =
           gen.multiRectangle(0 to 0, MONITORING_PLOT_SIZE_INT - 1 to MONITORING_PLOT_SIZE_INT)
-      val subzoneFeature = gen.subzoneFeature(siteBoundary)
+      val substratumFeature = gen.substratumFeature(siteBoundary)
 
       val expected = PlantingSiteValidationFailure.stratumTooSmall("Z1")
 
@@ -333,7 +340,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         importer.import(
             name = "Test Site",
             organizationId = organizationId,
-            shapefiles = listOf(Shapefile(listOf(subzoneFeature))),
+            shapefiles = listOf(Shapefile(listOf(substratumFeature))),
         )
         fail("Should have thrown exception for validation failure")
       } catch (e: PlantingSiteMapInvalidException) {
@@ -365,7 +372,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
               2 to 0,
           )
 
-      val subzoneFeature = gen.subzoneFeature(siteBoundary)
+      val substratumFeature = gen.substratumFeature(siteBoundary)
 
       val expected = PlantingSiteValidationFailure.stratumTooSmall("Z1")
 
@@ -374,7 +381,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         importer.import(
             name = "Test Site",
             organizationId = organizationId,
-            shapefiles = listOf(Shapefile(listOf(subzoneFeature))),
+            shapefiles = listOf(Shapefile(listOf(substratumFeature))),
         )
         fail("Should have thrown exception for validation failure")
       } catch (e: PlantingSiteMapInvalidException) {
@@ -393,7 +400,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
         importer.import(
             name = "Test Site",
             organizationId = organizationId,
-            shapefiles = listOf(Shapefile(listOf(subzoneFeature))),
+            shapefiles = listOf(Shapefile(listOf(substratumFeature))),
             gridOrigin = gen.point(2 to 0),
         )
       } catch (e: PlantingSiteMapInvalidException) {

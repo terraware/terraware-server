@@ -387,8 +387,8 @@ class AdminPlantingSitesController(
                 Shapefile.fromBoundary(
                     siteBoundary,
                     mapOf(
-                        PlantingSiteImporter.zoneNameProperties.first() to "Zone",
-                        PlantingSiteImporter.subzoneNameProperties.first() to "Subzone",
+                        PlantingSiteImporter.stratumNameProperties.first() to "Zone",
+                        PlantingSiteImporter.substratumNameProperties.first() to "Subzone",
                     ),
                 )
 
