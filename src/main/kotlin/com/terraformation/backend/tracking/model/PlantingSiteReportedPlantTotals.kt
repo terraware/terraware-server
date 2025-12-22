@@ -8,7 +8,7 @@ import kotlin.math.roundToInt
 
 data class PlantingSiteReportedPlantTotals(
     val id: PlantingSiteId,
-    val plantingZones: List<PlantingZone>,
+    val strata: List<Stratum>,
     val plantsSinceLastObservation: Int,
     val species: List<Species>,
     val totalPlants: Int,
@@ -16,8 +16,8 @@ data class PlantingSiteReportedPlantTotals(
 ) {
   val progressPercent: Int?
     get() {
-      return if (plantingZones.isNotEmpty()) {
-        val targetPlants = plantingZones.sumOf { it.targetPlants }
+      return if (strata.isNotEmpty()) {
+        val targetPlants = strata.sumOf { it.targetPlants }
         if (targetPlants > 0) {
           (totalPlants * 100.0 / targetPlants).roundToInt()
         } else {
@@ -28,10 +28,10 @@ data class PlantingSiteReportedPlantTotals(
       }
     }
 
-  data class PlantingZone(
+  data class Stratum(
       val id: StratumId,
       val plantsSinceLastObservation: Int,
-      val plantingSubzones: List<PlantingSubzone>,
+      val substrata: List<Substratum>,
       val species: List<Species>,
       val targetPlants: Int,
       val totalPlants: Int,
@@ -47,7 +47,7 @@ data class PlantingSiteReportedPlantTotals(
       }
   }
 
-  data class PlantingSubzone(
+  data class Substratum(
       val id: SubstratumId,
       val plantsSinceLastObservation: Int,
       val species: List<Species>,

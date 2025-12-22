@@ -94,10 +94,10 @@ class AdminPlantingSitesController(
 
   @GetMapping("/plantingSite/{plantingSiteId}")
   fun getPlantingSite(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
-    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
+    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
     val country = plantingSite.countryCode?.let { countriesDao.fetchOneByCode(it) }
     val plotCounts = plantingSiteStore.countMonitoringPlots(plantingSiteId)
-    val plantCounts = plantingSiteStore.countReportedPlantsInSubzones(plantingSiteId)
+    val plantCounts = plantingSiteStore.countReportedPlantsInSubstrata(plantingSiteId)
     val organization = organizationStore.fetchOneById(plantingSite.organizationId)
     val reportedPlants = plantingSiteStore.countReportedPlants(plantingSiteId)
     val subzonesById =
@@ -181,7 +181,7 @@ class AdminPlantingSitesController(
 
   @GetMapping("/plantingSite/{plantingSiteId}/map")
   fun getPlantingSiteMap(@PathVariable plantingSiteId: PlantingSiteId, model: Model): String {
-    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
+    val plantingSite = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
 
     model.addAttribute("site", plantingSite)
 
@@ -539,7 +539,7 @@ class AdminPlantingSitesController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      plantingSiteStore.updatePlantingZone(plantingZoneId) { row ->
+      plantingSiteStore.updateStratum(plantingZoneId) { row ->
         row.copy(
             errorMargin = errorMargin,
             name = name,

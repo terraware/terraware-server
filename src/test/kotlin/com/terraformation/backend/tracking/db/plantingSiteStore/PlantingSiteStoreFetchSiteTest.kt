@@ -39,13 +39,13 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               timeZone = timeZone,
           )
       val boundaryModifiedTime = Instant.ofEpochSecond(5001)
-      val plantingZoneId =
+      val stratumId =
           insertStratum(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
               targetPlantingDensity = BigDecimal.ONE,
           )
-      val plantingSubzoneId = insertSubstratum(boundary = multiPolygon(1.0))
+      val substratumId = insertSubstratum(boundary = multiPolygon(1.0))
       val monitoringPlotId =
           insertMonitoringPlot(boundary = polygon(0.1), elevationMeters = BigDecimal.TEN)
       insertMonitoringPlot(boundary = polygon(0.1), isAdHoc = true)
@@ -109,7 +109,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               timeZone = timeZone,
           )
 
-      val expectedWithZone =
+      val expectedWithStratum =
           expectedWithSite.copy(
               strata =
                   listOf(
@@ -117,7 +117,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           areaHa = BigDecimal.TEN,
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
-                          id = plantingZoneId,
+                          id = stratumId,
                           name = "Z1",
                           substrata = emptyList(),
                           stableId = StableId("Z1"),
@@ -126,17 +126,17 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                   )
           )
 
-      val expectedWithSubzone =
-          expectedWithZone.copy(
+      val expectedWithSubstratum =
+          expectedWithStratum.copy(
               strata =
                   listOf(
-                      expectedWithZone.strata[0].copy(
+                      expectedWithStratum.strata[0].copy(
                           substrata =
                               listOf(
                                   SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
-                                      id = plantingSubzoneId,
+                                      id = substratumId,
                                       fullName = "Z1-1",
                                       name = "1",
                                       plantingCompletedTime = null,
@@ -149,7 +149,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           )
 
       val expectedWithPlot =
-          expectedWithSubzone.copy(
+          expectedWithSubstratum.copy(
               adHocPlots =
                   listOf(
                       MonitoringPlotModel(
@@ -176,10 +176,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                   ),
               strata =
                   listOf(
-                      expectedWithSubzone.strata[0].copy(
+                      expectedWithSubstratum.strata[0].copy(
                           substrata =
                               listOf(
-                                  expectedWithSubzone.strata[0]
+                                  expectedWithSubstratum.strata[0]
                                       .substrata[0]
                                       .copy(
                                           monitoringPlots =
@@ -203,8 +203,8 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       val allExpected =
           mapOf(
               PlantingSiteDepth.Site to expectedWithSite,
-              PlantingSiteDepth.Zone to expectedWithZone,
-              PlantingSiteDepth.Subzone to expectedWithSubzone,
+              PlantingSiteDepth.Stratum to expectedWithStratum,
+              PlantingSiteDepth.Substratum to expectedWithSubstratum,
               PlantingSiteDepth.Plot to expectedWithPlot,
           )
 
@@ -225,27 +225,27 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               timeZone = timeZone,
           )
       val boundaryModifiedTime = Instant.ofEpochSecond(5001)
-      val plantingZoneId1 =
+      val stratumId1 =
           insertStratum(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
               targetPlantingDensity = BigDecimal.ONE,
           )
-      val plantingSubzoneId11 = insertSubstratum(boundary = multiPolygon(1.0))
+      val substratumId11 = insertSubstratum(boundary = multiPolygon(1.0))
       val monitoringPlotId111 = insertMonitoringPlot(boundary = polygon(0.1))
       val monitoringPlotId112 = insertMonitoringPlot(boundary = polygon(0.1))
 
-      val plantingSubzoneId12 = insertSubstratum(boundary = multiPolygon(1.0))
+      val substratumId12 = insertSubstratum(boundary = multiPolygon(1.0))
       val monitoringPlotId121 = insertMonitoringPlot(boundary = polygon(0.1))
       val monitoringPlotId122 = insertMonitoringPlot(boundary = polygon(0.1))
 
-      val plantingZoneId2 =
+      val stratumId2 =
           insertStratum(
               boundary = multiPolygon(2.0),
               boundaryModifiedTime = boundaryModifiedTime,
               targetPlantingDensity = BigDecimal.ONE,
           )
-      val plantingSubzoneId2 =
+      val substratumId2 =
           insertSubstratum(boundary = multiPolygon(1.0), fullName = "Z2-1", name = "1")
       val monitoringPlotId2 = insertMonitoringPlot(boundary = polygon(0.1))
 
@@ -309,19 +309,19 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
 
       /* (x) - for latest (o) for observed but not the latest.
 
-        Observations        | 1 | 2 |
-        --------------------|---|---|
-        Planting Site       | o | x |
-        | - Zone 1          | o | x |
-        | - - Subzone 1-1   | x |   |
-        | - - - Plot 1-1-1  | x |   |
-        | - - - Plot 1-1-2  |   |   |
-        | - - Subzone 1-2   | o | x |
-        | - - - Plot 1-2-1  | x |   |
-        | - - - Plot 1-2-2  | o | x |
-        | - Zone 2          |   | x |
-        | - - Subzone 1-2   |   | x |
-        | - - - Plot 1-2-1  |   | x |
+        Observations         | 1 | 2 |
+        ---------------------|---|---|
+        Planting Site        | o | x |
+        | - Stratum 1        | o | x |
+        | - - Substratum 1-1 | x |   |
+        | - - - Plot 1-1-1   | x |   |
+        | - - - Plot 1-1-2   |   |   |
+        | - - Substratum 1-2 | o | x |
+        | - - - Plot 1-2-1   | x |   |
+        | - - - Plot 1-2-2   | o | x |
+        | - Stratum 2        |   | x |
+        | - - Substratum 1-2 |   | x |
+        | - - - Plot 1-2-1   |   | x |
       */
 
       val expected =
@@ -343,7 +343,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           areaHa = BigDecimal.TEN,
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
-                          id = plantingZoneId1,
+                          id = stratumId1,
                           latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                           latestObservationId = observationId2,
                           name = "Z1",
@@ -352,7 +352,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                   SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
-                                      id = plantingSubzoneId11,
+                                      id = substratumId11,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(1000),
                                       latestObservationId = observationId1,
                                       fullName = "Z1-1",
@@ -384,7 +384,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                   SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
-                                      id = plantingSubzoneId12,
+                                      id = substratumId12,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                                       latestObservationId = observationId2,
                                       fullName = "Z1-2",
@@ -421,7 +421,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           areaHa = BigDecimal.TEN,
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
-                          id = plantingZoneId2,
+                          id = stratumId2,
                           latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                           latestObservationId = observationId2,
                           name = "Z2",
@@ -430,7 +430,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                   SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
-                                      id = plantingSubzoneId2,
+                                      id = substratumId2,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                                       latestObservationId = observationId2,
                                       fullName = "Z2-1",
@@ -474,21 +474,21 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       }
 
       val siteBoundary4326 = multiPolygon(30)
-      val zoneBoundary4326 = multiPolygon(20)
-      val subzoneBoundary4326 = multiPolygon(10)
+      val stratumBoundary4326 = multiPolygon(20)
+      val substratumBoundary4326 = multiPolygon(10)
       val monitoringPlotBoundary4326 = polygon(1)
       val exclusion4326 = multiPolygon(5)
 
       val siteBoundary3857 = siteBoundary4326.to3857()
-      val zoneBoundary3857 = zoneBoundary4326.to3857()
-      val subzoneBoundary3857 = subzoneBoundary4326.to3857()
+      val stratumBoundary3857 = stratumBoundary4326.to3857()
+      val substratumBoundary3857 = substratumBoundary4326.to3857()
       val monitoringPlotBoundary3857 = monitoringPlotBoundary4326.to3857()
       val exclusion3857 = exclusion4326.to3857()
 
       val plantingSiteId =
           insertPlantingSite(boundary = siteBoundary3857, exclusion = exclusion3857)
-      val plantingZoneId = insertStratum(boundary = zoneBoundary3857)
-      val plantingSubzoneId = insertSubstratum(boundary = subzoneBoundary3857)
+      val stratumId = insertStratum(boundary = stratumBoundary3857)
+      val substratumId = insertSubstratum(boundary = substratumBoundary3857)
       val monitoringPlotId = insertMonitoringPlot(boundary = monitoringPlotBoundary3857)
 
       val expected =
@@ -503,17 +503,17 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                   listOf(
                       StratumModel(
                           areaHa = BigDecimal.TEN,
-                          boundary = zoneBoundary4326,
+                          boundary = stratumBoundary4326,
                           boundaryModifiedTime = Instant.EPOCH,
-                          id = plantingZoneId,
+                          id = stratumId,
                           name = "Z1",
                           stableId = StableId("Z1"),
                           substrata =
                               listOf(
                                   SubstratumModel(
                                       areaHa = BigDecimal.ONE,
-                                      boundary = subzoneBoundary4326,
-                                      id = plantingSubzoneId,
+                                      boundary = substratumBoundary4326,
+                                      id = substratumId,
                                       fullName = "Z1-1",
                                       name = "1",
                                       plantingCompletedTime = null,

@@ -27,24 +27,24 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 
-class PlantingZoneModelTest {
+class StratumModelTest {
   private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
   private val siteOrigin = geometryFactory.createPoint(Coordinate(12.3, 45.6))
 
   @Nested
   inner class ChoosePermanentPlots {
     @Test
-    fun `only chooses plots that lie in requested subzones`() {
+    fun `only chooses plots that lie in requested substrata`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numPermanentPlots = 4,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 1,
                           plots = monitoringPlotModels(permanentIds = listOf(1, 2)),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 2,
                           plots = monitoringPlotModels(permanentIds = listOf(3, 4)),
                       ),
@@ -53,7 +53,7 @@ class PlantingZoneModelTest {
 
       assertSetEquals(
           setOf(MonitoringPlotId(3), MonitoringPlotId(4)),
-          model.choosePermanentPlots(plantingSubzoneIds(2)),
+          model.choosePermanentPlots(substrataIds(2)),
       )
     }
   }
@@ -63,11 +63,11 @@ class PlantingZoneModelTest {
     @Test
     fun `does not choose permanent plots`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numTemporaryPlots = 1,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
+                      substratumModel(
                           plots =
                               monitoringPlotModels(
                                   permanentIds = listOf(10, 11, 12, 13),
@@ -81,7 +81,7 @@ class PlantingZoneModelTest {
 
       repeatTest {
         val actual =
-            model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin).map {
+            model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
               model.findMonitoringPlot(it)?.id
             }
         assertEquals(expected, actual, "Should not have chosen permanent plot")
@@ -91,20 +91,18 @@ class PlantingZoneModelTest {
     @Test
     fun `can choose plots with permanent indexes that are not permanent currently`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numTemporaryPlots = 1,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
-                          plots = listOf(monitoringPlotModel(10, permanentIndex = 2))
-                      )
+                      substratumModel(plots = listOf(monitoringPlotModel(10, permanentIndex = 2)))
                   ),
           )
 
       repeatTest {
         val indexOfSelectedPlot =
             model
-                .chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin)
+                .chooseTemporaryPlots(substrataIds(1), siteOrigin)
                 .mapNotNull { model.findMonitoringPlot(it) }
                 .single()
                 .permanentIndex
@@ -116,11 +114,11 @@ class PlantingZoneModelTest {
     @Test
     fun `does not choose unavailable plots`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numTemporaryPlots = 1,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
+                      substratumModel(
                           plots =
                               listOf(
                                   monitoringPlotModel(10),
@@ -134,7 +132,7 @@ class PlantingZoneModelTest {
 
       repeatTest {
         val actual =
-            model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin).map {
+            model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
               model.findMonitoringPlot(it)?.id
             }
 
@@ -143,50 +141,55 @@ class PlantingZoneModelTest {
     }
 
     @Test
-    fun `does not choose plots that lie partially outside subzone`() {
-      // Zone is three plots wide by one plot high, split horizontally into two equal-sized subzones
-      // such that there are three plot locations but the middle one sits on the subzone boundary.
-      // Only subzone 1 is requested.
-      val subzoneWidth = MONITORING_PLOT_SIZE * 1.5
-      val subzoneHeight = MONITORING_PLOT_SIZE + 1
-      val subzone1Boundary =
-          Turtle(siteOrigin).makeMultiPolygon { rectangle(subzoneWidth, subzoneHeight) }
-      val subzone2Boundary =
+    fun `does not choose plots that lie partially outside substratum`() {
+      // Stratum is three plots wide by one plot high, split horizontally into two equal-sized
+      // substrata such that there are three plot locations but the middle one sits on the
+      // substratum boundary. Only substratum 1 is requested.
+      val substratumWidth = MONITORING_PLOT_SIZE * 1.5
+      val substratumHeight = MONITORING_PLOT_SIZE + 1
+      val substratum1Boundary =
+          Turtle(siteOrigin).makeMultiPolygon { rectangle(substratumWidth, substratumHeight) }
+      val substratum2Boundary =
           Turtle(siteOrigin).makeMultiPolygon {
-            east(subzoneWidth)
-            rectangle(subzoneWidth, subzoneHeight)
+            east(substratumWidth)
+            rectangle(substratumWidth, substratumHeight)
           }
-      val subzone1PlotBoundary = Turtle(siteOrigin).makePolygon { square(MONITORING_PLOT_SIZE) }
-      val bothSubzonesPlotBoundary =
+      val substratum1PlotBoundary = Turtle(siteOrigin).makePolygon { square(MONITORING_PLOT_SIZE) }
+      val bothSubstrataPlotBoundary =
           Turtle(siteOrigin).makePolygon {
             east(MONITORING_PLOT_SIZE)
             square(MONITORING_PLOT_SIZE)
           }
-      val subzone2PlotBoundary =
+      val substratum2PlotBoundary =
           Turtle(siteOrigin).makePolygon {
             east(MONITORING_PLOT_SIZE * 2)
             square(MONITORING_PLOT_SIZE)
           }
 
       val model =
-          plantingZoneModel(
+          stratumModel(
               numTemporaryPlots = 1,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
-                          boundary = subzone1Boundary,
+                      substratumModel(
+                          boundary = substratum1Boundary,
                           id = 1,
                           plots =
                               listOf(
-                                  monitoringPlotModel(boundary = subzone1PlotBoundary, id = 10),
-                                  monitoringPlotModel(boundary = bothSubzonesPlotBoundary, id = 11),
+                                  monitoringPlotModel(boundary = substratum1PlotBoundary, id = 10),
+                                  monitoringPlotModel(
+                                      boundary = bothSubstrataPlotBoundary,
+                                      id = 11,
+                                  ),
                               ),
                       ),
-                      plantingSubzoneModel(
-                          boundary = subzone2Boundary,
+                      substratumModel(
+                          boundary = substratum2Boundary,
                           id = 2,
                           plots =
-                              listOf(monitoringPlotModel(boundary = subzone2PlotBoundary, id = 20)),
+                              listOf(
+                                  monitoringPlotModel(boundary = substratum2PlotBoundary, id = 20)
+                              ),
                       ),
                   ),
           )
@@ -195,7 +198,7 @@ class PlantingZoneModelTest {
 
       repeatTest {
         val chosenIds =
-            model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin).map {
+            model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
               model.findMonitoringPlot(it)?.id
             }
 
@@ -204,13 +207,13 @@ class PlantingZoneModelTest {
     }
 
     @Test
-    fun `spreads monitoring plots evenly across subzones`() {
+    fun `spreads monitoring plots evenly across substrata`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numTemporaryPlots = 6,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 1,
                           plots =
                               monitoringPlotModels(
@@ -218,7 +221,7 @@ class PlantingZoneModelTest {
                                   temporaryIds = listOf(11, 12, 13, 14),
                               ),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 2,
                           plots =
                               monitoringPlotModels(
@@ -226,7 +229,7 @@ class PlantingZoneModelTest {
                                   temporaryIds = listOf(21, 22, 23, 24),
                               ),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 3,
                           plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
                       ),
@@ -243,25 +246,29 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(plantingSubzoneIds(1, 2, 3), siteOrigin)
+                .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin)
                 .map { model.findMonitoringPlot(it)?.id }
                 .toSet()
 
-        val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+        val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(listOf(2, 2, 2), numChosenPerSubzone, "Number of plots chosen in each subzone")
+        assertEquals(
+            listOf(2, 2, 2),
+            numChosenPerSubstratum,
+            "Number of plots chosen in each substratum",
+        )
       }
     }
 
     @Test
-    fun `places excess plots in subzones with fewest permanent plots`() {
+    fun `places excess plots in substrata with fewest permanent plots`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numPermanentPlots = 12,
               numTemporaryPlots = 5,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 1,
                           plots =
                               listOf(
@@ -277,7 +284,7 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(19),
                               ),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 2,
                           plots =
                               listOf(
@@ -289,7 +296,7 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(25),
                               ),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 3,
                           plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
                       ),
@@ -306,25 +313,29 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(plantingSubzoneIds(1, 2, 3), siteOrigin)
+                .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin)
                 .map { model.findMonitoringPlot(it)?.id }
                 .toSet()
 
-        val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+        val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(listOf(1, 2, 2), numChosenPerSubzone, "Number of plots chosen in each subzone")
+        assertEquals(
+            listOf(1, 2, 2),
+            numChosenPerSubstratum,
+            "Number of plots chosen in each substratum",
+        )
       }
     }
 
     @Test
-    fun `places excess plots in requested subzones if no difference in permanent plots`() {
+    fun `places excess plots in requested substrata if no difference in permanent plots`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numPermanentPlots = 9,
               numTemporaryPlots = 5,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 1,
                           plots =
                               listOf(
@@ -336,7 +347,7 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(15),
                               ),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 2,
                           plots =
                               listOf(
@@ -348,7 +359,7 @@ class PlantingZoneModelTest {
                                   monitoringPlotModel(25),
                               ),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 3,
                           plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
                       ),
@@ -365,32 +376,36 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(plantingSubzoneIds(1, 2), siteOrigin)
+                .chooseTemporaryPlots(substrataIds(1, 2), siteOrigin)
                 .map { model.findMonitoringPlot(it)?.id }
                 .toSet()
 
-        val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+        val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(listOf(2, 1, 0), numChosenPerSubzone, "Number of plots chosen in each subzone")
+        assertEquals(
+            listOf(2, 1, 0),
+            numChosenPerSubstratum,
+            "Number of plots chosen in each substratum",
+        )
       }
     }
 
     @Test
-    fun `excludes plots that would have been placed in unrequested subzones`() {
+    fun `excludes plots that would have been placed in unrequested substrata`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numTemporaryPlots = 5,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 1,
                           plots = monitoringPlotModels(temporaryIds = listOf(10, 11, 12, 13, 14)),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 2,
                           plots = monitoringPlotModels(temporaryIds = listOf(20, 21, 22, 23, 24)),
                       ),
-                      plantingSubzoneModel(
+                      substratumModel(
                           id = 3,
                           plots = monitoringPlotModels(temporaryIds = listOf(30, 31, 32, 33, 34)),
                       ),
@@ -407,36 +422,38 @@ class PlantingZoneModelTest {
       repeatTest {
         val chosenIds =
             model
-                .chooseTemporaryPlots(plantingSubzoneIds(2, 3), siteOrigin)
+                .chooseTemporaryPlots(substrataIds(2, 3), siteOrigin)
                 .map { model.findMonitoringPlot(it)?.id }
                 .toSet()
 
-        val numChosenPerSubzone = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+        val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(listOf(0, 2, 2), numChosenPerSubzone, "Number of plots chosen in each subzone")
+        assertEquals(
+            listOf(0, 2, 2),
+            numChosenPerSubstratum,
+            "Number of plots chosen in each substratum",
+        )
       }
     }
 
     @Test
-    fun `throws exception if no subzones`() {
-      val model = plantingZoneModel(numTemporaryPlots = 1, subzones = emptyList())
+    fun `throws exception if no substrata`() {
+      val model = stratumModel(numTemporaryPlots = 1, substrata = emptyList())
 
       assertThrows<IllegalArgumentException> { model.chooseTemporaryPlots(emptySet(), siteOrigin) }
     }
 
     @Test
-    fun `throws exception if subzone has too few remaining plots`() {
+    fun `throws exception if substratum has too few remaining plots`() {
       val model =
-          plantingZoneModel(
+          stratumModel(
               numTemporaryPlots = 6,
-              subzones =
-                  listOf(
-                      plantingSubzoneModel(plots = monitoringPlotModels(permanentIds = listOf(10)))
-                  ),
+              substrata =
+                  listOf(substratumModel(plots = monitoringPlotModels(permanentIds = listOf(10)))),
           )
 
       assertThrows<SubstratumFullException> {
-        model.chooseTemporaryPlots(plantingSubzoneIds(1), siteOrigin)
+        model.chooseTemporaryPlots(substrataIds(1), siteOrigin)
       }
     }
   }
@@ -444,7 +461,7 @@ class PlantingZoneModelTest {
   @Nested
   inner class FindUnusedSquare {
     @RepeatedTest(20)
-    fun `can find square in non-rectangular planting zone`() {
+    fun `can find square in non-rectangular stratum`() {
       // Boundary shape:
       //
       // +-------+
@@ -465,15 +482,15 @@ class PlantingZoneModelTest {
 
       val siteBoundary = geometryFactory.createMultiPolygon(arrayOf(sitePolygon))
 
-      val zone =
-          plantingZoneModel(
+      val stratum =
+          stratumModel(
               boundary = siteBoundary,
-              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())),
+              substrata = listOf(substratumModel(boundary = siteBoundary, plots = emptyList())),
           )
 
       val expected = Turtle(siteOrigin).makePolygon { square(50) }
 
-      val actual = zone.findUnusedSquare(siteOrigin, 50)
+      val actual = stratum.findUnusedSquare(siteOrigin, 50)
 
       if (!expected.equalsExact(actual, 0.1)) {
         assertEquals(expected, actual)
@@ -501,16 +518,16 @@ class PlantingZoneModelTest {
 
       val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { square(21) }
 
-      val zone =
-          plantingZoneModel(
+      val stratum =
+          stratumModel(
               boundary = siteBoundary,
-              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())),
+              substrata = listOf(substratumModel(boundary = siteBoundary, plots = emptyList())),
           )
 
       val actualCounts =
           (1..numberOfRuns)
               .asSequence()
-              .map { zone.findUnusedSquare(siteOrigin, 10) }
+              .map { stratum.findUnusedSquare(siteOrigin, 10) }
               .also { assertNotNull(it, "Failed to find square") }
               .groupBy { it!!.coordinate }
               .mapValues { it.value.size }
@@ -554,13 +571,13 @@ class PlantingZoneModelTest {
           }
 
       val siteBoundary = geometryFactory.createMultiPolygon((triangles + targetArea).toTypedArray())
-      val zone =
-          plantingZoneModel(
+      val stratum =
+          stratumModel(
               boundary = siteBoundary,
-              subzones = listOf(plantingSubzoneModel(boundary = siteBoundary, plots = emptyList())),
+              substrata = listOf(substratumModel(boundary = siteBoundary, plots = emptyList())),
           )
 
-      val square = zone.findUnusedSquare(siteOrigin, 30)
+      val square = stratum.findUnusedSquare(siteOrigin, 30)
       assertNotNull(square, "Unused square")
 
       assertThat(square!!.intersection(targetArea).area)
@@ -580,12 +597,12 @@ class PlantingZoneModelTest {
       val siteBoundary = Turtle(siteOrigin).makeMultiPolygon { rectangle(61, 31) }
       val existingPlotPolygon = Turtle(siteOrigin).makePolygon { square(30) }
 
-      val zone =
-          plantingZoneModel(
+      val stratum =
+          stratumModel(
               boundary = siteBoundary,
-              subzones =
+              substrata =
                   listOf(
-                      plantingSubzoneModel(
+                      substratumModel(
                           boundary = siteBoundary,
                           plots =
                               listOf(
@@ -606,7 +623,7 @@ class PlantingZoneModelTest {
 
       repeat(20) {
         val actual =
-            zone.findUnusedSquares(
+            stratum.findUnusedSquares(
                 gridOrigin = siteOrigin,
                 sizeMeters = 30,
                 count = 1,
@@ -637,20 +654,20 @@ class PlantingZoneModelTest {
 
   /**
    * Returns the boundary of a test monitoring plot based on its ID. The 10s digit of the ID is
-   * assumed to be the subzone ID and the 1s digit is assumed to be a position in the subzone. The
-   * positions are laid out as follows:
+   * assumed to be the substratum ID and the 1s digit is assumed to be a position in the substratum.
+   * The positions are laid out as follows:
    *
    *     4
    *     3  2
    *     0  1
    */
   private fun monitoringPlotBoundary(id: Int): Polygon {
-    val subzoneId = id / 10
+    val substratumId = id / 10
     val plotNumber = id.rem(10)
 
     return Turtle(siteOrigin).makePolygon {
-      // Subzone corner
-      east(subzoneId * MONITORING_PLOT_SIZE * 2)
+      // Substratum corner
+      east(substratumId * MONITORING_PLOT_SIZE * 2)
       north(MONITORING_PLOT_SIZE * (plotNumber / 2))
       if (plotNumber.rem(2) == 1) {
         east(MONITORING_PLOT_SIZE)
@@ -690,11 +707,11 @@ class PlantingZoneModelTest {
   }
 
   /**
-   * Returns the boundary for a sample subzone. Subzones are arranged in a row from west to east and
-   * each one has room for 5 monitoring plots in the layout defined by [monitoringPlotBoundary],
+   * Returns the boundary for a sample substratum. Substrata are arranged in a row from west to east
+   * and each one has room for 5 monitoring plots in the layout defined by [monitoringPlotBoundary],
    * plus a 1-meter margin to account for floating-point inaccuracy.
    */
-  private fun plantingSubzoneBoundary(id: Int, numPlots: Int): MultiPolygon {
+  private fun substratumBoundary(id: Int, numPlots: Int): MultiPolygon {
     return Turtle(siteOrigin).makeMultiPolygon {
       east(id * MONITORING_PLOT_SIZE * 2)
 
@@ -722,10 +739,10 @@ class PlantingZoneModelTest {
     }
   }
 
-  private fun plantingSubzoneModel(
+  private fun substratumModel(
       id: Int = 1,
       plots: List<MonitoringPlotModel> = emptyList(),
-      boundary: MultiPolygon = plantingSubzoneBoundary(id, plots.size),
+      boundary: MultiPolygon = substratumBoundary(id, plots.size),
   ) =
       SubstratumModel(
           areaHa = BigDecimal.ONE,
@@ -738,28 +755,28 @@ class PlantingZoneModelTest {
           stableId = StableId("name"),
       )
 
-  private fun plantingSubzoneIds(vararg id: Int) = id.map { SubstratumId(it.toLong()) }.toSet()
+  private fun substrataIds(vararg id: Int) = id.map { SubstratumId(it.toLong()) }.toSet()
 
   /**
-   * Returns the boundary for a sample planting zone that contains some number of 51x76 meter
-   * subzones laid out west to east.
+   * Returns the boundary for a sample stratum that contains some number of 51x76 meter substrata
+   * laid out west to east.
    */
-  private fun plantingZoneBoundary(subzones: List<ExistingSubstratumModel>): MultiPolygon {
-    if (subzones.isEmpty()) {
+  private fun stratumBoundary(substrata: List<ExistingSubstratumModel>): MultiPolygon {
+    if (substrata.isEmpty()) {
       return multiPolygon(1)
     }
 
-    return subzones
+    return substrata
         .map { it.boundary }
-        .reduce { acc: Geometry, subzone: Geometry -> acc.union(subzone) }
+        .reduce { acc: Geometry, substratum: Geometry -> acc.union(substratum) }
         .toMultiPolygon()
   }
 
-  private fun plantingZoneModel(
+  private fun stratumModel(
       numTemporaryPlots: Int = 1,
       numPermanentPlots: Int = 1,
-      subzones: List<ExistingSubstratumModel>,
-      boundary: MultiPolygon = plantingZoneBoundary(subzones),
+      substrata: List<ExistingSubstratumModel>,
+      boundary: MultiPolygon = stratumBoundary(substrata),
   ) =
       ExistingStratumModel(
           areaHa = BigDecimal.ONE,
@@ -770,7 +787,7 @@ class PlantingZoneModelTest {
           name = "name",
           numPermanentPlots = numPermanentPlots,
           numTemporaryPlots = numTemporaryPlots,
-          substrata = subzones,
+          substrata = substrata,
           stableId = StableId("name"),
           studentsT = BigDecimal.ONE,
           targetPlantingDensity = BigDecimal.ONE,

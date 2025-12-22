@@ -48,8 +48,8 @@ class ObservationStoreFetchStartableObservationsTest : BaseObservationStoreTest(
   }
 
   @Test
-  fun `honors planting site time strata`() {
-    // Three adjacent time strata, 1 hour apart
+  fun `honors planting site time zone`() {
+    // Three adjacent time zone, 1 hour apart
     val zone1 = ZoneId.of("America/Los_Angeles")
     val zone2 = ZoneId.of("America/Denver")
     val zone3 = ZoneId.of("America/Chicago")

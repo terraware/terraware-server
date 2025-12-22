@@ -21,8 +21,8 @@ import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.MonitoringPlotHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
-import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
-import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
+import com.terraformation.backend.tracking.model.StratumHistoryModel
+import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -46,9 +46,9 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         ParentStore(dslContext),
         plantingSeasonsDao,
         plantingSitesDao,
-        substrataDao,
-        strataDao,
         eventPublisher,
+        strataDao,
+        substrataDao,
     )
   }
 
@@ -63,9 +63,9 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
     val gridOrigin = point(1)
     val siteBoundary1 = multiPolygon(200)
     val siteBoundary2 = multiPolygon(250)
-    val zoneBoundary1 = multiPolygon(150)
-    val subzoneBoundary1 = multiPolygon(100)
-    val subzoneBoundary2 = multiPolygon(90)
+    val stratumBoundary1 = multiPolygon(150)
+    val substratumBoundary1 = multiPolygon(100)
+    val substratumBoundary2 = multiPolygon(90)
     val monitoringPlotBoundary1 = polygon(30)
     val monitoringPlotBoundary2 = polygon(25)
 
@@ -78,30 +78,30 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
             name = "Site 1",
         )
     val plantingSiteHistoryId1 = inserted.plantingSiteHistoryId
-    val plantingZoneId1 =
-        insertStratum(areaHa = BigDecimal(75), boundary = zoneBoundary1, name = "Zone 1")
-    val plantingZoneHistoryId1 = inserted.stratumHistoryId
-    val plantingSubzoneId1 =
+    val stratumId1 =
+        insertStratum(areaHa = BigDecimal(75), boundary = stratumBoundary1, name = "Stratum 1")
+    val stratumHistoryId1 = inserted.stratumHistoryId
+    val substratumId1 =
         insertSubstratum(
             areaHa = BigDecimal(50),
-            boundary = subzoneBoundary1,
-            name = "Subzone 1",
+            boundary = substratumBoundary1,
+            name = "Substratum 1",
         )
-    val subzoneHistoryId1 = inserted.substratumHistoryId
+    val substratumHistoryId1 = inserted.substratumHistoryId
     val monitoringPlotId1 = insertMonitoringPlot(boundary = monitoringPlotBoundary1)
     val monitoringPlotHistoryId1 = inserted.monitoringPlotHistoryId
 
-    // A subzone that was deleted after a monitoring plot was added to it.
-    val subzoneId2 =
+    // A substratum that was deleted after a monitoring plot was added to it.
+    val substratumId2 =
         insertSubstratum(
             areaHa = BigDecimal(25),
-            boundary = subzoneBoundary2,
-            name = "Subzone 2",
+            boundary = substratumBoundary2,
+            name = "Substratum 2",
         )
-    val subzoneHistoryId2 = inserted.substratumHistoryId
+    val substratumHistoryId2 = inserted.substratumHistoryId
     val monitoringPlotId2 = insertMonitoringPlot(boundary = monitoringPlotBoundary2)
     val monitoringPlotHistoryId2 = inserted.monitoringPlotHistoryId
-    substrataDao.deleteById(subzoneId2)
+    substrataDao.deleteById(substratumId2)
 
     // A second set of history records for the same site.
     insertPlantingSiteHistory(boundary = siteBoundary2)
@@ -111,8 +111,8 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
 
     // A second site with its own history.
     insertPlantingSite(boundary = siteBoundary2, name = "Site 2")
-    insertStratum(name = "Site 2 Zone")
-    insertSubstratum(name = "Site 2 Subzone")
+    insertStratum(name = "Site 2 Stratum")
+    insertSubstratum(name = "Site 2 Substratum")
     insertMonitoringPlot()
 
     val expected =
@@ -123,25 +123,25 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
             gridOrigin = gridOrigin,
             id = plantingSiteHistoryId1,
             plantingSiteId = plantingSiteId,
-            plantingZones =
+            strata =
                 listOf(
-                    PlantingZoneHistoryModel(
+                    StratumHistoryModel(
                         areaHa = BigDecimal(75),
-                        boundary = zoneBoundary1,
-                        id = plantingZoneHistoryId1,
-                        name = "Zone 1",
-                        plantingZoneId = plantingZoneId1,
-                        stableId = StableId("Zone 1"),
-                        plantingSubzones =
+                        boundary = stratumBoundary1,
+                        id = stratumHistoryId1,
+                        name = "Stratum 1",
+                        stratumId = stratumId1,
+                        stableId = StableId("Stratum 1"),
+                        substrata =
                             listOf(
-                                PlantingSubzoneHistoryModel(
+                                SubstratumHistoryModel(
                                     areaHa = BigDecimal(50),
-                                    boundary = subzoneBoundary1,
-                                    id = subzoneHistoryId1,
-                                    fullName = "Zone 1-Subzone 1",
-                                    name = "Subzone 1",
-                                    plantingSubzoneId = plantingSubzoneId1,
-                                    stableId = StableId("Zone 1-Subzone 1"),
+                                    boundary = substratumBoundary1,
+                                    id = substratumHistoryId1,
+                                    fullName = "Stratum 1-Substratum 1",
+                                    name = "Substratum 1",
+                                    substratumId = substratumId1,
+                                    stableId = StableId("Stratum 1-Substratum 1"),
                                     monitoringPlots =
                                         listOf(
                                             MonitoringPlotHistoryModel(
@@ -154,14 +154,14 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
                                             ),
                                         ),
                                 ),
-                                PlantingSubzoneHistoryModel(
+                                SubstratumHistoryModel(
                                     areaHa = BigDecimal(25),
-                                    boundary = subzoneBoundary2,
-                                    id = subzoneHistoryId2,
-                                    fullName = "Zone 1-Subzone 2",
-                                    name = "Subzone 2",
-                                    plantingSubzoneId = null,
-                                    stableId = StableId("Zone 1-Subzone 2"),
+                                    boundary = substratumBoundary2,
+                                    id = substratumHistoryId2,
+                                    fullName = "Stratum 1-Substratum 2",
+                                    name = "Substratum 2",
+                                    substratumId = null,
+                                    stableId = StableId("Stratum 1-Substratum 2"),
                                     monitoringPlots =
                                         listOf(
                                             MonitoringPlotHistoryModel(
@@ -202,7 +202,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
             gridOrigin = null,
             id = plantingSiteHistoryId,
             plantingSiteId = plantingSiteId,
-            plantingZones = emptyList(),
+            strata = emptyList(),
         )
 
     val actual =

@@ -225,9 +225,9 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             plantingSeasonsDao,
             plantingSitesDao,
-            substrataDao,
-            strataDao,
             publisher,
+            strataDao,
+            substrataDao,
         )
     projectStore = ProjectStore(clock, dslContext, publisher, parentStore, projectsDao)
     reportStore =

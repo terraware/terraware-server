@@ -36,9 +36,9 @@ import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailureType
-import com.terraformation.backend.tracking.model.PlantingSubzoneHistoryModel
-import com.terraformation.backend.tracking.model.PlantingZoneHistoryModel
+import com.terraformation.backend.tracking.model.StratumHistoryModel
 import com.terraformation.backend.tracking.model.StratumModel
+import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toMultiPolygon
@@ -409,7 +409,7 @@ data class PlantingSubzoneHistoryPayload(
     val plantingSubzoneId: SubstratumId?,
 ) {
   constructor(
-      model: PlantingSubzoneHistoryModel
+      model: SubstratumHistoryModel
   ) : this(
       areaHa = model.areaHa,
       boundary = model.boundary,
@@ -417,7 +417,7 @@ data class PlantingSubzoneHistoryPayload(
       id = model.id,
       monitoringPlots = model.monitoringPlots.map { MonitoringPlotHistoryPayload(it) },
       name = model.name,
-      plantingSubzoneId = model.plantingSubzoneId,
+      plantingSubzoneId = model.substratumId,
   )
 }
 
@@ -431,14 +431,14 @@ data class PlantingZoneHistoryPayload(
     val plantingZoneId: StratumId?,
 ) {
   constructor(
-      model: PlantingZoneHistoryModel
+      model: StratumHistoryModel
   ) : this(
       areaHa = model.areaHa,
       boundary = model.boundary,
       id = model.id,
       name = model.name,
-      plantingSubzones = model.plantingSubzones.map { PlantingSubzoneHistoryPayload(it) },
-      plantingZoneId = model.plantingZoneId,
+      plantingSubzones = model.substrata.map { PlantingSubzoneHistoryPayload(it) },
+      plantingZoneId = model.stratumId,
   )
 }
 
@@ -460,7 +460,7 @@ data class PlantingSiteHistoryPayload(
       exclusion = model.exclusion,
       id = model.id,
       plantingSiteId = model.plantingSiteId,
-      plantingZones = model.plantingZones.map { PlantingZoneHistoryPayload(it) },
+      plantingZones = model.strata.map { PlantingZoneHistoryPayload(it) },
   )
 }
 
@@ -472,7 +472,7 @@ data class PlantingSubzoneReportedPlantsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      subzoneTotals: PlantingSiteReportedPlantTotals.PlantingSubzone
+      subzoneTotals: PlantingSiteReportedPlantTotals.Substratum
   ) : this(
       id = subzoneTotals.id,
       plantsSinceLastObservation = subzoneTotals.plantsSinceLastObservation,
@@ -492,12 +492,11 @@ data class PlantingZoneReportedPlantsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      zoneTotals: PlantingSiteReportedPlantTotals.PlantingZone
+      zoneTotals: PlantingSiteReportedPlantTotals.Stratum
   ) : this(
       id = zoneTotals.id,
       plantsSinceLastObservation = zoneTotals.plantsSinceLastObservation,
-      plantingSubzones =
-          zoneTotals.plantingSubzones.map { PlantingSubzoneReportedPlantsPayload(it) },
+      plantingSubzones = zoneTotals.substrata.map { PlantingSubzoneReportedPlantsPayload(it) },
       progressPercent = zoneTotals.progressPercent,
       species = zoneTotals.species.map { ReportedSpeciesPayload(it) },
       totalPlants = zoneTotals.totalPlants,
@@ -517,7 +516,7 @@ data class PlantingSiteReportedPlantsPayload(
       totals: PlantingSiteReportedPlantTotals
   ) : this(
       id = totals.id,
-      plantingZones = totals.plantingZones.map { PlantingZoneReportedPlantsPayload(it) },
+      plantingZones = totals.strata.map { PlantingZoneReportedPlantsPayload(it) },
       plantsSinceLastObservation = totals.plantsSinceLastObservation,
       progressPercent = totals.progressPercent,
       species = totals.species.map { ReportedSpeciesPayload(it) },

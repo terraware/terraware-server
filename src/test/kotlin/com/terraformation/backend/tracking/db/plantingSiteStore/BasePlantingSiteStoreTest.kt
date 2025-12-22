@@ -34,9 +34,9 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         ParentStore(dslContext),
         plantingSeasonsDao,
         plantingSitesDao,
-        substrataDao,
-        strataDao,
         rateLimitedEventPublisher,
+        strataDao,
+        substrataDao,
     )
   }
 

@@ -54,9 +54,9 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         parentStore,
         plantingSeasonsDao,
         plantingSitesDao,
-        substrataDao,
-        strataDao,
         eventPublisher,
+        strataDao,
+        substrataDao,
     )
   }
 
@@ -207,7 +207,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       insertStratumPopulation(plantingZoneId1, speciesId1, 160, 16)
       insertStratumPopulation(plantingZoneId2, speciesId2, 320, 32)
 
-      val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Subzone)
+      val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
 
       val existingSubzonePopulations = dslContext.selectFrom(SUBSTRATUM_POPULATIONS).fetch()
 

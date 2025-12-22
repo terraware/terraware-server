@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
 
-internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
+internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() {
   @Nested
-  inner class UpdatePlantingZone {
+  inner class UpdateStratum {
     @Test
     fun `updates editable values`() {
       val createdTime = Instant.ofEpochSecond(1000)
@@ -45,7 +45,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               variance = BigDecimal.ZERO,
           )
 
-      val plantingZoneId = insertStratum(initialRow)
+      val stratumId = insertStratum(initialRow)
 
       val newName = "renamed"
       val newErrorMargin = BigDecimal(10)
@@ -58,7 +58,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
       val expected =
           initialRow.copy(
               errorMargin = newErrorMargin,
-              id = plantingZoneId,
+              id = stratumId,
               modifiedBy = user.userId,
               modifiedTime = clock.instant(),
               name = newName,
@@ -69,7 +69,7 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
               variance = newVariance,
           )
 
-      store.updatePlantingZone(plantingZoneId) {
+      store.updateStratum(stratumId) {
         it.copy(
             // Editable
             errorMargin = newErrorMargin,
@@ -89,71 +89,71 @@ internal class PlantingSiteStoreUpdateZoneTest : BasePlantingSiteStoreTest() {
         )
       }
 
-      assertEquals(expected, strataDao.fetchOneById(plantingZoneId))
+      assertEquals(expected, strataDao.fetchOneById(stratumId))
     }
 
     @Test
-    fun `updates full names of subzones if zone is renamed`() {
+    fun `updates full names of substrata if stratum is renamed`() {
       insertPlantingSite(x = 0)
-      val zoneId1 = insertStratum(name = "initial 1")
-      val subzoneId1 = insertSubstratum(name = "sub 1")
-      val subzoneId2 = insertSubstratum(name = "sub 2")
+      val stratumId1 = insertStratum(name = "initial 1")
+      val substratumId1 = insertSubstratum(name = "sub 1")
+      val substratumId2 = insertSubstratum(name = "sub 2")
       insertStratum(name = "initial 2")
-      val subzoneId3 = insertSubstratum(name = "sub 3")
+      val substratumId3 = insertSubstratum(name = "sub 3")
 
-      store.updatePlantingZone(zoneId1) { it.copy(name = "renamed") }
+      store.updateStratum(stratumId1) { it.copy(name = "renamed") }
 
       assertEquals(
           mapOf(
-              subzoneId1 to "renamed-sub 1",
-              subzoneId2 to "renamed-sub 2",
-              subzoneId3 to "initial 2-sub 3",
+              substratumId1 to "renamed-sub 1",
+              substratumId2 to "renamed-sub 2",
+              substratumId3 to "initial 2-sub 3",
           ),
           substrataDao.findAll().associate { it.id to it.fullName },
       )
     }
 
     @Test
-    fun `updates zone name in current history entry`() {
+    fun `updates stratum name in current history entry`() {
       insertPlantingSite(x = 0)
-      val plantingZoneId = insertStratum(name = "initial")
-      insertSubstratum(name = "subzone")
+      val stratumId = insertStratum(name = "initial")
+      insertSubstratum(name = "substratum")
 
       clock.instant = Instant.ofEpochSecond(1000)
 
       insertPlantingSiteHistory(createdTime = clock.instant)
-      val newPlantingZoneHistoryId = insertStratumHistory()
-      val newPlantingSubzoneHistoryId = insertSubstratumHistory()
+      val newStratumHistoryId = insertStratumHistory()
+      val newSubstratumHistoryId = insertSubstratumHistory()
 
       val expectedSiteHistory = dslContext.fetch(PLANTING_SITE_HISTORIES)
-      val expectedZoneHistory =
+      val expectedStratumHistory =
           dslContext.fetch(STRATUM_HISTORIES).onEach { record ->
-            if (record.id == newPlantingZoneHistoryId) {
+            if (record.id == newStratumHistoryId) {
               record.name = "renamed"
             }
           }
-      val expectedSubzoneHistory =
+      val expectedSubstratumHistory =
           dslContext.fetch(SUBSTRATUM_HISTORIES).onEach { record ->
-            if (record.id == newPlantingSubzoneHistoryId) {
-              record.fullName = "renamed-subzone"
+            if (record.id == newSubstratumHistoryId) {
+              record.fullName = "renamed-substratum"
             }
           }
 
-      store.updatePlantingZone(plantingZoneId) { it.copy(name = "renamed") }
+      store.updateStratum(stratumId) { it.copy(name = "renamed") }
 
       assertTableEquals(expectedSiteHistory, "Planting site histories should not be affected")
-      assertTableEquals(expectedZoneHistory)
-      assertTableEquals(expectedSubzoneHistory)
+      assertTableEquals(expectedStratumHistory)
+      assertTableEquals(expectedSubstratumHistory)
     }
 
     @Test
     fun `throws exception if no permission`() {
       insertPlantingSite()
-      val plantingZoneId = insertStratum()
+      val stratumId = insertStratum()
 
-      every { user.canUpdatePlantingZone(plantingZoneId) } returns false
+      every { user.canUpdatePlantingZone(stratumId) } returns false
 
-      assertThrows<AccessDeniedException> { store.updatePlantingZone(plantingZoneId) { it } }
+      assertThrows<AccessDeniedException> { store.updateStratum(stratumId) { it } }
     }
   }
 }
