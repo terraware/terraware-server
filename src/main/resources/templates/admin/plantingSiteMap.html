@@ -79,14 +79,14 @@
                 data: /*[[${siteGeoJson}]]*/,
             });
 
-            map.addSource('zones', {
+            map.addSource('strata', {
                 type: 'geojson',
-                data: /*[[${zonesGeoJson}]]*/,
+                data: /*[[${strataGeoJson}]]*/,
             });
 
-            map.addSource('subzones', {
+            map.addSource('substrata', {
                 type: 'geojson',
-                data: /*[[${subzonesGeoJson}]]*/,
+                data: /*[[${substrataGeoJson}]]*/,
             });
 
             map.addSource('plots', {
@@ -195,9 +195,9 @@
             });
 
             map.addLayer({
-                id: 'subzones',
+                id: 'substrata',
                 type: 'line',
-                source: 'subzones',
+                source: 'substrata',
                 layout: {},
                 paint: {
                     'line-color': 'grey',
@@ -205,9 +205,9 @@
             });
 
             map.addLayer({
-                id: 'zones',
+                id: 'strata',
                 type: 'line',
-                source: 'zones',
+                source: 'strata',
                 layout: {},
                 paint: {
                     'line-color': 'yellow',
@@ -215,9 +215,9 @@
             });
 
             map.addLayer({
-                id: 'subzoneLabels',
+                id: 'substratumLabels',
                 type: 'symbol',
-                source: 'subzones',
+                source: 'substrata',
                 layout: {
                     'text-field': ['get', 'name'],
                 },
@@ -229,9 +229,9 @@
             });
 
             map.addLayer({
-                id: 'zoneLabels',
+                id: 'stratumLabels',
                 type: 'symbol',
-                source: 'zones',
+                source: 'strata',
                 layout: {
                     'text-field': ['get', 'name'],
                 },
@@ -270,8 +270,8 @@
                 const props = e.features[0].properties;
                 const detailsLineItems = [
                     `ID: ${props.id}`,
-                    `Zone: ${props.zone}`,
-                    `Subzone: ${props.subzone}`,
+                    `Stratum: ${props.stratum}`,
+                    `Substratum: ${props.substratum}`,
                     props.permanentIndex ? `Permanent: ${props.permanentIndex}` : null,
                     props.type ? `Type: ${props.type}` : null,
                 ];

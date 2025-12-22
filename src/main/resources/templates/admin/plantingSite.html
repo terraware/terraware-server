@@ -10,7 +10,7 @@
             padding: .25em;
         }
 
-        table#subzones>tbody>tr>:nth-child(n+3):nth-child(-n+5) {
+        table#substrata>tbody>tr>:nth-child(n+3):nth-child(-n+5) {
             text-align: right;
         }
 
@@ -38,13 +38,13 @@
 
     <th:block th:fragment="additionalScript">
         <script th:inline="javascript">
-            function registerPlotCalculator(zoneId) {
-                const errorMarginField = document.getElementById(`errorMargin-${zoneId}`);
-                const permanentPlotsField = document.getElementById(`numPermanent-${zoneId}`);
-                const studentsTField = document.getElementById(`studentsT-${zoneId}`);
-                const temporaryPlotsField = document.getElementById(`numTemporary-${zoneId}`);
-                const totalPlotsField = document.getElementById(`total-${zoneId}`);
-                const varianceField = document.getElementById(`variance-${zoneId}`);
+            function registerPlotCalculator(stratumId) {
+                const errorMarginField = document.getElementById(`errorMargin-${stratumId}`);
+                const permanentPlotsField = document.getElementById(`numPermanent-${stratumId}`);
+                const studentsTField = document.getElementById(`studentsT-${stratumId}`);
+                const temporaryPlotsField = document.getElementById(`numTemporary-${stratumId}`);
+                const totalPlotsField = document.getElementById(`total-${stratumId}`);
+                const varianceField = document.getElementById(`variance-${stratumId}`);
 
                 const calculateDefaultTotalPlots = () => {
                     const errorMargin = Number.parseFloat(errorMarginField.value);
@@ -225,11 +225,11 @@
 <th:block th:if="!${site.strata.isEmpty()}">
 
     <th:block th:if="${canUpdatePlantingSite}">
-        <h3>Planting Zone Settings</h3>
+        <h3>Stratum Settings</h3>
 
         <table id="plotCounts">
             <tr>
-                <th>Zone ID</th>
+                <th>Stratum ID</th>
                 <th>Name</th>
                 <th>Target<br/>Density</th>
                 <th>Variance</th>
@@ -241,51 +241,51 @@
                 <th></th>
             </tr>
 
-            <tr th:each="zone : ${site.strata}">
-                <td th:text="${zone.id}">1</td>
-                <td title="Zone name edits will not show up in the site's map history; they will be applied retroactively, as if they had been the names in the most recently uploaded shapefile. If you want the old names to appear in the map history, upload a new shapefile instead of renaming the zones here.">
-                    <input required name="name" th:value="${zone.name}" th:form="|zone-${zone.id}|"/>
+            <tr th:each="stratum : ${site.strata}">
+                <td th:text="${stratum.id}">1</td>
+                <td title="Stratum name edits will not show up in the site's map history; they will be applied retroactively, as if they had been the names in the most recently uploaded shapefile. If you want the old names to appear in the map history, upload a new shapefile instead of renaming the strata here.">
+                    <input required name="name" th:value="${stratum.name}" th:form="|stratum-${stratum.id}|"/>
                     &#9432;
                 </td>
                 <td>
                     <input type="number" required min="1" name="targetPlantingDensity" size="8"
-                           th:value="${zone.targetPlantingDensity}" th:form="|zone-${zone.id}|"/>
+                           th:value="${stratum.targetPlantingDensity}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="variance" size="8" th:id="|variance-${zone.id}|"
-                           th:value="${zone.variance}" th:form="|zone-${zone.id}|"/>
+                    <input type="number" required min="0.001" step="0.001" name="variance" size="8" th:id="|variance-${stratum.id}|"
+                           th:value="${stratum.variance}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="errorMargin" th:id="|errorMargin-${zone.id}|"
-                           th:value="${zone.errorMargin}" th:form="|zone-${zone.id}|"/>
+                    <input type="number" required min="0.001" step="0.001" name="errorMargin" th:id="|errorMargin-${stratum.id}|"
+                           th:value="${stratum.errorMargin}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="studentsT" th:id="|studentsT-${zone.id}|"
-                           th:value="${zone.studentsT}" th:form="|zone-${zone.id}|"/>
+                    <input type="number" required min="0.001" step="0.001" name="studentsT" th:id="|studentsT-${stratum.id}|"
+                           th:value="${stratum.studentsT}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="1" name="numPermanent" th:id="|numPermanent-${zone.id}|"
-                           th:value="${zone.numPermanentPlots}" th:form="|zone-${zone.id}|"/>
+                    <input type="number" required min="1" name="numPermanent" th:id="|numPermanent-${stratum.id}|"
+                           th:value="${stratum.numPermanentPlots}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0" name="numTemporary" th:id="|numTemporary-${zone.id}|"
-                           th:value="${zone.numTemporaryPlots}" th:form="|zone-${zone.id}|"/>
+                    <input type="number" required min="0" name="numTemporary" th:id="|numTemporary-${stratum.id}|"
+                           th:value="${stratum.numTemporaryPlots}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <span th:id="|total-${zone.id}|"
-                          th:text="${zone.numPermanentPlots != null || zone.numTemporaryPlots != null ? (zone.numPermanentPlots ?: 0) + (zone.numTemporaryPlots ?: 0) : ''}">
+                    <span th:id="|total-${stratum.id}|"
+                          th:text="${stratum.numPermanentPlots != null || stratum.numTemporaryPlots != null ? (stratum.numPermanentPlots ?: 0) + (stratum.numTemporaryPlots ?: 0) : ''}">
                         123
                     </span>
                 </td>
                 <td style="padding-left: 8px;">
-                    <form method="POST" action="/admin/updatePlantingZone" th:id="|zone-${zone.id}|">
+                    <form method="POST" action="/admin/updateStratum" th:id="|stratum-${stratum.id}|">
                         <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-                        <input type="hidden" name="plantingZoneId" th:value="${zone.id}"/>
+                        <input type="hidden" name="stratumId" th:value="${stratum.id}"/>
                         <input type="submit" value="Update"/>
                     </form>
                     <script th:inline="javascript">
                         /*<![CDATA[*/
-                        registerPlotCalculator(/*[[${zone.id}]]*/);
+                        registerPlotCalculator(/*[[${stratum.id}]]*/);
                         /*]]>*/
                     </script>
                 </td>
@@ -310,8 +310,8 @@
             </label>
             <br/>
             <label>
-                Subzone IDs to mark incomplete (comma-separated)
-                <input type="text" name="subzoneIdsToMarkIncomplete"/>
+                Substratum IDs to mark incomplete (comma-separated)
+                <input type="text" name="substratumIdsToMarkIncomplete"/>
             </label>
             <br/>
             <input type="submit" value="Use Updated Shapefiles"/>
@@ -320,14 +320,14 @@
 
     <h3>Site Details</h3>
 
-    <h4 th:text="|Planting Zones (${numPlantingZones}) and Subzones (${numSubzones}) and Monitoring Plots (${numPlots})|">
-        Planting Zones (1) and Subzones (2) and Monitoring Plots (3)
+    <h4 th:text="|Strata (${numStrata}) and Substrata (${numSubstrata}) and Monitoring Plots (${numPlots})|">
+        Strata (1) and Substrata (2) and Monitoring Plots (3)
     </h4>
 
-    <table id="subzones" class="bordered">
+    <table id="substrata" class="bordered">
         <tr>
-            <th>Zone</th>
-            <th>Subzone</th>
+            <th>Stratum</th>
+            <th>Substratum</th>
             <th>Area<br/>(ha)</th>
             <th>Plots</th>
             <th>Reported<br/>Plants</th>
@@ -335,21 +335,21 @@
             <th>ID</th>
         </tr>
 
-        <th:block th:each="zone : ${site.strata}">
+        <th:block th:each="stratum : ${site.strata}">
             <tr>
-                <td th:text="${zone.name}" colspan="5">Zone</td>
-                <td th:text="${zone.stableId}">SID</td>
-                <td th:text="${zone.id}">1234</td>
+                <td th:text="${stratum.name}" colspan="5">Stratum</td>
+                <td th:text="${stratum.stableId}">SID</td>
+                <td th:text="${stratum.id}">1234</td>
             </tr>
 
-            <tr th:each="subzone : ${zone.substrata}">
+            <tr th:each="substratum : ${stratum.substrata}">
                 <td></td>
-                <td th:text="${subzone.name}">Subzone</td>
-                <td th:text="${subzone.areaHa}">123.45</td>
-                <td th:text="${plotCounts[zone.id][subzone.id] ?: 0}">1000</td>
-                <td th:text="${plantCounts[subzone.id] ?: 0}">543</td>
-                <td th:text="${subzone.stableId}">999</td>
-                <td th:text="${subzone.id}">999</td>
+                <td th:text="${substratum.name}">Substratum</td>
+                <td th:text="${substratum.areaHa}">123.45</td>
+                <td th:text="${plotCounts[stratum.id][substratum.id] ?: 0}">1000</td>
+                <td th:text="${plantCounts[substratum.id] ?: 0}">543</td>
+                <td th:text="${substratum.stableId}">999</td>
+                <td th:text="${substratum.id}">999</td>
             </tr>
         </th:block>
     </table>
@@ -362,7 +362,7 @@
             <th>Start</th>
             <th>End</th>
             <th>
-                Requested Subzones
+                Requested Substrata
                 <br/>
                 <small>
                     If none, use whole site
@@ -377,8 +377,8 @@
             <td th:text="${observation.startDate}">2023-01-01</td>
             <td th:text="${observation.endDate}">2023-01-31</td>
             <td>
-                    <div th:each="subzoneId : ${observation.requestedSubstratumIds}"
-                        th:text="|${subzonesById.get(subzoneId).fullName} (${subzoneId})|">
+                    <div th:each="substratumId : ${observation.requestedSubstratumIds}"
+                        th:text="|${substrataById.get(substratumId).fullName} (${substratumId})|">
                         abc-123 (456)
                     </div>
             </td>
@@ -404,10 +404,10 @@
                 <input type="date" form="createObservation" name="endDate" th:value="${nextObservationEnd}"/>
             </td>
             <td>
-                <select multiple form="createObservation" name="requestedSubzoneIds">
-                    <option th:each="subzone : ${subzonesById.values()}"
-                            th:text="|${subzone.fullName} (${subzone.id})|"
-                            th:value="${subzone.id}">
+                <select multiple form="createObservation" name="requestedSubstratumIds">
+                    <option th:each="substratum : ${substrataById.values()}"
+                            th:text="|${substratum.fullName} (${substratum.id})|"
+                            th:value="${substratum.id}">
                         abc-123 (456)
                     </option>
                 </select>
