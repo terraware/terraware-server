@@ -75,7 +75,7 @@ internal class PlantingSiteStoreUpdateSubstratumCompletedTest : BasePlantingSite
       insertStratum()
       val substratumId = insertSubstratum()
 
-      every { user.canUpdatePlantingSubzoneCompleted(any()) } returns false
+      every { user.canUpdateSubstratumCompleted(any()) } returns false
 
       assertThrows<AccessDeniedException> { store.updateSubstratumCompleted(substratumId, true) }
     }

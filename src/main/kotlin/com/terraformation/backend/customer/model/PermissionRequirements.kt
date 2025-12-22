@@ -1314,7 +1314,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
 
   fun readStratum(stratumId: StratumId) {
     user.recordPermissionChecks {
-      if (!user.canReadPlantingZone(stratumId)) {
+      if (!user.canReadStratum(stratumId)) {
         throw StratumNotFoundException(stratumId)
       }
     }
@@ -1346,7 +1346,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
 
   fun readSubstratum(substratumId: SubstratumId) {
     user.recordPermissionChecks {
-      if (!user.canReadPlantingSubzone(substratumId)) {
+      if (!user.canReadSubstratum(substratumId)) {
         throw SubstrataNotFoundException(substratumId)
       }
     }
@@ -1942,7 +1942,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
 
   fun updateStratum(stratumId: StratumId) {
     user.recordPermissionChecks {
-      if (!user.canUpdatePlantingZone(stratumId)) {
+      if (!user.canUpdateStratum(stratumId)) {
         readStratum(stratumId)
         throw AccessDeniedException("No permission to update stratum $stratumId")
       }
@@ -1969,7 +1969,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
 
   fun updateSubstratumCompleted(substratumId: SubstratumId) {
     user.recordPermissionChecks {
-      if (!user.canUpdatePlantingSubzoneCompleted(substratumId)) {
+      if (!user.canUpdateSubstratumCompleted(substratumId)) {
         readSubstratum(substratumId)
         throw AccessDeniedException("No permission to update substratum $substratumId")
       }

@@ -151,7 +151,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
       insertPlantingSite()
       val stratumId = insertStratum()
 
-      every { user.canUpdatePlantingZone(stratumId) } returns false
+      every { user.canUpdateStratum(stratumId) } returns false
 
       assertThrows<AccessDeniedException> { store.updateStratum(stratumId) { it } }
     }

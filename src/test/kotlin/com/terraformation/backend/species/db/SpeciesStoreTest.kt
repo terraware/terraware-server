@@ -570,7 +570,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertDelivery()
       insertPlanting(speciesId = speciesId5)
 
-      every { user.canReadPlantingSubzone(subzoneId) } returns true
+      every { user.canReadSubstratum(subzoneId) } returns true
 
       val expected =
           listOf(
@@ -641,7 +641,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             .insert()
       }
 
-      every { user.canReadPlantingSubzone(subzoneId) } returns true
+      every { user.canReadSubstratum(subzoneId) } returns true
 
       val expected =
           listOf(
@@ -682,7 +682,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertStratum()
       val subzoneId = insertSubstratum()
 
-      every { user.canReadPlantingSubzone(subzoneId) } returns false
+      every { user.canReadSubstratum(subzoneId) } returns false
 
       assertThrows<SubstrataNotFoundException> {
         store.fetchSiteSpeciesByPlantingSubzoneId(subzoneId)

@@ -473,10 +473,6 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
-  fun canReadPlantingSubzone(plantingSubzoneId: SubstratumId): Boolean = defaultPermission
-
-  fun canReadPlantingZone(plantingZoneId: StratumId): Boolean = defaultPermission
-
   fun canReadProject(projectId: ProjectId): Boolean = defaultPermission
 
   fun canReadProjectAcceleratorDetails(projectId: ProjectId): Boolean = defaultPermission
@@ -509,11 +505,15 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadSpecies(speciesId: SpeciesId): Boolean = defaultPermission
 
+  fun canReadStratum(stratumId: StratumId): Boolean = defaultPermission
+
   fun canReadSubLocation(subLocationId: SubLocationId): Boolean = defaultPermission
 
   fun canReadSubmission(submissionId: SubmissionId): Boolean = defaultPermission
 
   fun canReadSubmissionDocument(documentId: SubmissionDocumentId): Boolean = defaultPermission
+
+  fun canReadSubstratum(substratumId: SubstratumId): Boolean = defaultPermission
 
   fun canReadTimeseries(deviceId: DeviceId): Boolean = defaultPermission
 
@@ -627,11 +627,6 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdatePlantingSiteProject(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
-  fun canUpdatePlantingSubzoneCompleted(plantingSubzoneId: SubstratumId): Boolean =
-      defaultPermission
-
-  fun canUpdatePlantingZone(plantingZoneId: StratumId): Boolean = defaultPermission
-
   fun canUpdateProject(projectId: ProjectId): Boolean = defaultPermission
 
   fun canUpdateProjectAcceleratorDetails(projectId: ProjectId): Boolean = defaultPermission
@@ -654,14 +649,18 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdateSpecificGlobalRoles(globalRoles: Set<GlobalRole>): Boolean = defaultPermission
 
+  fun canUpdateStratum(stratumId: StratumId): Boolean = defaultPermission
+
   fun canUpdateSubLocation(subLocationId: SubLocationId): Boolean = defaultPermission
 
   fun canUpdateSubmissionStatus(deliverableId: DeliverableId, projectId: ProjectId): Boolean =
       defaultPermission
 
+  fun canUpdateSubstratumCompleted(substratumId: SubstratumId): Boolean = defaultPermission
+
   fun canUpdateT0(monitoringPlotId: MonitoringPlotId): Boolean = defaultPermission
 
-  fun canUpdateT0(plantingZoneId: StratumId): Boolean = defaultPermission
+  fun canUpdateT0(stratumId: StratumId): Boolean = defaultPermission
 
   fun canUpdateTimeseries(deviceId: DeviceId): Boolean = defaultPermission
 

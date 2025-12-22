@@ -153,9 +153,9 @@ internal class PermissionTest : DatabaseTest() {
   private val draftPlantingSiteIds = facilityIds.map { DraftPlantingSiteId(it.value) }
   private val monitoringPlotIds = facilityIds.map { MonitoringPlotId(it.value) }
   private val plantingSiteIds = facilityIds.map { PlantingSiteId(it.value) }
-  private val plantingSubzoneIds = facilityIds.map { SubstratumId(it.value) }
-  private val plantingZoneIds = facilityIds.map { StratumId(it.value) }
   private val observationIds = plantingSiteIds.map { ObservationId(it.value) }
+  private val stratumIds = facilityIds.map { StratumId(it.value) }
+  private val substratumIds = facilityIds.map { SubstratumId(it.value) }
 
   private val projectIds = listOf(1000, 1001, 3000, 4000).map { ProjectId(it.toLong()) }
   private val moduleEventIds = listOf(1000, 1001, 3000, 4000).map { EventId(it.toLong()) }
@@ -383,23 +383,23 @@ internal class PermissionTest : DatabaseTest() {
       )
     }
 
-    plantingZoneIds.forEach { plantingZoneId ->
+    stratumIds.forEach { stratumId ->
       putDatabaseId(
-          plantingZoneId,
+          stratumId,
           insertStratum(
               createdBy = userId,
-              plantingSiteId = getDatabaseId(PlantingSiteId(plantingZoneId.value)),
+              plantingSiteId = getDatabaseId(PlantingSiteId(stratumId.value)),
           ),
       )
     }
 
-    plantingSubzoneIds.forEach { plantingSubzoneId ->
+    substratumIds.forEach { substratumId ->
       putDatabaseId(
-          plantingSubzoneId,
+          substratumId,
           insertSubstratum(
               createdBy = userId,
-              plantingSiteId = getDatabaseId(PlantingSiteId(plantingSubzoneId.value)),
-              stratumId = getDatabaseId(StratumId(plantingSubzoneId.value)),
+              plantingSiteId = getDatabaseId(PlantingSiteId(substratumId.value)),
+              stratumId = getDatabaseId(StratumId(substratumId.value)),
           ),
       )
     }
@@ -634,15 +634,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *plantingSubzoneIds.forOrg1(),
-        readPlantingSubzone = true,
-        updatePlantingSubzoneCompleted = true,
+        *substratumIds.forOrg1(),
+        readSubstratum = true,
+        updateSubstratumCompleted = true,
     )
 
     permissions.expect(
-        *plantingZoneIds.forOrg1(),
-        readPlantingZone = true,
-        updatePlantingZone = true,
+        *stratumIds.forOrg1(),
+        readStratum = true,
+        updateStratum = true,
         updateT0 = true,
     )
 
@@ -924,15 +924,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *plantingSubzoneIds.forOrg1(),
-        readPlantingSubzone = true,
-        updatePlantingSubzoneCompleted = true,
+        *substratumIds.forOrg1(),
+        readSubstratum = true,
+        updateSubstratumCompleted = true,
     )
 
     permissions.expect(
-        *plantingZoneIds.forOrg1(),
-        readPlantingZone = true,
-        updatePlantingZone = true,
+        *stratumIds.forOrg1(),
+        readStratum = true,
+        updateStratum = true,
         updateT0 = true,
     )
 
@@ -1133,14 +1133,14 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *plantingSubzoneIds.forOrg1(),
-        readPlantingSubzone = true,
-        updatePlantingSubzoneCompleted = true,
+        *substratumIds.forOrg1(),
+        readSubstratum = true,
+        updateSubstratumCompleted = true,
     )
 
     permissions.expect(
-        *plantingZoneIds.forOrg1(),
-        readPlantingZone = true,
+        *stratumIds.forOrg1(),
+        readStratum = true,
         updateT0 = true,
     )
 
@@ -1312,14 +1312,14 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *plantingSubzoneIds.forOrg1(),
-        readPlantingSubzone = true,
-        updatePlantingSubzoneCompleted = true,
+        *substratumIds.forOrg1(),
+        readSubstratum = true,
+        updateSubstratumCompleted = true,
     )
 
     permissions.expect(
-        *plantingZoneIds.forOrg1(),
-        readPlantingZone = true,
+        *stratumIds.forOrg1(),
+        readStratum = true,
     )
 
     permissions.expect(
@@ -1603,15 +1603,15 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *plantingSubzoneIds.toTypedArray(),
-        readPlantingSubzone = true,
-        updatePlantingSubzoneCompleted = true,
+        *substratumIds.toTypedArray(),
+        readSubstratum = true,
+        updateSubstratumCompleted = true,
     )
 
     permissions.expect(
-        *plantingZoneIds.toTypedArray(),
-        readPlantingZone = true,
-        updatePlantingZone = true,
+        *stratumIds.toTypedArray(),
+        readStratum = true,
+        updateStratum = true,
         updateT0 = true,
     )
 
@@ -2828,14 +2828,14 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *plantingSubzoneIds.forOrg1(),
-        readPlantingSubzone = true,
-        updatePlantingSubzoneCompleted = true,
+        *substratumIds.forOrg1(),
+        readSubstratum = true,
+        updateSubstratumCompleted = true,
     )
 
     permissions.expect(
-        *plantingZoneIds.forOrg1(),
-        readPlantingZone = true,
+        *stratumIds.forOrg1(),
+        readStratum = true,
     )
 
     permissions.expect(
@@ -2912,13 +2912,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
-        *plantingSubzoneIds.forOrgs(listOf(3, 4)),
-        readPlantingSubzone = true,
+        *substratumIds.forOrgs(listOf(3, 4)),
+        readSubstratum = true,
     )
 
     permissions.expect(
-        *plantingZoneIds.forOrgs(listOf(3, 4)),
-        readPlantingZone = true,
+        *stratumIds.forOrgs(listOf(3, 4)),
+        readStratum = true,
     )
 
     permissions.expect(
@@ -3173,15 +3173,15 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedParticipantProjectSpecies = participantProjectSpeciesIds.toMutableSet()
     private val uncheckedPlantings = plantingIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
-    private val uncheckedPlantingSubzones = plantingSubzoneIds.toMutableSet()
-    private val uncheckedPlantingZones = plantingZoneIds.toMutableSet()
     private val uncheckedProjects = projectIds.toMutableSet()
     private val uncheckedReports = reportIds.toMutableSet()
     private val uncheckedSeedFundReports = seedFundReportIds.toMutableSet()
     private val uncheckedSpecies = speciesIds.toMutableSet()
+    private val uncheckedStrata = stratumIds.toMutableSet()
     private val uncheckedSubLocations = subLocationIds.toMutableSet()
     private val uncheckedSubmissionDocuments = submissionDocumentIds.toMutableSet()
     private val uncheckedSubmissions = submissionIds.toMutableSet()
+    private val uncheckedSubstrata = substratumIds.toMutableSet()
     private val uncheckedUsers = otherUserIds.values.toMutableSet()
     private val uncheckedViabilityTests = viabilityTestIds.toMutableSet()
     private val uncheckedWithdrawals = withdrawalIds.toMutableSet()
@@ -3915,54 +3915,54 @@ internal class PermissionTest : DatabaseTest() {
     }
 
     fun expect(
-        vararg plantingSubzoneIds: SubstratumId,
-        readPlantingSubzone: Boolean = false,
-        updatePlantingSubzoneCompleted: Boolean = false,
+        vararg substratumIds: SubstratumId,
+        readSubstratum: Boolean = false,
+        updateSubstratumCompleted: Boolean = false,
     ) {
-      plantingSubzoneIds.forEach { plantingSubzoneId ->
-        val idInDatabase = getDatabaseId(plantingSubzoneId)
+      substratumIds.forEach { substratumId ->
+        val idInDatabase = getDatabaseId(substratumId)
 
         assertEquals(
-            readPlantingSubzone,
-            user.canReadPlantingSubzone(idInDatabase),
-            "Can read planting subzone $plantingSubzoneId",
+            readSubstratum,
+            user.canReadSubstratum(idInDatabase),
+            "Can read substratum $substratumId",
         )
         assertEquals(
-            updatePlantingSubzoneCompleted,
-            user.canUpdatePlantingSubzoneCompleted(idInDatabase),
-            "Can update planting completed for subzone $plantingSubzoneId",
+            updateSubstratumCompleted,
+            user.canUpdateSubstratumCompleted(idInDatabase),
+            "Can update planting completed for substratum $substratumId",
         )
 
-        uncheckedPlantingSubzones.remove(plantingSubzoneId)
+        uncheckedSubstrata.remove(substratumId)
       }
     }
 
     fun expect(
-        vararg plantingZoneIds: StratumId,
-        readPlantingZone: Boolean = false,
-        updatePlantingZone: Boolean = false,
+        vararg stratumIds: StratumId,
+        readStratum: Boolean = false,
+        updateStratum: Boolean = false,
         updateT0: Boolean = false,
     ) {
-      plantingZoneIds.forEach { plantingZoneId ->
-        val idInDatabase = getDatabaseId(plantingZoneId)
+      stratumIds.forEach { stratumId ->
+        val idInDatabase = getDatabaseId(stratumId)
 
         assertEquals(
-            readPlantingZone,
-            user.canReadPlantingZone(idInDatabase),
-            "Can read planting zone $plantingZoneId",
+            readStratum,
+            user.canReadStratum(idInDatabase),
+            "Can read stratum $stratumId",
         )
         assertEquals(
-            updatePlantingZone,
-            user.canUpdatePlantingZone(idInDatabase),
-            "Can update planting zone $plantingZoneId",
+            updateStratum,
+            user.canUpdateStratum(idInDatabase),
+            "Can update stratum $stratumId",
         )
         assertEquals(
             updateT0,
             user.canUpdateT0(idInDatabase),
-            "Can update T0 for planting zone $plantingZoneId",
+            "Can update T0 for stratum $stratumId",
         )
 
-        uncheckedPlantingZones.remove(plantingZoneId)
+        uncheckedStrata.remove(stratumId)
       }
     }
 
@@ -4628,8 +4628,8 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedParticipantProjectSpecies.toTypedArray())
       expect(*uncheckedPlantings.toTypedArray())
       expect(*uncheckedPlantingSites.toTypedArray())
-      expect(*uncheckedPlantingSubzones.toTypedArray())
-      expect(*uncheckedPlantingZones.toTypedArray())
+      expect(*uncheckedSubstrata.toTypedArray())
+      expect(*uncheckedStrata.toTypedArray())
       expect(*uncheckedProjects.toTypedArray())
       expect(*uncheckedReports.toTypedArray())
       expect(*uncheckedSeedFundReports.toTypedArray())
