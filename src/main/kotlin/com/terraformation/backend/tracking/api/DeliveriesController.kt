@@ -73,7 +73,7 @@ data class PlantingPayload(
       id = model.id,
       notes = model.notes,
       numPlants = model.numPlants,
-      plantingSubzoneId = model.plantingSubzoneId,
+      plantingSubzoneId = model.substratumId,
       speciesId = model.speciesId,
       type = model.type,
   )

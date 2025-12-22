@@ -69,6 +69,6 @@ class PlantingSiteService(
 
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
-    deliveryStore.recalculateZonePopulations(event.edited.id)
+    deliveryStore.recalculateStratumPopulations(event.edited.id)
   }
 }
