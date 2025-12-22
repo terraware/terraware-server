@@ -258,7 +258,7 @@ data class ObservationPlantingSubzoneResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingSubzoneResultsModel
+      model: ObservationSubstratumResultsModel
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
@@ -269,7 +269,7 @@ data class ObservationPlantingSubzoneResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzoneId = model.plantingSubzoneId,
+      plantingSubzoneId = model.substratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -371,7 +371,7 @@ data class ObservationPlantingZoneResultsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      model: ObservationPlantingZoneResultsModel
+      model: ObservationStratumResultsModel
   ) : this(
       areaHa = model.areaHa,
       completedTime = model.completedTime,
@@ -381,9 +381,8 @@ data class ObservationPlantingZoneResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzones =
-          model.plantingSubzones.map { ObservationPlantingSubzoneResultsPayload(it) },
-      plantingZoneId = model.plantingZoneId,
+      plantingSubzones = model.substrata.map { ObservationPlantingSubzoneResultsPayload(it) },
+      plantingZoneId = model.stratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -457,7 +456,6 @@ data class ObservationStratumResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzones = model.substrata.map { ObservationPlantingSubzoneResultsPayload(it) },
       plantingZoneId = model.stratumId,
       species =
           model.species
@@ -535,7 +533,7 @@ data class ObservationResultsPayload(
               .map { ObservationSpeciesResultsPayload(it) },
       startDate = model.startDate,
       state = model.state,
-      strata = model.plantingZones.map { ObservationStratumResultsPayload(it) },
+      strata = model.strata.map { ObservationStratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
@@ -619,7 +617,7 @@ data class PlantingZoneObservationSummaryPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
-      substrata = model.plantingSubzones.map { ObservationSubstratumResultsPayload(it) },
+      substrata = model.substrata.map { ObservationSubstratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,
