@@ -197,7 +197,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           }
 
       assertHasProblem(
-          "Stratum Z1 has no substratum with positive value for properties: $property"
+          "Stratum S1 has no substratum with positive value for properties: $property"
       ) {
         importer.import(
             "name",
@@ -215,7 +215,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           gen.substratumFeature(gen.multiRectangle(0 to 0, 500 to 500), substratumStableId = "x")
 
       assertHasProblem(
-          "Substratum S1 is missing stratum stable ID properties: stable_z, stable_zon, stable_s, stable_str"
+          "Substratum Sub1 is missing stratum stable ID properties: stable_z, stable_zon, stable_s, stable_str"
       ) {
         importer.shapefilesToModel(
             listOf(Shapefile(listOf(substratumFeature))),
@@ -234,7 +234,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           gen.substratumFeature(gen.multiRectangle(0 to 0, 500 to 500), stratumStableId = "x")
 
       assertHasProblem(
-          "Substratum S1 is missing substratum stable ID properties: stable_sz, stable_sub, stable_ss"
+          "Substratum Sub1 is missing substratum stable ID properties: stable_sz, stable_sub, stable_ss"
       ) {
         importer.shapefilesToModel(
             listOf(Shapefile(listOf(substratumFeature))),
@@ -253,15 +253,15 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           listOf(
               gen.substratumFeature(
                   gen.multiRectangle(0 to 0, 500 to 250),
-                  substratumStableId = "Z1-S1",
+                  substratumStableId = "S1-Sub1",
               ),
               gen.substratumFeature(
                   gen.multiRectangle(0 to 250, 500 to 500),
-                  substratumStableId = "Z1-S1",
+                  substratumStableId = "S1-Sub1",
               ),
           )
 
-      assertHasProblem("Duplicate stable ID Z1-S1 on substrata: S1, S2") {
+      assertHasProblem("Duplicate stable ID S1-Sub1 on substrata: Sub1, Sub2") {
         importer.import(
             "Test Site",
             "description",
@@ -334,7 +334,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
           gen.multiRectangle(0 to 0, MONITORING_PLOT_SIZE_INT - 1 to MONITORING_PLOT_SIZE_INT)
       val substratumFeature = gen.substratumFeature(siteBoundary)
 
-      val expected = PlantingSiteValidationFailure.stratumTooSmall("Z1")
+      val expected = PlantingSiteValidationFailure.stratumTooSmall("S1")
 
       try {
         importer.import(
@@ -374,7 +374,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
       val substratumFeature = gen.substratumFeature(siteBoundary)
 
-      val expected = PlantingSiteValidationFailure.stratumTooSmall("Z1")
+      val expected = PlantingSiteValidationFailure.stratumTooSmall("S1")
 
       // Without grid origin
       try {

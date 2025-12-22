@@ -118,9 +118,9 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           boundary = multiPolygon(2.0),
                           boundaryModifiedTime = boundaryModifiedTime,
                           id = stratumId,
-                          name = "Z1",
+                          name = "S1",
                           substrata = emptyList(),
-                          stableId = StableId("Z1"),
+                          stableId = StableId("S1"),
                           targetPlantingDensity = BigDecimal.ONE,
                       ),
                   )
@@ -137,10 +137,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       areaHa = BigDecimal.ONE,
                                       boundary = multiPolygon(1.0),
                                       id = substratumId,
-                                      fullName = "Z1-1",
+                                      fullName = "S1-1",
                                       name = "1",
                                       plantingCompletedTime = null,
-                                      stableId = StableId("Z1-1"),
+                                      stableId = StableId("S1-1"),
                                       monitoringPlots = emptyList(),
                                   )
                               )
@@ -246,7 +246,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               targetPlantingDensity = BigDecimal.ONE,
           )
       val substratumId2 =
-          insertSubstratum(boundary = multiPolygon(1.0), fullName = "Z2-1", name = "1")
+          insertSubstratum(boundary = multiPolygon(1.0), fullName = "S2-1", name = "1")
       val monitoringPlotId2 = insertMonitoringPlot(boundary = polygon(0.1))
 
       val plotHistoryIds =
@@ -346,7 +346,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           id = stratumId1,
                           latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                           latestObservationId = observationId2,
-                          name = "Z1",
+                          name = "S1",
                           substrata =
                               listOf(
                                   SubstratumModel(
@@ -355,10 +355,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       id = substratumId11,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(1000),
                                       latestObservationId = observationId1,
-                                      fullName = "Z1-1",
+                                      fullName = "S1-1",
                                       name = "1",
                                       plantingCompletedTime = null,
-                                      stableId = StableId("Z1-1"),
+                                      stableId = StableId("S1-1"),
                                       monitoringPlots =
                                           listOf(
                                               MonitoringPlotModel(
@@ -387,10 +387,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       id = substratumId12,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                                       latestObservationId = observationId2,
-                                      fullName = "Z1-2",
+                                      fullName = "S1-2",
                                       name = "2",
                                       plantingCompletedTime = null,
-                                      stableId = StableId("Z1-2"),
+                                      stableId = StableId("S1-2"),
                                       monitoringPlots =
                                           listOf(
                                               MonitoringPlotModel(
@@ -414,7 +414,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                           ),
                                   ),
                               ),
-                          stableId = StableId("Z1"),
+                          stableId = StableId("S1"),
                           targetPlantingDensity = BigDecimal.ONE,
                       ),
                       ExistingStratumModel(
@@ -424,7 +424,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           id = stratumId2,
                           latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                           latestObservationId = observationId2,
-                          name = "Z2",
+                          name = "S2",
                           substrata =
                               listOf(
                                   SubstratumModel(
@@ -433,10 +433,10 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       id = substratumId2,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                                       latestObservationId = observationId2,
-                                      fullName = "Z2-1",
+                                      fullName = "S2-1",
                                       name = "1",
                                       plantingCompletedTime = null,
-                                      stableId = StableId("Z2-1"),
+                                      stableId = StableId("S2-1"),
                                       monitoringPlots =
                                           listOf(
                                               MonitoringPlotModel(
@@ -451,7 +451,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                           ),
                                   ),
                               ),
-                          stableId = StableId("Z2"),
+                          stableId = StableId("S2"),
                           targetPlantingDensity = BigDecimal.ONE,
                       ),
                   ),
@@ -506,18 +506,18 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                           boundary = stratumBoundary4326,
                           boundaryModifiedTime = Instant.EPOCH,
                           id = stratumId,
-                          name = "Z1",
-                          stableId = StableId("Z1"),
+                          name = "S1",
+                          stableId = StableId("S1"),
                           substrata =
                               listOf(
                                   SubstratumModel(
                                       areaHa = BigDecimal.ONE,
                                       boundary = substratumBoundary4326,
                                       id = substratumId,
-                                      fullName = "Z1-1",
+                                      fullName = "S1-1",
                                       name = "1",
                                       plantingCompletedTime = null,
-                                      stableId = StableId("Z1-1"),
+                                      stableId = StableId("S1-1"),
                                       monitoringPlots =
                                           listOf(
                                               MonitoringPlotModel(

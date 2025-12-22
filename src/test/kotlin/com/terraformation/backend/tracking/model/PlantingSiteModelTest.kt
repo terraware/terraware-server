@@ -30,7 +30,7 @@ class PlantingSiteModelTest {
     fun `checks for strata not covered by site`() {
       val site = newSite(width = 100, height = 100) { stratum(width = 200, height = 200) }
 
-      assertHasProblem(site, PlantingSiteValidationFailure.stratumNotInSite("Z1"))
+      assertHasProblem(site, PlantingSiteValidationFailure.stratumNotInSite("S1"))
     }
 
     @Test
@@ -43,7 +43,7 @@ class PlantingSiteModelTest {
 
       assertHasProblem(
           site,
-          PlantingSiteValidationFailure.stratumBoundaryOverlaps(setOf("Z2"), "Z1"),
+          PlantingSiteValidationFailure.stratumBoundaryOverlaps(setOf("S2"), "S1"),
       )
     }
 
@@ -55,7 +55,7 @@ class PlantingSiteModelTest {
 
       assertHasProblem(
           siteWithoutSubstrata,
-          PlantingSiteValidationFailure.stratumHasNoSubstrata("Z1"),
+          PlantingSiteValidationFailure.stratumHasNoSubstrata("S1"),
       )
     }
 
@@ -71,7 +71,7 @@ class PlantingSiteModelTest {
       val site =
           newSite(width = 100, height = 100) { stratum { substratum(width = 200, height = 200) } }
 
-      assertHasProblem(site, PlantingSiteValidationFailure.substratumNotInStratum("S1", "Z1"))
+      assertHasProblem(site, PlantingSiteValidationFailure.substratumNotInStratum("Sub1", "S1"))
     }
 
     @Test
@@ -86,7 +86,7 @@ class PlantingSiteModelTest {
 
       assertHasProblem(
           site,
-          PlantingSiteValidationFailure.substratumBoundaryOverlaps(setOf("S2"), "S1", "Z1"),
+          PlantingSiteValidationFailure.substratumBoundaryOverlaps(setOf("Sub2"), "Sub1", "S1"),
       )
     }
 
@@ -100,14 +100,14 @@ class PlantingSiteModelTest {
         }
       }
 
-      assertHasProblem(site, PlantingSiteValidationFailure.substratumInExclusionArea("S1", "Z1"))
+      assertHasProblem(site, PlantingSiteValidationFailure.substratumInExclusionArea("Sub1", "S1"))
     }
 
     @Test
     fun `checks that stratum is big enough for a permanent plot and a temporary plot`() {
       assertHasProblem(
           newSite(width = MONITORING_PLOT_SIZE_INT * 2 - 1, height = MONITORING_PLOT_SIZE_INT),
-          PlantingSiteValidationFailure.stratumTooSmall("Z1"),
+          PlantingSiteValidationFailure.stratumTooSmall("S1"),
           "Site is big enough for permanent plot but not also for temporary plot",
       )
     }

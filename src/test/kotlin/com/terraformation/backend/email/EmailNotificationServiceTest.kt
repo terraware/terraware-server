@@ -1578,7 +1578,7 @@ internal class EmailNotificationServiceTest {
                     ),
                     StratumT0DensityChangedEventModel(
                         StratumId(2),
-                        stratumName = "Z2",
+                        stratumName = "S2",
                         speciesDensityChanges = emptyList(),
                     ),
                 ),
@@ -1604,7 +1604,7 @@ internal class EmailNotificationServiceTest {
                     ),
                     StratumT0DensityChangedEventModel(
                         StratumId(2),
-                        stratumName = "Z2",
+                        stratumName = "S2",
                         speciesDensityChanges = emptyList(),
                     ),
                 ),
