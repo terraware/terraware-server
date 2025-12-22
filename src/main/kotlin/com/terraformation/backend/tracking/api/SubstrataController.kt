@@ -38,7 +38,7 @@ class SubstrataController(
   fun listSubstratumSpecies(
       @PathVariable id: SubstratumId,
   ): ListSubstratumSpeciesResponsePayload {
-    val species = speciesStore.fetchSiteSpeciesByPlantingSubzoneId(id)
+    val species = speciesStore.fetchSiteSpeciesBySubstratumId(id)
 
     return ListSubstratumSpeciesResponsePayload(species.map { SubstratumSpeciesPayload(it) })
   }

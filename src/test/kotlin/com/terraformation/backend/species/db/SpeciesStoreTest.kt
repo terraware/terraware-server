@@ -601,7 +601,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val actual = store.fetchSiteSpeciesByPlantingSubzoneId(subzoneId)
+      val actual = store.fetchSiteSpeciesBySubstratumId(subzoneId)
 
       assertEquals(expected, actual)
     }
@@ -671,7 +671,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val actual = store.fetchSiteSpeciesByPlantingSubzoneId(subzoneId)
+      val actual = store.fetchSiteSpeciesBySubstratumId(subzoneId)
 
       assertEquals(expected, actual)
     }
@@ -684,9 +684,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       every { user.canReadSubstratum(subzoneId) } returns false
 
-      assertThrows<SubstrataNotFoundException> {
-        store.fetchSiteSpeciesByPlantingSubzoneId(subzoneId)
-      }
+      assertThrows<SubstrataNotFoundException> { store.fetchSiteSpeciesBySubstratumId(subzoneId) }
     }
   }
 
