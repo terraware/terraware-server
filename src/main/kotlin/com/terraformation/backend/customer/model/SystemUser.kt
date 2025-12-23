@@ -52,6 +52,9 @@ class SystemUser(
     private const val EMAIL = "systemUser@terraformation.com"
   }
 
+  override val description: String
+    get() = "system user"
+
   override val timeZone: ZoneId
     get() = ZoneOffset.UTC
 

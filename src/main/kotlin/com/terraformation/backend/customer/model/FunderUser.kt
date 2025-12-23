@@ -30,6 +30,9 @@ data class FunderUser(
     private val parentStore: ParentStore,
     private val permissionStore: PermissionStore,
 ) : TerrawareUser {
+  override val description: String
+    get() = "funder user $email"
+
   private val _fundingEntityId = ResettableLazy { permissionStore.fetchFundingEntity(userId) }
   override val fundingEntityId: FundingEntityId? by _fundingEntityId
 

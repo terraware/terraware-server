@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.exc.MismatchedInputException
 import com.fasterxml.jackson.databind.exc.PropertyBindingException
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.opencsv.CSVWriter
+import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.db.DuplicateEntityException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EntityStaleException
@@ -326,10 +327,13 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
   }
 
   private fun logError(ex: Exception, request: WebRequest) {
-    val description = request.getDescription(false)
+    val requestDescription = request.getDescription(false)
+    val userDescription = CurrentUserHolder.getCurrentUser()?.description ?: "unauthenticated user"
+
     controllerLogger(ex)
         .error(
-            "${ex.javaClass.simpleName} thrown while handling request $description: ${ex.message}",
+            "${ex.javaClass.simpleName} thrown while handling request $requestDescription " +
+                "for $userDescription: ${ex.message}",
             ex,
         )
   }

@@ -34,6 +34,9 @@ data class DeviceManagerUser(
     private const val EMAIL = "deviceManagerUser@terraformation.com"
   }
 
+  override val description: String
+    get() = "device manager user $userId"
+
   override val timeZone: ZoneId
     get() = ZoneOffset.UTC
 
