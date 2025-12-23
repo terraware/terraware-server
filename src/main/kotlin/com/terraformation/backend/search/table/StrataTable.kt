@@ -13,26 +13,26 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class PlantingZonesTable(private val tables: SearchTables) : SearchTable() {
+class StrataTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = STRATA.ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          plantingZoneHistories.asMultiValueSublist(
-              "histories",
-              STRATA.ID.eq(STRATUM_HISTORIES.STRATUM_ID),
-          ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
               STRATA.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
           ),
-          plantingSubzones.asMultiValueSublist(
+          substrata.asMultiValueSublist(
               "plantingSubzones",
               STRATA.ID.eq(SUBSTRATA.STRATUM_ID),
           ),
-          plantingZonePopulations.asMultiValueSublist(
+          stratumHistories.asMultiValueSublist(
+              "histories",
+              STRATA.ID.eq(STRATUM_HISTORIES.STRATUM_ID),
+          ),
+          stratumPopulations.asMultiValueSublist(
               "populations",
               STRATA.ID.eq(STRATUM_POPULATIONS.STRATUM_ID),
           ),

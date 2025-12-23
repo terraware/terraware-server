@@ -16,16 +16,16 @@ import org.jooq.SelectJoinStep
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-class PlantingSubzonesTable(private val tables: SearchTables) : SearchTable() {
+class SubstrataTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = SUBSTRATA.ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          plantingSubzoneHistories.asMultiValueSublist(
-              "histories",
-              SUBSTRATA.ID.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID),
+          monitoringPlots.asMultiValueSublist(
+              "monitoringPlots",
+              SUBSTRATA.ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID),
           ),
           plantings.asMultiValueSublist(
               "plantings",
@@ -35,17 +35,17 @@ class PlantingSubzonesTable(private val tables: SearchTables) : SearchTable() {
               "plantingSite",
               SUBSTRATA.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
           ),
-          plantingZones.asSingleValueSublist(
+          strata.asSingleValueSublist(
               "plantingZone",
               SUBSTRATA.STRATUM_ID.eq(STRATA.ID),
           ),
-          plantingSubzonePopulations.asMultiValueSublist(
+          substratumHistories.asMultiValueSublist(
+              "histories",
+              SUBSTRATA.ID.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID),
+          ),
+          substratumPopulations.asMultiValueSublist(
               "populations",
               SUBSTRATA.ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID),
-          ),
-          monitoringPlots.asMultiValueSublist(
-              "monitoringPlots",
-              SUBSTRATA.ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID),
           ),
       )
     }
@@ -72,7 +72,7 @@ class PlantingSubzonesTable(private val tables: SearchTables) : SearchTable() {
       )
 
   override val inheritsVisibilityFrom: SearchTable
-    get() = tables.plantingZones
+    get() = tables.strata
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query.join(STRATA).on(SUBSTRATA.STRATUM_ID.eq(STRATA.ID))
