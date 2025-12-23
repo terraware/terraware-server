@@ -26,7 +26,7 @@ class PlantingsTable(private val tables: SearchTables) : SearchTable() {
               "plantingSite",
               PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
           ),
-          plantingSubzones.asSingleValueSublist(
+          substrata.asSingleValueSublist(
               "plantingSubzone",
               PLANTINGS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
