@@ -116,6 +116,9 @@ interface TerrawareUser : Principal, UserDetails {
    */
   val authId: String?
 
+  /** A human-readable description of the user for use in log messages. */
+  val description: String
+
   override fun getName(): String = authId ?: throw IllegalStateException("User is unregistered")
 
   override fun getUsername(): String = authId ?: throw IllegalStateException("User is unregistered")

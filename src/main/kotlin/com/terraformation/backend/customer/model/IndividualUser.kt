@@ -103,6 +103,9 @@ data class IndividualUser(
     val log = perClassLogger()
   }
 
+  override val description: String
+    get() = "user $email"
+
   private val _organizationRoles = ResettableLazy { permissionStore.fetchOrganizationRoles(userId) }
   override val organizationRoles: Map<OrganizationId, Role> by _organizationRoles
 
