@@ -1,3 +1,5 @@
+b9248e1d00b SW-7897 Endpoint to download observation videos (#3762)
+56b1f8430cd Include user email in request error log messages (#3761)
 92ebd8ca8cb Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v3 (#3760)
 a2b394691ad SW-7828 - Rename zone->strata in search fields (#3758)
 4fad2ec9c58 SW-7829 - Rename zone->strata in api docs (#3757)
