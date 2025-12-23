@@ -191,6 +191,18 @@ class ObservationService(
     }
   }
 
+  fun readMediaFile(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      fileId: FileId,
+  ): SizedInputStream {
+    requirePermissions { readObservation(observationId) }
+
+    ensureMediaFileExists(observationId, monitoringPlotId, fileId)
+
+    return fileService.readFile(fileId)
+  }
+
   fun readPhoto(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,

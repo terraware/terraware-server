@@ -464,6 +464,23 @@ class ObservationsController(
     return GetMuxStreamResponsePayload(streamModel)
   }
 
+  @ApiResponse200
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a video with the requested ID."
+  )
+  @GetMapping("/{observationId}/plots/{plotId}/media/{fileId}")
+  @Operation(
+      summary = "Downloads a video or photo of an observation.",
+      description = "For videos, this returns a video file, not a stream.",
+  )
+  fun getObservationMediaFile(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      @PathVariable fileId: FileId,
+  ): ResponseEntity<InputStreamResource> {
+    return observationService.readMediaFile(observationId, plotId, fileId).toResponseEntity()
+  }
+
   @ApiResponse404(
       "The plot observation does not exist, or does not have a photo with the requested ID."
   )

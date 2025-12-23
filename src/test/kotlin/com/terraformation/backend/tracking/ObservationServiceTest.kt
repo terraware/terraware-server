@@ -639,6 +639,62 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Nested
+    inner class ReadMediaFile {
+      private val content = byteArrayOf(1, 2, 3, 4)
+
+      private lateinit var fileId: FileId
+
+      @BeforeEach
+      fun setUp() {
+        fileId =
+            service.storeMediaFile(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = content.inputStream(),
+                metadata = metadata,
+                caption = null,
+                isOriginal = true,
+            )
+      }
+
+      @Test
+      fun `returns original data`() {
+        val inputStream = service.readMediaFile(observationId, plotId, fileId)
+        assertArrayEquals(content, inputStream.readAllBytes())
+      }
+
+      @Test
+      fun `throws exception if file is from wrong observation`() {
+        val otherObservationId = insertObservation()
+        insertObservationPlot()
+
+        assertThrows<FileNotFoundException> {
+          service.readMediaFile(otherObservationId, plotId, fileId)
+        }
+      }
+
+      @Test
+      fun `throws exception if file is from wrong monitoring plot`() {
+        val otherPlotId = insertMonitoringPlot()
+        insertObservationPlot()
+
+        assertThrows<FileNotFoundException> {
+          service.readMediaFile(observationId, otherPlotId, fileId)
+        }
+      }
+
+      @Test
+      fun `throws exception if no permission to read observation`() {
+        deleteOrganizationUser()
+
+        assertThrows<ObservationNotFoundException> {
+          service.readMediaFile(observationId, plotId, fileId)
+        }
+      }
+    }
+
+    @Nested
     inner class ReadPhoto {
       private val content = byteArrayOf(1, 2, 3, 4)
 
