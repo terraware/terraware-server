@@ -6,9 +6,9 @@ Alpha,Known 3,1,100%,3,100%
 Alpha,Known 4,1,,2,
 Alpha,Other A,2,,2,
 Alpha,Other B,1,,1,
-Alpha,Other C,1,,0,
+Alpha,Other C,1,,,
 Alpha,Other D,1,,1,
 Beta,Known 3,4,100%,3,100%
 Beta,Known 5,7,80%,5,40%
 Beta,Other B,,,1,
-Beta,Other C,1,,0,
+Beta,Other C,1,,,

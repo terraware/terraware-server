@@ -84,7 +84,6 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
-import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -879,7 +878,6 @@ class ObservationStore(
           isAdHoc,
           observationPlotsRow.isPermanent!!,
           plantCountsBySpecies,
-          cumulativeDeadFromCurrentObservation = true,
       )
 
       observationPlotsDao.update(
@@ -998,15 +996,8 @@ class ObservationStore(
               .fetchOneInto(PlantingSitesRow::class.java)
               ?: throw PlantingSiteNotFoundException(plantingSiteId)
 
-      // Subtract the plot-level live/dead/existing counts from the Other species and add them
-      // to the target species. This propagates the changes up to the stratum and site totals.
-      // Once this has been done for all the plot-level totals, the end result will be that the
-      // plot, stratum, and site totals for the Other species will all be zero.
-      //
-      // We have to cancel out the Other totals rather than just deleting them because the same
-      // Other species might appear in later observations, in which case the cumulative dead and
-      // mortality rate in those observations will need to change to the values they would have
-      // had if the Other species hadn't been recorded in this observation.
+      // Add the plot-level live/dead/existing counts to the target species. This propagates the
+      // changes up to the zone and site totals.
       updateSpeciesTotals(
           observationId,
           plantingSite,
@@ -1016,12 +1007,6 @@ class ObservationStore(
           isAdHoc,
           plotDetails[OBSERVATION_PLOTS.IS_PERMANENT]!!,
           mapOf(
-              RecordedSpeciesKey(RecordedSpeciesCertainty.Other, null, otherSpeciesName) to
-                  mapOf(
-                      RecordedPlantStatus.Live to -(plotTotal.totalLive ?: 0),
-                      RecordedPlantStatus.Dead to -(plotTotal.totalDead ?: 0),
-                      RecordedPlantStatus.Existing to -(plotTotal.totalExisting ?: 0),
-                  ),
               RecordedSpeciesKey(RecordedSpeciesCertainty.Known, speciesId, null) to
                   mapOf(
                       RecordedPlantStatus.Live to (plotTotal.totalLive ?: 0),
@@ -1032,10 +1017,9 @@ class ObservationStore(
       )
     }
 
-    // The plant counts for the Other species have been emptied out for this observation. We want
-    // the end result to be as if people had never recorded the Other species in the first place,
-    // so we need to delete its statistics or else the Other species will still be included by
-    // queries that list all the recorded species in an observation.
+    // The plant counts for the Other species have been added to the target species for this
+    // observation. We want the end result to be as if people had never recorded the Other species
+    // in the first place, so we need to delete its totals entirely.
     with(OBSERVED_PLOT_SPECIES_TOTALS) {
       dslContext
           .deleteFrom(OBSERVED_PLOT_SPECIES_TOTALS)
@@ -1295,35 +1279,7 @@ class ObservationStore(
     }
   }
 
-  /**
-   * Recalculates the stratum- and site-level mortality rates for an observation.
-   *
-   * When an observation starts, [populateCumulativeDead] inserts rows into the "observed species
-   * totals" tables for the observation's plots, substrata, strata, and the site as a whole, mostly
-   * so that the cumulative dead plant counts from earlier observations of the same plots can be
-   * carried forward to the current observation.
-   *
-   * Those tables are updated incrementally as the observation proceeds, such that after the last
-   * plot is completed, they have correct plot-level and substratum-level mortality rates based on
-   * the plant counts from the just-observed plots.
-   *
-   * However, at the stratum and site levels, we want mortality rates to also include plants from
-   * substrata that weren't requested in the current observation but were observed in the past. That
-   * is, the stratum- and site-level mortality rates should be based on the most recent observation
-   * data from all the substrata that have ever been observed, not just the ones in the current
-   * observation.
-   *
-   * One approach would be to include the cumulative dead and permanent live values for other
-   * substrata in the initial data set that's inserted by [populateCumulativeDead], such that the
-   * incremental updates would take the additional plants into account.
-   *
-   * But that approach wouldn't give us the best available results in the face of concurrent
-   * observations: if each of two substrata has its own active observation at the same time, the
-   * stratum- and site-level mortality rates for whichever observation finishes last should
-   * incorporate the plant counts from the other observation. Incorporating those plant counts when
-   * the observation finishes, rather than when it starts, means we can include data from
-   * observations that weren't done yet at the time the current one started.
-   */
+  /** Recalculates the stratum- and site-level survival rates for an observation. */
   fun recalculateSurvivalMortalityRates(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
@@ -1334,7 +1290,6 @@ class ObservationStore(
         val speciesName: String?,
         val stratumId: StratumId,
         val permanentLive: Int,
-        val cumulativeDead: Int,
         val totalLive: Int,
         val survivalRateIncludesTempPlots: Boolean,
     )
@@ -1348,7 +1303,6 @@ class ObservationStore(
                   SPECIES_NAME,
                   SUBSTRATA.STRATUM_ID.asNonNullable(),
                   PERMANENT_LIVE.asNonNullable(),
-                  CUMULATIVE_DEAD.asNonNullable(),
                   TOTAL_LIVE.asNonNullable(),
                   SUBSTRATA.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable(),
               )
@@ -1359,7 +1313,6 @@ class ObservationStore(
               .and(
                   OBSERVATION_ID.eq(latestObservationForSubstratumField(DSL.inline(observationId)))
               )
-              .and(CUMULATIVE_DEAD.plus(PERMANENT_LIVE).plus(TOTAL_LIVE).gt(0))
               .fetch { record ->
                 SubstratumSpeciesRecord(
                     certaintyId = record[CERTAINTY_ID.asNonNullable()],
@@ -1367,7 +1320,6 @@ class ObservationStore(
                     speciesName = record[SPECIES_NAME],
                     stratumId = record[SUBSTRATA.STRATUM_ID.asNonNullable()],
                     permanentLive = record[PERMANENT_LIVE.asNonNullable()],
-                    cumulativeDead = record[CUMULATIVE_DEAD.asNonNullable()],
                     totalLive = record[TOTAL_LIVE.asNonNullable()],
                     survivalRateIncludesTempPlots =
                         record[
@@ -1385,13 +1337,6 @@ class ObservationStore(
       stratumToLiveAndDead.forEach { (stratumId, liveAndDeadForStratum) ->
         val totalPermanentLive = liveAndDeadForStratum.sumOf { it.permanentLive }
         val totalLive = liveAndDeadForStratum.sumOf { it.totalLive }
-        val totalDead = liveAndDeadForStratum.sumOf { it.cumulativeDead }
-        val stratumMortalityRate =
-            if (totalPermanentLive + totalDead > 0) {
-              ((totalDead * 100.0) / (totalPermanentLive + totalDead).toDouble()).roundToInt()
-            } else {
-              null
-            }
 
         with(OBSERVED_STRATUM_SPECIES_TOTALS) {
           val updateScope = ObservationSpeciesStratum(stratumId)
@@ -1424,8 +1369,6 @@ class ObservationStore(
               dslContext
                   .insertInto(OBSERVED_STRATUM_SPECIES_TOTALS)
                   .set(CERTAINTY_ID, speciesKey.certainty)
-                  .set(CUMULATIVE_DEAD, totalDead)
-                  .set(MORTALITY_RATE, stratumMortalityRate)
                   .set(OBSERVATION_ID, observationId)
                   .set(PERMANENT_LIVE, totalPermanentLive)
                   .set(STRATUM_ID, stratumId)
@@ -1437,8 +1380,6 @@ class ObservationStore(
           if (rowsInserted == 0) {
             dslContext
                 .update(OBSERVED_STRATUM_SPECIES_TOTALS)
-                .set(CUMULATIVE_DEAD, totalDead)
-                .set(MORTALITY_RATE, stratumMortalityRate?.let { DSL.inline(it) } ?: MORTALITY_RATE)
                 .set(PERMANENT_LIVE, totalPermanentLive)
                 .set(SURVIVAL_RATE, survivalRate)
                 .where(OBSERVATION_ID.eq(observationId))
@@ -1453,13 +1394,6 @@ class ObservationStore(
 
       val totalPermanentLive = stratumToLiveAndDead.flatMap { it.value }.sumOf { it.permanentLive }
       val totalLive = stratumToLiveAndDead.flatMap { it.value }.sumOf { it.totalLive }
-      val totalDead = stratumToLiveAndDead.flatMap { it.value }.sumOf { it.cumulativeDead }
-      val siteMortalityRate =
-          if (totalDead > 0) {
-            ((totalDead * 100.0) / (totalPermanentLive + totalDead).toDouble()).roundToInt()
-          } else {
-            0
-          }
 
       with(OBSERVED_SITE_SPECIES_TOTALS) {
         val updateScope = ObservationSpeciesSite(plantingSiteId)
@@ -1492,8 +1426,6 @@ class ObservationStore(
             dslContext
                 .insertInto(OBSERVED_SITE_SPECIES_TOTALS)
                 .set(CERTAINTY_ID, speciesKey.certainty)
-                .set(CUMULATIVE_DEAD, totalDead)
-                .set(MORTALITY_RATE, siteMortalityRate)
                 .set(OBSERVATION_ID, observationId)
                 .set(PERMANENT_LIVE, totalPermanentLive)
                 .set(PLANTING_SITE_ID, plantingSiteId)
@@ -1505,8 +1437,6 @@ class ObservationStore(
         if (rowsInserted == 0) {
           dslContext
               .update(OBSERVED_SITE_SPECIES_TOTALS)
-              .set(CUMULATIVE_DEAD, totalDead)
-              .set(MORTALITY_RATE, siteMortalityRate)
               .set(PERMANENT_LIVE, totalPermanentLive)
               .set(SURVIVAL_RATE, survivalRate)
               .where(OBSERVATION_ID.eq(observationId))
@@ -1665,192 +1595,6 @@ class ObservationStore(
         .execute()
   }
 
-  /**
-   * Populates the cumulative dead counts for permanent monitoring plots so that dead plants from
-   * previous observations can be included in mortality rate calculations.
-   *
-   * Temporary monitoring plots are excluded because mortality rate calculations aren't meaningful
-   * if we have no way of telling how many plants died and fully decayed prior to the first
-   * observation. With permanent monitoring plots, the assumption is that observations will happen
-   * often enough that all dead plants will be counted.
-   *
-   * We only include plants from plots that are marked as permanent in the current observation. If
-   * the number of permanent monitoring plots decreases between observations, plants from the plots
-   * that used to be marked as permanent, but no longer are, won't be included in the totals. To
-   * make that work, we can't just copy the stratum- and site-level totals from the previous
-   * observation; we have to compute them from scratch using the current observation's list of
-   * permanent plots.
-   *
-   * This is called when an observation is started, meaning that the cumulative dead counts are
-   * guaranteed to already be present when a plot is completed; [updateSpeciesTotalsTable] can thus
-   * assume that if there aren't already totals present for a given species in a permanent
-   * monitoring plot, there must not have been any dead plants in previous observations.
-   */
-  fun populateCumulativeDead(observationId: ObservationId) {
-    requirePermissions { updateObservation(observationId) }
-
-    val observation = fetchObservationById(observationId)
-
-    dslContext.transaction { _ ->
-      with(OBSERVED_PLOT_SPECIES_TOTALS) {
-        dslContext
-            .insertInto(
-                this,
-                CERTAINTY_ID,
-                CUMULATIVE_DEAD,
-                MONITORING_PLOT_ID,
-                MORTALITY_RATE,
-                OBSERVATION_ID,
-                SPECIES_ID,
-                SPECIES_NAME,
-            )
-            .select(
-                DSL.select(
-                        CERTAINTY_ID,
-                        CUMULATIVE_DEAD,
-                        MONITORING_PLOT_ID,
-                        DSL.value(100),
-                        DSL.value(observationId),
-                        SPECIES_ID,
-                        SPECIES_NAME,
-                    )
-                    .distinctOn(MONITORING_PLOT_ID, CERTAINTY_ID, SPECIES_ID, SPECIES_NAME)
-                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                    .join(OBSERVATION_PLOTS)
-                    .on(MONITORING_PLOT_ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
-                    .join(OBSERVATIONS)
-                    .on(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
-                    .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-                    .and(OBSERVATION_PLOTS.IS_PERMANENT)
-                    .and(CUMULATIVE_DEAD.gt(0))
-                    .orderBy(
-                        MONITORING_PLOT_ID,
-                        CERTAINTY_ID,
-                        SPECIES_ID,
-                        SPECIES_NAME,
-                        OBSERVATIONS.COMPLETED_TIME.desc(),
-                    )
-            )
-            .execute()
-      }
-
-      // Roll up the just-inserted plot totals (which only include plots that are currently
-      // permanent and that had dead plants previously) to get the substratum totals.
-
-      with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
-        dslContext
-            .insertInto(
-                this,
-                CERTAINTY_ID,
-                CUMULATIVE_DEAD,
-                MORTALITY_RATE,
-                OBSERVATION_ID,
-                SUBSTRATUM_ID,
-                SPECIES_ID,
-                SPECIES_NAME,
-            )
-            .select(
-                DSL.select(
-                        OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
-                        DSL.sum(OBSERVED_PLOT_SPECIES_TOTALS.CUMULATIVE_DEAD)
-                            .cast(SQLDataType.INTEGER),
-                        DSL.value(100),
-                        DSL.value(observationId),
-                        MONITORING_PLOTS.SUBSTRATUM_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME,
-                    )
-                    .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                    .join(MONITORING_PLOTS)
-                    .on(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-                    .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-                    .groupBy(
-                        OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID,
-                        MONITORING_PLOTS.SUBSTRATUM_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_NAME,
-                    )
-            )
-            .execute()
-      }
-
-      // Roll up the just-inserted substratumstratumstratum totals to get the stratum totals.
-
-      with(OBSERVED_STRATUM_SPECIES_TOTALS) {
-        dslContext
-            .insertInto(
-                this,
-                CERTAINTY_ID,
-                CUMULATIVE_DEAD,
-                MORTALITY_RATE,
-                OBSERVATION_ID,
-                STRATUM_ID,
-                SPECIES_ID,
-                SPECIES_NAME,
-            )
-            .select(
-                DSL.select(
-                        OBSERVED_SUBSTRATUM_SPECIES_TOTALS.CERTAINTY_ID,
-                        DSL.sum(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.CUMULATIVE_DEAD)
-                            .cast(SQLDataType.INTEGER),
-                        DSL.value(100),
-                        DSL.value(observationId),
-                        SUBSTRATA.STRATUM_ID,
-                        OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SPECIES_NAME,
-                    )
-                    .from(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
-                    .join(SUBSTRATA)
-                    .on(SUBSTRATA.ID.eq(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID))
-                    .where(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-                    .groupBy(
-                        OBSERVED_SUBSTRATUM_SPECIES_TOTALS.CERTAINTY_ID,
-                        SUBSTRATA.STRATUM_ID,
-                        OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SPECIES_NAME,
-                    )
-            )
-            .execute()
-      }
-
-      // Roll up the just-inserted stratum totals to get the site totals.
-
-      with(OBSERVED_SITE_SPECIES_TOTALS) {
-        dslContext
-            .insertInto(
-                this,
-                CERTAINTY_ID,
-                CUMULATIVE_DEAD,
-                MORTALITY_RATE,
-                OBSERVATION_ID,
-                PLANTING_SITE_ID,
-                SPECIES_ID,
-                SPECIES_NAME,
-            )
-            .select(
-                DSL.select(
-                        OBSERVED_STRATUM_SPECIES_TOTALS.CERTAINTY_ID,
-                        DSL.sum(OBSERVED_STRATUM_SPECIES_TOTALS.CUMULATIVE_DEAD)
-                            .cast(SQLDataType.INTEGER),
-                        DSL.value(100),
-                        DSL.value(observationId),
-                        DSL.value(observation.plantingSiteId),
-                        OBSERVED_STRATUM_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_STRATUM_SPECIES_TOTALS.SPECIES_NAME,
-                    )
-                    .from(OBSERVED_STRATUM_SPECIES_TOTALS)
-                    .where(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-                    .groupBy(
-                        OBSERVED_STRATUM_SPECIES_TOTALS.CERTAINTY_ID,
-                        OBSERVED_STRATUM_SPECIES_TOTALS.SPECIES_ID,
-                        OBSERVED_STRATUM_SPECIES_TOTALS.SPECIES_NAME,
-                    )
-            )
-            .execute()
-      }
-    }
-  }
-
   /** Sets the statuses of the incomplete observation plots to be "Not Observed" */
   private fun abandonPlots(observationId: ObservationId) {
     dslContext
@@ -1925,14 +1669,7 @@ class ObservationStore(
     }
   }
 
-  /**
-   * Updates the tables that hold the aggregated per-species plant totals from observations.
-   *
-   * @param cumulativeDeadFromCurrentObservation If true, only use [observationId]'s totals as the
-   *   starting point for the cumulative dead count at the substratum, stratum, and site level. If
-   *   false, use the most recently-created observation of the substratum, stratum, or site, up to
-   *   and including [observationId].
-   */
+  /** Updates the tables that hold the aggregated per-species plant totals from observations. */
   private fun updateSpeciesTotals(
       observationId: ObservationId,
       plantingSite: PlantingSitesRow,
@@ -1942,7 +1679,6 @@ class ObservationStore(
       isAdHoc: Boolean,
       isPermanent: Boolean,
       plantCountsBySpecies: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
-      cumulativeDeadFromCurrentObservation: Boolean = false,
   ) {
     if (plantCountsBySpecies.isNotEmpty()) {
       if (monitoringPlotId != null) {
@@ -1950,7 +1686,6 @@ class ObservationStore(
             observationId,
             isPermanent,
             plantCountsBySpecies,
-            false,
             plantingSite,
             ObservationSpeciesPlot(monitoringPlotId),
         )
@@ -1962,7 +1697,6 @@ class ObservationStore(
               observationId,
               isPermanent,
               plantCountsBySpecies,
-              cumulativeDeadFromCurrentObservation,
               plantingSite,
               ObservationSpeciesSubstratum(substratumId, monitoringPlotId),
           )
@@ -1973,7 +1707,6 @@ class ObservationStore(
               observationId,
               isPermanent,
               plantCountsBySpecies,
-              cumulativeDeadFromCurrentObservation,
               plantingSite,
               ObservationSpeciesStratum(stratumId, monitoringPlotId),
           )
@@ -1983,7 +1716,6 @@ class ObservationStore(
             observationId,
             isPermanent,
             plantCountsBySpecies,
-            cumulativeDeadFromCurrentObservation,
             plantingSite,
             ObservationSpeciesSite(plantingSite.id!!, monitoringPlotId),
         )
@@ -1996,16 +1728,11 @@ class ObservationStore(
    *
    * These tables are all identical with the exception of one column that identifies the scope of
    * aggregation (monitoring plot, stratum, or planting site).
-   *
-   * @param cumulativeDeadFromCurrentObservation If true, only use [observationId]'s totals as the
-   *   starting point for the cumulative dead count. If false, use the most recently-created
-   *   observation of the area, up to and including [observationId].
    */
   private fun <ID : Any> updateSpeciesTotalsTable(
       observationId: ObservationId,
       isPermanent: Boolean,
       totals: Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>,
-      cumulativeDeadFromCurrentObservation: Boolean = false,
       plantingSite: PlantingSitesRow,
       updateScope: ObservationSpeciesScope<ID>,
   ) {
@@ -2026,67 +1753,19 @@ class ObservationStore(
     val totalLiveField = table.field("total_live", Int::class.java)!!
     val totalDeadField = table.field("total_dead", Int::class.java)!!
     val totalExistingField = table.field("total_existing", Int::class.java)!!
-    val mortalityRateField = table.field("mortality_rate", Int::class.java)!!
-    val cumulativeDeadField = table.field("cumulative_dead", Int::class.java)!!
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
-
-    val observationIdCondition =
-        if (cumulativeDeadFromCurrentObservation) {
-          observationIdField.eq(observationId)
-        } else {
-          observationIdField.le(observationId)
-        }
 
     dslContext.transaction { _ ->
       totals.forEach { (speciesKey, statusCounts) ->
         val totalLive = statusCounts.getOrDefault(RecordedPlantStatus.Live, 0)
         val totalDead = statusCounts.getOrDefault(RecordedPlantStatus.Dead, 0)
         val totalExisting = statusCounts.getOrDefault(RecordedPlantStatus.Existing, 0)
-        val permanentDead: Int
-        val permanentLive: Int
-        val existingCumulativeDead: Int
-
-        if (isPermanent) {
-          permanentDead = totalDead
-          permanentLive = totalLive
-
-          existingCumulativeDead =
-              dslContext
-                  .select(cumulativeDeadField)
-                  .from(table)
-                  .where(updateScope.observedTotalsScopeField.eq(updateScope.scopeId))
-                  .and(observationIdCondition)
-                  .and(certaintyField.eq(speciesKey.certainty))
-                  .and(
-                      if (speciesKey.id != null) speciesIdField.eq(speciesKey.id)
-                      else speciesIdField.isNull
-                  )
-                  .and(
-                      if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
-                      else speciesNameField.isNull
-                  )
-                  .orderBy(observationIdField.desc())
-                  .limit(1)
-                  .fetchOne(cumulativeDeadField) ?: 0
-        } else {
-          permanentDead = 0
-          permanentLive = 0
-          existingCumulativeDead = 0
-        }
-
-        val cumulativeDead = existingCumulativeDead + permanentDead
-        val totalPlants = permanentLive + cumulativeDead
-
-        val mortalityRate =
+        val permanentLive: Int =
             if (isPermanent) {
-              if (totalPlants == 0) {
-                0
-              } else {
-                (cumulativeDead * 100.0 / totalPlants).roundToInt()
-              }
+              totalLive
             } else {
-              null
+              0
             }
 
         val survivalRatePermanentDenominator =
@@ -2127,9 +1806,7 @@ class ObservationStore(
                 .set(totalLiveField, totalLive)
                 .set(totalDeadField, totalDead)
                 .set(totalExistingField, totalExisting)
-                .set(cumulativeDeadField, cumulativeDead)
                 .set(permanentLiveField, permanentLive)
-                .set(mortalityRateField, mortalityRate)
                 .set(survivalRateField, survivalRate)
                 .onConflictDoNothing()
                 .execute()
@@ -2146,42 +1823,6 @@ class ObservationStore(
                       if (speciesKey.name != null) speciesNameField.eq(speciesKey.name)
                       else speciesNameField.isNull
                   )
-
-          // If we are updating a past observation (e.g., when removing a plot due to a map edit),
-          // the cumulative dead counts for the current observation as well as any subsequent ones
-          // need to be updated, as do their mortality rates.
-          if (permanentLive != 0 || permanentDead != 0) {
-            val mortalityRateDenominatorField =
-                permanentLiveField
-                    .plus(cumulativeDeadField)
-                    .plus(permanentDead)
-                    .plus(
-                        // For this observation, the adjustment to the live plants count needs to be
-                        // included in the mortality rate denominator. But the live plant counts
-                        // in subsequent observations are already correct.
-                        DSL.case_(observationIdField).`when`(observationId, permanentLive).else_(0)
-                    )
-
-            dslContext
-                .update(table)
-                .set(cumulativeDeadField, cumulativeDeadField.plus(permanentDead))
-                .set(
-                    mortalityRateField,
-                    DSL.case_()
-                        .`when`(mortalityRateDenominatorField.eq(0), 0)
-                        .else_(
-                            (cumulativeDeadField
-                                    .cast(SQLDataType.NUMERIC)
-                                    .plus(permanentDead)
-                                    .times(100)
-                                    .div(mortalityRateDenominatorField))
-                                .cast(SQLDataType.INTEGER)
-                        ),
-                )
-                .where(observationIdField.ge(observationId))
-                .and(scopeIdAndSpeciesCondition)
-                .execute()
-          }
 
           val survivalRate =
               if (plantingSite.survivalRateIncludesTempPlots!! && speciesKey.id != null) {

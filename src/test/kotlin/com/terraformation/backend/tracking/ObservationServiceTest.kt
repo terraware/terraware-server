@@ -2532,8 +2532,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               2,
               1,
               1,
-              null,
-              0,
               0,
           )
       val plotSpecies2Totals =
@@ -2546,8 +2544,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               0,
               0,
               1,
-              null,
-              0,
               0,
           )
       val plotOther1Total =
@@ -2560,8 +2556,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               0,
               0,
               1,
-              null,
-              0,
               0,
           )
       val plotOther2Total =
@@ -2574,8 +2568,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               0,
               1,
               0,
-              null,
-              0,
               0,
           )
       val plotUnknownTotal =
@@ -2587,8 +2579,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               Unknown,
               1,
               0,
-              0,
-              null,
               0,
               0,
           )
