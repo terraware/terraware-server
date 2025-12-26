@@ -234,16 +234,16 @@
         </form>
     </th:block>
 
-    <th:block th:if="${canRecalculateMortalityRates}">
-        <h3>Recalculate Mortality Rates</h3>
+    <th:block th:if="${canRecalculateSurvivalRates}">
+        <h3>Recalculate Survival Rates</h3>
 
         <p>
-            This updates the stratum- and site-level mortality rates for a partial observation of a
+            This updates the stratum- and site-level survival rates for a partial observation of a
             planting site to take into account plants from substrata that weren't observed this
             time.
         </p>
 
-        <form method="POST" action="/admin/recalculateMortalityRates">
+        <form method="POST" action="/admin/recalculateSurvivalRates">
             <label>
                 Planting Site ID:
                 <input type="text" name="plantingSiteId"/>
