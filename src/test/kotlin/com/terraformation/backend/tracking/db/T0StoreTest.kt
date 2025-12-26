@@ -1398,6 +1398,40 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `unknown and other species are not included in t0 densities`() {
+      val t0ObservationId = insertObservation()
+      insertObservationPlot()
+      insertObservedPlotSpeciesTotals(
+          certainty = RecordedSpeciesCertainty.Other,
+          observationId = t0ObservationId,
+          speciesName = "testing",
+          totalLive = 10,
+      )
+      insertObservedPlotSpeciesTotals(
+          certainty = RecordedSpeciesCertainty.Unknown,
+          observationId = t0ObservationId,
+          totalLive = 11,
+      )
+      store.assignT0PlotObservation(monitoringPlotId, t0ObservationId)
+
+      insertObservedPlotSpeciesTotals(
+          certainty = RecordedSpeciesCertainty.Other,
+          observationId = observationId,
+          speciesName = "testing",
+          totalLive = 5,
+      )
+      insertObservedPlotSpeciesTotals(
+          certainty = RecordedSpeciesCertainty.Unknown,
+          observationId = observationId,
+          totalLive = 6,
+      )
+
+      store.on(ObservationStateUpdatedEvent(observationId, ObservationState.Abandoned))
+
+      assertTableEmpty(PLOT_T0_DENSITIES)
+    }
+
+    @Test
     fun `t0 densities are not added when new observation state is not Completed or Abandoned`() {
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
