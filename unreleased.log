@@ -1,3 +1,4 @@
+efcb1aa5401 Update database dependencies to v11.20.0 (#3763)
 b9248e1d00b SW-7897 Endpoint to download observation videos (#3762)
 56b1f8430cd Include user email in request error log messages (#3761)
 92ebd8ca8cb Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v3 (#3760)
