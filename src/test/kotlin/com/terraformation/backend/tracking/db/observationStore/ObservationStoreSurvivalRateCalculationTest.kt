@@ -11,7 +11,6 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
@@ -21,8 +20,6 @@ import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
-import kotlin.collections.component1
-import kotlin.collections.component2
 import kotlin.math.roundToInt
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
@@ -759,19 +756,139 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   @Test
   fun `survival rate is updated when t0 density changes`() {
-    runSurvivalRateScenario("/tracking/observation/SurvivalRateT0DensityChange", numSpecies = 2) {
-      val species1 = speciesIds["Species 0"]!!
-      val plot1 = plotIds["111"]!!
-
-      with(PLOT_T0_DENSITIES) {
-        dslContext
-            .update(this)
-            .set(PLOT_DENSITY, BigDecimal.valueOf(20).toPlantsPerHectare())
-            .where(MONITORING_PLOT_ID.eq(plot1))
-            .and(SPECIES_ID.eq(species1))
-            .execute()
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1, area = 50) {
+            plot(111)
+            plot(112)
+          }
+          substratum(2, area = 50) {
+            plot(211) //
+          }
+        }
+        stratum(2) {
+          substratum(3, area = 200) {
+            plot(311) //
+          }
+        }
       }
-      observationStore.recalculateSurvivalRates(plot1)
+
+      t0DensitySet {
+        plot(111) {
+          species(0, density = 10)
+          species(1, density = 20)
+        }
+        plot(112) {
+          species(0, density = 30)
+          species(1, density = 40)
+        }
+        plot(211) {
+          species(0, density = 50)
+          species(1, density = 60)
+        }
+        plot(311) {
+          species(0, density = 70)
+          species(1, density = 80)
+        }
+      }
+
+      observation(1) {
+        plot(111) {
+          species(0, live = 9)
+          species(1, live = 20)
+        }
+        plot(112) {
+          species(0, live = 30)
+          species(1, live = 39)
+        }
+        plot(211) {
+          species(0, live = 55)
+          species(1, live = 55)
+        }
+        plot(311) {
+          species(0, live = 61)
+          species(1, live = 78)
+        }
+      }
+
+      val baseline =
+          expectResults(1) {
+            survivalRate(96)
+            species(0, survivalRate = 97)
+            species(1, survivalRate = 96)
+            stratum(1) {
+              survivalRate(99)
+              species(0, survivalRate = 104)
+              species(1, survivalRate = 95)
+              substratum(1) {
+                survivalRate(98)
+                species(0, survivalRate = 98)
+                species(1, survivalRate = 98)
+                plot(111) {
+                  survivalRate(97)
+                  species(0, survivalRate = 90)
+                  species(1, survivalRate = 100)
+                }
+                plot(112) {
+                  survivalRate(99)
+                  species(0, survivalRate = 100)
+                  species(1, survivalRate = 98)
+                }
+              }
+              substratum(2) {
+                survivalRate(100)
+                species(0, survivalRate = 110)
+                species(1, survivalRate = 92)
+                plot(211) {
+                  survivalRate(100)
+                  species(0, survivalRate = 110)
+                  species(1, survivalRate = 92)
+                }
+              }
+            }
+            stratum(2) {
+              survivalRate(93)
+              species(0, survivalRate = 87)
+              species(1, survivalRate = 97)
+              substratum(3) {
+                survivalRate(93)
+                species(0, survivalRate = 87)
+                species(1, survivalRate = 97)
+                plot(311) {
+                  survivalRate(93)
+                  species(0, survivalRate = 87)
+                  species(1, survivalRate = 97)
+                }
+              }
+            }
+          }
+
+      t0DensitySet {
+        plot(111) {
+          species(0, density = 20) //
+        }
+      }
+
+      expectResults(1, baseline = baseline) {
+        survivalRate(94)
+        species(0, survivalRate = 91)
+
+        stratum(1) {
+          survivalRate(95)
+          species(0, survivalRate = 94)
+
+          substratum(1) {
+            survivalRate(89)
+            species(0, survivalRate = 78)
+
+            plot(111) {
+              survivalRate(73)
+              species(0, survivalRate = 45)
+            }
+          }
+        }
+      }
     }
   }
 
