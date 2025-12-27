@@ -149,6 +149,9 @@ class ObservationScenario(
       init: SiteCreatedStep.() -> Unit,
   ) = initChild(SiteCreatedStep(this, survivalRateIncludesTempPlots), init).andAdvanceClock()
 
+  fun siteEdited(survivalRateIncludesTempPlots: Boolean = false, init: SiteEditedStep.() -> Unit) =
+      initChild(SiteEditedStep(this, survivalRateIncludesTempPlots), init).andAdvanceClock()
+
   fun t0DensitySet(init: T0DensitySetStep.() -> Unit) =
       initChild(T0DensitySetStep(this), init).andAdvanceClock()
 
