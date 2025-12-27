@@ -63,10 +63,6 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               "plantingSeasons",
               PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID),
           ),
-          plantingZones.asMultiValueSublist(
-              "plantingZones",
-              PLANTING_SITE_SUMMARIES.ID.eq(STRATA.PLANTING_SITE_ID),
-          ),
           plantingSitePopulations.asMultiValueSublist(
               "populations",
               PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SITE_POPULATIONS.PLANTING_SITE_ID),
@@ -75,6 +71,10 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               "project",
               PLANTING_SITE_SUMMARIES.PROJECT_ID.eq(PROJECTS.ID),
               isRequired = false,
+          ),
+          strata.asMultiValueSublist(
+              "plantingZones",
+              PLANTING_SITE_SUMMARIES.ID.eq(STRATA.PLANTING_SITE_ID),
           ),
       )
     }

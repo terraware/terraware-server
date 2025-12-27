@@ -31,13 +31,13 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
               "plantingSite",
               MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITE_SUMMARIES.ID),
           ),
-          plantingSubzones.asSingleValueSublist(
-              "plantingSubzone",
-              MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
-          ),
           observationPlots.asMultiValueSublist(
               "observationPlots",
               MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID),
+          ),
+          substrata.asSingleValueSublist(
+              "plantingSubzone",
+              MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
       )
     }

@@ -13,7 +13,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class PlantingSubzoneHistoriesTable(private val tables: SearchTables) : SearchTable() {
+class SubstratumHistoriesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = SUBSTRATUM_HISTORIES.ID
 
@@ -24,11 +24,11 @@ class PlantingSubzoneHistoriesTable(private val tables: SearchTables) : SearchTa
               "monitoringPlotHistories",
               SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID),
           ),
-          plantingSubzones.asSingleValueSublist(
+          substrata.asSingleValueSublist(
               "plantingSubzone",
               SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
-          plantingZoneHistories.asSingleValueSublist(
+          stratumHistories.asSingleValueSublist(
               "plantingZoneHistory",
               SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID),
           ),
@@ -46,7 +46,7 @@ class PlantingSubzoneHistoriesTable(private val tables: SearchTables) : SearchTa
       )
 
   override val inheritsVisibilityFrom: SearchTable
-    get() = tables.plantingZoneHistories
+    get() = tables.stratumHistories
 
   override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
     return query
