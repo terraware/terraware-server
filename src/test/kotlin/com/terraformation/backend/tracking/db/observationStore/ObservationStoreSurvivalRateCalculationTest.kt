@@ -1023,148 +1023,255 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   @Test
   fun `survival rate with geometry change between observations`() {
-    val newPlantingSiteId =
-        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = false)
-    every { user.canReadPlantingSite(newPlantingSiteId) } returns true
+    every { user.canReadPlantingSite(any()) } returns true
+    every { user.canUpdatePlantingSite(any()) } returns true
 
-    fun updatePlantingSite() {
-      // moves plot 112 to substratum2 (from substratum1), adds plot 312 to site, changes plot 212
-      // from permanent to temporary, removes plot 213 from substratum adds all history objects that
-      // would occur with this edit
-      insertPlantingSiteHistory()
-      val stratum1 = stratumIds["Zone1"]!!
-      val stratum2 = stratumIds["Zone2"]!!
-      val newStratum1History = insertStratumHistory(stratumId = stratum1)
-      val newStratum2History = insertStratumHistory(stratumId = stratum2)
-      val substratum1 = substratumIds["Subzone1"]!!
-      val substratum2 = substratumIds["Subzone2"]!!
-      val substratum3 = substratumIds["Subzone3"]!!
-      val newSubstratum1History =
-          insertSubstratumHistory(
-              substratumId = substratum1,
-              stratumHistoryId = newStratum1History,
-          )
-      val newSubstratum2History =
-          insertSubstratumHistory(
-              substratumId = substratum2,
-              stratumHistoryId = newStratum1History,
-          )
-      val newSubstratum3History =
-          insertSubstratumHistory(
-              substratumId = substratum3,
-              stratumHistoryId = newStratum2History,
-          )
-      plotHistoryIds[plotIds["111"]!!] =
-          insertMonitoringPlotHistory(
-              monitoringPlotId = plotIds["111"]!!,
-              substratumId = substratum1,
-              substratumHistoryId = newSubstratum1History,
-          )
-      val plot112 = plotIds["112"]!!
-      dslContext
-          .update(MONITORING_PLOTS)
-          .set(MONITORING_PLOTS.SUBSTRATUM_ID, substratum2)
-          .where(MONITORING_PLOTS.ID.eq(plot112))
-          .execute()
-      plotHistoryIds[plot112] =
-          insertMonitoringPlotHistory(
-              monitoringPlotId = plot112,
-              substratumId = substratum2,
-              substratumHistoryId = newSubstratum2History,
-          )
-      plotHistoryIds[plotIds["211"]!!] =
-          insertMonitoringPlotHistory(
-              monitoringPlotId = plotIds["211"]!!,
-              substratumId = substratum2,
-              substratumHistoryId = newSubstratum2History,
-          )
-      val plot212 = plotIds["212"]!!
-      dslContext
-          .update(MONITORING_PLOTS)
-          .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
-          .where(MONITORING_PLOTS.ID.eq(plot212))
-          .execute()
-      plotHistoryIds[plot212] =
-          insertMonitoringPlotHistory(
-              monitoringPlotId = plot212,
-              substratumId = substratum2,
-              substratumHistoryId = newSubstratum2History,
-          )
-      permanentPlotNumbers.remove("212")
-      permanentPlotIds.remove(plot212)
-      val plot213 = plotIds["213"]!!
-      dslContext
-          .update(MONITORING_PLOTS)
-          .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
-          .set(
-              MONITORING_PLOTS.SUBSTRATUM_ID,
-              DSL.castNull(SubstratumId::class.java),
-          )
-          .where(MONITORING_PLOTS.ID.eq(plot213))
-          .execute()
-      plotHistoryIds[plot213] =
-          insertMonitoringPlotHistory(
-              monitoringPlotId = plot213,
-              substratumId = null,
-              substratumHistoryId = null,
-          )
-      permanentPlotNumbers.remove("213")
-      permanentPlotIds.remove(plot213)
-      plotHistoryIds[plotIds["311"]!!] =
-          insertMonitoringPlotHistory(
-              monitoringPlotId = plotIds["311"]!!,
-              substratumId = substratum3,
-              substratumHistoryId = newSubstratum3History,
-          )
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) {
+            plot(111)
+            plot(112)
+          }
+          substratum(2) {
+            plot(211)
+            plot(212)
+            plot(213)
+          }
+        }
+        stratum(2) { substratum(3) { plot(311) } }
+      }
 
-      val newPlotId =
-          insertMonitoringPlot(
-              insertHistory = false,
-              substratumId = substratum3,
-              plotNumber = 312,
-              sizeMeters = 30,
-              permanentIndex = 312,
-          )
-      plotHistoryIds[newPlotId] =
-          insertMonitoringPlotHistory(
-              substratumId = substratum3,
-              substratumHistoryId = newSubstratum3History,
-          )
-      permanentPlotNumbers.add("312")
-      permanentPlotIds.add(newPlotId)
-      plotIds["312"] = newPlotId
-      val species1 = speciesIds["Species 0"]!!
-      val species2 = speciesIds["Species 1"]!!
-      insertPlotT0Density(
-          speciesId = species1,
-          plotDensity = BigDecimal.valueOf(90).toPlantsPerHectare(),
-      )
-      insertPlotT0Density(
-          speciesId = species2,
-          plotDensity = BigDecimal.valueOf(100).toPlantsPerHectare(),
-      )
+      t0DensitySet {
+        plot(111) {
+          species(0, density = 10)
+          species(1, density = 20)
+        }
+        plot(112) {
+          species(0, density = 30)
+          species(1, density = 40)
+        }
+        plot(211) {
+          species(0, density = 50)
+          species(1, density = 60)
+        }
+        plot(212) {
+          species(0, density = 100)
+          species(1, density = 105)
+        }
+        plot(213) {
+          species(0, density = 65)
+          species(1, density = 75)
+        }
+        plot(311) {
+          species(0, density = 70)
+          species(1, density = 80)
+        }
+      }
+
+      observation(1) {
+        plot(111) {
+          species(0, live = 9)
+          species(1, live = 20)
+        }
+        plot(112) {
+          species(0, live = 30)
+          species(1, live = 39)
+        }
+        plot(211) {
+          species(0, live = 55)
+          species(1, live = 55)
+        }
+        plot(212) {
+          species(0, live = 54)
+          species(1, live = 61)
+        }
+        plot(213) {
+          species(0, live = 60)
+          species(1, live = 50)
+        }
+        plot(311) {
+          species(0, live = 61)
+          species(1, live = 78)
+        }
+      }
+
+      val observation1Results =
+          expectResults(1) {
+            survivalRate(81)
+            species(0, survivalRate = 83)
+            species(1, survivalRate = 80)
+            stratum(1) {
+              survivalRate(78)
+              species(0, survivalRate = 82)
+              species(1, survivalRate = 75)
+              substratum(1) {
+                survivalRate(98)
+                species(0, survivalRate = 98)
+                species(1, survivalRate = 98)
+                plot(111) {
+                  survivalRate(97)
+                  species(0, survivalRate = 90)
+                  species(1, survivalRate = 100)
+                }
+                plot(112) {
+                  survivalRate(99)
+                  species(0, survivalRate = 100)
+                  species(1, survivalRate = 98)
+                }
+              }
+              substratum(2) {
+                survivalRate(74)
+                species(0, survivalRate = 79)
+                species(1, survivalRate = 69)
+                plot(211) {
+                  survivalRate(100)
+                  species(0, survivalRate = 110)
+                  species(1, survivalRate = 92)
+                }
+                plot(212) {
+                  survivalRate(56)
+                  species(0, survivalRate = 54)
+                  species(1, survivalRate = 58)
+                }
+                plot(213) {
+                  survivalRate(79)
+                  species(0, survivalRate = 92)
+                  species(1, survivalRate = 67)
+                }
+              }
+            }
+            stratum(2) {
+              survivalRate(93)
+              species(0, survivalRate = 87)
+              species(1, survivalRate = 97)
+              substratum(3) {
+                survivalRate(93)
+                species(0, survivalRate = 87)
+                species(1, survivalRate = 97)
+                plot(311) {
+                  survivalRate(93)
+                  species(0, survivalRate = 87)
+                  species(1, survivalRate = 97)
+                }
+              }
+            }
+          }
+
+      siteEdited {
+        stratum(1) {
+          substratum(1) {
+            plot(111) //
+          }
+          substratum(2) {
+            plot(112) // Moved from substratum 1
+            plot(211)
+            plot(212)
+            // Plot 213 is no longer in site boundary
+          }
+        }
+        stratum(2) {
+          substratum(3) {
+            plot(311)
+            plot(312) // Newly created
+          }
+        }
+      }
+
+      t0DensitySet {
+        plot(312) {
+          species(0, density = 90)
+          species(1, density = 100)
+        }
+      }
+
+      observation(2) {
+        plot(111) {
+          species(0, live = 8)
+          species(1, live = 19)
+        }
+        plot(112) {
+          species(0, live = 30)
+          species(1, live = 38)
+        }
+        plot(211) {
+          species(0, live = 51)
+          species(1, live = 52)
+        }
+        plot(212, isPermanent = false) {
+          species(0, live = 54)
+          species(1, live = 61)
+        }
+        plot(311) {
+          species(0, live = 60)
+          species(1, live = 70)
+        }
+        plot(312) {
+          species(0, live = 81)
+          species(1, live = 99)
+        }
+      }
+
+      expectResults(observation = 1, baseline = observation1Results) {
+        // Results shouldn't have changed.
+      }
+
+      expectResults(observation = 2) {
+        survivalRate(92)
+        species(0, survivalRate = 92)
+        species(1, survivalRate = 93)
+        stratum(1) {
+          survivalRate(94)
+          species(0, survivalRate = 99)
+          species(1, survivalRate = 91)
+          substratum(1) {
+            survivalRate(90)
+            species(0, survivalRate = 80)
+            species(1, survivalRate = 95)
+            plot(111) {
+              survivalRate(90)
+              species(0, survivalRate = 80)
+              species(1, survivalRate = 95)
+            }
+          }
+          substratum(2) {
+            survivalRate(95)
+            species(0, survivalRate = 101)
+            species(1, survivalRate = 90)
+            plot(112) {
+              survivalRate(97)
+              species(0, survivalRate = 100)
+              species(1, survivalRate = 95)
+            }
+            plot(211) {
+              survivalRate(94)
+              species(0, survivalRate = 102)
+              species(1, survivalRate = 87)
+            }
+          }
+        }
+        stratum(2) {
+          survivalRate(91)
+          species(0, survivalRate = 88)
+          species(1, survivalRate = 94)
+          substratum(3) {
+            survivalRate(91)
+            species(0, survivalRate = 88)
+            species(1, survivalRate = 94)
+            plot(311) {
+              survivalRate(87)
+              species(0, survivalRate = 86)
+              species(1, survivalRate = 87)
+            }
+            plot(312) {
+              survivalRate(95)
+              species(0, survivalRate = 90)
+              species(1, survivalRate = 99)
+            }
+          }
+        }
+      }
     }
-
-    val prefix = "/tracking/observation/SurvivalRateSiteGeometryChange"
-    val numSpecies = 2
-
-    runSurvivalRateScenario(
-        prefix,
-        numSpecies,
-    ) {
-      updatePlantingSite()
-
-      importObservationsCsv(prefix, numSpecies, 1, Instant.EPOCH.plusSeconds(10), false)
-    }
-
-    // ensure that observation1 didn't change
-    val observation1Expected = loadExpectedSurvivalRates(prefix, numSpecies)
-    val observation1Actual =
-        ratesObjectFromResults(
-            resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1],
-            inserted.plantingSiteId,
-        )
-    assertSurvivalRates(observation1Expected, observation1Actual, "Observation 1 shouldn't change")
   }
 
   @Test
