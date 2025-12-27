@@ -1,11 +1,11 @@
-Observation ->,1,1,1,2,2,2
-Species,# Total Plants,Mortality Rate,Survival Rate,# Total Plants,Mortality Rate,Survival Rate
-Known 1,3,0%,100%,4,0%,150%
-Known 2,5,50%,50%,3,50%,100%
-Known 3,5,0%,100%,6,0%,100%
-Known 4,1,0%,,2,100%,
-Known 5,7,20%,80%,5,60%,40%
-Other A,2,50%,,2,50%,
-Other B,1,0%,,2,0%,
-Other C,2,100%,,0,100%,
-Other D,1,100%,,1,50%,
+Observation ->,1,1,2,2
+Species,# Total Plants,Survival Rate,# Total Plants,Survival Rate
+Known 1,3,100%,4,150%
+Known 2,5,50%,3,100%
+Known 3,5,100%,6,100%
+Known 4,1,,2,
+Known 5,7,80%,5,40%
+Other A,2,,2,
+Other B,1,,2,
+Other C,2,,0,
+Other D,1,,1,

@@ -1,4 +1,4 @@
-Observation ->,1,1,1,1,1,1,2,2,2,2,2,2,3,3,3,3,3,3
-Subzone,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Survival Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Survival Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Mortality Rate,Survival Rate,Est Plants
-Alpha-1,3,22,1,33%,67%,22,,,,,,,3,33,1,25%,100%,33
-Alpha-2,,,,,,,3,11,1,67%,,11,,,,,,
+Observation ->,1,1,1,1,1,2,2,2,2,2,3,3,3,3,3
+Subzone,# Plants (excluding existing),Planting Density,# Live Species,Survival Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Survival Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Survival Rate,Est Plants
+Alpha-1,3,22,1,67%,22,,,,,,3,33,1,100%,33
+Alpha-2,,,,,,3,11,1,,11,,,,,

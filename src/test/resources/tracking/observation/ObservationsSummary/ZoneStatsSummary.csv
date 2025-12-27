@@ -1,5 +1,5 @@
-Observation ->,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3,3
-Zone,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Mortality Rate,Mortality Rate Std Dev,Survival Rate,Survival Rate Std Dev,Est Plants,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Mortality Rate,Mortality Rate Std Dev,Survival Rate,Survival Rate Std Dev,Est Plants,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Mortality Rate,Mortality Rate Std Dev,Survival Rate,Survival Rate Std Dev,Est Plants
-Alpha,189,741,381,4,26%,13%,117%,7%,741000,189,741,381,4,26%,13%,117%,7%,741000,534,2331,375,4,25%,1%,367%,191%,2331000
-Beta,444,770,308,4,24%,9%,123%,18%,770000,444,770,308,4,24%,9%,123%,18%,770000,828,1531,1222,4,23%,8%,244%,150%,1531000
-Charlie,,,,,,,,,,891,1418,448,4,20%,6%,,,709000,891,1418,448,4,20%,6%,,,709000
+Observation ->,1,1,1,1,1,1,1,2,2,2,2,2,2,2,3,3,3,3,3,3,3
+Zone,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Survival Rate,Survival Rate Std Dev,Est Plants,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Survival Rate,Survival Rate Std Dev,Est Plants,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Survival Rate,Survival Rate Std Dev,Est Plants
+Alpha,189,741,381,4,117%,7%,741000,189,741,381,4,117%,7%,741000,534,2331,375,4,367%,191%,2331000
+Beta,444,770,308,4,123%,18%,770000,444,770,308,4,123%,18%,770000,828,1531,1222,4,244%,150%,1531000
+Charlie,,,,,,,,891,1418,448,4,,,709000,891,1418,448,4,,,709000

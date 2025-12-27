@@ -1,3 +1,3 @@
-1,1,1,1,1,1,1,1
-Planting Density,Planting Density Std Dev,Estimated # Plants,# Species,Mortality Rate,Mortality Rate Std Dev,Survival Rate,Survival Rate Std Dev
-1029,633,,2,0%,0%,96%,3%
+1,1,1,1,1,1
+Planting Density,Planting Density Std Dev,Estimated # Plants,# Species,Survival Rate,Survival Rate Std Dev
+1029,633,,2,96%,3%
