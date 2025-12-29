@@ -32,6 +32,8 @@ class SiteEditedStep(
   fun stratum(number: Int, init: Stratum.() -> Unit) = initChild(Stratum(number), init)
 
   override fun finish() {
+    children.forEach { boundary = boundary.union(it.boundary).toMultiPolygon() }
+
     val existing =
         scenario.plantingSiteStore.fetchSiteById(scenario.plantingSiteId, PlantingSiteDepth.Plot)
     val desired =
