@@ -49,28 +49,11 @@ data class ObservedPlotCoordinatesModel(
 data class ObservationSpeciesResultsModel(
     val certainty: RecordedSpeciesCertainty,
     /**
-     * Number of dead plants observed in permanent monitoring plots in all observations including
-     * this one. Used in the mortality rate calculation. This needs to be a cumulative total because
-     * dead plants, especially young seedlings, are likely to decay between observations, making
-     * them impossible to see when people go out to observe a site. To reduce the amount of double
-     * counting of dead plants, we instruct users to only record plants that seem to have died since
-     * the previous observation.
-     */
-    val cumulativeDead: Int,
-    /**
      * Number of live plants observed in monitoring plots in the latest observations. If this is for
      * a stratum or site, it may also include past observations (excluding ad-hoc) if the latest
      * observation doesn't include all subareas.
      */
     val latestLive: Int,
-    /**
-     * Percentage of plants in permanent monitoring plots that are dead. If there are no permanent
-     * monitoring plots (or if this is a plot-level result for a temporary monitoring plot) this
-     * will be null. The mortality rate is calculated using [cumulativeDead] and [permanentLive].
-     * Existing plants are not included in the mortality rate because the intent is to track the
-     * health of plants that were introduced to the site.
-     */
-    val mortalityRate: Int?,
     /**
      * Number of live plants observed in permanent plots in this observation, not including existing
      * plants. 0 if this is a plot-level result for a temporary monitoring plot. Used in the
@@ -110,14 +93,6 @@ data class ObservationMonitoringPlotResultsModel(
     val isPermanent: Boolean,
     val monitoringPlotId: MonitoringPlotId,
     val monitoringPlotNumber: Long,
-    /**
-     * If this is a permanent monitoring plot in this observation, percentage of plants of all
-     * species that were dead. Dead plants from previous observations are counted in this
-     * percentage, but only live plants from the current observation are counted. Existing plants
-     * are not counted because the intent is to track the health of plants that were introduced to
-     * the site.
-     */
-    val mortalityRate: Int?,
     val notes: String?,
     /** IDs of newer monitoring plots that overlap with this one. */
     val overlappedByPlotIds: Set<MonitoringPlotId>,
@@ -166,17 +141,6 @@ interface BaseMonitoringResult {
   val estimatedPlants: Int?
 
   /**
-   * Percentage of plants of all species that were dead in the region's permanent monitoring plots.
-   * Dead plants from previous observations are counted in this percentage, but only live plants
-   * from the current observation are counted. Existing plants are not counted because the intent is
-   * to track the health of plants that were introduced to the site.
-   */
-  val mortalityRate: Int?
-
-  /** Standard deviation of mortality rates of plots */
-  val mortalityRateStdDev: Int?
-
-  /**
    * Whether planting has completed. Planting is considered completed if all substrata in the region
    * have completed planting.
    */
@@ -222,8 +186,6 @@ data class ObservationSubstratumResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
-    override val mortalityRate: Int?,
-    override val mortalityRateStdDev: Int?,
     val monitoringPlots: List<ObservationMonitoringPlotResultsModel>,
     val name: String,
     override val plantingCompleted: Boolean,
@@ -242,8 +204,6 @@ data class ObservationStratumResultsModel(
     val areaHa: BigDecimal,
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
-    override val mortalityRate: Int?,
-    override val mortalityRateStdDev: Int?,
     val name: String,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
@@ -264,8 +224,6 @@ data class ObservationResultsModel(
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
     val isAdHoc: Boolean,
-    override val mortalityRate: Int?,
-    override val mortalityRateStdDev: Int?,
     val observationId: ObservationId,
     val observationType: ObservationType,
     override val plantingCompleted: Boolean,
@@ -291,8 +249,6 @@ data class ObservationStratumRollupResultsModel(
     override val estimatedPlants: Int?,
     /** Time when the latest observation in this rollup was completed. */
     val latestCompletedTime: Instant,
-    override val mortalityRate: Int?,
-    override val mortalityRateStdDev: Int?,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
@@ -353,19 +309,6 @@ data class ObservationStratumRollupResultsModel(
             null
           }
 
-      val mortalityRate = species.calculateMortalityRate()
-      val mortalityRateStdDev =
-          completedMonitoringPlots
-              .mapNotNull { plot ->
-                plot.mortalityRate?.let { mortalityRate ->
-                  val permanentPlants =
-                      plot.species.sumOf { species ->
-                        species.permanentLive + species.cumulativeDead
-                      }
-                  mortalityRate to permanentPlants.toDouble()
-                }
-              }
-              .calculateWeightedStandardDeviation()
       val survivalRateSubstrata =
           nonNullSubstratumResults.filter { substratum ->
             substratum.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
@@ -394,8 +337,6 @@ data class ObservationStratumRollupResultsModel(
           earliestCompletedTime = completedMonitoringPlots.minOf { it.completedTime!! },
           estimatedPlants = estimatedPlants?.roundToInt(),
           latestCompletedTime = completedMonitoringPlots.maxOf { it.completedTime!! },
-          mortalityRate = mortalityRate,
-          mortalityRateStdDev = mortalityRateStdDev,
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
           plantingDensityStdDev = plantingDensityStdDev,
@@ -418,8 +359,6 @@ data class ObservationRollupResultsModel(
     override val estimatedPlants: Int?,
     /** Time when the latest observation in this rollup was completed. */
     val latestCompletedTime: Instant,
-    override val mortalityRate: Int?,
-    override val mortalityRateStdDev: Int?,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int,
     override val plantingDensityStdDev: Int?,
@@ -482,19 +421,6 @@ data class ObservationRollupResultsModel(
             null
           }
 
-      val mortalityRate = species.calculateMortalityRate()
-      val mortalityRateStdDev =
-          monitoringPlots
-              .mapNotNull { plot ->
-                plot.mortalityRate?.let { mortalityRate ->
-                  val permanentPlants =
-                      plot.species.sumOf { species ->
-                        species.permanentLive + species.cumulativeDead
-                      }
-                  mortalityRate to permanentPlants.toDouble()
-                }
-              }
-              .calculateWeightedStandardDeviation()
       val survivalRate =
           if (nonNullStratumResults.all { it.survivalRate != null })
               species.calculateSurvivalRate(survivalRateIncludesTempPlots)
@@ -515,8 +441,6 @@ data class ObservationRollupResultsModel(
           earliestCompletedTime = nonNullStratumResults.minOf { it.earliestCompletedTime },
           estimatedPlants = estimatedPlants,
           latestCompletedTime = nonNullStratumResults.maxOf { it.latestCompletedTime },
-          mortalityRate = mortalityRate,
-          mortalityRateStdDev = mortalityRateStdDev,
           plantingCompleted = plantingCompleted,
           plantingDensity = plantingDensity,
           plantingDensityStdDev = plantingDensityStdDev,
@@ -540,21 +464,6 @@ data class RecordedPlantModel(
     val speciesName: String?,
     val status: RecordedPlantStatus,
 )
-
-/**
- * Calculates the mortality rate across all non-preexisting plants of all species in permanent
- * monitoring plots.
- */
-fun List<ObservationSpeciesResultsModel>.calculateMortalityRate(): Int? {
-  val numNonExistingPlants = this.sumOf { it.permanentLive + it.cumulativeDead }
-  val numDeadPlants = this.sumOf { it.cumulativeDead }
-
-  return if (numNonExistingPlants > 0) {
-    (numDeadPlants * 100.0 / numNonExistingPlants).roundToInt()
-  } else {
-    null
-  }
-}
 
 fun List<ObservationSpeciesResultsModel>.calculateSurvivalRate(
     includeTempPlots: Boolean = false
@@ -597,16 +506,7 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
       .map { (key, groupedSpecies) ->
         val permanentLive = groupedSpecies.sumOf { it.permanentLive }
         val totalLive = groupedSpecies.sumOf { it.totalLive }
-        val cumulativeDead = groupedSpecies.sumOf { it.cumulativeDead }
-        val numNonExistingPlants = permanentLive + cumulativeDead
         val t0Density = groupedSpecies.sumOf { it.t0Density ?: BigDecimal.ZERO }
-
-        val mortalityRate =
-            if (numNonExistingPlants > 0) {
-              (cumulativeDead * 100.0 / numNonExistingPlants).roundToInt()
-            } else {
-              0
-            }
 
         val survivalRateNumerator = if (includeTempPlots) totalLive else permanentLive
         val survivalRate =
@@ -621,9 +521,7 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
 
         ObservationSpeciesResultsModel(
             certainty = key.first,
-            cumulativeDead = cumulativeDead,
             latestLive = groupedSpecies.sumOf { it.latestLive },
-            mortalityRate = mortalityRate,
             permanentLive = permanentLive,
             speciesId = key.second,
             speciesName = key.third,
