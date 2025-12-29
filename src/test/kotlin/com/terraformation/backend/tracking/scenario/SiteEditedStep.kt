@@ -56,7 +56,9 @@ class SiteEditedStep(
     with(MONITORING_PLOT_HISTORIES) {
       test.dslContext
           .select(MONITORING_PLOT_ID, ID, SUBSTRATUM_ID)
+          .distinctOn(MONITORING_PLOT_ID)
           .from(MONITORING_PLOT_HISTORIES)
+          .orderBy(MONITORING_PLOT_ID, ID.desc())
           .fetch()
           .forEach { (monitoringPlotId, monitoringPlotHistoryId, substratumId) ->
             scenario.monitoringPlotHistoryIds[monitoringPlotId!!] = monitoringPlotHistoryId!!
