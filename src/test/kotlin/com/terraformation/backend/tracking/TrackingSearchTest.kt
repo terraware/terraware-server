@@ -860,7 +860,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertStratum()
     insertSubstratum()
 
-    val prefix = SearchFieldPrefix(root = searchTables.plantingSubzones)
+    val prefix = SearchFieldPrefix(root = searchTables.substrata)
 
     val expected = SearchResults(emptyList())
     val actual =

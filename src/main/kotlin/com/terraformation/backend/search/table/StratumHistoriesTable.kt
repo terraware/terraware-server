@@ -13,7 +13,7 @@ import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
-class PlantingZoneHistoriesTable(private val tables: SearchTables) : SearchTable() {
+class StratumHistoriesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
     get() = STRATUM_HISTORIES.ID
 
@@ -24,13 +24,13 @@ class PlantingZoneHistoriesTable(private val tables: SearchTables) : SearchTable
               "plantingSiteHistory",
               STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID),
           ),
-          plantingSubzoneHistories.asMultiValueSublist(
-              "plantingSubzoneHistories",
-              STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID),
-          ),
-          plantingZones.asSingleValueSublist(
+          strata.asSingleValueSublist(
               "plantingZone",
               STRATUM_HISTORIES.STRATUM_ID.eq(STRATA.ID),
+          ),
+          substratumHistories.asMultiValueSublist(
+              "plantingSubzoneHistories",
+              STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID),
           ),
       )
     }
