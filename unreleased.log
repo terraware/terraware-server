@@ -1,3 +1,4 @@
+bae88cab7f2 SW-7857 Use web app's internal role name translations (#3771)
 e9de077d18a SW-7899 Only copy known species t0 densities (#3764)
 ba1e7789496 SW-7807 Remove mortality rates from test spreadsheets (#3706)
 efcb1aa5401 Update database dependencies to v11.20.0 (#3763)
