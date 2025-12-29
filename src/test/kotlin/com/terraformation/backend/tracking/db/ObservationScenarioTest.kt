@@ -30,6 +30,7 @@ import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
+import com.terraformation.backend.tracking.scenario.ObservationScenario
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
@@ -1297,5 +1298,16 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     }
 
     throw RuntimeException("Unable to generate square with requested area $areaHa")
+  }
+
+  protected fun scenario(init: ObservationScenario.() -> Unit) {
+    ObservationScenario.forTest(
+            this,
+            clock = clock,
+            eventPublisher = eventPublisher,
+            observationResultsStore = resultsStore,
+            observationStore = observationStore,
+        )
+        .init()
   }
 }
