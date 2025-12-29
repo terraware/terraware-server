@@ -43,8 +43,16 @@ class MonitoringPlotHistoriesTable(private val tables: SearchTables) : SearchTab
               "plantingSubzone",
               MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
+          substrata.asSingleValueSublist(
+              "substratum",
+              MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+          ),
           substratumHistories.asSingleValueSublist(
               "plantingSubzoneHistory",
+              MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID),
+          ),
+          substratumHistories.asSingleValueSublist(
+              "substratumHistory",
               MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID),
           ),
       )

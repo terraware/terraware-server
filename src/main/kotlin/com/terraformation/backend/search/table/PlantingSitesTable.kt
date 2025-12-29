@@ -76,6 +76,10 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
               "plantingZones",
               PLANTING_SITE_SUMMARIES.ID.eq(STRATA.PLANTING_SITE_ID),
           ),
+          strata.asMultiValueSublist(
+              "strata",
+              PLANTING_SITE_SUMMARIES.ID.eq(STRATA.PLANTING_SITE_ID),
+          ),
       )
     }
   }

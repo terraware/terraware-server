@@ -39,6 +39,10 @@ class SubstrataTable(private val tables: SearchTables) : SearchTable() {
               "plantingZone",
               SUBSTRATA.STRATUM_ID.eq(STRATA.ID),
           ),
+          strata.asSingleValueSublist(
+              "stratum",
+              SUBSTRATA.STRATUM_ID.eq(STRATA.ID),
+          ),
           substratumHistories.asMultiValueSublist(
               "histories",
               SUBSTRATA.ID.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID),
