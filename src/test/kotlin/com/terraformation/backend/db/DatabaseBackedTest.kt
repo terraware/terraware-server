@@ -3153,14 +3153,7 @@ abstract class DatabaseBackedTest {
       totalLive: Int = 0,
       totalDead: Int = 0,
       totalExisting: Int = 0,
-      cumulativeDead: Int = 0,
       permanentLive: Int = 0,
-      mortalityRate: Int =
-          if (cumulativeDead + permanentLive == 0) {
-            0
-          } else {
-            (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
-          },
       survivalRate: Int? = null,
   ) {
     with(OBSERVED_PLOT_SPECIES_TOTALS) {
@@ -3174,9 +3167,7 @@ abstract class DatabaseBackedTest {
           .set(TOTAL_LIVE, totalLive)
           .set(TOTAL_DEAD, totalDead)
           .set(TOTAL_EXISTING, totalExisting)
-          .set(CUMULATIVE_DEAD, cumulativeDead)
           .set(PERMANENT_LIVE, permanentLive)
-          .set(MORTALITY_RATE, mortalityRate)
           .set(SURVIVAL_RATE, survivalRate)
           .execute()
     }
@@ -3204,15 +3195,7 @@ abstract class DatabaseBackedTest {
       totalLive: Int = row.totalLive ?: 0,
       totalDead: Int = row.totalDead ?: 0,
       totalExisting: Int = row.totalExisting ?: 0,
-      cumulativeDead: Int = row.cumulativeDead ?: 0,
       permanentLive: Int = row.permanentLive ?: 0,
-      mortalityRate: Int =
-          row.mortalityRate
-              ?: if (cumulativeDead + permanentLive == 0) {
-                0
-              } else {
-                (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
-              },
   ) {
     with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
       dslContext
@@ -3225,9 +3208,7 @@ abstract class DatabaseBackedTest {
           .set(TOTAL_LIVE, totalLive)
           .set(TOTAL_DEAD, totalDead)
           .set(TOTAL_EXISTING, totalExisting)
-          .set(CUMULATIVE_DEAD, cumulativeDead)
           .set(PERMANENT_LIVE, permanentLive)
-          .set(MORTALITY_RATE, mortalityRate)
           .execute()
     }
   }
@@ -3254,15 +3235,7 @@ abstract class DatabaseBackedTest {
       totalLive: Int = row.totalLive ?: 0,
       totalDead: Int = row.totalDead ?: 0,
       totalExisting: Int = row.totalExisting ?: 0,
-      cumulativeDead: Int = row.cumulativeDead ?: 0,
       permanentLive: Int = row.permanentLive ?: 0,
-      mortalityRate: Int =
-          row.mortalityRate
-              ?: if (cumulativeDead + permanentLive == 0) {
-                0
-              } else {
-                (cumulativeDead * 100.0 / (cumulativeDead + permanentLive)).roundToInt()
-              },
   ) {
     with(OBSERVED_SITE_SPECIES_TOTALS) {
       dslContext
@@ -3275,9 +3248,7 @@ abstract class DatabaseBackedTest {
           .set(TOTAL_LIVE, totalLive)
           .set(TOTAL_DEAD, totalDead)
           .set(TOTAL_EXISTING, totalExisting)
-          .set(CUMULATIVE_DEAD, cumulativeDead)
           .set(PERMANENT_LIVE, permanentLive)
-          .set(MORTALITY_RATE, mortalityRate)
           .execute()
     }
   }

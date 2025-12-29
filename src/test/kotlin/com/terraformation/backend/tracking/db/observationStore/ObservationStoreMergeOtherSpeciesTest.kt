@@ -135,7 +135,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
     val observationId2 = insertObservation()
     insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
-    store.populateCumulativeDead(observationId2)
 
     store.completePlot(
         observationId2,
@@ -176,8 +175,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 totalLive = 1,
                 totalDead = 0,
                 totalExisting = 0,
-                mortalityRate = 0,
-                cumulativeDead = 0,
                 permanentLive = 1,
                 survivalRate = (1 * 100.0 / 10).roundToInt(),
             ),
@@ -190,8 +187,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 totalLive = 1,
                 totalDead = 1,
                 totalExisting = 0,
-                mortalityRate = 50,
-                cumulativeDead = 1,
                 permanentLive = 1,
             ),
             ObservedPlotSpeciesTotalsRecord(
@@ -203,8 +198,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 totalLive = 1,
                 totalDead = 0,
                 totalExisting = 0,
-                mortalityRate = 0,
-                cumulativeDead = 0,
                 permanentLive = 1,
                 survivalRate = (1 * 100.0 / 10).roundToInt(),
             ),
@@ -217,8 +210,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 totalLive = 1,
                 totalDead = 1,
                 totalExisting = 0,
-                mortalityRate = 67,
-                cumulativeDead = 2,
                 permanentLive = 1,
             ),
         )
@@ -235,20 +226,12 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             expectedPlotsBeforeMerge[0].apply {
               totalLive = 2
               totalDead = 1
-              cumulativeDead = 1
               permanentLive = 2
-              mortalityRate = 33
               survivalRate = (2 * 100.0 / 10).roundToInt()
             },
             // expectedPlotsBeforeMerge[1] should be deleted
-            expectedPlotsBeforeMerge[2].apply {
-              cumulativeDead = 1
-              mortalityRate = 50
-            },
-            expectedPlotsBeforeMerge[3].apply {
-              cumulativeDead = 1
-              mortalityRate = 50
-            },
+            expectedPlotsBeforeMerge[2],
+            expectedPlotsBeforeMerge[3],
         )
 
     assertTableEquals(expectedPlotsAfterMerge, "After merge")
@@ -308,8 +291,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 totalLive = 1,
                 totalDead = 0,
                 totalExisting = 0,
-                mortalityRate = null,
-                cumulativeDead = 0,
                 permanentLive = 0,
             ),
             ObservedPlotSpeciesTotalsRecord(
@@ -321,8 +302,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
                 totalLive = 1,
                 totalDead = 1,
                 totalExisting = 0,
-                mortalityRate = null,
-                cumulativeDead = 0,
                 permanentLive = 0,
             ),
         )
@@ -361,8 +340,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           totalLive = totalLive,
           totalDead = totalDead,
           totalExisting = totalExisting,
-          mortalityRate = mortalityRate,
-          cumulativeDead = cumulativeDead,
           permanentLive = permanentLive,
           survivalRate = survivalRate,
       )
@@ -377,8 +354,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           totalLive = totalLive,
           totalDead = totalDead,
           totalExisting = totalExisting,
-          mortalityRate = mortalityRate,
-          cumulativeDead = cumulativeDead,
           permanentLive = permanentLive,
           survivalRate = survivalRate,
       )
@@ -395,8 +370,6 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
           totalLive = totalLive,
           totalDead = totalDead,
           totalExisting = totalExisting,
-          mortalityRate = mortalityRate,
-          cumulativeDead = cumulativeDead,
           permanentLive = permanentLive,
           survivalRate = survivalRate,
       )

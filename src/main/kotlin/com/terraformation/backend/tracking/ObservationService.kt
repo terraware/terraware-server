@@ -174,7 +174,6 @@ class ObservationService(
             }
           }
 
-          observationStore.populateCumulativeDead(observationId)
           val startedObservation = observationStore.recordObservationStart(observationId)
 
           eventPublisher.publishEvent(ObservationStartedEvent(startedObservation))
