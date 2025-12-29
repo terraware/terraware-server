@@ -608,12 +608,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>quarterly_report_has_quarter</td>
-                                    <td>(((report_frequency_id &#61; 1) AND (report_quarter_id IS NOT NULL) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM start_date)) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM end_date))) OR ((report_frequency_id &lt;&gt; 1) AND (report_quarter_id IS NULL)))</td>
-                                </tr>
-                                <tr>
                                     <td>reports_check</td>
                                     <td>(end_date &gt; start_date)</td>
+                                </tr>
+                                <tr>
+                                    <td>quarterly_report_has_quarter</td>
+                                    <td>(((report_frequency_id &#61; 1) AND (report_quarter_id IS NOT NULL) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM start_date)) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM end_date))) OR ((report_frequency_id &lt;&gt; 1) AND (report_quarter_id IS NULL)))</td>
                                 </tr>
                                 <tr>
                                     <td>submitted_status</td>
