@@ -149,11 +149,30 @@ data class ZoneT0DataPayload(
       )
 }
 
+data class StratumT0DataPayload(
+    val stratumId: StratumId,
+    val densityData: List<SpeciesDensityPayload> = emptyList(),
+) {
+  constructor(
+      model: StratumT0TempDataModel
+  ) : this(
+      stratumId = model.stratumId,
+      densityData = model.densityData.map { SpeciesDensityPayload(it) },
+  )
+
+  fun toModel() =
+      StratumT0TempDataModel(
+          stratumId = stratumId,
+          densityData = densityData.map { it.toModel() },
+      )
+}
+
 data class SiteT0DataResponsePayload(
     val plantingSiteId: PlantingSiteId,
     val survivalRateIncludesTempPlots: Boolean = false,
     val plots: List<PlotT0DataPayload> = emptyList(),
     val zones: List<ZoneT0DataPayload> = emptyList(),
+    val strata: List<StratumT0DataPayload> = emptyList(),
 ) {
   constructor(
       model: SiteT0DataModel
@@ -162,6 +181,7 @@ data class SiteT0DataResponsePayload(
       survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
       plots = model.plots.map { PlotT0DataPayload(it) },
       zones = model.strata.map { ZoneT0DataPayload(it) },
+      strata = model.strata.map { StratumT0DataPayload(it) },
   )
 }
 

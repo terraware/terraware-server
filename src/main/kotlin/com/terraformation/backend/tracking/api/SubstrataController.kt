@@ -28,7 +28,7 @@ class SubstrataController(
     private val plantingSiteStore: PlantingSiteStore,
     private val speciesStore: SpeciesStore,
 ) {
-  @GetMapping("/subzones/{id}/species")
+  @GetMapping("/subzones/{id}/species", "/substrata/{id}/species")
   @Operation(
       summary = "Gets a list of the species that may have been planted in a substratum.",
       description =

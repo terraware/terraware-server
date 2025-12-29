@@ -51,6 +51,7 @@ class DeliveriesController(
   }
 }
 
+// response payload
 data class PlantingPayload(
     val id: PlantingId,
     @Schema(description = "If type is \"Reassignment To\", the reassignment notes, if any.")
@@ -61,7 +62,7 @@ data class PlantingPayload(
                 "will be negative."
     )
     val numPlants: Int,
-    val plantingSubzoneId: SubstratumId?,
+    val substratumId: SubstratumId?,
     val speciesId: SpeciesId,
     val type: PlantingType,
 ) {
@@ -71,12 +72,17 @@ data class PlantingPayload(
       id = model.id,
       notes = model.notes,
       numPlants = model.numPlants,
-      plantingSubzoneId = model.substratumId,
+      substratumId = model.substratumId,
       speciesId = model.speciesId,
       type = model.type,
   )
+
+  @Deprecated("Use substratumId instead.")
+  val plantingSubzoneId: SubstratumId?
+    get() = substratumId
 }
 
+// response payload
 data class DeliveryPayload(
     val id: DeliveryId,
     val plantings: List<PlantingPayload>,
@@ -93,13 +99,14 @@ data class DeliveryPayload(
   )
 }
 
+// request payload
 data class ReassignmentPayload(
     val fromPlantingId: PlantingId,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(1)
     @Schema(
         description =
-            "Number of plants to reassign from the planting's original subzone to the new one. " +
+            "Number of plants to reassign from the planting's original substratum to the new one. " +
                 "Must be less than or equal to the number of plants in the original planting."
     )
     val numPlants: Int,

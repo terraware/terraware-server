@@ -767,6 +767,7 @@ class ObservationsController(
   }
 }
 
+// response payload
 data class ObservationPayload(
     @Schema(description = "Date this observation is scheduled to end.") //
     val endDate: LocalDate,
@@ -797,7 +798,7 @@ data class ObservationPayload(
                     "If specific substrata were requested for this observation, their IDs."
             )
     )
-    val requestedSubzoneIds: Set<SubstratumId>?,
+    val requestedSubstratumIds: Set<SubstratumId>?,
     @Schema(description = "Date this observation started.") //
     val startDate: LocalDate,
     val state: ObservationState,
@@ -817,11 +818,15 @@ data class ObservationPayload(
       plantingSiteHistoryId = model.plantingSiteHistoryId,
       plantingSiteId = model.plantingSiteId,
       plantingSiteName = plantingSiteName,
-      requestedSubzoneIds = model.requestedSubstratumIds.ifEmpty { null },
+      requestedSubstratumIds = model.requestedSubstratumIds.ifEmpty { null },
       startDate = model.startDate,
       state = model.state,
       type = model.observationType,
   )
+
+  @Deprecated("Use requestedSubstratumIds instead.")
+  val requestedSubzoneIds: Set<SubstratumId>?
+    get() = requestedSubstratumIds
 }
 
 data class GetObservationResponsePayload(val observation: ObservationPayload) :
@@ -843,6 +848,7 @@ data class ListObservationsResponsePayload(
     val totalUnclaimedPlots: Int,
 ) : SuccessResponsePayload
 
+// response payload
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class AssignedPlotPayload(
     val boundary: Geometry,
@@ -856,9 +862,9 @@ data class AssignedPlotPayload(
     val isFirstObservation: Boolean,
     val isPermanent: Boolean,
     val observationId: ObservationId,
-    val plantingSubzoneId: SubstratumId?,
-    val plantingSubzoneName: String,
-    val plantingZoneName: String,
+    val substratumId: SubstratumId?,
+    val substratumName: String,
+    val stratumName: String,
     val plotId: MonitoringPlotId,
     val plotName: String,
     val plotNumber: Long,
@@ -878,14 +884,26 @@ data class AssignedPlotPayload(
       isFirstObservation = details.isFirstObservation,
       isPermanent = details.model.isPermanent,
       observationId = details.model.observationId,
-      plantingSubzoneId = details.substratumId,
-      plantingSubzoneName = details.substratumName,
-      plantingZoneName = details.stratumName,
+      substratumId = details.substratumId,
+      substratumName = details.substratumName,
+      stratumName = details.stratumName,
       plotId = details.model.monitoringPlotId,
       plotName = "${details.plotNumber}",
       plotNumber = details.plotNumber,
       sizeMeters = details.sizeMeters,
   )
+
+  @Deprecated("Use substratumId instead")
+  val plantingSubzoneId: SubstratumId?
+    get() = substratumId
+
+  @Deprecated("Use substratumName instead")
+  val plantingSubzoneName: String
+    get() = substratumName
+
+  @Deprecated("Use stratumName instead")
+  val plantingZoneName: String
+    get() = stratumName
 }
 
 data class RecordedPlantPayload(
