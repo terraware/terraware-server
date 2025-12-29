@@ -30,6 +30,10 @@ class PlantingsTable(private val tables: SearchTables) : SearchTable() {
               "plantingSubzone",
               PLANTINGS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
+          substrata.asSingleValueSublist(
+              "substratum",
+              PLANTINGS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+          ),
       )
     }
   }

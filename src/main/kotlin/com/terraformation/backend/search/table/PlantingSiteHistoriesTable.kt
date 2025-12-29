@@ -32,6 +32,10 @@ class PlantingSiteHistoriesTable(private val tables: SearchTables) : SearchTable
               "plantingZoneHistories",
               PLANTING_SITE_HISTORIES.ID.eq(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID),
           ),
+          stratumHistories.asMultiValueSublist(
+              "stratumHistories",
+              PLANTING_SITE_HISTORIES.ID.eq(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID),
+          ),
       )
     }
   }

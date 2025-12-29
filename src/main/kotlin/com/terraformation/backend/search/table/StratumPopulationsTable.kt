@@ -27,6 +27,10 @@ class StratumPopulationsTable(private val tables: SearchTables) : SearchTable() 
               "plantingZone",
               STRATUM_POPULATIONS.STRATUM_ID.eq(STRATA.ID),
           ),
+          strata.asSingleValueSublist(
+              "stratum",
+              STRATUM_POPULATIONS.STRATUM_ID.eq(STRATA.ID),
+          ),
       )
     }
   }

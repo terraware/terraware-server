@@ -27,6 +27,10 @@ class SubstratumPopulationsTable(private val tables: SearchTables) : SearchTable
               "plantingSubzone",
               SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
+          substrata.asSingleValueSublist(
+              "substratum",
+              SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+          ),
       )
     }
   }

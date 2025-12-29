@@ -39,6 +39,10 @@ class MonitoringPlotsTable(tables: SearchTables) : SearchTable() {
               "plantingSubzone",
               MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
           ),
+          substrata.asSingleValueSublist(
+              "substratum",
+              MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID),
+          ),
       )
     }
   }

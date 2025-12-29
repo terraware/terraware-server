@@ -28,8 +28,16 @@ class StratumHistoriesTable(private val tables: SearchTables) : SearchTable() {
               "plantingZone",
               STRATUM_HISTORIES.STRATUM_ID.eq(STRATA.ID),
           ),
+          strata.asSingleValueSublist(
+              "stratum",
+              STRATUM_HISTORIES.STRATUM_ID.eq(STRATA.ID),
+          ),
           substratumHistories.asMultiValueSublist(
               "plantingSubzoneHistories",
+              STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID),
+          ),
+          substratumHistories.asMultiValueSublist(
+              "substratumHistories",
               STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID),
           ),
       )
