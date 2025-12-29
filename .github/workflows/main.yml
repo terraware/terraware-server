@@ -32,7 +32,7 @@ jobs:
       name: ${{ (github.ref == 'refs/heads/main' && 'staging') || (startsWith(github.ref, 'refs/tags/v2') && 'prod') || null }}
       url: ${{ (github.ref == 'refs/heads/main' && 'https://staging.terraware.io/') || (startsWith(github.ref, 'refs/tags/v2') && 'https://terraware.io/') || null }}
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24-8core
 
     steps:
     - uses: actions/checkout@v6
