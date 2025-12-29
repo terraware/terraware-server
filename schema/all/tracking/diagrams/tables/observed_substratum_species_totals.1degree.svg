@@ -14,7 +14,7 @@
 <g id="node1" class="node">
 <title>observed_substratum_species_totals</title>
 <g id="a_node1"><a xlink:href="../../tables/observed_substratum_species_totals.html" xlink:title="observed_substratum_species_totals" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="275,-45 275,-353 612,-353 612,-45 275,-45"/>
+<polygon fill="#ffffff" stroke="transparent" points="275,-89 275,-353 612,-353 612,-89 275,-89"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="277.5,-329 277.5,-351 610.5,-351 610.5,-329 277.5,-329"/>
 <polygon fill="none" stroke="black" points="277.5,-329 277.5,-351 610.5,-351 610.5,-329 277.5,-329"/>
 <text text-anchor="start" x="282.5" y="-338.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observed_substratum_species_totals</text>
@@ -60,31 +60,23 @@
 <polygon fill="none" stroke="black" points="516.5,-153 516.5,-175 610.5,-175 610.5,-153 516.5,-153"/>
 <text text-anchor="start" x="519.5" y="-161.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="277.5,-131 277.5,-153 516.5,-153 516.5,-131 277.5,-131"/>
-<text text-anchor="start" x="297.5" y="-139.2" font-family="Helvetica,sans-Serif" font-size="11.00">mortality_rate</text>
+<text text-anchor="start" x="297.5" y="-139.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_live</text>
 <polygon fill="none" stroke="black" points="516.5,-131 516.5,-153 610.5,-153 610.5,-131 516.5,-131"/>
 <text text-anchor="start" x="519.5" y="-139.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="none" stroke="black" points="277.5,-109 277.5,-131 516.5,-131 516.5,-109 277.5,-109"/>
-<text text-anchor="start" x="297.5" y="-117.2" font-family="Helvetica,sans-Serif" font-size="11.00">cumulative_dead</text>
+<text text-anchor="start" x="297.5" y="-117.2" font-family="Helvetica,sans-Serif" font-size="11.00">survival_rate</text>
 <polygon fill="none" stroke="black" points="516.5,-109 516.5,-131 610.5,-131 610.5,-109 516.5,-109"/>
 <text text-anchor="start" x="519.5" y="-117.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="none" stroke="black" points="277.5,-87 277.5,-109 516.5,-109 516.5,-87 277.5,-87"/>
-<text text-anchor="start" x="297.5" y="-95.2" font-family="Helvetica,sans-Serif" font-size="11.00">permanent_live</text>
-<polygon fill="none" stroke="black" points="516.5,-87 516.5,-109 610.5,-109 610.5,-87 516.5,-87"/>
-<text text-anchor="start" x="519.5" y="-95.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="none" stroke="black" points="277.5,-65 277.5,-87 516.5,-87 516.5,-65 277.5,-65"/>
-<text text-anchor="start" x="297.5" y="-73.2" font-family="Helvetica,sans-Serif" font-size="11.00">survival_rate</text>
-<polygon fill="none" stroke="black" points="516.5,-65 516.5,-87 610.5,-87 610.5,-65 516.5,-65"/>
-<text text-anchor="start" x="519.5" y="-73.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="#ffffff" stroke="transparent" points="277.5,-47 277.5,-65 401.5,-65 401.5,-47 277.5,-47"/>
-<polygon fill="none" stroke="black" points="277.5,-47 277.5,-65 401.5,-65 401.5,-47 277.5,-47"/>
-<text text-anchor="start" x="280.5" y="-53.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="401.5,-47 401.5,-65 516.5,-65 516.5,-47 401.5,-47"/>
-<polygon fill="none" stroke="black" points="401.5,-47 401.5,-65 516.5,-65 516.5,-47 401.5,-47"/>
-<text text-anchor="start" x="506.5" y="-53.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="516.5,-47 516.5,-65 610.5,-65 610.5,-47 516.5,-47"/>
-<polygon fill="none" stroke="black" points="516.5,-47 516.5,-65 610.5,-65 610.5,-47 516.5,-47"/>
-<text text-anchor="start" x="591.5" y="-53.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="276,-46 276,-352 611,-352 611,-46 276,-46"/>
+<polygon fill="#ffffff" stroke="transparent" points="277.5,-91 277.5,-109 401.5,-109 401.5,-91 277.5,-91"/>
+<polygon fill="none" stroke="black" points="277.5,-91 277.5,-109 401.5,-109 401.5,-91 277.5,-91"/>
+<text text-anchor="start" x="280.5" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="401.5,-91 401.5,-109 516.5,-109 516.5,-91 401.5,-91"/>
+<polygon fill="none" stroke="black" points="401.5,-91 401.5,-109 516.5,-109 516.5,-91 401.5,-91"/>
+<text text-anchor="start" x="506.5" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="516.5,-91 516.5,-109 610.5,-109 610.5,-91 516.5,-91"/>
+<polygon fill="none" stroke="black" points="516.5,-91 516.5,-109 610.5,-109 610.5,-91 516.5,-91"/>
+<text text-anchor="start" x="591.5" y="-97.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="276,-90 276,-352 611,-352 611,-90 276,-90"/>
 </a>
 </g>
 </g>
@@ -195,9 +187,9 @@
 <!-- observed_substratum_species_totals&#45;&gt;public.species -->
 <g id="edge3" class="edge">
 <title>observed_substratum_species_totals:w&#45;&gt;public.species:e</title>
-<path fill="none" stroke="black" d="M262.33,-269.95C247.92,-258.86 255.77,-227.71 234,-211 220.65,-200.75 204.49,-193.02 188.53,-187.23"/>
-<polygon fill="black" stroke="black" points="268.81,-271.8 275.51,-277.46 272.65,-272.9 276.5,-274 276.5,-274 276.5,-274 272.65,-272.9 277.49,-270.54 268.81,-271.8 268.81,-271.8"/>
-<ellipse fill="none" stroke="black" cx="265.73" cy="-270.92" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M262.22,-269.87C247.77,-258.58 256.01,-226.89 234,-210 220.68,-199.78 204.54,-192.16 188.58,-186.5"/>
+<polygon fill="black" stroke="black" points="268.81,-271.78 275.5,-277.46 272.66,-272.89 276.5,-274 276.5,-274 276.5,-274 272.66,-272.89 277.5,-270.54 268.81,-271.78 268.81,-271.78"/>
+<ellipse fill="none" stroke="black" cx="265.74" cy="-270.89" rx="3.2" ry="3.2"/>
 </g>
 <!-- substrata -->
 <g id="node5" class="node">

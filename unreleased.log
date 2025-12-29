@@ -1,3 +1,4 @@
+6d7bd832d71 SW-7807 Remove mortality rates (#3710)
 74b0e2ad296 Remove unused observation test setup function (#3709)
 f09ba3920ec SW-7807 Stop calculating aggregate mortality rates (#3708)
 34a882728d4 SW-7807 Remove mortality rates from observation API (#3707)
