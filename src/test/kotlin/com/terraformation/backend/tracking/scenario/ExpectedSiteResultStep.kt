@@ -104,7 +104,13 @@ class ExpectedSiteResultStep(
         }
       }
 
-      private fun resultForPlot(number: Long) =
+      /**
+       * Returns the actual result for the monitoring plot of the given number.
+       *
+       * @throws IllegalArgumentException There weren't any results for the requested plot in this
+       *   observation.
+       */
+      private fun resultForPlot(number: Long): ObservationMonitoringPlotResultsModel =
           actualResult.monitoringPlots.firstOrNull { it.monitoringPlotNumber == number }
               ?: throw IllegalArgumentException(
                   "No result for $name plot $number in observation $observation"
