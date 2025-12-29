@@ -894,27 +894,130 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   @Test
   fun `survival rate with temp plots is updated when t0 stratum density changes`() {
-    val newPlantingSiteId =
-        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
-
-    every { user.canReadPlantingSite(newPlantingSiteId) } returns true
-
-    runSurvivalRateScenario(
-        "/tracking/observation/SurvivalRateT0ZoneDensityChange",
-        numSpecies = 2,
-    ) {
-      val species1 = speciesIds["Species 0"]!!
-      val stratum1 = stratumIds["Zone1"]!!
-
-      with(STRATUM_T0_TEMP_DENSITIES) {
-        dslContext
-            .update(this)
-            .set(STRATUM_DENSITY, BigDecimal.valueOf(20).toPlantsPerHectare())
-            .where(STRATUM_ID.eq(stratum1))
-            .and(SPECIES_ID.eq(species1))
-            .execute()
+    scenario {
+      siteCreated(survivalRateIncludesTempPlots = true) {
+        stratum(1) {
+          substratum(1) {
+            plot(111)
+            plot(112)
+          }
+        }
+        stratum(2) {
+          substratum(2) {
+            plot(211)
+            plot(212)
+          }
+        }
       }
-      observationStore.recalculateSurvivalRates(stratum1)
+
+      t0DensitySet {
+        plot(211) {
+          species(0, density = 50)
+          species(1, density = 60)
+        }
+        stratum(1) {
+          species(0, density = 40)
+          species(1, density = 80)
+        }
+        stratum(2) {
+          species(0, density = 120)
+          species(1, density = 150)
+        }
+      }
+
+      observation(1) {
+        plot(111, isPermanent = false) {
+          species(0, live = 9)
+          species(1, live = 20)
+        }
+        plot(112, isPermanent = false) {
+          species(0, live = 30)
+          species(1, live = 39)
+        }
+        plot(211, isPermanent = true) {
+          species(0, live = 55)
+          species(1, live = 55)
+        }
+        plot(212, isPermanent = false) {
+          species(0, live = 61)
+          species(1, live = 78)
+        }
+      }
+
+      val baseline =
+          expectResults(1) {
+            survivalRate(56)
+            species(0, survivalRate = 62)
+            species(1, survivalRate = 52)
+            stratum(1) {
+              survivalRate(41)
+              species(0, survivalRate = 49)
+              species(1, survivalRate = 37)
+              substratum(1) {
+                survivalRate(41)
+                species(0, survivalRate = 49)
+                species(1, survivalRate = 37)
+                plot(111) {
+                  survivalRate(24)
+                  species(0, survivalRate = 23)
+                  species(1, survivalRate = 25)
+                }
+                plot(112) {
+                  survivalRate(58)
+                  species(0, survivalRate = 75)
+                  species(1, survivalRate = 49)
+                }
+              }
+            }
+            stratum(2) {
+              survivalRate(66)
+              species(0, survivalRate = 68)
+              species(1, survivalRate = 63)
+              substratum(2) {
+                survivalRate(66)
+                species(0, survivalRate = 68)
+                species(1, survivalRate = 63)
+                plot(211) {
+                  survivalRate(100)
+                  species(0, survivalRate = 110)
+                  species(1, survivalRate = 92)
+                }
+                plot(212) {
+                  survivalRate(51)
+                  species(0, survivalRate = 51)
+                  species(1, survivalRate = 52)
+                }
+              }
+            }
+          }
+
+      t0DensitySet {
+        stratum(1) {
+          species(0, density = 20) //
+        }
+      }
+
+      // Only species 0's results should change, and only in stratum 1.
+      expectResults(1, baseline = baseline) {
+        survivalRate(60)
+        species(0, survivalRate = 74)
+        stratum(1) {
+          survivalRate(49)
+          species(0, survivalRate = 98)
+          substratum(1) {
+            survivalRate(49)
+            species(0, survivalRate = 98)
+            plot(111) {
+              survivalRate(29)
+              species(0, survivalRate = 45)
+            }
+            plot(112) {
+              survivalRate(69)
+              species(0, survivalRate = 150)
+            }
+          }
+        }
+      }
     }
   }
 
