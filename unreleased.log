@@ -1,3 +1,4 @@
+f09ba3920ec SW-7807 Stop calculating aggregate mortality rates (#3708)
 34a882728d4 SW-7807 Remove mortality rates from observation API (#3707)
 bae88cab7f2 SW-7857 Use web app's internal role name translations (#3771)
 e9de077d18a SW-7899 Only copy known species t0 densities (#3764)
