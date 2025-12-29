@@ -1,3 +1,4 @@
+04819476d93 SW-7828 Rename zone->strata in search table classes (#3759)
 6d3f6a9bae1 SW-7783 Add site geometry editing support to test DSL (#3769)
 43a1c54d760 SW-7783 Convert t0 stratum density test to DSL (#3768)
 d98b5fd6d47 SW-7783 Add DSL for observation test scenarios (#3767)
