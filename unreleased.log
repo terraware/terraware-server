@@ -1,3 +1,5 @@
+5ab8d6621d7 SW-7807 Remove mortality rate mention from admin UI (#3711)
+6d3961ad0c8 Use 8-core GitHub Actions runner for main workflow (#3772)
 6d7bd832d71 SW-7807 Remove mortality rates (#3710)
 74b0e2ad296 Remove unused observation test setup function (#3709)
 f09ba3920ec SW-7807 Stop calculating aggregate mortality rates (#3708)
