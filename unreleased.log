@@ -1,3 +1,4 @@
+ed915e0486d SW-7829 Rename zone->strata in api response payloads (#3774)
 a09588b6d21 Update dependency html-minifier-next to v4.16.3 (#3765)
 982cf9c70f7 SW-7828 Rename zone->strata in search sublists (#3773)
 04819476d93 SW-7828 Rename zone->strata in search table classes (#3759)
