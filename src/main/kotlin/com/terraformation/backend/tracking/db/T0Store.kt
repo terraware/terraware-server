@@ -540,6 +540,7 @@ class T0Store(
                     )
                 )
                 .and(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+                .and(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.isNotNull)
                 .and(PLOT_T0_DENSITIES.SPECIES_ID.isNull)
         )
         .execute()
