@@ -285,7 +285,7 @@ data class ObservationSubstratumResultsPayload(
         description =
             "ID of the substratum. Absent if the substratum was deleted after the observation."
     )
-    val plantingSubzoneId: SubstratumId?,
+    val substratumId: SubstratumId?,
     val species: List<ObservationSpeciesResultsPayload>,
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
@@ -313,7 +313,7 @@ data class ObservationSubstratumResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzoneId = model.substratumId,
+      substratumId = model.substratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -385,7 +385,7 @@ data class ObservationStratumResultsPayload(
     @Schema(
         description = "ID of the stratum. Absent if the stratum was deleted after the observation."
     )
-    val plantingZoneId: StratumId?,
+    val stratumId: StratumId?,
     val species: List<ObservationSpeciesResultsPayload>,
     @Schema(
         description =
@@ -418,7 +418,7 @@ data class ObservationStratumResultsPayload(
       name = model.name,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingZoneId = model.stratumId,
+      stratumId = model.stratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -459,6 +459,7 @@ data class ObservationResultsPayload(
     val plantingDensityStdDev: Int?,
     val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
+    @Schema(description = "Use strata instead", deprecated = true)
     val plantingZones: List<ObservationPlantingZoneResultsPayload>,
     val species: List<ObservationSpeciesResultsPayload>,
     val startDate: LocalDate,
@@ -500,7 +501,47 @@ data class ObservationResultsPayload(
   )
 }
 
+@Schema(description = "Use StratumObservationSummaryPayload instead", deprecated = true)
 data class PlantingZoneObservationSummaryPayload(
+    val areaHa: BigDecimal,
+    val earliestObservationTime: Instant,
+    val estimatedPlants: Int?,
+    val latestObservationTime: Instant,
+    val plantingDensity: Int,
+    val plantingDensityStdDev: Int?,
+    val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
+    val plantingZoneId: StratumId,
+    val species: List<ObservationSpeciesResultsPayload>,
+    val substrata: List<ObservationSubstratumResultsPayload>,
+    val survivalRate: Int?,
+    val survivalRateStdDev: Int?,
+    val totalPlants: Int,
+    val totalSpecies: Int,
+) {
+  constructor(
+      model: ObservationStratumRollupResultsModel
+  ) : this(
+      areaHa = model.areaHa,
+      earliestObservationTime = model.earliestCompletedTime,
+      estimatedPlants = model.estimatedPlants,
+      latestObservationTime = model.latestCompletedTime,
+      plantingDensity = model.plantingDensity,
+      plantingDensityStdDev = model.plantingDensityStdDev,
+      plantingSubzones = model.substrata.map { ObservationPlantingSubzoneResultsPayload(it) },
+      plantingZoneId = model.stratumId,
+      species =
+          model.species
+              .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              .map { ObservationSpeciesResultsPayload(it) },
+      substrata = model.substrata.map { ObservationSubstratumResultsPayload(it) },
+      survivalRate = model.survivalRate,
+      survivalRateStdDev = model.survivalRateStdDev,
+      totalPlants = model.totalPlants,
+      totalSpecies = model.totalSpecies,
+  )
+}
+
+data class StratumObservationSummaryPayload(
     @Schema(description = "Area of this stratum in hectares.") //
     val areaHa: BigDecimal,
     @Schema(description = "The earliest time of the observations used in this summary.")
@@ -521,9 +562,6 @@ data class PlantingZoneObservationSummaryPayload(
     )
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
-    @Schema(description = "Use substrata instead", deprecated = true)
-    val plantingSubzones: List<ObservationPlantingSubzoneResultsPayload>,
-    val plantingZoneId: StratumId,
     @Schema(
         description =
             "Combined list of observed species and their statuses from the latest observation of each substratum."
@@ -560,8 +598,6 @@ data class PlantingZoneObservationSummaryPayload(
       latestObservationTime = model.latestCompletedTime,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
-      plantingSubzones = model.substrata.map { ObservationPlantingSubzoneResultsPayload(it) },
-      plantingZoneId = model.stratumId,
       species =
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
@@ -594,12 +630,14 @@ data class PlantingSiteObservationSummaryPayload(
     val plantingDensity: Int,
     val plantingDensityStdDev: Int?,
     val plantingSiteId: PlantingSiteId,
+    @Schema(description = "Use strata instead", deprecated = true)
     val plantingZones: List<PlantingZoneObservationSummaryPayload>,
     @Schema(
         description =
             "Combined list of observed species and their statuses from the latest observation of each substratum within each stratum."
     )
     val species: List<ObservationSpeciesResultsPayload>,
+    val strata: List<StratumObservationSummaryPayload>,
     @Schema(
         description =
             "Percentage of plants of all species in this site's permanent monitoring plots that " +
@@ -634,6 +672,7 @@ data class PlantingSiteObservationSummaryPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      strata = model.strata.map { StratumObservationSummaryPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
       totalPlants = model.totalPlants,

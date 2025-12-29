@@ -265,7 +265,39 @@ data class MonitoringPlotHistoryPayload(
   )
 }
 
+// response payload
+@Schema(description = "Use SubstratumResponsePayload instead", deprecated = true)
 data class PlantingSubzonePayload(
+    val areaHa: BigDecimal,
+    val boundary: MultiPolygon,
+    val fullName: String,
+    val id: SubstratumId,
+    val latestObservationCompletedTime: Instant?,
+    val latestObservationId: ObservationId?,
+    val monitoringPlots: List<MonitoringPlotPayload>,
+    val name: String,
+    val observedTime: Instant?,
+    val plantingCompleted: Boolean,
+    val plantingCompletedTime: Instant?,
+) {
+  constructor(
+      model: ExistingSubstratumModel
+  ) : this(
+      areaHa = model.areaHa,
+      boundary = model.boundary,
+      fullName = model.fullName,
+      id = model.id,
+      latestObservationCompletedTime = model.latestObservationCompletedTime,
+      latestObservationId = model.latestObservationId,
+      monitoringPlots = model.monitoringPlots.map { MonitoringPlotPayload(it) },
+      name = model.name,
+      observedTime = model.observedTime,
+      plantingCompleted = model.plantingCompletedTime != null,
+      plantingCompletedTime = model.plantingCompletedTime,
+  )
+}
+
+data class SubstratumResponsePayload(
     @Schema(description = "Area of substratum in hectares.") //
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
@@ -298,15 +330,11 @@ data class PlantingSubzonePayload(
   )
 }
 
+// response payload
+@Schema(description = "Use StratumResponsePayload instead", deprecated = true)
 data class PlantingZonePayload(
-    @Schema(description = "Area of stratum in hectares.") //
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
-    @Schema(
-        description =
-            "When the boundary of this stratum was last modified. Modifications of other " +
-                "attributes of the stratum do not cause this timestamp to change."
-    )
     val boundaryModifiedTime: Instant,
     val id: StratumId,
     val latestObservationCompletedTime: Instant?,
@@ -334,6 +362,42 @@ data class PlantingZonePayload(
   )
 }
 
+data class StratumResponsePayload(
+    @Schema(description = "Area of stratum in hectares.") //
+    val areaHa: BigDecimal,
+    val boundary: MultiPolygon,
+    @Schema(
+        description =
+            "When the boundary of this stratum was last modified. Modifications of other " +
+                "attributes of the stratum do not cause this timestamp to change."
+    )
+    val boundaryModifiedTime: Instant,
+    val id: StratumId,
+    val latestObservationCompletedTime: Instant?,
+    val latestObservationId: ObservationId?,
+    val name: String,
+    val numPermanentPlots: Int,
+    val numTemporaryPlots: Int,
+    val substrata: List<SubstratumResponsePayload>,
+    val targetPlantingDensity: BigDecimal,
+) {
+  constructor(
+      model: ExistingStratumModel
+  ) : this(
+      model.areaHa,
+      model.boundary,
+      model.boundaryModifiedTime,
+      model.id,
+      latestObservationCompletedTime = model.latestObservationCompletedTime,
+      latestObservationId = model.latestObservationId,
+      model.name,
+      model.numPermanentPlots,
+      model.numTemporaryPlots,
+      model.substrata.map { SubstratumResponsePayload(it) },
+      model.targetPlantingDensity,
+  )
+}
+
 data class PlantingSeasonPayload(
     val endDate: LocalDate,
     val id: PlantingSeasonId,
@@ -348,6 +412,7 @@ data class PlantingSeasonPayload(
   )
 }
 
+// response payload
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class PlantingSitePayload(
     val adHocPlots: List<MonitoringPlotPayload>,
@@ -363,8 +428,10 @@ data class PlantingSitePayload(
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<PlantingSeasonPayload>,
+    @Schema(description = "Use strata instead", deprecated = true)
     val plantingZones: List<PlantingZonePayload>?,
     val projectId: ProjectId? = null,
+    val strata: List<StratumResponsePayload>?,
     val survivalRateIncludesTempPlots: Boolean?,
     val timeZone: ZoneId?,
 ) {
@@ -385,11 +452,14 @@ data class PlantingSitePayload(
       plantingSeasons = model.plantingSeasons.map { PlantingSeasonPayload(it) },
       plantingZones = model.strata.map { PlantingZonePayload(it) },
       projectId = model.projectId,
+      strata = model.strata.map { StratumResponsePayload(it) },
       survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
       timeZone = model.timeZone,
   )
 }
 
+// response payload
+@Schema(description = "Use SubstratumHistoryResponsePayload instead", deprecated = true)
 data class PlantingSubzoneHistoryPayload(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
@@ -397,7 +467,6 @@ data class PlantingSubzoneHistoryPayload(
     val id: SubstratumHistoryId,
     val monitoringPlots: List<MonitoringPlotHistoryPayload>,
     val name: String,
-    @Schema(description = "ID of substratum if it exists in the current version of the site.")
     val plantingSubzoneId: SubstratumId?,
 ) {
   constructor(
@@ -413,13 +482,37 @@ data class PlantingSubzoneHistoryPayload(
   )
 }
 
+data class SubstratumHistoryResponsePayload(
+    val areaHa: BigDecimal,
+    val boundary: MultiPolygon,
+    val fullName: String,
+    val id: SubstratumHistoryId,
+    val monitoringPlots: List<MonitoringPlotHistoryPayload>,
+    val name: String,
+    @Schema(description = "ID of substratum if it exists in the current version of the site.")
+    val substratumId: SubstratumId?,
+) {
+  constructor(
+      model: SubstratumHistoryModel
+  ) : this(
+      areaHa = model.areaHa,
+      boundary = model.boundary,
+      fullName = model.fullName,
+      id = model.id,
+      monitoringPlots = model.monitoringPlots.map { MonitoringPlotHistoryPayload(it) },
+      name = model.name,
+      substratumId = model.substratumId,
+  )
+}
+
+// response payload
+@Schema(description = "Use StratumHistoryResponsePayload instead", deprecated = true)
 data class PlantingZoneHistoryPayload(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
     val id: StratumHistoryId,
     val name: String,
     val plantingSubzones: List<PlantingSubzoneHistoryPayload>,
-    @Schema(description = "ID of stratum if it exists in the current version of the site.")
     val plantingZoneId: StratumId?,
 ) {
   constructor(
@@ -434,6 +527,28 @@ data class PlantingZoneHistoryPayload(
   )
 }
 
+data class StratumHistoryResponsePayload(
+    val areaHa: BigDecimal,
+    val boundary: MultiPolygon,
+    val id: StratumHistoryId,
+    val name: String,
+    val substrata: List<SubstratumHistoryResponsePayload>,
+    @Schema(description = "ID of stratum if it exists in the current version of the site.")
+    val stratumId: StratumId?,
+) {
+  constructor(
+      model: StratumHistoryModel
+  ) : this(
+      areaHa = model.areaHa,
+      boundary = model.boundary,
+      id = model.id,
+      name = model.name,
+      substrata = model.substrata.map { SubstratumHistoryResponsePayload(it) },
+      stratumId = model.stratumId,
+  )
+}
+
+// response payload
 data class PlantingSiteHistoryPayload(
     val areaHa: BigDecimal?,
     val boundary: MultiPolygon,
@@ -441,7 +556,9 @@ data class PlantingSiteHistoryPayload(
     val exclusion: MultiPolygon? = null,
     val id: PlantingSiteHistoryId,
     val plantingSiteId: PlantingSiteId,
+    @Schema(description = "Use strata instead", deprecated = true)
     val plantingZones: List<PlantingZoneHistoryPayload>,
+    val strata: List<StratumHistoryResponsePayload>,
 ) {
   constructor(
       model: PlantingSiteHistoryModel
@@ -453,9 +570,12 @@ data class PlantingSiteHistoryPayload(
       id = model.id,
       plantingSiteId = model.plantingSiteId,
       plantingZones = model.strata.map { PlantingZoneHistoryPayload(it) },
+      strata = model.strata.map { StratumHistoryResponsePayload(it) },
   )
 }
 
+// response payload
+@Schema(description = "Use SubstratumReportedPlantsResponsePayload instead", deprecated = true)
 data class PlantingSubzoneReportedPlantsPayload(
     val id: SubstratumId,
     val plantsSinceLastObservation: Int,
@@ -464,16 +584,36 @@ data class PlantingSubzoneReportedPlantsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      subzoneTotals: PlantingSiteReportedPlantTotals.Substratum
+      substratumTotals: PlantingSiteReportedPlantTotals.Substratum
   ) : this(
-      id = subzoneTotals.id,
-      plantsSinceLastObservation = subzoneTotals.plantsSinceLastObservation,
-      species = subzoneTotals.species.map { ReportedSpeciesPayload(it) },
-      totalPlants = subzoneTotals.totalPlants,
-      totalSpecies = subzoneTotals.totalSpecies,
+      id = substratumTotals.id,
+      plantsSinceLastObservation = substratumTotals.plantsSinceLastObservation,
+      species = substratumTotals.species.map { ReportedSpeciesPayload(it) },
+      totalPlants = substratumTotals.totalPlants,
+      totalSpecies = substratumTotals.totalSpecies,
   )
 }
 
+data class SubstratumReportedPlantsResponsePayload(
+    val id: SubstratumId,
+    val plantsSinceLastObservation: Int,
+    val species: List<ReportedSpeciesPayload>,
+    val totalPlants: Int,
+    val totalSpecies: Int,
+) {
+  constructor(
+      substratumTotals: PlantingSiteReportedPlantTotals.Substratum
+  ) : this(
+      id = substratumTotals.id,
+      plantsSinceLastObservation = substratumTotals.plantsSinceLastObservation,
+      species = substratumTotals.species.map { ReportedSpeciesPayload(it) },
+      totalPlants = substratumTotals.totalPlants,
+      totalSpecies = substratumTotals.totalSpecies,
+  )
+}
+
+// response payload
+@Schema(description = "Use StratumReportedPlantsResponsePayload instead", deprecated = true)
 data class PlantingZoneReportedPlantsPayload(
     val id: StratumId,
     val plantsSinceLastObservation: Int,
@@ -484,24 +624,49 @@ data class PlantingZoneReportedPlantsPayload(
     val totalSpecies: Int,
 ) {
   constructor(
-      zoneTotals: PlantingSiteReportedPlantTotals.Stratum
+      stratumTotals: PlantingSiteReportedPlantTotals.Stratum
   ) : this(
-      id = zoneTotals.id,
-      plantsSinceLastObservation = zoneTotals.plantsSinceLastObservation,
-      plantingSubzones = zoneTotals.substrata.map { PlantingSubzoneReportedPlantsPayload(it) },
-      progressPercent = zoneTotals.progressPercent,
-      species = zoneTotals.species.map { ReportedSpeciesPayload(it) },
-      totalPlants = zoneTotals.totalPlants,
-      totalSpecies = zoneTotals.totalSpecies,
+      id = stratumTotals.id,
+      plantsSinceLastObservation = stratumTotals.plantsSinceLastObservation,
+      plantingSubzones = stratumTotals.substrata.map { PlantingSubzoneReportedPlantsPayload(it) },
+      progressPercent = stratumTotals.progressPercent,
+      species = stratumTotals.species.map { ReportedSpeciesPayload(it) },
+      totalPlants = stratumTotals.totalPlants,
+      totalSpecies = stratumTotals.totalSpecies,
   )
 }
 
+data class StratumReportedPlantsResponsePayload(
+    val id: StratumId,
+    val plantsSinceLastObservation: Int,
+    val substrata: List<SubstratumReportedPlantsResponsePayload>,
+    val progressPercent: Int,
+    val species: List<ReportedSpeciesPayload>,
+    val totalPlants: Int,
+    val totalSpecies: Int,
+) {
+  constructor(
+      stratumTotals: PlantingSiteReportedPlantTotals.Stratum
+  ) : this(
+      id = stratumTotals.id,
+      plantsSinceLastObservation = stratumTotals.plantsSinceLastObservation,
+      substrata = stratumTotals.substrata.map { SubstratumReportedPlantsResponsePayload(it) },
+      progressPercent = stratumTotals.progressPercent,
+      species = stratumTotals.species.map { ReportedSpeciesPayload(it) },
+      totalPlants = stratumTotals.totalPlants,
+      totalSpecies = stratumTotals.totalSpecies,
+  )
+}
+
+// response payload
 data class PlantingSiteReportedPlantsPayload(
     val id: PlantingSiteId,
+    @Schema(description = "Use strata instead", deprecated = true)
     val plantingZones: List<PlantingZoneReportedPlantsPayload>,
     val plantsSinceLastObservation: Int,
     val progressPercent: Int?,
     val species: List<ReportedSpeciesPayload>,
+    val strata: List<StratumReportedPlantsResponsePayload>,
     val totalPlants: Int,
 ) {
   constructor(
@@ -512,6 +677,7 @@ data class PlantingSiteReportedPlantsPayload(
       plantsSinceLastObservation = totals.plantsSinceLastObservation,
       progressPercent = totals.progressPercent,
       species = totals.species.map { ReportedSpeciesPayload(it) },
+      strata = totals.strata.map { StratumReportedPlantsResponsePayload(it) },
       totalPlants = totals.totalPlants,
   )
 }

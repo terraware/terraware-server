@@ -77,6 +77,7 @@ class DraftPlantingSitesController(
   }
 }
 
+// response payload
 data class DraftPlantingSitePayload(
     @Schema(
         description =
@@ -99,12 +100,12 @@ data class DraftPlantingSitePayload(
         description =
             "If the user has started defining substrata, the number of substrata defined so far."
     )
-    val numPlantingSubzones: Int?,
+    val numSubstrata: Int?,
     @Schema(
         description =
             "If the user has started defining strata, the number of strata defined so far."
     )
-    val numPlantingZones: Int?,
+    val numStrata: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
@@ -126,6 +127,14 @@ data class DraftPlantingSitePayload(
       record.projectId,
       record.timeZone,
   )
+
+  @Deprecated("Use numSubstrata instead.")
+  val numPlantingSubzones: Int?
+    get() = numSubstrata
+
+  @Deprecated("Use numStrata instead.")
+  val numPlantingZones: Int?
+    get() = numStrata
 }
 
 data class GetDraftPlantingSiteResponsePayload(val site: DraftPlantingSitePayload) :
