@@ -56,7 +56,7 @@ def get_incomplete_plot_ids(client, observation_id):
         plot["plotId"]
         for plot in client.list_observation_plots(observation_id)
         if "completedByUserId" not in plot
-        and ("claimedByUserId" not in plot or plot["claimedByUserId"] == my_user_id)
+           and ("claimedByUserId" not in plot or plot["claimedByUserId"] == my_user_id)
     ]
 
 
@@ -70,7 +70,7 @@ def main():
         "-O",
         type=int,
         help="Choose observation from this organization. Default is the current user's "
-        + "lowest-numbered organization.",
+             + "lowest-numbered organization.",
     )
     parser.add_argument(
         "--plot",
@@ -83,7 +83,7 @@ def main():
         "-n",
         type=int,
         help="Record results for this many plots. Default is to record results for all "
-        + "incomplete plots. Ignored if --plot is specified.",
+             + "incomplete plots. Ignored if --plot is specified.",
     )
     add_terraware_args(parser)
     args = parser.parse_args()
@@ -119,8 +119,8 @@ def main():
     if not plot_ids:
         raise Exception("No incomplete monitoring plots found in observation.")
 
-    # Use the organization's species list, rather than the list of planted species in each subzone,
-    # so we can run this without needing to first create a bunch of nursery withdrawals.
+    # Use the organization's species list, rather than the list of planted species in each
+    # substratum, so we can run this without needing to first create a bunch of nursery withdrawals.
     species_ids = [species["id"] for species in client.list_species(organization_id)]
 
     for plot_id in plot_ids:

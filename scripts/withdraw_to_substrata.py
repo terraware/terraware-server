@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Withdraw plants from a nursery to each of the subzones in a planting site.
+Withdraw plants from a nursery to each of the substrata in a planting site.
 
-Ensures that all the subzones of a newly-created site are planted.
+Ensures that all the substrata of a newly-created site are planted.
 """
 import argparse
 from datetime import date, datetime, timezone
@@ -29,13 +29,13 @@ def generate_batch_withdrawal(batch_id):
 
 
 def generate_nursery_withdrawal(
-    facility_id, batch_id, planting_site_id, planting_subzone_id
+        facility_id, batch_id, planting_site_id, substratum_id
 ):
     return {
         "batchWithdrawals": [generate_batch_withdrawal(batch_id)],
         "facilityId": facility_id,
         "plantingSiteId": planting_site_id,
-        "plantingSubzoneId": planting_subzone_id,
+        "substratumId": substratum_id,
         "purpose": "Out Plant",
         "withdrawnDate": str(date.today()),
     }
@@ -43,7 +43,7 @@ def generate_nursery_withdrawal(
 
 def main():
     parser = argparse.ArgumentParser(
-        "Withdraw one plant from a nursery to each subzone at a planting site"
+        "Withdraw one plant from a nursery to each substratum at a planting site"
     )
     parser.add_argument("--batch", "-b", type=int, help="Batch ID to withdraw from.")
     parser.add_argument(
@@ -55,17 +55,17 @@ def main():
     client = client_from_args(args)
 
     batch = client.get_seedling_batch(args.batch)
-    planting_site = client.get_planting_site(args.planting_site, depth="Subzone")
+    planting_site = client.get_planting_site(args.planting_site, depth="Substratum")
 
-    for planting_zone in planting_site["plantingZones"]:
-        for planting_subzone in planting_zone["plantingSubzones"]:
-            print(f"Withdrawing to subzone {planting_subzone['id']}")
+    for stratum in planting_site["strata"]:
+        for substratum in stratum["substrata"]:
+            print(f"Withdrawing to substratum {substratum['id']}")
             client.withdraw_seedling_batch(
                 generate_nursery_withdrawal(
                     batch["facilityId"],
                     args.batch,
                     args.planting_site,
-                    planting_subzone["id"],
+                    substratum["id"],
                 )
             )
 

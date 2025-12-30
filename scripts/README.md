@@ -60,14 +60,14 @@ To advance that server's clock by 3 days:
 ## Creating batch withdrawals
 
 ```
-./withdraw_to_subzones.py -b 306 -p 190
+./withdraw_to_substrata.py -b 306 -p 190
 ```
 
 and a quick example of repeating this 500 times:
 
 ```
 for i in {1..500}; do
-  ./withdraw_to_subzones.py -b 306 -p 190
+  ./withdraw_to_substrata.py -b 306 -p 190
 done
 ```
 
