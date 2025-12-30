@@ -2,7 +2,8 @@ package com.terraformation.backend.tracking.scenario
 
 import com.terraformation.backend.tracking.model.BaseMonitoringResult
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.assertAll
 
 /**
  * Superclass for DSL nodes that specify expected observation results. The format of expected
@@ -12,6 +13,11 @@ import org.junit.jupiter.api.Assertions
  *   expected results specified in the current step are merged with the expected baseline results,
  *   such that a scenario that verifies results multiple times only needs to specify the values that
  *   should have changed from one step to the next.
+ * @param assertions Running list of all the assertions to make for this observation. This is shared
+ *   across different levels of the hierarchy. The idea is that we build a list of all the
+ *   assertions we want to make for the entire observation, and then check them all at once using
+ *   [assertAll] such that if multiple values don't match, we get a full list of all the mismatches
+ *   rather than bailing out when we hit the first one.
  */
 abstract class ExpectedObservationResult<
     T : BaseMonitoringResult,
@@ -22,13 +28,14 @@ abstract class ExpectedObservationResult<
     val actualResult: T,
     var survivalRate: Int? = null,
     val baseline: B? = null,
+    val assertions: MutableList<() -> Unit>,
 ) : NodeWithChildren<ExpectedObservationResult.Species>() {
   private var survivalRateSet: Boolean = survivalRate != null
 
   fun survivalRate(expected: Int?) = apply {
     survivalRate = expected
     survivalRateSet = true
-    Assertions.assertEquals(expected, actualResult.survivalRate, "$name survival rate")
+    assertions.add { assertEquals(expected, actualResult.survivalRate, "$name survival rate") }
   }
 
   fun species(
@@ -43,6 +50,7 @@ abstract class ExpectedObservationResult<
             number,
             actualResult.species.firstOrNull { it.speciesId == speciesId },
             survivalRate,
+            assertions,
         ),
         init,
     )
@@ -66,13 +74,16 @@ abstract class ExpectedObservationResult<
       val number: Int,
       val speciesResult: ObservationSpeciesResultsModel?,
       val survivalRate: Int?,
+      val assertions: MutableList<() -> Unit>,
   ) : ScenarioNode {
     override fun finish() {
-      Assertions.assertEquals(
-          survivalRate,
-          speciesResult?.survivalRate,
-          "$parentName species $number survival rate",
-      )
+      assertions.add {
+        assertEquals(
+            survivalRate,
+            speciesResult?.survivalRate,
+            "$parentName species $number survival rate",
+        )
+      }
     }
   }
 }
