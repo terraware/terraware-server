@@ -1212,9 +1212,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         }
       }
 
-      expectResults(observation = 1, baseline = observation1Results) {
-        // Results shouldn't have changed.
-      }
+      expectUnchangedResults(observation = 1, baseline = observation1Results)
 
       expectResults(observation = 2) {
         survivalRate(92)

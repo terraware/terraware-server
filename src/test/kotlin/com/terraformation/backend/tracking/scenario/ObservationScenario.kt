@@ -139,6 +139,13 @@ class ObservationScenario(
     )
   }
 
+  fun expectUnchangedResults(
+      observation: Int,
+      baseline: ExpectedSiteResultStep,
+  ): ExpectedSiteResultStep {
+    return expectResults(observation, baseline) {}
+  }
+
   fun observation(
       number: Int,
       init: ObservationCompletedStep.() -> Unit,
