@@ -119,8 +119,8 @@ def main():
     if not plot_ids:
         raise Exception("No incomplete monitoring plots found in observation.")
 
-    # Use the organization's species list, rather than the list of planted species in each subzone,
-    # so we can run this without needing to first create a bunch of nursery withdrawals.
+    # Use the organization's species list, rather than the list of planted species in each
+    # substratum, so we can run this without needing to first create a bunch of nursery withdrawals.
     species_ids = [species["id"] for species in client.list_species(organization_id)]
 
     for plot_id in plot_ids:
