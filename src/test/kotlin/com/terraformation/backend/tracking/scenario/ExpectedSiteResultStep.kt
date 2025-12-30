@@ -4,6 +4,7 @@ import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResult
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
+import org.junit.jupiter.api.assertAll
 
 class ExpectedSiteResultStep(
     scenario: ObservationScenario,
@@ -18,6 +19,7 @@ class ExpectedSiteResultStep(
         actualResult,
         survivalRate,
         baseline,
+        mutableListOf(),
     ) {
   val strata = mutableListOf<Stratum>()
 
@@ -39,6 +41,8 @@ class ExpectedSiteResultStep(
       val stratumNumbers = strata.map { it.number }.toSet()
       baseline.strata.filter { it.number !in stratumNumbers }.forEach { stratum(it.number) {} }
     }
+
+    assertAll(assertions)
   }
 
   inner class Stratum(val number: Int, survivalRate: Int? = null, baseline: Stratum?) :
@@ -48,6 +52,7 @@ class ExpectedSiteResultStep(
           actualResult.strata.first { it.name == "$number" },
           survivalRate,
           baseline,
+          assertions,
       ) {
     val substrata = mutableListOf<Substratum>()
 
@@ -80,6 +85,7 @@ class ExpectedSiteResultStep(
             actualResult.substrata.first { it.name == "$number" },
             survivalRate,
             baseline,
+            assertions,
         ) {
       val plots = mutableListOf<Plot>()
 
@@ -128,6 +134,7 @@ class ExpectedSiteResultStep(
               actualResult,
               survivalRate,
               baseline,
+              assertions,
           ) {
         override fun finish() {
           mergeBaselineRates()
