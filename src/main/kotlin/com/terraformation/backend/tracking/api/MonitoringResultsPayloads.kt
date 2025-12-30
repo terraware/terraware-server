@@ -567,6 +567,7 @@ data class StratumObservationSummaryPayload(
             "Combined list of observed species and their statuses from the latest observation of each substratum."
     )
     val species: List<ObservationSpeciesResultsPayload>,
+    val stratumId: StratumId,
     @Schema(description = "List of substratum observations used in this summary.")
     val substrata: List<ObservationSubstratumResultsPayload>,
     @Schema(
@@ -602,6 +603,7 @@ data class StratumObservationSummaryPayload(
           model.species
               .filter { it.certainty != RecordedSpeciesCertainty.Unknown }
               .map { ObservationSpeciesResultsPayload(it) },
+      stratumId = model.stratumId,
       substrata = model.substrata.map { ObservationSubstratumResultsPayload(it) },
       survivalRate = model.survivalRate,
       survivalRateStdDev = model.survivalRateStdDev,
