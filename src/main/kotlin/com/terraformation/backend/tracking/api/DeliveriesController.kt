@@ -111,9 +111,22 @@ data class ReassignmentPayload(
     )
     val numPlants: Int,
     val notes: String?,
-    val toPlantingSubzoneId: SubstratumId,
+    @Schema(description = "Use toSubstratumId instead", deprecated = true)
+    val toPlantingSubzoneId: SubstratumId?,
+    // make non-nullable once FE is no longer using toPlantingSubzoneId
+    val toSubstratumId: SubstratumId?,
 ) {
-  fun toModel() = DeliveryStore.Reassignment(fromPlantingId, numPlants, notes, toPlantingSubzoneId)
+  fun toModel() =
+      DeliveryStore.Reassignment(
+          fromPlantingId,
+          numPlants,
+          notes,
+          toSubstratumId
+              ?: toPlantingSubzoneId
+              ?: throw IllegalArgumentException(
+                  "Must specify either toSubstratumId or toPlantingSubzoneId"
+              ),
+      )
 }
 
 data class GetDeliveryResponsePayload(val delivery: DeliveryPayload) : SuccessResponsePayload
