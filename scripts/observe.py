@@ -56,7 +56,7 @@ def get_incomplete_plot_ids(client, observation_id):
         plot["plotId"]
         for plot in client.list_observation_plots(observation_id)
         if "completedByUserId" not in plot
-           and ("claimedByUserId" not in plot or plot["claimedByUserId"] == my_user_id)
+        and ("claimedByUserId" not in plot or plot["claimedByUserId"] == my_user_id)
     ]
 
 
@@ -70,7 +70,7 @@ def main():
         "-O",
         type=int,
         help="Choose observation from this organization. Default is the current user's "
-             + "lowest-numbered organization.",
+        + "lowest-numbered organization.",
     )
     parser.add_argument(
         "--plot",
@@ -83,7 +83,7 @@ def main():
         "-n",
         type=int,
         help="Record results for this many plots. Default is to record results for all "
-             + "incomplete plots. Ignored if --plot is specified.",
+        + "incomplete plots. Ignored if --plot is specified.",
     )
     add_terraware_args(parser)
     args = parser.parse_args()

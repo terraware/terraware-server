@@ -28,9 +28,7 @@ def generate_batch_withdrawal(batch_id):
     }
 
 
-def generate_nursery_withdrawal(
-        facility_id, batch_id, planting_site_id, substratum_id
-):
+def generate_nursery_withdrawal(facility_id, batch_id, planting_site_id, substratum_id):
     return {
         "batchWithdrawals": [generate_batch_withdrawal(batch_id)],
         "facilityId": facility_id,
