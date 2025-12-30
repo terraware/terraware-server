@@ -98,14 +98,14 @@ data class DraftPlantingSitePayload(
     val name: String,
     @Schema(
         description =
-            "If the user has started defining substrata, the number of substrata defined so far."
-    )
-    val numSubstrata: Int?,
-    @Schema(
-        description =
             "If the user has started defining strata, the number of strata defined so far."
     )
     val numStrata: Int?,
+    @Schema(
+        description =
+            "If the user has started defining substrata, the number of substrata defined so far."
+    )
+    val numSubstrata: Int?,
     val organizationId: OrganizationId,
     @Schema(description = "If the draft is associated with a project, its ID.")
     val projectId: ProjectId?,
@@ -114,18 +114,18 @@ data class DraftPlantingSitePayload(
   constructor(
       record: DraftPlantingSitesRecord
   ) : this(
-      record.createdBy!!,
-      record.createdTime!!,
-      record.data!!,
-      record.description,
-      record.id!!,
-      record.modifiedTime!!,
-      record.name!!,
-      record.numSubstrata,
-      record.numStrata,
-      record.organizationId!!,
-      record.projectId,
-      record.timeZone,
+      createdBy = record.createdBy!!,
+      createdTime = record.createdTime!!,
+      data = record.data!!,
+      description = record.description,
+      id = record.id!!,
+      modifiedTime = record.modifiedTime!!,
+      name = record.name!!,
+      numStrata = record.numSubstrata,
+      numSubstrata = record.numSubstrata,
+      organizationId = record.organizationId!!,
+      projectId = record.projectId,
+      timeZone = record.timeZone,
   )
 
   @Deprecated("Use numSubstrata instead.")

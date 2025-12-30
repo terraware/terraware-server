@@ -95,7 +95,7 @@ class WithdrawalsController(
             payload.toModel(),
             payload.readyByDate,
             payload.plantingSiteId,
-            payload.plantingSubzoneId,
+            payload.substratumId ?: payload.plantingSubzoneId,
         )
     val batches = withdrawal.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
     val deliveryModel = withdrawal.deliveryId?.let { deliveryStore.fetchOneById(it) }
@@ -291,12 +291,7 @@ data class CreateNurseryWithdrawalRequestPayload(
                 "were delivered."
     )
     val plantingSiteId: PlantingSiteId?,
-    @Schema(
-        description =
-            "If purpose is \"Out Plant\", the ID of the substratum to which the seedlings " +
-                "were delivered. Must be specified if the planting site has substrata, " +
-                "but must be omitted or set to null if the planting site has no substrata."
-    )
+    @Schema(description = "Use substratumId instead", deprecated = true)
     val plantingSubzoneId: SubstratumId?,
     val purpose: CreateWithdrawalPurpose,
     @Schema(
@@ -305,6 +300,13 @@ data class CreateNurseryWithdrawalRequestPayload(
                 "batches that are created at the other nursery."
     )
     val readyByDate: LocalDate? = null,
+    @Schema(
+        description =
+            "If purpose is \"Out Plant\", the ID of the substratum to which the seedlings " +
+                "were delivered. Must be specified if the planting site has substrata, " +
+                "but must be omitted or set to null if the planting site has no substrata."
+    )
+    val substratumId: SubstratumId?,
     val withdrawnDate: LocalDate,
 ) {
   fun toModel() =
