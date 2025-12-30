@@ -716,7 +716,29 @@ data class UpdatedPlantingSeasonPayload(
   fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, id = id, startDate = startDate)
 }
 
+@Schema(description = "Use NewSubstratumPayload", deprecated = true)
 data class NewPlantingSubzonePayload(
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry,
+    val name: String,
+) {
+  fun validate() {
+    if (boundary !is MultiPolygon && boundary !is Polygon) {
+      throw IllegalArgumentException("Substratum boundaries must be Polygon or MultiPolygon")
+    }
+  }
+
+  fun toModel(stratumName: String, exclusion: MultiPolygon?): NewSubstratumModel {
+    return SubstratumModel.create(
+        boundary = boundary.toMultiPolygon(),
+        exclusion = exclusion,
+        fullName = "$stratumName-$name",
+        name = name,
+    )
+  }
+}
+
+data class NewSubstratumPayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry,
     @Schema(
@@ -732,23 +754,20 @@ data class NewPlantingSubzonePayload(
     }
   }
 
-  fun toModel(zoneName: String, exclusion: MultiPolygon?): NewSubstratumModel {
+  fun toModel(stratumName: String, exclusion: MultiPolygon?): NewSubstratumModel {
     return SubstratumModel.create(
         boundary = boundary.toMultiPolygon(),
         exclusion = exclusion,
-        fullName = "$zoneName-$name",
+        fullName = "$stratumName-$name",
         name = name,
     )
   }
 }
 
+@Schema(description = "Use NewStratumPayload", deprecated = true)
 data class NewPlantingZonePayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry,
-    @Schema(
-        description =
-            "Name of this stratum. Two strata in the same planting site may not have the same name."
-    )
     val name: String,
     val plantingSubzones: List<NewPlantingSubzonePayload>?,
     val targetPlantingDensity: BigDecimal?,
@@ -773,6 +792,37 @@ data class NewPlantingZonePayload(
   }
 }
 
+data class NewStratumPayload(
+    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
+    val boundary: Geometry,
+    @Schema(
+        description =
+            "Name of this stratum. Two strata in the same planting site may not have the same name."
+    )
+    val name: String,
+    val substrata: List<NewSubstratumPayload>?,
+    val targetPlantingDensity: BigDecimal?,
+) {
+  fun validate() {
+    if (boundary !is MultiPolygon && boundary !is Polygon) {
+      throw IllegalArgumentException("Stratum boundaries must be Polygon or MultiPolygon")
+    }
+
+    substrata?.forEach { it.validate() }
+  }
+
+  fun toModel(exclusion: MultiPolygon?): NewStratumModel {
+    return StratumModel.create(
+        boundary = boundary.toMultiPolygon(),
+        exclusion = exclusion,
+        name = name,
+        targetPlantingDensity =
+            targetPlantingDensity ?: StratumModel.DEFAULT_TARGET_PLANTING_DENSITY,
+        substrata = substrata?.map { it.toModel(name, exclusion) } ?: emptyList(),
+    )
+  }
+}
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class PlantingSiteValidationProblemPayload(
     @ArraySchema(
@@ -785,19 +835,27 @@ data class PlantingSiteValidationProblemPayload(
     )
     val conflictsWith: Set<String>?,
     @Schema(description = "If the problem relates to a particular stratum, its name.")
-    val plantingZone: String?,
+    val stratum: String?,
     @Schema(
         description =
             "If the problem relates to a particular substratum, its name. If this is present, " +
-                "plantingZone will also be present and will be the name of the stratum that " +
+                "stratum will also be present and will be the name of the stratum that " +
                 "contains this substratum."
     )
-    val plantingSubzone: String?,
+    val substratum: String?,
     val problemType: PlantingSiteValidationFailureType,
 ) {
   constructor(
       model: PlantingSiteValidationFailure
   ) : this(model.conflictsWith, model.stratumName, model.substratumName, model.type)
+
+  @Deprecated("Use stratum instead")
+  val plantingZone: String?
+    get() = stratum
+
+  @Deprecated("Use substratum instead")
+  val plantingSubzone: String?
+    get() = substratum
 }
 
 data class CreatePlantingSiteRequestPayload(
@@ -809,13 +867,15 @@ data class CreatePlantingSiteRequestPayload(
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<NewPlantingSeasonPayload>? = null,
+    @Schema(description = "Use strata instead", deprecated = true)
+    val plantingZones: List<NewPlantingZonePayload>? = null,
+    val projectId: ProjectId? = null,
     @Schema(
         description =
             "List of strata to create. If present and not empty, \"boundary\" must also " +
                 "be specified."
     )
-    val plantingZones: List<NewPlantingZonePayload>? = null,
-    val projectId: ProjectId? = null,
+    val strata: List<NewStratumPayload>? = null,
     val timeZone: ZoneId?,
 ) {
   fun validate() {
@@ -827,6 +887,7 @@ data class CreatePlantingSiteRequestPayload(
       throw IllegalArgumentException("Exclusion area must be Polygon or MultiPolygon")
     }
 
+    strata?.forEach { it.validate() }
     plantingZones?.forEach { it.validate() }
   }
 
@@ -839,7 +900,10 @@ data class CreatePlantingSiteRequestPayload(
         exclusion = exclusionMultiPolygon,
         name = name,
         organizationId = organizationId,
-        strata = plantingZones?.map { it.toModel(exclusionMultiPolygon) } ?: emptyList(),
+        strata =
+            strata?.map { it.toModel(exclusionMultiPolygon) }
+                ?: plantingZones?.map { it.toModel(exclusionMultiPolygon) }
+                ?: emptyList(),
         projectId = projectId,
         timeZone = timeZone,
     )

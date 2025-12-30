@@ -18,6 +18,7 @@ import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -87,7 +88,14 @@ class T0Controller(
   fun assignT0TempSiteData(
       @RequestBody payload: AssignSiteT0TempDataRequestPayload
   ): SimpleSuccessResponsePayload {
-    t0Service.assignT0TempStratumData(payload.zones.map { it.toModel() })
+    require(payload.strata != null || payload.zones != null) {
+      "Must specify either strata or zones"
+    }
+    if (payload.strata != null) {
+      t0Service.assignT0TempStratumData(payload.strata.map { it.toModel() })
+    } else if (payload.zones != null) {
+      t0Service.assignT0TempStratumData(payload.zones.map { it.toModel() })
+    }
 
     return SimpleSuccessResponsePayload()
   }
@@ -224,5 +232,8 @@ data class AssignSiteT0DataRequestPayload(
 
 data class AssignSiteT0TempDataRequestPayload(
     val plantingSiteId: PlantingSiteId,
-    val zones: List<ZoneT0DataPayload> = emptyList(),
+    @Schema(description = "Use strata instead", deprecated = true)
+    val zones: List<ZoneT0DataPayload>?,
+    // make non-nullable once FE is no longer using zones
+    val strata: List<StratumT0DataPayload>?,
 )

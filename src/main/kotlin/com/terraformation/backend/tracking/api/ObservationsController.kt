@@ -65,7 +65,6 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.Valid
-import jakarta.validation.constraints.NotEmpty
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
@@ -1080,13 +1079,15 @@ data class ScheduleObservationRequestPayload(
     val endDate: LocalDate,
     @Schema(description = "Which planting site this observation needs to be scheduled for.")
     val plantingSiteId: PlantingSiteId,
-    @field:NotEmpty
+    @Schema(description = "Use requestedSubstratumIds instead", deprecated = true)
+    val requestedSubzoneIds: Set<SubstratumId>?,
     @ArraySchema(
         arraySchema =
             Schema(description = "The IDs of the substrata this observation should cover."),
         minItems = 1,
     )
-    val requestedSubzoneIds: Set<SubstratumId>,
+    // make non-nullable once FE is no longer using requestedSubzoneIds
+    val requestedSubstratumIds: Set<SubstratumId>?,
     @Schema(
         description =
             "The start date for this observation, can be up to a year from the date this " +
@@ -1101,7 +1102,12 @@ data class ScheduleObservationRequestPayload(
           isAdHoc = false,
           observationType = ObservationType.Monitoring,
           plantingSiteId = plantingSiteId,
-          requestedSubstratumIds = requestedSubzoneIds,
+          requestedSubstratumIds =
+              requestedSubstratumIds
+                  ?: requestedSubzoneIds
+                  ?: throw IllegalArgumentException(
+                      "Must specify either requestedSubstratumIds or requestedSubzoneIds"
+                  ),
           startDate = startDate,
           state = ObservationState.Upcoming,
       )
