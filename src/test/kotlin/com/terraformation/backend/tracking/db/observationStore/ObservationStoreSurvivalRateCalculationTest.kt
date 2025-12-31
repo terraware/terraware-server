@@ -1353,6 +1353,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             plot(1) { survivalRate(percent(obsLive[2][1], densities[1])) }
           }
         }
+        noResultForStratum(2)
       }
 
       siteEdited {
@@ -1375,10 +1376,12 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
                 densities[1] + densities[2] + densities[3],
             )
         )
+        noResultForStratum(1)
         stratum(2) {
           // Should pull substratum 2 rate from observation 1, but credit it to stratum 2
           // thanks to the map edit
           survivalRate(percent(obsLive[1][2] + obsLive[3][3], densities[2] + densities[3]))
+          noResultForSubstratum(2)
           substratum(3) { survivalRate(percent(obsLive[3][3], densities[3])) }
         }
       }

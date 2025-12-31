@@ -5,6 +5,7 @@ import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
 import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import org.junit.jupiter.api.assertAll
+import org.junit.jupiter.api.assertNull
 
 class ExpectedSiteResultStep(
     scenario: ObservationScenario,
@@ -33,6 +34,15 @@ class ExpectedSiteResultStep(
           strata,
           init,
       )
+
+  fun noResultForStratum(number: Int) {
+    assertions.add {
+      assertNull(
+          actualResult.strata.firstOrNull { it.name == "$number" },
+          "Result for stratum $number",
+      )
+    }
+  }
 
   override fun finish() {
     if (baseline != null) {
@@ -66,6 +76,15 @@ class ExpectedSiteResultStep(
             substrata,
             init,
         )
+
+    fun noResultForSubstratum(number: Int) {
+      assertions.add {
+        assertNull(
+            actualResult.substrata.firstOrNull { it.name == "$number" },
+            "Result for $name substratum $number",
+        )
+      }
+    }
 
     override fun finish() {
       if (baseline != null) {
