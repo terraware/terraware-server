@@ -84,6 +84,7 @@ class SiteCreatedStep(
                 fullName = "${this@Stratum.number}-$number",
                 name = "$number",
                 plantingCompletedTime = Instant.EPOCH,
+                stableId = "$number",
             )
       }
 

@@ -16,6 +16,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
 import com.terraformation.backend.tracking.model.ObservationResultsModel
+import com.terraformation.backend.util.nullSafeMapOf
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
@@ -1267,6 +1268,118 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
               species(1, survivalRate = 99)
             }
           }
+        }
+      }
+    }
+  }
+
+  @Test
+  fun `survival rate with geometry change between observations of disjoint substrata`() {
+    every { user.canReadPlantingSite(any()) } returns true
+    every { user.canUpdatePlantingSite(any()) } returns true
+
+    dslContext.deleteFrom(MONITORING_PLOTS).execute()
+
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) { plot(1) }
+          substratum(2) { plot(2) }
+        }
+        stratum(2) { substratum(3) { plot(3) } }
+      }
+
+      val densities = nullSafeMapOf(1 to 30, 2 to 40, 3 to 50)
+      t0DensitySet {
+        plot(1) { species(0, density = densities[1]) }
+        plot(2) { species(0, density = densities[2]) }
+        plot(3) { species(0, density = densities[3]) }
+      }
+
+      // Map<observation number, Map<plot number, live plant count>>
+      val obsLive =
+          nullSafeMapOf(
+              1 to nullSafeMapOf(1 to 13, 2 to 14, 3 to 15),
+              2 to nullSafeMapOf(1 to 23),
+              3 to nullSafeMapOf(3 to 35),
+          )
+
+      observation(1) {
+        plot(1) { species(0, live = obsLive[1][1]) }
+        plot(2) { species(0, live = obsLive[1][2]) }
+        plot(3) { species(0, live = obsLive[1][3]) }
+      }
+
+      expectResults(observation = 1) {
+        survivalRate(
+            percent(
+                obsLive[1][1] + obsLive[1][2] + obsLive[1][3],
+                densities[1] + densities[2] + densities[3],
+            )
+        )
+        stratum(1) {
+          survivalRate(percent(obsLive[1][1] + obsLive[1][2], densities[1] + densities[2]))
+          substratum(1) {
+            survivalRate(percent(obsLive[1][1], densities[1]))
+            plot(1) { survivalRate(percent(obsLive[1][1], densities[1])) }
+          }
+          substratum(2) {
+            survivalRate(percent(obsLive[1][2], densities[2]))
+            plot(2) { survivalRate(percent(obsLive[1][2], densities[2])) }
+          }
+        }
+        stratum(2) {
+          survivalRate(percent(obsLive[1][3], densities[3]))
+          substratum(3) {
+            survivalRate(percent(obsLive[1][3], densities[3]))
+            plot(3) { survivalRate(percent(obsLive[1][3], densities[3])) }
+          }
+        }
+      }
+
+      observation(2) { plot(1) { species(0, live = obsLive[2][1]) } }
+
+      expectResults(observation = 2) {
+        survivalRate(
+            percent(
+                obsLive[2][1] + obsLive[1][2] + obsLive[1][3],
+                densities[1] + densities[2] + densities[3],
+            )
+        )
+        stratum(1) {
+          survivalRate(percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2]))
+          substratum(1) {
+            survivalRate(percent(obsLive[2][1], densities[1]))
+            plot(1) { survivalRate(percent(obsLive[2][1], densities[1])) }
+          }
+        }
+      }
+
+      siteEdited {
+        stratum(1) { //
+          substratum(1) { plot(1) }
+        }
+        stratum(2) {
+          substratum(2) { plot(2) } // Moved from stratum 1
+          substratum(3) { plot(3) }
+        }
+      }
+
+      observation(3) { plot(3) { species(0, live = obsLive[3][3]) } }
+
+      expectResults(observation = 3) {
+        // Should pull substratum 1 rate from observation 2
+        survivalRate(
+            percent(
+                obsLive[2][1] + obsLive[1][2] + obsLive[3][3],
+                densities[1] + densities[2] + densities[3],
+            )
+        )
+        stratum(2) {
+          // Should pull substratum 2 rate from observation 1, but credit it to stratum 2
+          // thanks to the map edit
+          survivalRate(percent(obsLive[1][2] + obsLive[3][3], densities[2] + densities[3]))
+          substratum(3) { survivalRate(percent(obsLive[3][3], densities[3])) }
         }
       }
     }
