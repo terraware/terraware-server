@@ -26,6 +26,7 @@ import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import java.time.temporal.ChronoUnit
 import org.jooq.Configuration
@@ -60,6 +61,7 @@ class ObservationScenario(
     val observationResultsStore: ObservationResultsStore,
     val observationStore: ObservationStore,
     val plantingSiteStore: PlantingSiteStore,
+    val t0Store: T0Store,
     val test: DatabaseBackedTest,
 ) : NodeWithChildren<ScenarioNode>() {
   companion object {
@@ -99,12 +101,14 @@ class ObservationScenario(
                 StrataDao(configuration),
                 SubstrataDao(configuration),
             ),
+        t0Store: T0Store = T0Store(clock, test.dslContext, eventPublisher),
     ): ObservationScenario {
       return ObservationScenario(
           clock,
           observationResultsStore,
           observationStore,
           plantingSiteStore,
+          t0Store,
           test,
       )
     }
