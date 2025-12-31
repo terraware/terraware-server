@@ -1,7 +1,10 @@
 package com.terraformation.backend.tracking.scenario
 
+import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.BaseMonitoringResult
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
+import java.math.BigDecimal
+import java.math.RoundingMode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.assertAll
 
@@ -32,10 +35,19 @@ abstract class ExpectedObservationResult<
 ) : NodeWithChildren<ExpectedObservationResult.Species>() {
   private var survivalRateSet: Boolean = survivalRate != null
 
-  fun survivalRate(expected: Int?) = apply {
+  fun survivalRate(expected: Int?) {
     survivalRate = expected
     survivalRateSet = true
     assertions.add { assertEquals(expected, actualResult.survivalRate, "$name survival rate") }
+  }
+
+  /** Returns the ratio between two integers as a percentage value with half-up rounding. */
+  fun percent(numerator: Number, denominator: Number): Int {
+    return numerator
+        .toBigDecimal()
+        .multiply(BigDecimal.valueOf(100))
+        .divide(denominator.toBigDecimal(), 0, RoundingMode.HALF_UP)
+        .toInt()
   }
 
   fun species(

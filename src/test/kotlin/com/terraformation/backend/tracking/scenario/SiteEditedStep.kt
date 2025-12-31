@@ -108,7 +108,7 @@ class SiteEditedStep(
               fullName = "${this@Stratum.number}-$number",
               name = "$number",
               monitoringPlots = children.map { it.toModel() },
-              stableId = StableId("${this@Stratum.number}-$number"),
+              stableId = StableId("$number"),
           )
 
       inner class Plot(val number: Long) : ScenarioNode {
