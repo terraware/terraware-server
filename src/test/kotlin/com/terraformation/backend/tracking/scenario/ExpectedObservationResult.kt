@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.scenario
 
+import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.BaseMonitoringResult
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import java.math.BigDecimal
@@ -41,9 +42,11 @@ abstract class ExpectedObservationResult<
   }
 
   /** Returns the ratio between two integers as a percentage value with half-up rounding. */
-  fun percent(numerator: Int, denominator: Int): Int {
-    return BigDecimal(numerator * 100)
-        .divide(BigDecimal(denominator), 0, RoundingMode.HALF_UP)
+  fun percent(numerator: Number, denominator: Number): Int {
+    return numerator
+        .toBigDecimal()
+        .multiply(BigDecimal.valueOf(100))
+        .divide(denominator.toBigDecimal(), 0, RoundingMode.HALF_UP)
         .toInt()
   }
 
