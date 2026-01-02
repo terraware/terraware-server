@@ -51,6 +51,14 @@ class T0DensitySetStep(val scenario: ObservationScenario) :
   inner class Plot(val number: Long) : NodeWithChildren<Plot.Species>() {
     val monitoringPlotId = scenario.getMonitoringPlotId(number)
 
+    fun observation(observation: Int) {
+      scenario.t0Store.assignT0PlotObservation(
+          monitoringPlotId,
+          scenario.observationIds[observation]
+              ?: throw IllegalArgumentException("Unknown observation $observation"),
+      )
+    }
+
     fun species(speciesId: Int, density: Int?, init: Species.() -> Unit = {}) =
         initChild(Species(speciesId, density), init)
 
