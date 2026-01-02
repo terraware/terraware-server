@@ -1190,7 +1190,8 @@ class ObservationStore(
       updateFunc: (EditableMonitoringSpeciesModel) -> EditableMonitoringSpeciesModel,
   ) {
     requirePermissions {
-      updateObservation(observationId) //
+      updateT0(monitoringPlotId) // TODO: Get clarification from product about permission behavior
+      updateObservation(observationId)
     }
 
     observationLocker.withLockedObservation(observationId) { observation ->
