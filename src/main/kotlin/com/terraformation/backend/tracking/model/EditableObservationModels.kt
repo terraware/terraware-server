@@ -8,10 +8,12 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOM
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassQuadratDetailsUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesUpdatedEventValues
 import com.terraformation.backend.tracking.event.BiomassSpeciesUpdatedEventValues
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEventValues
 import com.terraformation.backend.util.nullIfEquals
 import java.math.BigDecimal
@@ -135,6 +137,31 @@ data class EditableBiomassSpeciesModel(
         EditableBiomassSpeciesModel(
             isInvasive = record[IS_INVASIVE]!!,
             isThreatened = record[IS_THREATENED]!!,
+        )
+      }
+    }
+  }
+}
+
+data class EditableMonitoringSpeciesModel(
+    val totalDead: Int,
+    val totalExisting: Int,
+    val totalLive: Int,
+) {
+  fun toEventValues(other: EditableMonitoringSpeciesModel) =
+      MonitoringSpeciesTotalsEditedEventValues(
+          totalDead = totalDead.nullIfEquals(other.totalDead),
+          totalExisting = totalExisting.nullIfEquals(other.totalExisting),
+          totalLive = totalLive.nullIfEquals(other.totalLive),
+      )
+
+  companion object {
+    fun of(record: Record): EditableMonitoringSpeciesModel {
+      return with(OBSERVED_PLOT_SPECIES_TOTALS) {
+        EditableMonitoringSpeciesModel(
+            totalDead = record[TOTAL_DEAD]!!,
+            totalExisting = record[TOTAL_EXISTING]!!,
+            totalLive = record[TOTAL_LIVE]!!,
         )
       }
     }

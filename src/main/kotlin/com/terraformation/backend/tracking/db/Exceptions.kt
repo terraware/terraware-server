@@ -173,6 +173,9 @@ class ShapefilesInvalidException(val problems: List<String>) :
 class SpeciesInWrongOrganizationException(val speciesId: SpeciesId) :
     MismatchedStateException("Species $speciesId is in the wrong organization")
 
+class SpeciesNotInObservationException(val speciesId: SpeciesId?, val speciesName: String?) :
+    EntityNotFoundException("Species ${speciesId ?: speciesName} not found in observation")
+
 class StratumNotFoundException(val stratumId: StratumId) :
     EntityNotFoundException("Stratum $stratumId not found")
 
