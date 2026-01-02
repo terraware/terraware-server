@@ -1259,6 +1259,17 @@ class ObservationStore(
             plantCountAdjustments,
         )
 
+        // Aggregation from substratum to stratum (and then to site) works by adding up the most
+        // recent data for each substratum at the time of the observation in question.
+        //
+        // Edits to an observation can affect stratum and site data for later observations, but only
+        // if the edited observation hasn't been superseded by a newer observation of the same
+        // substratum.
+        //
+        // So we want to update later observations that don't have newer results for the substratum
+        // we're editing, that is, observations for which this observation's substratum-level totals
+        // would be used to calculate the stratum- and site-level totals.
+
         val latestObservations = OBSERVATIONS.`as`("latest_observations")
         val observationWithLatestResultsForSubstratum =
             DSL.field(
@@ -1267,6 +1278,7 @@ class ObservationStore(
                     .join(OBSERVATION_REQUESTED_SUBSTRATA)
                     .on(latestObservations.ID.eq(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID))
                     .where(latestObservations.COMPLETED_TIME.ge(observation.completedTime))
+                    .and(latestObservations.COMPLETED_TIME.le(OBSERVATIONS.COMPLETED_TIME))
                     .and(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(substratumId))
                     .orderBy(latestObservations.COMPLETED_TIME.desc(), latestObservations.ID.desc())
                     .limit(1)
@@ -1284,7 +1296,8 @@ class ObservationStore(
                     )
                     .and(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(substratumId))
             )
-        val laterObservationsWithoutThisSubstratum =
+
+        val laterObservationsDependentOnSubstratumDataFromThisObservation =
             dslContext
                 .select(
                     OBSERVATIONS.ID.asNonNullable(),
@@ -1297,7 +1310,7 @@ class ObservationStore(
                 .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
                 .fetch()
 
-        laterObservationsWithoutThisSubstratum.forEach {
+        laterObservationsDependentOnSubstratumDataFromThisObservation.forEach {
             (laterObservationId, stratumIdInLaterObservation) ->
           updateSpeciesTotals(
               observationId = laterObservationId,
