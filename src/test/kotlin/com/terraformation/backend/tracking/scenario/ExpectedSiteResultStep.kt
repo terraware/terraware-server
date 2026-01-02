@@ -52,7 +52,7 @@ class ExpectedSiteResultStep(
       baseline.strata.filter { it.number !in stratumNumbers }.forEach { stratum(it.number) {} }
     }
 
-    assertAll(assertions)
+    assertAll("Observation $observation", assertions)
   }
 
   inner class Stratum(val number: Int, survivalRate: Int? = null, baseline: Stratum?) :
