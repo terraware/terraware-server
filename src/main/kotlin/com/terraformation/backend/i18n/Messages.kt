@@ -648,6 +648,8 @@ class Messages {
 
   fun manifestCsvWrongDataTypeForChild() = getMessage("manifestCsvWrongDataTypeForChild")
 
+  fun unknownSpecies() = getMessage("unknownSpecies")
+
   fun variablesCsvColumnName(position: Int): String = getMessage("variablesCsvColumnName.$position")
 
   fun variablesCsvDataTypeRequired() = getMessage("variablesCsvDataTypeRequired")
