@@ -115,18 +115,18 @@ abstract class ExpectedObservationResult<
             speciesResult?.survivalRate,
             "$prefix survival rate",
         )
+      }
 
-        if (totalDead != null) {
-          assertions.add { assertEquals(totalDead, speciesResult?.totalDead, "$prefix total dead") }
+      if (totalDead != null) {
+        assertions.add { assertEquals(totalDead, speciesResult?.totalDead, "$prefix total dead") }
+      }
+      if (totalExisting != null) {
+        assertions.add {
+          assertEquals(totalExisting, speciesResult?.totalExisting, "$prefix total existing")
         }
-        if (totalExisting != null) {
-          assertions.add {
-            assertEquals(totalExisting, speciesResult?.totalExisting, "$prefix total existing")
-          }
-        }
-        if (totalLive != null) {
-          assertions.add { assertEquals(totalLive, speciesResult?.totalLive, "$prefix total live") }
-        }
+      }
+      if (totalLive != null) {
+        assertions.add { assertEquals(totalLive, speciesResult?.totalLive, "$prefix total live") }
       }
     }
   }
