@@ -112,6 +112,11 @@ class ObservationScenario(
           test,
       )
     }
+
+    /** Magic species number that causes plants to be recorded with "Other" certainty. */
+    const val OTHER = -1
+    /** Magic species number that causes plants to be recorded with "Unknown" certainty. */
+    const val UNKNOWN = -2
   }
 
   val monitoringPlotHistoryIds = mutableMapOf<MonitoringPlotId, MonitoringPlotHistoryId>()

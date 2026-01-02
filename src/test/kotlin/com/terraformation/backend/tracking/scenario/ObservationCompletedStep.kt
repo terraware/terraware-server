@@ -62,9 +62,6 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
   ) : NodeWithChildren<Plot.Species>() {
     private lateinit var monitoringPlotId: MonitoringPlotId
 
-    val unknown = -1
-    val other = -2
-
     fun completePlot() {
       scenario.observationStore.completePlot(
           observationId = observationId,
@@ -136,10 +133,10 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
 
       override fun prepare() {
         when (number) {
-          unknown -> {
+          ObservationScenario.UNKNOWN -> {
             certainty = RecordedSpeciesCertainty.Unknown
           }
-          other -> {
+          ObservationScenario.OTHER -> {
             certainty = RecordedSpeciesCertainty.Other
             speciesName = "Other"
           }
