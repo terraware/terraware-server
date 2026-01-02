@@ -76,7 +76,8 @@ class SiteCreatedStep(
       var boundary: MultiPolygon = rectangle(0)
       lateinit var substratumId: SubstratumId
 
-      fun plot(plotNum: Long, init: Plot.() -> Unit = {}) = initChild(Plot(plotNum), init)
+      fun plot(plotNum: Long, permanentIndex: Int? = plotNum.toInt(), init: Plot.() -> Unit = {}) =
+          initChild(Plot(plotNum, permanentIndex), init)
 
       override fun prepare() {
         substratumId =
@@ -98,13 +99,18 @@ class SiteCreatedStep(
             .execute()
       }
 
-      inner class Plot(val number: Long) : ScenarioNode {
+      inner class Plot(val number: Long, val permanentIndex: Int?) : ScenarioNode {
         val boundary =
             rectanglePolygon(width = MONITORING_PLOT_SIZE, x = number * MONITORING_PLOT_SIZE * 2)
         lateinit var monitoringPlotId: MonitoringPlotId
 
         override fun prepare() {
-          monitoringPlotId = test.insertMonitoringPlot(plotNumber = number, boundary = boundary)
+          monitoringPlotId =
+              test.insertMonitoringPlot(
+                  boundary = boundary,
+                  plotNumber = number,
+                  permanentIndex = permanentIndex,
+              )
           scenario.monitoringPlotIds[number] = monitoringPlotId
           scenario.monitoringPlotSubstratumIds[monitoringPlotId] = substratumId
           scenario.monitoringPlotHistoryIds[monitoringPlotId] =
