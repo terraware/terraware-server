@@ -3,10 +3,12 @@ package com.terraformation.backend.eventlog
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.BiomassSpeciesId
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_SPECIES
 import com.terraformation.backend.eventlog.api.EventSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.event.BiomassSpeciesCreatedEvent
 import kotlin.reflect.KClass
 import org.jooq.DSLContext
@@ -27,6 +29,7 @@ class EventLogPayloadContext(
   private val eventsByClass = entries.map { it.event }.groupBy { it::class }
 
   private val biomassSpeciesNames = mutableMapOf<BiomassSpeciesId, BiomassSpecies>()
+  private val speciesNames = mutableMapOf<ObservationStore.RecordedSpeciesKey, String>()
 
   /**
    * Returns the name of a biomass species, possibly looking it up from the database the first time
@@ -58,6 +61,26 @@ class EventLogPayloadContext(
             .fetchOne()
             ?.let { BiomassSpecies(it.value1() ?: "$biomassSpeciesId", it.value2(), it.value3()) }
             ?: BiomassSpecies("$biomassSpeciesId", null, null)
+      }
+    }
+  }
+
+  /**
+   * Returns the name of a recorded species, possibly looking it up from the database the first time
+   * it's requested.
+   */
+  fun getRecordedSpeciesName(
+      certainty: RecordedSpeciesCertainty,
+      speciesId: SpeciesId?,
+      speciesName: String?,
+  ): String {
+    val speciesKey = ObservationStore.RecordedSpeciesKey(certainty, speciesId, speciesName)
+    return speciesNames.getOrPut(speciesKey) {
+      when (certainty) {
+        RecordedSpeciesCertainty.Known ->
+            dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(speciesId)) ?: "$speciesId"
+        RecordedSpeciesCertainty.Other -> speciesName!!
+        RecordedSpeciesCertainty.Unknown -> "Unknown" // TODO: i18n
       }
     }
   }

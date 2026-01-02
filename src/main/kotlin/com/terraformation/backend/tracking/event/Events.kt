@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
@@ -604,6 +605,60 @@ data class BiomassSpeciesUpdatedEventV1(
 typealias BiomassSpeciesUpdatedEvent = BiomassSpeciesUpdatedEventV1
 
 typealias BiomassSpeciesUpdatedEventValues = BiomassSpeciesUpdatedEventV1.Values
+
+sealed interface MonitoringSpeciesPersistentEvent : PersistentEvent {
+  val certainty: RecordedSpeciesCertainty
+  val monitoringPlotId: MonitoringPlotId
+  val observationId: ObservationId
+  val organizationId: OrganizationId
+  val plantingSiteId: PlantingSiteId
+  val speciesId: SpeciesId?
+  val speciesName: String?
+}
+
+data class MonitoringSpeciesTotalsEditedEventV1(
+    override val certainty: RecordedSpeciesCertainty,
+    val changedFrom: Values,
+    val changedTo: Values,
+    override val monitoringPlotId: MonitoringPlotId,
+    override val observationId: ObservationId,
+    override val organizationId: OrganizationId,
+    override val plantingSiteId: PlantingSiteId,
+    override val speciesId: SpeciesId?,
+    override val speciesName: String?,
+) : FieldsUpdatedPersistentEvent, MonitoringSpeciesPersistentEvent {
+  data class Values(
+      val totalDead: Int? = null,
+      val totalExisting: Int? = null,
+      val totalLive: Int? = null,
+  )
+
+  override fun listUpdatedFields(
+      messages: Messages
+  ): List<FieldsUpdatedPersistentEvent.UpdatedField> {
+    return listOfNotNull(
+        createUpdatedField(
+            "totalDead",
+            messages.numericValueOrNull(changedFrom.totalDead),
+            messages.numericValueOrNull(changedTo.totalDead),
+        ),
+        createUpdatedField(
+            "totalExisting",
+            messages.numericValueOrNull(changedFrom.totalExisting),
+            messages.numericValueOrNull(changedTo.totalExisting),
+        ),
+        createUpdatedField(
+            "totalLive",
+            messages.numericValueOrNull(changedFrom.totalLive),
+            messages.numericValueOrNull(changedTo.totalLive),
+        ),
+    )
+  }
+}
+
+typealias MonitoringSpeciesTotalsEditedEvent = MonitoringSpeciesTotalsEditedEventV1
+
+typealias MonitoringSpeciesTotalsEditedEventValues = MonitoringSpeciesTotalsEditedEventV1.Values
 
 sealed interface RecordedTreePersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId
