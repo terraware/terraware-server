@@ -50,19 +50,35 @@ abstract class ExpectedObservationResult<
         .toInt()
   }
 
+  /**
+   * Asserts that the per-species data matches expectations for this result.
+   *
+   * @param survivalRate Expected survival rate. If this is null, asserts that the result has no
+   *   survival rate. That is, null is treated as an expected value, not an indication that the
+   *   survival rate shouldn't be tested.
+   * @param totalDead Expected total dead plants, or null to skip verifying the value.
+   * @param totalExisting Expected total existing plants, or null to skip verifying the value.
+   * @param totalLive Expected total live plants, or null to skip verifying the value.
+   */
   fun species(
       number: Int,
-      survivalRate: Int? = null,
+      survivalRate: Int?,
+      totalDead: Int? = null,
+      totalExisting: Int? = null,
+      totalLive: Int? = null,
       init: Species.() -> Unit = {},
   ): Species {
     val speciesId = scenario.getOrInsertSpecies(number)
     return initChild(
         Species(
-            name,
-            number,
-            actualResult.species.firstOrNull { it.speciesId == speciesId },
-            survivalRate,
-            assertions,
+            parentName = name,
+            number = number,
+            speciesResult = actualResult.species.firstOrNull { it.speciesId == speciesId },
+            survivalRate = survivalRate,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            totalLive = totalLive,
+            assertions = assertions,
         ),
         init,
     )
@@ -86,15 +102,31 @@ abstract class ExpectedObservationResult<
       val number: Int,
       val speciesResult: ObservationSpeciesResultsModel?,
       val survivalRate: Int?,
+      val totalDead: Int?,
+      val totalExisting: Int?,
+      val totalLive: Int?,
       val assertions: MutableList<() -> Unit>,
   ) : ScenarioNode {
     override fun finish() {
+      val prefix = "$parentName species $number"
       assertions.add {
         assertEquals(
             survivalRate,
             speciesResult?.survivalRate,
-            "$parentName species $number survival rate",
+            "$prefix survival rate",
         )
+
+        if (totalDead != null) {
+          assertions.add { assertEquals(totalDead, speciesResult?.totalDead, "$prefix total dead") }
+        }
+        if (totalExisting != null) {
+          assertions.add {
+            assertEquals(totalExisting, speciesResult?.totalExisting, "$prefix total existing")
+          }
+        }
+        if (totalLive != null) {
+          assertions.add { assertEquals(totalLive, speciesResult?.totalLive, "$prefix total live") }
+        }
       }
     }
   }
