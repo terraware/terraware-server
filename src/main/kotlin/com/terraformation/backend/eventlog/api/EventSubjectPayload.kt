@@ -26,6 +26,7 @@ import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassSpeciesPersistentEvent
+import com.terraformation.backend.tracking.event.MonitoringSpeciesPersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFilePersistentEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
@@ -182,6 +183,41 @@ data class BiomassSpeciesSubjectPayload(
           shortText = context.subjectShortText<BiomassSpeciesSubjectPayload>(),
           speciesId = biomassSpecies.speciesId,
           scientificName = biomassSpecies.scientificName,
+      )
+    }
+  }
+}
+
+@JsonTypeName("MonitoringSpecies")
+data class MonitoringSpeciesSubjectPayload(
+    override val fullText: String,
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+    val plantingSiteId: PlantingSiteId,
+    override val shortText: String,
+    val speciesId: SpeciesId?,
+    val scientificName: String?,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: MonitoringSpeciesPersistentEvent,
+        context: EventLogPayloadContext,
+    ): MonitoringSpeciesSubjectPayload {
+      val displayName =
+          context.getRecordedSpeciesName(
+              event.certainty,
+              event.speciesId,
+              event.speciesName,
+          )
+
+      return MonitoringSpeciesSubjectPayload(
+          fullText = context.subjectFullText<MonitoringSpeciesSubjectPayload>(displayName),
+          monitoringPlotId = event.monitoringPlotId,
+          observationId = event.observationId,
+          plantingSiteId = event.plantingSiteId,
+          shortText = context.subjectShortText<MonitoringSpeciesSubjectPayload>(),
+          speciesId = event.speciesId,
+          scientificName = event.speciesName,
       )
     }
   }
@@ -386,6 +422,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   BiomassQuadrat(BiomassQuadratPersistentEvent::class),
   BiomassQuadratSpecies(BiomassQuadratSpeciesPersistentEvent::class),
   BiomassSpecies(BiomassSpeciesPersistentEvent::class),
+  MonitoringSpecies(MonitoringSpeciesPersistentEvent::class),
   ObservationPlot(ObservationPlotPersistentEvent::class),
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
   Organization(OrganizationPersistentEvent::class),
