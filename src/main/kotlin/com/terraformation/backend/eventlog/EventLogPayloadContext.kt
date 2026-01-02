@@ -79,7 +79,9 @@ class EventLogPayloadContext(
       when (certainty) {
         RecordedSpeciesCertainty.Known ->
             dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(speciesId)) ?: "$speciesId"
-        RecordedSpeciesCertainty.Other -> speciesName!!
+        RecordedSpeciesCertainty.Other ->
+            speciesName
+                ?: throw IllegalArgumentException("Species name required for certainty Other")
         RecordedSpeciesCertainty.Unknown -> "Unknown" // TODO: i18n
       }
     }
