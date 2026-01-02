@@ -202,7 +202,7 @@ data class MonitoringSpeciesSubjectPayload(
     fun forEvent(
         event: MonitoringSpeciesPersistentEvent,
         context: EventLogPayloadContext,
-    ): BiomassSpeciesSubjectPayload {
+    ): MonitoringSpeciesSubjectPayload {
       val displayName =
           context.getRecordedSpeciesName(
               event.certainty,
@@ -210,7 +210,7 @@ data class MonitoringSpeciesSubjectPayload(
               event.speciesName,
           )
 
-      return BiomassSpeciesSubjectPayload(
+      return MonitoringSpeciesSubjectPayload(
           fullText = context.subjectFullText<MonitoringSpeciesSubjectPayload>(displayName),
           monitoringPlotId = event.monitoringPlotId,
           observationId = event.observationId,
