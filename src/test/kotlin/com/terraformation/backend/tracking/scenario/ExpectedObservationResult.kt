@@ -68,12 +68,26 @@ abstract class ExpectedObservationResult<
       totalLive: Int? = null,
       init: Species.() -> Unit = {},
   ): Species {
-    val speciesId = scenario.getOrInsertSpecies(number)
+    val speciesId =
+        when (number) {
+          ObservationScenario.OTHER,
+          ObservationScenario.UNKNOWN -> null
+          else -> scenario.getOrInsertSpecies(number)
+        }
+    val speciesName =
+        when (number) {
+          ObservationScenario.OTHER -> "Other"
+          else -> null
+        }
+
     return initChild(
         Species(
             parentName = name,
             number = number,
-            speciesResult = actualResult.species.firstOrNull { it.speciesId == speciesId },
+            speciesResult =
+                actualResult.species.firstOrNull {
+                  it.speciesId == speciesId && it.speciesName == speciesName
+                },
             survivalRate = survivalRate,
             totalDead = totalDead,
             totalExisting = totalExisting,
