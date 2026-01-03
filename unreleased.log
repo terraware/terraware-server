@@ -1,3 +1,6 @@
+06536a2ee56 SW-7783 Implement monitoring observation editing (#3790)
+69ca0398717 Observation test DSL: Magic species numbers (#3789)
+32c8cc80750 Observation test DSL: Verify total plant counts (#3788)
 98094e9c934 Observation test DSL: Flexible plot number types (#3787)
 bbbd3f2b338 SW-7783 Define event for monitoring observation edit (#3786)
 4576b0ab883 Observation test DSL: Observation number in assertions (#3785)
