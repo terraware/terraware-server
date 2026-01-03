@@ -1772,6 +1772,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun updateObservationQuantities(observationId: ObservationId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateObservationQuantities(observationId)) {
+        readObservation(observationId)
+        throw AccessDeniedException("No permission to update observation $observationId quantities")
+      }
+    }
+  }
+
   fun updateOrganization(organizationId: OrganizationId) {
     user.recordPermissionChecks {
       if (!user.canUpdateOrganization(organizationId)) {

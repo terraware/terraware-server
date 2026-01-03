@@ -694,6 +694,7 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
+        updateObservationQuantities = true,
     )
 
     permissions.expect(
@@ -978,6 +979,7 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
+        updateObservationQuantities = true,
     )
 
     permissions.expect(
@@ -1180,6 +1182,7 @@ internal class PermissionTest : DatabaseTest() {
         *observationIds.forOrg1(),
         readObservation = true,
         updateObservation = true,
+        updateObservationQuantities = true,
     )
 
     permissions.expect(
@@ -1664,6 +1667,7 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
+        updateObservationQuantities = true,
     )
 
     permissions.expect(
@@ -1832,6 +1836,7 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
+        updateObservationQuantities = true,
     )
 
     permissions.expect(
@@ -2108,6 +2113,7 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
+        updateObservationQuantities = true,
     )
 
     permissions.expect(
@@ -2386,6 +2392,7 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot = true,
         rescheduleObservation = true,
         updateObservation = true,
+        updateObservationQuantities = true,
     )
 
     permissions.expect(
@@ -4100,6 +4107,7 @@ internal class PermissionTest : DatabaseTest() {
         replaceObservationPlot: Boolean = false,
         rescheduleObservation: Boolean = false,
         updateObservation: Boolean = false,
+        updateObservationQuantities: Boolean = false,
     ) {
       observationIds.forEach { observationId ->
         val idInDatabase = getDatabaseId(observationId)
@@ -4128,6 +4136,11 @@ internal class PermissionTest : DatabaseTest() {
             updateObservation,
             user.canUpdateObservation(idInDatabase),
             "Can update observation $observationId",
+        )
+        assertEquals(
+            updateObservationQuantities,
+            user.canUpdateObservationQuantities(idInDatabase),
+            "Can update observation quantities $observationId",
         )
 
         uncheckedObservations.remove(observationId)

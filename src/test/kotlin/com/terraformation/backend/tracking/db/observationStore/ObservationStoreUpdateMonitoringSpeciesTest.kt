@@ -15,8 +15,10 @@ import com.terraformation.backend.util.nullSafeMapOf
 import com.terraformation.backend.util.nullSafeMutableMapOf
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.springframework.security.access.AccessDeniedException
 
 /**
  * Tests the behavior of editing plant counts on monitoring observations, primarily verifying that
@@ -1082,6 +1084,21 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
       observationEdited(1) { plot(2) { species(0, live = 22) } }
 
       assertResultsMatchNumbersFromObsLive()
+    }
+  }
+
+  @Test
+  fun `throws exception if no permission to edit quantities`() {
+    scenario {
+      siteCreated { stratum(1) { substratum(1) { plot(1) } } }
+      observation(1) { plot(1) { species(0, live = 1) } }
+
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        observationEdited(1) { plot(1) { species(0, live = 2) } }
+      }
     }
   }
 

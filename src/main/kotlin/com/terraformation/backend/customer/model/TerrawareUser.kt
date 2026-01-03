@@ -618,6 +618,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canUpdateObservation(observationId: ObservationId): Boolean = defaultPermission
 
+  fun canUpdateObservationQuantities(observationId: ObservationId): Boolean = defaultPermission
+
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canUpdateParticipant(participantId: ParticipantId): Boolean = defaultPermission
