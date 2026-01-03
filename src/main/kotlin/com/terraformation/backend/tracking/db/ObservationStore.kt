@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationIdConverter
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -51,6 +52,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_PO
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
@@ -58,12 +60,14 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTO
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
+import com.terraformation.backend.tracking.model.EditableMonitoringSpeciesModel
 import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -997,7 +1001,7 @@ class ObservationStore(
               ?: throw PlantingSiteNotFoundException(plantingSiteId)
 
       // Add the plot-level live/dead/existing counts to the target species. This propagates the
-      // changes up to the zone and site totals.
+      // changes up to the stratum and site totals.
       updateSpeciesTotals(
           observationId,
           plantingSite,
@@ -1171,6 +1175,166 @@ class ObservationStore(
                 observationId = observationId,
                 organizationId = organizationId,
                 plantingSiteId = observation.plantingSiteId,
+            )
+        )
+      }
+    }
+  }
+
+  fun updateMonitoringSpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+      certainty: RecordedSpeciesCertainty,
+      speciesId: SpeciesId?,
+      speciesName: String?,
+      updateFunc: (EditableMonitoringSpeciesModel) -> EditableMonitoringSpeciesModel,
+  ) {
+    requirePermissions {
+      updateObservation(observationId) //
+    }
+
+    observationLocker.withLockedObservation(observationId) { observation ->
+      if (observation.observationType != ObservationType.Monitoring) {
+        throw IllegalArgumentException("Observation type is not Monitoring")
+      }
+
+      val existing =
+          with(OBSERVED_PLOT_SPECIES_TOTALS) {
+            dslContext
+                .select(TOTAL_DEAD, TOTAL_LIVE, TOTAL_EXISTING)
+                .from(OBSERVED_PLOT_SPECIES_TOTALS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .and(CERTAINTY_ID.eq(certainty))
+                .and(SPECIES_ID.eqOrIsNull(speciesId))
+                .and(SPECIES_NAME.eqOrIsNull(speciesName))
+                .fetchOne { EditableMonitoringSpeciesModel.of(it) }
+                ?: throw SpeciesNotInObservationException(speciesId, speciesName)
+          }
+
+      val updated = updateFunc(existing)
+
+      if (updated != existing) {
+        // We need to update the totals for the stratum and substratum the plot was in at the time
+        // of the observation, which might not be where it currently is.
+        val (isPermanent, substratumId, stratumId) =
+            dslContext
+                .select(
+                    OBSERVATION_PLOTS.IS_PERMANENT.asNonNullable(),
+                    OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID,
+                    OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
+                        .STRATUM_ID,
+                )
+                .from(OBSERVATION_PLOTS)
+                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+                .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+                .fetchOne() ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+
+        val plantingSitesRow =
+            dslContext
+                .selectFrom(PLANTING_SITES)
+                .where(PLANTING_SITES.ID.eq(observation.plantingSiteId))
+                .fetchOneInto(PlantingSitesRow::class.java)
+                ?: throw PlantingSiteNotFoundException(observation.plantingSiteId)
+
+        val plantCountAdjustments =
+            mapOf(
+                RecordedSpeciesKey(certainty, speciesId, speciesName) to
+                    mapOf(
+                        RecordedPlantStatus.Dead to updated.totalDead - existing.totalDead,
+                        RecordedPlantStatus.Existing to
+                            updated.totalExisting - existing.totalExisting,
+                        RecordedPlantStatus.Live to updated.totalLive - existing.totalLive,
+                    )
+            )
+
+        updateSpeciesTotals(
+            observationId,
+            plantingSitesRow,
+            stratumId,
+            substratumId,
+            monitoringPlotId,
+            observation.isAdHoc,
+            isPermanent,
+            plantCountAdjustments,
+        )
+
+        // Aggregation from substratum to stratum (and then to site) works by adding up the most
+        // recent data for each substratum at the time of the observation in question.
+        //
+        // Edits to an observation can affect stratum and site data for later observations, but only
+        // if the edited observation hasn't been superseded by a newer observation of the same
+        // substratum.
+        //
+        // So we want to update later observations that don't have newer results for the substratum
+        // we're editing, that is, observations for which this observation's substratum-level totals
+        // would be used to calculate the stratum- and site-level totals.
+
+        val latestObservations = OBSERVATIONS.`as`("latest_observations")
+        val observationWithLatestResultsForSubstratum =
+            DSL.field(
+                DSL.select(latestObservations.ID)
+                    .from(latestObservations)
+                    .join(OBSERVATION_REQUESTED_SUBSTRATA)
+                    .on(latestObservations.ID.eq(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID))
+                    .where(latestObservations.COMPLETED_TIME.ge(observation.completedTime))
+                    .and(latestObservations.COMPLETED_TIME.le(OBSERVATIONS.COMPLETED_TIME))
+                    .and(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(substratumId))
+                    .orderBy(latestObservations.COMPLETED_TIME.desc(), latestObservations.ID.desc())
+                    .limit(1)
+            )
+        val stratumIdAtTimeOfObservation =
+            DSL.field(
+                DSL.select(STRATUM_HISTORIES.STRATUM_ID)
+                    .from(STRATUM_HISTORIES)
+                    .join(SUBSTRATUM_HISTORIES)
+                    .on(STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
+                    .where(
+                        STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                            OBSERVATIONS.PLANTING_SITE_HISTORY_ID
+                        )
+                    )
+                    .and(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(substratumId))
+            )
+
+        val laterObservationsDependentOnSubstratumDataFromThisObservation =
+            dslContext
+                .select(
+                    OBSERVATIONS.ID.asNonNullable(),
+                    stratumIdAtTimeOfObservation.asNonNullable(),
+                )
+                .from(OBSERVATIONS)
+                .where(OBSERVATIONS.PLANTING_SITE_ID.eq(observation.plantingSiteId))
+                .and(OBSERVATIONS.COMPLETED_TIME.gt(observation.completedTime))
+                .and(observationWithLatestResultsForSubstratum.eq(observationId))
+                .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
+                .fetch()
+
+        laterObservationsDependentOnSubstratumDataFromThisObservation.forEach {
+            (laterObservationId, stratumIdInLaterObservation) ->
+          updateSpeciesTotals(
+              observationId = laterObservationId,
+              plantingSite = plantingSitesRow,
+              stratumId = stratumIdInLaterObservation,
+              substratumId = null,
+              monitoringPlotId = null,
+              isAdHoc = observation.isAdHoc,
+              isPermanent = isPermanent,
+              plantCountsBySpecies = plantCountAdjustments,
+          )
+        }
+
+        eventPublisher.publishEvent(
+            MonitoringSpeciesTotalsEditedEvent(
+                certainty = certainty,
+                changedFrom = existing.toEventValues(updated),
+                changedTo = updated.toEventValues(existing),
+                monitoringPlotId = monitoringPlotId,
+                observationId = observationId,
+                organizationId = plantingSitesRow.organizationId!!,
+                plantingSiteId = observation.plantingSiteId,
+                speciesId = speciesId,
+                speciesName = speciesName,
             )
         )
       }

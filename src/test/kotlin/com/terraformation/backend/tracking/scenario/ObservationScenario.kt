@@ -160,6 +160,9 @@ class ObservationScenario(
       init: ObservationCompletedStep.() -> Unit,
   ) = initChild(ObservationCompletedStep(this, number), init).andAdvanceClock()
 
+  fun observationEdited(number: Int, init: ObservationEditedStep.() -> Unit) =
+      initChild(ObservationEditedStep(this, this, number), init).andAdvanceClock()
+
   fun siteCreated(
       survivalRateIncludesTempPlots: Boolean = false,
       init: SiteCreatedStep.() -> Unit,
