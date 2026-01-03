@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVAT
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
@@ -36,7 +37,6 @@ import com.terraformation.backend.util.toPlantsPerHectare
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
-import kotlin.collections.Map
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
@@ -490,6 +490,20 @@ class T0Store(
   fun on(event: ObservationStateUpdatedEvent) {
     if (event.newState in listOf(ObservationState.Completed, ObservationState.Abandoned)) {
       assignNewObservationSpeciesZero(event.observationId)
+    }
+  }
+
+  @EventListener
+  fun on(event: MonitoringSpeciesTotalsEditedEvent) {
+    val isT0Observation =
+        dslContext.fetchExists(
+            PLOT_T0_OBSERVATIONS,
+            PLOT_T0_OBSERVATIONS.OBSERVATION_ID.eq(event.observationId)
+                .and(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.eq(event.monitoringPlotId)),
+        )
+
+    if (isT0Observation) {
+      assignT0PlotObservation(event.monitoringPlotId, event.observationId)
     }
   }
 

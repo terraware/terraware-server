@@ -27,6 +27,7 @@ import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.T0Store
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import java.time.temporal.ChronoUnit
 import org.jooq.Configuration
@@ -58,6 +59,7 @@ import org.jooq.Configuration
  */
 class ObservationScenario(
     val clock: TestClock,
+    val eventPublisher: TestEventPublisher,
     val observationResultsStore: ObservationResultsStore,
     val observationStore: ObservationStore,
     val plantingSiteStore: PlantingSiteStore,
@@ -67,6 +69,7 @@ class ObservationScenario(
   companion object {
     fun forTest(
         test: DatabaseBackedTest,
+        registerListeners: Boolean = true,
         clock: TestClock = TestClock(),
         eventPublisher: TestEventPublisher = TestEventPublisher(),
         identifierGenerator: IdentifierGenerator = IdentifierGenerator(clock, test.dslContext),
@@ -103,8 +106,13 @@ class ObservationScenario(
             ),
         t0Store: T0Store = T0Store(clock, test.dslContext, eventPublisher),
     ): ObservationScenario {
+      if (registerListeners) {
+        eventPublisher.register<MonitoringSpeciesTotalsEditedEvent> { t0Store.on(it) }
+      }
+
       return ObservationScenario(
           clock,
+          eventPublisher,
           observationResultsStore,
           observationStore,
           plantingSiteStore,

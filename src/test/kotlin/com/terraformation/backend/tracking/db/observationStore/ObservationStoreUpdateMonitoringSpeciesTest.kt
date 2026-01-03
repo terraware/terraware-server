@@ -739,6 +739,120 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
   }
 
   @Test
+  fun `editing t0 observation affects survival rates in all observations that include the substratum`() {
+    scenario {
+      siteCreated {
+        stratum(1) {
+          substratum(1) { plot(1) }
+          substratum(2) { plot(2) }
+        }
+        stratum(2) { substratum(3) { plot(3) } }
+      }
+
+      // Map<observation number, Map<plot number, live count>>
+      val obsLive =
+          nullSafeMapOf(
+              1 to nullSafeMutableMapOf(1 to 13, 2 to 14, 3 to 15),
+              2 to nullSafeMutableMapOf(1 to 23),
+              3 to nullSafeMutableMapOf(3 to 35),
+          )
+
+      obsLive.forEach { (observationNumber, plantsPerPlot) ->
+        observation(observationNumber) {
+          plantsPerPlot.forEach { (plotNumber, liveCount) ->
+            plot(plotNumber) { species(0, live = liveCount) }
+          }
+        }
+      }
+
+      val densities = nullSafeMutableMapOf(1 to obsLive[1][1], 2 to 40, 3 to 50)
+
+      t0DensitySet {
+        plot(1) { observation(1) }
+        plot(2) { species(0, densities[2]) }
+        plot(3) { species(0, densities[3]) }
+      }
+
+      fun assertResultsMatchNumbersFromObsLive() {
+        expectResults(observation = 1) {
+          survivalRate(
+              percent(
+                  obsLive[1][1] + obsLive[1][2] + obsLive[1][3],
+                  densities[1] + densities[2] + densities[3],
+              )
+          )
+          stratum(1) {
+            survivalRate(percent(obsLive[1][1] + obsLive[1][2], densities[1] + densities[2]))
+            substratum(1) {
+              survivalRate(percent(obsLive[1][1], densities[1]))
+              plot(1) { survivalRate(percent(obsLive[1][1], densities[1])) }
+            }
+            substratum(2) {
+              survivalRate(percent(obsLive[1][2], densities[2]))
+              plot(2) { survivalRate(percent(obsLive[1][2], densities[2])) }
+            }
+          }
+          stratum(2) {
+            survivalRate(percent(obsLive[1][3], densities[3]))
+            substratum(3) {
+              survivalRate(percent(obsLive[1][3], densities[3]))
+              plot(3) { survivalRate(percent(obsLive[1][3], densities[3])) }
+            }
+          }
+        }
+
+        expectResults(observation = 2) {
+          survivalRate(
+              percent(
+                  obsLive[2][1] + obsLive[1][2] + obsLive[1][3],
+                  densities[1] + densities[2] + densities[3],
+              )
+          )
+          stratum(1) {
+            survivalRate(percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2]))
+            substratum(1) {
+              survivalRate(percent(obsLive[2][1], densities[1]))
+              plot(1) { survivalRate(percent(obsLive[2][1], densities[1])) }
+            }
+            noResultForSubstratum(2)
+          }
+          noResultForStratum(2)
+        }
+
+        expectResults(observation = 3) {
+          survivalRate(
+              percent(
+                  obsLive[2][1] + obsLive[1][2] + obsLive[3][3],
+                  densities[1] + densities[2] + densities[3],
+              )
+          )
+          noResultForStratum(1)
+          stratum(2) {
+            survivalRate(percent(obsLive[3][3], densities[3]))
+            noResultForSubstratum(2)
+            substratum(3) { survivalRate(percent(obsLive[3][3], densities[3])) }
+          }
+        }
+      }
+
+      assertResultsMatchNumbersFromObsLive()
+
+      // The edit will include dead and existing plants to verify that the dead ones are counted as
+      // part of the t0 density.
+      val obs1Dead = 20
+      obsLive[1][1] = 43
+      densities[1] = obsLive[1][1] + obs1Dead
+      observationEdited(1) {
+        plot(1) { species(0, live = obsLive[1][1], dead = obs1Dead, existing = 50) }
+      }
+
+      // This will use the updated obsLive[1][1] value, i.e., it will assert that the results are
+      // what we would have gotten if the original observation had used the edited number.
+      assertResultsMatchNumbersFromObsLive()
+    }
+  }
+
+  @Test
   fun `stratum-level survival rates account for map edits that cause substrata to move from one stratum to another`() {
     scenario {
       siteCreated {
