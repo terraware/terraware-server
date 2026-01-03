@@ -1,3 +1,8 @@
+58c395d213d SW-7783 Localize unknown species name (#3793)
+ba6eae21c9a SW-7783 Apply changes from observation edit API (#3792)
+47d8a2bf343 SW-7783 Don't allow Contributors to edit plant counts (#3796)
+73c034911de Update dependency software.amazon.awssdk:bom to v2.41.0 (#3782)
+bdfde0f6460 SW-7783 Update survival rates on t0 observation edit (#3791)
 06536a2ee56 SW-7783 Implement monitoring observation editing (#3790)
 69ca0398717 Observation test DSL: Magic species numbers (#3789)
 32c8cc80750 Observation test DSL: Verify total plant counts (#3788)
