@@ -1128,6 +1128,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { updateObservation(observationId) } ifUser { canUpdateObservation(observationId) }
 
   @Test
+  fun updateObservationQuantities() =
+      allow { updateObservationQuantities(observationId) } ifUser
+          {
+            canUpdateObservationQuantities(observationId)
+          }
+
+  @Test
   fun updateOrganization() =
       allow { updateOrganization(organizationId) } ifUser { canUpdateOrganization(organizationId) }
 
