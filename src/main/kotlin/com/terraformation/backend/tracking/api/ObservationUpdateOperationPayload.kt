@@ -13,6 +13,7 @@ import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratSpeciesModel
 import com.terraformation.backend.tracking.model.EditableBiomassSpeciesModel
+import com.terraformation.backend.tracking.model.EditableMonitoringSpeciesModel
 import com.terraformation.backend.tracking.model.EditableObservationPlotDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.util.patchNullable
@@ -115,7 +116,15 @@ data class MonitoringSpeciesUpdateOperationPayload(
     val totalDead: Int?,
     val totalExisting: Int?,
     val totalLive: Int?,
-) : ObservationUpdateOperationPayload
+) : ObservationUpdateOperationPayload {
+  fun applyTo(model: EditableMonitoringSpeciesModel): EditableMonitoringSpeciesModel {
+    return model.copy(
+        totalDead = totalDead ?: model.totalDead,
+        totalExisting = totalExisting ?: model.totalExisting,
+        totalLive = totalLive ?: model.totalLive,
+    )
+  }
+}
 
 @JsonTypeName("ObservationPlot")
 data class ObservationPlotUpdateOperationPayload(
