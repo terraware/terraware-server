@@ -25,11 +25,11 @@ class ObservationCompletedStep(val scenario: ObservationScenario, val number: In
   lateinit var observationId: ObservationId
 
   fun plot(
-      number: Long,
+      number: Number,
       isPermanent: Boolean = true,
       conditions: Set<ObservableCondition> = emptySet(),
       init: Plot.() -> Unit = {},
-  ) = initChild(Plot(number, isPermanent, conditions), init)
+  ) = initChild(Plot(number.toLong(), isPermanent, conditions), init)
 
   override fun prepare() {
     val plantingSiteHistoryId =

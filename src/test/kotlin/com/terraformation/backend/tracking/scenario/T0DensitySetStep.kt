@@ -12,7 +12,7 @@ class T0DensitySetStep(val scenario: ObservationScenario) :
   private val test: DatabaseBackedTest
     get() = scenario.test
 
-  fun plot(number: Long, init: Plot.() -> Unit) = initChild(Plot(number), init)
+  fun plot(number: Number, init: Plot.() -> Unit) = initChild(Plot(number.toLong()), init)
 
   fun stratum(number: Int, init: Stratum.() -> Unit) = initAndAppend(Stratum(number), strata, init)
 
