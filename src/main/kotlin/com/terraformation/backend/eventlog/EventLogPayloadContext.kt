@@ -82,7 +82,7 @@ class EventLogPayloadContext(
         RecordedSpeciesCertainty.Other ->
             speciesName
                 ?: throw IllegalArgumentException("Species name required for certainty Other")
-        RecordedSpeciesCertainty.Unknown -> "Unknown" // TODO: i18n
+        RecordedSpeciesCertainty.Unknown -> messages.unknownSpecies()
       }
     }
   }
