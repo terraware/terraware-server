@@ -1,3 +1,6 @@
+98094e9c934 Observation test DSL: Flexible plot number types (#3787)
+bbbd3f2b338 SW-7783 Define event for monitoring observation edit (#3786)
+4576b0ab883 Observation test DSL: Observation number in assertions (#3785)
 5c46c9b2be5 Observation test DSL: Set t0 from observation (#3784)
 e8189a3c4ce Observation test DSL: Set plot permanent indexes (#3783)
 c9bcfc1da19 Test disjoint substratum observations with map edit (#3781)
