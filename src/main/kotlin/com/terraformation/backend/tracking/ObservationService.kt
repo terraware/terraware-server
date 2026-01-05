@@ -731,9 +731,15 @@ class ObservationService(
   fun <T> updateCompletedPlot(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
+      includesQuantityUpdates: Boolean = false,
       func: () -> T,
   ): T {
-    requirePermissions { updateObservation(observationId) }
+    requirePermissions {
+      if (includesQuantityUpdates) {
+        updateObservationQuantities(observationId)
+      }
+      updateObservation(observationId)
+    }
 
     val plotStatus =
         dslContext.fetchValue(

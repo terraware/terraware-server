@@ -334,7 +334,10 @@ class ObservationsController(
       @PathVariable plotId: MonitoringPlotId,
       @RequestBody payload: UpdateObservationRequestPayload,
   ): SimpleSuccessResponsePayload {
-    observationService.updateCompletedPlot(observationId, plotId) {
+    val includesQuantityUpdates =
+        payload.updates.any { it is MonitoringSpeciesUpdateOperationPayload }
+
+    observationService.updateCompletedPlot(observationId, plotId, includesQuantityUpdates) {
       payload.updates.forEach { element ->
         when (element) {
           is BiomassSpeciesUpdateOperationPayload ->
