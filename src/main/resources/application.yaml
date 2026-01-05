@@ -124,6 +124,7 @@ management:
 # generating the API documentation from the command line.
 springdoc:
   api-docs:
+    enabled: true
     version: "openapi_3_0"
   # Limit the package scan to just the API classes. Otherwise the schema will include a bunch of
   # internal data model classes we don't actually expose to clients.
@@ -149,6 +150,7 @@ springdoc:
   swagger-ui:
     # Disable the demo API (pet store)
     disable-swagger-default-url: true
+    enabled: true
     operations-sorter: alpha
     tags-sorter: alpha
     # Allow the user to use "try it out" after logging into the web app; this will cause their
