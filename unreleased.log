@@ -1,3 +1,5 @@
+76f8aad4946 Update dependency html-minifier-next to v4.16.4 (#3794)
+83166d2003a Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.15 (#3795)
 58c395d213d SW-7783 Localize unknown species name (#3793)
 ba6eae21c9a SW-7783 Apply changes from observation edit API (#3792)
 47d8a2bf343 SW-7783 Don't allow Contributors to edit plant counts (#3796)
