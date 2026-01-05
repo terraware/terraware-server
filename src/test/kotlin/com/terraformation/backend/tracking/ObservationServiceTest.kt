@@ -2891,7 +2891,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `calls function to perform updates`() {
       val initial = dslContext.fetchSingle(OBSERVATION_PLOTS)
 
-      service.updateCompletedPlot(observationId, monitoringPlotId) {
+      service.updateCompletedPlot(observationId, monitoringPlotId, includesQuantityUpdates = true) {
         dslContext.update(OBSERVATION_PLOTS).set(OBSERVATION_PLOTS.NOTES, "new notes").execute()
       }
 
@@ -2939,6 +2939,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<ObservationNotFoundException> {
         service.updateCompletedPlot(observationId, monitoringPlotId) {}
+      }
+    }
+
+    @Test
+    fun `throws exception if no permission to update observation quantities`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        service.updateCompletedPlot(
+            observationId,
+            monitoringPlotId,
+            includesQuantityUpdates = true,
+        ) {}
       }
     }
   }
