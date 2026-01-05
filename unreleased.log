@@ -1,3 +1,4 @@
+24fed9402a0 Explicitly enable OpenAPI schema endpoints (#3797)
 76f8aad4946 Update dependency html-minifier-next to v4.16.4 (#3794)
 83166d2003a Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.15 (#3795)
 58c395d213d SW-7783 Localize unknown species name (#3793)
