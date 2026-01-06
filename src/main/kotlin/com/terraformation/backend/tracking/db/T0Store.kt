@@ -24,7 +24,9 @@ import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEv
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
+import com.terraformation.backend.tracking.model.ObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
+import com.terraformation.backend.tracking.model.PlotObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
@@ -83,6 +85,87 @@ class T0Store(
         (!survivalRateIncludesTempPlots(plantingSiteId) || isAllTempT0DataSet(plantingSiteId))
   }
 
+  /** Fetch Plots with observations and the species densities of each observation */
+  fun fetchPlotObservationSpeciesDensities(
+      plantingSiteId: PlantingSiteId
+  ): List<PlotObservationSpeciesDensityModel> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return with(OBSERVED_PLOT_SPECIES_TOTALS) {
+      dslContext
+          .select(
+              MONITORING_PLOT_ID,
+              OBSERVATION_ID,
+              OBSERVATIONS.START_DATE,
+              OBSERVATIONS.COMPLETED_TIME,
+              SPECIES_ID,
+              TOTAL_LIVE.plus(TOTAL_DEAD),
+          )
+          .from(OBSERVED_PLOT_SPECIES_TOTALS)
+          .join(OBSERVATION_PLOTS)
+          .on(
+              OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATION_ID)
+                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
+          )
+          .join(OBSERVATIONS)
+          .on(OBSERVATIONS.ID.eq(OBSERVATION_ID))
+          .join(MONITORING_PLOTS)
+          .on(MONITORING_PLOTS.ID.eq(MONITORING_PLOT_ID))
+          .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+          .and(completedObservationsCondition)
+          .and(OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID.eq(RecordedSpeciesCertainty.Known))
+          .and(MONITORING_PLOTS.SUBSTRATUM_ID.isNotNull)
+          // currently permanent:
+          .and(MONITORING_PLOTS.PERMANENT_INDEX.isNotNull)
+          // has been observed at least once while it was permanent:
+          .and(
+              DSL.exists(
+                  DSL.selectOne()
+                      .from(OBSERVATION_PLOTS)
+                      .join(OBSERVATIONS)
+                      .on(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                      .where(OBSERVATION_PLOTS.IS_PERMANENT.isTrue)
+                      .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
+                      .and(completedObservationsCondition)
+              )
+          )
+          .and(
+              DSL.or(
+                  OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.gt(0),
+                  OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD.gt(0),
+              )
+          )
+          .fetchGroups(MONITORING_PLOT_ID.asNonNullable())
+          .map { (monitoringPlotId, plotRecords) ->
+            PlotObservationSpeciesDensityModel(
+                monitoringPlotId = monitoringPlotId,
+                observations =
+                    plotRecords
+                        .groupBy { it[OBSERVATION_ID.asNonNullable()] }
+                        .map { (observationId, observationRecords) ->
+                          ObservationSpeciesDensityModel(
+                              observationId = observationId,
+                              observationStartDate =
+                                  observationRecords.first()[OBSERVATIONS.START_DATE]!!,
+                              observationCompletedTime =
+                                  observationRecords.first()[OBSERVATIONS.COMPLETED_TIME]!!,
+                              species =
+                                  observationRecords.map { record ->
+                                    SpeciesDensityModel(
+                                        speciesId = record[SPECIES_ID]!!,
+                                        density =
+                                            record[TOTAL_LIVE.plus(TOTAL_DEAD)]!!
+                                                .toBigDecimal()
+                                                .toPlantsPerHectare(),
+                                    )
+                                  },
+                          )
+                        },
+            )
+          }
+    }
+  }
+
   fun fetchSiteSpeciesByPlot(plantingSiteId: PlantingSiteId): List<PlotSpeciesModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -118,11 +201,7 @@ class T0Store(
             .join(OBSERVATIONS)
             .on(OBSERVATIONS.ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID))
             .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(plantingSiteId))
-            .and(
-                OBSERVATIONS.STATE_ID.`in`(
-                    listOf(ObservationState.Completed, ObservationState.Abandoned)
-                )
-            )
+            .and(completedObservationsCondition)
             .and(
                 DSL.or(
                     OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.gt(0),
@@ -229,11 +308,7 @@ class T0Store(
               .on(OBSERVATIONS.ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID))
               .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
               .and(OBSERVATION_ID.ne(observationId))
-              .and(
-                  OBSERVATIONS.STATE_ID.`in`(
-                      listOf(ObservationState.Completed, ObservationState.Abandoned)
-                  )
-              )
+              .and(completedObservationsCondition)
               .and(SPECIES_ID.notIn(observationDensities.keys))
               .and(DSL.or(TOTAL_LIVE.gt(0), TOTAL_DEAD.gt(0)))
               .fetchSet(SPECIES_ID.asNonNullable())
@@ -747,11 +822,7 @@ class T0Store(
               .and(PERMANENT_INDEX.isNotNull)
               .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(true))
               .and(PLOT_T0_DENSITIES.PLOT_DENSITY.isNull)
-              .and(
-                  OBSERVATIONS.STATE_ID.`in`(
-                      listOf(ObservationState.Completed, ObservationState.Abandoned)
-                  )
-              )
+              .and(completedObservationsCondition)
       )
     }
   }
@@ -776,11 +847,7 @@ class T0Store(
                       .join(OBSERVATIONS)
                       .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
                       .where(PLANTING_SITE_ID.eq(plantingSiteId))
-                      .and(
-                          OBSERVATIONS.STATE_ID.`in`(
-                              listOf(ObservationState.Completed, ObservationState.Abandoned)
-                          )
-                      )
+                      .and(completedObservationsCondition)
               )
               .asTable("plot_species")
         }
@@ -816,11 +883,7 @@ class T0Store(
               .and(PERMANENT_INDEX.isNull)
               .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
               .and(STRATUM_T0_TEMP_DENSITIES.STRATUM_DENSITY.isNull)
-              .and(
-                  OBSERVATIONS.STATE_ID.`in`(
-                      listOf(ObservationState.Completed, ObservationState.Abandoned)
-                  )
-              )
+              .and(completedObservationsCondition)
       )
     }
   }
@@ -843,11 +906,7 @@ class T0Store(
                         .on(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(ID))
                         .join(OBSERVATIONS)
                         .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
-                        .where(
-                            OBSERVATIONS.STATE_ID.`in`(
-                                listOf(ObservationState.Completed, ObservationState.Abandoned)
-                            )
-                        )
+                        .where(completedObservationsCondition)
                 )
             )
       }
@@ -865,11 +924,7 @@ class T0Store(
             .on(OBSERVATIONS.ID.eq(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID))
             .where(PLANTING_SITE_ID.eq(plantingSiteId))
             .and(OBSERVED_PLOT_SPECIES_TOTALS.CERTAINTY_ID.eq(RecordedSpeciesCertainty.Known))
-            .and(
-                OBSERVATIONS.STATE_ID.`in`(
-                    listOf(ObservationState.Completed, ObservationState.Abandoned)
-                )
-            )
+            .and(completedObservationsCondition)
             .and(
                 DSL.or(
                     OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE.gt(0),
@@ -884,4 +939,7 @@ class T0Store(
           .from(PLANTING_SITES)
           .where(PLANTING_SITES.ID.eq(plantingSiteId))
           .fetchOne(PLANTING_SITES.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable())!!
+
+  private val completedObservationsCondition =
+      OBSERVATIONS.STATE_ID.`in`(listOf(ObservationState.Completed, ObservationState.Abandoned))
 }

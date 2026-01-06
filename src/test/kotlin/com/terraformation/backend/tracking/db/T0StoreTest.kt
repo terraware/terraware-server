@@ -30,7 +30,9 @@ import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
+import com.terraformation.backend.tracking.model.ObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
+import com.terraformation.backend.tracking.model.PlotObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedModel
@@ -41,6 +43,10 @@ import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import com.terraformation.backend.tracking.model.StratumT0TempDensityChangedModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
+import java.time.LocalDate
+import java.time.ZoneOffset
+import kotlin.IllegalArgumentException
+import kotlin.lazy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -66,6 +72,9 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var observationId: ObservationId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
+  private val observationTime = clock.instant()
+  private val observationStartDate =
+      LocalDate.ofInstant(clock.instant(), ZoneOffset.UTC).minusDays(1)
 
   @BeforeEach
   fun setUp() {
@@ -76,22 +85,26 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     plantingSiteId = insertPlantingSite(boundary = siteBoundary, gridOrigin = gridOrigin)
     stratumId = insertStratum(name = "Stratum 2")
     substratumId = insertSubstratum()
-    observationId = insertObservation(completedTime = clock.instant())
+    observationId =
+        insertObservation(
+            startDate = observationStartDate,
+            completedTime = observationTime,
+        )
 
     tempPlotId = insertMonitoringPlot(plotNumber = 10)
     insertObservationPlot(
-        claimedTime = clock.instant(),
+        claimedTime = observationTime,
         claimedBy = user.userId,
-        completedTime = clock.instant(),
+        completedTime = observationTime,
         completedBy = user.userId,
         isPermanent = false,
     )
 
     monitoringPlotId = insertMonitoringPlot(plotNumber = 2, permanentIndex = 2)
     insertObservationPlot(
-        claimedTime = clock.instant(),
+        claimedTime = observationTime,
         claimedBy = user.userId,
-        completedTime = clock.instant(),
+        completedTime = observationTime,
         completedBy = user.userId,
         isPermanent = true,
     )
@@ -338,17 +351,17 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertStratumT0TempDensity(speciesId = speciesId1)
       insertMonitoringPlot(plotNumber = 100, permanentIndex = 100, substratumId = null)
       insertObservationPlot(
-          claimedTime = clock.instant(),
+          claimedTime = observationTime,
           claimedBy = user.userId,
-          completedTime = clock.instant(),
+          completedTime = observationTime,
           completedBy = user.userId,
           isPermanent = true,
       )
       insertMonitoringPlot(plotNumber = 101, permanentIndex = null, substratumId = null)
       insertObservationPlot(
-          claimedTime = clock.instant(),
+          claimedTime = observationTime,
           claimedBy = user.userId,
-          completedTime = clock.instant(),
+          completedTime = observationTime,
           completedBy = user.userId,
       )
 
@@ -364,9 +377,9 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // ad-hoc plots are excluded
       insertMonitoringPlot(isAdHoc = true, plotNumber = 100, substratumId = null)
       insertObservationPlot(
-          claimedTime = clock.instant(),
+          claimedTime = observationTime,
           claimedBy = user.userId,
-          completedTime = clock.instant(),
+          completedTime = observationTime,
           completedBy = user.userId,
           isPermanent = false,
       )
@@ -412,9 +425,9 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // observations are excluded
       insertMonitoringPlot(plotNumber = 103, permanentIndex = 103)
       insertObservationPlot(
-          claimedTime = clock.instant(),
+          claimedTime = observationTime,
           claimedBy = user.userId,
-          completedTime = clock.instant(),
+          completedTime = observationTime,
           completedBy = user.userId,
           isPermanent = false,
       )
@@ -437,9 +450,9 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertSubstratum()
       insertMonitoringPlot(plotNumber = 104, permanentIndex = null)
       insertObservationPlot(
-          claimedTime = clock.instant(),
+          claimedTime = observationTime,
           claimedBy = user.userId,
-          completedTime = clock.instant(),
+          completedTime = observationTime,
           completedBy = user.userId,
           isPermanent = true,
       )
@@ -447,6 +460,81 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTrue(
           store.fetchAllT0SiteDataSet(plantingSiteId),
           "Ignore observed plots that weren't temporary at observation",
+      )
+    }
+  }
+
+  @Nested
+  inner class FetchPlotObservationSpeciesDensities {
+    @Test
+    fun `throws exception when user lacks permission`() {
+      deleteOrganizationUser()
+
+      assertThrows<PlantingSiteNotFoundException> {
+        store.fetchPlotObservationSpeciesDensities(plantingSiteId)
+      }
+    }
+
+    @Test
+    fun `fetches plots with observations and their densities`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1, totalDead = 1)
+      // Unknown excluded
+      insertObservedPlotSpeciesTotals(certainty = RecordedSpeciesCertainty.Unknown, totalLive = 3)
+      // excludes temp plots
+      insertObservedPlotSpeciesTotals(
+          speciesId = speciesId1,
+          monitoringPlotId = tempPlotId,
+          totalLive = 4,
+      )
+
+      // excludes plot that hasn't been observed while it was permanent
+      insertMonitoringPlot(plotNumber = 3, permanentIndex = 3)
+      insertObservationPlot(isPermanent = false)
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 5)
+
+      // incomplete observations excluded
+      insertObservation(startDate = observationStartDate.plusDays(1))
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId,
+          claimedTime = observationTime,
+          claimedBy = user.userId,
+          completedTime = observationTime,
+          completedBy = user.userId,
+          isPermanent = true,
+      )
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 6)
+
+      val expected =
+          listOf(
+              PlotObservationSpeciesDensityModel(
+                  monitoringPlotId = monitoringPlotId,
+                  observations =
+                      listOf(
+                          ObservationSpeciesDensityModel(
+                              observationId = observationId,
+                              observationStartDate = observationStartDate,
+                              observationCompletedTime = observationTime,
+                              species =
+                                  listOf(
+                                      SpeciesDensityModel(
+                                          speciesId = speciesId1,
+                                          density = BigDecimal.ONE.toPlantsPerHectare(),
+                                      ),
+                                      SpeciesDensityModel(
+                                          speciesId = speciesId2,
+                                          density = BigDecimal.TWO.toPlantsPerHectare(),
+                                      ),
+                                  ),
+                          )
+                      ),
+              )
+          )
+
+      assertEquals(
+          expected,
+          store.fetchPlotObservationSpeciesDensities(plantingSiteId),
+          "Plot with Observations and their species",
       )
     }
   }
@@ -687,7 +775,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       val speciesId5 = insertSpecies()
       val speciesId6 = insertSpecies()
-      insertObservation(completedTime = clock.instant())
+      insertObservation(completedTime = observationTime)
       insertObservedPlotSpeciesTotals(speciesId = speciesId5, totalLive = 1)
       // should be excluded because no plants
       insertObservedPlotSpeciesTotals(speciesId = speciesId6, totalLive = 0)

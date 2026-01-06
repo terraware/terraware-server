@@ -11,7 +11,9 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.tracking.T0Service
 import com.terraformation.backend.tracking.db.T0Store
+import com.terraformation.backend.tracking.model.ObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
+import com.terraformation.backend.tracking.model.PlotObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.PlotSpeciesModel
 import com.terraformation.backend.tracking.model.PlotT0DataModel
 import com.terraformation.backend.tracking.model.SiteT0DataModel
@@ -20,6 +22,8 @@ import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -52,7 +56,21 @@ class T0Controller(
     return GetAllSiteT0DataSetResponsePayload(allSet = allSet)
   }
 
-  @GetMapping("/site/{plantingSiteId}/species")
+  @Operation(
+      summary =
+          "Lists all permanent plots with completed observations, and the observations' recorded species for a planting site"
+  )
+  @GetMapping("/site/{plantingSiteId}/observations")
+  fun getT0PlotObservationsForPlantingSite(
+      @PathVariable plantingSiteId: PlantingSiteId
+  ): GetT0SitePlotObservationsResponsePayload {
+    val plotData = t0Store.fetchPlotObservationSpeciesDensities(plantingSiteId)
+
+    return GetT0SitePlotObservationsResponsePayload(
+        plotData.map { PlotObservationSpeciesDensityPayload(it) }
+    )
+  }
+
   @Operation(
       summary =
           "Lists all the species that have been withdrawn to a planting site or recorded in " +
@@ -61,8 +79,9 @@ class T0Controller(
           "Species with densities are species that were withdrawn, species with null densities are " +
               "species that were recorded in observations but not withdrawn to the plot's substratum.",
   )
+  @GetMapping("/site/{plantingSiteId}/species")
   fun getT0SpeciesForPlantingSite(
-      @PathVariable("plantingSiteId") plantingSiteId: PlantingSiteId
+      @PathVariable plantingSiteId: PlantingSiteId
   ): GetSitePlotSpeciesResponsePayload {
     val plots = t0Store.fetchSiteSpeciesByPlot(plantingSiteId)
 
@@ -237,3 +256,35 @@ data class AssignSiteT0TempDataRequestPayload(
     // make non-nullable once FE is no longer using zones
     val strata: List<StratumT0DataPayload>?,
 )
+
+data class PlotObservationSpeciesDensityPayload(
+    val monitoringPlotId: MonitoringPlotId,
+    val observations: List<ObservationSpeciesDensityPayload>,
+) {
+  constructor(
+      model: PlotObservationSpeciesDensityModel
+  ) : this(
+      monitoringPlotId = model.monitoringPlotId,
+      observations = model.observations.map { ObservationSpeciesDensityPayload(it) },
+  )
+}
+
+data class ObservationSpeciesDensityPayload(
+    val observationCompletedTime: Instant,
+    val observationId: ObservationId,
+    val observationStartDate: LocalDate,
+    val species: List<SpeciesDensityPayload>,
+) {
+  constructor(
+      model: ObservationSpeciesDensityModel
+  ) : this(
+      observationCompletedTime = model.observationCompletedTime,
+      observationId = model.observationId,
+      observationStartDate = model.observationStartDate,
+      species = model.species?.map { SpeciesDensityPayload(it) } ?: emptyList(),
+  )
+}
+
+data class GetT0SitePlotObservationsResponsePayload(
+    val data: List<PlotObservationSpeciesDensityPayload>
+) : SuccessResponsePayload
