@@ -6,6 +6,8 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import java.math.BigDecimal
+import java.time.Instant
+import java.time.LocalDate
 
 data class SpeciesDensityModel(
     val speciesId: SpeciesId,
@@ -15,6 +17,18 @@ data class SpeciesDensityModel(
 data class OptionalSpeciesDensityModel(
     val speciesId: SpeciesId,
     val density: BigDecimal?,
+)
+
+data class ObservationSpeciesDensityModel(
+    val observationId: ObservationId,
+    val observationStartDate: LocalDate,
+    val observationCompletedTime: Instant,
+    val species: List<SpeciesDensityModel>,
+)
+
+data class PlotObservationSpeciesDensityModel(
+    val monitoringPlotId: MonitoringPlotId,
+    val observations: List<ObservationSpeciesDensityModel>,
 )
 
 data class SiteT0DataModel(
