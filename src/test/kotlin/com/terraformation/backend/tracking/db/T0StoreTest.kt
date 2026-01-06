@@ -41,8 +41,6 @@ import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import com.terraformation.backend.tracking.model.StratumT0TempDensityChangedModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
-import kotlin.IllegalArgumentException
-import kotlin.lazy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
