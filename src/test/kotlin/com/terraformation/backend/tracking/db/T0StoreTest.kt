@@ -595,6 +595,15 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `throws exception if plot was not in requested observation`() {
+      val otherMonitoringPlotId = insertMonitoringPlot()
+
+      assertThrows<PlotNotInObservationException> {
+        store.assignT0PlotObservation(otherMonitoringPlotId, observationId)
+      }
+    }
+
+    @Test
     fun `stores observation and all species densities`() {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 3, totalDead = 4)

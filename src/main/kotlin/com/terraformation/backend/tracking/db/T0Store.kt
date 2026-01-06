@@ -180,6 +180,10 @@ class T0Store(
   ): PlotT0DensityChangedModel {
     requirePermissions { updateT0(monitoringPlotId) }
 
+    if (!wasMonitoringPlotInObservation(monitoringPlotId, observationId)) {
+      throw PlotNotInObservationException(observationId, monitoringPlotId)
+    }
+
     val now = clock.instant()
     val currentUserId = currentUser().userId
 
@@ -675,6 +679,18 @@ class T0Store(
       dslContext.fetchExists(
           this,
           ID.eq(monitoringPlotId).and(PERMANENT_INDEX.isNotNull),
+      )
+    }
+  }
+
+  private fun wasMonitoringPlotInObservation(
+      monitoringPlotId: MonitoringPlotId,
+      observationId: ObservationId,
+  ): Boolean {
+    return with(OBSERVATION_PLOTS) {
+      dslContext.fetchExists(
+          this,
+          MONITORING_PLOT_ID.eq(monitoringPlotId).and(OBSERVATION_ID.eq(observationId)),
       )
     }
   }
