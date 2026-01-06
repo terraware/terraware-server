@@ -1,3 +1,4 @@
+9c40035c13a SW-7919 Allow assigning formerly-permanent plot as t0 (#3800)
 639c45aa05e Fix permission inversion in observation editing (#3798)
 24fed9402a0 Explicitly enable OpenAPI schema endpoints (#3797)
 76f8aad4946 Update dependency html-minifier-next to v4.16.4 (#3794)
