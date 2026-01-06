@@ -61,12 +61,12 @@ class T0Controller(
           "Lists all permanent plots with completed observations, and the observations' recorded species for a planting site"
   )
   @GetMapping("/site/{plantingSiteId}/observations")
-  fun getT0PlotObservationsForPlantingSite(
+  fun getPlotObservationDensitiesForPlantingSite(
       @PathVariable plantingSiteId: PlantingSiteId
-  ): GetT0SitePlotObservationsResponsePayload {
+  ): GetSitePlotObservationDensitiesResponsePayload {
     val plotData = t0Store.fetchPlotObservationSpeciesDensities(plantingSiteId)
 
-    return GetT0SitePlotObservationsResponsePayload(
+    return GetSitePlotObservationDensitiesResponsePayload(
         plotData.map { PlotObservationSpeciesDensityPayload(it) }
     )
   }
@@ -285,6 +285,6 @@ data class ObservationSpeciesDensityPayload(
   )
 }
 
-data class GetT0SitePlotObservationsResponsePayload(
+data class GetSitePlotObservationDensitiesResponsePayload(
     val data: List<PlotObservationSpeciesDensityPayload>
 ) : SuccessResponsePayload
