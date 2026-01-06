@@ -683,11 +683,11 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception when plot is not permanent`() {
-      val tempPlot = insertMonitoringPlot(plotNumber = 1)
+    fun `throws exception if plot was not in requested observation`() {
+      val otherMonitoringPlotId = insertMonitoringPlot()
 
-      assertThrows<IllegalArgumentException> {
-        store.assignT0PlotObservation(tempPlot, observationId)
+      assertThrows<PlotNotInObservationException> {
+        store.assignT0PlotObservation(otherMonitoringPlotId, observationId)
       }
     }
 
@@ -999,13 +999,20 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `allows assigning plot that was permanent in its observation but no longer is`() {
-      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
+    fun `allows assigning temporary plot t0 observations`() {
+      dslContext
+          .update(OBSERVATION_PLOTS)
+          .set(OBSERVATION_PLOTS.IS_PERMANENT, false)
+          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+          .execute()
       dslContext
           .update(MONITORING_PLOTS)
           .setNull(MONITORING_PLOTS.PERMANENT_INDEX)
           .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
           .execute()
+
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
 
       store.assignT0PlotObservation(monitoringPlotId, observationId)
 

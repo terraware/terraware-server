@@ -259,8 +259,8 @@ class T0Store(
   ): PlotT0DensityChangedModel {
     requirePermissions { updateT0(monitoringPlotId) }
 
-    require(wasMonitoringPlotPermanent(monitoringPlotId, observationId)) {
-      "Cannot assign T0 data to non-permanent plot $monitoringPlotId."
+    if (!wasMonitoringPlotInObservation(monitoringPlotId, observationId)) {
+      throw PlotNotInObservationException(observationId, monitoringPlotId)
     }
 
     val now = clock.instant()
@@ -758,16 +758,14 @@ class T0Store(
     }
   }
 
-  private fun wasMonitoringPlotPermanent(
+  private fun wasMonitoringPlotInObservation(
       monitoringPlotId: MonitoringPlotId,
       observationId: ObservationId,
   ): Boolean {
     return with(OBSERVATION_PLOTS) {
       dslContext.fetchExists(
           this,
-          MONITORING_PLOT_ID.eq(monitoringPlotId)
-              .and(OBSERVATION_ID.eq(observationId))
-              .and(IS_PERMANENT.isTrue),
+          MONITORING_PLOT_ID.eq(monitoringPlotId).and(OBSERVATION_ID.eq(observationId)),
       )
     }
   }
