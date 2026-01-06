@@ -161,6 +161,18 @@
         <mj-class name="social-icons" padding="0px 8px 0px 8px"/>
     </mj-attributes>
     <mj-style>
+        td.number {
+            text-align: right;
+        }
+
+        th {
+            text-align: left;
+        }
+
+        th.number {
+            text-align: right;
+        }
+
         .text-link {
             color: #2C8658;
         }

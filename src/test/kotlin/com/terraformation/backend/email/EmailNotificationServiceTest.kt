@@ -94,7 +94,10 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
+import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.device.db.DeviceStore
@@ -122,6 +125,7 @@ import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
@@ -137,6 +141,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
@@ -170,6 +175,8 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.Month
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.Locale
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -191,6 +198,7 @@ internal class EmailNotificationServiceTest {
   private val documentStore: DocumentStore = mockk()
   private val facilityStore: FacilityStore = mockk()
   private val fundingEntityStore: FundingEntityStore = mockk()
+  private val observationStore: ObservationStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
   private val participantStore: ParticipantStore = mockk()
@@ -233,6 +241,7 @@ internal class EmailNotificationServiceTest {
           emailService,
           facilityStore,
           fundingEntityStore,
+          observationStore,
           organizationStore,
           parentStore,
           participantStore,
@@ -347,6 +356,7 @@ internal class EmailNotificationServiceTest {
           organizationId = organization.id,
           name = "My Site",
           strata = listOf(plantingZone),
+          timeZone = ZoneId.of("Asia/Tokyo"),
       )
   private val cohort =
       ExistingCohortModel(
@@ -406,6 +416,22 @@ internal class EmailNotificationServiceTest {
           modifiedBy = acceleratorUserId,
           modifiedTime = Instant.EPOCH,
           projectId = project.id,
+      )
+
+  private val observation =
+      ExistingObservationModel(
+          completedTime =
+              ZonedDateTime.of(2026, 1, 6, 1, 2, 3, 0, plantingSite.timeZone!!).toInstant(),
+          endDate = LocalDate.of(2026, 1, 7),
+          id = ObservationId(1),
+          isAdHoc = false,
+          observationType = ObservationType.Monitoring,
+          plantingSiteHistoryId = PlantingSiteHistoryId(1),
+          plantingSiteId = plantingSite.id,
+          requestedSubstratumIds = setOf(SubstratumId(1)),
+          startDate = LocalDate.of(2026, 1, 2),
+          state = ObservationState.Completed,
+          upcomingNotificationSentTime = null,
       )
 
   private val projectAcceleratorDetails =
@@ -563,6 +589,7 @@ internal class EmailNotificationServiceTest {
     every { documentStore.fetchOneById(document.id) } returns document
     every { facilityStore.fetchOneById(facility.id) } returns facility
     every { fundingEntityStore.fetchOneById(fundingEntity.id) } returns fundingEntity
+    every { observationStore.fetchObservationById(observation.id) } returns observation
     every { organizationStore.fetchOneById(organization.id) } returns organization
     every { organizationStore.fetchOneById(nonAcceleratorOrganization.id) } returns
         nonAcceleratorOrganization
@@ -1524,6 +1551,62 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("OtherSpecies", message = message)
     assertBodyContains("100.5", message = message)
     assertBodyContains("200.6", message = message)
+    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
+  }
+
+  @Test
+  fun `rateLimitedMonitoringSpeciesTotalsEditedEvent should notify org TF contacts`() {
+    service.on(
+        RateLimitedMonitoringSpeciesTotalsEditedEvent(
+            organizationId = organization.id,
+            plantingSiteId = plantingSite.id,
+            changes =
+                listOf(
+                    RateLimitedMonitoringSpeciesTotalsEditedEvent.PlotChange(
+                        certainty = RecordedSpeciesCertainty.Known,
+                        changedFrom = 1,
+                        changedTo = 2,
+                        monitoringPlotId = monitoringPlot.id,
+                        observationId = observation.id,
+                        speciesId = species.id,
+                        speciesName = null,
+                        plantStatus = RecordedPlantStatus.Dead,
+                    ),
+                    RateLimitedMonitoringSpeciesTotalsEditedEvent.PlotChange(
+                        certainty = RecordedSpeciesCertainty.Other,
+                        changedFrom = 3,
+                        changedTo = 4,
+                        monitoringPlotId = monitoringPlot.id,
+                        observationId = observation.id,
+                        speciesId = null,
+                        speciesName = "Other species",
+                        plantStatus = RecordedPlantStatus.Existing,
+                    ),
+                    RateLimitedMonitoringSpeciesTotalsEditedEvent.PlotChange(
+                        certainty = RecordedSpeciesCertainty.Unknown,
+                        changedFrom = 5,
+                        changedTo = 6,
+                        monitoringPlotId = monitoringPlot.id,
+                        observationId = observation.id,
+                        speciesId = null,
+                        speciesName = null,
+                        plantStatus = RecordedPlantStatus.Live,
+                    ),
+                ),
+        )
+    )
+
+    val message = sentMessageWithSubject("has made updates to the plant counts")
+    assertSubjectContains(organization.name, message = message)
+    assertSubjectContains(plantingSite.name, message = message)
+    assertBodyContains(plantingSite.name, message = message, hasTextPlain = false)
+    assertBodyContains("${monitoringPlot.plotNumber}", message = message, hasTextPlain = false)
+    assertBodyContains(species.scientificName, message = message, hasTextPlain = false)
+    assertBodyContains("Other species", message = message, hasTextPlain = false)
+    assertBodyContains("Unknown", message = message, hasTextPlain = false)
+    assertBodyContains(">1<", message = message, hasTextPlain = false)
+    assertBodyContains(">2<", message = message, hasTextPlain = false)
+    assertBodyContains("2026-01-06", message = message, hasTextPlain = false)
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
   }
 

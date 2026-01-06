@@ -1,0 +1,48 @@
+<#-- @ftlvariable name="" type="com.terraformation.backend.email.model.MonitoringSpeciesTotalsEdited" -->
+<!-- <#setting date_format="full"> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-body03">
+                    The following changes have been made to Observations for ${plantingSiteName}:
+                </mj-text>
+
+                <mj-table>
+                    <tr>
+                        <th>Date Observed</th>
+                        <th>Plot#</th>
+                        <th>Species</th>
+                        <th>Status</th>
+                        <th class="number">Previous</th>
+                        <th class="number">New</th>
+                    </tr>
+                    <mj-raw>
+                        <#list changes as change>
+                    </mj-raw>
+                            <tr>
+                                <td>${change.observationName}</td>
+                                <td>${change.monitoringPlotNumber}</td>
+                                <td>${change.speciesName}</td>
+                                <td>${change.plantStatus}</td>
+                                <td class="number">${change.changedFrom}</td>
+                                <td class="number">${change.changedTo}</td>
+                            </tr>
+                    <mj-raw>
+                        </#list>
+                    </mj-raw>
+                </mj-table>
+
+                <mj-button mj-class="btn-productive-primary-md" href="${observationsUrl}">
+                    See Observations
+                </mj-button>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>
