@@ -1,3 +1,4 @@
+4a81be69118 SW-7910 Email TF Contacts on observation quantity edit (#3802)
 f94826ee463 SW-7910 Publish notification event on plant count edit (#3801)
 9c40035c13a SW-7919 Allow assigning formerly-permanent plot as t0 (#3800)
 639c45aa05e Fix permission inversion in observation editing (#3798)
