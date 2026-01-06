@@ -62,7 +62,7 @@ internal class T0ServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertSubstratum()
     monitoringPlotId1 = insertMonitoringPlot(permanentIndex = 1)
     observationId = insertObservation()
-    insertObservationPlot()
+    insertObservationPlot(isPermanent = true)
     monitoringPlotId2 = insertMonitoringPlot(permanentIndex = 2)
     stratumId2 = insertStratum()
     speciesId1 = insertSpecies()

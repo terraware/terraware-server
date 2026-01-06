@@ -41,8 +41,6 @@ import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import com.terraformation.backend.tracking.model.StratumT0TempDensityChangedModel
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
-import kotlin.IllegalArgumentException
-import kotlin.lazy
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -729,7 +727,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 1)
       insertObservedPlotSpeciesTotals(totalLive = 1, totalDead = 1)
       val secondObservationId = insertObservation(plantingSiteId = plantingSiteId)
-      insertObservationPlot()
+      insertObservationPlot(isPermanent = true)
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 1)
       insertObservedPlotSpeciesTotals(totalLive = 2, totalDead = 2)
 
@@ -910,6 +908,32 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
             "Should store plot density with a scale of 10",
         )
       })
+    }
+
+    @Test
+    fun `allows assigning plot that was permanent in its observation but no longer is`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
+      dslContext
+          .update(MONITORING_PLOTS)
+          .setNull(MONITORING_PLOTS.PERMANENT_INDEX)
+          .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+          .execute()
+
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      assertTableEquals(
+          listOf(
+              PlotT0ObservationsRecord(
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+                  createdBy = user.userId,
+                  modifiedBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedTime = clock.instant(),
+              )
+          ),
+          "Should connect plot to observation",
+      )
     }
   }
 
@@ -1344,7 +1368,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val speciesId1 = insertSpecies()
 
       val t0ObservationId = insertObservation()
-      insertObservationPlot()
+      insertObservationPlot(isPermanent = true)
       insertObservedPlotSpeciesTotals(
           observationId = t0ObservationId,
           speciesId = speciesId1,
@@ -1373,7 +1397,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val speciesId2 = insertSpecies()
 
       val t0ObservationId = insertObservation()
-      insertObservationPlot()
+      insertObservationPlot(isPermanent = true)
       insertObservedPlotSpeciesTotals(
           observationId = t0ObservationId,
           speciesId = speciesId1,
@@ -1400,7 +1424,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `unknown and other species are not included in t0 densities`() {
       val t0ObservationId = insertObservation()
-      insertObservationPlot()
+      insertObservationPlot(isPermanent = true)
       insertObservedPlotSpeciesTotals(
           certainty = RecordedSpeciesCertainty.Other,
           observationId = t0ObservationId,
@@ -1437,7 +1461,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val speciesId2 = insertSpecies()
 
       val t0ObservationId = insertObservation()
-      insertObservationPlot()
+      insertObservationPlot(isPermanent = true)
       insertObservedPlotSpeciesTotals(
           observationId = t0ObservationId,
           speciesId = speciesId1,
