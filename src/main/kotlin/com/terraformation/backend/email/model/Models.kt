@@ -11,7 +11,10 @@ import com.terraformation.backend.db.LocalizableEnum
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.pojos.DevicesRow
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.i18n.FormattingResourceBundleModel
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.tracking.model.PlotT0DensityChangedEventModel
@@ -554,6 +557,29 @@ class ActivityCreated(
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "accelerator/activity/created"
+}
+
+class MonitoringSpeciesTotalsEdited(
+    config: TerrawareServerConfig,
+    val changes: List<Change>,
+    val observationsUrl: String,
+    val organizationName: String,
+    val plantingSiteId: PlantingSiteId,
+    val plantingSiteName: String,
+) : EmailTemplateModel(config) {
+  class Change(
+      val changedFrom: Int?,
+      val changedTo: Int?,
+      val monitoringPlotId: MonitoringPlotId,
+      val monitoringPlotNumber: Long,
+      val observationId: ObservationId,
+      val observationName: String,
+      val plantStatus: RecordedPlantStatus,
+      val speciesName: String,
+  )
+
+  override val templateDir: String
+    get() = "observation/monitoringTotalsEdited"
 }
 
 class T0DataSet(

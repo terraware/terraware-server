@@ -69,6 +69,7 @@ import com.terraformation.backend.email.model.FacilityAlertRequested
 import com.terraformation.backend.email.model.FacilityIdle
 import com.terraformation.backend.email.model.FunderAddedToFundingEntity
 import com.terraformation.backend.email.model.MissingContact
+import com.terraformation.backend.email.model.MonitoringSpeciesTotalsEdited
 import com.terraformation.backend.email.model.NurserySeedlingBatchReady
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.email.model.ObservationNotStarted
@@ -102,6 +103,7 @@ import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.ObservationNotStartedEvent
@@ -116,6 +118,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
@@ -139,6 +142,7 @@ class EmailNotificationService(
     private val emailService: EmailService,
     private val facilityStore: FacilityStore,
     private val fundingEntityStore: FundingEntityStore,
+    private val observationStore: ObservationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
     private val participantStore: ParticipantStore,
@@ -886,6 +890,73 @@ class EmailNotificationService(
             ),
         )
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: RateLimitedMonitoringSpeciesTotalsEditedEvent) {
+    systemUser.run {
+      val organization = organizationStore.fetchOneById(event.organizationId)
+      val plantingSite =
+          plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Plot)
+      val observations =
+          event.changes
+              .map { it.observationId }
+              .distinct()
+              .associateWith { observationStore.fetchObservationById((it)) }
+
+      val speciesNames =
+          event.changes
+              .mapNotNull { it.speciesId }
+              .distinct()
+              .associateWith { speciesStore.fetchSpeciesById(it).scientificName }
+      val monitoringPlots =
+          plantingSite.strata.flatMap { stratum ->
+            stratum.substrata.flatMap { substratum -> substratum.monitoringPlots }
+          }
+      val plotNumbers = monitoringPlots.associate { it.id to it.plotNumber }
+
+      val timeZone = plantingSite.timeZone ?: organization.timeZone ?: ZoneOffset.UTC
+
+      val changes =
+          event.changes.map { change ->
+            val observation = observations[change.observationId]
+            val observationDate =
+                observation?.completedTime?.atZone(timeZone)?.toLocalDate() ?: observation?.endDate
+            val observationName = observationDate?.format(ISO_LOCAL_DATE) ?: "Unknown"
+            val speciesName =
+                change.speciesName ?: change.speciesId?.let { speciesNames[it] } ?: "Unknown"
+
+            MonitoringSpeciesTotalsEdited.Change(
+                changedFrom = change.changedFrom,
+                changedTo = change.changedTo,
+                monitoringPlotId = change.monitoringPlotId,
+                monitoringPlotNumber = plotNumbers[change.monitoringPlotId] ?: -1,
+                observationId = change.observationId,
+                observationName = observationName,
+                plantStatus = change.plantStatus,
+                speciesName = speciesName,
+            )
+          }
+
+      val observationsUrl = webAppUrls.fullObservations(event.organizationId, event.plantingSiteId)
+
+      val model =
+          MonitoringSpeciesTotalsEdited(
+              config = config,
+              changes = changes,
+              observationsUrl = observationsUrl.toString(),
+              organizationName = organization.name,
+              plantingSiteId = event.plantingSiteId,
+              plantingSiteName = plantingSite.name,
+          )
+
+      emailService.sendOrganizationNotification(
+          event.organizationId,
+          model,
+          false,
+          setOf(Role.TerraformationContact),
+      )
     }
   }
 
