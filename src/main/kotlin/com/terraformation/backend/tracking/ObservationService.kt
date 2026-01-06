@@ -31,6 +31,7 @@ import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
+import com.terraformation.backend.ratelimit.RateLimitedEventPublisher
 import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.InvalidObservationEndDateException
 import com.terraformation.backend.tracking.db.InvalidObservationStartDateException
@@ -50,6 +51,7 @@ import com.terraformation.backend.tracking.db.PlotNotInObservationException
 import com.terraformation.backend.tracking.db.PlotSizeNotReplaceableException
 import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsException
 import com.terraformation.backend.tracking.db.SpeciesInWrongOrganizationException
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
@@ -61,6 +63,7 @@ import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewObservationModel
@@ -99,6 +102,7 @@ class ObservationService(
     private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
+    private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val systemUser: SystemUser,
     private val thumbnailService: ThumbnailService,
 ) {
@@ -776,6 +780,13 @@ class ObservationService(
       affectedObservationIds.forEach { observationId ->
         observationStore.abandonObservation(observationId)
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: MonitoringSpeciesTotalsEditedEvent) {
+    RateLimitedMonitoringSpeciesTotalsEditedEvent.of(event)?.let {
+      rateLimitedEventPublisher.publishEvent(it)
     }
   }
 

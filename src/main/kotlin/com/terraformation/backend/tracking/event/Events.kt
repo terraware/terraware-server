@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.StratumId
@@ -659,6 +660,92 @@ data class MonitoringSpeciesTotalsEditedEventV1(
 typealias MonitoringSpeciesTotalsEditedEvent = MonitoringSpeciesTotalsEditedEventV1
 
 typealias MonitoringSpeciesTotalsEditedEventValues = MonitoringSpeciesTotalsEditedEventV1.Values
+
+data class RateLimitedMonitoringSpeciesTotalsEditedEvent(
+    val changes: List<PlotChange>,
+    val organizationId: OrganizationId,
+    val plantingSiteId: PlantingSiteId,
+) : RateLimitedEvent<RateLimitedMonitoringSpeciesTotalsEditedEvent> {
+  data class PlantCounts(
+      val totalDead: Int? = null,
+      val totalExisting: Int? = null,
+      val totalLive: Int? = null,
+  )
+
+  data class PlotChange(
+      val certainty: RecordedSpeciesCertainty,
+      val changedFrom: Int?,
+      val changedTo: Int?,
+      val monitoringPlotId: MonitoringPlotId,
+      val observationId: ObservationId,
+      val speciesId: SpeciesId?,
+      val speciesName: String?,
+      val plantStatus: RecordedPlantStatus,
+  )
+
+  override fun getRateLimitKey() =
+      mapOf("organizationId" to organizationId, "plantingSiteId" to plantingSiteId)
+
+  override fun getMinimumInterval(): Duration = Duration.ofHours(24)
+
+  override fun combine(
+      existing: RateLimitedMonitoringSpeciesTotalsEditedEvent
+  ): RateLimitedMonitoringSpeciesTotalsEditedEvent {
+    require(existing.organizationId == organizationId) {
+      "Cannot combine events for different organizationIds"
+    }
+    require(existing.plantingSiteId == plantingSiteId) {
+      "Cannot combine events for different plantingSiteIds"
+    }
+
+    return existing.copy(changes = existing.changes + changes)
+  }
+
+  companion object {
+    fun of(
+        event: MonitoringSpeciesTotalsEditedEvent
+    ): RateLimitedMonitoringSpeciesTotalsEditedEvent? {
+      fun changeForStatus(
+          status: RecordedPlantStatus,
+          getTotal: (MonitoringSpeciesTotalsEditedEventValues) -> Int?,
+      ): PlotChange? {
+        val fromTotal = getTotal(event.changedFrom)
+        val toTotal = getTotal(event.changedTo)
+        return if (fromTotal != toTotal) {
+          PlotChange(
+              certainty = event.certainty,
+              changedFrom = fromTotal,
+              changedTo = toTotal,
+              monitoringPlotId = event.monitoringPlotId,
+              observationId = event.observationId,
+              plantStatus = status,
+              speciesId = event.speciesId,
+              speciesName = event.speciesName,
+          )
+        } else {
+          null
+        }
+      }
+
+      val changes =
+          listOfNotNull(
+              changeForStatus(RecordedPlantStatus.Dead) { it.totalDead },
+              changeForStatus(RecordedPlantStatus.Existing) { it.totalExisting },
+              changeForStatus(RecordedPlantStatus.Live) { it.totalLive },
+          )
+
+      return if (changes.isNotEmpty()) {
+        return RateLimitedMonitoringSpeciesTotalsEditedEvent(
+            changes = changes,
+            organizationId = event.organizationId,
+            plantingSiteId = event.plantingSiteId,
+        )
+      } else {
+        null
+      }
+    }
+  }
+}
 
 sealed interface RecordedTreePersistentEvent : PersistentEvent {
   val monitoringPlotId: MonitoringPlotId

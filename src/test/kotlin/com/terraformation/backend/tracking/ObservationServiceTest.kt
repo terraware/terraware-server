@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
@@ -84,6 +85,8 @@ import com.terraformation.backend.tracking.db.ScheduleObservationWithoutPlantsEx
 import com.terraformation.backend.tracking.db.SpeciesInWrongOrganizationException
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.StratumEdit
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
@@ -95,6 +98,7 @@ import com.terraformation.backend.tracking.event.ObservationScheduledEvent
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.RateLimitedMonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
@@ -190,6 +194,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationStore,
         plantingSiteStore,
         parentStore,
+        eventPublisher,
         SystemUser(usersDao),
         thumbnailService,
     )
@@ -2788,6 +2793,111 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             swCorner = point(1),
         )
       }
+    }
+  }
+
+  @Nested
+  inner class OnMonitoringSpeciesTotalsEditedEvent {
+    @Test
+    fun `publishes event with plant counts split out by status`() {
+      val monitoringPlotId = MonitoringPlotId(123)
+      val observationId = ObservationId(456)
+      val speciesId = SpeciesId(789)
+
+      service.on(
+          MonitoringSpeciesTotalsEditedEvent(
+              certainty = Known,
+              changedFrom =
+                  MonitoringSpeciesTotalsEditedEventValues(
+                      totalDead = 1,
+                      totalExisting = 2,
+                      totalLive = 3,
+                  ),
+              changedTo =
+                  MonitoringSpeciesTotalsEditedEventValues(
+                      totalDead = 4,
+                      totalExisting = 5,
+                      totalLive = 6,
+                  ),
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              organizationId = organizationId,
+              plantingSiteId = plantingSiteId,
+              speciesId = speciesId,
+              speciesName = null,
+          )
+      )
+
+      eventPublisher.assertEventPublished(
+          RateLimitedMonitoringSpeciesTotalsEditedEvent(
+              changes =
+                  listOf(
+                      RateLimitedMonitoringSpeciesTotalsEditedEvent.PlotChange(
+                          certainty = Known,
+                          changedFrom = 1,
+                          changedTo = 4,
+                          monitoringPlotId = monitoringPlotId,
+                          observationId = observationId,
+                          speciesId = speciesId,
+                          speciesName = null,
+                          plantStatus = RecordedPlantStatus.Dead,
+                      ),
+                      RateLimitedMonitoringSpeciesTotalsEditedEvent.PlotChange(
+                          certainty = Known,
+                          changedFrom = 2,
+                          changedTo = 5,
+                          monitoringPlotId = monitoringPlotId,
+                          observationId = observationId,
+                          speciesId = speciesId,
+                          speciesName = null,
+                          plantStatus = RecordedPlantStatus.Existing,
+                      ),
+                      RateLimitedMonitoringSpeciesTotalsEditedEvent.PlotChange(
+                          certainty = Known,
+                          changedFrom = 3,
+                          changedTo = 6,
+                          monitoringPlotId = monitoringPlotId,
+                          observationId = observationId,
+                          speciesId = speciesId,
+                          speciesName = null,
+                          plantStatus = RecordedPlantStatus.Live,
+                      ),
+                  ),
+              organizationId = organizationId,
+              plantingSiteId = plantingSiteId,
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish notification event if edit was a no-op`() {
+      val monitoringPlotId = MonitoringPlotId(123)
+      val observationId = ObservationId(456)
+      val speciesId = SpeciesId(789)
+
+      service.on(
+          MonitoringSpeciesTotalsEditedEvent(
+              Known,
+              MonitoringSpeciesTotalsEditedEventValues(
+                  totalDead = 1,
+                  totalExisting = 2,
+                  totalLive = 3,
+              ),
+              MonitoringSpeciesTotalsEditedEventValues(
+                  totalDead = 1,
+                  totalExisting = 2,
+                  totalLive = 3,
+              ),
+              monitoringPlotId,
+              observationId,
+              organizationId,
+              plantingSiteId,
+              speciesId,
+              null,
+          )
+      )
+
+      eventPublisher.assertEventNotPublished<RateLimitedMonitoringSpeciesTotalsEditedEvent>()
     }
   }
 
