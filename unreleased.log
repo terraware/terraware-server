@@ -1,3 +1,4 @@
+f94826ee463 SW-7910 Publish notification event on plant count edit (#3801)
 9c40035c13a SW-7919 Allow assigning formerly-permanent plot as t0 (#3800)
 639c45aa05e Fix permission inversion in observation editing (#3798)
 24fed9402a0 Explicitly enable OpenAPI schema endpoints (#3797)
