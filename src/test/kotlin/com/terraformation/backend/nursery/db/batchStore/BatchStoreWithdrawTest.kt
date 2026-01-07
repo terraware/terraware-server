@@ -890,6 +890,9 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
 
     val destinationFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
 
+    val withdrawnDate = LocalDate.of(2022, 10, 1)
+    clock.instant = withdrawnDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
+
     store.withdraw(
         NewWithdrawalModel(
             destinationFacilityId = destinationFacilityId,
@@ -897,7 +900,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
             id = null,
             notes = "Notes",
             purpose = WithdrawalPurpose.NurseryTransfer,
-            withdrawnDate = LocalDate.of(2022, 10, 1),
+            withdrawnDate = withdrawnDate,
             batchWithdrawals =
                 listOf(
                     BatchWithdrawalModel(

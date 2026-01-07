@@ -170,9 +170,12 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
   fun `includes facility number in batch number`() {
     val secondFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
 
+    val addedDate = LocalDate.of(2022, 1, 2)
+    clock.instant = addedDate.plusDays(7).atStartOfDay(ZoneOffset.UTC).toInstant()
+
     val inputModel =
         CreateBatchRequestPayload(
-                addedDate = LocalDate.of(2022, 1, 2),
+                addedDate = addedDate,
                 facilityId = secondFacilityId,
                 germinatingQuantity = 0,
                 activeGrowthQuantity = 1,
@@ -184,7 +187,7 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
 
     val batch = store.create(inputModel)
 
-    assertEquals("70-2-2-001", batch.batchNumber)
+    assertEquals("22-2-2-001", batch.batchNumber)
   }
 
   @Test
@@ -274,5 +277,33 @@ internal class BatchStoreCreateBatchTest : BatchStoreTest() {
     assertThrows<SubLocationAtWrongFacilityException> {
       store.create(makeNewBatchModel().copy(subLocationIds = setOf(otherSubLocationId)))
     }
+  }
+
+  @Test
+  fun `throws exception if addedDate is in the future`() {
+    val addedDate = LocalDate.of(2025, 1, 2)
+    clock.instant = addedDate.minusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
+
+    val inputModel =
+        CreateBatchRequestPayload(
+                addedDate = addedDate,
+                facilityId = facilityId,
+                germinatingQuantity = 0,
+                germinationStartedDate = LocalDate.of(2022, 2, 20),
+                hardeningOffQuantity = 4,
+                notes = "notes",
+                activeGrowthQuantity = 1,
+                readyByDate = LocalDate.of(2022, 3, 4),
+                readyQuantity = 2,
+                seedsSownDate = LocalDate.of(2022, 2, 12),
+                speciesId = speciesId,
+                subLocationIds = emptySet(),
+                substrate = BatchSubstrate.Other,
+                substrateNotes = "My substrate",
+                treatment = SeedTreatment.Chemical,
+            )
+            .toModel()
+
+    assertThrows<IllegalArgumentException> { store.create(inputModel) }
   }
 }

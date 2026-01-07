@@ -22,6 +22,7 @@ import com.terraformation.backend.db.default_schema.tables.records.UploadProblem
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.file.FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.UploadService
@@ -36,8 +37,8 @@ import io.mockk.CapturingSlot
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
-import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.util.Locale
 import java.util.UUID
 import org.jobrunr.jobs.JobId
@@ -128,6 +129,8 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     organizationId = insertOrganization()
     facilityId = insertFacility(type = FacilityType.Nursery)
     subLocationId = insertSubLocation(name = "Location 1")
+
+    clock.instant = LocalDate.of(2023, 1, 2).atStartOfDay(ZoneOffset.UTC).toInstant()
   }
 
   @Test
@@ -141,21 +144,21 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             SpeciesRow(
                 commonName = "Common name",
                 createdBy = user.userId,
-                createdTime = Instant.EPOCH,
+                createdTime = clock.instant,
                 id = SpeciesId(1),
                 initialScientificName = "Scientific name",
                 modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
+                modifiedTime = clock.instant,
                 organizationId = organizationId,
                 scientificName = "Scientific name",
             ),
             SpeciesRow(
                 createdBy = user.userId,
-                createdTime = Instant.EPOCH,
+                createdTime = clock.instant,
                 id = SpeciesId(2),
                 initialScientificName = "Second name",
                 modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
+                modifiedTime = clock.instant,
                 organizationId = organizationId,
                 scientificName = "Second name",
             ),
@@ -164,9 +167,9 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 1),
                 activeGrowthQuantity = 2,
-                batchNumber = "70-2-1-001",
+                batchNumber = "23-2-1-001",
                 createdBy = user.userId,
-                createdTime = Instant.EPOCH,
+                createdTime = clock.instant,
                 facilityId = facilityId,
                 germinatingQuantity = 1,
                 hardeningOffQuantity = 0,
@@ -175,10 +178,11 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 latestObservedGerminatingQuantity = 1,
                 latestObservedHardeningOffQuantity = 0,
                 latestObservedReadyQuantity = 4,
-                latestObservedTime = Instant.EPOCH,
+                latestObservedTime =
+                    LocalDate.of(2022, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant(),
                 lossRate = 0,
                 modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
+                modifiedTime = clock.instant,
                 organizationId = organizationId,
                 readyQuantity = 4,
                 speciesId = SpeciesId(1),
@@ -187,9 +191,9 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 2),
                 activeGrowthQuantity = 0,
-                batchNumber = "70-2-1-002",
+                batchNumber = "23-2-1-002",
                 createdBy = user.userId,
-                createdTime = Instant.EPOCH,
+                createdTime = clock.instant,
                 facilityId = facilityId,
                 germinatingQuantity = 0,
                 hardeningOffQuantity = 0,
@@ -198,9 +202,10 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 latestObservedGerminatingQuantity = 0,
                 latestObservedHardeningOffQuantity = 0,
                 latestObservedReadyQuantity = 0,
-                latestObservedTime = Instant.EPOCH,
+                latestObservedTime =
+                    LocalDate.of(2022, 1, 2).atStartOfDay(ZoneOffset.UTC).toInstant(),
                 modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
+                modifiedTime = clock.instant,
                 organizationId = organizationId,
                 readyQuantity = 0,
                 speciesId = SpeciesId(2),
@@ -209,9 +214,9 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 3),
                 activeGrowthQuantity = 0,
-                batchNumber = "70-2-1-003",
+                batchNumber = "23-2-1-003",
                 createdBy = user.userId,
-                createdTime = Instant.EPOCH,
+                createdTime = clock.instant,
                 facilityId = facilityId,
                 germinatingQuantity = 0,
                 hardeningOffQuantity = 0,
@@ -220,9 +225,10 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 latestObservedGerminatingQuantity = 0,
                 latestObservedHardeningOffQuantity = 0,
                 latestObservedReadyQuantity = 0,
-                latestObservedTime = Instant.EPOCH,
+                latestObservedTime =
+                    LocalDate.of(2022, 1, 3).atStartOfDay(ZoneOffset.UTC).toInstant(),
                 modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
+                modifiedTime = clock.instant,
                 organizationId = organizationId,
                 readyQuantity = 0,
                 speciesId = SpeciesId(1),
@@ -253,11 +259,11 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             SpeciesRow(
                 commonName = "Common name",
                 createdBy = user.userId,
-                createdTime = Instant.EPOCH,
+                createdTime = clock.instant,
                 id = SpeciesId(1),
                 initialScientificName = "Scientific name",
                 modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
+                modifiedTime = clock.instant,
                 organizationId = organizationId,
                 scientificName = "Scientific name",
             ),
@@ -266,9 +272,9 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             BatchesRow(
                 addedDate = LocalDate.of(2022, 1, 1),
                 activeGrowthQuantity = 2,
-                batchNumber = "70-2-1-001",
+                batchNumber = "23-2-1-001",
                 createdBy = user.userId,
-                createdTime = Instant.EPOCH,
+                createdTime = clock.instant,
                 facilityId = facilityId,
                 germinatingQuantity = 123456,
                 hardeningOffQuantity = 0,
@@ -277,10 +283,11 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
                 latestObservedGerminatingQuantity = 123456,
                 latestObservedHardeningOffQuantity = 0,
                 latestObservedReadyQuantity = 3,
-                latestObservedTime = Instant.EPOCH,
+                latestObservedTime =
+                    LocalDate.of(2022, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant(),
                 lossRate = 0,
                 modifiedBy = user.userId,
-                modifiedTime = Instant.EPOCH,
+                modifiedTime = clock.instant,
                 organizationId = organizationId,
                 readyQuantity = 3,
                 speciesId = SpeciesId(1),
@@ -330,6 +337,15 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
     importer.importCsv(uploadId, false)
 
     assertEquals(speciesId, batchesDao.findAll().first().speciesId)
+  }
+
+  @Test
+  fun `future dated batches are excluded`() {
+    val uploadId = insertBatchUpload(headerAnd("Common name,,,,,2023-01-03,"))
+
+    importer.importCsv(uploadId, false)
+
+    assertTableEmpty(BATCHES)
   }
 
   /**
