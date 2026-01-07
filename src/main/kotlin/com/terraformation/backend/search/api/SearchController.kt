@@ -76,6 +76,8 @@ class SearchController(
     val rootPrefix = resolvePrefix(payload.prefix)
     val count = if (payload.count > 0) payload.count else Int.MAX_VALUE
 
+    validateFilterPrefixes(payload, rootPrefix)
+
     return SearchResponsePayload(
         searchService.search(
             rootPrefix,
@@ -186,6 +188,15 @@ class SearchController(
         }
 
     return SearchFieldPrefix(table)
+  }
+
+  private fun validateFilterPrefixes(payload: SearchRequestPayload, rootPrefix: SearchFieldPrefix) {
+    payload.filters?.forEach { filter ->
+      rootPrefix.relativeSublistPrefix(filter.prefix)
+          ?: throw IllegalArgumentException(
+              "Filter prefix ${filter.prefix} is not a sublist of ${payload.prefix}"
+          )
+    }
   }
 }
 
