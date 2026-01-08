@@ -1496,6 +1496,114 @@
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>planting_sites_created_by_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.created_by</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/users.html'>users</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_sites_modified_by_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.modified_by</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/users.html'>users</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_sites_time_zone_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.time_zone</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/time_zones.html'>time_zones</a><span>.time_zone</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_sites_country_code_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.country_code</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/countries.html'>countries</a><span>.code</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_sites_organization_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.organization_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/organizations.html'>organizations</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_sites_project_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.project_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/projects.html'>projects</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>recorded_plants_observation_id_monitoring_plot_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -1608,114 +1716,6 @@
                                             </table>
                                         </td>
                                         <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>planting_sites_created_by_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.created_by</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/users.html'>users</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>planting_sites_modified_by_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.modified_by</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/users.html'>users</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>planting_sites_time_zone_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.time_zone</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/time_zones.html'>time_zones</a><span>.time_zone</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>planting_sites_country_code_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.country_code</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/countries.html'>countries</a><span>.code</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>planting_sites_organization_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.organization_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/organizations.html'>organizations</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
-                                    </tr>
-                                    <tr>
-                                        <td>planting_sites_project_id_fkey</td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.project_id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td>
-                                            <table border='0' cellspacing='0' cellpadding='0'>
-                                                <tr>
-                                                    <td><a href='tables/projects.html'>projects</a><span>.id</span></td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
                                         <td>observations_observation_type_id_fkey</td>
@@ -2999,11 +2999,6 @@
                                         <td>((abundance_percent &gt;&#61; 0) AND (abundance_percent &lt;&#61; 100))</td>
                                     </tr>
                                     <tr>
-                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
-                                        <td>species_info_matches_certainty</td>
-                                        <td>(((certainty_id &#61; 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id &#61; 2) AND (species_id IS NULL)) OR ((certainty_id &#61; 3) AND (species_id IS NULL) AND (species_name IS NULL)))</td>
-                                    </tr>
-                                    <tr>
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
                                         <td>area_positive</td>
                                         <td>(area_ha &gt; (0)::numeric)</td>
@@ -3012,6 +3007,11 @@
                                         <td><a href='tables/planting_sites.html'>planting_sites</a></td>
                                         <td>planting_sites_description_check</td>
                                         <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/recorded_plants.html'>recorded_plants</a></td>
+                                        <td>species_info_matches_certainty</td>
+                                        <td>(((certainty_id &#61; 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id &#61; 2) AND (species_id IS NULL)) OR ((certainty_id &#61; 3) AND (species_id IS NULL) AND (species_name IS NULL)))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/observations.html'>observations</a></td>

@@ -1,3 +1,4 @@
+ffa410e0c3d SW-7931 Add endpoints for project modules (#3808)
 145a53bbb42 SW-7207 Add validation to search api filter prefixes (#3805)
 21fe637bea2 SW-7918 Rename zone->strata in strings (#3799)
 f9457392571 SW-7919 Allow assigning temporary plot t0 observations (#3804)
