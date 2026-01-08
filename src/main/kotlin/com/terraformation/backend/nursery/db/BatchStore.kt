@@ -213,6 +213,10 @@ class BatchStore(
           now
         }
 
+    if (newModel.addedDate > todayInFacilityTimeZone) {
+      throw IllegalArgumentException("Added date cannot be in the future")
+    }
+
     val rowWithDefaults =
         newModel
             .toRow()
