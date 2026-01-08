@@ -1,3 +1,5 @@
+e053857de60 SW-7480 Disallow future dates for batches (#3807)
+8481c0ec07e SW-7116 Migrate SDG values in seed fund reports to numeric (#3806)
 ffa410e0c3d SW-7931 Add endpoints for project modules (#3808)
 145a53bbb42 SW-7207 Add validation to search api filter prefixes (#3805)
 21fe637bea2 SW-7918 Rename zone->strata in strings (#3799)
