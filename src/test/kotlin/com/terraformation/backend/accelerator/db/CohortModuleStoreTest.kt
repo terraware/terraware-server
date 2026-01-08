@@ -11,7 +11,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.default_schema.GlobalRole
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -25,6 +25,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @BeforeEach
   fun setUp() {
+    insertOrganization()
     insertUserGlobalRole(role = GlobalRole.ReadOnly)
   }
 
@@ -207,7 +208,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class Assign {
+  inner class AssignCohort {
     @Test
     fun `throws exceptions if no associated permissions`() {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
@@ -294,7 +295,120 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class Remove {
+  inner class AssignProject {
+    @Test
+    fun `throws exception if no associated permissions`() {
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
+      insertCohort(phase = CohortPhase.Phase0DueDiligence)
+      insertParticipant(cohortId = inserted.cohortId)
+      insertProject(participantId = inserted.participantId)
+      insertModule()
+
+      assertThrows<AccessDeniedException> {
+        store.assign(
+            inserted.projectId,
+            inserted.moduleId,
+            "Module title",
+            LocalDate.of(2024, 1, 1),
+            LocalDate.of(2024, 1, 3),
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception if project is not in a cohort`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      insertCohort(phase = CohortPhase.Phase0DueDiligence)
+      insertParticipant(cohortId = null)
+      insertProject(participantId = inserted.participantId)
+      insertModule()
+
+      assertThrows<ProjectNotInCohortException> {
+        store.assign(
+            inserted.projectId,
+            inserted.moduleId,
+            "Module title",
+            LocalDate.of(2024, 1, 1),
+            LocalDate.of(2024, 1, 3),
+        )
+      }
+    }
+
+    @Test
+    fun `assigns new module to project's cohort`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      insertCohort(phase = CohortPhase.Phase0DueDiligence)
+      insertParticipant(cohortId = inserted.cohortId)
+      insertProject(participantId = inserted.participantId)
+      insertModule()
+
+      store.assign(
+          inserted.projectId,
+          inserted.moduleId,
+          "Module title",
+          LocalDate.of(2024, 1, 1),
+          LocalDate.of(2024, 1, 3),
+      )
+
+      assertEquals(
+          listOf(
+              CohortModulesRow(
+                  cohortId = inserted.cohortId,
+                  moduleId = inserted.moduleId,
+                  title = "Module title",
+                  startDate = LocalDate.of(2024, 1, 1),
+                  endDate = LocalDate.of(2024, 1, 3),
+              )
+          ),
+          cohortModulesDao.findAll(),
+      )
+    }
+
+    @Test
+    fun `updates existing cohort module for project's cohort`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      insertCohort(phase = CohortPhase.Phase0DueDiligence)
+      insertParticipant(cohortId = inserted.cohortId)
+      insertProject(participantId = inserted.participantId)
+      insertModule()
+
+      insertCohortModule(
+          cohortId = inserted.cohortId,
+          moduleId = inserted.moduleId,
+          title = "Old module title",
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3),
+      )
+
+      store.assign(
+          inserted.projectId,
+          inserted.moduleId,
+          "New module title",
+          LocalDate.of(2024, 2, 1),
+          LocalDate.of(2024, 2, 3),
+      )
+
+      assertEquals(
+          listOf(
+              CohortModulesRow(
+                  cohortId = inserted.cohortId,
+                  moduleId = inserted.moduleId,
+                  title = "New module title",
+                  startDate = LocalDate.of(2024, 2, 1),
+                  endDate = LocalDate.of(2024, 2, 3),
+              )
+          ),
+          cohortModulesDao.findAll(),
+      )
+    }
+  }
+
+  @Nested
+  inner class RemoveCohort {
     @Test
     fun `throws exceptions if no associated permissions`() {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
@@ -326,6 +440,59 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       store.remove(inserted.cohortId, inserted.moduleId)
+
+      assertTableEmpty(COHORT_MODULES)
+    }
+  }
+
+  @Nested
+  inner class RemoveProject {
+    @Test
+    fun `throws exception if no associated permissions`() {
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
+      insertCohort(phase = CohortPhase.Phase0DueDiligence)
+      insertParticipant(cohortId = inserted.cohortId)
+      insertProject(participantId = inserted.participantId)
+      insertModule()
+
+      assertThrows<AccessDeniedException> { //
+        store.remove(inserted.projectId, inserted.moduleId)
+      }
+    }
+
+    @Test
+    fun `throws exception if project is not in a cohort`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      insertCohort(phase = CohortPhase.Phase0DueDiligence)
+      insertParticipant(cohortId = null)
+      insertProject(participantId = inserted.participantId)
+      insertModule()
+
+      assertThrows<ProjectNotInCohortException> {
+        store.remove(inserted.projectId, inserted.moduleId)
+      }
+    }
+
+    @Test
+    fun `removes existing cohort module`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      insertCohort(phase = CohortPhase.Phase0DueDiligence)
+      insertParticipant(cohortId = inserted.cohortId)
+      insertProject(participantId = inserted.participantId)
+      insertModule()
+
+      insertCohortModule(
+          cohortId = inserted.cohortId,
+          moduleId = inserted.moduleId,
+          title = "Module Title",
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3),
+      )
+
+      store.remove(inserted.projectId, inserted.moduleId)
 
       assertTableEmpty(COHORT_MODULES)
     }

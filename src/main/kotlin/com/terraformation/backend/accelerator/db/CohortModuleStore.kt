@@ -93,6 +93,16 @@ class CohortModuleStore(
     }
   }
 
+  fun assign(
+      projectId: ProjectId,
+      moduleId: ModuleId,
+      title: String,
+      startDate: LocalDate,
+      endDate: LocalDate,
+  ) {
+    assign(fetchCohortId(projectId), moduleId, title, startDate, endDate)
+  }
+
   fun remove(cohortId: CohortId, moduleId: ModuleId) {
     requirePermissions { manageModules() }
 
@@ -103,6 +113,10 @@ class CohortModuleStore(
           .and(MODULE_ID.eq(moduleId))
           .execute()
     }
+  }
+
+  fun remove(projectId: ProjectId, moduleId: ModuleId) {
+    remove(fetchCohortId(projectId), moduleId)
   }
 
   private fun fetch(
@@ -140,5 +154,16 @@ class CohortModuleStore(
               )
         }
         .filter { currentUser().canReadCohort(it.cohortId!!) }
+  }
+
+  private fun fetchCohortId(projectId: ProjectId): CohortId {
+    return dslContext
+        .select(PARTICIPANTS.COHORT_ID)
+        .from(PROJECTS)
+        .join(PARTICIPANTS)
+        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+        .where(PROJECTS.ID.eq(projectId))
+        .fetch(PARTICIPANTS.COHORT_ID)
+        .firstOrNull() ?: throw ProjectNotInCohortException(projectId)
   }
 }
