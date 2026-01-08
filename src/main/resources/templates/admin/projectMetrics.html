@@ -30,7 +30,7 @@
         <td>
             <form method="POST"
                   th:id="|delete-${metric.id}|"
-                  action="/admin/updateOrganizationInternalTags">
+                  action="/admin/deleteProjectMetrics">
                 <input type="hidden" name="metricId" th:value="${metric.id}"/>
                 <input type="submit" value="Delete"/>
             </form>
