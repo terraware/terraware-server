@@ -62,6 +62,11 @@ class AdminController(
     )
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
     model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
+
+    model.addAttribute(
+        "canManageProjectReportConfigs",
+        currentUser().canManageProjectReportConfigs(),
+    )
     model.addAttribute("canManageTracking", GlobalRole.SuperAdmin in currentUser().globalRoles)
     model.addAttribute(
         "canMigrateSimplePlantingSites",

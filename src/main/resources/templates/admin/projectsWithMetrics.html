@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>Projects with Metrics</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="projectId : ${projectsWithMetrics.keySet()}" class="striped">
+        <td th:text="${projectId}">ID</td>
+        <td>
+            <a th:href="|/admin/projectMetrics/${projectId}|" th:text="${projectsWithMetrics[projectId]}">
+                Project Name
+            </a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

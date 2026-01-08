@@ -51,6 +51,11 @@
             <a href="/admin/document-producer">Manage Document Templates and Variables</a>
         </p>
     </th:block>
+
+    <h3>Reports</h3>
+    <p th:if="${canManageProjectReportConfigs}">
+        <a href="/admin/projectMetrics">Manage Project Metrics</a>
+    </p>
 </details>
 
 <details id="configuration" class="section">
