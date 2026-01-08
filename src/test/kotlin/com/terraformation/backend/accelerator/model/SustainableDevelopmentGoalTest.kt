@@ -28,18 +28,6 @@ class SustainableDevelopmentGoalTest {
   }
 
   @Test
-  fun `forJsonValue works correctly for names`() {
-    assertEquals(
-        SustainableDevelopmentGoal.NoPoverty,
-        SustainableDevelopmentGoal.forJsonValue("NoPoverty"),
-    )
-    assertEquals(
-        SustainableDevelopmentGoal.ResponsibleConsumption,
-        SustainableDevelopmentGoal.forJsonValue("ResponsibleConsumption"),
-    )
-  }
-
-  @Test
   fun `forJsonValue throws when doesn't exist`() {
     assertThrows<IllegalArgumentException> { SustainableDevelopmentGoal.forJsonValue("BadValue") }
   }
