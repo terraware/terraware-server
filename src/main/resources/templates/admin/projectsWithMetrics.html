@@ -20,7 +20,7 @@
     <tr th:each="projectId : ${projectsWithMetrics.keySet()}" class="striped">
         <td th:text="${projectId}">ID</td>
         <td>
-            <a th:href="|/admin/projectMetrics/${projectId}|" th:text="${projectsWithMetrics[projectId]}">
+            <a th:href="|/admin/projectMetrics/${projectId}|" th:text="${projectsWithMetrics.get(projectId)}">
                 Project Name
             </a>
         </td>
