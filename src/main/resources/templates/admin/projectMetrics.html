@@ -1,0 +1,43 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+-
+<a href="/admin/projectMetrics">Projects with Metrics</a>
+
+<h2 th:text="|(${project.id}) ${project.name}|"> Project Name </h2>
+
+<h2>Project Metrics</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Reference</th>
+        <th></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr th:each="metric : ${projectMetrics}" class="striped">
+        <td th:text="${metric.id}">ID</td>
+        <td th:text="${metric.name}">Metric Name</td>
+        <td th:text="${metric.reference}">Metric Reference</td>
+        <td>
+            <form method="POST"
+                  th:id="|delete-${metric.id}|"
+                  action="/admin/updateOrganizationInternalTags">
+                <input type="hidden" name="metricId" th:value="${metric.id}"/>
+                <input type="submit" value="Delete"/>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
