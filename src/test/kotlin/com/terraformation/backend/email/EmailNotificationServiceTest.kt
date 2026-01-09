@@ -11,8 +11,6 @@ import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
@@ -1251,92 +1249,6 @@ internal class EmailNotificationServiceTest {
 
     assertNoMessageSent()
     assertIsEventListener<PlantingSeasonNotScheduledSupportNotificationEvent>(service)
-  }
-
-  @Test
-  fun `participantProjectAdded with Terraformation contact`() {
-    every { userStore.getTerraformationContactUsers(any()) } returns
-        listOf(tfContactUser1, tfContactUser2)
-
-    val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
-
-    service.on(event)
-
-    assertSubjectContains("My Participant")
-    assertSubjectContains("added to")
-    assertBodyContains(organization.name)
-    assertBodyContains(participant.name)
-    assertBodyContains(project.name)
-    assertBodyContains("added to")
-
-    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
-  }
-
-  @Test
-  fun `participantProjectAdded without Terraformation contact`() {
-    val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
-
-    service.on(event)
-
-    assertSentNoContactNotification()
-
-    val message = sentMessageWithSubject("added to")
-    assertSubjectContains("My Participant", message = message)
-    assertBodyContains(organization.name, message = message)
-    assertBodyContains(participant.name, message = message)
-    assertBodyContains(project.name, message = message)
-    assertBodyContains("added to", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
-  }
-
-  @Test
-  fun `participantProjectAdded without Terraformation contact for non-accelerator organization`() {
-    every { config.support.email } returns null
-
-    val event = ParticipantProjectAddedEvent(user.userId, participant.id, project.id)
-    every { parentStore.getOrganizationId(project.id) } returns nonAcceleratorOrganization.id
-
-    service.on(event)
-
-    assertNoMessageSent()
-  }
-
-  @Test
-  fun `participantProjectRemoved with Terraformation contact`() {
-    every { userStore.getTerraformationContactUsers(any()) } returns
-        listOf(tfContactUser1, tfContactUser2)
-
-    val event = ParticipantProjectRemovedEvent(participant.id, project.id, user.userId)
-
-    service.on(event)
-
-    assertSubjectContains("My Participant")
-    assertSubjectContains("removed from")
-    assertBodyContains(organization.name)
-    assertBodyContains(participant.name)
-    assertBodyContains(project.name)
-    assertBodyContains("removed from")
-
-    assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2))
-  }
-
-  @Test
-  fun `participantProjectRemoved without Terraformation contact`() {
-    val event = ParticipantProjectRemovedEvent(participant.id, project.id, user.userId)
-
-    service.on(event)
-
-    assertSentNoContactNotification()
-
-    val message = sentMessageWithSubject("removed from")
-    assertSubjectContains("My Participant", message = message)
-    assertBodyContains(organization.name, message = message)
-    assertBodyContains(participant.name, message = message)
-    assertBodyContains(project.name, message = message)
-    assertBodyContains("removed from", message = message)
-
-    assertRecipientsEqual(setOf(supportContactEmail))
   }
 
   @Test

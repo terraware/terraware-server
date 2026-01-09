@@ -11,8 +11,6 @@ import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ApplicationSubmittedEvent
 import com.terraformation.backend.accelerator.event.DeliverableReadyForReviewEvent
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedToProjectNotificationDueEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent
 import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
@@ -78,8 +76,6 @@ import com.terraformation.backend.email.model.ObservationRescheduled
 import com.terraformation.backend.email.model.ObservationScheduled
 import com.terraformation.backend.email.model.ObservationStarted
 import com.terraformation.backend.email.model.ObservationUpcoming
-import com.terraformation.backend.email.model.ParticipantProjectAdded
-import com.terraformation.backend.email.model.ParticipantProjectRemoved
 import com.terraformation.backend.email.model.ParticipantProjectSpeciesAdded
 import com.terraformation.backend.email.model.ParticipantProjectSpeciesEdited
 import com.terraformation.backend.email.model.PlantingSeasonNotScheduled
@@ -601,46 +597,6 @@ class EmailNotificationService(
             OrganizationStore.FetchDepth.Organization,
         )
     val model = PlantingSeasonNotScheduledSupport(config, organization.name, plantingSite.name)
-
-    sendToOrganizationContact(organization, model)
-  }
-
-  @EventListener
-  fun on(event: ParticipantProjectAddedEvent) {
-    val participant = participantStore.fetchOneById(event.participantId)
-    val project = projectStore.fetchOneById(event.projectId)
-    val organization = organizationStore.fetchOneById(project.organizationId)
-    val admin =
-        userStore.fetchOneById(event.addedBy) as? IndividualUser
-            ?: throw IllegalArgumentException("Admin user must be an individual user")
-    val model =
-        ParticipantProjectAdded(
-            config,
-            admin.fullName ?: admin.email,
-            organization.name,
-            participant.name,
-            project.name,
-        )
-
-    sendToOrganizationContact(organization, model)
-  }
-
-  @EventListener
-  fun on(event: ParticipantProjectRemovedEvent) {
-    val participant = participantStore.fetchOneById(event.participantId)
-    val project = projectStore.fetchOneById(event.projectId)
-    val organization = organizationStore.fetchOneById(project.organizationId)
-    val admin =
-        userStore.fetchOneById(event.removedBy) as? IndividualUser
-            ?: throw IllegalArgumentException("Admin user must be an individual user")
-    val model =
-        ParticipantProjectRemoved(
-            config,
-            admin.fullName ?: admin.email,
-            organization.name,
-            participant.name,
-            project.name,
-        )
 
     sendToOrganizationContact(organization, model)
   }
