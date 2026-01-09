@@ -10,7 +10,6 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.ProjectLandUseModelTypesRecord
@@ -70,10 +69,8 @@ class ProjectAcceleratorDetailsStore(
         .from(PROJECTS)
         .leftJoin(PROJECT_ACCELERATOR_DETAILS)
         .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
-        .leftJoin(PARTICIPANTS)
-        .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
         .leftJoin(COHORTS)
-        .on(COHORTS.ID.eq(PARTICIPANTS.COHORT_ID))
+        .on(COHORTS.ID.eq(PROJECTS.COHORT_ID))
         .where(condition)
         .filter { filterFn(it[PROJECTS.ID]!!) }
         .map {

@@ -18,7 +18,6 @@ import com.terraformation.backend.db.accelerator.tables.records.ParticipantProje
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -153,11 +152,9 @@ class ParticipantProjectSpeciesStore(
         .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
         .join(PROJECTS)
         .on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
-        .join(PARTICIPANTS)
-        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
         .leftOuterJoin(COHORT_MODULES)
         .on(
-            COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID),
+            COHORT_MODULES.COHORT_ID.eq(PROJECTS.COHORT_ID),
             COHORT_MODULES.START_DATE.lessOrEqual(today),
         )
         .leftOuterJoin(MODULES)

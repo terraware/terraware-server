@@ -14,7 +14,7 @@ import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -42,8 +42,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `fetches the deliverable ID if no submission present for an active deliverable`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
@@ -75,8 +74,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `fetches the deliverable ID if no submission present for the most recent inactive deliverable if there is no active deliverable`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
@@ -119,8 +117,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `fetches both deliverable ID and submission ID if present for active deliverable`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
@@ -158,8 +155,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `fetches both deliverable ID and submission ID if present for most recent deliverable if there is no active deliverable`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
@@ -208,8 +204,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws an exception if no permission to read the submission`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
 
       val moduleId = insertModule()
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)

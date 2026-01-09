@@ -94,7 +94,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     fun `creates a submission for the project and deliverable if one does not exist for the active module when a species is added to a project`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId, participantId = participantId)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
@@ -154,7 +154,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     fun `does not create another submission for a project if a deliverable submission for the active module already exists`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId, participantId = participantId)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
@@ -205,8 +205,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId1 = insertProject(participantId = participantId)
-      val projectId2 = insertProject(participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId, participantId = participantId)
+      val projectId2 = insertProject(cohortId = cohortId, participantId = participantId)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -291,8 +291,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       // Between the most recent and future module
       clock.instant = Instant.EPOCH.plus(20, ChronoUnit.DAYS)
 
-      val projectId1 = insertProject(participantId = participantId)
-      val projectId2 = insertProject(participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId, participantId = participantId)
+      val projectId2 = insertProject(cohortId = cohortId, participantId = participantId)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -347,9 +347,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     fun `creates an entity for each project ID and species ID pairing even if there isn't any associated deliverable`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId)
-
-      val projectId1 = insertProject(participantId = participantId)
-      val projectId2 = insertProject(participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId, participantId = participantId)
+      val projectId2 = insertProject(cohortId = cohortId, participantId = participantId)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -376,11 +375,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `updates the status for the participant project species if species fields are edited by non-accelerator-users`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-
-      val projectId1 = insertProject(participantId = participantId)
-      val projectId2 = insertProject(participantId = participantId)
-      val projectId3 = insertProject(participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId)
+      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId3 = insertProject(cohortId = cohortId)
       val speciesId = insertSpecies()
 
       val participantProjectSpeciesId1 =
@@ -426,9 +423,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does not update the status of the participant project species if the species fields are edited by accelerator-users`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val speciesId = insertSpecies()
 
       insertParticipantProjectSpecies(
@@ -461,13 +456,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `it saves a snapshot of species data if the associated submission is approved`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
       val moduleId = insertModule()
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
       val speciesId1 = insertSpecies()
@@ -533,13 +527,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `it does nothing if the submission is not approved`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
       val moduleId = insertModule()
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
       val speciesId = insertSpecies()
@@ -571,13 +564,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `it does nothing if the submission is not for a species list deliverable`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
       val moduleId = insertModule()
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Document)
 
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
       service.on(

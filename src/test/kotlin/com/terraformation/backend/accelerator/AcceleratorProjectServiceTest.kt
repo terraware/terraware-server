@@ -27,8 +27,7 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertOrganization()
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
-    insertParticipant(cohortId = inserted.cohortId)
-    insertProject(countryCode = "KE", participantId = inserted.participantId)
+    insertProject(cohortId = inserted.cohortId, countryCode = "KE")
     insertVoteDecision(
         projectId = inserted.projectId,
         phase = CohortPhase.Phase0DueDiligence,

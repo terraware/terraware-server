@@ -36,8 +36,7 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `fetches project's cohort data`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
 
       val expected =
           ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
@@ -49,8 +48,7 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `uses cohort data even if project has an application`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       insertApplication()
 
       val expected =
@@ -100,8 +98,7 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception if no permission to read project`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
 
       every { user.canReadProject(projectId) } returns false
 
@@ -109,9 +106,8 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `returns null if the project is not associated to a participant which is associated to a cohort`() {
-      val participantId = insertParticipant()
-      val projectId = insertProject(participantId = participantId)
+    fun `returns null if the project is not associated to a cohort`() {
+      val projectId = insertProject()
 
       val actual = fetcher.fetchCohortData(projectId)
       assertNull(actual)

@@ -60,8 +60,8 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts voters`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId)
-      insertProject(participantId = participantId) // Should be ignored
-      val projectId = insertProject(participantId = participantId)
+      insertProject(cohortId = cohortId, participantId = participantId) // Should be ignored
+      val projectId = insertProject(cohortId = cohortId, participantId = participantId)
 
       service.on(ParticipantProjectAddedEvent(user.userId, participantId, projectId))
 
@@ -72,7 +72,7 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `does not modify existing voter information`() {
       val cohortId = insertCohort()
       val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId, participantId = participantId)
 
       insertVote(user = voter1, voteOption = VoteOption.No, conditionalInfo = "cond")
 
@@ -106,15 +106,15 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts voters`() {
       val cohortId1 = insertCohort()
       val participantId1 = insertParticipant(cohortId = cohortId1)
-      val projectId1 = insertProject(participantId = participantId1)
-      val projectId2 = insertProject(participantId = participantId1)
+      val projectId1 = insertProject(cohortId = cohortId1, participantId = participantId1)
+      val projectId2 = insertProject(cohortId = cohortId1, participantId = participantId1)
 
       // Should leave these alone
       val otherParticipantId = insertParticipant(cohortId = cohortId1)
-      insertProject(participantId = otherParticipantId)
+      insertProject(cohortId = cohortId1, participantId = otherParticipantId)
       val otherCohortId = insertCohort()
       val otherCohortParticipantId = insertParticipant(cohortId = otherCohortId)
-      insertProject(participantId = otherCohortParticipantId)
+      insertProject(cohortId = otherCohortId, participantId = otherCohortParticipantId)
 
       service.on(CohortParticipantAddedEvent(cohortId1, participantId1))
 
@@ -141,14 +141,14 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val phase = CohortPhase.Phase1FeasibilityStudy
       val cohortId1 = insertCohort(phase = phase)
       val participantId1 = insertParticipant(cohortId = cohortId1)
-      val projectId1 = insertProject(participantId = participantId1)
+      val projectId1 = insertProject(cohortId = cohortId1, participantId = participantId1)
       val participantId2 = insertParticipant(cohortId = cohortId1)
-      val projectId2 = insertProject(participantId = participantId2)
+      val projectId2 = insertProject(cohortId = cohortId1, participantId = participantId2)
 
       // Should leave these alone
       val otherCohortId = insertCohort()
       val otherCohortParticipantId = insertParticipant(cohortId = otherCohortId)
-      insertProject(participantId = otherCohortParticipantId)
+      insertProject(cohortId = otherCohortId, participantId = otherCohortParticipantId)
       insertVote(projectId1, user = voter1)
 
       service.on(CohortPhaseUpdatedEvent(cohortId1, phase))

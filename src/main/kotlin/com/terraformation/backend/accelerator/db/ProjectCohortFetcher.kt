@@ -6,7 +6,6 @@ import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
@@ -20,10 +19,8 @@ class ProjectCohortFetcher(private val dslContext: DSLContext) {
     return dslContext
         .select(COHORTS.ID, COHORTS.PHASE_ID, APPLICATIONS.APPLICATION_STATUS_ID)
         .from(PROJECTS)
-        .leftJoin(PARTICIPANTS)
-        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
         .leftJoin(COHORTS)
-        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+        .on(PROJECTS.COHORT_ID.eq(COHORTS.ID))
         .leftJoin(APPLICATIONS)
         .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
         .where(PROJECTS.ID.eq(projectId))

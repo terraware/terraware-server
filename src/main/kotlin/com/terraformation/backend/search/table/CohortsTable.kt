@@ -49,10 +49,8 @@ class CohortsTable(tables: SearchTables) : SearchTable() {
     } else {
       DSL.exists(
           DSL.selectOne()
-              .from(PARTICIPANTS)
-              .join(PROJECTS)
-              .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-              .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+              .from(PROJECTS)
+              .where(PROJECTS.COHORT_ID.eq(COHORTS.ID))
               .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
       )
     }

@@ -277,6 +277,7 @@ internal class PermissionTest : DatabaseTest() {
       putDatabaseId(
           projectId,
           insertProject(
+              cohortId = getDatabaseId(CohortId(projectId.value / 1000)),
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(projectId.value / 1000)),
               participantId = getDatabaseId(ParticipantId(projectId.value / 1000)),

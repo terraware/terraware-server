@@ -226,15 +226,13 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val invisibleModule = insertModule()
 
     val userCohort = insertCohort()
-    val userParticipant = insertParticipant(cohortId = userCohort)
-    insertProject(participantId = userParticipant, organizationId = inserted.organizationId)
+    insertProject(cohortId = userCohort, organizationId = inserted.organizationId)
 
     val otherUser = insertUser()
     val otherCohort = insertCohort()
-    val otherParticipant = insertParticipant(cohortId = otherCohort)
     val otherOrganization = insertOrganization()
     insertOrganizationUser(otherUser, otherOrganization)
-    insertProject(participantId = otherParticipant, organizationId = otherOrganization)
+    insertProject(cohortId = otherCohort, organizationId = otherOrganization)
 
     insertCohortModule(userCohort, module1)
     insertCohortModule(userCohort, module2)

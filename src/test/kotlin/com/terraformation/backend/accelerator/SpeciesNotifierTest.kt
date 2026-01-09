@@ -44,9 +44,8 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
     insertModule()
     insertCohort()
     insertCohortModule()
-    insertParticipant(cohortId = inserted.cohortId)
 
-    projectId = insertProject(participantId = inserted.participantId)
+    projectId = insertProject(cohortId = inserted.cohortId)
     deliverableId = insertDeliverable(deliverableTypeId = DeliverableType.Species)
 
     every { user.canReadProjectDeliverables(any()) } returns true

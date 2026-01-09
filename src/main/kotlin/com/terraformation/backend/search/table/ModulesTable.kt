@@ -6,7 +6,6 @@ import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULE
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -54,10 +53,8 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
         DSL.exists(
             DSL.selectOne()
                 .from(COHORT_MODULES)
-                .join(PARTICIPANTS)
-                .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
                 .join(PROJECTS)
-                .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+                .on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
                 .where(COHORT_MODULES.MODULE_ID.eq(MODULES.ID))
                 .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
         )

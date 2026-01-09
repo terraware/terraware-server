@@ -12,7 +12,6 @@ import com.terraformation.backend.db.accelerator.tables.records.SubmissionsRecor
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -85,10 +84,8 @@ class SubmissionStore(
             .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
             .join(COHORT_MODULES)
             .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
-            .join(PARTICIPANTS)
-            .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
             .join(PROJECTS)
-            .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
+            .on(COHORT_MODULES.COHORT_ID.eq(PROJECTS.COHORT_ID))
             .leftJoin(SUBMISSIONS)
             .on(
                 DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID),

@@ -88,8 +88,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     val cohortId = insertCohort()
-    val participantId = insertParticipant(cohortId = cohortId)
-    val projectId = insertProject(participantId = participantId)
+    val projectId = insertProject(cohortId = cohortId)
 
     insertModule()
     insertCohortModule()
@@ -113,8 +112,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     val cohortId = insertCohort()
-    val participantId = insertParticipant(cohortId = cohortId)
-    val projectId = insertProject(participantId = participantId)
+    val projectId = insertProject(cohortId = cohortId)
 
     insertModule()
     insertDeliverable()
@@ -236,8 +234,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     val cohortId = insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
-    val participantId = insertParticipant(cohortId = cohortId)
-    val moduleProjectId = insertProject(name = "Cohort project", participantId = participantId)
+    val moduleProjectId = insertProject(name = "Cohort project", cohortId = cohortId)
     insertModule(phase = CohortPhase.Phase1FeasibilityStudy)
     insertDeliverable()
     insertCohortModule()
