@@ -3,7 +3,6 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
-import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
@@ -141,7 +140,6 @@ class EmailNotificationService(
     private val observationStore: ObservationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
-    private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val projectStore: ProjectStore,
@@ -604,20 +602,19 @@ class EmailNotificationService(
   @EventListener
   fun on(event: ParticipantProjectSpeciesAddedToProjectNotificationDueEvent) {
     val project = projectStore.fetchOneById(event.projectId)
-    val participant = participantStore.fetchOneById(project.participantId!!)
     val species = speciesStore.fetchSpeciesById(event.speciesId)
     val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
 
     sendToAccelerator(
         project.organizationId,
         ParticipantProjectSpeciesAdded(
-            config,
-            webAppUrls
-                .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-                .toString(),
-            participant.name,
-            project.name,
-            species.scientificName,
+            config = config,
+            deliverableUrl =
+                webAppUrls
+                    .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                    .toString(),
+            projectName = project.name,
+            speciesName = species.scientificName,
         ),
         deliverableCategory.internalInterestId,
     )
@@ -626,19 +623,19 @@ class EmailNotificationService(
   @EventListener
   fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent) {
     val project = projectStore.fetchOneById(event.projectId)
-    val participant = participantStore.fetchOneById(project.participantId!!)
     val species = speciesStore.fetchSpeciesById(event.speciesId)
     val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
 
     sendToAccelerator(
         project.organizationId,
         ParticipantProjectSpeciesEdited(
-            config,
-            webAppUrls
-                .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-                .toString(),
-            participant.name,
-            species.scientificName,
+            config = config,
+            deliverableUrl =
+                webAppUrls
+                    .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                    .toString(),
+            projectName = project.name,
+            speciesName = species.scientificName,
         ),
         deliverableCategory.internalInterestId,
     )
@@ -690,17 +687,17 @@ class EmailNotificationService(
       }
 
       val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
-      val participant = participantStore.fetchOneById(project.participantId)
 
       sendToAccelerator(
           project.organizationId,
           DeliverableReadyForReview(
-              config,
-              webAppUrls
-                  .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-                  .toString(),
-              deliverableSubmission,
-              participant.name,
+              config = config,
+              deliverableUrl =
+                  webAppUrls
+                      .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                      .toString(),
+              deliverable = deliverableSubmission,
+              projectName = project.name,
           ),
           deliverableCategory.internalInterestId,
       )
