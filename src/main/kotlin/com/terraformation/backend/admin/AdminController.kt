@@ -61,7 +61,6 @@ class AdminController(
         currentUser().canManageModules() || currentUser().canManageDeliverables(),
     )
     model.addAttribute("canManageInternalTags", currentUser().canManageInternalTags())
-    model.addAttribute("canManageParticipants", currentUser().canCreateParticipant())
 
     model.addAttribute(
         "canManageProjectReportConfigs",
