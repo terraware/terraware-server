@@ -846,14 +846,17 @@ abstract class DatabaseBackedTest {
   protected fun insertProject(
       organizationId: OrganizationId = inserted.organizationId,
       name: String = "Project ${nextProjectNumber++}",
+      cohortId: CohortId? = null,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
       participantId: ParticipantId? = null,
+      phase: CohortPhase? = null,
       countryCode: String? = null,
   ): ProjectId {
     val row =
         ProjectsRow(
+            cohortId = cohortId,
             countryCode = countryCode,
             createdBy = createdBy,
             createdTime = createdTime,
@@ -863,6 +866,7 @@ abstract class DatabaseBackedTest {
             name = name,
             organizationId = organizationId,
             participantId = participantId,
+            phaseId = phase,
         )
 
     projectsDao.insert(row)

@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.ParticipantService
 import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
+import com.terraformation.backend.accelerator.event.CohortParticipantRemovedEvent
 import com.terraformation.backend.accelerator.model.ExistingParticipantModel
 import com.terraformation.backend.accelerator.model.NewParticipantModel
 import com.terraformation.backend.accelerator.model.ParticipantModel
@@ -117,8 +118,15 @@ class ParticipantStore(
         throw ParticipantNotFoundException(participantId)
       }
 
-      if (existing.cohortId != updated.cohortId && updated.cohortId != null) {
-        eventPublisher.publishEvent(CohortParticipantAddedEvent(updated.cohortId, participantId))
+      if (existing.cohortId != updated.cohortId) {
+        if (existing.cohortId != null) {
+          eventPublisher.publishEvent(
+              CohortParticipantRemovedEvent(existing.cohortId, participantId)
+          )
+        }
+        if (updated.cohortId != null) {
+          eventPublisher.publishEvent(CohortParticipantAddedEvent(updated.cohortId, participantId))
+        }
       }
     }
   }
