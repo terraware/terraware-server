@@ -1,6 +1,5 @@
 package com.terraformation.backend.support
 
-import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
@@ -16,7 +15,6 @@ class FailureReportingService(
     private val config: TerrawareServerConfig,
     private val deliverablesDao: DeliverablesDao,
     private val organizationStore: OrganizationStore,
-    private val participantStore: ParticipantStore,
     private val projectStore: ProjectStore,
     private val supportService: SupportService,
 ) {
@@ -28,7 +26,6 @@ class FailureReportingService(
       val deliverablesRow = deliverablesDao.fetchOneById(event.deliverableId)
       val project = projectStore.fetchOneById(event.projectId)
       val organization = organizationStore.fetchOneById(project.organizationId)
-      val participant = project.participantId?.let { participantStore.fetchOneById(it) }
 
       val description =
           """
@@ -37,7 +34,6 @@ class FailureReportingService(
             Reason: ${event.reason.description}
             
             Organization: ${organization.name}
-            Participant: ${participant?.name ?: "N/A"}
             Project: ${project.name}
             
             Deliverable: ${deliverablesRow?.name ?: "N/A"} (ID ${event.deliverableId})

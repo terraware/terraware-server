@@ -408,7 +408,6 @@ class PlantingSeasonNotScheduledSupport(
 class ParticipantProjectSpeciesAdded(
     config: TerrawareServerConfig,
     val deliverableUrl: String,
-    val participantName: String,
     val projectName: String,
     val speciesName: String,
 ) : EmailTemplateModel(config) {
@@ -419,7 +418,7 @@ class ParticipantProjectSpeciesAdded(
 class ParticipantProjectSpeciesEdited(
     config: TerrawareServerConfig,
     val deliverableUrl: String,
-    val participantName: String,
+    val projectName: String,
     val speciesName: String,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
@@ -440,7 +439,7 @@ class DeliverableReadyForReview(
     config: TerrawareServerConfig,
     val deliverableUrl: String,
     val deliverable: DeliverableSubmissionModel,
-    val participantName: String,
+    val projectName: String,
 ) : EmailTemplateModel(config) {
   override val templateDir: String
     get() = "deliverable/readyForReview"

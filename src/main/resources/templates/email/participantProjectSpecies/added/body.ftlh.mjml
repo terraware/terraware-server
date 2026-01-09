@@ -11,7 +11,7 @@
                   ${strings("notification.participantProjectSpecies.added.email.body.1", speciesName, projectName)}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                  ${strings("notification.participantProjectSpecies.added.email.body.2", participantName, speciesName, projectName)}
+                  ${strings("notification.participantProjectSpecies.added.email.body.2", projectName, speciesName)}
                 </mj-text>
                 <mj-button mj-class="btn-productive-primary-md"
                            href="${deliverableUrl?no_esc}">${strings("notification.participantProjectSpecies.added.email.buttonLabel")}

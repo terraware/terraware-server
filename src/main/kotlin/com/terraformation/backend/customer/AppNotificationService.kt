@@ -5,7 +5,6 @@ import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
-import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
@@ -89,7 +88,6 @@ class AppNotificationService(
     private val notificationStore: NotificationStore,
     private val organizationStore: OrganizationStore,
     private val parentStore: ParentStore,
-    private val participantStore: ParticipantStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val projectStore: ProjectStore,
@@ -333,13 +331,12 @@ class AppNotificationService(
 
     val species = speciesStore.fetchSpeciesById(event.speciesId)
 
-    val participant = participantStore.fetchOneById(project.participantId)
     val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
     val deliverableUrl =
         webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
     val renderMessage = {
       messages.participantProjectSpeciesApprovedSpeciesEdited(
-          participantName = participant.name,
+          projectName = project.name,
           speciesName = species.scientificName,
       )
     }
@@ -369,13 +366,11 @@ class AppNotificationService(
 
     val species = speciesStore.fetchSpeciesById(event.speciesId)
 
-    val participant = participantStore.fetchOneById(project.participantId)
     val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
     val deliverableUrl =
         webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
     val renderMessage = {
       messages.participantProjectSpeciesAddedToProject(
-          participantName = participant.name,
           projectName = project.name,
           speciesName = species.scientificName,
       )
@@ -462,15 +457,14 @@ class AppNotificationService(
         return@run
       }
 
-      val participant = participantStore.fetchOneById(project.participantId)
       val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
       val deliverableUrl =
           webAppUrls.acceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-      val renderMessage = { messages.deliverableReadyForReview(participant.name) }
+      val renderMessage = { messages.deliverableReadyForReview(project.name) }
 
       log.info(
-          "Creating app notifications for project ${event.projectId} participant " +
-              "${project.participantId} deliverable ${event.deliverableId} ready for review"
+          "Creating app notifications for project ${event.projectId} " +
+              "deliverable ${event.deliverableId} ready for review"
       )
 
       insertAcceleratorNotification(

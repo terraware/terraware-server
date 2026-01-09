@@ -3,7 +3,6 @@ package com.terraformation.backend.email
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
-import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
@@ -199,7 +198,6 @@ internal class EmailNotificationServiceTest {
   private val observationStore: ObservationStore = mockk()
   private val organizationStore: OrganizationStore = mockk()
   private val parentStore: ParentStore = mockk()
-  private val participantStore: ParticipantStore = mockk()
   private val plantingSiteStore: PlantingSiteStore = mockk()
   private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService = mockk()
   private val projectStore: ProjectStore = mockk()
@@ -242,7 +240,6 @@ internal class EmailNotificationServiceTest {
           observationStore,
           organizationStore,
           parentStore,
-          participantStore,
           plantingSiteStore,
           projectAcceleratorDetailsService,
           projectStore,
@@ -601,7 +598,6 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getOrganizationId(plantingSite.id) } returns organization.id
     every { parentStore.getOrganizationId(project.id) } returns organization.id
     every { parentStore.getPlantingSiteId(monitoringPlot.id) } returns plantingSite.id
-    every { participantStore.fetchOneById(participant.id) } returns participant
     every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns plantingSite
     every { projectAcceleratorDetailsService.fetchOneById(project.id) } returns
         projectAcceleratorDetails
@@ -1263,8 +1259,7 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     val message = sentMessageWithSubject("added to")
-    assertSubjectContains(participant.name, message = message)
-    assertBodyContains(participant.name, message = message)
+    assertSubjectContains(project.name, message = message)
     assertBodyContains(project.name, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("submitted for use", message = message)
@@ -1287,8 +1282,7 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     val message = sentMessageWithSubject("added to")
-    assertSubjectContains(participant.name, message = message)
-    assertBodyContains(participant.name, message = message)
+    assertSubjectContains(project.name, message = message)
     assertBodyContains(project.name, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("submitted for use", message = message)
@@ -1308,8 +1302,8 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     val message = sentMessageWithSubject("has been edited")
-    assertSubjectContains(participant.name, message = message)
-    assertBodyContains(participant.name, message = message)
+    assertSubjectContains(project.name, message = message)
+    assertBodyContains(project.name, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("has been edited", message = message)
 
@@ -1331,8 +1325,8 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     val message = sentMessageWithSubject("has been edited")
-    assertSubjectContains(participant.name, message = message)
-    assertBodyContains(participant.name, message = message)
+    assertSubjectContains(project.name, message = message)
+    assertBodyContains(project.name, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("has been edited", message = message)
 
@@ -1646,8 +1640,8 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     val message = sentMessageWithSubject("is ready for review")
-    assertSubjectContains(participant.name, message = message)
-    assertBodyContains(participant.name, message = message)
+    assertSubjectContains(project.name, message = message)
+    assertBodyContains(project.name, message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
   }
@@ -1664,8 +1658,8 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     val message = sentMessageWithSubject("is ready for review")
-    assertSubjectContains(participant.name, message = message)
-    assertBodyContains(participant.name, message = message)
+    assertSubjectContains(project.name, message = message)
+    assertBodyContains(project.name, message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
 
@@ -1681,8 +1675,8 @@ internal class EmailNotificationServiceTest {
     service.on(event)
 
     val message = sentMessageWithSubject("is ready for review")
-    assertSubjectContains(participant.name, message = message)
-    assertBodyContains(participant.name, message = message)
+    assertSubjectContains(project.name, message = message)
+    assertBodyContains(project.name, message = message)
 
     assertRecipientsEqual(setOf(acceleratorUser.email))
   }

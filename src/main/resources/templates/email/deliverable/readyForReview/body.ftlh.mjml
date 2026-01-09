@@ -8,13 +8,13 @@
         <mj-section padding="0px">
             <mj-column mj-class="body-wrapper">
                 <mj-text mj-class="text-headline06-bold">
-                  Deliverable was submitted by ${participantName}
+                  Deliverable was submitted by ${projectName}
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                  A deliverable was submitted by ${participantName} and is ready for review for approval.
+                  A deliverable was submitted by ${projectName} and is ready for review for approval.
                 </mj-text>
                 <mj-text mj-class="text-body03">
-                    <b>Project:</b> ${deliverable.projectName}
+                    <b>Project:</b> ${projectName}
                 </mj-text>
                 <mj-text mj-class="text-body03">
                     <b>Deliverable:</b> ${deliverable.name}

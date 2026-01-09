@@ -10,7 +10,6 @@ import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleEventStore
 import com.terraformation.backend.accelerator.db.ModuleStore
-import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ProjectAcceleratorDetailsStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
@@ -115,7 +114,6 @@ import java.time.Month
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
-import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -148,7 +146,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var observationResultsStore: ObservationResultsStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
-  private lateinit var participantStore: ParticipantStore
   private lateinit var plantingSiteStore: PlantingSiteStore
   private lateinit var projectAcceleratorDetailsService: ProjectAcceleratorDetailsService
   private lateinit var projectStore: ProjectStore
@@ -213,7 +210,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
     observationResultsStore = ObservationResultsStore(dslContext)
-    participantStore = ParticipantStore(clock, dslContext, publisher, participantsDao)
     plantingSiteStore =
         PlantingSiteStore(
             clock,
@@ -316,7 +312,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             notificationStore,
             organizationStore,
             parentStore,
-            participantStore,
             plantingSiteStore,
             projectAcceleratorDetailsService,
             projectStore,
@@ -345,7 +340,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     every { user.canReadModuleEvent(any()) } returns true
     every { user.canReadModuleEventParticipants() } returns true
     every { user.canReadOrganization(organizationId) } returns true
-    every { user.canReadParticipant(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectModules(any()) } returns true
@@ -815,7 +809,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         DeliverableReadyForReviewEvent(deliverableId, projectId),
         type = NotificationType.DeliverableReadyForReview,
         title = "Review a submitted deliverable",
-        body = "A deliverable from participant1 is ready for review for approval.",
+        body = "A deliverable from Project 1 is ready for review for approval.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         organizationId = null,
     )
@@ -862,7 +856,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationsRow(
             notificationTypeId = NotificationType.DeliverableReadyForReview,
             title = "Review a submitted deliverable",
-            body = "A deliverable from participant1 is ready for review for approval.",
+            body = "A deliverable from Project 1 is ready for review for approval.",
             localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
             organizationId = null,
         )
@@ -893,7 +887,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         NotificationsRow(
             notificationTypeId = NotificationType.DeliverableReadyForReview,
             title = "Review a submitted deliverable",
-            body = "A deliverable from participant1 is ready for review for approval.",
+            body = "A deliverable from Project 1 is ready for review for approval.",
             localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
             organizationId = null,
         )
@@ -963,8 +957,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store species added to project notification for global users with interest`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val participantName = "Participant ${UUID.randomUUID()}"
-    val participantId = insertParticipant(name = participantName)
+    val participantId = insertParticipant()
     val projectId = insertProject(participantId = participantId)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -980,7 +973,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             speciesId,
         ),
         type = NotificationType.ParticipantProjectSpeciesAddedToProject,
-        title = "A species has been added to a project for $participantName.",
+        title = "A species has been added to project Project 1.",
         body = "Species 1 has been submitted for use for Project 1.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,
@@ -991,8 +984,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store species approved species edited notification`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val participantName = "Participant ${UUID.randomUUID()}"
-    val participantId = insertParticipant(name = participantName)
+    val participantId = insertParticipant()
     val projectId = insertProject(participantId = participantId)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -1008,7 +1000,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             speciesId,
         ),
         type = NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
-        title = "An approved species has been edited for $participantName.",
+        title = "An approved species has been edited for Project 1.",
         body = "Species 1 has been edited and is ready for approval.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,

@@ -417,10 +417,10 @@ class Messages {
     )
   }
 
-  fun deliverableReadyForReview(participantName: String): NotificationMessage {
+  fun deliverableReadyForReview(projectName: String): NotificationMessage {
     return NotificationMessage(
         title = "Review a submitted deliverable",
-        body = "A deliverable from $participantName is ready for review for approval.",
+        body = "A deliverable from $projectName is ready for review for approval.",
     )
   }
 
@@ -432,13 +432,11 @@ class Messages {
   }
 
   fun participantProjectSpeciesAddedToProject(
-      participantName: String,
       projectName: String,
       speciesName: String,
   ): NotificationMessage {
     return NotificationMessage(
-        title =
-            getMessage("notification.participantProjectSpecies.added.app.title", participantName),
+        title = getMessage("notification.participantProjectSpecies.added.app.title", projectName),
         body =
             getMessage(
                 "notification.participantProjectSpecies.added.app.body",
@@ -449,12 +447,11 @@ class Messages {
   }
 
   fun participantProjectSpeciesApprovedSpeciesEdited(
-      participantName: String,
+      projectName: String,
       speciesName: String,
   ): NotificationMessage {
     return NotificationMessage(
-        title =
-            getMessage("notification.participantProjectSpecies.edited.app.title", participantName),
+        title = getMessage("notification.participantProjectSpecies.edited.app.title", projectName),
         body = getMessage("notification.participantProjectSpecies.edited.app.body", speciesName),
     )
   }

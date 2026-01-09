@@ -1,7 +1,7 @@
 <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.DeliverableReadyForReview" -->
-Deliverable was submitted by ${participantName}
+Deliverable was submitted by ${projectName}
 
-A deliverable was submitted by ${participantName} and is ready for review for approval.
+A deliverable was submitted by ${projectName} and is ready for review for approval.
 
 ${deliverableUrl}
 Project: ${deliverable.projectName}
