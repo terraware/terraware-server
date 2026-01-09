@@ -1,2 +1,4 @@
+1357a920a2b SW-7942 Use project names in notifications (#3814)
+50339f55313 SW-7942 Remove participants from admin UI (#3813)
 412bbe0ade0 Improve Claude skill for adding persistent events (#3812)
 086c04fec12 SW-7942 Remove participant project notifications (#3811)
