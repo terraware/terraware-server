@@ -788,8 +788,6 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 name = "Pre-screen deliverable",
                 organizationId = organizationId,
                 organizationName = organizationName,
-                participantId = null,
-                participantName = null,
                 position = 1,
                 projectDealName = "Internal Name 1",
                 projectId = org1ProjectId1,

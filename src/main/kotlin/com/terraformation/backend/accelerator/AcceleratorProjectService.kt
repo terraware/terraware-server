@@ -49,8 +49,6 @@ class AcceleratorProjectService(
             COHORTS.ID,
             COHORTS.NAME,
             COHORTS.PHASE_ID,
-            PARTICIPANTS.ID,
-            PARTICIPANTS.NAME,
             PROJECTS.ID,
             PROJECTS.NAME,
             decisionsMultiset,

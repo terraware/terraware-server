@@ -5,10 +5,8 @@ import com.terraformation.backend.db.accelerator.ApplicationStatus
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -54,8 +52,6 @@ data class ProjectAcceleratorDetailsModel(
     val minProjectArea: BigDecimal? = null,
     val numCommunities: Int? = null,
     val numNativeSpecies: Int? = null,
-    val participantId: ParticipantId? = null,
-    val participantName: String? = null,
     val perHectareBudget: BigDecimal? = null,
     val pipeline: Pipeline? = null,
     val plantingSitesCql: String? = null,
@@ -115,8 +111,6 @@ data class ProjectAcceleratorDetailsModel(
             minProjectArea = variableValues.minProjectArea,
             numCommunities = record[NUM_COMMUNITIES],
             numNativeSpecies = variableValues.numNativeSpecies,
-            participantId = record[PARTICIPANTS.ID],
-            participantName = record[PARTICIPANTS.NAME],
             perHectareBudget = variableValues.perHectareBudget,
             pipeline = record[PIPELINE_ID],
             plantingSitesCql = record[PLANTING_SITES_CQL],

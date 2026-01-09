@@ -65,8 +65,6 @@ class ProjectAcceleratorDetailsStore(
             COHORTS.ID,
             COHORTS.NAME,
             COHORTS.PHASE_ID,
-            PARTICIPANTS.ID,
-            PARTICIPANTS.NAME,
             projectProgressMultiset,
         )
         .from(PROJECTS)

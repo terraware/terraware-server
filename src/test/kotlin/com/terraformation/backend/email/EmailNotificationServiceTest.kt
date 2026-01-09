@@ -454,8 +454,6 @@ internal class EmailNotificationServiceTest {
           name = "Deliverable name",
           organizationId = organization.id,
           organizationName = organization.name,
-          participantId = participant.id,
-          participantName = participant.name,
           position = 1,
           projectDealName = null,
           projectId = project.id,

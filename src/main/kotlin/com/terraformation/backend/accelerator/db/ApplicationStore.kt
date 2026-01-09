@@ -282,8 +282,6 @@ class ApplicationStore(
               name = record[DELIVERABLES.NAME]!!,
               organizationId = record[ORGANIZATIONS.ID]!!,
               organizationName = record[ORGANIZATIONS.NAME]!!,
-              participantId = null,
-              participantName = null,
               position = record[DELIVERABLES.POSITION]!!,
               projectDealName = record[APPLICATIONS.INTERNAL_NAME],
               projectId = record[PROJECTS.ID]!!,
