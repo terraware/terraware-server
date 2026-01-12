@@ -43,7 +43,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
     )
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort()
-    insertParticipant(cohortId = inserted.cohortId)
     insertModule()
     insertCohortModule(
         inserted.cohortId,
@@ -58,7 +57,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns deliverable details with project submissions if present`() {
-    val projectId = insertProject(participantId = inserted.participantId)
+    val projectId = insertProject(cohortId = inserted.cohortId)
 
     val deliverableWithSubmission =
         insertDeliverable(
@@ -153,7 +152,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `includes project and module as sublists`() {
-    val projectId = insertProject(participantId = inserted.participantId)
+    val projectId = insertProject(cohortId = inserted.cohortId)
     val deliverableId = insertDeliverable(moduleId = inserted.moduleId)
     insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
@@ -179,7 +178,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `can filter by project and only includes deliverables that are part of project cohort`() {
     val moduleId = inserted.moduleId
-    val projectId = insertProject(participantId = inserted.participantId)
+    val projectId = insertProject(cohortId = inserted.cohortId)
 
     val deliverableWithSubmission = insertDeliverable(moduleId = moduleId)
     val submissionId =
@@ -189,7 +188,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             submissionStatus = SubmissionStatus.Approved,
         )
 
-    val hiddenProject = insertProject(participantId = inserted.participantId)
+    val hiddenProject = insertProject(cohortId = inserted.cohortId)
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = hiddenProject,
@@ -230,7 +229,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for project deliverable as sublists with projects as prefix`() {
-    val projectId = insertProject(participantId = inserted.participantId)
+    val projectId = insertProject(cohortId = inserted.cohortId)
     val deliverableWithSubmission = insertDeliverable(moduleId = inserted.moduleId)
     insertSubmission(deliverableId = deliverableWithSubmission, projectId = projectId)
 
@@ -260,7 +259,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns deliverable due date according to cohort or project overrides`() {
-    val projectId = insertProject(participantId = inserted.participantId)
+    val projectId = insertProject(cohortId = inserted.cohortId)
     val deliverableId = insertDeliverable(moduleId = inserted.moduleId)
 
     val prefix = SearchFieldPrefix(searchTables.projectDeliverables)
@@ -306,7 +305,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAllAcceleratorDetails() } returns false
 
     val moduleId = inserted.moduleId
-    val projectId = insertProject(participantId = inserted.participantId)
+    val projectId = insertProject(cohortId = inserted.cohortId)
 
     val deliverableWithSubmission = insertDeliverable(moduleId = moduleId)
     val submissionId =
@@ -321,9 +320,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
     insertCohortModule(cohortId = otherCohort, moduleId = inserted.moduleId)
 
     val otherOrganization = insertOrganization()
-    val otherParticipant = insertParticipant(cohortId = otherCohort)
-    val otherProject =
-        insertProject(participantId = otherParticipant, organizationId = otherOrganization)
+    val otherProject = insertProject(cohortId = otherCohort, organizationId = otherOrganization)
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = otherProject,
