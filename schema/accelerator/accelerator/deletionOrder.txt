@@ -37,8 +37,8 @@ participants
 deliverable_categories
 system_metrics
 standard_metrics
-cohorts
 modules
+cohorts
 score_categories
 report_statuses
 event_types
@@ -58,5 +58,5 @@ activity_media_types
 report_frequencies
 metric_types
 metric_components
-cohort_phases
 report_metric_statuses
+cohort_phases

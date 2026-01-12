@@ -1,5 +1,5 @@
-report_metric_statuses
 cohort_phases
+report_metric_statuses
 metric_components
 metric_types
 report_frequencies
@@ -19,8 +19,8 @@ event_statuses
 event_types
 report_statuses
 score_categories
-modules
 cohorts
+modules
 standard_metrics
 system_metrics
 deliverable_categories

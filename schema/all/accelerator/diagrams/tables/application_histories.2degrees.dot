@@ -60,6 +60,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "submissions":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "user_internal_interests":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "user_internal_interests":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "public.projects":"elipses":w -> "cohorts":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "public.projects":"elipses":w -> "participants":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "activities" [
    label=<
@@ -128,7 +129,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="45" HEIGHT="16"><B>cohorts</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/cohorts.html"
     target="_top"
@@ -326,7 +327,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="88" HEIGHT="16"><B>public.projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/projects.html"
     target="_top"

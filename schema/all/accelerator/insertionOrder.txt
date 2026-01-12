@@ -1,5 +1,5 @@
-report_metric_statuses
 cohort_phases
+report_metric_statuses
 metric_components
 metric_types
 report_frequencies

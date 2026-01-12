@@ -143,11 +143,13 @@ digraph "twoDegreesRelationshipsDiagram" {
   "project_internal_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_land_use_model_types":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_report_settings":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "projects":"cohort_id":w -> "accelerator.cohorts":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"country_code":w -> "countries":"code.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"participant_id":w -> "accelerator.participants":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "projects":"phase_id":w -> "accelerator.cohort_phases":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "seed_fund_reports":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seed_fund_reports":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "seed_fund_reports":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -256,12 +258,23 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="accelerator.applications"
   ];
+  "accelerator.cohort_phases" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="157" HEIGHT="16"><B>accelerator.cohort_phases</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/cohort_phases.html"
+    target="_top"
+    tooltip="accelerator.cohort_phases"
+  ];
   "accelerator.cohorts" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16"><B>accelerator.cohorts</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="../../../accelerator/tables/cohorts.html"
     target="_top"
@@ -980,7 +993,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="48" HEIGHT="16"><B>projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">36 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 7</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">36 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/projects.html"
     target="_top"
