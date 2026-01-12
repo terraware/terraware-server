@@ -40,17 +40,13 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exceptions if no associated permissions`() {
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertOrganization()
-      insertParticipant(cohortId = inserted.cohortId)
-      insertProject(participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId)
 
       deleteUserGlobalRole(role = GlobalRole.ReadOnly)
 
       assertThrows<ProjectNotFoundException> { store.fetch(projectId = inserted.projectId) }
       assertThrows<AccessDeniedException> { store.fetch() }
       assertThrows<CohortNotFoundException> { store.fetch(cohortId = inserted.cohortId) }
-      assertThrows<ParticipantNotFoundException> {
-        store.fetch(participantId = inserted.participantId)
-      }
     }
 
     @Test
@@ -60,10 +56,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val cohortA = insertCohort(phase = CohortPhase.Phase0DueDiligence)
       val cohortB = insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      val participantA = insertParticipant(cohortId = cohortA)
-      val participantB = insertParticipant(cohortId = cohortB)
-      val projectA = insertProject(cohortId = cohortA, participantId = participantA)
-      val projectB = insertProject(cohortId = cohortB, participantId = participantB)
+      val projectA = insertProject(cohortId = cohortA)
+      val projectB = insertProject(cohortId = cohortB)
 
       val module1 =
           insertModule(name = "Module 1", position = 3, phase = CohortPhase.Phase1FeasibilityStudy)
@@ -154,13 +148,6 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(expectedCohortModulesA, store.fetch(cohortId = cohortA), "Fetch by Cohort ID")
       verifyNoPermissionInversions()
 
-      assertEquals(
-          expectedCohortModulesA,
-          store.fetch(participantId = participantA),
-          "Fetch by Participant ID",
-      )
-      verifyNoPermissionInversions()
-
       assertEquals(expectedCohortModulesA, store.fetch(projectId = projectA), "Fetch by Project ID")
       verifyNoPermissionInversions()
 
@@ -180,15 +167,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(cohortBModule1),
-          store.fetch(participantId = participantB),
-          "Fetch by a different Cohort ID",
-      )
-      verifyNoPermissionInversions()
-
-      assertEquals(
-          listOf(cohortBModule1),
           store.fetch(projectId = projectB),
-          "Fetch by a different Cohort ID",
+          "Fetch by a different project ID",
       )
       verifyNoPermissionInversions()
 
@@ -301,8 +281,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(cohortId = inserted.cohortId)
-      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId)
       insertModule()
 
       assertThrows<AccessDeniedException> {
@@ -321,8 +300,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(cohortId = null)
-      insertProject(participantId = inserted.participantId)
+      insertProject()
       insertModule()
 
       assertThrows<ProjectNotInCohortException> {
@@ -341,8 +319,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(cohortId = inserted.cohortId)
-      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId)
       insertModule()
 
       store.assign(
@@ -372,8 +349,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(cohortId = inserted.cohortId)
-      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId)
       insertModule()
 
       insertCohortModule(
@@ -452,8 +428,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(cohortId = inserted.cohortId)
-      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId)
       insertModule()
 
       assertThrows<AccessDeniedException> { //
@@ -466,8 +441,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(cohortId = null)
-      insertProject(participantId = inserted.participantId)
+      insertProject(cohortId = null)
       insertModule()
 
       assertThrows<ProjectNotInCohortException> {
@@ -480,8 +454,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(cohortId = inserted.cohortId)
-      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId)
       insertModule()
 
       insertCohortModule(
