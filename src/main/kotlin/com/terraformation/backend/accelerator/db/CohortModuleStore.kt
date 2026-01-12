@@ -5,10 +5,8 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
@@ -25,14 +23,12 @@ class CohortModuleStore(
 ) {
   fun fetch(
       cohortId: CohortId? = null,
-      participantId: ParticipantId? = null,
       projectId: ProjectId? = null,
       moduleId: ModuleId? = null,
   ): List<ModuleModel> {
     requirePermissions {
       when {
         projectId != null -> readProjectModules(projectId)
-        participantId != null -> readParticipant(participantId)
         cohortId != null -> readCohort(cohortId)
         else -> readCohorts()
       }
@@ -44,7 +40,6 @@ class CohortModuleStore(
         DSL.and(
             when {
               projectId != null -> PROJECTS.ID.eq(projectId)
-              participantId != null -> PARTICIPANTS.ID.eq(participantId)
               cohortId != null -> COHORT_MODULES.COHORT_ID.eq(cohortId)
               else -> null
             },
@@ -54,13 +49,7 @@ class CohortModuleStore(
     val joinForVisibility = { query: SelectOnConditionStep<Record> ->
       when {
         projectId != null ->
-            query
-                .join(PARTICIPANTS)
-                .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
-                .join(PROJECTS)
-                .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-        participantId != null ->
-            query.join(PARTICIPANTS).on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+            query.join(PROJECTS).on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
         else -> query
       }
     }
