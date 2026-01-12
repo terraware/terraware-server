@@ -7,7 +7,6 @@ import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.default_schema.ProjectId
-import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
 
 @Named
@@ -18,16 +17,6 @@ class ProjectAcceleratorDetailsService(
   fun fetchOneById(projectId: ProjectId): ProjectAcceleratorDetailsModel {
     val variableValues = acceleratorProjectVariableValuesService.fetchValues(projectId)
     return projectAcceleratorDetailsStore.fetchOneById(projectId, variableValues)
-  }
-
-  fun fetchForProjectIds(
-      projectIds: Collection<ProjectId>
-  ): Map<ProjectId, ProjectAcceleratorDetailsModel> {
-    return projectAcceleratorDetailsStore
-        .fetch(PROJECTS.ID.`in`(projectIds)) {
-          acceleratorProjectVariableValuesService.fetchValues(it)
-        }
-        .associateBy { it.projectId }
   }
 
   /** Returns accelerator details for projects that are assigned to cohorts. */
@@ -41,15 +30,6 @@ class ProjectAcceleratorDetailsService(
     return projectAcceleratorDetailsStore.fetch(PARTICIPANTS.ID.eq(participantId)) {
       acceleratorProjectVariableValuesService.fetchValues(it)
     }
-  }
-
-  /** Returns accelerator details for one project. Null if not visible or does not exist. */
-  fun fetchOneOrNull(projectId: ProjectId): ProjectAcceleratorDetailsModel? {
-    return projectAcceleratorDetailsStore
-        .fetch(PROJECTS.ID.eq(projectId)) {
-          acceleratorProjectVariableValuesService.fetchValues(it)
-        }
-        .firstOrNull()
   }
 
   fun update(
