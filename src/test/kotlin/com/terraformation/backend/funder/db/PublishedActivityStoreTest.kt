@@ -49,9 +49,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    val cohortId = insertCohort()
-    val participantId = insertParticipant(cohortId = cohortId)
-    projectId = insertProject(participantId = participantId)
+    projectId = insertProject()
 
     activityId =
         insertActivity(
