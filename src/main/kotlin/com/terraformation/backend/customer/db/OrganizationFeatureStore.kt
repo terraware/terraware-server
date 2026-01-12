@@ -8,7 +8,6 @@ import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -69,10 +68,8 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .on(SUBMISSIONS.DELIVERABLE_ID.eq(DELIVERABLES.ID))
                   .leftJoin(COHORT_MODULES)
                   .on(COHORT_MODULES.MODULE_ID.eq(DELIVERABLES.MODULE_ID))
-                  .leftJoin(PARTICIPANTS)
-                  .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
-                  .join(PROJECTS)
-                  .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+                  .leftJoin(PROJECTS)
+                  .on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
                   .or(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                   .and(MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application))
@@ -83,10 +80,8 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
       DSL.multiset(
               DSL.select(PROJECTS.ID)
                   .from(COHORT_MODULES)
-                  .join(PARTICIPANTS)
-                  .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
                   .join(PROJECTS)
-                  .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+                  .on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
           )
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }

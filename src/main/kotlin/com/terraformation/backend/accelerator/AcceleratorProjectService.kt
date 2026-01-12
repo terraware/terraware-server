@@ -4,7 +4,6 @@ import com.terraformation.backend.accelerator.model.AcceleratorProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AcceleratorProjectNotFoundException
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -54,10 +53,8 @@ class AcceleratorProjectService(
             decisionsMultiset,
         )
         .from(PROJECTS)
-        .join(PARTICIPANTS)
-        .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
         .join(COHORTS)
-        .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+        .on(PROJECTS.COHORT_ID.eq(COHORTS.ID))
         .where(condition)
         .orderBy(COHORTS.ID, PROJECTS.ID)
         .fetch { AcceleratorProjectModel.of(it, decisionsMultiset) }

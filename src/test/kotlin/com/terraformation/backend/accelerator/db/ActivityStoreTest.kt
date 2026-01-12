@@ -49,8 +49,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   fun setUp() {
     insertOrganization()
     val cohortId = insertCohort()
-    val participantId = insertParticipant(cohortId = cohortId)
-    projectId = insertProject(participantId = participantId)
+    projectId = insertProject(cohortId = cohortId)
   }
 
   @Nested
@@ -143,7 +142,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exception if project is not in a cohort`() {
       insertOrganizationUser(role = Role.Admin)
-      dslContext.update(PROJECTS).setNull(PROJECTS.PARTICIPANT_ID).execute()
+      dslContext.update(PROJECTS).setNull(PROJECTS.COHORT_ID).execute()
 
       val model =
           NewActivityModel(

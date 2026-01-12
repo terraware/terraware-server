@@ -366,10 +366,8 @@ class ParentStore(private val dslContext: DSLContext) {
         dslContext
             .selectOne()
             .from(COHORT_MODULES)
-            .join(PARTICIPANTS)
-            .on(PARTICIPANTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
             .join(PROJECTS)
-            .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+            .on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
             .join(ORGANIZATION_USERS)
             .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
             .where(ORGANIZATION_USERS.USER_ID.eq(userId))
@@ -398,10 +396,8 @@ class ParentStore(private val dslContext: DSLContext) {
       dslContext
           .selectOne()
           .from(COHORTS)
-          .join(PARTICIPANTS)
-          .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
           .join(PROJECTS)
-          .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
+          .on(PROJECTS.COHORT_ID.eq(COHORTS.ID))
           .join(ORGANIZATION_USERS)
           .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
           .where(ORGANIZATION_USERS.USER_ID.eq(userId))
@@ -451,14 +447,14 @@ class ParentStore(private val dslContext: DSLContext) {
           (dslContext.fetchExists(
               PROJECT_ACCELERATOR_DETAILS,
               PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId),
-          ) || dslContext.fetchExists(PROJECTS, PROJECTS.participants.COHORT_ID.isNotNull))
+          ) || isProjectInCohort(projectId))
 
   fun isProjectInCohort(projectId: ProjectId?): Boolean =
       projectId != null &&
           dslContext.fetchExists(
               PROJECTS,
               PROJECTS.ID.eq(projectId),
-              PROJECTS.participants.COHORT_ID.isNotNull,
+              PROJECTS.COHORT_ID.isNotNull,
           )
 
   /**

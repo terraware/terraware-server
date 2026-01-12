@@ -15,7 +15,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -35,8 +35,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    val cohortId = insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
-    insertParticipant(cohortId = cohortId)
+    insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
 
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectVotes(any()) } returns true
@@ -47,7 +46,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchAllVotes {
     @Test
     fun `fetches with no vote`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
       assertEquals(emptyList<VoteModel>(), store.fetchAllVotes(projectId))
@@ -55,7 +54,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches all votes`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -119,7 +118,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches votes by phase`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
       val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
@@ -176,7 +175,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception on fetch if no permission to read votes `() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
 
       every { user.canReadProjectVotes(projectId) } returns false
 
@@ -188,7 +187,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchAllVoteDecisions {
     @Test
     fun `fetches with no vote`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
       assertEquals(emptyList<VoteDecisionModel>(), store.fetchAllVoteDecisions(projectId))
@@ -196,7 +195,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches all vote decisions`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       insertVoteDecision(projectId, phase, VoteOption.Yes, clock.instant)
@@ -211,7 +210,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches vote decisions by phase`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
       val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
@@ -231,7 +230,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   inner class Delete {
     @Test
     fun `delete only vote`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val newUser = insertUser()
@@ -246,7 +245,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `delete one vote from multiple voters`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -294,7 +293,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `delete one phase of votes from multiple phases`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
       val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
@@ -371,7 +370,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception on delete if no permission to update votes `() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       val newUser = insertUser()
       val vote = VoteOption.No
@@ -395,7 +394,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception on delete for wrong phase `() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase0DueDiligence
       val newUser = insertUser()
       val vote = VoteOption.No
@@ -406,7 +405,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `computes vote decision on deleting one vote from many`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val user1 = insertUser()
@@ -427,7 +426,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `computes vote decision on deleting only vote`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val newUser = insertUser()
@@ -448,7 +447,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
   inner class Upsert {
     @Test
     fun `creates blank vote for self`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
 
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
@@ -471,7 +470,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates blank vote for other user`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val otherUser = insertUser()
 
       clock.instant = Instant.EPOCH.plusSeconds(500)
@@ -495,7 +494,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates conditional vote for other user`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val otherUser = insertUser()
 
       clock.instant = Instant.EPOCH.plusSeconds(500)
@@ -521,7 +520,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `update only voter selection`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val newUser = insertUser()
@@ -553,7 +552,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `update voter selection with multiple voters`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val createdTime = Instant.EPOCH.plusSeconds(500)
@@ -618,7 +617,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `update voter selection for multiple phases`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase0: CohortPhase = CohortPhase.Phase0DueDiligence
       val phase1: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
@@ -667,8 +666,8 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `update voter selection for multiple projects`() {
-      val project1 = insertProject(participantId = inserted.participantId)
-      val project2 = insertProject(participantId = inserted.participantId)
+      val project1 = insertProject(cohortId = inserted.cohortId)
+      val project2 = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
 
       val createdTime = Instant.EPOCH.plusSeconds(500)
@@ -716,7 +715,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception on upsert if no permission to update votes`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       val newUser = insertUser()
       val vote = VoteOption.No
@@ -742,7 +741,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception on upsert if project in wrong phase`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase0DueDiligence
       val newUser = insertUser()
       val vote = VoteOption.No
@@ -755,7 +754,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `computes vote decision on creating one vote`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -769,7 +768,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `computes vote decision on creating one null vote`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -782,7 +781,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `computes vote decision on updating one vote`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -800,7 +799,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `computes vote decision on upserting to a tie`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 
@@ -820,7 +819,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `computes vote decision on updating to no vote`() {
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       val phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy
       clock.instant = Instant.EPOCH.plusSeconds(500)
 

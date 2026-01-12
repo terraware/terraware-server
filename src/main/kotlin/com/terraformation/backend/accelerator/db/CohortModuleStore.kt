@@ -158,12 +158,10 @@ class CohortModuleStore(
 
   private fun fetchCohortId(projectId: ProjectId): CohortId {
     return dslContext
-        .select(PARTICIPANTS.COHORT_ID)
+        .select(PROJECTS.COHORT_ID)
         .from(PROJECTS)
-        .join(PARTICIPANTS)
-        .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
         .where(PROJECTS.ID.eq(projectId))
-        .fetch(PARTICIPANTS.COHORT_ID)
+        .fetch(PROJECTS.COHORT_ID)
         .firstOrNull() ?: throw ProjectNotInCohortException(projectId)
   }
 }

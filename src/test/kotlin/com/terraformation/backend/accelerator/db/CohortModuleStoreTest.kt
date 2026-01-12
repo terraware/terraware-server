@@ -62,8 +62,8 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val cohortB = insertCohort(phase = CohortPhase.Phase0DueDiligence)
       val participantA = insertParticipant(cohortId = cohortA)
       val participantB = insertParticipant(cohortId = cohortB)
-      val projectA = insertProject(participantId = participantA)
-      val projectB = insertProject(participantId = participantB)
+      val projectA = insertProject(cohortId = cohortA, participantId = participantA)
+      val projectB = insertProject(cohortId = cohortB, participantId = participantB)
 
       val module1 =
           insertModule(name = "Module 1", position = 3, phase = CohortPhase.Phase1FeasibilityStudy)
@@ -302,7 +302,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertParticipant(cohortId = inserted.cohortId)
-      insertProject(participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
       insertModule()
 
       assertThrows<AccessDeniedException> {
@@ -342,7 +342,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertParticipant(cohortId = inserted.cohortId)
-      insertProject(participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
       insertModule()
 
       store.assign(
@@ -373,7 +373,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertParticipant(cohortId = inserted.cohortId)
-      insertProject(participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
       insertModule()
 
       insertCohortModule(
@@ -453,7 +453,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertParticipant(cohortId = inserted.cohortId)
-      insertProject(participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
       insertModule()
 
       assertThrows<AccessDeniedException> { //
@@ -481,7 +481,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertParticipant(cohortId = inserted.cohortId)
-      insertProject(participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
       insertModule()
 
       insertCohortModule(

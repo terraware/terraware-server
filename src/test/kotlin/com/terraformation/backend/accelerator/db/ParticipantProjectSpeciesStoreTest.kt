@@ -211,9 +211,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       // This one should not be returned because it is not a species type deliverable
       insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Document)
 
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId1 = insertProject(participantId = participantId)
-      val projectId2 = insertProject(participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId)
+      val projectId2 = insertProject(cohortId = cohortId)
 
       val speciesId = insertSpecies()
       val participantProjectSpeciesId1 =
@@ -279,9 +278,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       // Between the most recent and future module
       clock.instant = Instant.EPOCH.plus(20, ChronoUnit.DAYS)
 
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId1 = insertProject(participantId = participantId)
-      val projectId2 = insertProject(participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId)
+      val projectId2 = insertProject(cohortId = cohortId)
 
       val speciesId = insertSpecies()
       val participantProjectSpeciesId1 =

@@ -379,14 +379,14 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     val suffix = "${UUID.randomUUID()}"
     val cohortId1 = insertCohort(name = "Cohort 1 $suffix")
     val participantId2 = insertParticipant(cohortId = cohortId1, name = "Participant 2 $suffix")
-    val projectId2 = insertProject(participantId = participantId2)
-    val projectId3 = insertProject(participantId = participantId2)
+    val projectId2 = insertProject(cohortId = cohortId1, participantId = participantId2)
+    val projectId3 = insertProject(cohortId = cohortId1, participantId = participantId2)
     val participantId3 = insertParticipant(cohortId = cohortId1, name = "Participant 3 $suffix")
 
     // Test setup already inserts a participant+project with no cohort; also insert a second cohort
     insertCohort(name = "Cohort 2 $suffix")
     insertParticipant(cohortId = inserted.cohortId, name = "Participant 4 $suffix")
-    insertProject(participantId = inserted.participantId)
+    insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
 
     val prefix = SearchFieldPrefix(searchTables.cohorts)
     val fields =
@@ -456,6 +456,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     val participantId = insertParticipant(cohortId = inserted.cohortId)
     val projectId =
         insertProject(
+            cohortId = cohortId,
             organizationId = inserted.organizationId,
             participantId = inserted.participantId,
         )
@@ -469,6 +470,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     )
     val otherParticipant = insertParticipant(cohortId = inserted.cohortId)
     insertProject(
+        cohortId = cohortId,
         organizationId = otherOrganization,
         participantId = otherParticipant,
         createdBy = otherUser,
