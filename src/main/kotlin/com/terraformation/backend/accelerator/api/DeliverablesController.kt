@@ -26,7 +26,6 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -93,13 +92,6 @@ class DeliverablesController(
       )
       @RequestParam
       organizationId: OrganizationId? = null,
-      @Parameter(
-          description =
-              "List deliverables for all projects in this participant. Ignored if projectId is " +
-                  "specified."
-      )
-      @RequestParam
-      participantId: ParticipantId? = null,
       @Parameter(description = "List deliverables for this project only.")
       @RequestParam
       projectId: ProjectId? = null,
@@ -107,7 +99,6 @@ class DeliverablesController(
     val models =
         deliverableStore.fetchDeliverableSubmissions(
             organizationId,
-            participantId,
             projectId,
             moduleId = moduleId,
         )

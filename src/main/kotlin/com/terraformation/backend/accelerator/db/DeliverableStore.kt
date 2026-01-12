@@ -8,7 +8,6 @@ import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
@@ -17,7 +16,6 @@ import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_C
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_DOCUMENTS
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSION_DOCUMENTS
@@ -80,7 +78,6 @@ class DeliverableStore(
 
   fun fetchDeliverableSubmissions(
       organizationId: OrganizationId? = null,
-      participantId: ParticipantId? = null,
       projectId: ProjectId? = null,
       deliverableId: DeliverableId? = null,
       moduleId: ModuleId? = null,
@@ -88,7 +85,6 @@ class DeliverableStore(
     requirePermissions {
       when {
         projectId != null -> readProjectDeliverables(projectId)
-        participantId != null -> readParticipant(participantId)
         organizationId != null -> readOrganizationDeliverables(organizationId)
         moduleId != null -> readModule(moduleId)
         else -> readAllDeliverables()
@@ -99,7 +95,6 @@ class DeliverableStore(
         listOfNotNull(
             when {
               projectId != null -> PROJECTS.ID.eq(projectId)
-              participantId != null -> PARTICIPANTS.ID.eq(participantId)
               organizationId != null -> ORGANIZATIONS.ID.eq(organizationId)
               else -> null
             },
@@ -187,10 +182,8 @@ class DeliverableStore(
               .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
               .join(ORGANIZATIONS)
               .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-              .leftJoin(PARTICIPANTS)
-              .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
               .leftJoin(COHORTS)
-              .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+              .on(PROJECTS.COHORT_ID.eq(COHORTS.ID))
               .leftJoin(COHORT_MODULES)
               .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
               .and(COHORTS.ID.eq(COHORT_MODULES.COHORT_ID))
@@ -216,12 +209,10 @@ class DeliverableStore(
               .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
               .join(COHORT_MODULES)
               .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
-              .join(PARTICIPANTS)
-              .on(COHORT_MODULES.COHORT_ID.eq(PARTICIPANTS.COHORT_ID))
               .join(COHORTS)
-              .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+              .on(COHORT_MODULES.COHORT_ID.eq(COHORTS.ID))
               .join(PROJECTS)
-              .on(PARTICIPANTS.ID.eq(PROJECTS.PARTICIPANT_ID))
+              .on(COHORTS.ID.eq(PROJECTS.COHORT_ID))
               .leftJoin(PROJECT_ACCELERATOR_DETAILS)
               .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
               .join(ORGANIZATIONS)
@@ -240,10 +231,10 @@ class DeliverableStore(
               .where(conditions)
               .union(
                   // There are "submissions" from importing project data from the old project data
-                  // hub. The projects don't necessarily have cohorts or participants but they can
-                  // have submissions for deliverables that would ordinarily only appear for
-                  // projects in cohorts. Return these submissions if they exist, even if there's
-                  // no cohort in the picture.
+                  // hub. The projects don't necessarily have cohorts but they can have submissions
+                  // for deliverables that would ordinarily only appear for projects in cohorts.
+                  // Return these submissions if they exist, even if there's no cohort in the
+                  // picture.
                   DSL.select(*fieldList, DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE.`as`(dueDateField))
                       .from(SUBMISSIONS)
                       .join(DELIVERABLES)
@@ -256,10 +247,8 @@ class DeliverableStore(
                       .on(PROJECTS.ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
                       .join(ORGANIZATIONS)
                       .on(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                      .leftJoin(PARTICIPANTS)
-                      .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
                       .leftJoin(COHORTS)
-                      .on(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
+                      .on(PROJECTS.COHORT_ID.eq(COHORTS.ID))
                       .leftJoin(COHORT_MODULES)
                       .on(COHORTS.ID.eq(COHORT_MODULES.COHORT_ID))
                       .and(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
