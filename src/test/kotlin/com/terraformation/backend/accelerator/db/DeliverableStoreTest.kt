@@ -138,8 +138,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
       fun DeliverableSubmissionModel.forProject2() =
           copy(
-              participantId = participantId2,
-              participantName = "Participant 2 $suffix",
               projectId = projectId2,
               projectName = "Project 2",
           )
@@ -148,8 +146,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           copy(
               organizationId = organizationId2,
               organizationName = "Organization 2",
-              participantId = participantId1,
-              participantName = "Participant 1 $suffix",
               projectId = projectId3,
               projectName = "Project 3",
           )
@@ -162,8 +158,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               moduleTitle = "Module 3",
               organizationId = organizationId2,
               organizationName = "Organization 2",
-              participantId = participantId3,
-              participantName = "Participant 3 $suffix",
               projectId = projectId4,
               projectName = "Project 4",
           )
@@ -216,8 +210,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               name = "Deliverable 1",
               organizationId = organizationId1,
               organizationName = "Organization 1",
-              participantId = participantId1,
-              participantName = "Participant 1 $suffix",
               position = 1,
               projectDealName = null,
               projectId = projectId1,
@@ -479,8 +471,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   name = "Deliverable 1",
                   organizationId = organizationId,
                   organizationName = "Organization 1",
-                  participantId = null,
-                  participantName = null,
                   position = 1,
                   projectDealName = null,
                   projectId = projectId,
@@ -536,8 +526,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   name = "Deliverable 1",
                   organizationId = organizationId,
                   organizationName = "Organization 1",
-                  participantId = null,
-                  participantName = null,
                   position = 1,
                   projectDealName = null,
                   projectId = projectId,
@@ -586,8 +574,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   name = "Deliverable 1",
                   organizationId = organizationId,
                   organizationName = "Organization 1",
-                  participantId = participantId,
-                  participantName = participantName,
                   position = 1,
                   projectDealName = null,
                   projectId = projectId,
@@ -630,8 +616,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
                   name = "Deliverable 1",
                   organizationId = organizationId,
                   organizationName = "Organization 1",
-                  participantId = null,
-                  participantName = null,
                   position = 1,
                   projectDealName = null,
                   projectId = projectId,

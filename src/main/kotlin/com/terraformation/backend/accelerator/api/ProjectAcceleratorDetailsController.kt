@@ -15,7 +15,6 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -112,8 +111,6 @@ data class ProjectAcceleratorDetailsPayload(
     val minProjectArea: BigDecimal?,
     val numCommunities: Int?,
     val numNativeSpecies: Int?,
-    val participantId: ParticipantId?,
-    val participantName: String?,
     val perHectareBudget: BigDecimal?,
     val pipeline: Pipeline?,
     val plantingSitesCql: String?,
@@ -167,8 +164,6 @@ data class ProjectAcceleratorDetailsPayload(
       minProjectArea = model.minProjectArea,
       numCommunities = model.numCommunities,
       numNativeSpecies = model.numNativeSpecies,
-      participantId = model.participantId,
-      participantName = model.participantName,
       perHectareBudget = model.perHectareBudget,
       pipeline = model.pipeline,
       plantingSitesCql = model.plantingSitesCql,

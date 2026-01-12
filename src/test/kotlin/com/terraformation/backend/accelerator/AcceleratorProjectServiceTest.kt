@@ -55,8 +55,6 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         AcceleratorProjectModel(
             cohortId = inserted.cohortId,
             cohortName = cohortsDao.fetchOneById(inserted.cohortId)!!.name!!,
-            participantId = inserted.participantId,
-            participantName = participantsDao.fetchOneById(inserted.participantId)!!.name!!,
             phase = phase,
             projectId = inserted.projectId,
             projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
@@ -81,8 +79,6 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             AcceleratorProjectModel(
                 cohortId = inserted.cohortId,
                 cohortName = cohortsDao.fetchOneById(inserted.cohortId)!!.name!!,
-                participantId = inserted.participantId,
-                participantName = participantsDao.fetchOneById(inserted.participantId)!!.name!!,
                 phase = phase,
                 projectId = inserted.projectId,
                 projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,

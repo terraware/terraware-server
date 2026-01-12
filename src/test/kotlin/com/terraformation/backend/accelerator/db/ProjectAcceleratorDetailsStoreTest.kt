@@ -157,8 +157,6 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               minCarbonAccumulation = detailsRow.minCarbonAccumulation,
               numCommunities = detailsRow.numCommunities,
               numNativeSpecies = detailsRow.numNativeSpecies,
-              participantId = inserted.participantId,
-              participantName = "Participant name",
               perHectareBudget = detailsRow.perHectareBudget,
               pipeline = detailsRow.pipelineId,
               plantingSitesCql = "tf_accelerator:fid=123",

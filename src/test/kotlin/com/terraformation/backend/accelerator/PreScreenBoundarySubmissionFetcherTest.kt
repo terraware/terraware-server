@@ -70,8 +70,6 @@ class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
             name = "Pre-screen boundary deliverable",
             organizationId = inserted.organizationId,
             organizationName = "Org name",
-            participantId = null,
-            participantName = null,
             position = 1,
             projectDealName = "XXX_internalName",
             projectId = inserted.projectId,

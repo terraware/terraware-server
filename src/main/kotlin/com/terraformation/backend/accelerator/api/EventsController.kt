@@ -17,7 +17,6 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import io.swagger.v3.oas.annotations.Operation
@@ -169,8 +168,6 @@ class EventsController(
 data class ModuleEventProject(
     val projectId: ProjectId,
     val projectName: String,
-    val participantId: ParticipantId,
-    val participantName: String,
     val cohortId: CohortId,
     val cohortName: String,
 ) {
@@ -179,8 +176,6 @@ data class ModuleEventProject(
   ) : this(
       model.projectId,
       model.projectName,
-      model.participantId,
-      model.participantName,
       model.cohortId,
       model.cohortName,
   )
