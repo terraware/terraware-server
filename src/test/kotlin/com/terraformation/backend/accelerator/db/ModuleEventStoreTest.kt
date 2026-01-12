@@ -45,7 +45,6 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     cohortId = insertCohort()
-    insertParticipant(cohortId = cohortId)
     moduleId =
         insertModule(
             liveSessionDescription = "Live session description",
@@ -71,7 +70,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception no permission to view event`() {
       every { user.canReadModuleEvent(any()) } returns false
-      insertProject(participantId = inserted.participantId)
+      insertProject(cohortId = inserted.cohortId)
       val eventId = insertEvent()
       assertThrows<EventNotFoundException> { store.fetchOneById(eventId) }
     }
@@ -81,9 +80,9 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
       val endTime = startTime.plusSeconds(3600)
-      val project1 = insertProject(participantId = inserted.participantId)
-      val project2 = insertProject(participantId = inserted.participantId)
-      val invisibleProject = insertProject(participantId = inserted.participantId)
+      val project1 = insertProject(cohortId = inserted.cohortId)
+      val project2 = insertProject(cohortId = inserted.cohortId)
+      val invisibleProject = insertProject(cohortId = inserted.cohortId)
 
       val workshop =
           insertEvent(
@@ -132,9 +131,9 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val time3 = time2.plusSeconds(3600)
       val time4 = time3.plusSeconds(3600)
 
-      val project1 = insertProject(participantId = inserted.participantId)
-      val project2 = insertProject(participantId = inserted.participantId)
-      val invisibleProject = insertProject(participantId = inserted.participantId)
+      val project1 = insertProject(cohortId = inserted.cohortId)
+      val project2 = insertProject(cohortId = inserted.cohortId)
+      val invisibleProject = insertProject(cohortId = inserted.cohortId)
 
       val otherModule = insertModule(oneOnOneSessionDescription = "1:1 description")
       insertCohortModule(cohortId, otherModule)
@@ -361,8 +360,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     fun `creates event project rows when projects are provided`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
-      val project1 = insertProject(participantId = inserted.participantId)
-      val project2 = insertProject(participantId = inserted.participantId)
+      val project1 = insertProject(cohortId = inserted.cohortId)
+      val project2 = insertProject(cohortId = inserted.cohortId)
       val model =
           store.create(
               moduleId,

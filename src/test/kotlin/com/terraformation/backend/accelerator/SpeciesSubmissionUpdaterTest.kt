@@ -47,8 +47,7 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `resets the submission status if it exists and is currently 'Approved'`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
@@ -102,8 +101,7 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does nothing if the submission status is not 'Approved'`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =

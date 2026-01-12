@@ -9,7 +9,6 @@ import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -19,7 +18,6 @@ import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_M
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
@@ -402,19 +400,6 @@ class ParentStore(private val dslContext: DSLContext) {
           .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
           .where(ORGANIZATION_USERS.USER_ID.eq(userId))
           .and(COHORTS.ID.eq(cohortId))
-          .fetch()
-          .isNotEmpty
-
-  fun exists(participantId: ParticipantId, userId: UserId): Boolean =
-      dslContext
-          .selectOne()
-          .from(PARTICIPANTS)
-          .join(PROJECTS)
-          .on(PROJECTS.PARTICIPANT_ID.eq(PARTICIPANTS.ID))
-          .join(ORGANIZATION_USERS)
-          .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-          .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-          .and(PARTICIPANTS.ID.eq(participantId))
           .fetch()
           .isNotEmpty
 

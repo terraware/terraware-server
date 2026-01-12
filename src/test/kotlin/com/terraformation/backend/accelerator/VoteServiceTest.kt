@@ -4,12 +4,10 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.CohortStore
-import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.db.ProjectCohortFetcher
 import com.terraformation.backend.accelerator.db.VoteStore
-import com.terraformation.backend.accelerator.event.CohortParticipantAddedEvent
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
+import com.terraformation.backend.accelerator.event.CohortProjectAddedEvent
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -36,7 +34,6 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     VoteService(
         CohortStore(clock, cohortsDao, dslContext, eventPublisher),
         dslContext,
-        ParticipantStore(clock, dslContext, eventPublisher, participantsDao),
         systemUser,
         VoteStore(clock, dslContext, ProjectCohortFetcher(dslContext)),
     )
@@ -55,82 +52,30 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class ParticipantProjectAdded {
-    @Test
-    fun `inserts voters`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      insertProject(cohortId = cohortId, participantId = participantId) // Should be ignored
-      val projectId = insertProject(cohortId = cohortId, participantId = participantId)
-
-      service.on(ParticipantProjectAddedEvent(user.userId, participantId, projectId))
-
-      assertTableEquals(setOf(votesRecord(voter1), votesRecord(voter2)))
-    }
-
-    @Test
-    fun `does not modify existing voter information`() {
-      val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(cohortId = cohortId, participantId = participantId)
-
-      insertVote(user = voter1, voteOption = VoteOption.No, conditionalInfo = "cond")
-
-      clock.instant = Instant.ofEpochSecond(30)
-
-      service.on(ParticipantProjectAddedEvent(user.userId, participantId, projectId))
-
-      assertTableEquals(
-          setOf(
-              votesRecord(
-                  userId = voter1,
-                  createdTime = Instant.EPOCH,
-                  voteOption = VoteOption.No,
-                  conditionalInfo = "cond",
-                  createdBySystemUser = false,
-              ),
-              votesRecord(voter2),
-          )
-      )
-    }
-
-    @Test
-    fun `listens for event`() {
-      assertIsEventListener<ParticipantProjectAddedEvent>(service)
-    }
-  }
-
-  @Nested
-  inner class CohortParticipantAdded {
+  inner class CohortProjectAdded {
     @Test
     fun `inserts voters`() {
       val cohortId1 = insertCohort()
-      val participantId1 = insertParticipant(cohortId = cohortId1)
-      val projectId1 = insertProject(cohortId = cohortId1, participantId = participantId1)
-      val projectId2 = insertProject(cohortId = cohortId1, participantId = participantId1)
+      val projectId1 = insertProject(cohortId = cohortId1)
 
       // Should leave these alone
-      val otherParticipantId = insertParticipant(cohortId = cohortId1)
-      insertProject(cohortId = cohortId1, participantId = otherParticipantId)
+      insertProject(cohortId = cohortId1)
       val otherCohortId = insertCohort()
-      val otherCohortParticipantId = insertParticipant(cohortId = otherCohortId)
-      insertProject(cohortId = otherCohortId, participantId = otherCohortParticipantId)
+      insertProject(cohortId = otherCohortId)
 
-      service.on(CohortParticipantAddedEvent(cohortId1, participantId1))
+      service.on(CohortProjectAddedEvent(user.userId, cohortId1, projectId1))
 
       assertTableEquals(
           setOf(
               votesRecord(userId = voter1, projectId = projectId1),
               votesRecord(userId = voter2, projectId = projectId1),
-              votesRecord(userId = voter1, projectId = projectId2),
-              votesRecord(userId = voter2, projectId = projectId2),
           )
       )
     }
 
     @Test
     fun `listens for event`() {
-      assertIsEventListener<CohortParticipantAddedEvent>(service)
+      assertIsEventListener<CohortProjectAddedEvent>(service)
     }
   }
 
@@ -140,15 +85,12 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts voters`() {
       val phase = CohortPhase.Phase1FeasibilityStudy
       val cohortId1 = insertCohort(phase = phase)
-      val participantId1 = insertParticipant(cohortId = cohortId1)
-      val projectId1 = insertProject(cohortId = cohortId1, participantId = participantId1)
-      val participantId2 = insertParticipant(cohortId = cohortId1)
-      val projectId2 = insertProject(cohortId = cohortId1, participantId = participantId2)
+      val projectId1 = insertProject(cohortId = cohortId1)
+      val projectId2 = insertProject(cohortId = cohortId1)
 
       // Should leave these alone
       val otherCohortId = insertCohort()
-      val otherCohortParticipantId = insertParticipant(cohortId = otherCohortId)
-      insertProject(cohortId = otherCohortId, participantId = otherCohortParticipantId)
+      insertProject(cohortId = otherCohortId)
       insertVote(projectId1, user = voter1)
 
       service.on(CohortPhaseUpdatedEvent(cohortId1, phase))

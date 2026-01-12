@@ -20,11 +20,10 @@ class ParticipantProjectSpeciesControllerTest : ControllerIntegrationTest() {
     fun `can add species to approved species list`() {
       insertModule(phase = CohortPhase.Phase1FeasibilityStudy)
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
       insertOrganization()
       insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
       insertOrganizationUser(role = Role.Owner)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val speciesId = insertSpecies()
       insertCohortModule()
       insertDeliverable(

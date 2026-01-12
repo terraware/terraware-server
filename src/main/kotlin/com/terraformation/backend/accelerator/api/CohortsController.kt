@@ -16,7 +16,7 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.util.orNull
@@ -179,7 +179,8 @@ data class CohortPayload(
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
-    val participantIds: Set<ParticipantId>?,
+    @Deprecated("Use projectIds instead") val participantIds: Set<ProjectId>?,
+    val projectIds: Set<ProjectId>?,
     val phase: CohortPhase,
 ) {
   constructor(
@@ -191,7 +192,8 @@ data class CohortPayload(
       modifiedBy = cohort.modifiedBy,
       modifiedTime = cohort.modifiedTime,
       name = cohort.name,
-      participantIds = cohort.participantIds.orNull(),
+      participantIds = cohort.projectIds.orNull(),
+      projectIds = cohort.projectIds.orNull(),
       phase = cohort.phase,
   )
 }

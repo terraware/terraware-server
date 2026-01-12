@@ -33,7 +33,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     every { user.canReadCohort(any()) } returns true
-    every { user.canReadCohortParticipants(any()) } returns true
+    every { user.canReadCohortProjects(any()) } returns true
   }
 
   @Nested
@@ -89,14 +89,14 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception and does not delete cohort if it has participants`() {
+    fun `throws exception and does not delete cohort if it has projects`() {
       val cohortId = insertCohort()
       insertOrganization()
-      insertParticipant(cohortId = cohortId)
+      insertProject(cohortId = cohortId)
 
       every { user.canDeleteCohort(cohortId) } returns true
 
-      assertThrows<CohortHasParticipantsException> { store.delete(cohortId) }
+      assertThrows<CohortHasProjectsException> { store.delete(cohortId) }
     }
 
     @Test
@@ -117,7 +117,7 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FetchOneById {
     @Test
-    fun `includes or excludes list of participant IDs according to the requested depth`() {
+    fun `includes or excludes list of project IDs according to the requested depth`() {
       val modifiedBy = insertUser()
       val modifiedTime = Instant.ofEpochSecond(30)
       val cohortId =
@@ -129,9 +129,9 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
           )
 
       insertOrganization()
-      val participantId1 = insertParticipant(cohortId = cohortId)
-      val participantId2 = insertParticipant(cohortId = cohortId)
-      insertParticipant()
+      val projectId1 = insertProject(cohortId = cohortId)
+      val projectId2 = insertProject(cohortId = cohortId)
+      insertProject()
 
       // No depth, defaults to "cohort"
       val noDepthModel =
@@ -143,15 +143,15 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
               modifiedTime = modifiedTime,
               name = "Cohort Test",
               phase = CohortPhase.Phase0DueDiligence,
-              participantIds = emptySet(),
+              projectIds = emptySet(),
           )
 
       assertEquals(noDepthModel, store.fetchOneById(cohortId), "Default depth")
 
       assertEquals(
-          noDepthModel.copy(participantIds = setOf(participantId1, participantId2)),
-          store.fetchOneById(cohortId, CohortDepth.Participant),
-          "Participant depth",
+          noDepthModel.copy(projectIds = setOf(projectId1, projectId2)),
+          store.fetchOneById(cohortId, CohortDepth.Project),
+          "Project depth",
       )
     }
 
@@ -165,19 +165,19 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if no permission to read cohort participants`() {
+    fun `throws exception if no permission to read cohort projects`() {
       val cohortId = insertCohort()
 
       every { user.canReadCohort(cohortId) } returns false
-      every { user.canReadCohortParticipants(cohortId) } returns false
+      every { user.canReadCohortProjects(cohortId) } returns false
 
       assertThrows<CohortNotFoundException> {
-        store.fetchOneById(cohortId, cohortDepth = CohortDepth.Participant)
+        store.fetchOneById(cohortId, cohortDepth = CohortDepth.Project)
       }
 
       every { user.canReadCohort(cohortId) } returns true
       assertThrows<AccessDeniedException> {
-        store.fetchOneById(cohortId, cohortDepth = CohortDepth.Participant)
+        store.fetchOneById(cohortId, cohortDepth = CohortDepth.Project)
       }
     }
   }
@@ -196,16 +196,16 @@ class CohortStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `only includes cohorts with participants if the user is permitted to read participants`() {
+    fun `only includes cohorts with projects if the user is permitted to read projects`() {
       val cohortId1 = insertCohort()
       val cohortId2 = insertCohort()
       val invisibleCohortId = insertCohort(name = "Not Visible")
 
-      every { user.canReadCohortParticipants(invisibleCohortId) } returns false
+      every { user.canReadCohortProjects(invisibleCohortId) } returns false
 
       assertEquals(
           listOf(cohortId1, cohortId2),
-          store.findAll(cohortDepth = CohortDepth.Participant).map { it.id },
+          store.findAll(cohortDepth = CohortDepth.Project).map { it.id },
           "Cohort IDs",
       )
     }

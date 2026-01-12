@@ -4,7 +4,6 @@ import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
-import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionNotFoundException
@@ -32,7 +31,6 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
@@ -137,14 +135,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun addCohortParticipant(cohortId: CohortId, participantId: ParticipantId) {
+  fun addCohortProject(cohortId: CohortId, projectId: ProjectId) {
     user.recordPermissionChecks {
-      if (!user.canAddCohortParticipant(cohortId, participantId)) {
+      if (!user.canAddCohortProject(cohortId, projectId)) {
         readCohort(cohortId)
-        readParticipant(participantId)
-        throw AccessDeniedException(
-            "No permission to add participant $participantId to cohort $cohortId"
-        )
+        readProject(projectId)
+        throw AccessDeniedException("No permission to add project $projectId to cohort $cohortId")
       }
     }
   }
@@ -154,16 +150,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canAddOrganizationUser(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException("No permission to add users to organization $organizationId")
-      }
-    }
-  }
-
-  fun addParticipantProject(participantId: ParticipantId, projectId: ProjectId) {
-    user.recordPermissionChecks {
-      if (!user.canAddParticipantProject(participantId, projectId)) {
-        readParticipant(participantId)
-        readProject(projectId)
-        throw AccessDeniedException("No permission to add project to participant $participantId")
       }
     }
   }
@@ -349,14 +335,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun createParticipant() {
-    user.recordPermissionChecks {
-      if (!user.canCreateParticipant()) {
-        throw AccessDeniedException("No permission to create participant")
-      }
-    }
-  }
-
   fun createParticipantProjectSpecies(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canCreateParticipantProjectSpecies(projectId)) {
@@ -504,12 +482,12 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun deleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId) {
+  fun deleteCohortProject(cohortId: CohortId, projectId: ProjectId) {
     user.recordPermissionChecks {
-      if (!user.canDeleteCohortParticipant(cohortId, participantId)) {
+      if (!user.canDeleteCohortProject(cohortId, projectId)) {
         readCohort(cohortId)
-        readParticipant(participantId)
-        throw AccessDeniedException("No permission to delete cohort $cohortId")
+        readProject(projectId)
+        throw AccessDeniedException("No permission to delete project from cohort $cohortId")
       }
     }
   }
@@ -546,27 +524,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canDeleteOrganization(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException("No permission to delete organization $organizationId")
-      }
-    }
-  }
-
-  fun deleteParticipant(participantId: ParticipantId) {
-    user.recordPermissionChecks {
-      if (!user.canDeleteParticipant(participantId)) {
-        readParticipant(participantId)
-        throw AccessDeniedException("No permission to delete participant $participantId")
-      }
-    }
-  }
-
-  fun deleteParticipantProject(participantId: ParticipantId, projectId: ProjectId) {
-    user.recordPermissionChecks {
-      if (!user.canDeleteParticipantProject(participantId, projectId)) {
-        readParticipant(participantId)
-        readProject(projectId)
-        throw AccessDeniedException(
-            "No permission to delete project from participant $participantId"
-        )
       }
     }
   }
@@ -924,11 +881,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun readCohortParticipants(cohortId: CohortId) {
+  fun readCohortProjects(cohortId: CohortId) {
     user.recordPermissionChecks {
-      if (!user.canReadCohortParticipants(cohortId)) {
+      if (!user.canReadCohortProjects(cohortId)) {
         readCohort(cohortId)
-        throw AccessDeniedException("No permission to read participants for cohort $cohortId")
+        throw AccessDeniedException("No permission to read projects for cohort $cohortId")
       }
     }
   }
@@ -1137,14 +1094,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canReadOrganizationUser(organizationId, userId)) {
         readOrganization(organizationId)
         throw UserNotFoundException(userId)
-      }
-    }
-  }
-
-  fun readParticipant(participantId: ParticipantId) {
-    user.recordPermissionChecks {
-      if (!user.canReadParticipant(participantId)) {
-        throw ParticipantNotFoundException(participantId)
       }
     }
   }
@@ -1786,15 +1735,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateOrganization(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException("No permission to update organization $organizationId")
-      }
-    }
-  }
-
-  fun updateParticipant(participantId: ParticipantId) {
-    user.recordPermissionChecks {
-      if (!user.canUpdateParticipant(participantId)) {
-        readParticipant(participantId)
-        throw AccessDeniedException("No permission to update participant $participantId")
       }
     }
   }

@@ -93,8 +93,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates a submission for the project and deliverable if one does not exist for the active module when a species is added to a project`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(cohortId = cohortId, participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
@@ -153,8 +152,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does not create another submission for a project if a deliverable submission for the active module already exists`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId = insertProject(cohortId = cohortId, participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
@@ -199,14 +197,13 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each active project deliverable`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
       val moduleId = insertModule()
       insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId1 = insertProject(cohortId = cohortId, participantId = participantId)
-      val projectId2 = insertProject(cohortId = cohortId, participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId)
+      val projectId2 = insertProject(cohortId = cohortId)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -260,7 +257,6 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each most recent project deliverable, if there is no active one`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
 
       // This cohort module goes from 0 to 6 days
       val moduleIdOld = insertModule()
@@ -291,8 +287,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       // Between the most recent and future module
       clock.instant = Instant.EPOCH.plus(20, ChronoUnit.DAYS)
 
-      val projectId1 = insertProject(cohortId = cohortId, participantId = participantId)
-      val projectId2 = insertProject(cohortId = cohortId, participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId)
+      val projectId2 = insertProject(cohortId = cohortId)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -346,9 +342,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `creates an entity for each project ID and species ID pairing even if there isn't any associated deliverable`() {
       val cohortId = insertCohort()
-      val participantId = insertParticipant(cohortId = cohortId)
-      val projectId1 = insertProject(cohortId = cohortId, participantId = participantId)
-      val projectId2 = insertProject(cohortId = cohortId, participantId = participantId)
+      val projectId1 = insertProject(cohortId = cohortId)
+      val projectId2 = insertProject(cohortId = cohortId)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 

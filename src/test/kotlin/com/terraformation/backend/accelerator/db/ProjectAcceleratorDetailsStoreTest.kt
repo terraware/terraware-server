@@ -21,7 +21,7 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.net.URI
 import org.jooq.impl.DSL
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -51,7 +51,6 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns all details fields`() {
       insertCohort(name = "Cohort name", phase = CohortPhase.Phase0DueDiligence)
-      insertParticipant(name = "Participant name", cohortId = inserted.cohortId)
       val projectId = insertProject(cohortId = inserted.cohortId)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)

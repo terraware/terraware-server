@@ -1,7 +1,7 @@
 package com.terraformation.backend.customer.db
 
-import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.event.CohortProjectAddedEvent
+import com.terraformation.backend.accelerator.event.CohortProjectRemovedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.event.ProjectCreatedEvent
 import com.terraformation.backend.customer.event.ProjectDeletedEvent
@@ -17,7 +17,7 @@ import com.terraformation.backend.customer.model.ProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -246,49 +246,49 @@ class ProjectStore(
   }
 
   /**
-   * Sets or clears a project's participant ID.
+   * Sets or clears a project's cohort ID.
    *
    * This is a separate function from the regular [update] method because its permission structure
    * is different.
    */
-  fun updateParticipant(projectId: ProjectId, participantId: ParticipantId?) {
+  fun updateCohort(projectId: ProjectId, cohortId: CohortId?) {
     val existingRow =
         projectsDao.fetchOneById(projectId) ?: throw ProjectNotFoundException(projectId)
-    val existingParticipantId = existingRow.participantId
+    val existingCohortId = existingRow.cohortId
 
-    if (existingParticipantId == participantId) {
+    if (existingCohortId == cohortId) {
       return
     }
 
-    if (existingParticipantId != null) {
-      requirePermissions { deleteParticipantProject(existingParticipantId, projectId) }
+    if (existingCohortId != null) {
+      requirePermissions { deleteCohortProject(existingCohortId, projectId) }
     }
-    if (participantId != null) {
-      requirePermissions { addParticipantProject(participantId, projectId) }
+    if (cohortId != null) {
+      requirePermissions { addCohortProject(cohortId, projectId) }
     }
 
     dslContext
         .update(PROJECTS)
         .set(PROJECTS.MODIFIED_BY, currentUser().userId)
         .set(PROJECTS.MODIFIED_TIME, clock.instant())
-        .set(PROJECTS.PARTICIPANT_ID, participantId)
+        .set(PROJECTS.COHORT_ID, cohortId)
         .where(PROJECTS.ID.eq(projectId))
         .execute()
 
-    if (existingParticipantId != null) {
+    if (existingCohortId != null) {
       eventPublisher.publishEvent(
-          ParticipantProjectRemovedEvent(
-              participantId = existingParticipantId,
+          CohortProjectRemovedEvent(
+              cohortId = existingCohortId,
               projectId = projectId,
               removedBy = currentUser().userId,
           )
       )
     }
-    if (participantId != null) {
+    if (cohortId != null) {
       eventPublisher.publishEvent(
-          ParticipantProjectAddedEvent(
+          CohortProjectAddedEvent(
               addedBy = currentUser().userId,
-              participantId = participantId,
+              cohortId = cohortId,
               projectId = projectId,
           )
       )

@@ -799,8 +799,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val cohortId = insertCohort()
     insertCohortModule()
-    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
-    val projectId = insertProject(participantId = participantId)
+    val projectId = insertProject(cohortId = cohortId)
 
     insertUserInternalInterest(InternalInterest.GIS, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
@@ -822,8 +821,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val cohortId = insertCohort()
     insertCohortModule()
-    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
-    val projectId = insertProject(participantId = participantId)
+    val projectId = insertProject(cohortId = cohortId)
 
     insertUserInternalInterest(InternalInterest.Compliance, user.userId)
     val deliverableId = insertDeliverable(deliverableCategoryId = DeliverableCategory.GIS)
@@ -843,8 +841,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     val cohortId = insertCohort()
     insertCohortModule()
-    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
-    val projectId = insertProject(participantId = participantId)
+    val projectId = insertProject(cohortId = cohortId)
 
     // TF contact has the wrong deliverable category but we should notify them anyway because
     // being the contact overrides the category filtering.
@@ -875,8 +872,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertUserGlobalRole(tfContact, role = GlobalRole.TFExpert)
 
     val cohortId = insertCohort()
-    val participantId = insertParticipant(name = "participant1", cohortId = cohortId)
-    val projectId = insertProject(participantId = participantId)
+    val projectId = insertProject(cohortId = cohortId)
     insertModule()
     insertCohortModule()
     val deliverableId =
@@ -957,8 +953,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store species added to project notification for global users with interest`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val participantId = insertParticipant()
-    val projectId = insertProject(participantId = participantId)
+    val cohortId = insertCohort()
+    val projectId = insertProject(cohortId = cohortId)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
     insertModule()
@@ -984,8 +980,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store species approved species edited notification`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val participantId = insertParticipant()
-    val projectId = insertProject(participantId = participantId)
+    val cohortId = insertCohort()
+    val projectId = insertProject(cohortId = cohortId)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
     insertModule()

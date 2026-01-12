@@ -2,9 +2,9 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
 import org.jooq.Field
@@ -13,7 +13,7 @@ import org.jooq.Record
 data class NewCohortModel(
     val name: String,
     val phase: CohortPhase,
-    val participantIds: Set<ParticipantId> = emptySet(),
+    val projectIds: Set<ProjectId> = emptySet(),
 )
 
 data class ExistingCohortModel(
@@ -23,13 +23,13 @@ data class ExistingCohortModel(
     val modifiedBy: UserId,
     val modifiedTime: Instant,
     val name: String,
-    val participantIds: Set<ParticipantId>,
     val phase: CohortPhase,
+    val projectIds: Set<ProjectId>,
 ) {
   companion object {
     fun of(
         record: Record,
-        participantIdsField: Field<Set<ParticipantId>>? = null,
+        projectIdsField: Field<Set<ProjectId>>? = null,
     ): ExistingCohortModel {
       return ExistingCohortModel(
           createdBy = record[COHORTS.CREATED_BY]!!,
@@ -38,23 +38,23 @@ data class ExistingCohortModel(
           modifiedBy = record[COHORTS.MODIFIED_BY]!!,
           modifiedTime = record[COHORTS.MODIFIED_TIME]!!,
           name = record[COHORTS.NAME]!!,
-          participantIds = participantIdsField?.let { record[it] } ?: emptySet(),
           phase = record[COHORTS.PHASE_ID]!!,
+          projectIds = projectIdsField?.let { record[it] } ?: emptySet(),
       )
     }
 
     fun create(name: String, phase: CohortPhase): NewCohortModel {
       return NewCohortModel(
           name = name,
-          participantIds = emptySet(),
           phase = phase,
+          projectIds = emptySet(),
       )
     }
   }
 }
 
 fun CohortsRow.toModel(
-    participantIds: Set<ParticipantId> = emptySet(),
+    projectIds: Set<ProjectId> = emptySet(),
 ): ExistingCohortModel {
   return ExistingCohortModel(
       createdBy = createdBy!!,
@@ -63,7 +63,7 @@ fun CohortsRow.toModel(
       modifiedBy = modifiedBy!!,
       modifiedTime = modifiedTime!!,
       name = name!!,
-      participantIds = participantIds,
       phase = phaseId!!,
+      projectIds = projectIds,
   )
 }

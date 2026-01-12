@@ -29,7 +29,7 @@ import java.net.URI
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -80,8 +80,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertCohort()
-    insertParticipant(cohortId = inserted.cohortId)
-    projectId = insertProject(participantId = inserted.participantId)
+    projectId = insertProject(cohortId = inserted.cohortId)
     applicationId = insertApplication(internalName = "XXX_Organization")
 
     every { config.accelerator } returns

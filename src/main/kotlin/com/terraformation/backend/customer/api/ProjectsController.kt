@@ -15,7 +15,6 @@ import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
@@ -172,13 +171,14 @@ data class ProjectPayload(
     val modifiedTime: Instant?,
     val name: String,
     val organizationId: OrganizationId,
-    val participantId: ParticipantId?,
+    @Deprecated("If using this to check whether project is in cohort, use cohortPhase instead.")
+    val participantId: ProjectId?,
 ) {
   constructor(
       model: ExistingProjectModel,
       cohortData: ProjectCohortData? = null,
   ) : this(
-      cohortId = cohortData?.cohortId,
+      cohortId = model.cohortId,
       cohortPhase = cohortData?.cohortPhase,
       createdBy = model.createdBy,
       createdTime = model.createdTime,
@@ -188,7 +188,7 @@ data class ProjectPayload(
       modifiedTime = model.modifiedTime,
       name = model.name,
       organizationId = model.organizationId,
-      participantId = model.participantId,
+      participantId = if (model.cohortId != null) model.id else null,
   )
 }
 

@@ -3,8 +3,8 @@ package com.terraformation.backend.customer.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.event.ParticipantProjectAddedEvent
-import com.terraformation.backend.accelerator.event.ParticipantProjectRemovedEvent
+import com.terraformation.backend.accelerator.event.CohortProjectAddedEvent
+import com.terraformation.backend.accelerator.event.CohortProjectRemovedEvent
 import com.terraformation.backend.customer.event.ProjectCreatedEvent
 import com.terraformation.backend.customer.event.ProjectDeletedEvent
 import com.terraformation.backend.customer.event.ProjectDeletionStartedEvent
@@ -610,62 +610,55 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class UpdateParticipant {
+  inner class UpdateCohort {
     @Test
-    fun `sets participant`() {
-      val participantId = insertParticipant()
+    fun `sets cohort`() {
+      val cohortId = insertCohort()
 
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
-      store.updateParticipant(projectId, participantId)
+      store.updateCohort(projectId, cohortId)
 
       assertEquals(
-          participantId,
-          projectsDao.fetchOneById(projectId)!!.participantId,
-          "Participant ID",
+          cohortId,
+          projectsDao.fetchOneById(projectId)!!.cohortId,
+          "Cohort ID",
       )
-      eventPublisher.assertEventPublished(
-          ParticipantProjectAddedEvent(user.userId, participantId, projectId)
-      )
+      eventPublisher.assertEventPublished(CohortProjectAddedEvent(user.userId, cohortId, projectId))
     }
 
     @Test
-    fun `clears participant`() {
-      val participantId = insertParticipant()
-      val projectIdWithParticipant = insertProject(participantId = participantId)
+    fun `clears cohort`() {
+      val cohortId = insertCohort()
+      val projectIdWithParticipant = insertProject(cohortId = cohortId)
 
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
-      store.updateParticipant(projectIdWithParticipant, null)
+      store.updateCohort(projectIdWithParticipant, null)
 
-      assertNull(
-          projectsDao.fetchOneById(projectIdWithParticipant)!!.participantId,
-          "Participant ID",
-      )
+      assertNull(projectsDao.fetchOneById(projectIdWithParticipant)!!.cohortId, "Cohort ID")
       eventPublisher.assertEventPublished(
-          ParticipantProjectRemovedEvent(participantId, projectIdWithParticipant, user.userId)
+          CohortProjectRemovedEvent(cohortId, projectIdWithParticipant, user.userId)
       )
     }
 
     @Test
-    fun `throws exception if no permission to set participant`() {
-      val participantId = insertParticipant()
+    fun `throws exception if no permission to set cohort`() {
+      val cohortId = insertCohort()
 
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      assertThrows<AccessDeniedException> { store.updateParticipant(projectId, participantId) }
+      assertThrows<AccessDeniedException> { store.updateCohort(projectId, cohortId) }
     }
 
     @Test
-    fun `throws exception if no permission to clear participant`() {
-      val participantId = insertParticipant()
-      val projectIdWithParticipant = insertProject(participantId = participantId)
+    fun `throws exception if no permission to clear cohort`() {
+      val cohortId = insertCohort()
+      val projectIdWithCohort = insertProject(cohortId = cohortId)
 
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      assertThrows<AccessDeniedException> {
-        store.updateParticipant(projectIdWithParticipant, null)
-      }
+      assertThrows<AccessDeniedException> { store.updateCohort(projectIdWithCohort, null) }
     }
   }
 

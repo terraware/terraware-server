@@ -10,7 +10,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.OrganizationModel
-import com.terraformation.backend.db.accelerator.ParticipantId
+import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -87,11 +87,11 @@ class AcceleratorOrganizationsController(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class AcceleratorProjectPayload(
+    val cohortId: CohortId?,
     val id: ProjectId,
     val name: String,
-    val participantId: ParticipantId?,
 ) {
-  constructor(model: ExistingProjectModel) : this(model.id, model.name, model.participantId)
+  constructor(model: ExistingProjectModel) : this(model.cohortId, model.id, model.name)
 }
 
 data class TerraformationContactUserPayload(
