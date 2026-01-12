@@ -1,3 +1,4 @@
+86ff094d63c SW-7942 Remove fetching modules by participant (#3823)
 fcb78944c0f SW-7942 Remove participants from accelerator views (#3822)
 55190a4c5df SW-7942 Don't join with participants to get cohorts (#3821)
 aae34b9d9d1 SW-7942 Add cohort and phase to projects table (#3820)
