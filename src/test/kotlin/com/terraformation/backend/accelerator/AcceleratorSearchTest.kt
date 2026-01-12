@@ -38,8 +38,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     organizationId = insertOrganization()
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
-    insertParticipant()
-    insertProject(countryCode = "KE", participantId = inserted.participantId)
+    insertProject(countryCode = "KE")
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.canReadInternalTags() } returns true
@@ -375,30 +374,24 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `searches cohorts and participants`() {
+  fun `searches cohorts`() {
     val suffix = "${UUID.randomUUID()}"
     val cohortId1 = insertCohort(name = "Cohort 1 $suffix")
-    val participantId2 = insertParticipant(cohortId = cohortId1, name = "Participant 2 $suffix")
-    val projectId2 = insertProject(cohortId = cohortId1, participantId = participantId2)
-    val projectId3 = insertProject(cohortId = cohortId1, participantId = participantId2)
-    val participantId3 = insertParticipant(cohortId = cohortId1, name = "Participant 3 $suffix")
+    val projectId2 = insertProject(cohortId = cohortId1)
+    val projectId3 = insertProject(cohortId = cohortId1)
 
-    // Test setup already inserts a participant+project with no cohort; also insert a second cohort
+    // Test setup already inserts a project with no cohort; also insert a second cohort
     insertCohort(name = "Cohort 2 $suffix")
-    insertParticipant(cohortId = inserted.cohortId, name = "Participant 4 $suffix")
-    insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
+    insertProject(cohortId = inserted.cohortId)
 
     val prefix = SearchFieldPrefix(searchTables.cohorts)
     val fields =
         listOf(
                 "id",
                 "name",
-                "numParticipants",
                 "phase",
-                "participants.id",
-                "participants.name",
-                "participants.projects.id",
-                "participants.projects.name",
+                "projects.id",
+                "projects.name",
             )
             .map { prefix.resolve(it) }
 
@@ -408,31 +401,19 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "id" to "$cohortId1",
                     "name" to "Cohort 1 $suffix",
-                    "numParticipants" to "2",
                     "phase" to "Phase 0 - Due Diligence",
-                    "participants" to
+                    "projects" to
                         listOf(
                             mapOf(
-                                "id" to "$participantId2",
-                                "name" to "Participant 2 $suffix",
-                                "projects" to
-                                    listOf(
-                                        mapOf(
-                                            "id" to "$projectId2",
-                                            "name" to "Project 2",
-                                        ),
-                                        mapOf(
-                                            "id" to "$projectId3",
-                                            "name" to "Project 3",
-                                        ),
-                                    ),
+                                "id" to "$projectId2",
+                                "name" to "Project 2",
                             ),
                             mapOf(
-                                "id" to "$participantId3",
-                                "name" to "Participant 3 $suffix",
+                                "id" to "$projectId3",
+                                "name" to "Project 3",
                             ),
                         ),
-                )
+                ),
             )
         )
 
@@ -447,18 +428,16 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `searches cohorts and participants by organization membership for external users`() {
+  fun `searches cohorts by organization membership for external users`() {
     every { user.canReadAllAcceleratorDetails() } returns false
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
 
-    // Test setup already inserts a participant+project with no cohort
+    // Test setup already inserts a project with no cohort
     val cohortId = insertCohort()
-    val participantId = insertParticipant(cohortId = inserted.cohortId)
     val projectId =
         insertProject(
             cohortId = cohortId,
             organizationId = inserted.organizationId,
-            participantId = inserted.participantId,
         )
 
     val otherUser = insertUser()
@@ -468,35 +447,22 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
         organizationId = otherOrganization,
         role = Role.Admin,
     )
-    val otherParticipant = insertParticipant(cohortId = inserted.cohortId)
+    val otherCohort = insertCohort()
     insertProject(
-        cohortId = cohortId,
+        cohortId = otherCohort,
         organizationId = otherOrganization,
-        participantId = otherParticipant,
         createdBy = otherUser,
     )
 
     val prefix = SearchFieldPrefix(searchTables.cohorts)
-    val fields =
-        listOf(
-                "id",
-                "participants.id",
-                "participants.projects.id",
-            )
-            .map { prefix.resolve(it) }
+    val fields = listOf("id", "projects.id").map { prefix.resolve(it) }
 
     val expected =
         SearchResults(
             listOf(
                 mapOf(
                     "id" to "$cohortId",
-                    "participants" to
-                        listOf(
-                            mapOf(
-                                "id" to "$participantId",
-                                "projects" to listOf(mapOf("id" to "$projectId")),
-                            ),
-                        ),
+                    "projects" to listOf(mapOf("id" to "$projectId")),
                 )
             )
         )
