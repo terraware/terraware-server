@@ -52,8 +52,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns all details fields`() {
       insertCohort(name = "Cohort name", phase = CohortPhase.Phase0DueDiligence)
       insertParticipant(name = "Participant name", cohortId = inserted.cohortId)
-      val projectId =
-          insertProject(cohortId = inserted.cohortId, participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
 
