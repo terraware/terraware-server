@@ -1,3 +1,4 @@
+da23c6c5946 SW-7942 Remove unused participant fields from payloads (#3815)
 25c04c028c7 Update dependency html-minifier-next to v4.17.0 (#3819)
 337647a4545 Update dependency types-requests to v2.32.4.20260107 (#3818)
 c85f8a6c1bc Update database dependencies (#3816)
