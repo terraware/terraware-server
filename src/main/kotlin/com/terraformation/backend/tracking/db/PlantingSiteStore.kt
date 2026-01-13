@@ -2558,7 +2558,7 @@ class PlantingSiteStore(
                 PlantingSiteReportedPlantTotals.Stratum(
                     id = record[STRATA.ID.asNonNullable()],
                     plantsSinceLastObservation = plantsSinceLastObservation,
-                    substrata = record[substrataField] ?: emptyList(),
+                    substrata = record[substrataField],
                     species = species,
                     targetPlants = targetPlants.toInt(),
                     totalPlants = totalPlants,

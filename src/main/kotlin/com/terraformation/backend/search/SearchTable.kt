@@ -280,7 +280,7 @@ abstract class SearchTable {
   fun longField(fieldName: String, databaseField: Field<Long?>, nullable: Boolean = true) =
       LongField(fieldName, databaseField, this)
 
-  inline fun <E : Enum<E>, reified T : EnumFromReferenceTable<*, E>> nonLocalizableEnumField(
+  inline fun <reified T : EnumFromReferenceTable<*, T>> nonLocalizableEnumField(
       fieldName: String,
       databaseField: TableField<*, T?>,
   ) = NonLocalizableEnumField(fieldName, databaseField, this, T::class.java)

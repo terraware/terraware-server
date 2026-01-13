@@ -271,7 +271,7 @@ class ApplicationStore(
               cohortName = null,
               deliverableId = record[DELIVERABLES.ID]!!,
               descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
-              documents = record[documentsMultiset] ?: emptyList(),
+              documents = record[documentsMultiset],
               dueDate = null,
               feedback = record[SUBMISSIONS.FEEDBACK],
               internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],

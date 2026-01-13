@@ -278,7 +278,7 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
             ),
         )
 
-    val actual = store.fetchHistory(initial.id!!)
+    val actual = store.fetchHistory(initial.id)
 
     assertEquals(expected, actual)
   }

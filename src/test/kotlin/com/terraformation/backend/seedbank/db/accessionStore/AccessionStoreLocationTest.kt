@@ -35,7 +35,7 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
 
     store.update(desired)
 
-    val updatedGeos = geolocationsDao.fetchByAccessionId(initial.id!!)
+    val updatedGeos = geolocationsDao.fetchByAccessionId(initial.id)
 
     assertTrue(
         updatedGeos.any { it.latitude?.toInt() == 5 && it.longitude?.toInt() == 6 },
@@ -63,7 +63,7 @@ internal class AccessionStoreLocationTest : AccessionStoreTest() {
         "Existing sub-location ID was used",
     )
 
-    val updated = store.fetchOneById(initial.id!!)
+    val updated = store.fetchOneById(initial.id)
     assertEquals(locationName, updated.subLocation, "Location name")
   }
 

@@ -278,9 +278,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                             monitoringPlotEdits =
                                 listOf(
                                     MonitoringPlotEdit.Create(existing.boundary!!, 1),
-                                    MonitoringPlotEdit.Create(existing.boundary!!, 1),
-                                    MonitoringPlotEdit.Create(existing.boundary!!, 2),
-                                    MonitoringPlotEdit.Create(existing.boundary!!, 2),
+                                    MonitoringPlotEdit.Create(existing.boundary, 1),
+                                    MonitoringPlotEdit.Create(existing.boundary, 2),
+                                    MonitoringPlotEdit.Create(existing.boundary, 2),
                                 ),
                             substratumEdits = emptyList(),
                             removedRegion = rectangle(0),

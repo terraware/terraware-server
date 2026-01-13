@@ -19,7 +19,7 @@ import org.jooq.impl.DSL
  * This is used for values that don't ever need to be localized, which will generally be values that
  * are only for internal use.
  */
-class NonLocalizableEnumField<E : Enum<E>, T : EnumFromReferenceTable<*, E>>(
+class NonLocalizableEnumField<T : EnumFromReferenceTable<*, T>>(
     override val fieldName: String,
     override val databaseField: TableField<*, T?>,
     override val table: SearchTable,

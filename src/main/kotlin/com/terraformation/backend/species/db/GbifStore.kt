@@ -173,7 +173,7 @@ class GbifStore(private val dslContext: DSLContext) {
               familyName =
                   record[GBIF_TAXA.FAMILY]
                       ?: throw IllegalArgumentException("Family name must be non-null"),
-              vernacularNames = record[vernacularNamesMultiset] ?: emptyList(),
+              vernacularNames = record[vernacularNamesMultiset],
               threatStatus = record[GBIF_DISTRIBUTIONS.THREAT_STATUS],
           )
         }

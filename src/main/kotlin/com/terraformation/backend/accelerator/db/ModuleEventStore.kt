@@ -163,7 +163,7 @@ class ModuleEventStore(
       }
 
       if (updated.projects != existing.projects) {
-        val overlap = updated.projects!!.intersect(existing.projects!!)
+        val overlap = updated.projects.intersect(existing.projects)
         val toAdd = updated.projects.minus(overlap)
         val toRemove = existing.projects.minus(overlap)
 

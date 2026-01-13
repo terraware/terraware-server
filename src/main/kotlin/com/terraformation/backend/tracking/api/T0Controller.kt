@@ -281,7 +281,7 @@ data class ObservationSpeciesDensityPayload(
       observationCompletedTime = model.observationCompletedTime,
       observationId = model.observationId,
       observationStartDate = model.observationStartDate,
-      species = model.species?.map { SpeciesDensityPayload(it) } ?: emptyList(),
+      species = model.species.map { SpeciesDensityPayload(it) },
   )
 }
 
