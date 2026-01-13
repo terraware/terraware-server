@@ -40,7 +40,7 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           accessions.asMultiValueSublist("accessions", PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID)),
           batches.asMultiValueSublist("batches", PROJECTS.ID.eq(BATCHES.PROJECT_ID)),
           cohorts.asSingleValueSublist(
-              "cohorts",
+              "cohort",
               PROJECTS.COHORT_ID.eq(COHORTS.ID),
               isRequired = false,
           ),
