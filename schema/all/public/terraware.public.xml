@@ -932,16 +932,13 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="participant_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="projects_participant_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participants"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
             <parent column="code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="countries"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="cohort_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="cohort_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="projects_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohorts"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="phase_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="phase_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="projects_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_phases"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -961,9 +958,6 @@
          <index name="projects_organization_id_name_key" unique="true">
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="name"/>
-         </index>
-         <index name="projects_participant_id_idx" unique="false">
-            <column ascending="true" name="participant_id"/>
          </index>
       </table>
       <table name="rate_limited_events" remarks="Tracks events such as notifications that should have a minimum interval between instances." schema="public" type="TABLE">
@@ -1636,8 +1630,6 @@
             <child column="modified_by" foreignKey="modules_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="modules"/>
             <child column="created_by" foreignKey="participant_project_species_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
             <child column="modified_by" foreignKey="participant_project_species_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
-            <child column="created_by" foreignKey="participants_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participants"/>
-            <child column="modified_by" foreignKey="participants_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participants"/>
             <child column="created_by" foreignKey="project_overall_scores_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_overall_scores"/>
             <child column="modified_by" foreignKey="project_overall_scores_modified_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_overall_scores"/>
             <child column="created_by" foreignKey="project_scores_created_by_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_scores"/>

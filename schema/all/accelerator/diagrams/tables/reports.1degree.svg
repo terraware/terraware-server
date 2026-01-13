@@ -48,31 +48,28 @@
 <g id="node2" class="node">
 <title>public.projects</title>
 <g id="a_node2"><a xlink:href="../../../public/tables/projects.html" xlink:title="public.projects" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="20.5,-620 20.5,-744 152.5,-744 152.5,-620 20.5,-620"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="20.5,-722 20.5,-744 152.5,-744 152.5,-722 20.5,-722"/>
-<polygon fill="none" stroke="black" points="20.5,-722 20.5,-744 152.5,-744 152.5,-722 20.5,-722"/>
-<text text-anchor="start" x="25.5" y="-731.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.projects</text>
-<text text-anchor="start" x="113.5" y="-730.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="20.5,-700 20.5,-722 152.5,-722 152.5,-700 20.5,-700"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="25.5" y="-717"/>
-<text text-anchor="start" x="50.5" y="-708.2" font-family="Helvetica,sans-Serif" font-size="11.00">participant_id</text>
-<polygon fill="none" stroke="black" points="20.5,-678 20.5,-700 152.5,-700 152.5,-678 20.5,-678"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="25.5" y="-695"/>
-<text text-anchor="start" x="50.5" y="-686.2" font-family="Helvetica,sans-Serif" font-size="11.00">cohort_id</text>
-<polygon fill="none" stroke="black" points="20.5,-656 20.5,-678 152.5,-678 152.5,-656 20.5,-656"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="25.5" y="-673"/>
-<text text-anchor="start" x="50.5" y="-664.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
-<polygon fill="none" stroke="black" points="20.5,-638 20.5,-656 152.5,-656 152.5,-638 20.5,-638"/>
-<text text-anchor="start" x="23.5" y="-644.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="20.5,-620 20.5,-638 63.5,-638 63.5,-620 20.5,-620"/>
-<polygon fill="none" stroke="black" points="20.5,-620 20.5,-638 63.5,-638 63.5,-620 20.5,-620"/>
-<text text-anchor="start" x="23.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="transparent" points="63.5,-620 63.5,-638 113.5,-638 113.5,-620 63.5,-620"/>
-<polygon fill="none" stroke="black" points="63.5,-620 63.5,-638 113.5,-638 113.5,-620 63.5,-620"/>
-<text text-anchor="start" x="76.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="113.5,-620 113.5,-638 152.5,-638 152.5,-620 113.5,-620"/>
-<polygon fill="none" stroke="black" points="113.5,-620 113.5,-638 152.5,-638 152.5,-620 113.5,-620"/>
-<text text-anchor="start" x="127.5" y="-626.2" font-family="Helvetica,sans-Serif" font-size="11.00">15 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="20.5,-631 20.5,-733 152.5,-733 152.5,-631 20.5,-631"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="20.5,-711 20.5,-733 152.5,-733 152.5,-711 20.5,-711"/>
+<polygon fill="none" stroke="black" points="20.5,-711 20.5,-733 152.5,-733 152.5,-711 20.5,-711"/>
+<text text-anchor="start" x="25.5" y="-720.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.projects</text>
+<text text-anchor="start" x="113.5" y="-719.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="20.5,-689 20.5,-711 152.5,-711 152.5,-689 20.5,-689"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="25.5" y="-706"/>
+<text text-anchor="start" x="50.5" y="-697.2" font-family="Helvetica,sans-Serif" font-size="11.00">cohort_id</text>
+<polygon fill="none" stroke="black" points="20.5,-667 20.5,-689 152.5,-689 152.5,-667 20.5,-667"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="25.5" y="-684"/>
+<text text-anchor="start" x="50.5" y="-675.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
+<polygon fill="none" stroke="black" points="20.5,-649 20.5,-667 152.5,-667 152.5,-649 20.5,-649"/>
+<text text-anchor="start" x="23.5" y="-655.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="20.5,-631 20.5,-649 63.5,-649 63.5,-631 20.5,-631"/>
+<polygon fill="none" stroke="black" points="20.5,-631 20.5,-649 63.5,-649 63.5,-631 20.5,-631"/>
+<text text-anchor="start" x="23.5" y="-637.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="63.5,-631 63.5,-649 113.5,-649 113.5,-631 63.5,-631"/>
+<polygon fill="none" stroke="black" points="63.5,-631 63.5,-649 113.5,-649 113.5,-631 63.5,-631"/>
+<text text-anchor="start" x="76.5" y="-637.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="113.5,-631 113.5,-649 152.5,-649 152.5,-631 113.5,-631"/>
+<polygon fill="none" stroke="black" points="113.5,-631 113.5,-649 152.5,-649 152.5,-631 113.5,-631"/>
+<text text-anchor="start" x="127.5" y="-637.2" font-family="Helvetica,sans-Serif" font-size="11.00">15 &gt;</text>
 </a>
 </g>
 </g>
@@ -320,7 +317,7 @@
 <text text-anchor="start" x="286.5" y="-276.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
 <polygon fill="#ffffff" stroke="transparent" points="323.5,-270 323.5,-288 360.5,-288 360.5,-270 323.5,-270"/>
 <polygon fill="none" stroke="black" points="323.5,-270 323.5,-288 360.5,-288 360.5,-270 323.5,-270"/>
-<text text-anchor="start" x="335.5" y="-276.2" font-family="Helvetica,sans-Serif" font-size="11.00">37 &gt;</text>
+<text text-anchor="start" x="335.5" y="-276.2" font-family="Helvetica,sans-Serif" font-size="11.00">35 &gt;</text>
 </a>
 </g>
 </g>

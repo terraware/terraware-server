@@ -148,14 +148,11 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="participant_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="projects_participant_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participants"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="cohort_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="cohort_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="projects_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohorts"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="phase_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="phase_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="projects_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_phases"/>
          </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -175,9 +172,6 @@
          <index name="projects_organization_id_name_key" unique="true">
             <column ascending="true" name="organization_id"/>
             <column ascending="true" name="name"/>
-         </index>
-         <index name="projects_participant_id_idx" unique="false">
-            <column ascending="true" name="participant_id"/>
          </index>
       </table>
       <table name="vector_store" remarks="Content snippets and embeddings for use as context in Ask Terraware LLM prompts. This table is used by the Spring AI vector store library, and its structure needs to match what the library expects." schema="public" type="TABLE">

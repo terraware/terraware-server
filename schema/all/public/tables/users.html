@@ -216,16 +216,6 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="participants.created_by references users.id via participants_created_by_fkey"><a href='../../accelerator/tables/participants.html'>participants</a><span class='relatedKey'>.created_by</span></td>
-                                                <td class="constraint detail">participants_created_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="participants.modified_by references users.id via participants_modified_by_fkey"><a href='../../accelerator/tables/participants.html'>participants</a><span class='relatedKey'>.modified_by</span></td>
-                                                <td class="constraint detail">participants_modified_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="project_overall_scores.created_by references users.id via project_overall_scores_created_by_fkey"><a href='../../accelerator/tables/project_overall_scores.html'>project_overall_scores</a><span class='relatedKey'>.created_by</span></td>
                                                 <td class="constraint detail">project_overall_scores_created_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -1149,12 +1139,12 @@
                                     <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>users_first_name_check</td>
-                                    <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>users_last_name_check</td>
                                     <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>users_first_name_check</td>
+                                    <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

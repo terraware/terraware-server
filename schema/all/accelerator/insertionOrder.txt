@@ -25,7 +25,6 @@ deliverable_categories
 report_photos
 project_metrics
 cohorts
-participants
 activities
 project_report_configs
 reports

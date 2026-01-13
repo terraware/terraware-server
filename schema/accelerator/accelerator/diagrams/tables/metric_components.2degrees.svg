@@ -98,7 +98,7 @@
 <text text-anchor="start" x="63.5" y="-415.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="60.5,-391 60.5,-409 103.5,-409 103.5,-391 60.5,-391"/>
 <polygon fill="none" stroke="black" points="60.5,-391 60.5,-409 103.5,-409 103.5,-391 60.5,-391"/>
-<text text-anchor="start" x="63.5" y="-397.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<text text-anchor="start" x="63.5" y="-397.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
 <polygon fill="#ffffff" stroke="transparent" points="103.5,-391 103.5,-409 153.5,-409 153.5,-391 103.5,-391"/>
 <polygon fill="none" stroke="black" points="103.5,-391 103.5,-409 153.5,-409 153.5,-391 103.5,-391"/>
 <text text-anchor="start" x="116.5" y="-397.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>

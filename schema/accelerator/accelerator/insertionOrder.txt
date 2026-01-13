@@ -19,12 +19,11 @@ event_statuses
 event_types
 report_statuses
 score_categories
-cohorts
 modules
+cohorts
 standard_metrics
 system_metrics
 deliverable_categories
-participants
 project_report_configs
 reports
 report_photos

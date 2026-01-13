@@ -32,7 +32,6 @@ modules
 reports
 project_report_configs
 activities
-participants
 cohorts
 project_metrics
 report_photos

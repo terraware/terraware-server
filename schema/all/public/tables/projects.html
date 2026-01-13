@@ -453,28 +453,6 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="participant_id">participant_id</span></td>
-                                    <td>int8</td>
-                                    <td>19</td>
-                                    <td title='nullable'>√</td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="projects.participant_id references accelerator.participants.id via projects_participant_id_fkey"><a href='../../accelerator/tables/participants.html'>participants</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">projects_participant_id_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="country_code">country_code</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
@@ -599,12 +577,6 @@
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>organization_id + name</td>
-                                </tr>
-                                <tr>
-                                    <td title='Indexed'>projects_participant_id_idx</td>
-                                    <td>Performance</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>participant_id</td>
                                 </tr>
                                 </tbody>
                             </table>

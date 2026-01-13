@@ -7,7 +7,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "event_projects":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "modules":"elipses":w -> "cohort_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "participant_project_species":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "participants":"elipses":w -> "cohorts":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_accelerator_details":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "project_metrics":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_overall_scores":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
@@ -28,7 +27,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "submission_documents":"elipses":w -> "submissions":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "submissions":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "public.projects":"cohort_id":w -> "cohorts":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "public.projects":"participant_id":w -> "participants":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "public.projects":"phase_id":w -> "cohort_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "activities" [
    label=<
@@ -68,7 +66,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="45" HEIGHT="16"><B>cohorts</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/cohorts.html"
     target="_top"
@@ -117,17 +115,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/participant_project_species.html"
     target="_top"
     tooltip="participant_project_species"
-  ];
-  "participants" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="72" HEIGHT="16"><B>participants</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/participants.html"
-    target="_top"
-    tooltip="participants"
   ];
   "project_accelerator_details" [
    label=<
@@ -259,7 +246,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="88" HEIGHT="16"><B>public.projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/projects.html"
     target="_top"

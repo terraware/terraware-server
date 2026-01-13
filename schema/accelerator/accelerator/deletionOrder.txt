@@ -33,12 +33,11 @@ activities
 report_photos
 reports
 project_report_configs
-participants
 deliverable_categories
 system_metrics
 standard_metrics
-modules
 cohorts
+modules
 score_categories
 report_statuses
 event_types

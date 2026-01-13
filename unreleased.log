@@ -1,3 +1,4 @@
+70f7b0b9c47 SW-7942 Remove participants from data model and API (#3828)
 ff88d3c58d7 SW-7942 Remove participant ID from deliverable search (#3827)
 422ba34c5ac Upgrade to Kotlin 2.3.0 (#3831)
 6fd84eb5097 SW-7942 Fix misnamed search sublist (#3830)
