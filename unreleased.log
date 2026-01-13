@@ -1,3 +1,4 @@
+7ba048d6bb9 SW-7942 Remove unused participant from activity tests (#3826)
 a3df20ccdd8 SW-7942 Remove participants from search API (#3825)
 d54f0335ae0 Remove unused ProjectAcceleratorDetailsService functions (#3824)
 86ff094d63c SW-7942 Remove fetching modules by participant (#3823)
