@@ -7,7 +7,6 @@ import com.terraformation.backend.accelerator.db.DeliverableDueDateStore
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleStore
-import com.terraformation.backend.accelerator.db.ParticipantStore
 import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
@@ -39,7 +38,6 @@ class AdminCohortsController(
     private val deliverableStore: DeliverableStore,
     private val cohortStore: CohortStore,
     private val cohortModuleStore: CohortModuleStore,
-    private val participantStore: ParticipantStore,
     private val moduleStore: ModuleStore,
 ) {
   private val log = perClassLogger()
@@ -109,7 +107,7 @@ class AdminCohortsController(
 
     val cohort =
         try {
-          cohortStore.fetchOneById(cohortId, CohortDepth.Participant)
+          cohortStore.fetchOneById(cohortId, CohortDepth.Project)
         } catch (e: CohortNotFoundException) {
           log.warn("Cohort not found", e)
           redirectAttributes.failureMessage = "Cohort not found: ${e.message}"
@@ -133,9 +131,6 @@ class AdminCohortsController(
       return redirectToCohort(cohortId)
     }
 
-    val cohortProjects =
-        cohort.participantIds.flatMap { participantStore.fetchOneById(it).projectIds }
-
     val cohortModule = cohortModuleStore.fetch(cohortId, moduleId = dueDateModel.moduleId).first()
 
     val deliverable =
@@ -151,7 +146,7 @@ class AdminCohortsController(
     val submissions =
         deliverableStore
             .fetchDeliverableSubmissions(deliverableId = deliverableId)
-            .filter { cohortProjects.contains(it.projectId) }
+            .filter { cohort.projectIds.contains(it.projectId) }
             .sortedBy { it.projectId }
 
     model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())

@@ -40,22 +40,19 @@ class ProjectCohortFetcher(private val dslContext: DSLContext) {
         }
   }
 
-  /**
-   * Returns the current phase of a project, or null if the project is not in a participant that is
-   * in a cohort.
-   */
+  /** Returns the current phase of a project, or null if the project is not in a cohort. */
   fun getProjectPhase(projectId: ProjectId): CohortPhase? {
     return fetchCohortData(projectId)?.cohortPhase
   }
 
   /**
-   * Ensures the project's participant's cohort is in the specified phase, or that the project has
-   * an application and is in phase 0.
+   * Ensures the project's cohort is in the specified phase, or that the project has an application
+   * and is in phase 0.
    *
-   * @throws ProjectNotInCohortException The project is not in a participant, or its participant is
-   *   not in a cohort, and the project has no application.
-   * @throws ProjectNotInCohortPhaseException The project's participant's cohort is in a different
-   *   phase than the specified one.
+   * @throws ProjectNotInCohortException The project is not in a cohort, and the project has no
+   *   application.
+   * @throws ProjectNotInCohortPhaseException The project's cohort is in a different phase than the
+   *   specified one.
    */
   fun ensureProjectPhase(projectId: ProjectId, phase: CohortPhase) {
     val currentPhase = getProjectPhase(projectId) ?: throw ProjectNotInCohortException(projectId)

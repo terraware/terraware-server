@@ -8,12 +8,12 @@ import com.terraformation.backend.accelerator.model.toModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANTS
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -34,8 +34,8 @@ class CohortStore(
       cohortId: CohortId,
       cohortDepth: CohortDepth = CohortDepth.Cohort,
   ): ExistingCohortModel {
-    if (cohortDepth == CohortDepth.Participant) {
-      requirePermissions { readCohortParticipants(cohortId) }
+    if (cohortDepth == CohortDepth.Project) {
+      requirePermissions { readCohortProjects(cohortId) }
     }
     return fetch(COHORTS.ID.eq(cohortId), cohortDepth).firstOrNull()
         ?: throw CohortNotFoundException(cohortId)
@@ -47,8 +47,8 @@ class CohortStore(
   ): ExistingCohortModel? {
     val cohort = fetch(COHORTS.NAME.eq(name), cohortDepth).firstOrNull() ?: return null
 
-    if (cohortDepth == CohortDepth.Participant) {
-      requirePermissions { readCohortParticipants(cohort.id) }
+    if (cohortDepth == CohortDepth.Project) {
+      requirePermissions { readCohortProjects(cohort.id) }
     }
 
     return cohort
@@ -94,10 +94,9 @@ class CohortStore(
         }
       }
     } catch (e: DataIntegrityViolationException) {
-      val hasParticipants =
-          dslContext.fetchExists(PARTICIPANTS, PARTICIPANTS.COHORT_ID.eq(cohortId))
-      if (hasParticipants) {
-        throw CohortHasParticipantsException(cohortId)
+      val hasProjects = dslContext.fetchExists(PROJECTS, PROJECTS.COHORT_ID.eq(cohortId))
+      if (hasProjects) {
+        throw CohortHasProjectsException(cohortId)
       } else {
         throw e
       }
@@ -133,14 +132,14 @@ class CohortStore(
     }
   }
 
-  private fun participantIdsMultiset(): Field<Set<ParticipantId>> =
+  private val projectIdsMultiset: Field<Set<ProjectId>> =
       DSL.multiset(
-              DSL.select(PARTICIPANTS.ID)
-                  .from(PARTICIPANTS)
-                  .where(PARTICIPANTS.COHORT_ID.eq(COHORTS.ID))
-                  .orderBy(PARTICIPANTS.ID)
+              DSL.select(PROJECTS.ID)
+                  .from(PROJECTS)
+                  .where(PROJECTS.COHORT_ID.eq(COHORTS.ID))
+                  .orderBy(PROJECTS.ID)
           )
-          .convertFrom { result -> result.map { it[PARTICIPANTS.ID.asNonNullable()] }.toSet() }
+          .convertFrom { result -> result.map { it[PROJECTS.ID.asNonNullable()] }.toSet() }
 
   private fun fetch(
       condition: Condition?,
@@ -148,23 +147,23 @@ class CohortStore(
   ): List<ExistingCohortModel> {
     val user = currentUser()
 
-    val participantIdsField =
-        if (cohortDepth == CohortDepth.Participant) {
-          participantIdsMultiset()
+    val projectIdsField =
+        if (cohortDepth == CohortDepth.Project) {
+          projectIdsMultiset
         } else {
           null
         }
 
     return with(COHORTS) {
       dslContext
-          .select(COHORTS.asterisk(), participantIdsField)
+          .select(COHORTS.asterisk(), projectIdsField)
           .from(COHORTS)
           .apply { condition?.let { where(it) } }
           .orderBy(ID)
-          .fetch { ExistingCohortModel.of(it, participantIdsField) }
+          .fetch { ExistingCohortModel.of(it, projectIdsField) }
           .filter {
             user.canReadCohort(it.id) &&
-                (participantIdsField == null || user.canReadCohortParticipants(it.id))
+                (projectIdsField == null || user.canReadCohortProjects(it.id))
           }
     }
   }

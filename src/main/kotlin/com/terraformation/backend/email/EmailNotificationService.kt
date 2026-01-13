@@ -666,7 +666,7 @@ class EmailNotificationService(
   fun on(event: DeliverableReadyForReviewEvent) {
     systemUser.run {
       val project = projectStore.fetchOneById(event.projectId)
-      if (project.participantId == null) {
+      if (project.cohortId == null) {
         // We don't send notifications about individual deliverables in applications.
         return@run
       }

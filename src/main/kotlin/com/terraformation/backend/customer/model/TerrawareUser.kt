@@ -8,7 +8,6 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
@@ -223,11 +222,7 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canAddAnyOrganizationUser(): Boolean = defaultPermission
 
-  fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean =
-      defaultPermission
-
-  fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean =
-      defaultPermission
+  fun canAddCohortProject(cohortId: CohortId, projectId: ProjectId): Boolean = defaultPermission
 
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = defaultPermission
 
@@ -305,8 +300,7 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canDeleteCohort(cohortId: CohortId): Boolean = defaultPermission
 
-  fun canDeleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId): Boolean =
-      defaultPermission
+  fun canDeleteCohortProject(cohortId: CohortId, projectId: ProjectId): Boolean = defaultPermission
 
   fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean =
       defaultPermission
@@ -316,11 +310,6 @@ interface TerrawareUser : Principal, UserDetails {
   fun canDeleteFundingEntities(): Boolean = defaultPermission
 
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean = defaultPermission
-
-  fun canDeleteParticipant(participantId: ParticipantId): Boolean = defaultPermission
-
-  fun canDeleteParticipantProject(participantId: ParticipantId, projectId: ProjectId): Boolean =
-      defaultPermission
 
   fun canDeleteParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
@@ -410,7 +399,7 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadCohort(cohortId: CohortId): Boolean = defaultPermission
 
-  fun canReadCohortParticipants(cohortId: CohortId): Boolean = defaultPermission
+  fun canReadCohortProjects(cohortId: CohortId): Boolean = defaultPermission
 
   fun canReadCohorts(): Boolean = defaultPermission
 
@@ -465,8 +454,6 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       defaultPermission
-
-  fun canReadParticipant(participantId: ParticipantId): Boolean = defaultPermission
 
   fun canReadParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
@@ -621,8 +608,6 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUpdateObservationQuantities(observationId: ObservationId): Boolean = defaultPermission
 
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean = defaultPermission
-
-  fun canUpdateParticipant(participantId: ParticipantId): Boolean = defaultPermission
 
   fun canUpdateParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId

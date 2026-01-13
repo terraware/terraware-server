@@ -18,7 +18,7 @@ import org.jooq.impl.DSL
 class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
   /**
    * Returns all the projects in organizations with the Accelerator internal tag that have not been
-   * assigned to participants yet.
+   * assigned to cohorts yet.
    */
   fun fetchWithUnassignedProjects(): Map<OrganizationModel, List<ExistingProjectModel>> {
     requirePermissions { readInternalTags() }
@@ -28,10 +28,10 @@ class AcceleratorOrganizationStore(private val dslContext: DSLContext) {
             DSL.selectOne()
                 .from(PROJECTS)
                 .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                .and(PROJECTS.PARTICIPANT_ID.isNull)
+                .and(PROJECTS.COHORT_ID.isNull)
         )
 
-    val isUnassigned = PROJECTS.PARTICIPANT_ID.isNull
+    val isUnassigned = PROJECTS.COHORT_ID.isNull
 
     return fetchWithProjects(
         listOf(hasAcceleratorTagCondition, hasParticipantProject),

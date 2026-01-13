@@ -12,7 +12,6 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
@@ -185,7 +184,6 @@ internal class PermissionTest : DatabaseTest() {
   private lateinit var sameOrgUserId: UserId
   private lateinit var otherUserIds: Map<OrganizationId, UserId>
 
-  private val participantIds = listOf(1, 3, 4).map { ParticipantId(it.toLong()) }
   private val cohortIds = listOf(1, 3, 4).map { CohortId(it.toLong()) }
   private val globalRoles = setOf(GlobalRole.SuperAdmin)
 
@@ -263,16 +261,6 @@ internal class PermissionTest : DatabaseTest() {
 
     cohortIds.forEach { cohortId -> putDatabaseId(cohortId, insertCohort(createdBy = userId)) }
 
-    participantIds.forEach { participantId ->
-      putDatabaseId(
-          participantId,
-          insertParticipant(
-              createdBy = userId,
-              cohortId = getDatabaseId(CohortId(participantId.value)),
-          ),
-      )
-    }
-
     projectIds.forEach { projectId ->
       putDatabaseId(
           projectId,
@@ -280,7 +268,6 @@ internal class PermissionTest : DatabaseTest() {
               cohortId = getDatabaseId(CohortId(projectId.value / 1000)),
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(projectId.value / 1000)),
-              participantId = getDatabaseId(ParticipantId(projectId.value / 1000)),
           ),
       )
     }
@@ -751,7 +738,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         deleteSelf = true,
         readCohort = true,
-        readParticipant = true,
     )
 
     permissions.andNothingElse()
@@ -1036,7 +1022,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         deleteSelf = true,
         readCohort = true,
-        readParticipant = true,
     )
 
     permissions.andNothingElse()
@@ -1224,7 +1209,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         deleteSelf = true,
         readCohort = true,
-        readParticipant = true,
     )
 
     permissions.andNothingElse()
@@ -1377,7 +1361,6 @@ internal class PermissionTest : DatabaseTest() {
     permissions.expect(
         deleteSelf = true,
         readCohort = true,
-        readParticipant = true,
     )
 
     permissions.andNothingElse()
@@ -1551,16 +1534,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = true,
-        addCohortParticipant = true,
-        addParticipantProject = true,
+        addCohortProject = true,
         createCohort = true,
         createCohortModule = true,
         createDeviceManager = true,
-        createParticipant = true,
         deleteCohort = true,
-        deleteCohortParticipant = true,
-        deleteParticipant = true,
-        deleteParticipantProject = true,
+        deleteCohortProject = true,
         deleteSupportIssue = true,
         manageDisclaimers = true,
         manageModuleEventStatuses = true,
@@ -1573,13 +1552,12 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
-        readCohortParticipants = true,
+        readCohortProjects = true,
         readCohorts = true,
         readCurrentDisclaimer = true,
         readGlobalRoles = true,
         readModuleEventParticipants = true,
         readInternalTags = true,
-        readParticipant = true,
         readProjectReportConfigs = true,
         readPublishedProjects = true,
         readReportInternalComments = true,
@@ -1589,7 +1567,6 @@ internal class PermissionTest : DatabaseTest() {
         updateCohort = true,
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
-        updateParticipant = true,
         updateSpecificGlobalRoles = true,
     )
 
@@ -2010,16 +1987,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = true,
-        addCohortParticipant = true,
-        addParticipantProject = true,
+        addCohortProject = true,
         createCohort = true,
         createCohortModule = true,
         createDeviceManager = true,
-        createParticipant = true,
         deleteCohort = true,
-        deleteCohortParticipant = true,
-        deleteParticipant = true,
-        deleteParticipantProject = true,
+        deleteCohortProject = true,
         deleteSelf = true,
         deleteUsers = true,
         importGlobalSpeciesData = true,
@@ -2035,13 +2008,12 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
-        readCohortParticipants = true,
+        readCohortProjects = true,
         readCohorts = true,
         readCurrentDisclaimer = true,
         readGlobalRoles = true,
         readInternalTags = true,
         readModuleEventParticipants = true,
-        readParticipant = true,
         readProjectReportConfigs = true,
         readPublishedProjects = true,
         readReportInternalComments = true,
@@ -2052,7 +2024,6 @@ internal class PermissionTest : DatabaseTest() {
         updateCohort = true,
         updateDeviceTemplates = true,
         updateGlobalRoles = true,
-        updateParticipant = true,
         updateSpecificGlobalRoles = true,
     )
 
@@ -2293,16 +2264,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = false,
-        addCohortParticipant = true,
-        addParticipantProject = true,
+        addCohortProject = true,
         createCohort = true,
         createCohortModule = true,
         createDeviceManager = false,
-        createParticipant = true,
         deleteCohort = true,
-        deleteCohortParticipant = true,
-        deleteParticipant = true,
-        deleteParticipantProject = true,
+        deleteCohortProject = true,
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageDeliverables = true,
@@ -2316,12 +2283,11 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
-        readCohortParticipants = true,
+        readCohortProjects = true,
         readCohorts = true,
         readGlobalRoles = true,
         readInternalTags = true,
         readModuleEventParticipants = true,
-        readParticipant = true,
         readProjectReportConfigs = true,
         readPublishedProjects = true,
         readReportInternalComments = true,
@@ -2332,7 +2298,6 @@ internal class PermissionTest : DatabaseTest() {
         updateCohort = true,
         updateDeviceTemplates = false,
         updateGlobalRoles = false,
-        updateParticipant = true,
     )
 
     // Accelerator admin can apply all global roles to a user except super admin
@@ -2569,16 +2534,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = false,
-        addCohortParticipant = false,
-        addParticipantProject = false,
+        addCohortProject = false,
         createCohort = false,
         createCohortModule = false,
         createDeviceManager = false,
-        createParticipant = false,
         deleteCohort = false,
-        deleteCohortParticipant = false,
-        deleteParticipant = false,
-        deleteParticipantProject = false,
+        deleteCohortProject = false,
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
@@ -2586,12 +2547,11 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
-        readCohortParticipants = true,
+        readCohortProjects = true,
         readCohorts = true,
         readGlobalRoles = true,
         readModuleEventParticipants = true,
         readInternalTags = true,
-        readParticipant = true,
         readProjectReportConfigs = true,
         readPublishedProjects = true,
         readReportInternalComments = true,
@@ -2602,7 +2562,6 @@ internal class PermissionTest : DatabaseTest() {
         updateCohort = false,
         updateDeviceTemplates = false,
         updateGlobalRoles = false,
-        updateParticipant = false,
     )
 
     // TF Expert can't apply any global roles to a user
@@ -2946,16 +2905,12 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         addAnyOrganizationUser = false,
-        addCohortParticipant = false,
-        addParticipantProject = false,
+        addCohortProject = false,
         createCohort = false,
         createCohortModule = false,
         createDeviceManager = false,
-        createParticipant = false,
         deleteCohort = false,
-        deleteCohortParticipant = false,
-        deleteParticipant = false,
-        deleteParticipantProject = false,
+        deleteCohortProject = false,
         deleteSelf = true,
         importGlobalSpeciesData = false,
         manageInternalTags = false,
@@ -2963,12 +2918,11 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails = true,
         readAllDeliverables = true,
         readCohort = true,
-        readCohortParticipants = true,
+        readCohortProjects = true,
         readCohorts = true,
         readGlobalRoles = false,
         readModuleEventParticipants = true,
         readInternalTags = true,
-        readParticipant = true,
         readProjectReportConfigs = true,
         readPublishedProjects = true,
         readReportInternalComments = true,
@@ -2978,7 +2932,6 @@ internal class PermissionTest : DatabaseTest() {
         updateCohort = false,
         updateDeviceTemplates = false,
         updateGlobalRoles = false,
-        updateParticipant = false,
     )
     permissions.andNothingElse()
 
@@ -3597,16 +3550,12 @@ internal class PermissionTest : DatabaseTest() {
     fun expect(
         acceptCurrentDisclaimer: Boolean = false,
         addAnyOrganizationUser: Boolean = false,
-        addCohortParticipant: Boolean = false,
-        addParticipantProject: Boolean = false,
+        addCohortProject: Boolean = false,
         createCohort: Boolean = false,
         createCohortModule: Boolean = false,
         createDeviceManager: Boolean = false,
-        createParticipant: Boolean = false,
         deleteCohort: Boolean = false,
-        deleteCohortParticipant: Boolean = false,
-        deleteParticipant: Boolean = false,
-        deleteParticipantProject: Boolean = false,
+        deleteCohortProject: Boolean = false,
         deleteSelf: Boolean = false,
         deleteSupportIssue: Boolean = false,
         deleteUsers: Boolean = false,
@@ -3626,13 +3575,12 @@ internal class PermissionTest : DatabaseTest() {
         readAllAcceleratorDetails: Boolean = false,
         readAllDeliverables: Boolean = false,
         readCohort: Boolean = false,
-        readCohortParticipants: Boolean = false,
+        readCohortProjects: Boolean = false,
         readCohorts: Boolean = false,
         readCurrentDisclaimer: Boolean = false,
         readGlobalRoles: Boolean = false,
         readInternalTags: Boolean = false,
         readModuleEventParticipants: Boolean = false,
-        readParticipant: Boolean = false,
         readProjectReportConfigs: Boolean = false,
         readPublishedProjects: Boolean = false,
         readReportInternalComments: Boolean = false,
@@ -3643,11 +3591,9 @@ internal class PermissionTest : DatabaseTest() {
         updateCohort: Boolean = false,
         updateDeviceTemplates: Boolean = false,
         updateGlobalRoles: Boolean = false,
-        updateParticipant: Boolean = false,
         updateSpecificGlobalRoles: Boolean = false,
     ) {
       val cohortId = getDatabaseId(cohortIds[0])
-      val participantId = getDatabaseId(participantIds[0])
       val projectId = getDatabaseId(projectIds[0])
 
       assertEquals(
@@ -3661,34 +3607,18 @@ internal class PermissionTest : DatabaseTest() {
           "Can add any organization user",
       )
       assertEquals(
-          addCohortParticipant,
-          user.canAddCohortParticipant(cohortId, participantId),
-          "Can add cohort participant",
-      )
-      assertEquals(
-          addParticipantProject,
-          user.canAddParticipantProject(participantId, projectId),
-          "Can add participant project",
+          addCohortProject,
+          user.canAddCohortProject(cohortId, projectId),
+          "Can add cohort project",
       )
       assertEquals(createCohort, user.canCreateCohort(), "Can create cohort")
       assertEquals(createCohortModule, user.canCreateCohortModule(), "Can create cohort module")
       assertEquals(createDeviceManager, user.canCreateDeviceManager(), "Can create device manager")
-      assertEquals(createParticipant, user.canCreateParticipant(), "Can create participant")
       assertEquals(deleteCohort, user.canDeleteCohort(cohortId), "Can delete cohort")
       assertEquals(
-          deleteCohortParticipant,
-          user.canDeleteCohortParticipant(cohortId, participantId),
-          "Can delete cohort participant",
-      )
-      assertEquals(
-          deleteParticipant,
-          user.canDeleteParticipant(participantId),
-          "Can delete participant",
-      )
-      assertEquals(
-          deleteParticipantProject,
-          user.canDeleteParticipantProject(participantId, projectId),
-          "Can delete participant project",
+          deleteCohortProject,
+          user.canDeleteCohortProject(cohortId, projectId),
+          "Can delete cohort project",
       )
       assertEquals(deleteSelf, user.canDeleteSelf(), "Can delete self")
       assertEquals(deleteSupportIssue, user.canDeleteSupportIssue(), "Can delete support issue")
@@ -3738,9 +3668,9 @@ internal class PermissionTest : DatabaseTest() {
       assertEquals(readAllDeliverables, user.canReadAllDeliverables(), "Can read all deliverables")
       assertEquals(readCohort, user.canReadCohort(cohortId), "Can read cohort")
       assertEquals(
-          readCohortParticipants,
-          user.canReadCohortParticipants(cohortId),
-          "Can read cohort participants",
+          readCohortProjects,
+          user.canReadCohortProjects(cohortId),
+          "Can read cohort projects",
       )
       assertEquals(readCohorts, user.canReadCohorts(), "Can read all cohorts")
       assertEquals(
@@ -3755,7 +3685,6 @@ internal class PermissionTest : DatabaseTest() {
           user.canReadModuleEventParticipants(),
           "Can read module event participants",
       )
-      assertEquals(readParticipant, user.canReadParticipant(participantId), "Can read participant")
       assertEquals(
           readProjectReportConfigs,
           user.canReadProjectReportConfigs(),
@@ -3786,11 +3715,6 @@ internal class PermissionTest : DatabaseTest() {
           "Can update device templates",
       )
       assertEquals(updateGlobalRoles, user.canUpdateGlobalRoles(), "Can update global roles")
-      assertEquals(
-          updateParticipant,
-          user.canUpdateParticipant(participantId),
-          "Can update participant",
-      )
       assertEquals(
           updateSpecificGlobalRoles,
           user.canUpdateSpecificGlobalRoles(globalRoles),

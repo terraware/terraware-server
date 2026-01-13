@@ -8,7 +8,6 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
@@ -26,22 +25,15 @@ class CannotDeletePublishedActivityException(activityId: ActivityId) :
 class CannotUpdatePublishedActivityException(activityId: ActivityId) :
     MismatchedStateException("Activity $activityId has been published and cannot be updated")
 
-class CohortNotFoundException(id: CohortId) : EntityNotFoundException("Cohort $id not found")
+class CohortHasProjectsException(id: CohortId) : MismatchedStateException("Cohort $id has projects")
 
-class CohortHasParticipantsException(id: CohortId) :
-    MismatchedStateException("Cohort $id has participants")
+class CohortNotFoundException(id: CohortId) : EntityNotFoundException("Cohort $id not found")
 
 class DeliverableNotFoundException(id: DeliverableId) :
     EntityNotFoundException("Deliverable $id not found")
 
 class ModuleNotFoundException(moduleId: ModuleId) :
     EntityNotFoundException("Module $moduleId not found")
-
-class ParticipantHasProjectsException(id: ParticipantId) :
-    MismatchedStateException("Participant $id has projects")
-
-class ParticipantNotFoundException(id: ParticipantId) :
-    EntityNotFoundException("Participant $id not found")
 
 class ParticipantProjectSpeciesNotFoundException(id: ParticipantProjectSpeciesId) :
     EntityNotFoundException("Participant Project Species $id not found")
@@ -78,9 +70,6 @@ class ProjectNotInCohortException(id: ProjectId) :
 
 class ProjectNotInCohortPhaseException(id: ProjectId, phase: CohortPhase) :
     MismatchedStateException("Project $id is not currently in $phase")
-
-class ProjectNotInParticipantException(id: ProjectId) :
-    MismatchedStateException("Project $id is not currently associated to a participant")
 
 class ProjectVoteNotFoundException(
     projectId: ProjectId,

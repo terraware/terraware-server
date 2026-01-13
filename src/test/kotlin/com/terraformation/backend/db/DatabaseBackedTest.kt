@@ -34,7 +34,6 @@ import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.ProjectMetricId
@@ -70,7 +69,6 @@ import com.terraformation.backend.db.accelerator.tables.daos.EventProjectsDao
 import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
-import com.terraformation.backend.db.accelerator.tables.daos.ParticipantsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectOverallScoresDao
@@ -107,7 +105,6 @@ import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
-import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectOverallScoresRow
@@ -665,7 +662,6 @@ abstract class DatabaseBackedTest {
   protected val organizationReportSettingsDao: OrganizationReportSettingsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
-  protected val participantsDao: ParticipantsDao by lazyDao()
   protected val participantProjectSpeciesDao: ParticipantProjectSpeciesDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
@@ -850,7 +846,6 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
-      participantId: ParticipantId? = null,
       phase: CohortPhase? = null,
       countryCode: String? = null,
   ): ProjectId {
@@ -865,7 +860,6 @@ abstract class DatabaseBackedTest {
             modifiedTime = createdTime,
             name = name,
             organizationId = organizationId,
-            participantId = participantId,
             phaseId = phase,
         )
 
@@ -3995,27 +3989,6 @@ abstract class DatabaseBackedTest {
     applicationModulesDao.insert(row)
   }
 
-  fun insertParticipant(
-      name: String = "Participant ${UUID.randomUUID()}",
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      cohortId: CohortId? = null,
-  ): ParticipantId {
-    val row =
-        ParticipantsRow(
-            cohortId = cohortId,
-            createdBy = createdBy,
-            createdTime = createdTime,
-            modifiedBy = createdBy,
-            modifiedTime = createdTime,
-            name = name,
-        )
-
-    participantsDao.insert(row)
-
-    return row.id!!.also { inserted.participantIds.add(it) }
-  }
-
   fun insertParticipantProjectSpecies(
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
@@ -5071,7 +5044,6 @@ abstract class DatabaseBackedTest {
     val notificationIds = mutableListOf<NotificationId>()
     val observationIds = mutableListOf<ObservationId>()
     val organizationIds = mutableListOf<OrganizationId>()
-    val participantIds = mutableListOf<ParticipantId>()
     val participantProjectSpeciesIds = mutableListOf<ParticipantProjectSpeciesId>()
     val projectMetricIds = mutableListOf<ProjectMetricId>()
     val plantingIds = mutableListOf<PlantingId>()
@@ -5186,9 +5158,6 @@ abstract class DatabaseBackedTest {
 
     val organizationId
       get() = organizationIds.last()
-
-    val participantId
-      get() = participantIds.last()
 
     val participantProjectSpeciesId
       get() = participantProjectSpeciesIds.last()

@@ -56,9 +56,8 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     insertModule()
     insertCohort()
-    insertParticipant(cohortId = inserted.cohortId)
 
-    projectId = insertProject(participantId = inserted.participantId)
+    projectId = insertProject(cohortId = inserted.cohortId)
 
     every { scheduler.schedule<ModuleEventService>(any<Instant>(), any()) } returns
         JobId(UUID.randomUUID())

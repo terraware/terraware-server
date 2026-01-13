@@ -5,7 +5,6 @@ import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
 import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
-import com.terraformation.backend.accelerator.db.ParticipantNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
 import com.terraformation.backend.db.AccessionNotFoundException
@@ -31,7 +30,6 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
@@ -159,8 +157,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val organizationId: OrganizationId by
       readableId(OrganizationNotFoundException::class) { canReadOrganization(it) }
   private val otherUserId: UserId by readableId(UserNotFoundException::class) { canReadUser(it) }
-  private val participantId: ParticipantId by
-      readableId(ParticipantNotFoundException::class) { canReadParticipant(it) }
   private val participantProjectSpeciesId: ParticipantProjectSpeciesId by
       readableId(ParticipantProjectSpeciesNotFoundException::class) {
         canReadParticipantProjectSpecies(it)
@@ -279,23 +275,17 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { acceptCurrentDisclaimer() } ifUser { canAcceptCurrentDisclaimer() }
 
   @Test
-  fun addCohortParticipant() {
-    assertThrows<CohortNotFoundException> {
-      requirements.addCohortParticipant(cohortId, participantId)
-    }
+  fun addCohortProject() {
+    assertThrows<CohortNotFoundException> { requirements.addCohortProject(cohortId, projectId) }
 
     grant { user.canReadCohort(cohortId) }
-    assertThrows<ParticipantNotFoundException> {
-      requirements.addCohortParticipant(cohortId, participantId)
-    }
+    assertThrows<ProjectNotFoundException> { requirements.addCohortProject(cohortId, projectId) }
 
-    grant { user.canReadParticipant(participantId) }
-    assertThrows<AccessDeniedException> {
-      requirements.addCohortParticipant(cohortId, participantId)
-    }
+    grant { user.canReadProject(projectId) }
+    assertThrows<AccessDeniedException> { requirements.addCohortProject(cohortId, projectId) }
 
-    grant { user.canAddCohortParticipant(cohortId, participantId) }
-    requirements.addCohortParticipant(cohortId, participantId)
+    grant { user.canAddCohortProject(cohortId, projectId) }
+    requirements.addCohortProject(cohortId, projectId)
   }
 
   @Test
@@ -304,26 +294,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canAddOrganizationUser(organizationId)
           }
-
-  @Test
-  fun addParticipantProject() {
-    assertThrows<ParticipantNotFoundException> {
-      requirements.addParticipantProject(participantId, projectId)
-    }
-
-    grant { user.canReadParticipant(participantId) }
-    assertThrows<ProjectNotFoundException> {
-      requirements.addParticipantProject(participantId, projectId)
-    }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> {
-      requirements.addParticipantProject(participantId, projectId)
-    }
-
-    grant { user.canAddParticipantProject(participantId, projectId) }
-    requirements.addParticipantProject(participantId, projectId)
-  }
 
   @Test
   fun updateProjectInternalUsers() {
@@ -420,8 +390,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   fun createObservation() =
       allow { createObservation(plantingSiteId) } ifUser { canCreateObservation(plantingSiteId) }
 
-  @Test fun createParticipant() = allow { createParticipant() } ifUser { canCreateParticipant() }
-
   @Test
   fun createParticipantProjectSpecies() {
     assertThrows<AccessDeniedException> { requirements.createParticipantProjectSpecies(projectId) }
@@ -485,10 +453,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun deleteCohort() = allow { deleteCohort(cohortId) } ifUser { canDeleteCohort(cohortId) }
 
   @Test
-  fun deleteCohortParticipant() =
-      allow { deleteCohortParticipant(cohortId, participantId) } ifUser
+  fun deleteCohortProject() =
+      allow { deleteCohortProject(cohortId, projectId) } ifUser
           {
-            canDeleteCohortParticipant(cohortId, participantId)
+            canDeleteCohortProject(cohortId, projectId)
           }
 
   @Test
@@ -507,17 +475,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun deleteOrganization() =
       allow { deleteOrganization(organizationId) } ifUser { canDeleteOrganization(organizationId) }
-
-  @Test
-  fun deleteParticipant() =
-      allow { deleteParticipant(participantId) } ifUser { canDeleteParticipant(participantId) }
-
-  @Test
-  fun deleteParticipantProject() =
-      allow { deleteParticipantProject(participantId, projectId) } ifUser
-          {
-            canDeleteParticipantProject(participantId, projectId)
-          }
 
   @Test
   fun deleteParticipantProjectSpecies() =
@@ -679,14 +636,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readCohort() = testRead { readCohort(cohortId) }
 
   @Test
-  fun readCohortParticipants() {
-    assertThrows<CohortNotFoundException> { requirements.readCohortParticipants(cohortId) }
+  fun readCohortProjects() {
+    assertThrows<CohortNotFoundException> { requirements.readCohortProjects(cohortId) }
 
     grant { user.canReadCohort(cohortId) }
-    assertThrows<AccessDeniedException> { requirements.readCohortParticipants(cohortId) }
+    assertThrows<AccessDeniedException> { requirements.readCohortProjects(cohortId) }
 
-    grant { user.canReadCohortParticipants(cohortId) }
-    requirements.readCohortParticipants(cohortId)
+    grant { user.canReadCohortProjects(cohortId) }
+    requirements.readCohortProjects(cohortId)
   }
 
   @Test fun readCohorts() = allow { readCohorts() } ifUser { canReadCohorts() }
@@ -799,8 +756,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canReadOrganizationUser(organizationId, userId) }
     requirements.readOrganizationUser(organizationId, userId)
   }
-
-  @Test fun readParticipant() = testRead { readParticipant(participantId) }
 
   @Test
   fun readParticipantProjectSpecies() = testRead {
@@ -1144,10 +1099,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canUpdateNotifications(organizationId)
           }
-
-  @Test
-  fun updateParticipant() =
-      allow { updateParticipant(participantId) } ifUser { canUpdateParticipant(participantId) }
 
   @Test
   fun updateParticipantProjectSpecies() =

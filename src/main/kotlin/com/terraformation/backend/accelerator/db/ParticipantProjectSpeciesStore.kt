@@ -49,8 +49,8 @@ class ParticipantProjectSpeciesStore(
     // Participant project species can only be associated
     // to projects that are associated to a participant
     val project = projectsDao.fetchOneById(model.projectId)
-    if (project?.participantId == null) {
-      throw ProjectNotInParticipantException(model.projectId)
+    if (project?.cohortId == null) {
+      throw ProjectNotInCohortException(model.projectId)
     }
 
     val userId = currentUser().userId
@@ -85,8 +85,8 @@ class ParticipantProjectSpeciesStore(
     projects.forEach {
       requirePermissions { createParticipantProjectSpecies(it.id!!) }
 
-      if (it.participantId == null) {
-        throw ProjectNotInParticipantException(it.id!!)
+      if (it.cohortId == null) {
+        throw ProjectNotInCohortException(it.id!!)
       }
     }
 

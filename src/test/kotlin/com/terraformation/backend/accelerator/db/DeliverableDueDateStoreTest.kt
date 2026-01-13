@@ -37,8 +37,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
     fun `can filter by IDs`() {
       val cohortId1 = insertCohort()
       val cohortId2 = insertCohort()
-      val participantId1 = insertParticipant(cohortId = cohortId1)
-      val projectId1 = insertProject(participantId = participantId1)
+      val projectId1 = insertProject(cohortId = cohortId1)
 
       val moduleId1 = insertModule()
       val moduleId2 = insertModule()
@@ -272,9 +271,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertCohortModule(inserted.cohortId, inserted.moduleId)
       insertDeliverable()
 
-      insertParticipant(cohortId = inserted.cohortId)
-      val projectToUpdate = insertProject(participantId = inserted.participantId)
-      val projectToInsert = insertProject(participantId = inserted.participantId)
+      val projectToUpdate = insertProject(cohortId = inserted.cohortId)
+      val projectToInsert = insertProject(cohortId = inserted.cohortId)
 
       insertDeliverableProjectDueDate(
           inserted.deliverableId,
@@ -317,9 +315,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertCohort()
       insertCohortModule()
       insertDeliverable()
-      insertParticipant(cohortId = inserted.cohortId)
 
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
 
       assertThrows<AccessDeniedException> {
         store.upsertDeliverableProjectDueDate(
@@ -391,9 +388,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertCohort()
       insertCohortModule()
       insertDeliverable()
-      insertParticipant(cohortId = inserted.cohortId)
 
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
 
       insertDeliverableProjectDueDate(
           inserted.deliverableId,
@@ -426,9 +422,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertCohort()
       insertCohortModule()
       insertDeliverable()
-      insertParticipant(cohortId = inserted.cohortId)
 
-      val projectId = insertProject(participantId = inserted.participantId)
+      val projectId = insertProject(cohortId = inserted.cohortId)
 
       insertDeliverableProjectDueDate(
           inserted.deliverableId,

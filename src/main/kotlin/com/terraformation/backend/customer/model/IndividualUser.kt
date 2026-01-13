@@ -10,7 +10,6 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.ParticipantId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.SubmissionDocumentId
@@ -140,14 +139,10 @@ data class IndividualUser(
 
   override fun canAddAnyOrganizationUser() = isSuperAdmin()
 
-  override fun canAddCohortParticipant(cohortId: CohortId, participantId: ParticipantId) =
-      isAcceleratorAdmin()
+  override fun canAddCohortProject(cohortId: CohortId, projectId: ProjectId) = isAcceleratorAdmin()
 
   override fun canAddOrganizationUser(organizationId: OrganizationId) =
       isSuperAdmin() || isAdminOrHigher(organizationId)
-
-  override fun canAddParticipantProject(participantId: ParticipantId, projectId: ProjectId) =
-      isAcceleratorAdmin()
 
   override fun canAddTerraformationContact(organizationId: OrganizationId) = isTFExpertOrHigher()
 
@@ -196,8 +191,6 @@ data class IndividualUser(
   override fun canCreateObservation(plantingSiteId: PlantingSiteId) =
       isSuperAdmin() || isManagerOrHigher(plantingSiteId)
 
-  override fun canCreateParticipant() = isAcceleratorAdmin()
-
   override fun canCreateParticipantProjectSpecies(projectId: ProjectId) =
       isTFExpertOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
@@ -239,7 +232,7 @@ data class IndividualUser(
 
   override fun canDeleteCohort(cohortId: CohortId) = isAcceleratorAdmin()
 
-  override fun canDeleteCohortParticipant(cohortId: CohortId, participantId: ParticipantId) =
+  override fun canDeleteCohortProject(cohortId: CohortId, projectId: ProjectId) =
       isAcceleratorAdmin()
 
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
@@ -251,11 +244,6 @@ data class IndividualUser(
   override fun canDeleteFundingEntities() = isAcceleratorAdmin()
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
-
-  override fun canDeleteParticipant(participantId: ParticipantId) = isAcceleratorAdmin()
-
-  override fun canDeleteParticipantProject(participantId: ParticipantId, projectId: ProjectId) =
-      isAcceleratorAdmin()
 
   override fun canDeleteParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
@@ -377,7 +365,7 @@ data class IndividualUser(
   override fun canReadCohort(cohortId: CohortId) =
       isReadOnlyOrHigher() || parentStore.exists(cohortId, userId)
 
-  override fun canReadCohortParticipants(cohortId: CohortId): Boolean = isReadOnlyOrHigher()
+  override fun canReadCohortProjects(cohortId: CohortId): Boolean = isReadOnlyOrHigher()
 
   override fun canReadCohorts(): Boolean = isReadOnlyOrHigher()
 
@@ -462,9 +450,6 @@ data class IndividualUser(
       canListOrganizationUsers(organizationId) && parentStore.exists(organizationId, userId)
     }
   }
-
-  override fun canReadParticipant(participantId: ParticipantId) =
-      isReadOnlyOrHigher() || parentStore.exists(participantId, userId)
 
   override fun canReadParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
@@ -699,8 +684,6 @@ data class IndividualUser(
 
   override fun canUpdateOrganization(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
-
-  override fun canUpdateParticipant(participantId: ParticipantId) = isAcceleratorAdmin()
 
   override fun canUpdateParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId

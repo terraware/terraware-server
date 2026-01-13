@@ -35,7 +35,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val acceleratorOrgId2 = insertOrganization()
       val nonAcceleratorOrgId = insertOrganization()
       val untaggedOrgId = insertOrganization()
-      val participantId = insertParticipant()
+      val cohortId = insertCohort()
       val currentUserId = user.userId
 
       insertOrganizationInternalTag(acceleratorOrgId1, InternalTagIds.Accelerator)
@@ -44,7 +44,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertProject(organizationId = nonAcceleratorOrgId)
       insertProject(organizationId = untaggedOrgId)
-      insertProject(organizationId = acceleratorOrgId1, participantId = participantId)
+      insertProject(organizationId = acceleratorOrgId1, cohortId = cohortId)
       val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
       val unassignedProjectId2 = insertProject(organizationId = acceleratorOrgId2, name = "C")
       val unassignedProjectId3 = insertProject(organizationId = acceleratorOrgId2, name = "B")
@@ -116,7 +116,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val acceleratorOrgIdWithoutProjects = insertOrganization()
       val nonAcceleratorOrgId = insertOrganization()
       val untaggedOrgId = insertOrganization()
-      val participantId = insertParticipant()
+      val cohortId = insertCohort()
       val currentUserId = user.userId
 
       insertOrganizationInternalTag(acceleratorOrgId1, InternalTagIds.Accelerator)
@@ -130,7 +130,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertProject(
               organizationId = acceleratorOrgId1,
               name = "D",
-              participantId = participantId,
+              cohortId = cohortId,
           )
       val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
       val unassignedProjectId2 = insertProject(organizationId = acceleratorOrgId2, name = "C")
@@ -154,6 +154,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           organizationId = acceleratorOrgId1,
                       ),
                       ExistingProjectModel(
+                          cohortId = cohortId,
                           createdBy = currentUserId,
                           createdTime = Instant.EPOCH,
                           id = assignedProjectId,
@@ -161,7 +162,6 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.EPOCH,
                           name = "D",
                           organizationId = acceleratorOrgId1,
-                          participantId = participantId,
                       ),
                   ),
               OrganizationModel(
@@ -284,7 +284,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val acceleratorOrgIdWithoutProjects = insertOrganization()
       val nonAcceleratorOrgId = insertOrganization()
       val untaggedOrgId = insertOrganization()
-      val participantId = insertParticipant()
+      val cohortId = insertCohort()
       val currentUserId = user.userId
 
       insertOrganizationInternalTag(acceleratorOrgId1, InternalTagIds.Accelerator)
@@ -298,7 +298,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertProject(
               organizationId = acceleratorOrgId1,
               name = "D",
-              participantId = participantId,
+              cohortId = cohortId,
           )
       val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
       val unassignedProjectId2 = insertProject(organizationId = acceleratorOrgId2, name = "C")
@@ -342,6 +342,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           organizationId = acceleratorOrgId1,
                       ),
                       ExistingProjectModel(
+                          cohortId = cohortId,
                           createdBy = currentUserId,
                           createdTime = Instant.EPOCH,
                           id = assignedProjectId,
@@ -349,7 +350,6 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.EPOCH,
                           name = "D",
                           organizationId = acceleratorOrgId1,
-                          participantId = participantId,
                       ),
                   ),
               OrganizationModel(

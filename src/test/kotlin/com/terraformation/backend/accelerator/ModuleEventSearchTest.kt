@@ -41,7 +41,6 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     )
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort()
-    insertParticipant(cohortId = inserted.cohortId)
     insertModule()
 
     every { user.canReadAllAcceleratorDetails() } returns true
@@ -151,17 +150,17 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for associated projects`() {
-    val project1 = insertProject(participantId = inserted.participantId)
-    val project2 = insertProject(participantId = inserted.participantId)
-    val project3 = insertProject(participantId = inserted.participantId)
+    val project1 = insertProject(cohortId = inserted.cohortId)
+    val project2 = insertProject(cohortId = inserted.cohortId)
+    val project3 = insertProject(cohortId = inserted.cohortId)
     val event1 = insertEvent()
     insertEventProject(event1, project1)
     insertEventProject(event1, project2)
     insertEventProject(event1, project3)
 
-    val project4 = insertProject(participantId = inserted.participantId)
-    val project5 = insertProject(participantId = inserted.participantId)
-    val project6 = insertProject(participantId = inserted.participantId)
+    val project4 = insertProject(cohortId = inserted.cohortId)
+    val project5 = insertProject(cohortId = inserted.cohortId)
+    val project6 = insertProject(cohortId = inserted.cohortId)
     val event2 = insertEvent()
     insertEventProject(event2, project4)
     insertEventProject(event2, project5)
@@ -207,8 +206,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     val event3 = insertEvent()
     val hiddenEvent = insertEvent()
 
-    val project1 = insertProject(participantId = inserted.participantId)
-    val project2 = insertProject(participantId = inserted.participantId)
+    val project1 = insertProject(cohortId = inserted.cohortId)
+    val project2 = insertProject(cohortId = inserted.cohortId)
 
     insertEventProject(event1, project1)
     insertEventProject(event2, project1)
@@ -250,8 +249,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for events sublists using projects as prefix`() {
-    val project1 = insertProject(participantId = inserted.participantId)
-    val project2 = insertProject(participantId = inserted.participantId)
+    val project1 = insertProject(cohortId = inserted.cohortId)
+    val project2 = insertProject(cohortId = inserted.cohortId)
     val event1 = insertEvent()
     val event2 = insertEvent()
     val event3 = insertEvent()
@@ -294,8 +293,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
   fun `can only search for events for organization projects for non accelerator admins`() {
     val userProject =
         insertProject(
+            cohortId = inserted.cohortId,
             organizationId = inserted.organizationId,
-            participantId = inserted.participantId,
         )
 
     val otherUser = insertUser()
@@ -305,11 +304,11 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         organizationId = otherOrganization,
         role = Role.Admin,
     )
-    val otherParticipant = insertParticipant(cohortId = inserted.cohortId)
+    val otherCohort = insertCohort()
     val otherProject =
         insertProject(
+            cohortId = otherCohort,
             organizationId = otherOrganization,
-            participantId = otherParticipant,
             createdBy = otherUser,
         )
 

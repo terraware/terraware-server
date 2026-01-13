@@ -30,8 +30,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     cohortId = insertCohort()
-    insertParticipant(cohortId = inserted.cohortId)
-    projectId = insertProject(participantId = inserted.participantId)
+    projectId = insertProject(cohortId = inserted.cohortId)
 
     every { user.canManageModules() } returns true
     every { user.canReadModule(any()) } returns true
