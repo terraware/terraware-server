@@ -282,7 +282,7 @@ class DeliverableStore(
           cohortName = record[COHORTS.NAME],
           deliverableId = record[deliverableIdField]!!,
           descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
-          documents = record[documentsMultiset] ?: emptyList(),
+          documents = record[documentsMultiset],
           dueDate = record[dueDateField],
           feedback = record[SUBMISSIONS.FEEDBACK],
           internalComment = record[SUBMISSIONS.INTERNAL_COMMENT],

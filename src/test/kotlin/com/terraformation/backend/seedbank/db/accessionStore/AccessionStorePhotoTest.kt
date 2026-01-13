@@ -27,7 +27,7 @@ internal class AccessionStorePhotoTest : AccessionStoreTest() {
 
     accessionPhotosDao.insert(AccessionPhotosRow(accessionId = initial.id!!, fileId = filesRow.id))
 
-    val fetched = store.fetchOneById(initial.id!!)
+    val fetched = store.fetchOneById(initial.id)
 
     assertEquals(listOf("photo.jpg"), fetched.photoFilenames)
   }

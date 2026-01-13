@@ -19,7 +19,7 @@ interface LocalizableEnum<T : Enum<T>> {
           setDefaultEncoding("UTF-8")
         }
 
-    fun <T : LocalizableEnum<T>> loadLocalizedDisplayNames(
+    fun <T : Enum<T>> loadLocalizedDisplayNames(
         locale: Locale,
         values: List<T>,
     ): Map<T, String> {

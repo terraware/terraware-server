@@ -387,7 +387,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         type = NotificationType.AccessionScheduledToEndDrying,
         title = "An accession has dried",
         body = "${accessionModel.accessionNumber} has finished drying.",
-        localUrl = webAppUrls.accession(accessionModel.id!!),
+        localUrl = webAppUrls.accession(accessionModel.id),
     )
   }
 

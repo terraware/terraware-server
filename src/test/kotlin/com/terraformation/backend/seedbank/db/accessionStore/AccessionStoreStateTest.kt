@@ -46,7 +46,7 @@ internal class AccessionStoreStateTest : AccessionStoreTest() {
     assertEquals(
         listOf(
             AccessionStateHistoryRow(
-                accessionId = initial.id!!,
+                accessionId = initial.id,
                 newStateId = AccessionState.InStorage,
                 oldStateId = AccessionState.Drying,
                 reason = "Accession has been edited",

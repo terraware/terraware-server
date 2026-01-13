@@ -55,7 +55,7 @@ internal class AccessionStoreViabilityTest : AccessionStoreTest() {
         updatedTests.map { it.copy(id = null) },
     )
 
-    val updatedAccession = store.fetchOneById(initial.id!!)
+    val updatedAccession = store.fetchOneById(initial.id)
     assertNull(updatedAccession.totalViabilityPercent, "Total viability percent should not be set")
     assertNull(
         updatedAccession.viabilityTests.first().testResults,
