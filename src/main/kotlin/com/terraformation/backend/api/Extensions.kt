@@ -14,17 +14,29 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
 
+enum class CacheControlBehavior {
+  UNSPECIFIED,
+  IMMUTABLE,
+}
+
 /**
  * Wraps a SizedInputStream in a response entity suitable for use as a return value from a
  * controller method.
  */
 fun SizedInputStream.toResponseEntity(
-    addHeaders: (HttpHeaders.() -> Unit)? = null
+    cacheControlBehavior: CacheControlBehavior = CacheControlBehavior.UNSPECIFIED,
+    addHeaders: (HttpHeaders.() -> Unit)? = null,
 ): ResponseEntity<InputStreamResource> {
   val headers = HttpHeaders()
 
   headers.contentLength = size
   headers.contentType = contentType
+  when (cacheControlBehavior) {
+    CacheControlBehavior.UNSPECIFIED -> {}
+    CacheControlBehavior.IMMUTABLE -> {
+      headers.cacheControl = "public, max-age=31536000, immutable"
+    }
+  }
   addHeaders?.invoke(headers)
 
   val resource = InputStreamResource(this)

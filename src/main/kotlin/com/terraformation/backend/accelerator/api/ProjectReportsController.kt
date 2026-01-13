@@ -17,6 +17,7 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse400
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.CacheControlBehavior
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
@@ -271,7 +272,9 @@ class ProjectReportsController(
       @Parameter(description = PHOTO_MAXWIDTH_DESCRIPTION) @RequestParam maxWidth: Int? = null,
       @Parameter(description = PHOTO_MAXHEIGHT_DESCRIPTION) @RequestParam maxHeight: Int? = null,
   ): ResponseEntity<InputStreamResource> {
-    return reportService.readReportPhoto(reportId, fileId, maxWidth, maxHeight).toResponseEntity()
+    return reportService
+        .readReportPhoto(reportId, fileId, maxWidth, maxHeight)
+        .toResponseEntity(cacheControlBehavior = CacheControlBehavior.IMMUTABLE)
   }
 
   @Operation(summary = "Updates a report photo caption")
