@@ -17,8 +17,7 @@ import io.mockk.every
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
-import java.util.UUID
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -35,7 +34,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAllDeliverables() } returns true
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadOrganizationDeliverables(any()) } returns true
-    every { user.canReadParticipant(any()) } returns true
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectDeliverables(any()) } returns true
     every { user.canReadModule(any()) } returns true
@@ -64,11 +62,9 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       // Cohort 1
       //   Module 1
       //   Module 2
-      //   Participant 1
-      //     Project 1 (organization 1)
-      //     Project 3 (organization 2)
-      //   Participant 2
-      //     Project 2 (organization 1)
+      //   Project 1 (organization 1)
+      //   Project 2 (organization 1)
+      //   Project 3 (organization 2)
       // Cohort 2
       //   Module 2
       //   Participant 3
@@ -77,23 +73,15 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val now = Instant.ofEpochSecond(30)
       clock.instant = now
 
-      val suffix = "${UUID.randomUUID()}"
       val cohortId1 = insertCohort(name = "Cohort 1")
       val cohortId2 = insertCohort(name = "Cohort 2")
-      val participantId1 = insertParticipant(cohortId = cohortId1, name = "Participant 1 $suffix")
-      val participantId2 = insertParticipant(cohortId = cohortId1, name = "Participant 2 $suffix")
-      val participantId3 = insertParticipant(cohortId = cohortId2, name = "Participant 3 $suffix")
 
       val organizationId1 = insertOrganization()
       val organizationId2 = insertOrganization()
-      val projectId1 =
-          insertProject(organizationId = organizationId1, participantId = participantId1)
-      val projectId2 =
-          insertProject(organizationId = organizationId1, participantId = participantId2)
-      val projectId3 =
-          insertProject(organizationId = organizationId2, participantId = participantId1)
-      val projectId4 =
-          insertProject(organizationId = organizationId2, participantId = participantId3)
+      val projectId1 = insertProject(organizationId = organizationId1, cohortId = cohortId1)
+      val projectId2 = insertProject(organizationId = organizationId1, cohortId = cohortId1)
+      val projectId3 = insertProject(organizationId = organizationId2, cohortId = cohortId1)
+      val projectId4 = insertProject(organizationId = organizationId2, cohortId = cohortId2)
 
       val moduleId1 = insertModule(name = "Name 1")
       val deliverableId1 = insertDeliverable()
@@ -281,33 +269,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               deliverable1Project1,
-              deliverable1Project3,
-              deliverable2Project1,
-              deliverable2Project3,
-              deliverable3Project1,
-              deliverable3Project3,
-          ),
-          store.fetchDeliverableSubmissions(participantId = participantId1),
-          "All deliverables for participant 1 (projects 1 and 3)",
-      )
-      assertEquals(
-          listOf(
-              deliverable1Project2,
-              deliverable2Project2,
-              deliverable3Project2,
-          ),
-          store.fetchDeliverableSubmissions(participantId = participantId2),
-          "All deliverables for participant 2 (project 2)",
-      )
-      assertEquals(
-          listOf(deliverable3Project4),
-          store.fetchDeliverableSubmissions(participantId = participantId3),
-          "All deliverables for participant 3 (project 4)",
-      )
-
-      assertEquals(
-          listOf(
-              deliverable1Project1,
               deliverable2Project1,
               deliverable3Project1,
           ),
@@ -398,17 +359,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           ),
           store.fetchDeliverableSubmissions(organizationId = organizationId1, moduleId = moduleId1),
           "Deliverables by module for organization 1",
-      )
-
-      assertEquals(
-          listOf(
-              deliverable1Project1,
-              deliverable1Project3,
-              deliverable2Project1,
-              deliverable2Project3,
-          ),
-          store.fetchDeliverableSubmissions(participantId = participantId1, moduleId = moduleId1),
-          "Deliverables by module for participant 1",
       )
 
       assertEquals(
@@ -544,11 +494,9 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns application submissions for participant projects if deliverable ID is specified`() {
-      val participantName = "Participant ${UUID.randomUUID()}"
       val organizationId = insertOrganization()
       val cohortId = insertCohort(name = "Cohort Name")
-      val participantId = insertParticipant(cohortId = cohortId, name = participantName)
-      val projectId = insertProject(participantId = participantId)
+      val projectId = insertProject(cohortId = cohortId)
       val moduleId = insertModule(phase = CohortPhase.PreScreen)
       val deliverableId = insertDeliverable()
       val submissionId = insertSubmission(submissionStatus = SubmissionStatus.Approved)
@@ -637,17 +585,14 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val cohortWithDueDate = insertCohort()
       val cohortWithoutDueDate = insertCohort()
 
-      val participantWithDueDate = insertParticipant(cohortId = cohortWithDueDate)
-      val participantWithoutDueDate = insertParticipant(cohortId = cohortWithoutDueDate)
-
       val moduleId = insertModule()
       val deliverableId = insertDeliverable()
 
       insertOrganization()
 
-      val projectWithProjectDueDate = insertProject(participantId = participantWithDueDate)
-      val projectWithCohortDueDate = insertProject(participantId = participantWithDueDate)
-      val projectWithDefaultDueDate = insertProject(participantId = participantWithoutDueDate)
+      val projectWithProjectDueDate = insertProject(cohortId = cohortWithDueDate)
+      val projectWithCohortDueDate = insertProject(cohortId = cohortWithDueDate)
+      val projectWithDefaultDueDate = insertProject(cohortId = cohortWithoutDueDate)
 
       val cohortModuleEndDate = LocalDate.of(2024, 1, 2)
 
@@ -713,22 +658,17 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadAllDeliverables() } returns false
       every { user.canReadOrganization(any()) } returns false
       every { user.canReadOrganizationDeliverables(any()) } returns false
-      every { user.canReadParticipant(any()) } returns false
       every { user.canReadProject(any()) } returns false
       every { user.canReadProjectDeliverables(any()) } returns false
       every { user.canReadModule(any()) } returns false
 
       val organizationId = insertOrganization()
-      val participantId = insertParticipant()
       val projectId = insertProject()
       val moduleId = insertModule()
       val deliverableId = insertDeliverable()
 
       assertThrows<OrganizationNotFoundException> {
         store.fetchDeliverableSubmissions(organizationId = organizationId)
-      }
-      assertThrows<ParticipantNotFoundException> {
-        store.fetchDeliverableSubmissions(participantId = participantId)
       }
       assertThrows<ProjectNotFoundException> {
         store.fetchDeliverableSubmissions(projectId = projectId)
