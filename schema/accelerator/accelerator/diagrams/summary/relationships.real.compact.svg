@@ -413,37 +413,10 @@
 <polygon fill="black" stroke="black" points="1503.55,-768.13 1511.11,-772.58 1507.52,-768.57 1511.5,-769 1511.5,-769 1511.5,-769 1507.52,-768.57 1511.89,-765.42 1503.55,-768.13 1503.55,-768.13"/>
 <ellipse fill="none" stroke="black" cx="1500.37" cy="-767.79" rx="3.2" ry="3.2"/>
 </g>
-<!-- cohort_phases -->
-<g id="node5" class="node">
-<title>cohort_phases</title>
-<g id="a_node5"><a xlink:href="../../tables/cohort_phases.html" xlink:title="cohort_phases" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="8,-1817 8,-1901 138,-1901 138,-1817 8,-1817"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="8,-1879 8,-1901 138,-1901 138,-1879 8,-1879"/>
-<polygon fill="none" stroke="black" points="8,-1879 8,-1901 138,-1901 138,-1879 8,-1879"/>
-<text text-anchor="start" x="13" y="-1888.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">cohort_phases</text>
-<text text-anchor="start" x="99" y="-1887.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="8,-1857 8,-1879 138,-1879 138,-1857 8,-1857"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-1874"/>
-<text text-anchor="start" x="40" y="-1865.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="8,-1835 8,-1857 138,-1857 138,-1835 8,-1835"/>
-<polygon fill="none" stroke="black" points="8,-1835 8,-1857 138,-1857 138,-1835 8,-1835"/>
-<text text-anchor="start" x="40" y="-1843.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="8,-1817 8,-1835 62,-1835 62,-1817 8,-1817"/>
-<polygon fill="none" stroke="black" points="8,-1817 8,-1835 62,-1835 62,-1817 8,-1817"/>
-<text text-anchor="start" x="11" y="-1823.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="62,-1817 62,-1835 95,-1835 95,-1817 62,-1817"/>
-<polygon fill="none" stroke="black" points="62,-1817 62,-1835 95,-1835 95,-1817 62,-1817"/>
-<text text-anchor="start" x="85" y="-1823.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="95,-1817 95,-1835 138,-1835 138,-1817 95,-1817"/>
-<polygon fill="none" stroke="black" points="95,-1817 95,-1835 138,-1835 138,-1817 95,-1817"/>
-<text text-anchor="start" x="119" y="-1823.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 &gt;</text>
-</a>
-</g>
-</g>
 <!-- deliverable_cohort_due_dates -->
-<g id="node6" class="node">
+<g id="node5" class="node">
 <title>deliverable_cohort_due_dates</title>
-<g id="a_node6"><a xlink:href="../../tables/deliverable_cohort_due_dates.html" xlink:title="deliverable_cohort_due_dates" target="_top">
+<g id="a_node5"><a xlink:href="../../tables/deliverable_cohort_due_dates.html" xlink:title="deliverable_cohort_due_dates" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="864.5,-2958 864.5,-3060 1085.5,-3060 1085.5,-2958 864.5,-2958"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="865,-3038 865,-3060 1086,-3060 1086,-3038 865,-3038"/>
 <polygon fill="none" stroke="black" points="865,-3038 865,-3060 1086,-3060 1086,-3038 865,-3038"/>
@@ -520,6 +493,33 @@
 <path fill="none" stroke="black" d="M849.67,-3002.5C822.47,-2990.73 845.05,-2939.98 822,-2904 665.06,-2659.03 502.71,-2685.85 378,-2423 336.53,-2335.61 413.73,-1992 317,-1992"/>
 <polygon fill="black" stroke="black" points="856.12,-3003.62 863.38,-3008.55 860.06,-3004.31 864,-3005 864,-3005 864,-3005 860.06,-3004.31 864.62,-3001.45 856.12,-3003.62 856.12,-3003.62"/>
 <ellipse fill="none" stroke="black" cx="852.97" cy="-3003.07" rx="3.2" ry="3.2"/>
+</g>
+<!-- cohort_phases -->
+<g id="node6" class="node">
+<title>cohort_phases</title>
+<g id="a_node6"><a xlink:href="../../tables/cohort_phases.html" xlink:title="cohort_phases" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="8,-1817 8,-1901 138,-1901 138,-1817 8,-1817"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="8,-1879 8,-1901 138,-1901 138,-1879 8,-1879"/>
+<polygon fill="none" stroke="black" points="8,-1879 8,-1901 138,-1901 138,-1879 8,-1879"/>
+<text text-anchor="start" x="13" y="-1888.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">cohort_phases</text>
+<text text-anchor="start" x="99" y="-1887.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="8,-1857 8,-1879 138,-1879 138,-1857 8,-1857"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-1874"/>
+<text text-anchor="start" x="40" y="-1865.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="8,-1835 8,-1857 138,-1857 138,-1835 8,-1835"/>
+<polygon fill="none" stroke="black" points="8,-1835 8,-1857 138,-1857 138,-1835 8,-1835"/>
+<text text-anchor="start" x="40" y="-1843.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="8,-1817 8,-1835 62,-1835 62,-1817 8,-1817"/>
+<polygon fill="none" stroke="black" points="8,-1817 8,-1835 62,-1835 62,-1817 8,-1817"/>
+<text text-anchor="start" x="11" y="-1823.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="62,-1817 62,-1835 95,-1835 95,-1817 62,-1817"/>
+<polygon fill="none" stroke="black" points="62,-1817 62,-1835 95,-1835 95,-1817 62,-1817"/>
+<text text-anchor="start" x="85" y="-1823.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="95,-1817 95,-1835 138,-1835 138,-1817 95,-1817"/>
+<polygon fill="none" stroke="black" points="95,-1817 95,-1835 138,-1835 138,-1817 95,-1817"/>
+<text text-anchor="start" x="119" y="-1823.2" font-family="Helvetica,sans-Serif" font-size="11.00">6 &gt;</text>
+</a>
+</g>
 </g>
 <!-- modules&#45;&gt;cohort_phases -->
 <g id="edge35" class="edge">

@@ -508,12 +508,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>text_value_is_text_or_email</td>
-                                    <td>((text_value IS NULL) OR (variable_type_id &#61; ANY (ARRAY[2, 9])))</td>
-                                </tr>
-                                <tr>
                                     <td>variable_values_check</td>
                                     <td>((number_value IS NULL) OR (variable_type_id &#61; 1))</td>
+                                </tr>
+                                <tr>
+                                    <td>text_value_is_text_or_email</td>
+                                    <td>((text_value IS NULL) OR (variable_type_id &#61; ANY (ARRAY[2, 9])))</td>
                                 </tr>
                                 </tbody>
                             </table>
