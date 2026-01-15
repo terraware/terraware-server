@@ -14,9 +14,13 @@ import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
 
-enum class CacheControlBehavior {
-  UNSPECIFIED,
-  IMMUTABLE,
+/**
+ * Convenience value for the `addHeaders` parameter to `toResponseEntity` which adds immutable
+ * `Cache-Control` HTTP headers, suitable for cacheable responses which will never change (like
+ * images).
+ */
+val addImmutableCacheControlHeaders: HttpHeaders.() -> Unit = {
+  cacheControl = "public, max-age=31536000, immutable"
 }
 
 /**
@@ -24,19 +28,12 @@ enum class CacheControlBehavior {
  * controller method.
  */
 fun SizedInputStream.toResponseEntity(
-    cacheControlBehavior: CacheControlBehavior = CacheControlBehavior.UNSPECIFIED,
-    addHeaders: (HttpHeaders.() -> Unit)? = null,
+    addHeaders: (HttpHeaders.() -> Unit)? = null
 ): ResponseEntity<InputStreamResource> {
   val headers = HttpHeaders()
 
   headers.contentLength = size
   headers.contentType = contentType
-  when (cacheControlBehavior) {
-    CacheControlBehavior.UNSPECIFIED -> {}
-    CacheControlBehavior.IMMUTABLE -> {
-      headers.cacheControl = "public, max-age=31536000, immutable"
-    }
-  }
   addHeaders?.invoke(headers)
 
   val resource = InputStreamResource(this)

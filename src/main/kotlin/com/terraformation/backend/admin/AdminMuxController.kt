@@ -1,7 +1,7 @@
 package com.terraformation.backend.admin
 
-import com.terraformation.backend.api.CacheControlBehavior
 import com.terraformation.backend.api.RequireGlobalRole
+import com.terraformation.backend.api.addImmutableCacheControlHeaders
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.config.TerrawareServerConfig
@@ -71,7 +71,7 @@ class AdminMuxController(
     return try {
       thumbnailService
           .readFile(fileId, width, height)
-          .toResponseEntity(cacheControlBehavior = CacheControlBehavior.IMMUTABLE)
+          .toResponseEntity(addHeaders = addImmutableCacheControlHeaders)
     } catch (e: Exception) {
       log.error("Unable to get thumbnail", e)
       throw e

@@ -7,13 +7,13 @@ import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
 import com.terraformation.backend.api.AcceleratorEndpoint
-import com.terraformation.backend.api.CacheControlBehavior
 import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.addImmutableCacheControlHeaders
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
@@ -167,7 +167,7 @@ class ActivitiesController(
   ): ResponseEntity<InputStreamResource> {
     return activityMediaService
         .readMedia(activityId, fileId, maxWidth, maxHeight, raw == true)
-        .toResponseEntity(cacheControlBehavior = CacheControlBehavior.IMMUTABLE)
+        .toResponseEntity(addHeaders = addImmutableCacheControlHeaders)
   }
 
   @GetMapping("/{activityId}/media/{fileId}/stream")
