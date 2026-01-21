@@ -124,6 +124,9 @@ class TerrawareServerConfig(
     val requestLog: RequestLogConfig = RequestLogConfig(),
     val report: ReportConfig = ReportConfig(),
 
+    /** Configures the 3D Gaussian splatting service. */
+    val splatter: SplatterConfig = SplatterConfig(),
+
     /** Terraware support email config */
     val support: SupportConfig = SupportConfig(),
 ) {
@@ -395,6 +398,26 @@ class TerrawareServerConfig(
                   tokenSecret == null)
       ) {
         throw IllegalArgumentException("Token and signing key are required for Mux")
+      }
+    }
+  }
+
+  class SplatterConfig(
+      val enabled: Boolean = false,
+      /**
+       * URL of SQS queue to send outgoing requests to. This should be the queue that the splatter
+       * service is listening to.
+       */
+      val requestQueueUrl: URI? = null,
+      /**
+       * URL of SQS queue where we will receive responses from the splatter service. This queue
+       * should not be shared across environments; each environment should have its own queue.
+       */
+      val responseQueueUrl: URI? = null,
+  ) {
+    init {
+      if (enabled && (requestQueueUrl == null || responseQueueUrl == null)) {
+        throw IllegalArgumentException("Request and response queue URLs are required for Splatter")
       }
     }
   }

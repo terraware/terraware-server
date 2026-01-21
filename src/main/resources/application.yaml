@@ -143,6 +143,7 @@ springdoc:
     - "com.terraformation.backend.search.api"
     - "com.terraformation.backend.seedbank.api"
     - "com.terraformation.backend.species.api"
+    - "com.terraformation.backend.splat.api"
     - "com.terraformation.backend.support.api"
     - "com.terraformation.backend.time.api"
     - "com.terraformation.backend.tracking.api"
