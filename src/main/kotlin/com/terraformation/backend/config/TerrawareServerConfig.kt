@@ -44,6 +44,12 @@ class TerrawareServerConfig(
     val s3BucketName: String? = null,
 
     /**
+     * Prefix to use for S3 keys. This can be used when multiple environments are sharing a single
+     * S3 bucket and want to avoid name collisions.
+     */
+    val s3KeyPrefix: String? = null,
+
+    /**
      * Directory to use for local photo storage. If not specified, photos won't be stored on the
      * local filesystem. The server will attempt to create this directory if it doesn't exist.
      */
