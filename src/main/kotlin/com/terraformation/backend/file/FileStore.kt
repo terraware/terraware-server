@@ -75,6 +75,9 @@ interface FileStore {
   /** Returns the URL of a file with a given relative path on this file store. */
   fun getUrl(path: Path): URI
 
+  /** Returns the relative path of a file on this file store with a given URL. */
+  fun getPath(url: URI): Path
+
   /**
    * Creates a new URL for a file of a particular category with a particular content type.
    *

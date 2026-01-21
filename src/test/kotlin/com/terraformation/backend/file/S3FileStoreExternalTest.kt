@@ -8,6 +8,7 @@ import io.mockk.mockk
 import java.net.URI
 import java.nio.file.NoSuchFileException
 import kotlin.random.Random
+import kotlin.random.nextUInt
 import org.junit.Assume.assumeNoException
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -31,6 +32,7 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest
  */
 internal class S3FileStoreExternalTest : FileStoreTest() {
   private val bucketName = getEnvOrSkipTest("TEST_S3_BUCKET_NAME")
+  private val keyPrefix = Random.nextUInt().toString()
 
   private val config: TerrawareServerConfig = mockk()
   private val log = perClassLogger()
@@ -50,6 +52,7 @@ internal class S3FileStoreExternalTest : FileStoreTest() {
     }
 
     every { config.s3BucketName } returns bucketName
+    every { config.s3KeyPrefix } returns keyPrefix
 
     store = S3FileStore(config, PathGenerator())
   }
@@ -60,14 +63,14 @@ internal class S3FileStoreExternalTest : FileStoreTest() {
       try {
         log.debug("Deleting $key from $bucketName")
         s3Client.deleteObject(DeleteObjectRequest.builder().key(key).bucket(bucketName).build())
-      } catch (ignore: Exception) {
+      } catch (_: Exception) {
         // Swallow exceptions so the test doesn't fail if we can't clean up
       }
     }
   }
 
   override fun makeUrl(): URI {
-    val url = URI("s3://$bucketName/${Random.nextInt()}")
+    val url = URI("s3://$bucketName/$keyPrefix/${Random.nextInt()}")
     keysCreated.add(url.path.substring(1))
     return url
   }

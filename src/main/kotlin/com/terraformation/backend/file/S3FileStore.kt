@@ -11,6 +11,7 @@ import java.nio.file.FileSystemException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Instant
+import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -40,6 +41,7 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
   private val bucketName =
       config.s3BucketName
           ?: throw IllegalArgumentException("No S3 bucket name found in configuration")
+  private val keyPrefix = config.s3KeyPrefix?.let { it.trim('/') + '/' } ?: ""
 
   override fun delete(url: URI) {
     // Test whether the file exists; S3's delete endpoint doesn't return "not found" responses.
@@ -152,7 +154,16 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
 
   override fun getUrl(path: Path): URI {
     val relativePath = if (path.isAbsolute) path.relativeTo(path.root) else path
-    return URI("s3://$bucketName/${relativePath.invariantSeparatorsPathString}")
+    return URI("s3://$bucketName/$keyPrefix${relativePath.invariantSeparatorsPathString}")
+  }
+
+  override fun getPath(url: URI): Path {
+    val fullPath = url.path.trimStart('/')
+    return if (fullPath.startsWith(keyPrefix)) {
+      Path(fullPath.substring(keyPrefix.length))
+    } else {
+      Path(fullPath)
+    }
   }
 
   override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {

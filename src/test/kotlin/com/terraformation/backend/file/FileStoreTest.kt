@@ -125,6 +125,14 @@ abstract class FileStoreTest {
     assertTrue(store.canAccept(url))
   }
 
+  @Test
+  fun `getPath and getUrl are idempotent`() {
+    val path = Path("abc/def")
+    val url = store.getUrl(path)
+
+    assertEquals(path, store.getPath(url), "Path from URL")
+  }
+
   protected abstract fun makeUrl(): URI
 
   protected abstract fun createFile(url: URI, content: ByteArray = Random.nextBytes(1))
