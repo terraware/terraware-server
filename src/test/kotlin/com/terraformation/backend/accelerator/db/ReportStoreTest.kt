@@ -502,7 +502,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportSystemMetricModel(
                   metric = SystemMetric.SurvivalRate,
-                  entry = ReportSystemMetricEntryModel(systemValue = 0),
+                  entry = ReportSystemMetricEntryModel(systemValue = null),
               ),
           )
 
@@ -1222,7 +1222,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportSystemMetricModel(
                   metric = SystemMetric.SurvivalRate,
-                  entry = ReportSystemMetricEntryModel(systemValue = 0),
+                  entry = ReportSystemMetricEntryModel(systemValue = null),
               ),
           )
 
