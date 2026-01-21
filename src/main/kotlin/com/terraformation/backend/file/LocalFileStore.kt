@@ -76,6 +76,10 @@ class LocalFileStore(
     return URI("file:///${relativePath.invariantSeparatorsPathString}")
   }
 
+  override fun getPath(url: URI): Path {
+    return Path(url.path.trimStart('/'))
+  }
+
   override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
     return getUrl(pathGenerator.generatePath(timestamp, category, contentType))
   }

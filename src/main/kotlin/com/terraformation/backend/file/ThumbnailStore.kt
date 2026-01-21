@@ -22,7 +22,6 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.imageio.ImageIO
-import kotlin.io.path.Path
 import kotlin.io.path.nameWithoutExtension
 import net.coobird.thumbnailator.Thumbnails
 import net.coobird.thumbnailator.resizers.configurations.ScalingMode
@@ -392,7 +391,7 @@ class ThumbnailStore(
    * Thumbnails are currently always JPEG images, so the file extension is always `.jpg`.
    */
   private fun getThumbnailUrl(photoUrl: URI, width: Int, height: Int): URI {
-    val originalPath = Path(photoUrl.path)
+    val originalPath = fileStore.getPath(photoUrl)
     val originalFilename = originalPath.fileName
     val originalBaseName = originalFilename.nameWithoutExtension
     val thumbPath =

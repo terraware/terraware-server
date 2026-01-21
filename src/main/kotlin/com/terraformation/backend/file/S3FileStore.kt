@@ -11,6 +11,7 @@ import java.nio.file.FileSystemException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Instant
+import kotlin.io.path.Path
 import kotlin.io.path.invariantSeparatorsPathString
 import kotlin.io.path.relativeTo
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -154,6 +155,15 @@ class S3FileStore(config: TerrawareServerConfig, private val pathGenerator: Path
   override fun getUrl(path: Path): URI {
     val relativePath = if (path.isAbsolute) path.relativeTo(path.root) else path
     return URI("s3://$bucketName/$keyPrefix${relativePath.invariantSeparatorsPathString}")
+  }
+
+  override fun getPath(url: URI): Path {
+    val fullPath = url.path.trimStart('/')
+    return if (fullPath.startsWith(keyPrefix)) {
+      Path(fullPath.substring(keyPrefix.length))
+    } else {
+      Path(fullPath)
+    }
   }
 
   override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {

@@ -11,6 +11,7 @@ import java.nio.file.FileAlreadyExistsException
 import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.time.Instant
+import kotlin.io.path.Path
 import kotlin.io.path.relativeTo
 import org.junit.jupiter.api.fail
 import org.springframework.http.MediaType
@@ -103,6 +104,10 @@ class InMemoryFileStore(private val pathGenerator: PathGenerator? = null) :
   override fun getUrl(path: Path): URI {
     val relativePath = if (path.isAbsolute) path.relativeTo(path.root) else path
     return URI("file:///$relativePath")
+  }
+
+  override fun getPath(url: URI): Path {
+    return Path(url.path.trimStart('/'))
   }
 
   override fun newUrl(timestamp: Instant, category: String, contentType: String): URI {
