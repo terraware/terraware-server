@@ -1683,7 +1683,9 @@ class ReportStore(
       )
 
   private val systemValueField =
-      DSL.coalesce(REPORT_SYSTEM_METRICS.SYSTEM_VALUE, systemTerrawareValueField)
+      DSL.case_()
+          .`when`(REPORT_SYSTEM_METRICS.SYSTEM_TIME.isNull(), systemTerrawareValueField)
+          .else_(REPORT_SYSTEM_METRICS.SYSTEM_VALUE)
 
   private val systemMetricsMultiset: Field<List<ReportSystemMetricModel>> =
       DSL.multiset(
