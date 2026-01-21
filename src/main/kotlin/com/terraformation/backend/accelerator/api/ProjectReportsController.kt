@@ -625,7 +625,7 @@ data class ReportSystemMetricPayload(
     val reference: String,
     val status: ReportMetricStatus?,
     val systemTime: Instant?,
-    val systemValue: Int,
+    val systemValue: Int?,
     val target: Int?,
     val type: MetricType,
 ) {
