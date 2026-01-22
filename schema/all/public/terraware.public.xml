@@ -12,6 +12,19 @@
             <column ascending="true" name="platform"/>
          </index>
       </table>
+      <table name="asset_statuses" remarks="(Enum) Possible statuses of externally-generated assets as they're processed." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="asset_status_id" foreignKey="mux_assets_mux_asset_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="mux_assets"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="asset_statuses_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="asset_statuses_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="automations" remarks="Configuration of automatic processes run by the device manager." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -593,26 +606,13 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="mux_asset_statuses" remarks="(Enum) Possible statuses of Mux assets as they're processed." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="mux_asset_status_id" foreignKey="mux_assets_mux_asset_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="mux_assets"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="mux_asset_statuses_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="mux_asset_statuses_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
-      </table>
       <table name="mux_assets" remarks="Information about Mux (video streaming) assets associated with files." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="mux_assets_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="asset_id" nullable="false" remarks="ID of the Mux asset as a whole. Used when updating or deleting assets." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="mux_asset_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="mux_assets_mux_asset_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="mux_asset_statuses"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="asset_status_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="mux_assets_mux_asset_status_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="asset_statuses"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="playback_id" nullable="false" remarks="ID of the Mux playback configuration for the asset. This is passed to the video player to stream a video." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="created_time" nullable="false" remarks="When the file was sent to Mux to create the asset. This can be later than the created time of the original file." size="35" type="timestamptz" typeCode="93"/>

@@ -65,7 +65,6 @@ project_internal_roles
 plant_material_sourcing_methods
 organization_types
 notification_criticalities
-mux_asset_statuses
 managed_location_types
 growth_forms
 global_roles
@@ -76,6 +75,7 @@ disclaimers
 device_template_categories
 conservation_categories
 chat_memory_message_types
+asset_statuses
 land_use_model_types
 seed_treatments
 time_zones

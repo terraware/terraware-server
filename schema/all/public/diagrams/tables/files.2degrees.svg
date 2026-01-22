@@ -2313,74 +2313,74 @@
 <g id="node58" class="node">
 <title>mux_assets</title>
 <g id="a_node58"><a xlink:href="../../tables/mux_assets.html" xlink:title="mux_assets" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="672,-2227.02 672,-2373.02 814,-2373.02 814,-2227.02 672,-2227.02"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="672,-2351.02 672,-2373.02 814,-2373.02 814,-2351.02 672,-2351.02"/>
-<polygon fill="none" stroke="black" points="672,-2351.02 672,-2373.02 814,-2373.02 814,-2351.02 672,-2351.02"/>
-<text text-anchor="start" x="677" y="-2360.22" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">mux_assets</text>
-<text text-anchor="start" x="775" y="-2359.22" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="672,-2329.02 672,-2351.02 814,-2351.02 814,-2329.02 672,-2329.02"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="677" y="-2346.02"/>
-<text text-anchor="start" x="692" y="-2337.22" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="672,-2307.02 672,-2329.02 814,-2329.02 814,-2307.02 672,-2307.02"/>
-<polygon fill="none" stroke="black" points="672,-2307.02 672,-2329.02 814,-2329.02 814,-2307.02 672,-2307.02"/>
-<text text-anchor="start" x="692" y="-2315.22" font-family="Helvetica,sans-Serif" font-size="11.00">asset_id</text>
-<polygon fill="none" stroke="black" points="672,-2285.02 672,-2307.02 814,-2307.02 814,-2285.02 672,-2285.02"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="677" y="-2302.02"/>
-<text text-anchor="start" x="692" y="-2293.22" font-family="Helvetica,sans-Serif" font-size="11.00">mux_asset_status_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="672,-2263.02 672,-2285.02 814,-2285.02 814,-2263.02 672,-2263.02"/>
-<polygon fill="none" stroke="black" points="672,-2263.02 672,-2285.02 814,-2285.02 814,-2263.02 672,-2263.02"/>
-<text text-anchor="start" x="692" y="-2271.22" font-family="Helvetica,sans-Serif" font-size="11.00">playback_id</text>
-<polygon fill="none" stroke="black" points="672,-2245.02 672,-2263.02 814,-2263.02 814,-2245.02 672,-2245.02"/>
-<text text-anchor="start" x="675" y="-2251.22" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="672,-2227.02 672,-2245.02 741,-2245.02 741,-2227.02 672,-2227.02"/>
-<polygon fill="none" stroke="black" points="672,-2227.02 672,-2245.02 741,-2245.02 741,-2227.02 672,-2227.02"/>
-<text text-anchor="start" x="675" y="-2233.22" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="741,-2227.02 741,-2245.02 777,-2245.02 777,-2227.02 741,-2227.02"/>
-<polygon fill="none" stroke="black" points="741,-2227.02 741,-2245.02 777,-2245.02 777,-2227.02 741,-2227.02"/>
-<text text-anchor="start" x="767" y="-2233.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="777,-2227.02 777,-2245.02 814,-2245.02 814,-2227.02 777,-2227.02"/>
-<polygon fill="none" stroke="black" points="777,-2227.02 777,-2245.02 814,-2245.02 814,-2227.02 777,-2227.02"/>
-<text text-anchor="start" x="804" y="-2233.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="687,-2227.02 687,-2373.02 799,-2373.02 799,-2227.02 687,-2227.02"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="687,-2351.02 687,-2373.02 799,-2373.02 799,-2351.02 687,-2351.02"/>
+<polygon fill="none" stroke="black" points="687,-2351.02 687,-2373.02 799,-2373.02 799,-2351.02 687,-2351.02"/>
+<text text-anchor="start" x="692" y="-2360.22" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">mux_assets</text>
+<text text-anchor="start" x="760" y="-2359.22" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="687,-2329.02 687,-2351.02 799,-2351.02 799,-2329.02 687,-2329.02"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="692" y="-2346.02"/>
+<text text-anchor="start" x="708" y="-2337.22" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="687,-2307.02 687,-2329.02 799,-2329.02 799,-2307.02 687,-2307.02"/>
+<polygon fill="none" stroke="black" points="687,-2307.02 687,-2329.02 799,-2329.02 799,-2307.02 687,-2307.02"/>
+<text text-anchor="start" x="708" y="-2315.22" font-family="Helvetica,sans-Serif" font-size="11.00">asset_id</text>
+<polygon fill="none" stroke="black" points="687,-2285.02 687,-2307.02 799,-2307.02 799,-2285.02 687,-2285.02"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="692" y="-2302.02"/>
+<text text-anchor="start" x="708" y="-2293.22" font-family="Helvetica,sans-Serif" font-size="11.00">asset_status_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="687,-2263.02 687,-2285.02 799,-2285.02 799,-2263.02 687,-2263.02"/>
+<polygon fill="none" stroke="black" points="687,-2263.02 687,-2285.02 799,-2285.02 799,-2263.02 687,-2263.02"/>
+<text text-anchor="start" x="708" y="-2271.22" font-family="Helvetica,sans-Serif" font-size="11.00">playback_id</text>
+<polygon fill="none" stroke="black" points="687,-2245.02 687,-2263.02 799,-2263.02 799,-2245.02 687,-2245.02"/>
+<text text-anchor="start" x="690" y="-2251.22" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="687,-2227.02 687,-2245.02 741,-2245.02 741,-2227.02 687,-2227.02"/>
+<polygon fill="none" stroke="black" points="687,-2227.02 687,-2245.02 741,-2245.02 741,-2227.02 687,-2227.02"/>
+<text text-anchor="start" x="690" y="-2233.22" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="741,-2227.02 741,-2245.02 770,-2245.02 770,-2227.02 741,-2227.02"/>
+<polygon fill="none" stroke="black" points="741,-2227.02 741,-2245.02 770,-2245.02 770,-2227.02 741,-2227.02"/>
+<text text-anchor="start" x="760" y="-2233.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="770,-2227.02 770,-2245.02 799,-2245.02 799,-2227.02 770,-2227.02"/>
+<polygon fill="none" stroke="black" points="770,-2227.02 770,-2245.02 799,-2245.02 799,-2227.02 770,-2227.02"/>
+<text text-anchor="start" x="789" y="-2233.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- mux_assets&#45;&gt;files -->
-<g id="edge113" class="edge">
+<g id="edge114" class="edge">
 <title>mux_assets:w&#45;&gt;files:e</title>
-<path fill="none" stroke="black" d="M660.45,-2339.36C607.99,-2332.38 618.72,-2271.05 601,-2213.02 585.66,-2162.77 611.54,-1742.02 559,-1742.02"/>
-<polygon fill="black" stroke="black" points="670.45,-2335.98 669.95,-2343.97 668.36,-2343.87 668.85,-2335.88 670.45,-2335.98"/>
-<polyline fill="none" stroke="black" points="671,-2340.02 667.01,-2339.77 "/>
-<ellipse fill="none" stroke="black" cx="663.81" cy="-2339.57" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M675.5,-2339.47C618.6,-2333.13 622.37,-2273.57 601,-2213.02 583.51,-2163.48 611.54,-1742.02 559,-1742.02"/>
+<polygon fill="black" stroke="black" points="685.41,-2335.99 684.99,-2343.98 683.39,-2343.89 683.81,-2335.9 685.41,-2335.99"/>
+<polyline fill="none" stroke="black" points="686,-2340.02 682.01,-2339.81 "/>
+<ellipse fill="none" stroke="black" cx="678.81" cy="-2339.64" rx="3.2" ry="3.2"/>
 </g>
-<!-- mux_asset_statuses -->
+<!-- asset_statuses -->
 <g id="node59" class="node">
-<title>mux_asset_statuses</title>
-<g id="a_node59"><a xlink:href="../../tables/mux_asset_statuses.html" xlink:title="mux_asset_statuses" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="345,-2209.02 345,-2267.02 507,-2267.02 507,-2209.02 345,-2209.02"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="345,-2245.02 345,-2267.02 507,-2267.02 507,-2245.02 345,-2245.02"/>
-<polygon fill="none" stroke="black" points="345,-2245.02 345,-2267.02 507,-2267.02 507,-2245.02 345,-2245.02"/>
-<text text-anchor="start" x="350" y="-2254.22" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">mux_asset_statuses</text>
-<text text-anchor="start" x="468" y="-2253.22" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="345,-2227.02 345,-2245.02 507,-2245.02 507,-2227.02 345,-2227.02"/>
-<text text-anchor="start" x="348" y="-2233.22" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="345,-2209.02 345,-2227.02 415,-2227.02 415,-2209.02 345,-2209.02"/>
-<polygon fill="none" stroke="black" points="345,-2209.02 345,-2227.02 415,-2227.02 415,-2209.02 345,-2209.02"/>
-<text text-anchor="start" x="348" y="-2215.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="415,-2209.02 415,-2227.02 456,-2227.02 456,-2209.02 415,-2209.02"/>
-<polygon fill="none" stroke="black" points="415,-2209.02 415,-2227.02 456,-2227.02 456,-2209.02 415,-2209.02"/>
-<text text-anchor="start" x="446" y="-2215.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="456,-2209.02 456,-2227.02 507,-2227.02 507,-2209.02 456,-2209.02"/>
-<polygon fill="none" stroke="black" points="456,-2209.02 456,-2227.02 507,-2227.02 507,-2209.02 456,-2209.02"/>
-<text text-anchor="start" x="488" y="-2215.22" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+<title>asset_statuses</title>
+<g id="a_node59"><a xlink:href="../../tables/asset_statuses.html" xlink:title="asset_statuses" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="361,-2209.02 361,-2267.02 491,-2267.02 491,-2209.02 361,-2209.02"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="361,-2245.02 361,-2267.02 491,-2267.02 491,-2245.02 361,-2245.02"/>
+<polygon fill="none" stroke="black" points="361,-2245.02 361,-2267.02 491,-2267.02 491,-2245.02 361,-2245.02"/>
+<text text-anchor="start" x="366" y="-2254.22" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">asset_statuses</text>
+<text text-anchor="start" x="452" y="-2253.22" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="361,-2227.02 361,-2245.02 491,-2245.02 491,-2227.02 361,-2227.02"/>
+<text text-anchor="start" x="364" y="-2233.22" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="361,-2209.02 361,-2227.02 415,-2227.02 415,-2209.02 361,-2209.02"/>
+<polygon fill="none" stroke="black" points="361,-2209.02 361,-2227.02 415,-2227.02 415,-2209.02 361,-2209.02"/>
+<text text-anchor="start" x="364" y="-2215.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="415,-2209.02 415,-2227.02 448,-2227.02 448,-2209.02 415,-2209.02"/>
+<polygon fill="none" stroke="black" points="415,-2209.02 415,-2227.02 448,-2227.02 448,-2209.02 415,-2209.02"/>
+<text text-anchor="start" x="438" y="-2215.22" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="448,-2209.02 448,-2227.02 491,-2227.02 491,-2209.02 448,-2209.02"/>
+<polygon fill="none" stroke="black" points="448,-2209.02 448,-2227.02 491,-2227.02 491,-2209.02 448,-2209.02"/>
+<text text-anchor="start" x="472" y="-2215.22" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
 </g>
-<!-- mux_assets&#45;&gt;mux_asset_statuses -->
-<g id="edge114" class="edge">
-<title>mux_assets:w&#45;&gt;mux_asset_statuses:e</title>
-<path fill="none" stroke="black" d="M656.49,-2295.26C592.36,-2288.32 580.07,-2236.02 508,-2236.02"/>
-<polygon fill="black" stroke="black" points="663.01,-2295.61 670.81,-2299.62 667.01,-2295.81 671,-2296.02 671,-2296.02 671,-2296.02 667.01,-2295.81 671.19,-2292.43 663.01,-2295.61 663.01,-2295.61"/>
-<ellipse fill="none" stroke="black" cx="659.82" cy="-2295.44" rx="3.2" ry="3.2"/>
+<!-- mux_assets&#45;&gt;asset_statuses -->
+<g id="edge113" class="edge">
+<title>mux_assets:w&#45;&gt;asset_statuses:e</title>
+<path fill="none" stroke="black" d="M671.38,-2295.47C593.97,-2289.42 577.14,-2236.02 492,-2236.02"/>
+<polygon fill="black" stroke="black" points="678.01,-2295.72 685.86,-2299.62 682,-2295.87 686,-2296.02 686,-2296.02 686,-2296.02 682,-2295.87 686.14,-2292.43 678.01,-2295.72 678.01,-2295.72"/>
+<ellipse fill="none" stroke="black" cx="674.81" cy="-2295.6" rx="3.2" ry="3.2"/>
 </g>
 <!-- notifications -->
 <g id="node60" class="node">

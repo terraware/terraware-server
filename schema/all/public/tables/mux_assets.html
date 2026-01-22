@@ -161,7 +161,7 @@
                                     <td><p>ID of the Mux asset as a whole. Used when updating or deleting assets.</p></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="mux_asset_status_id">mux_asset_status_id</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="asset_status_id">asset_status_id</span></td>
                                     <td>int4</td>
                                     <td>10</td>
                                     <td title=''></td>
@@ -174,7 +174,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="mux_assets.mux_asset_status_id references mux_asset_statuses.id via mux_assets_mux_asset_status_id_fkey"><a href='mux_asset_statuses.html'>mux_asset_statuses</a><span class='relatedKey'>.id</span></td>
+                                                <td title="mux_assets.asset_status_id references asset_statuses.id via mux_assets_mux_asset_status_id_fkey"><a href='asset_statuses.html'>asset_statuses</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">mux_assets_mux_asset_status_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>

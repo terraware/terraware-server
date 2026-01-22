@@ -1,6 +1,7 @@
 time_zones
 seed_treatments
 land_use_model_types
+asset_statuses
 chat_memory_message_types
 conservation_categories
 device_template_categories
@@ -11,7 +12,6 @@ facility_types
 global_roles
 growth_forms
 managed_location_types
-mux_asset_statuses
 notification_criticalities
 organization_types
 plant_material_sourcing_methods
