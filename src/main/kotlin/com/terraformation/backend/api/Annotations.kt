@@ -86,6 +86,15 @@ annotation class ApiResponse200(
 
 @Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.FUNCTION)
+@ApiResponse(responseCode = "202")
+annotation class ApiResponse202(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String =
+        "The requested resource is not available yet, but should become available later."
+)
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
 @ApiResponseSimpleError(responseCode = "400")
 annotation class ApiResponse400(
     @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
@@ -138,6 +147,14 @@ annotation class ApiResponse413(
 annotation class ApiResponse415(
     @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
     val description: String = "The media type is not supported."
+)
+
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
+@ApiResponseSimpleError(responseCode = "422")
+annotation class ApiResponse422(
+    @get:AliasFor(annotation = ApiResponse::class, attribute = "description")
+    val description: String = "The requested content could not be processed."
 )
 
 @Retention(AnnotationRetention.RUNTIME)

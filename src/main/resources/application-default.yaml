@@ -17,6 +17,13 @@ terraware:
     email-regex: ".*"
 
 spring:
+  cloud:
+    aws:
+      sqs:
+        listener:
+          # Use a short poll timeout in dev environments because a long timeout makes server
+          # shutdown take longer (it waits for the current poll request to time out).
+          poll-timeout: "PT1S"
   flyway:
     # During development, it is convenient to temporarily add a repeatable migration and work on it
     # until it's correct, then make it a versioned migration. By default, Flyway would bomb out due

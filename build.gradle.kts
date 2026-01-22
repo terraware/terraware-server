@@ -92,6 +92,9 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.session:spring-session-jdbc")
 
+  implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2"))
+  implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
+
   implementation(platform("org.springframework.ai:spring-ai-bom:1.1.2"))
   implementation("org.springframework.ai:spring-ai-starter-model-openai")
   implementation("org.springframework.ai:spring-ai-starter-vector-store-pgvector")
