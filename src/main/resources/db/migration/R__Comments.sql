@@ -33,6 +33,8 @@ COMMENT ON COLUMN seedbank.accessions.total_withdrawn_weight_units_id IS 'Measur
 
 COMMENT ON TABLE app_versions IS 'Minimum and recommended versions for Terraware mobile apps.';
 
+COMMENT ON TABLE asset_statuses IS '(Enum) Possible statuses of externally-generated assets as they''re processed.';
+
 COMMENT ON TABLE automations IS 'Configuration of automatic processes run by the device manager.';
 
 COMMENT ON TABLE seedbank.bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';
@@ -128,8 +130,6 @@ COMMENT ON TABLE internal_tags IS 'Internal (non-user-facing) tags. Low-numbered
 COMMENT ON TABLE land_use_model_types IS '(Enum) Types of ways a project''s land can be used.';
 
 COMMENT ON TABLE managed_location_types IS '(Enum) Type of managed location for business analytics purposes.';
-
-COMMENT ON TABLE mux_asset_statuses IS '(Enum) Possible statuses of Mux assets as they''re processed.';
 
 COMMENT ON TABLE mux_assets IS 'Information about Mux (video streaming) assets associated with files.';
 COMMENT ON COLUMN mux_assets.asset_id IS 'ID of the Mux asset as a whole. Used when updating or deleting assets.';
