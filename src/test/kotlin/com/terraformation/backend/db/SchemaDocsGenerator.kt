@@ -265,6 +265,7 @@ class SchemaDocsGenerator : DatabaseTest() {
           "public" to
               mapOf(
                   "app_versions" to setOf(ALL, CUSTOMER),
+                  "asset_statuses" to setOf(ALL),
                   "automations" to setOf(ALL, DEVICE),
                   "chat_memory_conversations" to setOf(ALL, ACCELERATOR),
                   "chat_memory_message_types" to setOf(ALL, ACCELERATOR),
@@ -295,7 +296,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "internal_tags" to setOf(ALL, CUSTOMER),
                   "land_use_model_types" to setOf(ALL, ACCELERATOR, CUSTOMER),
                   "managed_location_types" to setOf(ALL, CUSTOMER),
-                  "mux_asset_statuses" to setOf(ALL),
                   "mux_assets" to setOf(ALL),
                   "species_native_categories" to setOf(ALL, SPECIES),
                   "notification_criticalities" to setOf(ALL, CUSTOMER),

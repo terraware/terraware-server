@@ -2,8 +2,8 @@
 
 package com.terraformation.backend.file.mux
 
+import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.default_schema.MuxAssetStatus
 import java.net.URI
 import java.time.Instant
 
@@ -13,10 +13,10 @@ import java.time.Instant
  */
 
 @Suppress("EnumEntryName")
-enum class MuxApiStatus(val assetStatus: MuxAssetStatus) {
-  preparing(MuxAssetStatus.Preparing),
-  ready(MuxAssetStatus.Ready),
-  errored(MuxAssetStatus.Errored),
+enum class MuxApiStatus(val assetStatus: AssetStatus) {
+  preparing(AssetStatus.Preparing),
+  ready(AssetStatus.Ready),
+  errored(AssetStatus.Errored),
 }
 
 data class MuxVideoAssetMetaPayload(

@@ -123,6 +123,7 @@ val ENUM_TABLES =
             ),
         "public" to
             listOf(
+                EnumTable("asset_statuses", isLocalizable = false),
                 EnumTable(
                     "chat_memory_message_types",
                     listOf("chat_memory_messages\\.message_type_id"),
@@ -141,7 +142,6 @@ val ENUM_TABLES =
                 EnumTable("growth_forms"),
                 EnumTable("land_use_model_types"),
                 EnumTable("managed_location_types", isLocalizable = false),
-                EnumTable("mux_asset_statuses", isLocalizable = false),
                 EnumTable(
                     "notification_criticalities",
                     listOf(".*\\.notification_criticality_id"),

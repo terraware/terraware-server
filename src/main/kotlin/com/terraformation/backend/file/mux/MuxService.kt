@@ -3,8 +3,8 @@ package com.terraformation.backend.file.mux
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
-import com.terraformation.backend.db.default_schema.MuxAssetStatus
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
 import com.terraformation.backend.file.FileService
@@ -126,10 +126,10 @@ class MuxService(
       dslContext
           .insertInto(MUX_ASSETS)
           .set(ASSET_ID, response.data.id)
+          .set(ASSET_STATUS_ID, response.data.status.assetStatus)
           .set(CREATED_TIME, clock.instant())
           .set(ERROR_MESSAGE, response.data.errorMessage)
           .set(FILE_ID, fileId)
-          .set(MUX_ASSET_STATUS_ID, response.data.status.assetStatus)
           .set(PLAYBACK_ID, playbackId)
           .execute()
     }
@@ -235,7 +235,7 @@ class MuxService(
       } else {
         dslContext
             .update(MUX_ASSETS)
-            .set(MUX_ASSET_STATUS_ID, MuxAssetStatus.Ready)
+            .set(ASSET_STATUS_ID, AssetStatus.Ready)
             .set(READY_TIME, clock.instant())
             .where(FILE_ID.eq(fileId))
             .and(READY_TIME.isNull)
@@ -263,8 +263,8 @@ class MuxService(
       } else {
         dslContext
             .update(MUX_ASSETS)
+            .set(ASSET_STATUS_ID, AssetStatus.Errored)
             .set(ERROR_MESSAGE, errorMessage)
-            .set(MUX_ASSET_STATUS_ID, MuxAssetStatus.Errored)
             .where(FILE_ID.eq(fileId))
             .execute()
 

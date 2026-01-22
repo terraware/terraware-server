@@ -61,6 +61,12 @@ VALUES (1, 'Not Submitted'),
        (13, 'Not Eligible')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO asset_statuses (id, name)
+VALUES (1, 'Preparing'),
+       (2, 'Ready'),
+       (3, 'Errored')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO nursery.batch_quantity_history_types (id, name)
 VALUES (1, 'Observed'),
        (2, 'Computed'),
@@ -314,12 +320,6 @@ VALUES (1, 'Activity'),
        (2, 'Output'),
        (3, 'Outcome'),
        (4, 'Impact')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO mux_asset_statuses (id, name)
-VALUES (1, 'Preparing'),
-       (2, 'Ready'),
-       (3, 'Errored')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO notification_criticalities (id, name)
