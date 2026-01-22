@@ -93,6 +93,7 @@ class SplatService(
       dslContext
           .update(SPLATS)
           .set(ASSET_STATUS_ID, AssetStatus.Errored)
+          .set(COMPLETED_TIME, clock.instant())
           .set(ERROR_MESSAGE, errorMessage)
           .where(FILE_ID.eq(fileId))
           .execute()
