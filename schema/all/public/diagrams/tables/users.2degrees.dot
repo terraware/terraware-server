@@ -135,6 +135,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "identifier_sequences":"elipses":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "internal_tags":"created_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "internal_tags":"modified_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "mux_assets":"elipses":w -> "asset_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "mux_assets":"elipses":w -> "files":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "notifications":"notification_type_id":w -> "notification_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "notifications":"organization_id":w -> "organizations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -190,6 +191,9 @@ digraph "twoDegreesRelationshipsDiagram" {
   "species_plant_material_sourcing_methods":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species_problems":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species_successional_groups":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "splats":"asset_status_id":w -> "asset_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "splats":"created_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "splats":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "sub_locations":"created_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "sub_locations":"facility_id":w -> "facilities":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "sub_locations":"modified_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -898,6 +902,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="nursery.withdrawals"
   ];
+  "asset_statuses" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16"><B>asset_statuses</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/asset_statuses.html"
+    target="_top"
+    tooltip="asset_statuses"
+  ];
   "automations" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -1063,7 +1078,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="25" HEIGHT="16"><B>files</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">16 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/files.html"
     target="_top"
@@ -1421,6 +1436,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="species_successional_groups"
   ];
+  "splats" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="35" HEIGHT="16"><B>splats</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/splats.html"
+    target="_top"
+    tooltip="splats"
+  ];
   "sub_locations" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -1599,7 +1625,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="country_code" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">country_code</TD></TR></TABLE></TD><TD PORT="country_code.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="cookies_consented" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">cookies_consented</TD></TR></TABLE></TD><TD PORT="cookies_consented.type" ALIGN="LEFT">bool[1]</TD></TR>
       <TR><TD PORT="cookies_consented_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">cookies_consented_time</TD></TR></TABLE></TD><TD PORT="cookies_consented_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">130 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">131 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"

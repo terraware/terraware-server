@@ -191,6 +191,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="splats.file_id references files.id via splats_file_id_fkey"><a href='splats.html'>splats</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">splats_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="thumbnails.file_id references files.id via thumbnail_photo_id_fkey"><a href='thumbnails.html'>thumbnails</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">thumbnail_photo_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
