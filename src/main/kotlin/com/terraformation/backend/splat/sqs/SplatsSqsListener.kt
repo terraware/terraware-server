@@ -5,9 +5,9 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.splat.SplatService
 import io.awspring.cloud.sqs.annotation.SqsListener
 import jakarta.inject.Named
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
-@ConditionalOnBean(SplatService::class)
+@ConditionalOnProperty("terraware.splatter.enabled")
 @Named
 class SplatsSqsListener(private val splatService: SplatService) {
   private val log = perClassLogger()

@@ -20,7 +20,7 @@ import com.terraformation.backend.splat.SplatNotReadyException
 import com.terraformation.backend.splat.SplatService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-@ConditionalOnBean(SplatService::class)
+@ConditionalOnProperty("terraware.splatter.enabled")
 @RequestMapping
 @RestController
 @TrackingEndpoint
