@@ -1,6 +1,10 @@
 # Configuration that's only used by the "aws" profile (prod and staging environments).
 
 spring:
+  cloud:
+    aws:
+      sqs:
+        enabled: true
   datasource:
     hikari:
       data-source-properties:
