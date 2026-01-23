@@ -49,6 +49,11 @@ spring:
       - org.springframework.ai.model.openai.autoconfigure.OpenAiModerationAutoConfiguration
       - org.springframework.ai.vectorstore.pgvector.autoconfigure.PgVectorStoreAutoConfiguration
 
+  cloud:
+    aws:
+      sqs:
+        enabled: false
+
   datasource:
     url: "${DATABASE_URL:jdbc:postgresql://localhost:5432/terraware}"
     username: "${DATABASE_USER:${USER:postgres}}"
