@@ -15,6 +15,15 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
 
 /**
+ * Convenience value for the `addHeaders` parameter to `toResponseEntity` which adds immutable
+ * `Cache-Control` HTTP headers, suitable for cacheable responses which will never change (like
+ * images).
+ */
+val addImmutableCacheControlHeaders: HttpHeaders.() -> Unit = {
+  cacheControl = "public, max-age=31536000, immutable"
+}
+
+/**
  * Wraps a SizedInputStream in a response entity suitable for use as a return value from a
  * controller method.
  */
