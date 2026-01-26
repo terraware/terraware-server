@@ -1169,6 +1169,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertReportSystemMetric(
+          reportId = reportId,
+          metric = SystemMetric.SurvivalRate,
+          systemValue = null,
+          systemTime = Instant.ofEpochSecond(9000),
+          modifiedTime = Instant.ofEpochSecond(700),
+          modifiedBy = user.userId,
+      )
+
       // These are ordered by reference.
       val systemMetrics =
           listOf(
@@ -1222,7 +1231,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportSystemMetricModel(
                   metric = SystemMetric.SurvivalRate,
-                  entry = ReportSystemMetricEntryModel(systemValue = null),
+                  entry =
+                      ReportSystemMetricEntryModel(
+                          systemValue = null,
+                          systemTime = Instant.ofEpochSecond(9000),
+                          modifiedTime = Instant.ofEpochSecond(700),
+                          modifiedBy = user.userId,
+                      ),
               ),
           )
 

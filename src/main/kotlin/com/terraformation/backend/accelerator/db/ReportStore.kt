@@ -1579,7 +1579,7 @@ class ReportStore(
                     .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
                     .and(COLLECTED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
             )
-            .convertFrom { it.toInt() }
+            .convertFrom { it?.toInt() }
       }
 
   private val withdrawnSeedlingsField =
@@ -1613,7 +1613,7 @@ class ReportStore(
                     .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
                     .and(ADDED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
             )
-            .convertFrom { it.toInt() }
+            .convertFrom { it?.toInt() }
       }
 
   // For species, we total up the number of trees planted per species, and take only ones that are
@@ -1667,7 +1667,7 @@ class ReportStore(
                     .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
                     .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull)
             )
-            .convertFrom { it.toInt() }
+            .convertFrom { it?.toInt() }
       }
 
   private val systemTerrawareValueField =
