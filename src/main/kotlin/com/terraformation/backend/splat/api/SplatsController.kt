@@ -9,6 +9,7 @@ import com.terraformation.backend.api.SimpleErrorResponsePayload
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.api.addImmutableCacheControlHeaders
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
@@ -72,7 +73,9 @@ class SplatsController(
       @PathVariable fileId: FileId,
   ): ResponseEntity<*> {
     return try {
-      splatService.readObservationSplat(observationId, fileId).toResponseEntity()
+      splatService
+          .readObservationSplat(observationId, fileId)
+          .toResponseEntity(addHeaders = addImmutableCacheControlHeaders)
     } catch (_: SplatGenerationFailedException) {
       ResponseEntity.unprocessableEntity()
           .body(SimpleErrorResponsePayload(ErrorDetails("Splat generation failed.")))
