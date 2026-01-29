@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>Splats</h2>
+
+<p>
+    Here you can send a request to the splatter service to generate a 3D Gaussian splatting model
+    from an already-uploaded observation video. You can adjust various processing settings.
+</p>
+
+<form method="POST" action="/admin/splats/process">
+    <table>
+        <tr>
+            <th>Setting</th>
+            <th/>
+            <th>Default</th>
+            <th>Explanation</th>
+        </tr>
+        <tr>
+            <td>Observation&nbsp;ID</td>
+            <td><input type="text" size="8" name="observationId" required/></td>
+            <td colspan="2"/>
+        </tr>
+        <tr>
+            <td>File ID</td>
+            <td><input type="text" size="8" name="fileId" required/></td>
+            <td colspan="2"/>
+        </tr>
+        <tr>
+            <td>Data Factor</td>
+            <td><input type="text" size="8" name="dataFactor"/></td>
+            <td>1</td>
+            <td>
+                Downscale frames by this factor during model training. You will probably want
+                to adjust Max Size rather than this.
+            </td>
+        </tr>
+        <tr>
+            <td>FPS</td>
+            <td><input type="text" size="8" name="fps"/></td>
+            <td>3</td>
+            <td>
+                Frames per second to extract from the video.
+            </td>
+        </tr>
+        <tr>
+            <td>Keep %</td>
+            <td><input type="text" size="8" name="keepPercent"/></td>
+            <td>90</td>
+            <td>
+                Percentage of frames to keep after checking for blurriness. If this is 90, the
+                blurriest 10% of frames will be dropped.
+            </td>
+        </tr>
+        <tr>
+            <td>Max Size</td>
+            <td><input type="text" size="8" name="maxSize"/></td>
+            <td>1600</td>
+            <td>
+                Downscale video frames to fit within a square this many pixels tall and wide.
+            </td>
+        </tr>
+        <tr>
+            <td>Max Steps</td>
+            <td><input type="text" size="8" name="maxSteps"/></td>
+            <td>30000</td>
+            <td>
+                Number of training steps to run.
+            </td>
+        </tr>
+        <tr>
+            <td>SSIM Lambda</td>
+            <td><input type="text" size="8" name="maxSteps"/></td>
+            <td>0.1</td>
+            <td>
+                Controls how much the training loss emphasizes structural similarity (SSIM) versus
+                raw pixel accuracy. Higher values tend to produce smoother, more visually
+                consistent results, while lower values prioritize sharper pixel-level detail.
+                Higher values also tend to produce larger model files.
+            </td>
+        </tr>
+        <tr>
+            <td>Other Args</td>
+            <td><input type="text" name="otherArgs"/></td>
+            <td></td>
+            <td>
+                Additional space-delimited arguments to pass to processing script, in case the
+                script is updated to support more options but the new options haven't been added
+                to this form yet.
+            </td>
+        </tr>
+
+        <tr>
+            <td/>
+            <td><input type="submit" value="Process Video" /></td>
+            <td colspan="2"/>
+        </tr>
+    </table>
+</form>
+
+</body>

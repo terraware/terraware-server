@@ -80,10 +80,15 @@ class SplatService(
     return readSplat(fileId)
   }
 
-  fun generateObservationSplat(observationId: ObservationId, fileId: FileId) {
+  fun generateObservationSplat(
+      observationId: ObservationId,
+      fileId: FileId,
+      force: Boolean = false,
+      processScriptArgs: List<String>? = null,
+  ) {
     ensureObservationFile(observationId, fileId)
 
-    generateSplat(fileId)
+    generateSplat(fileId, force, processScriptArgs)
   }
 
   fun recordSplatError(fileId: FileId, errorMessage: String) {
@@ -113,7 +118,11 @@ class SplatService(
     }
   }
 
-  private fun generateSplat(fileId: FileId) {
+  private fun generateSplat(
+      fileId: FileId,
+      force: Boolean = false,
+      processScriptArgs: List<String>?,
+  ) {
     val videoUrl =
         dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(fileId))
             ?: throw FileNotFoundException(fileId)
@@ -137,19 +146,22 @@ class SplatService(
                 .execute()
           }
 
-      if (rowsInserted == 1) {
+      if (rowsInserted == 1 || force) {
         val requestMessage =
             SplatterRequestMessage(
-                fileId.toString(),
-                responseQueueUrl,
-                SplatterRequestFileLocation(
-                    s3BucketName,
-                    videoKey,
-                ),
-                SplatterRequestFileLocation(
-                    s3BucketName,
-                    splatKey,
-                ),
+                args = processScriptArgs,
+                input =
+                    SplatterRequestFileLocation(
+                        s3BucketName,
+                        videoKey,
+                    ),
+                jobId = fileId.toString(),
+                output =
+                    SplatterRequestFileLocation(
+                        s3BucketName,
+                        splatKey,
+                    ),
+                responseQueueUrl = responseQueueUrl,
             )
 
         sqsTemplate.send(requestQueueUrl, requestMessage)
