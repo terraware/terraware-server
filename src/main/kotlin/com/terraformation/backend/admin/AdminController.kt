@@ -103,6 +103,7 @@ class AdminController(
     model.addAttribute("canUpdateGlobalRoles", currentUser().canUpdateGlobalRoles())
     model.addAttribute("organizations", organizations)
     model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })
+    model.addAttribute("splatterEnabled", config.splatter.enabled)
 
     return "/admin/index"
   }
