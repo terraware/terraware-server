@@ -146,6 +146,16 @@ class SplatService(
                 .execute()
           }
 
+      if (rowsInserted == 0 && force) {
+        with(SPLATS) {
+          dslContext
+              .update(SPLATS)
+              .set(ASSET_STATUS_ID, AssetStatus.Preparing)
+              .where(FILE_ID.eq(fileId))
+              .execute()
+        }
+      }
+
       if (rowsInserted == 1 || force) {
         val requestMessage =
             SplatterRequestMessage(
