@@ -49,7 +49,7 @@ class AdminSplatsController(
     try {
       val args =
           listOfNotNull(
-                  abortAfter?.let { listOf("--abort-after", abortAfter) },
+                  abortAfter?.ifBlank { null }?.let { listOf("--abort-after", abortAfter) },
                   dataFactor?.let { listOf("--data-factor", "$dataFactor") },
                   fps?.let { listOf("--fps", "$fps") },
                   keepPercent?.let { listOf("--keep-percent", "${keepPercent / 100.0}") },
