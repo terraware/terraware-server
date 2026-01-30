@@ -1,2 +1,4 @@
-bc74584dcc9 Add admin UI page for manual splat generation (#3849)
-4bc8470b767 SW-8007 Add headers to splat file response for caching (#3848)
+f5477eecd9d Update dependency html-minifier-next to v4.19.0 (#3835)
+40798db7aff Update Spring dependencies (#3837)
+dacd54a5749 Update dependency org.commonmark:commonmark to v0.27.1 (#3836)
+5692ededc7c Update amazoncorretto Docker tag to v25.0.2-al2023-headless (#3846)
