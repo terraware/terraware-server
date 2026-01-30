@@ -1,3 +1,5 @@
+fce08eb01cb Update geoToolsVersion to v34.2 (#3855)
+dda858f646c Update plugin com.diffplug.spotless to v8.2.0 (#3856)
 08663451d0f Update dependency com.google.auth:google-auth-library-oauth2-http to v1.42.1 (#3851)
 95ede5d8e58 Add new splatter options, URL display to admin UI (#3852)
 76ff42d3b54 Update dependency commons-codec:commons-codec to v1.21.0 (#3853)
