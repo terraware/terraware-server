@@ -1,3 +1,5 @@
+76ff42d3b54 Update dependency commons-codec:commons-codec to v1.21.0 (#3853)
+e382464c5a1 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v3.1.0 (#3854)
 cc3cc38d662 Update ktor monorepo to v3.4.0 (#3850)
 f5477eecd9d Update dependency html-minifier-next to v4.19.0 (#3835)
 40798db7aff Update Spring dependencies (#3837)
