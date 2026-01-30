@@ -193,6 +193,8 @@ import com.terraformation.backend.db.default_schema.tables.daos.SpeciesGrowthFor
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesPlantMaterialSourcingMethodsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesSuccessionalGroupsDao
+import com.terraformation.backend.db.default_schema.tables.daos.SplatAnnotationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.SplatsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
 import com.terraformation.backend.db.default_schema.tables.daos.TimeZonesDao
@@ -214,6 +216,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectLandUseM
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSettingsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SplatAnnotationsRow
+import com.terraformation.backend.db.default_schema.tables.pojos.SplatsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimersRow
@@ -229,8 +233,6 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_EC
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
-import com.terraformation.backend.db.default_schema.tables.references.SPLATS
-import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES_VALUES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
@@ -479,6 +481,7 @@ import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
+import com.terraformation.backend.splat.CoordinateModel
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
@@ -506,9 +509,7 @@ import org.jooq.Table
 import org.jooq.TableRecord
 import org.jooq.UpdatableRecord
 import org.jooq.impl.DAOImpl
-import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -714,6 +715,8 @@ abstract class DatabaseBackedTest {
       lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val speciesSuccessionalGroupsDao: SpeciesSuccessionalGroupsDao by lazyDao()
+  protected val splatAnnotationsDao: SplatAnnotationsDao by lazyDao()
+  protected val splatsDao: SplatsDao by lazyDao()
   protected val standardMetricsDao: StandardMetricsDao by lazyDao()
   protected val stratumHistoriesDao: StratumHistoriesDao by lazyDao()
   protected val stratumPopulationsDao: StratumPopulationsDao by lazyDao()
@@ -3051,75 +3054,64 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertSplat(
-      fileId: FileId = inserted.fileId,
-      assetStatus: AssetStatus = AssetStatus.Ready,
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-  ): FileId {
-    with(SPLATS) {
-      dslContext
-          .insertInto(SPLATS)
-          .set(FILE_ID, fileId)
-          .set(ASSET_STATUS_ID, assetStatus)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, createdTime)
-          .execute()
-    }
+      row: SplatsRow = SplatsRow(),
+      fileId: FileId = row.fileId ?: inserted.fileId,
+      assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            fileId = fileId,
+            assetStatusId = assetStatus,
+            createdBy = createdBy,
+            createdTime = createdTime,
+        )
 
-    return fileId
+    splatsDao.insert(rowWithDefaults)
   }
 
   private val nextAnnotationNumber = mutableMapOf<FileId, Int>()
 
   fun insertSplatAnnotation(
-      fileId: FileId = inserted.fileId,
-      title: String = "Annotation ${nextAnnotationNumber.getOrDefault(fileId, 1)}",
-      text: String? = null,
-      label: String? = null,
-      position: Coordinate = Coordinate(1.0, 2.0, 3.0),
-      cameraPosition: Coordinate? = null,
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      modifiedBy: UserId = createdBy,
-      modifiedTime: Instant = createdTime,
+      row: SplatAnnotationsRow = SplatAnnotationsRow(),
+      fileId: FileId = row.fileId ?: inserted.fileId,
+      title: String = row.title ?: "Annotation ${nextAnnotationNumber.getOrDefault(fileId, 1)}",
+      text: String? = row.text,
+      label: String? = row.label,
+      position: CoordinateModel =
+          row.positionX?.let { CoordinateModel(it, row.positionY!!, row.positionZ!!) }
+              ?: CoordinateModel(1.0, 2.0, 3.0),
+      cameraPosition: CoordinateModel? =
+          row.cameraPositionX?.let {
+            CoordinateModel(it, row.cameraPositionY!!, row.cameraPositionZ!!)
+          },
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
   ) {
-    with(SPLAT_ANNOTATIONS) {
-      dslContext
-          .insertInto(SPLAT_ANNOTATIONS)
-          .set(FILE_ID, fileId)
-          .set(CREATED_BY, createdBy)
-          .set(CREATED_TIME, createdTime)
-          .set(MODIFIED_BY, modifiedBy)
-          .set(MODIFIED_TIME, modifiedTime)
-          .set(TITLE, title)
-          .set(TEXT, text)
-          .set(LABEL, label)
-          .set(
-              POSITION,
-              DSL.function(
-                  "st_pointz",
-                  GeometryBinding.dataType,
-                  DSL.`val`(position.x),
-                  DSL.`val`(position.y),
-                  DSL.`val`(position.z),
-              ),
-          )
-          .set(
-              CAMERA_POSITION,
-              cameraPosition?.let {
-                DSL.function(
-                    "st_pointz",
-                    GeometryBinding.dataType,
-                    DSL.`val`(it.x),
-                    DSL.`val`(it.y),
-                    DSL.`val`(it.z),
-                )
-              },
-          )
-          .execute()
+    val rowWithDefaults =
+        row.copy(
+            fileId = fileId,
+            title = title,
+            text = text,
+            label = label,
+            positionX = position.x,
+            positionY = position.y,
+            positionZ = position.z,
+            cameraPositionX = cameraPosition?.x,
+            cameraPositionY = cameraPosition?.y,
+            cameraPositionZ = cameraPosition?.z,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+        )
 
-      nextAnnotationNumber[fileId] = nextAnnotationNumber.getOrDefault(fileId, 1) + 1
-    }
+    splatAnnotationsDao.insert(rowWithDefaults)
+
+    nextAnnotationNumber[fileId] = nextAnnotationNumber.getOrDefault(fileId, 1) + 1
   }
 
   fun insertObservationPlot(

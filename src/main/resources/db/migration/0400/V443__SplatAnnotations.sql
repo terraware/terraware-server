@@ -8,6 +8,15 @@ CREATE TABLE splat_annotations (
     title TEXT NOT NULL,
     text TEXT,
     label TEXT,
-    position GEOMETRY(POINTZ, 0) NOT NULL,
-    camera_position GEOMETRY(POINTZ, 0)
+    position_x NUMERIC NOT NULL,
+    position_y NUMERIC NOT NULL,
+    position_z NUMERIC NOT NULL,
+    camera_position_x NUMERIC,
+    camera_position_y NUMERIC,
+    camera_position_z NUMERIC,
+    CONSTRAINT camera_position_all_or_none CHECK (
+        (camera_position_x IS NULL AND camera_position_y IS NULL AND camera_position_z IS NULL) OR
+        (camera_position_x IS NOT NULL AND camera_position_y IS NOT NULL AND
+         camera_position_z IS NOT NULL)
+        )
 );

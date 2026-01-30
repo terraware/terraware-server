@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
-import com.terraformation.backend.db.GeometryBinding
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
@@ -24,8 +23,6 @@ import java.time.InstantSource
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
-import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.MediaType
 
@@ -209,32 +206,24 @@ class SplatService(
     ensureObservationFile(observationId, fileId)
     ensureSplat(fileId)
 
-    val position3D =
-        DSL.function("ST_Force3DZ", GeometryBinding.dataType, SPLAT_ANNOTATIONS.POSITION)
-    val cameraPosition3D =
-        DSL.function("ST_Force3DZ", GeometryBinding.dataType, SPLAT_ANNOTATIONS.CAMERA_POSITION)
-
-    return dslContext
-        .select(
-            SPLAT_ANNOTATIONS.FILE_ID,
-            SPLAT_ANNOTATIONS.TITLE,
-            SPLAT_ANNOTATIONS.TEXT,
-            SPLAT_ANNOTATIONS.LABEL,
-            position3D,
-            cameraPosition3D,
-        )
-        .from(SPLAT_ANNOTATIONS)
-        .where(SPLAT_ANNOTATIONS.FILE_ID.eq(fileId))
-        .fetch { record ->
-          SplatAnnotationModel(
-              fileId = record[SPLAT_ANNOTATIONS.FILE_ID]!!,
-              title = record[SPLAT_ANNOTATIONS.TITLE]!!,
-              text = record[SPLAT_ANNOTATIONS.TEXT],
-              label = record[SPLAT_ANNOTATIONS.LABEL],
-              position = record[position3D]!! as Point,
-              cameraPosition = record[cameraPosition3D] as Point?,
+    with(SPLAT_ANNOTATIONS) {
+      return dslContext
+          .select(
+              FILE_ID,
+              TITLE,
+              TEXT,
+              LABEL,
+              POSITION_X,
+              POSITION_Y,
+              POSITION_Z,
+              CAMERA_POSITION_X,
+              CAMERA_POSITION_Y,
+              CAMERA_POSITION_Z,
           )
-        }
+          .from(SPLAT_ANNOTATIONS)
+          .where(FILE_ID.eq(fileId))
+          .fetch { record -> SplatAnnotationModel.of(record) }
+    }
   }
 
   private fun ensureSplat(fileId: FileId) {

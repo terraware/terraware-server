@@ -18,12 +18,10 @@ import io.mockk.every
 import io.mockk.mockk
 import java.net.URI
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.locationtech.jts.geom.Coordinate
 
 class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -71,8 +69,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `returns annotations for a given observation and file`() {
-      val position1 = Coordinate(1.0, 2.0, 3.0)
-      val cameraPosition1 = Coordinate(4.0, 5.0, 6.0)
+      val position1 = CoordinateModel(1.0, 2.0, 3.0)
+      val cameraPosition1 = CoordinateModel(4.0, 5.0, 6.0)
       insertSplatAnnotation(
           title = "Test Annotation 1",
           text = "Description 1",
@@ -81,23 +79,27 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           cameraPosition = cameraPosition1,
       )
 
-      val position2 = Coordinate(7.0, 8.0, 9.0)
+      val position2 = CoordinateModel(7.0, 8.0, 9.0)
       insertSplatAnnotation(title = "Test Annotation 2", position = position2)
 
-      val result = service.listSplatAnnotations(observationId, fileId)
-
-      assertEquals(2, result.size, "Number of annotations")
-      assertEquals("Test Annotation 1", result[0].title)
-      assertEquals("Description 1", result[0].text)
-      assertEquals("Label 1", result[0].label)
-      assertEquals(position1, result[0].position.coordinate)
-      assertEquals(cameraPosition1, result[0].cameraPosition?.coordinate)
-
-      assertEquals("Test Annotation 2", result[1].title)
-      assertNull(result[1].text)
-      assertNull(result[1].label)
-      assertEquals(position2, result[1].position.coordinate)
-      assertNull(result[1].cameraPosition)
+      assertEquals(
+          listOf(
+              SplatAnnotationModel(
+                  title = "Test Annotation 1",
+                  text = "Description 1",
+                  label = "Label 1",
+                  position = position1,
+                  cameraPosition = cameraPosition1,
+                  fileId = fileId,
+              ),
+              SplatAnnotationModel(
+                  title = "Test Annotation 2",
+                  position = position2,
+                  fileId = fileId,
+              ),
+          ),
+          service.listSplatAnnotations(observationId, fileId),
+      )
     }
 
     @Test
