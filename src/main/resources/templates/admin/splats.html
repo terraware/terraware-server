@@ -33,6 +33,16 @@
             <td colspan="2"/>
         </tr>
         <tr>
+            <td>Abort After</td>
+            <td><input type="text" size="8" name="abortAfter"/></td>
+            <td/>
+            <td>
+                Abort the processing run after this step. Step names are the same as the splat.py
+                command names for steps that use splat.py. Additional step names: prune-tail,
+                link-images, link-images-factor, gsplat, splat-transform.
+            </td>
+        </tr>
+        <tr>
             <td>Data Factor</td>
             <td><input type="text" size="8" name="dataFactor"/></td>
             <td>1</td>
@@ -75,6 +85,14 @@
             </td>
         </tr>
         <tr>
+            <td>Skip Tail Pruning</td>
+            <td><input type="checkbox" value="1" name="noPruneTail"/></td>
+            <td>false</td>
+            <td>
+                If checked, don't try to prune outlier frames.
+            </td>
+        </tr>
+        <tr>
             <td>SSIM Lambda</td>
             <td><input type="text" size="8" name="ssimLambda"/></td>
             <td>0.1</td>
@@ -98,7 +116,7 @@
 
         <tr>
             <td/>
-            <td><input type="submit" value="Process Video" /></td>
+            <td><input type="submit" value="Process Video"/></td>
             <td colspan="2"/>
         </tr>
     </table>

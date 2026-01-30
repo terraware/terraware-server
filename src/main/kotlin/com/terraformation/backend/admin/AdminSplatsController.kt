@@ -3,6 +3,8 @@ package com.terraformation.backend.admin
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
+import com.terraformation.backend.db.default_schema.tables.daos.SplatsDao
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.splat.SplatService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -20,7 +22,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin])
 @Validated
 class AdminSplatsController(
+    private val filesDao: FilesDao,
     private val splatService: SplatService,
+    private val splatsDao: SplatsDao,
 ) {
   @GetMapping("/splats")
   fun splatsHome(): String {
@@ -31,11 +35,13 @@ class AdminSplatsController(
   fun processSplat(
       @RequestParam observationId: ObservationId,
       @RequestParam fileId: FileId,
+      @RequestParam abortAfter: String?,
       @RequestParam dataFactor: Int?,
       @RequestParam fps: Int?,
       @RequestParam keepPercent: Double?,
       @RequestParam maxSize: Int?,
       @RequestParam maxSteps: Int?,
+      @RequestParam noPruneTail: String?,
       @RequestParam ssimLambda: Double?,
       @RequestParam otherArgs: String?,
       redirectAttributes: RedirectAttributes,
@@ -43,11 +49,13 @@ class AdminSplatsController(
     try {
       val args =
           listOfNotNull(
+                  abortAfter?.let { listOf("--abort-after", abortAfter) },
                   dataFactor?.let { listOf("--data-factor", "$dataFactor") },
                   fps?.let { listOf("--fps", "$fps") },
                   keepPercent?.let { listOf("--keep-percent", "${keepPercent / 100.0}") },
                   maxSize?.let { listOf("--max-size", "$maxSize") },
                   maxSteps?.let { listOf("--max-steps", "$maxSteps") },
+                  noPruneTail?.let { listOf("--no-prune-tail") },
                   ssimLambda?.let { listOf("--ssim-lambda", "$ssimLambda") },
                   otherArgs?.ifEmpty { null }?.split(" "),
               )
@@ -55,7 +63,20 @@ class AdminSplatsController(
               .ifEmpty { null }
 
       splatService.generateObservationSplat(observationId, fileId, true, args)
-      redirectAttributes.successMessage = "Sent request to splatter service."
+
+      val storageUrl = filesDao.fetchOneById(fileId)?.storageUrl
+      val modelUrl = splatsDao.fetchOneByFileId(fileId)?.splatStorageUrl
+      val jobDirUrl = "$modelUrl-job.tar.gz"
+
+      redirectAttributes.successMessage =
+          "Sent request to splatter service. Model and archive will not be available until " +
+              "processing is finished."
+      redirectAttributes.successDetails =
+          listOf(
+              "Video: $storageUrl",
+              "Model: $modelUrl",
+              "Archive: $jobDirUrl",
+          )
     } catch (e: Exception) {
       redirectAttributes.failureMessage = "Splat generation failed: ${e.message}"
     }
