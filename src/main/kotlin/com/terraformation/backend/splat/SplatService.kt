@@ -4,10 +4,12 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.GeometryBinding
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
@@ -22,6 +24,8 @@ import java.time.InstantSource
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
+import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.MediaType
 
@@ -195,6 +199,49 @@ class SplatService(
       AssetStatus.Preparing -> throw SplatNotReadyException(fileId)
       AssetStatus.Ready ->
           fileStore.read(splatsRecord.splatStorageUrl!!).withContentType(splatMimeType)
+    }
+  }
+
+  fun listSplatAnnotations(
+      observationId: ObservationId,
+      fileId: FileId,
+  ): List<SplatAnnotationModel> {
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    val position3D =
+        DSL.function("ST_Force3DZ", GeometryBinding.dataType, SPLAT_ANNOTATIONS.POSITION)
+    val cameraPosition3D =
+        DSL.function("ST_Force3DZ", GeometryBinding.dataType, SPLAT_ANNOTATIONS.CAMERA_POSITION)
+
+    return dslContext
+        .select(
+            SPLAT_ANNOTATIONS.FILE_ID,
+            SPLAT_ANNOTATIONS.TITLE,
+            SPLAT_ANNOTATIONS.TEXT,
+            SPLAT_ANNOTATIONS.LABEL,
+            position3D,
+            cameraPosition3D,
+        )
+        .from(SPLAT_ANNOTATIONS)
+        .where(SPLAT_ANNOTATIONS.FILE_ID.eq(fileId))
+        .fetch { record ->
+          SplatAnnotationModel(
+              fileId = record[SPLAT_ANNOTATIONS.FILE_ID]!!,
+              title = record[SPLAT_ANNOTATIONS.TITLE]!!,
+              text = record[SPLAT_ANNOTATIONS.TEXT],
+              label = record[SPLAT_ANNOTATIONS.LABEL],
+              position = record[position3D]!! as Point,
+              cameraPosition = record[cameraPosition3D] as Point?,
+          )
+        }
+  }
+
+  private fun ensureSplat(fileId: FileId) {
+    val splatExists = dslContext.fetchExists(SPLATS, SPLATS.FILE_ID.eq(fileId))
+
+    if (!splatExists) {
+      throw FileNotFoundException(fileId)
     }
   }
 

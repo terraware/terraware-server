@@ -124,6 +124,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocument
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.UserInternalInterestsRow
+import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.ConservationCategory
@@ -228,6 +229,8 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_EC
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
+import com.terraformation.backend.db.default_schema.tables.references.SPLATS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES_VALUES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
@@ -503,7 +506,9 @@ import org.jooq.Table
 import org.jooq.TableRecord
 import org.jooq.UpdatableRecord
 import org.jooq.impl.DAOImpl
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -3043,6 +3048,78 @@ abstract class DatabaseBackedTest {
         )
 
     observationMediaFilesDao.insert(rowWithDefaults)
+  }
+
+  fun insertSplat(
+      fileId: FileId = inserted.fileId,
+      assetStatus: AssetStatus = AssetStatus.Ready,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+  ): FileId {
+    with(SPLATS) {
+      dslContext
+          .insertInto(SPLATS)
+          .set(FILE_ID, fileId)
+          .set(ASSET_STATUS_ID, assetStatus)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, createdTime)
+          .execute()
+    }
+
+    return fileId
+  }
+
+  private val nextAnnotationNumber = mutableMapOf<FileId, Int>()
+
+  fun insertSplatAnnotation(
+      fileId: FileId = inserted.fileId,
+      title: String = "Annotation ${nextAnnotationNumber.getOrDefault(fileId, 1)}",
+      text: String? = null,
+      label: String? = null,
+      position: Coordinate = Coordinate(1.0, 2.0, 3.0),
+      cameraPosition: Coordinate? = null,
+      createdBy: UserId = currentUser().userId,
+      createdTime: Instant = Instant.EPOCH,
+      modifiedBy: UserId = createdBy,
+      modifiedTime: Instant = createdTime,
+  ) {
+    with(SPLAT_ANNOTATIONS) {
+      dslContext
+          .insertInto(SPLAT_ANNOTATIONS)
+          .set(FILE_ID, fileId)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, createdTime)
+          .set(MODIFIED_BY, modifiedBy)
+          .set(MODIFIED_TIME, modifiedTime)
+          .set(TITLE, title)
+          .set(TEXT, text)
+          .set(LABEL, label)
+          .set(
+              POSITION,
+              DSL.function(
+                  "st_pointz",
+                  GeometryBinding.dataType,
+                  DSL.`val`(position.x),
+                  DSL.`val`(position.y),
+                  DSL.`val`(position.z),
+              ),
+          )
+          .set(
+              CAMERA_POSITION,
+              cameraPosition?.let {
+                DSL.function(
+                    "st_pointz",
+                    GeometryBinding.dataType,
+                    DSL.`val`(it.x),
+                    DSL.`val`(it.y),
+                    DSL.`val`(it.z),
+                )
+              },
+          )
+          .execute()
+
+      nextAnnotationNumber[fileId] = nextAnnotationNumber.getOrDefault(fileId, 1) + 1
+    }
   }
 
   fun insertObservationPlot(

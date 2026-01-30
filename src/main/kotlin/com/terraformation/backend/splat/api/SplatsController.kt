@@ -16,11 +16,13 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.splat.ObservationSplatModel
+import com.terraformation.backend.splat.SplatAnnotationModel
 import com.terraformation.backend.splat.SplatGenerationFailedException
 import com.terraformation.backend.splat.SplatNotReadyException
 import com.terraformation.backend.splat.SplatService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -103,6 +105,21 @@ class SplatsController(
 
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a video with the requested ID."
+  )
+  @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
+  @Operation(summary = "Gets the list of annotations for a splat model.")
+  fun listSplatAnnotations(
+      @PathVariable observationId: ObservationId,
+      @PathVariable fileId: FileId,
+  ): ListSplatAnnotationsResponsePayload {
+    val models = splatService.listSplatAnnotations(observationId, fileId)
+
+    return ListSplatAnnotationsResponsePayload(models.map { SplatAnnotationPayload.of(it) })
+  }
 }
 
 data class ObservationSplatPayload(
@@ -126,4 +143,29 @@ data class GenerateSplatRequestPayload(
 
 data class ListObservationSplatsResponsePayload(
     val splats: List<ObservationSplatPayload>,
+) : SuccessResponsePayload
+
+data class SplatAnnotationPayload(
+    val fileId: FileId,
+    val title: String,
+    val text: String?,
+    val label: String?,
+    val position: Point,
+    val cameraPosition: Point?,
+) {
+  companion object {
+    fun of(model: SplatAnnotationModel) =
+        SplatAnnotationPayload(
+            fileId = model.fileId,
+            title = model.title,
+            text = model.text,
+            label = model.label,
+            position = model.position,
+            cameraPosition = model.cameraPosition,
+        )
+  }
+}
+
+data class ListSplatAnnotationsResponsePayload(
+    val annotations: List<SplatAnnotationPayload>,
 ) : SuccessResponsePayload
