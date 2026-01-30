@@ -1,3 +1,4 @@
+b46f9087d4b Update database dependencies (#3834)
 fce08eb01cb Update geoToolsVersion to v34.2 (#3855)
 dda858f646c Update plugin com.diffplug.spotless to v8.2.0 (#3856)
 08663451d0f Update dependency com.google.auth:google-auth-library-oauth2-http to v1.42.1 (#3851)
