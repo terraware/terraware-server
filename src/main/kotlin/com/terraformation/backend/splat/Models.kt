@@ -2,6 +2,7 @@ package com.terraformation.backend.splat
 
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.SplatAnnotationId
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -35,7 +36,8 @@ data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecim
   ) : this(BigDecimal.valueOf(x), BigDecimal.valueOf(y), BigDecimal.valueOf(z))
 }
 
-data class SplatAnnotationModel(
+data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
+    val id: AnnotationId,
     val cameraPosition: CoordinateModel? = null,
     val fileId: FileId,
     val label: String? = null,
@@ -44,9 +46,10 @@ data class SplatAnnotationModel(
     val title: String,
 ) {
   companion object {
-    fun of(record: Record) =
+    fun of(record: Record): ExistingSplatAnnotationModel =
         with(SPLAT_ANNOTATIONS) {
-          SplatAnnotationModel(
+          ExistingSplatAnnotationModel(
+              id = record[ID]!!,
               fileId = record[FILE_ID]!!,
               title = record[TITLE]!!,
               bodyText = record[BODY_TEXT],
@@ -69,3 +72,7 @@ data class SplatAnnotationModel(
         }
   }
 }
+
+typealias ExistingSplatAnnotationModel = SplatAnnotationModel<SplatAnnotationId>
+
+typealias NewSplatAnnotationModel = SplatAnnotationModel<Nothing?>

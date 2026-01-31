@@ -13,9 +13,11 @@ import com.terraformation.backend.api.addImmutableCacheControlHeaders
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.SplatAnnotationId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.splat.CoordinateModel
+import com.terraformation.backend.splat.ExistingSplatAnnotationModel
 import com.terraformation.backend.splat.ObservationSplatModel
 import com.terraformation.backend.splat.SplatAnnotationModel
 import com.terraformation.backend.splat.SplatGenerationFailedException
@@ -109,7 +111,7 @@ class SplatsController(
 
   @ApiResponse200
   @ApiResponse404(
-      "The plot observation does not exist, or does not have a splat for the requested file id."
+      "The plot observation does not exist, or does not have a splat for the requested file ID."
   )
   @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
   @Operation(summary = "Gets the list of annotations for a splat model.")
@@ -122,6 +124,27 @@ class SplatsController(
     return ListObservationSplatAnnotationsResponsePayload(
         models.map { SplatAnnotationPayload.of(it) }
     )
+  }
+
+  @ApiResponse200
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a splat for the requested file ID."
+  )
+  @PostMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
+  @Operation(
+      summary = "Sets the list of annotations for a splat model.",
+      description =
+          "Updates existing annotations that have IDs, deletes annotations not in the list, and creates new annotations without IDs.",
+  )
+  fun setSplatAnnotations(
+      @PathVariable observationId: ObservationId,
+      @PathVariable fileId: FileId,
+      @RequestBody payload: SetSplatAnnotationsRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    val annotations = payload.annotations.map { it.toModel(fileId) }
+    splatService.setSplatAnnotations(observationId, fileId, annotations)
+
+    return SimpleSuccessResponsePayload()
   }
 }
 
@@ -155,6 +178,7 @@ data class CoordinatePayload(val x: BigDecimal, val y: BigDecimal, val z: BigDec
 }
 
 data class SplatAnnotationPayload(
+    val id: SplatAnnotationId,
     val cameraPosition: CoordinatePayload?,
     val fileId: FileId,
     val label: String?,
@@ -163,8 +187,9 @@ data class SplatAnnotationPayload(
     val title: String,
 ) {
   companion object {
-    fun of(model: SplatAnnotationModel) =
+    fun of(model: ExistingSplatAnnotationModel) =
         SplatAnnotationPayload(
+            id = model.id,
             cameraPosition = model.cameraPosition?.let { CoordinatePayload.of(it) },
             fileId = model.fileId,
             label = model.label,
@@ -178,3 +203,27 @@ data class SplatAnnotationPayload(
 data class ListObservationSplatAnnotationsResponsePayload(
     val annotations: List<SplatAnnotationPayload>,
 ) : SuccessResponsePayload
+
+data class SetSplatAnnotationRequestPayload(
+    val id: SplatAnnotationId?,
+    val cameraPosition: CoordinatePayload?,
+    val label: String?,
+    val position: CoordinatePayload,
+    val text: String?,
+    val title: String,
+) {
+  fun toModel(fileId: FileId): SplatAnnotationModel<SplatAnnotationId?> =
+      SplatAnnotationModel(
+          id = id,
+          cameraPosition = cameraPosition?.let { CoordinateModel(it.x, it.y, it.z) },
+          fileId = fileId,
+          label = label,
+          position = CoordinateModel(position.x, position.y, position.z),
+          text = text,
+          title = title,
+      )
+}
+
+data class SetSplatAnnotationsRequestPayload(
+    val annotations: List<SetSplatAnnotationRequestPayload>,
+)
