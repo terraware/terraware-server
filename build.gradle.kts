@@ -102,7 +102,7 @@ dependencies {
   implementation("org.springframework.ai:spring-ai-rag")
   implementation("org.springframework.ai:spring-ai-tika-document-reader")
 
-  implementation("ch.qos.logback.access:logback-access-tomcat:2.0.7")
+  implementation("ch.qos.logback.access:logback-access-tomcat:2.0.9")
   implementation("com.drewnoakes:metadata-extractor:2.19.0")
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
