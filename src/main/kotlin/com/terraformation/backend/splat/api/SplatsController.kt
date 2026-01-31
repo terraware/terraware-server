@@ -109,7 +109,7 @@ class SplatsController(
 
   @ApiResponse200
   @ApiResponse404(
-      "The plot observation does not exist, or does not have a video with the requested ID."
+      "The plot observation does not exist, or does not have a splat for the requested file id."
   )
   @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
   @Operation(summary = "Gets the list of annotations for a splat model.")
