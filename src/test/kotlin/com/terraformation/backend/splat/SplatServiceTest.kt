@@ -9,6 +9,8 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.file.S3FileStore
@@ -194,36 +196,37 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.setSplatAnnotations(observationId, fileId, annotations)
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              NewSplatAnnotationModel(
-                  id = null,
+              SplatAnnotationsRecord(
+                  fileId = fileId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
                   title = "New Annotation 1",
                   bodyText = "Description 1",
                   label = "Label 1",
-                  position = position1,
-                  cameraPosition = cameraPosition1,
-                  fileId = fileId,
+                  positionX = position1.x,
+                  positionY = position1.y,
+                  positionZ = position1.z,
+                  cameraPositionX = cameraPosition1.x,
+                  cameraPositionY = cameraPosition1.y,
+                  cameraPositionZ = cameraPosition1.z,
               ),
-              NewSplatAnnotationModel(
-                  id = null,
-                  title = "New Annotation 2",
-                  position = position2,
+              SplatAnnotationsRecord(
                   fileId = fileId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
+                  title = "New Annotation 2",
+                  positionX = position2.x,
+                  positionY = position2.y,
+                  positionZ = position2.z,
               ),
           ),
-          service.listObservationSplatAnnotations(observationId, fileId).map {
-            // do this to ignore the ids in the test
-            NewSplatAnnotationModel(
-                id = null,
-                title = it.title,
-                bodyText = it.bodyText,
-                label = it.label,
-                position = it.position,
-                cameraPosition = it.cameraPosition,
-                fileId = it.fileId,
-            )
-          },
+          where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId),
       )
     }
 
@@ -254,19 +257,25 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.setSplatAnnotations(observationId, fileId, annotations)
 
-      assertEquals(
-          listOf(
-              ExistingSplatAnnotationModel(
-                  id = id1,
-                  title = "Updated Title",
-                  bodyText = "Updated Text",
-                  label = "Updated Label",
-                  position = updatedPosition,
-                  cameraPosition = updatedCameraPosition,
-                  fileId = fileId,
-              )
+      assertTableEquals(
+          SplatAnnotationsRecord(
+              id = id1,
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant(),
+              title = "Updated Title",
+              bodyText = "Updated Text",
+              label = "Updated Label",
+              positionX = updatedPosition.x,
+              positionY = updatedPosition.y,
+              positionZ = updatedPosition.z,
+              cameraPositionX = updatedCameraPosition.x,
+              cameraPositionY = updatedCameraPosition.y,
+              cameraPositionZ = updatedCameraPosition.z,
           ),
-          service.listObservationSplatAnnotations(observationId, fileId),
+          where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId),
       )
     }
 
@@ -298,22 +307,34 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.setSplatAnnotations(observationId, fileId, annotations)
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              ExistingSplatAnnotationModel(
+              SplatAnnotationsRecord(
                   id = id1,
+                  fileId = fileId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
                   title = "Annotation 1",
-                  position = position1,
-                  fileId = fileId,
+                  positionX = position1.x,
+                  positionY = position1.y,
+                  positionZ = position1.z,
               ),
-              ExistingSplatAnnotationModel(
+              SplatAnnotationsRecord(
                   id = id2,
-                  title = "Annotation 2",
-                  position = position2,
                   fileId = fileId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
+                  title = "Annotation 2",
+                  positionX = position2.x,
+                  positionY = position2.y,
+                  positionZ = position2.z,
               ),
           ),
-          service.listObservationSplatAnnotations(observationId, fileId),
+          where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId),
       )
     }
 
@@ -344,33 +365,32 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.setSplatAnnotations(observationId, fileId, annotations)
 
-      assertEquals(
+      assertTableEquals(
           listOf(
-              NewSplatAnnotationModel(
-                  id = null,
+              SplatAnnotationsRecord(
+                  fileId = fileId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
                   title = "Updated Title",
-                  position = position1,
-                  fileId = fileId,
+                  positionX = position1.x,
+                  positionY = position1.y,
+                  positionZ = position1.z,
               ),
-              NewSplatAnnotationModel(
-                  id = null,
-                  title = "New Annotation",
-                  position = position3,
+              SplatAnnotationsRecord(
                   fileId = fileId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
+                  title = "New Annotation",
+                  positionX = position3.x,
+                  positionY = position3.y,
+                  positionZ = position3.z,
               ),
           ),
-          service.listObservationSplatAnnotations(observationId, fileId).map {
-            // do this to ignore the ids in the test
-            NewSplatAnnotationModel(
-                id = null,
-                title = it.title,
-                bodyText = it.bodyText,
-                label = it.label,
-                position = it.position,
-                cameraPosition = it.cameraPosition,
-                fileId = it.fileId,
-            )
-          },
+          where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId),
       )
     }
 
@@ -384,10 +404,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.setSplatAnnotations(observationId, fileId, emptyList())
 
-      assertEquals(
-          emptyList<ExistingSplatAnnotationModel>(),
-          service.listObservationSplatAnnotations(observationId, fileId),
-      )
+      assertTableEmpty(SPLAT_ANNOTATIONS, where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId))
     }
 
     @Test
