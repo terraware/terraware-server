@@ -158,7 +158,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class SetSplatAnnotations {
+  inner class SetObservationSplatAnnotations {
     private lateinit var fileId: FileId
 
     @BeforeEach
@@ -194,7 +194,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      service.setSplatAnnotations(observationId, fileId, annotations)
+      service.setObservationSplatAnnotations(observationId, fileId, annotations)
 
       assertTableEquals(
           listOf(
@@ -255,7 +255,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      service.setSplatAnnotations(observationId, fileId, annotations)
+      service.setObservationSplatAnnotations(observationId, fileId, annotations)
 
       assertTableEquals(
           SplatAnnotationsRecord(
@@ -305,7 +305,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      service.setSplatAnnotations(observationId, fileId, annotations)
+      service.setObservationSplatAnnotations(observationId, fileId, annotations)
 
       assertTableEquals(
           listOf(
@@ -363,7 +363,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      service.setSplatAnnotations(observationId, fileId, annotations)
+      service.setObservationSplatAnnotations(observationId, fileId, annotations)
 
       assertTableEquals(
           listOf(
@@ -402,7 +402,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertSplatAnnotation(title = "Annotation 1", position = position1)
       insertSplatAnnotation(title = "Annotation 2", position = position2)
 
-      service.setSplatAnnotations(observationId, fileId, emptyList())
+      service.setObservationSplatAnnotations(observationId, fileId, emptyList())
 
       assertTableEmpty(SPLAT_ANNOTATIONS, where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId))
     }
@@ -435,7 +435,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      service.setSplatAnnotations(observationId, fileId, annotations)
+      service.setObservationSplatAnnotations(observationId, fileId, annotations)
 
       assertTableEquals(
           listOf(
@@ -472,7 +472,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val otherFileId = insertFile()
 
       assertThrows<FileNotFoundException> {
-        service.setSplatAnnotations(observationId, otherFileId, emptyList())
+        service.setObservationSplatAnnotations(observationId, otherFileId, emptyList())
       }
     }
 
@@ -482,7 +482,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationMediaFile(fileId = fileWithoutSplat)
 
       assertThrows<FileNotFoundException> {
-        service.setSplatAnnotations(observationId, fileWithoutSplat, emptyList())
+        service.setObservationSplatAnnotations(observationId, fileWithoutSplat, emptyList())
       }
     }
   }

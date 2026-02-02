@@ -129,6 +129,17 @@ class SplatService(
     return listSplatAnnotations(fileId)
   }
 
+  fun setObservationSplatAnnotations(
+      observationId: ObservationId,
+      fileId: FileId,
+      annotations: List<SplatAnnotationModel<*>>,
+  ) {
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    setSplatAnnotations(fileId, annotations)
+  }
+
   private fun generateSplat(
       fileId: FileId,
       force: Boolean = false,
@@ -233,16 +244,7 @@ class SplatService(
     }
   }
 
-  fun setSplatAnnotations(
-      observationId: ObservationId,
-      fileId: FileId,
-      annotations: List<SplatAnnotationModel<*>>,
-  ) {
-    ensureObservationFile(observationId, fileId)
-    ensureSplat(fileId)
-
-    requirePermissions { updateObservation(observationId) }
-
+  private fun setSplatAnnotations(fileId: FileId, annotations: List<SplatAnnotationModel<*>>) {
     dslContext.transaction { _ ->
       val now = clock.instant()
       val userId = currentUser().userId

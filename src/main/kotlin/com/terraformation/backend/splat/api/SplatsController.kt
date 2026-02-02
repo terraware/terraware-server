@@ -136,13 +136,13 @@ class SplatsController(
       description =
           "Updates existing annotations that have IDs, deletes annotations not in the list, and creates new annotations without IDs.",
   )
-  fun setSplatAnnotations(
+  fun setObservationSplatAnnotations(
       @PathVariable observationId: ObservationId,
       @PathVariable fileId: FileId,
       @RequestBody payload: SetSplatAnnotationsRequestPayload,
   ): SimpleSuccessResponsePayload {
     val annotations = payload.annotations.map { it.toModel(fileId) }
-    splatService.setSplatAnnotations(observationId, fileId, annotations)
+    splatService.setObservationSplatAnnotations(observationId, fileId, annotations)
 
     return SimpleSuccessResponsePayload()
   }
