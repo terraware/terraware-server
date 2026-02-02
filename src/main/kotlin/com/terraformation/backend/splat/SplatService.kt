@@ -119,6 +119,16 @@ class SplatService(
     }
   }
 
+  fun listObservationSplatAnnotations(
+      observationId: ObservationId,
+      fileId: FileId,
+  ): List<SplatAnnotationModel> {
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    return listSplatAnnotations(fileId)
+  }
+
   private fun generateSplat(
       fileId: FileId,
       force: Boolean = false,
@@ -199,19 +209,15 @@ class SplatService(
     }
   }
 
-  fun listSplatAnnotations(
-      observationId: ObservationId,
+  private fun listSplatAnnotations(
       fileId: FileId,
   ): List<SplatAnnotationModel> {
-    ensureObservationFile(observationId, fileId)
-    ensureSplat(fileId)
-
     with(SPLAT_ANNOTATIONS) {
       return dslContext
           .select(
               FILE_ID,
               TITLE,
-              TEXT,
+              BODY_TEXT,
               LABEL,
               POSITION_X,
               POSITION_Y,

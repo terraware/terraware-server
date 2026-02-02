@@ -40,7 +40,7 @@ data class SplatAnnotationModel(
     val fileId: FileId,
     val label: String? = null,
     val position: CoordinateModel,
-    val text: String? = null,
+    val bodyText: String? = null,
     val title: String,
 ) {
   companion object {
@@ -49,7 +49,7 @@ data class SplatAnnotationModel(
           SplatAnnotationModel(
               fileId = record[FILE_ID]!!,
               title = record[TITLE]!!,
-              text = record[TEXT],
+              bodyText = record[BODY_TEXT],
               label = record[LABEL],
               position =
                   CoordinateModel(

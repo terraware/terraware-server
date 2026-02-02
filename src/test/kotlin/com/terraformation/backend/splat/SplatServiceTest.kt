@@ -56,7 +56,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class ListSplatAnnotations {
+  inner class ListObservationSplatAnnotations {
     private lateinit var fileId: FileId
 
     @BeforeEach
@@ -73,7 +73,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val cameraPosition1 = CoordinateModel(4.0, 5.0, 6.0)
       insertSplatAnnotation(
           title = "Test Annotation 1",
-          text = "Description 1",
+          bodyText = "Description 1",
           label = "Label 1",
           position = position1,
           cameraPosition = cameraPosition1,
@@ -86,7 +86,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               SplatAnnotationModel(
                   title = "Test Annotation 1",
-                  text = "Description 1",
+                  bodyText = "Description 1",
                   label = "Label 1",
                   position = position1,
                   cameraPosition = cameraPosition1,
@@ -98,13 +98,13 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   fileId = fileId,
               ),
           ),
-          service.listSplatAnnotations(observationId, fileId),
+          service.listObservationSplatAnnotations(observationId, fileId),
       )
     }
 
     @Test
     fun `returns empty list when no annotations exist`() {
-      val result = service.listSplatAnnotations(observationId, fileId)
+      val result = service.listObservationSplatAnnotations(observationId, fileId)
 
       assertEquals(0, result.size, "Number of annotations")
     }
@@ -114,7 +114,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val otherFileId = insertFile()
 
       assertThrows<FileNotFoundException> {
-        service.listSplatAnnotations(observationId, otherFileId)
+        service.listObservationSplatAnnotations(observationId, otherFileId)
       }
     }
 
@@ -136,7 +136,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertThrows<ObservationNotFoundException> {
-        service.listSplatAnnotations(otherObservationId, otherFileId)
+        service.listObservationSplatAnnotations(otherObservationId, otherFileId)
       }
     }
 
@@ -146,7 +146,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservationMediaFile(fileId = fileWithoutSplat)
 
       assertThrows<FileNotFoundException> {
-        service.listSplatAnnotations(observationId, fileWithoutSplat)
+        service.listObservationSplatAnnotations(observationId, fileWithoutSplat)
       }
     }
   }

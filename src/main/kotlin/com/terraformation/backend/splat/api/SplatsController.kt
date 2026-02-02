@@ -113,13 +113,15 @@ class SplatsController(
   )
   @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
   @Operation(summary = "Gets the list of annotations for a splat model.")
-  fun listSplatAnnotations(
+  fun listObservationSplatAnnotations(
       @PathVariable observationId: ObservationId,
       @PathVariable fileId: FileId,
-  ): ListSplatAnnotationsResponsePayload {
-    val models = splatService.listSplatAnnotations(observationId, fileId)
+  ): ListObservationSplatAnnotationsResponsePayload {
+    val models = splatService.listObservationSplatAnnotations(observationId, fileId)
 
-    return ListSplatAnnotationsResponsePayload(models.map { SplatAnnotationPayload.of(it) })
+    return ListObservationSplatAnnotationsResponsePayload(
+        models.map { SplatAnnotationPayload.of(it) }
+    )
   }
 }
 
@@ -157,7 +159,7 @@ data class SplatAnnotationPayload(
     val fileId: FileId,
     val label: String?,
     val position: CoordinatePayload,
-    val text: String?,
+    val bodyText: String?,
     val title: String,
 ) {
   companion object {
@@ -167,12 +169,12 @@ data class SplatAnnotationPayload(
             fileId = model.fileId,
             label = model.label,
             position = CoordinatePayload.of(model.position),
-            text = model.text,
+            bodyText = model.bodyText,
             title = model.title,
         )
   }
 }
 
-data class ListSplatAnnotationsResponsePayload(
+data class ListObservationSplatAnnotationsResponsePayload(
     val annotations: List<SplatAnnotationPayload>,
 ) : SuccessResponsePayload

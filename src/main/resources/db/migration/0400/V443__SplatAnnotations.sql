@@ -6,7 +6,7 @@ CREATE TABLE splat_annotations (
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
     title TEXT NOT NULL,
-    text TEXT,
+    body_text TEXT,
     label TEXT,
     position_x NUMERIC NOT NULL,
     position_y NUMERIC NOT NULL,

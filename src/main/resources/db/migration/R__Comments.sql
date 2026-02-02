@@ -141,7 +141,9 @@ COMMENT ON COLUMN mux_assets.ready_time IS 'If the asset is ready to play, what 
 COMMENT ON COLLATION natural_numeric IS 'Collation that sorts strings that contain numbers in numeric order, e.g., `a2` comes before `a10`.';
 
 COMMENT ON TABLE notification_criticalities IS '(Enum) Criticality information of notifications in the application.';
+
 COMMENT ON TABLE notification_types IS '(Enum) Types of notifications in the application.';
+
 COMMENT ON TABLE notifications IS 'Notifications for application users.';
 
 COMMENT ON TABLE organization_internal_tags IS 'Which internal (non-user-facing) tags apply to which organizations.';
@@ -218,7 +220,11 @@ COMMENT ON TABLE species_problem_types IS '(Enum) Specific types of problems tha
 COMMENT ON TABLE species_problems IS 'Problems found in species data. Rows are deleted from this table when the problem is marked as ignored by the user or the user accepts the suggested fix.';
 
 COMMENT ON TABLE splats IS 'Information about 3D Gaussian splatting models generated from video files.';
+
 COMMENT ON TABLE splat_annotations IS 'Annotations that should be displayed inside splat models.';
+COMMENT ON COLUMN splat_annotations.label IS 'The text that displays over the annotations while it''s floating in space.';
+COMMENT ON COLUMN splat_annotations.title IS 'The text that displays at the top of the annotation box after it is clicked.';
+COMMENT ON COLUMN splat_annotations.body_text IS 'The text that displays in the annotation box after it is clicked.';
 
 COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Session, not the application.';
 
@@ -558,6 +564,7 @@ COMMENT ON COLUMN tracking.plantings.substratum_id IS 'Which plot this planting 
 COMMENT ON COLUMN tracking.plantings.species_id IS 'Which species was planted.';
 
 COMMENT ON TABLE tracking.plot_t0_densities IS 'Density for a plot per species, in plants per hectare.';
+
 COMMENT ON TABLE tracking.plot_t0_observations IS 'Which observation to use to determine t0 plot density.';
 
 COMMENT ON TABLE tracking.recorded_plant_statuses IS '(Enum) Possible statuses of a plant recorded during observation of a monitoring plot.';
@@ -796,7 +803,9 @@ COMMENT ON COLUMN docprod.variable_workflow_history.max_variable_value_id IS 'Th
 COMMENT ON TABLE docprod.variable_workflow_statuses IS '(Enum) Workflow statuses of variables in projects. The list of valid statuses depends on the variable type.';
 
 COMMENT ON TABLE funder.funding_entities IS 'Top-level information about Funding Entities for Funders.';
+
 COMMENT ON TABLE funder.funding_entity_projects IS 'Which funding entities are associated with which projects.';
+
 COMMENT ON TABLE funder.funding_entity_users IS 'Funding Entity membership.';
 
 COMMENT ON TABLE funder.published_activities IS 'Published project activities visible to funders.';
@@ -804,8 +813,11 @@ COMMENT ON TABLE funder.published_activities IS 'Published project activities vi
 COMMENT ON TABLE funder.published_activity_media_files IS 'Media files for published project activities visible to funders. It is possible for a file to continue to appear here after it has been removed from the activity if the removal has not been published yet.';
 
 COMMENT ON TABLE funder.published_project_carbon_certs IS 'Carbon Certifications for published projects.';
+
 COMMENT ON TABLE funder.published_project_details IS 'Published Project Data visible to funders.';
+
 COMMENT ON TABLE funder.published_project_land_use IS 'Land Use Model Types and hectares of each for published projects.';
+
 COMMENT ON TABLE funder.published_project_sdg IS 'Sustainable Development Goals for published projects.';
 
 COMMENT ON TABLE funder.published_report_achievements IS 'Achievements of published reports.';

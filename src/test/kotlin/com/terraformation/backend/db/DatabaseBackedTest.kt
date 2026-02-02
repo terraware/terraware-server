@@ -3077,7 +3077,7 @@ abstract class DatabaseBackedTest {
       row: SplatAnnotationsRow = SplatAnnotationsRow(),
       fileId: FileId = row.fileId ?: inserted.fileId,
       title: String = row.title ?: "Annotation ${nextAnnotationNumber.getOrDefault(fileId, 1)}",
-      text: String? = row.text,
+      bodyText: String? = row.bodyText,
       label: String? = row.label,
       position: CoordinateModel =
           row.positionX?.let { CoordinateModel(it, row.positionY!!, row.positionZ!!) }
@@ -3095,7 +3095,7 @@ abstract class DatabaseBackedTest {
         row.copy(
             fileId = fileId,
             title = title,
-            text = text,
+            bodyText = bodyText,
             label = label,
             positionX = position.x,
             positionY = position.y,
