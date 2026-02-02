@@ -117,6 +117,18 @@ class ProjectReportsController(
   }
 
   @ApiResponse200
+  @GetMapping("/years")
+  @Operation(summary = "Get project reporting years")
+  fun getAcceleratorReportYears(
+      @PathVariable projectId: ProjectId,
+  ): GetAcceleratorReportYearsResponsePayload {
+    val model = reportStore.fetchProjectReportYears(projectId)
+    val payload = model?.let { ReportYearsPayload(it.first, it.second) }
+
+    return GetAcceleratorReportYearsResponsePayload(payload)
+  }
+
+  @ApiResponse200
   @ApiResponse400
   @ApiResponse404
   @PostMapping("/{reportId}")
@@ -730,6 +742,8 @@ data class ReportProjectMetricEntriesPayload(
       )
 }
 
+data class ReportYearsPayload(val startYear: Int, val endYear: Int)
+
 data class CreateAcceleratorReportConfigRequestPayload(
     val config: NewAcceleratorReportConfigPayload
 )
@@ -767,6 +781,9 @@ data class ListAcceleratorReportsResponsePayload(val reports: List<AcceleratorRe
     SuccessResponsePayload
 
 data class GetAcceleratorReportResponsePayload(val report: AcceleratorReportPayload) :
+    SuccessResponsePayload
+
+data class GetAcceleratorReportYearsResponsePayload(val years: ReportYearsPayload?) :
     SuccessResponsePayload
 
 data class ListAcceleratorReportConfigResponsePayload(
