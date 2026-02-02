@@ -1,4 +1,4 @@
-pyjwt==2.10.1
+pyjwt==2.11.0
 requests==2.32.5
 types-requests==2.32.4.20260107
 
