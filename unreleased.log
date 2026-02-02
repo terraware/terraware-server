@@ -1,3 +1,5 @@
+3cd74a7eae7 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.42 (#3862)
+31db5fd6059 Upgrade black to v26 (#3865)
 f1a34d45684 Update dependency html-minifier-next to v4.19.1 (#3860)
 b9ae1586623 Update dependency ch.qos.logback.access:logback-access-tomcat to v2.0.9 (#3859)
 8fca2109016 Update dependency io.mockk:mockk to v1.14.9 (#3861)
