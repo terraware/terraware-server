@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
@@ -118,6 +119,16 @@ class SplatService(
     }
   }
 
+  fun listObservationSplatAnnotations(
+      observationId: ObservationId,
+      fileId: FileId,
+  ): List<SplatAnnotationModel> {
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    return listSplatAnnotations(fileId)
+  }
+
   private fun generateSplat(
       fileId: FileId,
       force: Boolean = false,
@@ -195,6 +206,37 @@ class SplatService(
       AssetStatus.Preparing -> throw SplatNotReadyException(fileId)
       AssetStatus.Ready ->
           fileStore.read(splatsRecord.splatStorageUrl!!).withContentType(splatMimeType)
+    }
+  }
+
+  private fun listSplatAnnotations(
+      fileId: FileId,
+  ): List<SplatAnnotationModel> {
+    with(SPLAT_ANNOTATIONS) {
+      return dslContext
+          .select(
+              FILE_ID,
+              TITLE,
+              BODY_TEXT,
+              LABEL,
+              POSITION_X,
+              POSITION_Y,
+              POSITION_Z,
+              CAMERA_POSITION_X,
+              CAMERA_POSITION_Y,
+              CAMERA_POSITION_Z,
+          )
+          .from(SPLAT_ANNOTATIONS)
+          .where(FILE_ID.eq(fileId))
+          .fetch { record -> SplatAnnotationModel.of(record) }
+    }
+  }
+
+  private fun ensureSplat(fileId: FileId) {
+    val splatExists = dslContext.fetchExists(SPLATS, SPLATS.FILE_ID.eq(fileId))
+
+    if (!splatExists) {
+      throw FileNotFoundException(fileId)
     }
   }
 

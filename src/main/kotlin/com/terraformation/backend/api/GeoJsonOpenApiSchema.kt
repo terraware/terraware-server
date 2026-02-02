@@ -84,7 +84,7 @@ abstract class GeoJsonOpenApiSchema {
           Schema(
               name = "Position",
               description =
-                  "A single position consisting of X and Y values in the coordinate system " +
+                  "A single position consisting of X, Y, and optional Z values in the coordinate system " +
                       "specified by the crs field.",
               example = "[120,-9.53]",
           ),

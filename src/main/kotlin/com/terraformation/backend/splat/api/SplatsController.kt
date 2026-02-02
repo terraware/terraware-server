@@ -15,12 +15,15 @@ import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.splat.CoordinateModel
 import com.terraformation.backend.splat.ObservationSplatModel
+import com.terraformation.backend.splat.SplatAnnotationModel
 import com.terraformation.backend.splat.SplatGenerationFailedException
 import com.terraformation.backend.splat.SplatNotReadyException
 import com.terraformation.backend.splat.SplatService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import java.math.BigDecimal
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -103,6 +106,23 @@ class SplatsController(
 
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a splat for the requested file id."
+  )
+  @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
+  @Operation(summary = "Gets the list of annotations for a splat model.")
+  fun listObservationSplatAnnotations(
+      @PathVariable observationId: ObservationId,
+      @PathVariable fileId: FileId,
+  ): ListObservationSplatAnnotationsResponsePayload {
+    val models = splatService.listObservationSplatAnnotations(observationId, fileId)
+
+    return ListObservationSplatAnnotationsResponsePayload(
+        models.map { SplatAnnotationPayload.of(it) }
+    )
+  }
 }
 
 data class ObservationSplatPayload(
@@ -126,4 +146,35 @@ data class GenerateSplatRequestPayload(
 
 data class ListObservationSplatsResponsePayload(
     val splats: List<ObservationSplatPayload>,
+) : SuccessResponsePayload
+
+data class CoordinatePayload(val x: BigDecimal, val y: BigDecimal, val z: BigDecimal) {
+  companion object {
+    fun of(model: CoordinateModel) = CoordinatePayload(model.x, model.y, model.z)
+  }
+}
+
+data class SplatAnnotationPayload(
+    val cameraPosition: CoordinatePayload?,
+    val fileId: FileId,
+    val label: String?,
+    val position: CoordinatePayload,
+    val bodyText: String?,
+    val title: String,
+) {
+  companion object {
+    fun of(model: SplatAnnotationModel) =
+        SplatAnnotationPayload(
+            cameraPosition = model.cameraPosition?.let { CoordinatePayload.of(it) },
+            fileId = model.fileId,
+            label = model.label,
+            position = CoordinatePayload.of(model.position),
+            bodyText = model.bodyText,
+            title = model.title,
+        )
+  }
+}
+
+data class ListObservationSplatAnnotationsResponsePayload(
+    val annotations: List<SplatAnnotationPayload>,
 ) : SuccessResponsePayload
