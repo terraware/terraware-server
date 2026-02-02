@@ -152,6 +152,7 @@ import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
+import com.terraformation.backend.db.default_schema.SplatAnnotationId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.ThumbnailId
@@ -3090,7 +3091,7 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
-  ) {
+  ): SplatAnnotationId {
     val rowWithDefaults =
         row.copy(
             fileId = fileId,
@@ -3112,6 +3113,8 @@ abstract class DatabaseBackedTest {
     splatAnnotationsDao.insert(rowWithDefaults)
 
     nextAnnotationNumber[fileId] = nextAnnotationNumber.getOrDefault(fileId, 1) + 1
+
+    return rowWithDefaults.id!!.also { inserted.splatAnnotationIds.add(it) }
   }
 
   fun insertObservationPlot(
@@ -5127,6 +5130,7 @@ abstract class DatabaseBackedTest {
     val seedbankWithdrawalIds = mutableListOf<SeedbankWithdrawalId>()
     val seedFundReportIds = mutableListOf<SeedFundReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
+    val splatAnnotationIds = mutableListOf<SplatAnnotationId>()
     val standardMetricIds = mutableListOf<StandardMetricId>()
     val stratumHistoryIds = mutableListOf<StratumHistoryId>()
     val stratumIds = mutableListOf<StratumId>()
@@ -5266,6 +5270,9 @@ abstract class DatabaseBackedTest {
 
     val speciesId
       get() = speciesIds.last()
+
+    val splatAnnotationId
+      get() = splatAnnotationIds.last()
 
     val standardMetricId
       get() = standardMetricIds.last()

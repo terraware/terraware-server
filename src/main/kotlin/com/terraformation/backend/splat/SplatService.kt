@@ -122,11 +122,22 @@ class SplatService(
   fun listObservationSplatAnnotations(
       observationId: ObservationId,
       fileId: FileId,
-  ): List<SplatAnnotationModel> {
+  ): List<ExistingSplatAnnotationModel> {
     ensureObservationFile(observationId, fileId)
     ensureSplat(fileId)
 
     return listSplatAnnotations(fileId)
+  }
+
+  fun setObservationSplatAnnotations(
+      observationId: ObservationId,
+      fileId: FileId,
+      annotations: List<SplatAnnotationModel<*>>,
+  ) {
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    setSplatAnnotations(fileId, annotations)
   }
 
   private fun generateSplat(
@@ -211,10 +222,11 @@ class SplatService(
 
   private fun listSplatAnnotations(
       fileId: FileId,
-  ): List<SplatAnnotationModel> {
+  ): List<ExistingSplatAnnotationModel> {
     with(SPLAT_ANNOTATIONS) {
       return dslContext
           .select(
+              ID,
               FILE_ID,
               TITLE,
               BODY_TEXT,
@@ -229,6 +241,92 @@ class SplatService(
           .from(SPLAT_ANNOTATIONS)
           .where(FILE_ID.eq(fileId))
           .fetch { record -> SplatAnnotationModel.of(record) }
+    }
+  }
+
+  private fun setSplatAnnotations(fileId: FileId, annotations: List<SplatAnnotationModel<*>>) {
+    dslContext.transaction { _ ->
+      val now = clock.instant()
+      val userId = currentUser().userId
+
+      val annotationsWithIds =
+          annotations.mapNotNull { annotation -> annotation.id?.let { it to annotation } }
+      val annotationsWithoutIds = annotations.filter { it.id == null }
+      val requestedIds = annotationsWithIds.map { it.first }.toSet()
+
+      annotationsWithIds.forEach { (id, annotation) ->
+        with(SPLAT_ANNOTATIONS) {
+          dslContext
+              .update(SPLAT_ANNOTATIONS)
+              .set(MODIFIED_BY, userId)
+              .set(MODIFIED_TIME, now)
+              .set(TITLE, annotation.title)
+              .set(BODY_TEXT, annotation.bodyText)
+              .set(LABEL, annotation.label)
+              .set(POSITION_X, annotation.position.x)
+              .set(POSITION_Y, annotation.position.y)
+              .set(POSITION_Z, annotation.position.z)
+              .set(CAMERA_POSITION_X, annotation.cameraPosition?.x)
+              .set(CAMERA_POSITION_Y, annotation.cameraPosition?.y)
+              .set(CAMERA_POSITION_Z, annotation.cameraPosition?.z)
+              .where(ID.eq(id).and(FILE_ID.eq(fileId)))
+              .execute()
+        }
+      }
+
+      with(SPLAT_ANNOTATIONS) {
+        val deleteCondition =
+            if (requestedIds.isEmpty()) {
+              FILE_ID.eq(fileId)
+            } else {
+              FILE_ID.eq(fileId).and(ID.notIn(requestedIds))
+            }
+        dslContext.deleteFrom(SPLAT_ANNOTATIONS).where(deleteCondition).execute()
+      }
+
+      if (annotationsWithoutIds.isNotEmpty()) {
+        with(SPLAT_ANNOTATIONS) {
+          val insertQuery =
+              dslContext.insertInto(
+                  SPLAT_ANNOTATIONS,
+                  FILE_ID,
+                  CREATED_BY,
+                  CREATED_TIME,
+                  MODIFIED_BY,
+                  MODIFIED_TIME,
+                  TITLE,
+                  BODY_TEXT,
+                  LABEL,
+                  POSITION_X,
+                  POSITION_Y,
+                  POSITION_Z,
+                  CAMERA_POSITION_X,
+                  CAMERA_POSITION_Y,
+                  CAMERA_POSITION_Z,
+              )
+
+          annotationsWithoutIds.forEach { annotation ->
+            insertQuery.values(
+                fileId,
+                userId,
+                now,
+                userId,
+                now,
+                annotation.title,
+                annotation.bodyText,
+                annotation.label,
+                annotation.position.x,
+                annotation.position.y,
+                annotation.position.z,
+                annotation.cameraPosition?.x,
+                annotation.cameraPosition?.y,
+                annotation.cameraPosition?.z,
+            )
+          }
+
+          insertQuery.execute()
+        }
+      }
     }
   }
 
