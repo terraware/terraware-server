@@ -1282,6 +1282,52 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class FetchReportYears {
+    @Test
+    fun `returns null for no report config`() {
+      assertNull(store.fetchProjectReportYears(projectId))
+    }
+
+    @Test
+    fun `returns earliest and latest report config years`() {
+      insertProjectReportConfig(
+          frequency = ReportFrequency.Quarterly,
+          reportingStartDate = LocalDate.of(2024, 1, 1),
+          reportingEndDate = LocalDate.of(2028, 12, 1),
+      )
+      insertProjectReportConfig(
+          frequency = ReportFrequency.Annual,
+          reportingStartDate = LocalDate.of(2021, 1, 1),
+          reportingEndDate = LocalDate.of(2025, 12, 1),
+      )
+
+      assertEquals(
+          2021 to 2028,
+          store.fetchProjectReportYears(projectId),
+      )
+    }
+
+    @Test
+    fun `throws Access Denied Exception for non-accelerator or non-org managers`() {
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      assertThrows<AccessDeniedException>(message = "Contributor") {
+        store.fetchProjectReportYears(projectId)
+      }
+
+      insertUserGlobalRole(role = GlobalRole.ReadOnly)
+      assertDoesNotThrow(message = "Read Only") { store.fetchProjectReportYears(projectId) }
+
+      deleteOrganizationUser()
+      deleteUserGlobalRole(role = GlobalRole.ReadOnly)
+      insertOrganizationUser(role = Role.Manager)
+      assertDoesNotThrow(message = "Org Manager") { store.fetchProjectReportYears(projectId) }
+    }
+  }
+
+  @Nested
   inner class ReviewReport {
     @Test
     fun `throws Access Denied Exception for non-TFExpert users`() {
