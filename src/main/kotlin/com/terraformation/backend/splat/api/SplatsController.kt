@@ -178,23 +178,23 @@ data class CoordinatePayload(val x: BigDecimal, val y: BigDecimal, val z: BigDec
 }
 
 data class SplatAnnotationPayload(
-    val id: SplatAnnotationId,
+    val bodyText: String?,
     val cameraPosition: CoordinatePayload?,
     val fileId: FileId,
+    val id: SplatAnnotationId,
     val label: String?,
     val position: CoordinatePayload,
-    val bodyText: String?,
     val title: String,
 ) {
   companion object {
     fun of(model: ExistingSplatAnnotationModel) =
         SplatAnnotationPayload(
-            id = model.id,
+            bodyText = model.bodyText,
             cameraPosition = model.cameraPosition?.let { CoordinatePayload.of(it) },
             fileId = model.fileId,
+            id = model.id,
             label = model.label,
             position = CoordinatePayload.of(model.position),
-            bodyText = model.bodyText,
             title = model.title,
         )
   }
@@ -205,21 +205,21 @@ data class ListObservationSplatAnnotationsResponsePayload(
 ) : SuccessResponsePayload
 
 data class SetSplatAnnotationRequestPayload(
-    val id: SplatAnnotationId?,
+    val bodyText: String?,
     val cameraPosition: CoordinatePayload?,
+    val id: SplatAnnotationId?,
     val label: String?,
     val position: CoordinatePayload,
-    val text: String?,
     val title: String,
 ) {
   fun toModel(fileId: FileId): SplatAnnotationModel<SplatAnnotationId?> =
       SplatAnnotationModel(
-          id = id,
+          bodyText = bodyText,
           cameraPosition = cameraPosition?.let { CoordinateModel(it.x, it.y, it.z) },
           fileId = fileId,
+          id = id,
           label = label,
           position = CoordinateModel(position.x, position.y, position.z),
-          text = text,
           title = title,
       )
 }

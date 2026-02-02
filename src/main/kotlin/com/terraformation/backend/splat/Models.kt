@@ -38,11 +38,11 @@ data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecim
 
 data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
     val id: AnnotationId,
+    val bodyText: String? = null,
     val cameraPosition: CoordinateModel? = null,
     val fileId: FileId,
     val label: String? = null,
     val position: CoordinateModel,
-    val bodyText: String? = null,
     val title: String,
 ) {
   companion object {
@@ -50,16 +50,7 @@ data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
         with(SPLAT_ANNOTATIONS) {
           ExistingSplatAnnotationModel(
               id = record[ID]!!,
-              fileId = record[FILE_ID]!!,
-              title = record[TITLE]!!,
               bodyText = record[BODY_TEXT],
-              label = record[LABEL],
-              position =
-                  CoordinateModel(
-                      record[POSITION_X]!!,
-                      record[POSITION_Y]!!,
-                      record[POSITION_Z]!!,
-                  ),
               cameraPosition =
                   record[CAMERA_POSITION_X]?.let {
                     CoordinateModel(
@@ -68,6 +59,15 @@ data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
                         record[CAMERA_POSITION_Z]!!,
                     )
                   },
+              fileId = record[FILE_ID]!!,
+              label = record[LABEL],
+              position =
+                  CoordinateModel(
+                      record[POSITION_X]!!,
+                      record[POSITION_Y]!!,
+                      record[POSITION_Z]!!,
+                  ),
+              title = record[TITLE]!!,
           )
         }
   }
