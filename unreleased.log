@@ -1,3 +1,4 @@
+fce2d17d8fc SW-8013 Support retrieval of splat annotations (#3857)
 3cd74a7eae7 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.42 (#3862)
 31db5fd6059 Upgrade black to v26 (#3865)
 f1a34d45684 Update dependency html-minifier-next to v4.19.1 (#3860)

@@ -72,6 +72,7 @@ user_preferences
 notifications
 organization_internal_tags
 species_problems
+splat_annotations
 splats
 automations
 organization_users

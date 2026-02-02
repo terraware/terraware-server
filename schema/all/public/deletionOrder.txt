@@ -6,6 +6,7 @@ project_internal_users
 organization_users
 automations
 splats
+splat_annotations
 species_problems
 organization_internal_tags
 notifications

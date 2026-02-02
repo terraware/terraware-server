@@ -191,6 +191,9 @@ digraph "twoDegreesRelationshipsDiagram" {
   "species_plant_material_sourcing_methods":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species_problems":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "species_successional_groups":"elipses":w -> "species":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "splat_annotations":"created_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "splat_annotations":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "splat_annotations":"modified_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "splats":"asset_status_id":w -> "asset_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "splats":"created_by":w -> "users":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "splats":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=teeodot];
@@ -1078,7 +1081,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="25" HEIGHT="16"><B>files</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">16 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">17 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/files.html"
     target="_top"
@@ -1436,6 +1439,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="species_successional_groups"
   ];
+  "splat_annotations" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="107" HEIGHT="16"><B>splat_annotations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/splat_annotations.html"
+    target="_top"
+    tooltip="splat_annotations"
+  ];
   "splats" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -1625,7 +1639,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="country_code" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">country_code</TD></TR></TABLE></TD><TD PORT="country_code.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="cookies_consented" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">cookies_consented</TD></TR></TABLE></TD><TD PORT="cookies_consented.type" ALIGN="LEFT">bool[1]</TD></TR>
       <TR><TD PORT="cookies_consented_time" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="167" HEIGHT="16">cookies_consented_time</TD></TR></TABLE></TD><TD PORT="cookies_consented_time.type" ALIGN="LEFT">timestamptz[35,6]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">131 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">133 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"

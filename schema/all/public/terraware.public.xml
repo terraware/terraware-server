@@ -496,6 +496,7 @@
             <child column="file_id" foreignKey="mux_assets_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="mux_assets"/>
             <child column="file_id" foreignKey="report_files_file_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_files"/>
             <child column="file_id" foreignKey="report_photos_photo_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="seed_fund_report_photos"/>
+            <child column="file_id" foreignKey="splat_annotations_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="splat_annotations"/>
             <child column="file_id" foreignKey="splats_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="splats"/>
             <child column="file_id" foreignKey="thumbnail_photo_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="thumbnails"/>
             <child column="file_id" foreignKey="accession_photos_photo_id_fkey" implied="false" onDeleteCascade="false" schema="seedbank" table="accession_photos"/>
@@ -1320,6 +1321,34 @@
             <column ascending="true" name="species_id"/>
          </index>
       </table>
+      <table name="splat_annotations" remarks="Annotations that should be displayed inside splat models." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="splat_annotations_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="splat_annotations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="created_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="splat_annotations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="5" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="title" nullable="false" remarks="The text that displays at the top of the annotation box after it is clicked." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="body_text" nullable="true" remarks="The text that displays in the annotation box after it is clicked." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="label" nullable="true" remarks="The text that displays over the annotations while it's floating in space." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="position_x" nullable="false" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="position_y" nullable="false" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="position_z" nullable="false" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="camera_position_x" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="camera_position_y" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="camera_position_z" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="splat_annotations_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <checkConstraint constraint="(((camera_position_x IS NULL) AND (camera_position_y IS NULL) AND (camera_position_z IS NULL)) OR ((camera_position_x IS NOT NULL) AND (camera_position_y IS NOT NULL) AND (camera_position_z IS NOT NULL)))" name="camera_position_all_or_none"/>
+      </table>
       <table name="splats" remarks="Information about 3D Gaussian splatting models generated from video files." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="file_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="splats_file_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="files"/>
@@ -1723,6 +1752,8 @@
             <child column="created_by" foreignKey="species_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
             <child column="deleted_by" foreignKey="species_deleted_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
             <child column="modified_by" foreignKey="species_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
+            <child column="created_by" foreignKey="splat_annotations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="splat_annotations"/>
+            <child column="modified_by" foreignKey="splat_annotations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="splat_annotations"/>
             <child column="created_by" foreignKey="splats_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="splats"/>
             <child column="created_by" foreignKey="storage_locations_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
             <child column="modified_by" foreignKey="storage_locations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>

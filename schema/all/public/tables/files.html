@@ -191,6 +191,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="splat_annotations.file_id references files.id via splat_annotations_file_id_fkey"><a href='splat_annotations.html'>splat_annotations</a><span class='relatedKey'>.file_id</span></td>
+                                                <td class="constraint detail">splat_annotations_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="splats.file_id references files.id via splats_file_id_fkey"><a href='splats.html'>splats</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">splats_file_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -469,12 +474,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>file_name_cannot_be_empty_string</td>
-                                    <td>(length(file_name) &gt; 0)</td>
-                                </tr>
-                                <tr>
                                     <td>content_type_cannot_be_empty_string</td>
                                     <td>(length(content_type) &gt; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>file_name_cannot_be_empty_string</td>
+                                    <td>(length(file_name) &gt; 0)</td>
                                 </tr>
                                 </tbody>
                             </table>
