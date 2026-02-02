@@ -281,9 +281,9 @@ commander@^11.1.0:
   integrity sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==
 
 commander@^14.0.2:
-  version "14.0.2"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-14.0.2.tgz#b71fd37fe4069e4c3c7c13925252ada4eba14e8e"
-  integrity sha512-TywoWNNRbhoD0BXs1P3ZEScW8W5iKrnbithIl0YH+uCmBd0QpPOA8yc82DS3BIE5Ma6FnBVUsJ7wVUDz4dvOWQ==
+  version "14.0.3"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-14.0.3.tgz#425d79b48f9af82fcd9e4fc1ea8af6c5ec07bbc2"
+  integrity sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==
 
 commander@^2.19.0, commander@^2.20.0:
   version "2.20.3"
@@ -580,9 +580,9 @@ header-case@^2.0.4:
     tslib "^2.0.3"
 
 html-minifier-next@^4.0.0:
-  version "4.19.0"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-4.19.0.tgz#b40a139f3acb73eee3196e23f69bdd6cfae864ab"
-  integrity sha512-ZJTXOi/MsCusH4PGX7uWietqddp6Cq0BYFEdSE1gEzO8oP2rTNHM6ZPM1/A7SOOkdPOsUENsnsa+s/ioPh62Xw==
+  version "4.19.1"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-4.19.1.tgz#6c7fd6b9865e4ea714c24d0dd8a74e66a759fff7"
+  integrity sha512-2TdfFp9L4nKVCc4/sglWJGBh8DnILl/HEsEdKGhk+19OCUXHb1p4Qf9uDEO/EDlKuioLqR0OqBCjL9yOlv0zeA==
   dependencies:
     "@types/relateurl" "^0.2.33"
     change-case "^4.1.2"
@@ -590,7 +590,7 @@ html-minifier-next@^4.0.0:
     entities "^7.0.0"
     lightningcss "^1.28.2"
     relateurl "^0.2.7"
-    terser "^5.44.1"
+    terser "^5.46.0"
 
 html-minifier@^4.0.0:
   version "4.0.0"
@@ -1807,7 +1807,7 @@ strip-ansi@^7.0.1:
   dependencies:
     ansi-regex "^6.0.1"
 
-terser@^5.44.1:
+terser@^5.46.0:
   version "5.46.0"
   resolved "https://registry.yarnpkg.com/terser/-/terser-5.46.0.tgz#1b81e560d584bbdd74a8ede87b4d9477b0ff9695"
   integrity sha512-jTwoImyr/QbOWFFso3YoU3ik0jBBDJ6JTOQiy/J2YxVJdZCc+5u7skhNwiOR3FQIygFqVUPHl7qbbxtjW2K3Qg==
