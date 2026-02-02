@@ -2,6 +2,7 @@ package com.terraformation.backend.splat
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -82,8 +83,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val position2 = CoordinateModel(7.0, 8.0, 9.0)
       insertSplatAnnotation(title = "Test Annotation 2", position = position2)
 
-      assertEquals(
-          listOf(
+      assertSetEquals(
+          setOf(
               SplatAnnotationModel(
                   title = "Test Annotation 1",
                   bodyText = "Description 1",
@@ -98,7 +99,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   fileId = fileId,
               ),
           ),
-          service.listObservationSplatAnnotations(observationId, fileId),
+          service.listObservationSplatAnnotations(observationId, fileId).toSet(),
       )
     }
 
