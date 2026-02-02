@@ -267,7 +267,7 @@ class SplatService(
               .set(CAMERA_POSITION_X, annotation.cameraPosition?.x)
               .set(CAMERA_POSITION_Y, annotation.cameraPosition?.y)
               .set(CAMERA_POSITION_Z, annotation.cameraPosition?.z)
-              .where(ID.eq(id))
+              .where(ID.eq(id).and(FILE_ID.eq(fileId)))
               .execute()
         }
       }

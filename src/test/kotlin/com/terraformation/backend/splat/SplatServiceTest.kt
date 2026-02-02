@@ -408,6 +408,66 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `only modifies annotations for the given file`() {
+      val position1 = CoordinateModel(1.0, 2.0, 3.0)
+      val position2 = CoordinateModel(4.0, 5.0, 6.0)
+
+      val id1 = insertSplatAnnotation(title = "Annotation 1", position = position1)
+
+      val otherFileId = insertFile()
+      insertObservationMediaFile(fileId = otherFileId)
+      insertSplat()
+      val id2 = insertSplatAnnotation(title = "Annotation 2", position = position2)
+
+      val annotations =
+          listOf(
+              ExistingSplatAnnotationModel(
+                  id = id1,
+                  title = "Updated Annotation 1",
+                  position = position1,
+                  fileId = fileId,
+              ),
+              ExistingSplatAnnotationModel(
+                  id = id2,
+                  title = "Updated Annotation 2",
+                  position = position2,
+                  fileId = otherFileId,
+              ),
+          )
+
+      service.setSplatAnnotations(observationId, fileId, annotations)
+
+      assertTableEquals(
+          listOf(
+              SplatAnnotationsRecord(
+                  id = id1,
+                  fileId = fileId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
+                  title = "Updated Annotation 1",
+                  positionX = position1.x,
+                  positionY = position1.y,
+                  positionZ = position1.z,
+              ),
+              SplatAnnotationsRecord(
+                  id = id2,
+                  fileId = otherFileId,
+                  createdBy = user.userId,
+                  createdTime = clock.instant(),
+                  modifiedBy = user.userId,
+                  modifiedTime = clock.instant(),
+                  title = "Annotation 2", // not updated
+                  positionX = position2.x,
+                  positionY = position2.y,
+                  positionZ = position2.z,
+              ),
+          )
+      )
+    }
+
+    @Test
     fun `throws exception if file is not associated with observation`() {
       val otherFileId = insertFile()
 
