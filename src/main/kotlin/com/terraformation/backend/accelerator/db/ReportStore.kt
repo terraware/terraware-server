@@ -148,6 +148,27 @@ class ReportStore(
         .firstOrNull() ?: throw ReportNotFoundException(reportId)
   }
 
+  fun fetchProjectReportYears(projectId: ProjectId): Pair<Int, Int>? {
+    requirePermissions { readProjectReports(projectId) }
+
+    return with(PROJECT_REPORT_CONFIGS) {
+      val startYearField = DSL.year(DSL.min(REPORTING_START_DATE))
+      val endYearField = DSL.year(DSL.max(REPORTING_END_DATE))
+
+      dslContext
+          .select(startYearField, endYearField)
+          .from(this)
+          .where(PROJECT_ID.eq(projectId))
+          .fetchOne { record ->
+            if (record[startYearField] != null && record[endYearField] != null) {
+              record[startYearField] to record[endYearField]
+            } else {
+              null
+            }
+          }
+    }
+  }
+
   fun insertProjectReportConfig(newModel: NewProjectReportConfigModel) {
     requirePermissions { manageProjectReportConfigs() }
 

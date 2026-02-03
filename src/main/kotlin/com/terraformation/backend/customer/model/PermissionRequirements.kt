@@ -1176,6 +1176,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readProjectReports(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canReadProjectReports(projectId)) {
+        readProject(projectId)
+        throw AccessDeniedException("No permission to view reports for project $projectId")
+      }
+    }
+  }
+
   fun readProjectScores(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canReadProjectScores(projectId)) {

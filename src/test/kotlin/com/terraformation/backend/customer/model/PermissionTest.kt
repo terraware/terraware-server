@@ -704,6 +704,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         updateProject = true,
         updateProjectReports = true,
     )
@@ -988,6 +989,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
         updateProject = true,
         updateProjectReports = true,
     )
@@ -1187,6 +1189,7 @@ internal class PermissionTest : DatabaseTest() {
         readProject = true,
         readProjectDeliverables = true,
         readProjectModules = true,
+        readProjectReports = true,
     )
 
     permissions.expect(
@@ -1671,6 +1674,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -1840,6 +1844,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -1887,6 +1892,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -2111,6 +2117,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -2165,6 +2172,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -2391,6 +2399,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -2445,6 +2454,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -2675,6 +2685,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -2690,6 +2701,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -2707,6 +2719,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectFunderDetails = true,
         readProjectModules = true,
+        readProjectReports = true,
         readProjectScores = true,
         readProjectVotes = true,
         readPublishedReports = true,
@@ -4088,6 +4101,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables: Boolean = false,
         readProjectFunderDetails: Boolean = false,
         readProjectModules: Boolean = false,
+        readProjectReports: Boolean = false,
         readProjectScores: Boolean = false,
         readProjectVotes: Boolean = false,
         readPublishedReports: Boolean = false,
@@ -4166,6 +4180,11 @@ internal class PermissionTest : DatabaseTest() {
             readProjectFunderDetails,
             user.canReadProjectFunderDetails(idInDatabase),
             "Can read project funder details for project $projectId",
+        )
+        assertEquals(
+            readProjectReports,
+            user.canReadProjectReports(idInDatabase),
+            "Can read reports for project $projectId",
         )
         assertEquals(
             readProjectScores,
