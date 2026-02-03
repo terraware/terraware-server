@@ -1,6 +1,8 @@
 package com.terraformation.backend.tracking.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
 import com.terraformation.backend.api.ApiResponse404
@@ -64,12 +66,15 @@ import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletRequestWrapper
 import jakarta.validation.Valid
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
 import org.springframework.core.io.InputStreamResource
@@ -95,6 +100,7 @@ import org.springframework.web.multipart.MultipartFile
 class ObservationsController(
     private val biomassStore: BiomassStore,
     private val messages: Messages,
+    private val objectMapper: ObjectMapper,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val observationResultsStore: ObservationResultsStore,
@@ -564,7 +570,7 @@ class ObservationsController(
     return UploadPlotPhotoResponsePayload(fileId)
   }
 
-  @Operation(summary = "Adds a photo of a monitoring plot after an observation is complete.")
+  @Operation(summary = "Adds a photo/video of a monitoring plot after an observation is complete.")
   @PostMapping(
       "/{observationId}/plots/{plotId}/otherMedia",
       consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -591,6 +597,85 @@ class ObservationsController(
             type = payload.type ?: ObservationMediaType.Plot,
         )
     return UploadPlotPhotoResponsePayload(fileId)
+  }
+
+  @Operation(
+      summary = "Adds a photo/video of a monitoring plot after an observation is complete.",
+      description =
+          "This is a workaround for a limitation of background uploads on the mobile app.",
+  )
+  @PostMapping(
+      "/{observationId}/plots/{plotId}/otherMedia",
+      consumes = [MediaType.APPLICATION_OCTET_STREAM_VALUE],
+  )
+  fun uploadOtherPlotMediaOctetStream(
+      @PathVariable observationId: ObservationId,
+      @PathVariable plotId: MonitoringPlotId,
+      request: HttpServletRequest,
+  ): UploadPlotPhotoResponsePayload {
+    val boundary =
+        request.getHeader("X-Multipart-Boundary")?.ifBlank { null }
+            ?: throw BadRequestException("No X-Multipart-Boundary header found")
+    val fakeContentType = "${MediaType.MULTIPART_FORM_DATA_VALUE}; boundary=$boundary"
+    val wrappedRequest =
+        object : HttpServletRequestWrapper(request) {
+          override fun getContentType() = fakeContentType
+
+          override fun getHeader(name: String) =
+              if (name.equals("Content-Type", ignoreCase = true)) {
+                fakeContentType
+              } else {
+                super.getHeader(name)
+              }
+        }
+
+    val fileUpload = JakartaServletFileUpload()
+    val items = fileUpload.getItemIterator(wrappedRequest)
+    var payload: UploadPlotMediaRequestPayload? = null
+    var response: UploadPlotPhotoResponsePayload? = null
+
+    while (items.hasNext()) {
+      val item = items.next()
+
+      when (item.fieldName) {
+        "payload" -> {
+          payload =
+              objectMapper.readValue<UploadPlotMediaRequestPayload>(item.inputStream.readAllBytes())
+        }
+        "file" -> {
+          if (payload == null) {
+            throw BadRequestException(
+                "JSON payload must come before file in background upload request body"
+            )
+          }
+          val contentType = item.getPlainContentType(SUPPORTED_MEDIA_TYPES)
+          val filename = item.getFilename()
+          val contentLength =
+              item.headers.getHeader("Content-Length")?.toLong()
+                  ?: throw BadRequestException("File must include Content-Length header")
+
+          val fileId =
+              observationService.storeMediaFile(
+                  observationId = observationId,
+                  monitoringPlotId = plotId,
+                  position = payload.position,
+                  data = item.inputStream,
+                  metadata = FileMetadata.of(contentType, filename, contentLength),
+                  caption = payload.caption,
+                  isOriginal = false,
+                  type = payload.type ?: ObservationMediaType.Plot,
+              )
+
+          response = UploadPlotPhotoResponsePayload(fileId)
+        }
+        else ->
+            throw BadRequestException(
+                "Unrecognized item in mobile background upload form submission: ${item.fieldName}"
+            )
+      }
+    }
+
+    return response ?: throw BadRequestException("No uploaded file found in request")
   }
 
   @ApiResponse409("The plot is already claimed by someone else.")
