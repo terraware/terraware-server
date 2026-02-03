@@ -1,3 +1,4 @@
+d60ebf6a16d SW-8015 Support mobile app background video uploads (#3868)
 e81e2382a51 Implemented API to fetch report year range without without full query (#3866)
 acae490f212 SW-8013 Support setting of splat annotations (#3858)
 fce2d17d8fc SW-8013 Support retrieval of splat annotations (#3857)
