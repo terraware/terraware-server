@@ -97,10 +97,11 @@ fun FileItemInput.getPlainContentType(allowedTypes: Set<MediaType>): String {
  * the content type, if any.
  */
 fun MultipartFile.getFilename(defaultBaseName: String = "upload"): String {
-  return originalFilename
+  return originalFilename?.ifEmpty { null }
       ?: run {
         val contentType = getPlainContentType() ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
-        val extension = MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType) ?: ""
+        val extension =
+            MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType)?.extension ?: ""
         defaultBaseName + extension
       }
 }
@@ -111,11 +112,12 @@ fun MultipartFile.getFilename(defaultBaseName: String = "upload"): String {
  * the content type, if any.
  */
 fun FileItemInput.getFilename(defaultBaseName: String = "upload"): String {
-  return name
+  return name?.ifEmpty { null }
       ?: run {
         val contentType =
             getPlainContentType(contentType) ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
-        val extension = MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType) ?: ""
+        val extension =
+            MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType)?.extension ?: ""
         defaultBaseName + extension
       }
 }

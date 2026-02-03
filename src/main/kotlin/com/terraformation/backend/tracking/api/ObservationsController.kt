@@ -77,6 +77,7 @@ import java.time.format.DateTimeFormatter
 import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
+import org.springframework.boot.autoconfigure.web.servlet.MultipartProperties
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -100,6 +101,7 @@ import org.springframework.web.multipart.MultipartFile
 class ObservationsController(
     private val biomassStore: BiomassStore,
     private val messages: Messages,
+    private val multipartProperties: MultipartProperties,
     private val objectMapper: ObjectMapper,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
@@ -552,7 +554,7 @@ class ObservationsController(
       @PathVariable plotId: MonitoringPlotId,
       @RequestPart("file") file: MultipartFile,
       @RequestPart("payload") payload: UploadPlotPhotoRequestPayload,
-  ): UploadPlotPhotoResponsePayload {
+  ): UploadPlotMediaResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
     val filename = file.getFilename("photo")
 
@@ -567,7 +569,7 @@ class ObservationsController(
             isOriginal = true,
             type = payload.type ?: ObservationMediaType.Plot,
         )
-    return UploadPlotPhotoResponsePayload(fileId)
+    return UploadPlotMediaResponsePayload(fileId)
   }
 
   @Operation(summary = "Adds a photo/video of a monitoring plot after an observation is complete.")
@@ -581,7 +583,7 @@ class ObservationsController(
       @PathVariable plotId: MonitoringPlotId,
       @RequestPart("file") file: MultipartFile,
       @RequestPart("payload") payload: UploadPlotMediaRequestPayload,
-  ): UploadPlotPhotoResponsePayload {
+  ): UploadPlotMediaResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_MEDIA_TYPES)
     val filename = file.getFilename("photo")
 
@@ -596,7 +598,7 @@ class ObservationsController(
             isOriginal = false,
             type = payload.type ?: ObservationMediaType.Plot,
         )
-    return UploadPlotPhotoResponsePayload(fileId)
+    return UploadPlotMediaResponsePayload(fileId)
   }
 
   @Operation(
@@ -612,7 +614,7 @@ class ObservationsController(
       @PathVariable observationId: ObservationId,
       @PathVariable plotId: MonitoringPlotId,
       request: HttpServletRequest,
-  ): UploadPlotPhotoResponsePayload {
+  ): UploadPlotMediaResponsePayload {
     val boundary =
         request.getHeader("X-Multipart-Boundary")?.ifBlank { null }
             ?: throw BadRequestException("No X-Multipart-Boundary header found")
@@ -632,7 +634,7 @@ class ObservationsController(
     val fileUpload = JakartaServletFileUpload()
     val items = fileUpload.getItemIterator(wrappedRequest)
     var payload: UploadPlotMediaRequestPayload? = null
-    var response: UploadPlotPhotoResponsePayload? = null
+    var response: UploadPlotMediaResponsePayload? = null
 
     while (items.hasNext()) {
       val item = items.next()
@@ -654,6 +656,10 @@ class ObservationsController(
               item.headers.getHeader("Content-Length")?.toLong()
                   ?: throw BadRequestException("File must include Content-Length header")
 
+          if (contentLength > multipartProperties.maxFileSize.toBytes()) {
+            throw BadRequestException("File exceeds maximum size")
+          }
+
           val fileId =
               observationService.storeMediaFile(
                   observationId = observationId,
@@ -666,7 +672,7 @@ class ObservationsController(
                   type = payload.type ?: ObservationMediaType.Plot,
               )
 
-          response = UploadPlotPhotoResponsePayload(fileId)
+          response = UploadPlotMediaResponsePayload(fileId)
         }
         else ->
             throw BadRequestException(
@@ -1254,4 +1260,4 @@ data class UploadPlotPhotoRequestPayload(
     val type: ObservationMediaType?,
 )
 
-data class UploadPlotPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
+data class UploadPlotMediaResponsePayload(val fileId: FileId) : SuccessResponsePayload
