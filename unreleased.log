@@ -1,3 +1,4 @@
+e81e2382a51 Implemented API to fetch report year range without without full query (#3866)
 acae490f212 SW-8013 Support setting of splat annotations (#3858)
 fce2d17d8fc SW-8013 Support retrieval of splat annotations (#3857)
 3cd74a7eae7 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.42 (#3862)
