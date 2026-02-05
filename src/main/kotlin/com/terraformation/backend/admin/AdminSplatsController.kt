@@ -39,10 +39,12 @@ class AdminSplatsController(
       @RequestParam dataFactor: Int?,
       @RequestParam fps: Int?,
       @RequestParam keepPercent: Double?,
+      @RequestParam mapper: String?,
       @RequestParam maxSize: Int?,
       @RequestParam maxSteps: Int?,
-      @RequestParam noPruneTail: String?,
+      @RequestParam restartAt: String?,
       @RequestParam ssimLambda: Double?,
+      @RequestParam tailPruning: Boolean?,
       @RequestParam otherArgs: String?,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -52,11 +54,25 @@ class AdminSplatsController(
                   abortAfter?.ifBlank { null }?.let { listOf("--abort-after", abortAfter) },
                   dataFactor?.let { listOf("--data-factor", "$dataFactor") },
                   fps?.let { listOf("--fps", "$fps") },
-                  keepPercent?.let { listOf("--keep-percent", "${keepPercent / 100.0}") },
+                  keepPercent?.let {
+                    if (keepPercent < 100.0) {
+                      listOf("--keep-percent", "${keepPercent / 100.0}")
+                    } else {
+                      listOf("--no-filter-blurry")
+                    }
+                  },
+                  mapper?.ifBlank { null }?.let { listOf("--mapper", mapper) },
                   maxSize?.let { listOf("--max-size", "$maxSize") },
                   maxSteps?.let { listOf("--max-steps", "$maxSteps") },
-                  noPruneTail?.let { listOf("--no-prune-tail") },
+                  restartAt?.ifBlank { null }?.let { listOf("--restart-at", restartAt) },
                   ssimLambda?.let { listOf("--ssim-lambda", "$ssimLambda") },
+                  tailPruning?.let {
+                    if (tailPruning) {
+                      listOf("--prune-tail")
+                    } else {
+                      listOf("--no-prune-tail")
+                    }
+                  },
                   otherArgs?.ifEmpty { null }?.split(" "),
               )
               .flatten()

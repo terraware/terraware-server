@@ -194,6 +194,7 @@ class SplatService(
                         splatKey,
                     ),
                 responseQueueUrl = responseQueueUrl,
+                restoreJob = processScriptArgs?.contains("--restart-at") == true,
             )
 
         sqsTemplate.send(requestQueueUrl, requestMessage)
