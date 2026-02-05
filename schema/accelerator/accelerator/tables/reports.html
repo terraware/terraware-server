@@ -209,14 +209,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="reports.[config_id, project_id] references project_report_configs.[id, project_id] via reports_config_id_project_id_fkey"><a href='project_report_configs.html'>project_report_configs</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">reports_config_id_project_id_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="reports.project_id references public.projects.id via reports_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">reports_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="reports.[config_id, project_id] references project_report_configs.[id, project_id] via reports_config_id_project_id_fkey"><a href='project_report_configs.html'>project_report_configs</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">reports_config_id_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -612,12 +612,12 @@
                                     <td>(((status_id &#61; 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id &#61; 2) OR (status_id &#61; 3) OR (status_id &#61; 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id &#61; 5))</td>
                                 </tr>
                                 <tr>
-                                    <td>quarterly_report_has_quarter</td>
-                                    <td>(((report_frequency_id &#61; 1) AND (report_quarter_id IS NOT NULL) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM start_date)) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM end_date))) OR ((report_frequency_id &lt;&gt; 1) AND (report_quarter_id IS NULL)))</td>
-                                </tr>
-                                <tr>
                                     <td>reports_check</td>
                                     <td>(end_date &gt; start_date)</td>
+                                </tr>
+                                <tr>
+                                    <td>quarterly_report_has_quarter</td>
+                                    <td>(((report_frequency_id &#61; 1) AND (report_quarter_id IS NOT NULL) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM start_date)) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM end_date))) OR ((report_frequency_id &lt;&gt; 1) AND (report_quarter_id IS NULL)))</td>
                                 </tr>
                                 </tbody>
                             </table>
