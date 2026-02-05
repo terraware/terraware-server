@@ -65,7 +65,20 @@
             <td>90</td>
             <td>
                 Percentage of frames to keep after checking for blurriness. If this is 90, the
-                blurriest 10% of frames will be dropped.
+                blurriest 10% of frames will be dropped. A value of 100 will skip the filter-blurry
+                step.
+            </td>
+        </tr>
+        <tr>
+            <td>Mapper</td>
+            <td>
+                <select name="mapper">
+                    <option value="colmap">COLMAP</option>
+                    <option value="glomap" selected>GLOMAP</option>
+                </select>
+            <td>GLOMAP</td>
+            <td>
+                Which command to use for the mapper phase of the SfM step.
             </td>
         </tr>
         <tr>
@@ -85,11 +98,14 @@
             </td>
         </tr>
         <tr>
-            <td>Skip Tail Pruning</td>
-            <td><input type="checkbox" value="1" name="noPruneTail"/></td>
-            <td>false</td>
+            <td>Restart At</td>
+            <td><input type="text" size="8" name="restartAt"/></td>
+            <td/>
             <td>
-                If checked, don't try to prune outlier frames.
+                Restart the processing run at this step, using the files in the archived job
+                directory. Step names are the same as the splat.py command names for steps that
+                use splat.py. Additional step names: prune-tail, link-images, link-images-factor,
+                gsplat, splat-transform.
             </td>
         </tr>
         <tr>
@@ -104,9 +120,23 @@
             </td>
         </tr>
         <tr>
+            <td>Tail Pruning</td>
+            <td>
+                <select name="tailPruning">
+                    <option value="" selected>Default</option>
+                    <option value="true">Enable</option>
+                    <option value="false">Disable</option>
+                </select>
+            </td>
+            <td>Default</td>
+            <td>
+                Enable or disable tail pruning. Default is enabled for COLMAP and disabled for
+                GLOMAP.
+            </td>
+        </tr>
+        <tr>
             <td>Other Args</td>
-            <td><input type="text" name="otherArgs"/></td>
-            <td></td>
+            <td colspan="2"><input type="text" name="otherArgs"/></td>
             <td>
                 Additional space-delimited arguments to pass to processing script, in case the
                 script is updated to support more options but the new options haven't been added
