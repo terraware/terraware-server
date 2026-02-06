@@ -88,6 +88,9 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
     }
   }
 
+  private val phaseField =
+      DSL.field(DSL.select(COHORTS.PHASE_ID).from(COHORTS).where(COHORTS.ID.eq(PROJECTS.COHORT_ID)))
+
   override val fields: List<SearchField> =
       listOf(
           timestampField("createdTime", PROJECTS.CREATED_TIME),
@@ -95,6 +98,7 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           idWrapperField("id", PROJECTS.ID) { ProjectId(it) },
           timestampField("modifiedTime", PROJECTS.MODIFIED_TIME),
           textField("name", PROJECTS.NAME),
+          enumField("phase", phaseField),
       )
 
   override fun conditionForVisibility(): Condition {
