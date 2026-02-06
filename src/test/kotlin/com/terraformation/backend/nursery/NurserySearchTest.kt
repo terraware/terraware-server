@@ -242,8 +242,8 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `facility inventory totals table returns correct totals`() {
-      // Empty batch shouldn't count toward total species.
-      insertBatch(facilityId = facilityId2, speciesId = speciesId2)
+      // Empty batch should be included in total species.
+      insertBatch(organizationId = organizationId, facilityId = facilityId2, speciesId = speciesId2)
 
       val prefix = SearchFieldPrefix(root = searchTables.facilityInventoryTotals)
       val results =
@@ -306,7 +306,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                               ),
                           ),
                       "totalQuantity" to number(128 + 256 + 512),
-                      "totalSpecies" to number(1),
+                      "totalSpecies" to number(2),
                   ),
               )
           ),
