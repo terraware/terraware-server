@@ -574,7 +574,10 @@ class ObservationsController(
       @PathVariable observationId: ObservationId,
       @PathVariable plotId: MonitoringPlotId,
       @RequestPart("file") file: MultipartFile,
-      @RequestPart("payload") payload: UploadPlotMediaRequestPayload,
+      @RequestPart("payload") payload: UploadPlotMediaRequestPayload?,
+      @RequestParam caption: String?,
+      @RequestParam position: ObservationPlotPosition?,
+      @RequestParam type: ObservationMediaType?,
   ): UploadPlotMediaResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_MEDIA_TYPES)
     val filename = file.getFilename("photo")
@@ -583,12 +586,12 @@ class ObservationsController(
         observationService.storeMediaFile(
             observationId = observationId,
             monitoringPlotId = plotId,
-            position = payload.position,
+            position = payload?.position ?: position,
             data = file.inputStream,
             metadata = FileMetadata.of(contentType, filename, file.size),
-            caption = payload.caption,
+            caption = payload?.caption ?: caption,
             isOriginal = false,
-            type = payload.type ?: ObservationMediaType.Plot,
+            type = payload?.type ?: type ?: ObservationMediaType.Plot,
         )
     return UploadPlotMediaResponsePayload(fileId)
   }
