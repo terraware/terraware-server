@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PL
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PROBLEMS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.nursery.tables.references.FACILITY_INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.SPECIES_PROJECTS
 import com.terraformation.backend.search.SearchTable
@@ -28,6 +29,10 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           batches.asMultiValueSublist("batches", SPECIES.ID.eq(BATCHES.SPECIES_ID)),
+          facilityInventories.asMultiValueSublist(
+              "facilityInventories",
+              SPECIES.ID.eq(FACILITY_INVENTORIES.SPECIES_ID),
+          ),
           inventories.asSingleValueSublist(
               "inventory",
               SPECIES.ORGANIZATION_ID.eq(INVENTORIES.ORGANIZATION_ID)
