@@ -29,15 +29,15 @@ class SpeciesTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           batches.asMultiValueSublist("batches", SPECIES.ID.eq(BATCHES.SPECIES_ID)),
+          facilityInventories.asMultiValueSublist(
+              "facilityInventories",
+              SPECIES.ID.eq(FACILITY_INVENTORIES.SPECIES_ID),
+          ),
           inventories.asSingleValueSublist(
               "inventory",
               SPECIES.ORGANIZATION_ID.eq(INVENTORIES.ORGANIZATION_ID)
                   .and(SPECIES.ID.eq(INVENTORIES.SPECIES_ID)),
               isRequired = false,
-          ),
-          facilityInventories.asMultiValueSublist(
-              "facilityInventories",
-              SPECIES.ID.eq(FACILITY_INVENTORIES.SPECIES_ID),
           ),
           nurserySpeciesProjects.asMultiValueSublist(
               "nurseryProjects",
