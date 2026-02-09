@@ -1,3 +1,8 @@
+4d9a3dc0beb Update aws-actions/configure-aws-credentials action to v6 (#3876)
+5f062e38ef6 Update dependency pyjwt to v2.11.0 (#3867)
+da8875d8edf Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v8.4.2 (#3874)
+caec744f5e5 Log contents of file upload requests (#3877)
+192bad6eb32 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v3.2.0 (#3875)
 61b0c752ea8 SW-7491 Update facility_inventory_totals to include empty nurseries (#3873)
 61fc154cfb2 SW-7491 Add batches multi sublist to species search table (#3872)
 678fe68140d SW-7931 Add phase to Projects search table (#3871)
