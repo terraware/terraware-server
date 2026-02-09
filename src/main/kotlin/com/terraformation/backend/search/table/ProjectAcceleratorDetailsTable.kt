@@ -34,6 +34,7 @@ class ProjectAcceleratorDetailsTable(tables: SearchTables) : SearchTable() {
             bigDecimalField("carbonCapacity", CARBON_CAPACITY),
             bigDecimalField("confirmedReforestableLand", CONFIRMED_REFORESTABLE_LAND),
             textField("dealDescription", DEAL_DESCRIPTION),
+            textField("dealName", DEAL_NAME),
             nonLocalizableEnumField("dealStage", DEAL_STAGE_ID),
             textField("dropboxFolderPath", DROPBOX_FOLDER_PATH),
             textField("failureRisk", FAILURE_RISK),
