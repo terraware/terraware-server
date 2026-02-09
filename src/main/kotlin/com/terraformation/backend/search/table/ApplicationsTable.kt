@@ -7,6 +7,7 @@ import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Record
+import org.jooq.SelectJoinStep
 import org.jooq.TableField
 
 class ApplicationsTable(private val tables: SearchTables) : SearchTable() {
@@ -27,4 +28,8 @@ class ApplicationsTable(private val tables: SearchTables) : SearchTable() {
 
   override val inheritsVisibilityFrom: SearchTable
     get() = tables.projects
+
+  override fun <T : Record> joinForVisibility(query: SelectJoinStep<T>): SelectJoinStep<T> {
+    return query.join(PROJECTS).on(APPLICATIONS.PROJECT_ID.eq(PROJECTS.ID))
+  }
 }
