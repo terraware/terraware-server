@@ -46,7 +46,6 @@ class RequestResponseLoggingFilter(
       listOf(
           MediaType.APPLICATION_FORM_URLENCODED,
           MediaType.APPLICATION_JSON,
-          MediaType.APPLICATION_OCTET_STREAM,
           MediaType.MULTIPART_FORM_DATA,
       )
 
