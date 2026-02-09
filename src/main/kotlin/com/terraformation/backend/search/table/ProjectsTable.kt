@@ -2,6 +2,7 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
@@ -38,6 +39,7 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           accessions.asMultiValueSublist("accessions", PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID)),
+          applications.asSingleValueSublist("application", PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID)),
           batches.asMultiValueSublist("batches", PROJECTS.ID.eq(BATCHES.PROJECT_ID)),
           cohorts.asSingleValueSublist(
               "cohort",
@@ -88,9 +90,6 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
     }
   }
 
-  private val phaseField =
-      DSL.field(DSL.select(COHORTS.PHASE_ID).from(COHORTS).where(COHORTS.ID.eq(PROJECTS.COHORT_ID)))
-
   override val fields: List<SearchField> =
       listOf(
           timestampField("createdTime", PROJECTS.CREATED_TIME),
@@ -98,7 +97,7 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           idWrapperField("id", PROJECTS.ID) { ProjectId(it) },
           timestampField("modifiedTime", PROJECTS.MODIFIED_TIME),
           textField("name", PROJECTS.NAME),
-          enumField("phase", phaseField),
+          enumField("phase", PROJECTS.PHASE_ID),
       )
 
   override fun conditionForVisibility(): Condition {
