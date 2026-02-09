@@ -152,13 +152,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="recorded_trees.observation_id references observations.id via recorded_trees_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_fkey</td>
+                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="recorded_trees.[observation_id, monitoring_plot_id, biomass_species_id] references observation_biomass_species.[observation_id, monitoring_plot_id, id] via recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey"><a href='observation_biomass_species.html'>observation_biomass_species</a><span class='relatedKey'>.observation_id</span></td>
-                                                <td class="constraint detail">recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey</td>
+                                                <td title="recorded_trees.observation_id references observations.id via recorded_trees_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">recorded_trees_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
