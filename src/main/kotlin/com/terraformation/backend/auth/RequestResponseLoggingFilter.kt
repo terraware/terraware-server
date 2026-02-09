@@ -43,7 +43,12 @@ class RequestResponseLoggingFilter(
   private val log = perClassLogger()
 
   private val loggableContentTypes =
-      listOf(MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED)
+      listOf(
+          MediaType.APPLICATION_FORM_URLENCODED,
+          MediaType.APPLICATION_JSON,
+          MediaType.APPLICATION_OCTET_STREAM,
+          MediaType.MULTIPART_FORM_DATA,
+      )
 
   /**
    * Prefix to include in request IDs. [ServletRequest.getRequestId] doesn't return globally unique
@@ -108,6 +113,8 @@ class RequestResponseLoggingFilter(
                 mdcPut("method", wrappedRequest.method)
                 mdcPut("queryString", wrappedRequest.queryString)
                 mdcPut("uri", wrappedRequest.requestURI)
+
+                wrappedRequest.contentType?.let { mdcPut("contentType", it) }
 
                 wrappedResponse?.let {
                   mdcPut("response", payload(it.contentType, it.contentAsByteArray))
