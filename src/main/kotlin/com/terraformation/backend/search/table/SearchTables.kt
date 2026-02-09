@@ -27,6 +27,7 @@ import kotlin.reflect.full.declaredMemberProperties
 class SearchTables(clock: Clock) {
   val accessionCollectors = AccessionCollectorsTable(this)
   val accessions = AccessionsTable(this, clock)
+  val applications = ApplicationsTable(this)
   val bags = BagsTable(this)
   val batches = BatchesTable(this)
   val batchSubLocations = BatchSubLocationsTable(this)
