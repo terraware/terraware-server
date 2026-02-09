@@ -1,3 +1,4 @@
+6f545398582 Add deal name to accelerator details search table (#3880)
 86c6b0a9fcf SW-7491 Add facilityInventories multi sublist to species search table (#3878)
 4d9a3dc0beb Update aws-actions/configure-aws-credentials action to v6 (#3876)
 5f062e38ef6 Update dependency pyjwt to v2.11.0 (#3867)
