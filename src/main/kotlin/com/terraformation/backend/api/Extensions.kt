@@ -3,7 +3,6 @@ package com.terraformation.backend.api
 import com.terraformation.backend.file.SizedInputStream
 import jakarta.ws.rs.NotSupportedException
 import java.io.ByteArrayOutputStream
-import org.apache.commons.fileupload2.core.FileItemInput
 import org.apache.tika.mime.MimeTypes
 import org.geotools.api.feature.simple.SimpleFeature
 import org.geotools.geojson.feature.FeatureJSON
@@ -49,7 +48,7 @@ private fun getPlainContentType(plainContentType: String?, allowedTypes: Set<Med
     val contentType =
         try {
           MediaType.parseMediaType(plainContentType)
-        } catch (e: InvalidMediaTypeException) {
+        } catch (_: InvalidMediaTypeException) {
           null
         }
 
@@ -81,17 +80,6 @@ fun MultipartFile.getPlainContentType(allowedTypes: Set<MediaType>): String {
 }
 
 /**
- * Returns the content type of an uploaded file, minus any extended information. For example, if the
- * client-supplied content type is, "text/plain;charset=UTF-8", returns "text/plain".
- *
- * @param allowedTypes Only accept content types from this set; throw NotSupportedException for
- *   types that aren't listed.
- */
-fun FileItemInput.getPlainContentType(allowedTypes: Set<MediaType>): String {
-  return getPlainContentType(getPlainContentType(contentType), allowedTypes)
-}
-
-/**
  * Returns the filename of an uploaded file. If the client supplied a filename, returns it as-is.
  * Otherwise, constructs a filename based on a default base name and an appropriate extension for
  * the content type, if any.
@@ -100,22 +88,6 @@ fun MultipartFile.getFilename(defaultBaseName: String = "upload"): String {
   return originalFilename?.ifEmpty { null }
       ?: run {
         val contentType = getPlainContentType() ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
-        val extension =
-            MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType)?.extension ?: ""
-        defaultBaseName + extension
-      }
-}
-
-/**
- * Returns the filename of an uploaded file. If the client supplied a filename, returns it as-is.
- * Otherwise, constructs a filename based on a default base name and an appropriate extension for
- * the content type, if any.
- */
-fun FileItemInput.getFilename(defaultBaseName: String = "upload"): String {
-  return name?.ifEmpty { null }
-      ?: run {
-        val contentType =
-            getPlainContentType(contentType) ?: MediaType.APPLICATION_OCTET_STREAM_VALUE
         val extension =
             MimeTypes.getDefaultMimeTypes().getRegisteredMimeType(contentType)?.extension ?: ""
         defaultBaseName + extension
