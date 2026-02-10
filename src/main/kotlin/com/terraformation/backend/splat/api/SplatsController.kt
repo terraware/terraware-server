@@ -65,6 +65,28 @@ class SplatsController(
   }
 
   @ApiResponse200
+  @ApiResponse404("The observation does not exist.")
+  @GetMapping("/api/v1/tracking/observations/{observationId}/birdnet")
+  @Operation(summary = "Gets information about BirdNet results from an observation.")
+  fun getObservationBirdnetResults(
+      @PathVariable observationId: ObservationId,
+      @Parameter(description = "If present, only list results for this monitoring plot.")
+      @RequestParam
+      monitoringPlotId: MonitoringPlotId?,
+      @Parameter(
+          description = "If present, only return information about the result for this video file."
+      )
+      @RequestParam
+      fileId: FileId?,
+  ): ListObservationBirdnetResultsResponsePayload {
+    val models = splatService.listObservationBirdnetResults(observationId, monitoringPlotId, fileId)
+
+    return ListObservationBirdnetResultsResponsePayload(
+        models.map { ObservationBirdnetResultPayload.of(it) }
+    )
+  }
+
+  @ApiResponse200
   @ApiResponse202("The video is still being processed and the model is not ready yet.")
   @ApiResponse404(
       "The plot observation does not exist, or does not have a video with the requested ID."
@@ -257,3 +279,24 @@ data class SetSplatAnnotationRequestPayload(
 data class SetSplatAnnotationsRequestPayload(
     val annotations: List<SetSplatAnnotationRequestPayload>,
 )
+
+data class ObservationBirdnetResultPayload(
+    val fileId: FileId,
+    val monitoringPlotId: MonitoringPlotId,
+    val status: AssetStatus,
+    val resultsStorageUrl: String?,
+) {
+  companion object {
+    fun of(model: com.terraformation.backend.splat.ObservationBirdnetResultModel) =
+        ObservationBirdnetResultPayload(
+            fileId = model.fileId,
+            monitoringPlotId = model.monitoringPlotId,
+            status = model.assetStatus,
+            resultsStorageUrl = model.resultsStorageUrl?.toString(),
+        )
+  }
+}
+
+data class ListObservationBirdnetResultsResponsePayload(
+    val results: List<ObservationBirdnetResultPayload>,
+) : SuccessResponsePayload

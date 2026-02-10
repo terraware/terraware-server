@@ -76,6 +76,38 @@ class SplatService(
         .fetch { ObservationSplatModel.of(it) }
   }
 
+  fun listObservationBirdnetResults(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId? = null,
+      fileId: FileId? = null,
+  ): List<ObservationBirdnetResultModel> {
+    requirePermissions { readObservation(observationId) }
+
+    val conditions =
+        with(OBSERVATION_MEDIA_FILES) {
+          listOfNotNull(
+              OBSERVATION_ID.eq(observationId),
+              monitoringPlotId?.let { MONITORING_PLOT_ID.eq(monitoringPlotId) },
+              fileId?.let { FILE_ID.eq(fileId) },
+          )
+        }
+
+    return dslContext
+        .select(
+            OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID,
+            OBSERVATION_MEDIA_FILES.OBSERVATION_ID,
+            BIRDNET_RESULTS.ASSET_STATUS_ID,
+            BIRDNET_RESULTS.FILE_ID,
+            BIRDNET_RESULTS.RESULTS_STORAGE_URL,
+        )
+        .from(OBSERVATION_MEDIA_FILES)
+        .join(BIRDNET_RESULTS)
+        .on(OBSERVATION_MEDIA_FILES.FILE_ID.eq(BIRDNET_RESULTS.FILE_ID))
+        .where(conditions)
+        .orderBy(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID, OBSERVATION_MEDIA_FILES.FILE_ID)
+        .fetch { ObservationBirdnetResultModel.of(it) }
+  }
+
   fun readObservationSplat(observationId: ObservationId, fileId: FileId): SizedInputStream {
     ensureObservationFile(observationId, fileId)
 

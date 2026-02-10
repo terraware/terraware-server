@@ -3,12 +3,14 @@ package com.terraformation.backend.splat
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.SplatAnnotationId
+import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import java.math.BigDecimal
+import java.net.URI
 import org.jooq.Record
 
 data class ObservationSplatModel(
@@ -33,6 +35,25 @@ data class SplatInfoModel(
     val cameraPosition: CoordinateModel?,
     val originPosition: CoordinateModel?,
 )
+
+data class ObservationBirdnetResultModel(
+    val assetStatus: AssetStatus,
+    val fileId: FileId,
+    val monitoringPlotId: MonitoringPlotId,
+    val observationId: ObservationId,
+    val resultsStorageUrl: URI?,
+) {
+  companion object {
+    fun of(record: Record) =
+        ObservationBirdnetResultModel(
+            assetStatus = record[BIRDNET_RESULTS.ASSET_STATUS_ID]!!,
+            fileId = record[BIRDNET_RESULTS.FILE_ID]!!,
+            monitoringPlotId = record[OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID]!!,
+            observationId = record[OBSERVATION_MEDIA_FILES.OBSERVATION_ID]!!,
+            resultsStorageUrl = record[BIRDNET_RESULTS.RESULTS_STORAGE_URL],
+        )
+  }
+}
 
 data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecimal) {
   constructor(

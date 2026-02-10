@@ -66,6 +66,61 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class ListObservationBirdnetResults {
+    private lateinit var fileId1: FileId
+    private lateinit var fileId2: FileId
+
+    @BeforeEach
+    fun setUp() {
+      fileId1 = insertFile()
+      fileId2 = insertFile()
+      insertObservationPlot()
+      insertObservationMediaFile(fileId = fileId1)
+      insertObservationMediaFile(fileId = fileId2)
+      insertBirdnetResult(fileId = fileId1, assetStatus = AssetStatus.Ready)
+      insertBirdnetResult(fileId = fileId2, assetStatus = AssetStatus.Preparing)
+    }
+
+    @Test
+    fun `returns BirdNet results for an observation`() {
+      val results = service.listObservationBirdnetResults(observationId)
+
+      assertEquals(2, results.size, "Number of results")
+      assertEquals(fileId1, results[0].fileId, "First result file ID")
+      assertEquals(fileId2, results[1].fileId, "Second result file ID")
+    }
+
+    @Test
+    fun `filters results by file ID`() {
+      val results = service.listObservationBirdnetResults(observationId, fileId = fileId1)
+
+      assertEquals(1, results.size, "Number of results")
+      assertEquals(fileId1, results[0].fileId, "Result file ID")
+      assertEquals(AssetStatus.Ready, results[0].assetStatus, "Asset status")
+    }
+
+    @Test
+    fun `returns empty list when no BirdNet results exist`() {
+      val otherObservationId = insertObservation(state = ObservationState.InProgress)
+
+      val results = service.listObservationBirdnetResults(otherObservationId)
+
+      assertEquals(0, results.size, "Number of results")
+    }
+
+    @Test
+    fun `throws exception if user does not have permission to read observation`() {
+      val otherOrganizationId = insertOrganization()
+      val otherPlantingSiteId = insertPlantingSite(organizationId = otherOrganizationId)
+      val otherObservationId = insertObservation(plantingSiteId = otherPlantingSiteId)
+
+      assertThrows<ObservationNotFoundException> {
+        service.listObservationBirdnetResults(otherObservationId)
+      }
+    }
+  }
+
+  @Nested
   inner class ListObservationSplatAnnotations {
 
     @BeforeEach
