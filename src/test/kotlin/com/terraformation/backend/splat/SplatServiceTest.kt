@@ -39,6 +39,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private lateinit var observationId: ObservationId
+  private lateinit var fileId: FileId
 
   @BeforeEach
   fun setUp() {
@@ -56,20 +57,14 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
     insertMonitoringPlot()
     observationId = insertObservation(state = ObservationState.InProgress)
+    fileId = insertFile()
+    insertObservationPlot()
+    insertObservationMediaFile()
+    insertSplat()
   }
 
   @Nested
   inner class ListObservationSplatAnnotations {
-    private lateinit var fileId: FileId
-
-    @BeforeEach
-    fun setUp() {
-      fileId = insertFile()
-      insertObservationPlot()
-      insertObservationMediaFile()
-      insertSplat()
-    }
-
     @Test
     fun `returns annotations for a given observation and file`() {
       val position1 = CoordinateModel(1.0, 2.0, 3.0)
@@ -159,16 +154,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class SetObservationSplatAnnotations {
-    private lateinit var fileId: FileId
-
-    @BeforeEach
-    fun setUp() {
-      fileId = insertFile()
-      insertObservationPlot()
-      insertObservationMediaFile()
-      insertSplat()
-    }
-
     @Test
     fun `creates new annotations when none exist`() {
       val position1 = CoordinateModel(1.0, 2.0, 3.0)
@@ -483,6 +468,167 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<FileNotFoundException> {
         service.setObservationSplatAnnotations(observationId, fileWithoutSplat, emptyList())
+      }
+    }
+  }
+
+  @Nested
+  inner class GetObservationSplatInfo {
+    @Test
+    fun `returns origin position when it exists`() {
+      val originPosition = CoordinateModel(10.0, 20.0, 30.0)
+      insertSplatInformation(originPosition = originPosition)
+
+      val position1 = CoordinateModel(1.0, 2.0, 3.0)
+      val id1 = insertSplatAnnotation(title = "Annotation 1", position = position1)
+
+      val expected =
+          SplatInfoModel(
+              originPosition = originPosition,
+              annotations =
+                  listOf(
+                      ExistingSplatAnnotationModel(
+                          id = id1,
+                          title = "Annotation 1",
+                          position = position1,
+                          fileId = fileId,
+                      ),
+                  ),
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
+    fun `returns null origin position when record does not exist`() {
+      val position1 = CoordinateModel(1.0, 2.0, 3.0)
+      val id1 = insertSplatAnnotation(title = "Annotation 1", position = position1)
+
+      val expected =
+          SplatInfoModel(
+              originPosition = null,
+              annotations =
+                  listOf(
+                      ExistingSplatAnnotationModel(
+                          id = id1,
+                          title = "Annotation 1",
+                          position = position1,
+                          fileId = fileId,
+                      ),
+                  ),
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
+    fun `returns null origin position when all coordinates are null`() {
+      insertSplatInformation(originPosition = null)
+
+      val position1 = CoordinateModel(1.0, 2.0, 3.0)
+      val id1 = insertSplatAnnotation(title = "Annotation 1", position = position1)
+
+      val expected =
+          SplatInfoModel(
+              originPosition = null,
+              annotations =
+                  listOf(
+                      ExistingSplatAnnotationModel(
+                          id = id1,
+                          title = "Annotation 1",
+                          position = position1,
+                          fileId = fileId,
+                      ),
+                  ),
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
+    fun `returns all annotations with origin position`() {
+      val originPosition = CoordinateModel(5.0, 10.0, 15.0)
+      insertSplatInformation(originPosition = originPosition)
+
+      val position1 = CoordinateModel(1.0, 2.0, 3.0)
+      val cameraPosition1 = CoordinateModel(4.0, 5.0, 6.0)
+      val id1 =
+          insertSplatAnnotation(
+              title = "Test Annotation 1",
+              bodyText = "Description 1",
+              label = "Label 1",
+              position = position1,
+              cameraPosition = cameraPosition1,
+          )
+
+      val position2 = CoordinateModel(7.0, 8.0, 9.0)
+      val id2 = insertSplatAnnotation(title = "Test Annotation 2", position = position2)
+
+      val expected =
+          SplatInfoModel(
+              originPosition = originPosition,
+              annotations =
+                  listOf(
+                      ExistingSplatAnnotationModel(
+                          id = id1,
+                          title = "Test Annotation 1",
+                          bodyText = "Description 1",
+                          label = "Label 1",
+                          position = position1,
+                          cameraPosition = cameraPosition1,
+                          fileId = fileId,
+                      ),
+                      ExistingSplatAnnotationModel(
+                          id = id2,
+                          title = "Test Annotation 2",
+                          position = position2,
+                          fileId = fileId,
+                      ),
+                  ),
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
+    fun `returns empty annotations list when none exist`() {
+      val originPosition = CoordinateModel(10.0, 20.0, 30.0)
+      insertSplatInformation(originPosition = originPosition)
+
+      val expected =
+          SplatInfoModel(
+              originPosition = originPosition,
+              annotations = emptyList(),
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
+    fun `throws exception if file is not associated with observation`() {
+      val otherFileId = insertFile()
+
+      assertThrows<FileNotFoundException> {
+        service.getObservationSplatInfo(observationId, otherFileId)
+      }
+    }
+
+    @Test
+    fun `throws exception if user does not have permission to read observation`() {
+      deleteOrganizationUser()
+
+      assertThrows<ObservationNotFoundException> {
+        service.getObservationSplatInfo(observationId, fileId)
+      }
+    }
+
+    @Test
+    fun `throws exception if splat does not exist for file`() {
+      val fileWithoutSplat = insertFile()
+      insertObservationMediaFile(fileId = fileWithoutSplat)
+
+      assertThrows<FileNotFoundException> {
+        service.getObservationSplatInfo(observationId, fileWithoutSplat)
       }
     }
   }

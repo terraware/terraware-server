@@ -226,6 +226,9 @@ COMMENT ON COLUMN splat_annotations.label IS 'The text that displays over the an
 COMMENT ON COLUMN splat_annotations.title IS 'The text that displays at the top of the annotation box after it is clicked.';
 COMMENT ON COLUMN splat_annotations.body_text IS 'The text that displays in the annotation box after it is clicked.';
 
+COMMENT ON TABLE splat_information IS 'Information about splat models, such as center point of the splat.';
+COMMENT ON COLUMN splat_information.origin_position_x IS 'Center point of the splat (along with y and z).';
+
 COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Session, not the application.';
 
 COMMENT ON TABLE spring_session_attributes IS 'Data associated with a login session. Used by Spring Session, not the application.';

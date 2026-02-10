@@ -28,6 +28,11 @@ data class ObservationSplatModel(
   }
 }
 
+data class SplatInfoModel(
+    val annotations: List<SplatAnnotationModel<SplatAnnotationId>>,
+    val originPosition: CoordinateModel?,
+)
+
 data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecimal) {
   constructor(
       x: Double,

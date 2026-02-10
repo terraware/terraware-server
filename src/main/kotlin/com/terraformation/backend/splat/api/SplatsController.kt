@@ -21,6 +21,7 @@ import com.terraformation.backend.splat.ExistingSplatAnnotationModel
 import com.terraformation.backend.splat.ObservationSplatModel
 import com.terraformation.backend.splat.SplatAnnotationModel
 import com.terraformation.backend.splat.SplatGenerationFailedException
+import com.terraformation.backend.splat.SplatInfoModel
 import com.terraformation.backend.splat.SplatNotReadyException
 import com.terraformation.backend.splat.SplatService
 import io.swagger.v3.oas.annotations.Operation
@@ -113,8 +114,23 @@ class SplatsController(
   @ApiResponse404(
       "The plot observation does not exist, or does not have a splat for the requested file ID."
   )
+  @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/info")
+  @Operation(summary = "Gets the info for a splat model, such as the list of annotations.")
+  fun listSplatDetails(
+      @PathVariable observationId: ObservationId,
+      @PathVariable fileId: FileId,
+  ): GetObservationSplatInfoResponsePayload {
+    val infoModel = splatService.getObservationSplatInfo(observationId, fileId)
+
+    return GetObservationSplatInfoResponsePayload(infoModel)
+  }
+
+  @ApiResponse200
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a splat for the requested file ID."
+  )
   @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
-  @Operation(summary = "Gets the list of annotations for a splat model.")
+  @Operation(summary = "Use /info instead", deprecated = true)
   fun listObservationSplatAnnotations(
       @PathVariable observationId: ObservationId,
       @PathVariable fileId: FileId,
@@ -198,6 +214,18 @@ data class SplatAnnotationPayload(
             title = model.title,
         )
   }
+}
+
+data class GetObservationSplatInfoResponsePayload(
+    val annotations: List<SplatAnnotationPayload>,
+    val originPosition: CoordinatePayload?,
+) : SuccessResponsePayload {
+  constructor(
+      model: SplatInfoModel
+  ) : this(
+      annotations = model.annotations.map { SplatAnnotationPayload.of(it) },
+      originPosition = model.originPosition?.let { CoordinatePayload.of(it) },
+  )
 }
 
 data class ListObservationSplatAnnotationsResponsePayload(

@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_INFORMATION
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
@@ -119,6 +120,22 @@ class SplatService(
     }
   }
 
+  fun getObservationSplatInfo(
+      observationId: ObservationId,
+      fileId: FileId,
+  ): SplatInfoModel {
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    val annotations = listSplatAnnotations(fileId)
+    val originPosition = getSplatOriginPosition(fileId)
+
+    return SplatInfoModel(
+        annotations = annotations,
+        originPosition = originPosition,
+    )
+  }
+
   fun listObservationSplatAnnotations(
       observationId: ObservationId,
       fileId: FileId,
@@ -218,6 +235,29 @@ class SplatService(
       AssetStatus.Preparing -> throw SplatNotReadyException(fileId)
       AssetStatus.Ready ->
           fileStore.read(splatsRecord.splatStorageUrl!!).withContentType(splatMimeType)
+    }
+  }
+
+  private fun getSplatOriginPosition(fileId: FileId): CoordinateModel? {
+    with(SPLAT_INFORMATION) {
+      return dslContext
+          .select(
+              ORIGIN_POSITION_X,
+              ORIGIN_POSITION_Y,
+              ORIGIN_POSITION_Z,
+          )
+          .from(SPLAT_INFORMATION)
+          .where(FILE_ID.eq(fileId))
+          .fetchOne()
+          ?.let { record ->
+            record[ORIGIN_POSITION_X]?.let {
+              CoordinateModel(
+                  it,
+                  record[ORIGIN_POSITION_Y]!!,
+                  record[ORIGIN_POSITION_Z]!!,
+              )
+            }
+          }
     }
   }
 
