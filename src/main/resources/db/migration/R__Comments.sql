@@ -672,10 +672,16 @@ COMMENT ON TABLE accelerator.project_metrics IS 'Metrics specific to one project
 
 COMMENT ON TABLE accelerator.project_overall_scores IS 'Overall scores assigned to project by scorers.';
 
+COMMENT ON TABLE accelerator.project_project_metric_targets IS 'Project targets for project-specific metrics by year';
+
 COMMENT ON TABLE accelerator.project_report_configs IS 'Configurations for accelerator project reports, including reporting dates and reporting frequencies.';
 
 COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
 COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 to 2. The score can be null to represent not yet scored. ';
+        
+COMMENT ON TABLE accelerator.project_standard_metric_targets IS 'Project targets for standard metrics by year';
+
+COMMENT ON TABLE accelerator.project_system_metric_targets IS 'Project targets for system metrics by year';
 
 COMMENT ON VIEW accelerator.project_variables IS 'Latest Variables for projects. Only includes accelerator projects, and includes all accelerator projects, whether or not they have values for any variables.';
 
