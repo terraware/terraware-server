@@ -8,10 +8,12 @@ data class SplatterRequestFileLocation(
 )
 
 data class SplatterRequestMessage(
-    val args: List<String>? = null,
+    val abortAfter: String? = null,
     val input: SplatterRequestFileLocation,
     val jobId: String,
     val output: SplatterRequestFileLocation,
     val responseQueueUrl: URI,
+    val restartAt: String? = null,
     val restoreJob: Boolean = false,
+    val stepArgs: Map<String, List<String>>? = null,
 )

@@ -1,6 +1,15 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{/admin/header :: head}"/>
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        td {
+            vertical-align: top;
+        }
+        td input {
+            margin-top: 0;
+        }
+    </style>
+</head>
 <body>
 
 <span th:replace="~{/admin/header :: top}"/>
@@ -16,138 +25,221 @@
 
 <form method="POST" action="/admin/splats/process">
     <table>
-        <tr>
-            <th>Setting</th>
-            <th/>
-            <th>Default</th>
-            <th>Explanation</th>
-        </tr>
-        <tr>
-            <td>Observation&nbsp;ID</td>
-            <td><input type="text" size="8" name="observationId" required/></td>
-            <td colspan="2"/>
-        </tr>
-        <tr>
-            <td>File ID</td>
-            <td><input type="text" size="8" name="fileId" required/></td>
-            <td colspan="2"/>
-        </tr>
-        <tr>
-            <td>Abort After</td>
-            <td><input type="text" size="8" name="abortAfter"/></td>
-            <td/>
-            <td>
-                Abort the processing run after this step. Step names are the same as the splat.py
-                command names for steps that use splat.py. Additional step names: prune-tail,
-                link-images, link-images-factor, gsplat, splat-transform.
-            </td>
-        </tr>
-        <tr>
-            <td>Data Factor</td>
-            <td><input type="text" size="8" name="dataFactor"/></td>
-            <td>1</td>
-            <td>
-                Downscale frames by this factor during model training. You will probably want
-                to adjust Max Size rather than this.
-            </td>
-        </tr>
-        <tr>
-            <td>FPS</td>
-            <td><input type="text" size="8" name="fps"/></td>
-            <td>3</td>
-            <td>
-                Frames per second to extract from the video.
-            </td>
-        </tr>
-        <tr>
-            <td>Keep %</td>
-            <td><input type="text" size="8" name="keepPercent"/></td>
-            <td>90</td>
-            <td>
-                Percentage of frames to keep after checking for blurriness. If this is 90, the
-                blurriest 10% of frames will be dropped. A value of 100 will skip the filter-blurry
-                step.
-            </td>
-        </tr>
-        <tr>
-            <td>Mapper</td>
-            <td>
-                <select name="mapper">
-                    <option value="colmap">COLMAP</option>
-                    <option value="glomap" selected>GLOMAP</option>
-                </select>
-            <td>GLOMAP</td>
-            <td>
-                Which command to use for the mapper phase of the SfM step.
-            </td>
-        </tr>
-        <tr>
-            <td>Max Size</td>
-            <td><input type="text" size="8" name="maxSize"/></td>
-            <td>1600</td>
-            <td>
-                Downscale video frames to fit within a square this many pixels tall and wide.
-            </td>
-        </tr>
-        <tr>
-            <td>Max Steps</td>
-            <td><input type="text" size="8" name="maxSteps"/></td>
-            <td>30000</td>
-            <td>
-                Number of training steps to run.
-            </td>
-        </tr>
-        <tr>
-            <td>Restart At</td>
-            <td><input type="text" size="8" name="restartAt"/></td>
-            <td/>
-            <td>
-                Restart the processing run at this step, using the files in the archived job
-                directory. Step names are the same as the splat.py command names for steps that
-                use splat.py. Additional step names: prune-tail, link-images, link-images-factor,
-                gsplat, splat-transform.
-            </td>
-        </tr>
-        <tr>
-            <td>SSIM Lambda</td>
-            <td><input type="text" size="8" name="ssimLambda"/></td>
-            <td>0.1</td>
-            <td>
-                Controls how much the training loss emphasizes structural similarity (SSIM) versus
-                raw pixel accuracy. Higher values tend to produce smoother, more visually
-                consistent results, while lower values prioritize sharper pixel-level detail.
-                Higher values also tend to produce larger model files.
-            </td>
-        </tr>
-        <tr>
-            <td>Tail Pruning</td>
-            <td>
-                <select name="tailPruning">
-                    <option value="" selected>Default</option>
-                    <option value="true">Enable</option>
-                    <option value="false">Disable</option>
-                </select>
-            </td>
-            <td>Default</td>
-            <td>
-                Enable or disable tail pruning. Default is enabled for COLMAP and disabled for
-                GLOMAP.
-            </td>
-        </tr>
-        <tr>
-            <td>Other Args</td>
-            <td colspan="2"><input type="text" name="otherArgs"/></td>
-            <td>
-                Additional space-delimited arguments to pass to processing script, in case the
-                script is updated to support more options but the new options haven't been added
-                to this form yet.
-            </td>
-        </tr>
+        <thead>
+            <tr>
+                <th>Step</th>
+                <th>Setting</th>
+                <th/>
+                <th>Explanation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="2"></td>
+                <td>Observation&nbsp;ID</td>
+                <td colspan="2"><input type="text" name="observationId" required/></td>
+            </tr>
+            <tr>
+                <td>File ID</td>
+                <td colspan="2"><input type="text" name="fileId" required/></td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td rowspan="3">extract</td>
+                <td>FPS</td>
+                <td><input type="text" name="fps" placeholder="3"/></td>
+                <td>
+                    Frames per second to extract from the video.
+                </td>
+            </tr>
+            <tr>
+                <td>Max Size</td>
+                <td><input type="text" name="maxSize" placeholder="1600"/></td>
+                <td>
+                    Downscale video frames to fit within a square this many pixels tall and wide.
+                </td>
+            </tr>
+            <tr>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[extract]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to splat.py extract.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td rowspan="2">filter-blurry</td>
+                <td>Keep %</td>
+                <td><input type="text" name="keepPercent" placeholder="90"/></td>
+                <td>
+                    Percentage of frames to keep after checking for blurriness. If this is 90, the
+                    blurriest 10% of frames will be dropped. A value of 100 will skip the filter-blurry
+                    step.
+                </td>
+            </tr>
+            <tr>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[filter-blurry]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to splat.py filter-blurry.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td rowspan="2">sfm</td>
+                <td>Mapper</td>
+                <td>
+                    <select name="mapper">
+                        <option value="colmap">COLMAP</option>
+                        <option value="glomap" selected>GLOMAP</option>
+                    </select>
+                <td>
+                    Which command to use for the mapper phase of the SfM step.
+                </td>
+            </tr>
+            <tr>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[sfm]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to splat.py sfm.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td rowspan="2">prune-tail</td>
+                <td>Tail Pruning</td>
+                <td>
+                    <select name="tailPruning">
+                        <option value="" selected>Default</option>
+                        <option value="true">Enable</option>
+                        <option value="false">Disable</option>
+                    </select>
+                </td>
+                <td>
+                    Enable or disable tail pruning. Default is enabled for COLMAP and disabled for
+                    GLOMAP.
+                </td>
+            </tr>
+            <tr>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[prune-tail]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to prune_tail.py.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td>prepare</td>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[prepare]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to splat.py prepare.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td rowspan="4">gsplat</td>
+                <td>Data Factor</td>
+                <td><input type="text" name="dataFactor" placeholder="1"/></td>
+                <td>
+                    Downscale frames by this factor during model training. You will probably want
+                    to adjust Max Size rather than this.
+                </td>
+            </tr>
+            <tr>
+                <td>Max Steps</td>
+                <td><input type="text" name="maxSteps" placeholder="30000"/></td>
+                <td>
+                    Number of training steps to run.
+                </td>
+            </tr>
+            <tr>
+                <td>SSIM Lambda</td>
+                <td><input type="text" name="ssimLambda" placeholder="0.1"/></td>
+                <td>
+                    Controls how much the training loss emphasizes structural similarity (SSIM) versus
+                    raw pixel accuracy. Higher values tend to produce smoother, more visually
+                    consistent results, while lower values prioritize sharper pixel-level detail.
+                    Higher values also tend to produce larger model files.
+                </td>
+            </tr>
+            <tr>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[gsplat]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to simple_trainer.py.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td>splat-transform</td>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[splat-transform]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to splat-transform.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td rowspan="4"></td>
+                <td>Abort After</td>
+                <td><input type="text" name="abortAfter"/></td>
+                <td>
+                    Abort the processing run after this step. Step names are the same as the splat.py
+                    command names for steps that use splat.py. Additional step names: prune-tail,
+                    link-images, link-images-factor, gsplat, splat-transform.
+                </td>
+            </tr>
+            <tr>
+                <td>Restart At</td>
+                <td><input type="text" name="restartAt"/></td>
+                <td>
+                    Restart the processing run at this step, using the files in the archived job
+                    directory. Step names are the same as the splat.py command names for steps that
+                    use splat.py. Additional step names: prune-tail, link-images, link-images-factor,
+                    gsplat, splat-transform.
+                </td>
+            </tr>
+
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
 
         <tr>
-            <td/>
-            <td><input type="submit" value="Process Video"/></td>
             <td colspan="2"/>
+            <td colspan="2"><input type="submit" value="Process Video"/></td>
         </tr>
     </table>
 </form>

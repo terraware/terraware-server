@@ -76,3 +76,9 @@ data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
 typealias ExistingSplatAnnotationModel = SplatAnnotationModel<SplatAnnotationId>
 
 typealias NewSplatAnnotationModel = SplatAnnotationModel<Nothing?>
+
+data class SplatGenerationParams(
+    val abortAfter: String? = null,
+    val restartAt: String? = null,
+    val stepArgs: Map<String, List<String>> = emptyMap(),
+)

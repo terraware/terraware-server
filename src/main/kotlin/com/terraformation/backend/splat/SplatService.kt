@@ -85,11 +85,11 @@ class SplatService(
       observationId: ObservationId,
       fileId: FileId,
       force: Boolean = false,
-      processScriptArgs: List<String>? = null,
+      params: SplatGenerationParams = SplatGenerationParams(),
   ) {
     ensureObservationFile(observationId, fileId)
 
-    generateSplat(fileId, force, processScriptArgs)
+    generateSplat(fileId, force, params)
   }
 
   fun recordSplatError(fileId: FileId, errorMessage: String) {
@@ -143,7 +143,7 @@ class SplatService(
   private fun generateSplat(
       fileId: FileId,
       force: Boolean = false,
-      processScriptArgs: List<String>?,
+      params: SplatGenerationParams,
   ) {
     val videoUrl =
         dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(fileId))
@@ -181,7 +181,7 @@ class SplatService(
       if (rowsInserted == 1 || force) {
         val requestMessage =
             SplatterRequestMessage(
-                args = processScriptArgs,
+                abortAfter = params.abortAfter,
                 input =
                     SplatterRequestFileLocation(
                         s3BucketName,
@@ -194,7 +194,9 @@ class SplatService(
                         splatKey,
                     ),
                 responseQueueUrl = responseQueueUrl,
-                restoreJob = processScriptArgs?.contains("--restart-at") == true,
+                restartAt = params.restartAt,
+                restoreJob = params.restartAt != null,
+                stepArgs = params.stepArgs,
             )
 
         sqsTemplate.send(requestQueueUrl, requestMessage)

@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SplatsDao
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.splat.SplatGenerationParams
 import com.terraformation.backend.splat.SplatService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Controller
@@ -45,40 +46,49 @@ class AdminSplatsController(
       @RequestParam restartAt: String?,
       @RequestParam ssimLambda: Double?,
       @RequestParam tailPruning: Boolean?,
-      @RequestParam otherArgs: String?,
+      payload: AdminProcessSplatRequestPayload,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      val args =
+      val stepArgs =
           listOfNotNull(
-                  abortAfter?.ifBlank { null }?.let { listOf("--abort-after", abortAfter) },
-                  dataFactor?.let { listOf("--data-factor", "$dataFactor") },
-                  fps?.let { listOf("--fps", "$fps") },
+                  dataFactor?.let { "gsplat" to listOf("--data-factor", "$dataFactor") },
+                  fps?.let { "extract" to listOf("--fps", "$fps") },
                   keepPercent?.let {
                     if (keepPercent < 100.0) {
-                      listOf("--keep-percent", "${keepPercent / 100.0}")
+                      "filter-blurry" to listOf("--keep-percent", "${keepPercent / 100.0}")
                     } else {
-                      listOf("--no-filter-blurry")
+                      "filter-blurry" to listOf("--no-filter-blurry")
                     }
                   },
-                  mapper?.ifBlank { null }?.let { listOf("--mapper", mapper) },
-                  maxSize?.let { listOf("--max-size", "$maxSize") },
-                  maxSteps?.let { listOf("--max-steps", "$maxSteps") },
-                  restartAt?.ifBlank { null }?.let { listOf("--restart-at", restartAt) },
-                  ssimLambda?.let { listOf("--ssim-lambda", "$ssimLambda") },
+                  mapper?.ifBlank { null }?.let { "sfm" to listOf("--mapper", mapper) },
+                  maxSize?.let { "extract" to listOf("--max-size", "$maxSize") },
+                  maxSteps?.let { "gsplat" to listOf("--max_steps", "$maxSteps") },
+                  ssimLambda?.let { "gsplat" to listOf("--ssim_lambda", "$ssimLambda") },
                   tailPruning?.let {
                     if (tailPruning) {
-                      listOf("--prune-tail")
+                      "prune-tail" to listOf("--prune-tail")
                     } else {
-                      listOf("--no-prune-tail")
+                      "prune-tail" to listOf("--no-prune-tail")
                     }
                   },
-                  otherArgs?.ifEmpty { null }?.split(" "),
               )
-              .flatten()
-              .ifEmpty { null }
+              .groupBy { it.first }
+              .mapValues { (_, lists) -> lists.flatMap { it.second } }
+              .toMutableMap()
 
-      splatService.generateObservationSplat(observationId, fileId, true, args)
+      payload.stepArgs.forEach { (stepName, argsString) ->
+        if (!argsString.isNullOrBlank()) {
+          val splitArgs = argsString.split(' ')
+          stepArgs.compute(stepName) { _, args ->
+            if (args == null) splitArgs else args + splitArgs
+          }
+        }
+      }
+
+      val params = SplatGenerationParams(abortAfter, restartAt, stepArgs)
+
+      splatService.generateObservationSplat(observationId, fileId, true, params)
 
       val storageUrl = filesDao.fetchOneById(fileId)?.storageUrl
       val modelUrl = splatsDao.fetchOneByFileId(fileId)?.splatStorageUrl
@@ -102,3 +112,8 @@ class AdminSplatsController(
 
   private fun redirectToSplatsHome() = "redirect:/admin/splats"
 }
+
+/** "Payload" that accepts form fields with subscripted names such as `stepArgs[extract]`. */
+data class AdminProcessSplatRequestPayload(
+    val stepArgs: Map<String, String?>,
+)
