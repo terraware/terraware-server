@@ -119,6 +119,23 @@ class SplatService(
     }
   }
 
+  fun getObservationSplatInfo(
+      observationId: ObservationId,
+      fileId: FileId,
+  ): SplatInfoModel {
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    val annotations = listSplatAnnotations(fileId)
+    val (originPosition, cameraPosition) = getSplatPositions(fileId)
+
+    return SplatInfoModel(
+        annotations = annotations,
+        cameraPosition = cameraPosition,
+        originPosition = originPosition,
+    )
+  }
+
   fun listObservationSplatAnnotations(
       observationId: ObservationId,
       fileId: FileId,
@@ -220,6 +237,44 @@ class SplatService(
       AssetStatus.Preparing -> throw SplatNotReadyException(fileId)
       AssetStatus.Ready ->
           fileStore.read(splatsRecord.splatStorageUrl!!).withContentType(splatMimeType)
+    }
+  }
+
+  private fun getSplatPositions(fileId: FileId): Pair<CoordinateModel?, CoordinateModel?> {
+    with(SPLATS) {
+      val record =
+          dslContext
+              .select(
+                  CAMERA_POSITION_X,
+                  CAMERA_POSITION_Y,
+                  CAMERA_POSITION_Z,
+                  ORIGIN_POSITION_X,
+                  ORIGIN_POSITION_Y,
+                  ORIGIN_POSITION_Z,
+              )
+              .from(SPLATS)
+              .where(FILE_ID.eq(fileId))
+              .fetchOne()
+
+      val cameraPosition =
+          record?.get(CAMERA_POSITION_X)?.let {
+            CoordinateModel(
+                it,
+                record[CAMERA_POSITION_Y]!!,
+                record[CAMERA_POSITION_Z]!!,
+            )
+          }
+
+      val originPosition =
+          record?.get(ORIGIN_POSITION_X)?.let {
+            CoordinateModel(
+                it,
+                record[ORIGIN_POSITION_Y]!!,
+                record[ORIGIN_POSITION_Z]!!,
+            )
+          }
+
+      return Pair(originPosition, cameraPosition)
     }
   }
 

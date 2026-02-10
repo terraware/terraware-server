@@ -3058,6 +3058,14 @@ abstract class DatabaseBackedTest {
       row: SplatsRow = SplatsRow(),
       fileId: FileId = row.fileId ?: inserted.fileId,
       assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
+      originPosition: CoordinateModel? =
+          row.originPositionX?.let {
+            CoordinateModel(it, row.originPositionY!!, row.originPositionZ!!)
+          },
+      cameraPosition: CoordinateModel? =
+          row.cameraPositionX?.let {
+            CoordinateModel(it, row.cameraPositionY!!, row.cameraPositionZ!!)
+          },
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
   ) {
@@ -3065,6 +3073,12 @@ abstract class DatabaseBackedTest {
         row.copy(
             fileId = fileId,
             assetStatusId = assetStatus,
+            originPositionX = originPosition?.x,
+            originPositionY = originPosition?.y,
+            originPositionZ = originPosition?.z,
+            cameraPositionY = cameraPosition?.y,
+            cameraPositionX = cameraPosition?.x,
+            cameraPositionZ = cameraPosition?.z,
             createdBy = createdBy,
             createdTime = createdTime,
         )
