@@ -678,7 +678,7 @@ COMMENT ON TABLE accelerator.project_report_configs IS 'Configurations for accel
 
 COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
 COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 to 2. The score can be null to represent not yet scored. ';
-        
+
 COMMENT ON TABLE accelerator.project_standard_metric_targets IS 'Project targets for standard metrics by year';
 
 COMMENT ON TABLE accelerator.project_system_metric_targets IS 'Project targets for system metrics by year';
@@ -828,6 +828,8 @@ COMMENT ON TABLE funder.published_project_details IS 'Published Project Data vis
 
 COMMENT ON TABLE funder.published_project_land_use IS 'Land Use Model Types and hectares of each for published projects.';
 
+COMMENT ON TABLE funder.published_project_metric_targets IS 'Published project targets for project-specific metrics by year';
+
 COMMENT ON TABLE funder.published_project_sdg IS 'Sustainable Development Goals for published projects.';
 
 COMMENT ON TABLE funder.published_report_achievements IS 'Achievements of published reports.';
@@ -843,5 +845,9 @@ COMMENT ON TABLE funder.published_report_standard_metrics IS 'Standard metrics o
 COMMENT ON TABLE funder.published_report_system_metrics IS 'System metrics of published reports.';
 
 COMMENT ON TABLE funder.published_reports IS 'Published reports visible to funders.';
+
+COMMENT ON TABLE funder.published_standard_metric_targets IS 'Published project targets for standard metrics by year';
+
+COMMENT ON TABLE funder.published_system_metric_targets IS 'Published project targets for system metrics by year';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

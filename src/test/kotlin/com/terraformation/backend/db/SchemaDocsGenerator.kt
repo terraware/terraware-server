@@ -240,6 +240,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "published_activity_media_files" to setOf(ALL, FUNDER),
                   "published_project_carbon_certs" to setOf(ALL, FUNDER),
                   "published_project_land_use" to setOf(ALL, FUNDER),
+                  "published_project_metric_targets" to setOf(ALL, FUNDER),
                   "published_project_sdg" to setOf(ALL, FUNDER),
                   "published_project_details" to setOf(ALL, FUNDER),
                   "published_report_achievements" to setOf(ALL, FUNDER),
@@ -249,6 +250,8 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "published_report_standard_metrics" to setOf(ALL, FUNDER),
                   "published_report_system_metrics" to setOf(ALL, FUNDER),
                   "published_reports" to setOf(ALL, FUNDER),
+                  "published_standard_metric_targets" to setOf(ALL, FUNDER),
+                  "published_system_metric_targets" to setOf(ALL, FUNDER),
               ),
           "nursery" to
               mapOf(
