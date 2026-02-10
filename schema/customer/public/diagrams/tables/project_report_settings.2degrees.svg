@@ -139,14 +139,14 @@
 <text text-anchor="start" x="69" y="-1468.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="8,-1442 8,-1460 108,-1460 108,-1442 8,-1442"/>
 <text text-anchor="start" x="11" y="-1448.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="8,-1424 8,-1442 51,-1442 51,-1424 8,-1424"/>
-<polygon fill="none" stroke="black" points="8,-1424 8,-1442 51,-1442 51,-1424 8,-1424"/>
+<polygon fill="#ffffff" stroke="transparent" points="8,-1424 8,-1442 32,-1442 32,-1424 8,-1424"/>
+<polygon fill="none" stroke="black" points="8,-1424 8,-1442 32,-1442 32,-1424 8,-1424"/>
 <text text-anchor="start" x="11" y="-1430.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="51,-1424 51,-1442 75,-1442 75,-1424 51,-1424"/>
-<polygon fill="none" stroke="black" points="51,-1424 51,-1442 75,-1442 75,-1424 51,-1424"/>
-<text text-anchor="start" x="65" y="-1430.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="75,-1424 75,-1442 108,-1442 108,-1424 75,-1424"/>
-<polygon fill="none" stroke="black" points="75,-1424 75,-1442 108,-1442 108,-1424 75,-1424"/>
+<polygon fill="#ffffff" stroke="transparent" points="32,-1424 32,-1442 85,-1442 85,-1424 32,-1424"/>
+<polygon fill="none" stroke="black" points="32,-1424 32,-1442 85,-1442 85,-1424 32,-1424"/>
+<text text-anchor="start" x="36" y="-1430.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="85,-1424 85,-1442 108,-1442 108,-1424 85,-1424"/>
+<polygon fill="none" stroke="black" points="85,-1424 85,-1442 108,-1442 108,-1424 85,-1424"/>
 <text text-anchor="start" x="89" y="-1430.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>

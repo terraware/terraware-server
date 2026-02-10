@@ -2982,48 +2982,48 @@
 <g id="node57" class="node">
 <title>splats</title>
 <g id="a_node57"><a xlink:href="../../tables/splats.html" xlink:title="splats" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="863,-821.05 863,-945.05 985,-945.05 985,-821.05 863,-821.05"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="863,-923.05 863,-945.05 985,-945.05 985,-923.05 863,-923.05"/>
-<polygon fill="none" stroke="black" points="863,-923.05 863,-945.05 985,-945.05 985,-923.05 863,-923.05"/>
-<text text-anchor="start" x="867.5" y="-932.25" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">splats</text>
-<text text-anchor="start" x="946" y="-931.25" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="863,-901.05 863,-923.05 985,-923.05 985,-901.05 863,-901.05"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="868" y="-918.054"/>
-<text text-anchor="start" x="883" y="-909.25" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
-<polygon fill="none" stroke="black" points="863,-879.05 863,-901.05 985,-901.05 985,-879.05 863,-879.05"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="868" y="-896.054"/>
-<text text-anchor="start" x="883" y="-887.25" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
-<polygon fill="none" stroke="black" points="863,-857.05 863,-879.05 985,-879.05 985,-857.05 863,-857.05"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="868" y="-874.054"/>
-<text text-anchor="start" x="883" y="-865.25" font-family="Helvetica,sans-Serif" font-size="11.00">asset_status_id</text>
-<polygon fill="none" stroke="black" points="863,-839.05 863,-857.05 985,-857.05 985,-839.05 863,-839.05"/>
-<text text-anchor="start" x="866" y="-845.25" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="863,-821.05 863,-839.05 922,-839.05 922,-821.05 863,-821.05"/>
-<polygon fill="none" stroke="black" points="863,-821.05 863,-839.05 922,-839.05 922,-821.05 863,-821.05"/>
-<text text-anchor="start" x="866" y="-827.25" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
-<polygon fill="#ffffff" stroke="transparent" points="922,-821.05 922,-839.05 953,-839.05 953,-821.05 922,-821.05"/>
-<polygon fill="none" stroke="black" points="922,-821.05 922,-839.05 953,-839.05 953,-821.05 922,-821.05"/>
-<text text-anchor="start" x="943" y="-827.25" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="953,-821.05 953,-839.05 985,-839.05 985,-821.05 953,-821.05"/>
-<polygon fill="none" stroke="black" points="953,-821.05 953,-839.05 985,-839.05 985,-821.05 953,-821.05"/>
-<text text-anchor="start" x="975" y="-827.25" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="858.5,-821.05 858.5,-945.05 989.5,-945.05 989.5,-821.05 858.5,-821.05"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="859,-923.05 859,-945.05 990,-945.05 990,-923.05 859,-923.05"/>
+<polygon fill="none" stroke="black" points="859,-923.05 859,-945.05 990,-945.05 990,-923.05 859,-923.05"/>
+<text text-anchor="start" x="863.5" y="-932.25" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">splats</text>
+<text text-anchor="start" x="951" y="-931.25" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="859,-901.05 859,-923.05 990,-923.05 990,-901.05 859,-901.05"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="864" y="-918.054"/>
+<text text-anchor="start" x="879" y="-909.25" font-family="Helvetica,sans-Serif" font-size="11.00">file_id</text>
+<polygon fill="none" stroke="black" points="859,-879.05 859,-901.05 990,-901.05 990,-879.05 859,-879.05"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="864" y="-896.054"/>
+<text text-anchor="start" x="879" y="-887.25" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<polygon fill="none" stroke="black" points="859,-857.05 859,-879.05 990,-879.05 990,-857.05 859,-857.05"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="864" y="-874.054"/>
+<text text-anchor="start" x="879" y="-865.25" font-family="Helvetica,sans-Serif" font-size="11.00">asset_status_id</text>
+<polygon fill="none" stroke="black" points="859,-839.05 859,-857.05 990,-857.05 990,-839.05 859,-839.05"/>
+<text text-anchor="start" x="862" y="-845.25" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="859,-821.05 859,-839.05 922,-839.05 922,-821.05 859,-821.05"/>
+<polygon fill="none" stroke="black" points="859,-821.05 859,-839.05 922,-839.05 922,-821.05 859,-821.05"/>
+<text text-anchor="start" x="862" y="-827.25" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
+<polygon fill="#ffffff" stroke="transparent" points="922,-821.05 922,-839.05 956,-839.05 956,-821.05 922,-821.05"/>
+<polygon fill="none" stroke="black" points="922,-821.05 922,-839.05 956,-839.05 956,-821.05 922,-821.05"/>
+<text text-anchor="start" x="946" y="-827.25" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="956,-821.05 956,-839.05 990,-839.05 990,-821.05 956,-821.05"/>
+<polygon fill="none" stroke="black" points="956,-821.05 956,-839.05 990,-839.05 990,-821.05 956,-821.05"/>
+<text text-anchor="start" x="980" y="-827.25" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- splats&#45;&gt;users -->
 <g id="edge140" class="edge">
 <title>splats:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M847.7,-892.02C811.62,-903.25 825.25,-959.7 782,-982.05 726.05,-1010.97 542.63,-963.7 500,-1010.05 448.17,-1066.41 534.56,-3766.05 458,-3766.05"/>
-<polygon fill="black" stroke="black" points="854.07,-891.14 862.49,-893.62 858.04,-890.6 862,-890.05 862,-890.05 862,-890.05 858.04,-890.6 861.51,-886.49 854.07,-891.14 854.07,-891.14"/>
-<ellipse fill="none" stroke="black" cx="850.9" cy="-891.58" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M843.61,-892.16C809.21,-903.73 823.87,-959.74 782,-982.05 726.43,-1011.67 542.63,-963.7 500,-1010.05 448.17,-1066.41 534.56,-3766.05 458,-3766.05"/>
+<polygon fill="black" stroke="black" points="850.08,-891.21 858.52,-893.62 854.04,-890.63 858,-890.05 858,-890.05 858,-890.05 854.04,-890.63 857.48,-886.49 850.08,-891.21 850.08,-891.21"/>
+<ellipse fill="none" stroke="black" cx="846.92" cy="-891.68" rx="3.2" ry="3.2"/>
 </g>
 <!-- splats&#45;&gt;files -->
 <g id="edge141" class="edge">
 <title>splats:w&#45;&gt;files:e</title>
-<path fill="none" stroke="black" d="M851.57,-912.59C719.49,-926.62 859.02,-1214.05 713,-1214.05"/>
-<polygon fill="black" stroke="black" points="861,-908.1 861.4,-916.09 859.81,-916.17 859.4,-908.18 861,-908.1"/>
-<polyline fill="none" stroke="black" points="862,-912.05 858.01,-912.26 "/>
-<ellipse fill="none" stroke="black" cx="854.81" cy="-912.42" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M847.23,-912.63C716.67,-927.2 858.11,-1214.05 713,-1214.05"/>
+<polygon fill="black" stroke="black" points="856.99,-908.1 857.41,-916.09 855.82,-916.18 855.39,-908.19 856.99,-908.1"/>
+<polyline fill="none" stroke="black" points="858,-912.05 854.01,-912.27 "/>
+<ellipse fill="none" stroke="black" cx="850.81" cy="-912.44" rx="3.2" ry="3.2"/>
 </g>
 <!-- sub_locations -->
 <g id="node58" class="node">

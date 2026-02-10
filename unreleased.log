@@ -1,3 +1,4 @@
+66d9ac67396 Add position columns to splats table (#3884)
 a0a9afe7ca3 Support per-step splatter arguments (#3885)
 437d03b230f Accept observation video parameters as form fields (#3882)
 abc67be8c51 Remove mobile app background upload workaround (#3881)

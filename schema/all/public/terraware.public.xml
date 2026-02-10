@@ -1363,10 +1363,18 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="completed_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="splat_storage_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="error_message" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="origin_position_x" nullable="true" remarks="Center point of the splat (along with y and z)." size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="origin_position_y" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="origin_position_z" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="camera_position_x" nullable="true" remarks="Starting location of the camera (along with y and z)." size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="camera_position_y" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="camera_position_z" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <primaryKey column="file_id" sequenceNumberInPK="1"/>
          <index name="splats_pkey" unique="true">
             <column ascending="true" name="file_id"/>
          </index>
+         <checkConstraint constraint="(((camera_position_x IS NULL) AND (camera_position_y IS NULL) AND (camera_position_z IS NULL)) OR ((camera_position_x IS NOT NULL) AND (camera_position_y IS NOT NULL) AND (camera_position_z IS NOT NULL)))" name="camera_position_all_or_none"/>
+         <checkConstraint constraint="(((origin_position_x IS NULL) AND (origin_position_y IS NULL) AND (origin_position_z IS NULL)) OR ((origin_position_x IS NOT NULL) AND (origin_position_y IS NOT NULL) AND (origin_position_z IS NOT NULL)))" name="origin_position_all_or_none"/>
       </table>
       <table name="sub_locations" remarks="The available locations where seeds can be stored at a seed bank facility or seedlings can be stored at a nursery facility." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">

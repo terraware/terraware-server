@@ -2536,6 +2536,16 @@
                                         <td>(value !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/splats.html'>splats</a></td>
+                                        <td>camera_position_all_or_none</td>
+                                        <td>(((camera_position_x IS NULL) AND (camera_position_y IS NULL) AND (camera_position_z IS NULL)) OR ((camera_position_x IS NOT NULL) AND (camera_position_y IS NOT NULL) AND (camera_position_z IS NOT NULL)))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/splats.html'>splats</a></td>
+                                        <td>origin_position_all_or_none</td>
+                                        <td>(((origin_position_x IS NULL) AND (origin_position_y IS NULL) AND (origin_position_z IS NULL)) OR ((origin_position_x IS NOT NULL) AND (origin_position_y IS NOT NULL) AND (origin_position_z IS NOT NULL)))</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/users.html'>users</a></td>
                                         <td>users_auth_id_check</td>
                                         <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
