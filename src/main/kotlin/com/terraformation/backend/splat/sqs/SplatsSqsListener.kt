@@ -24,6 +24,17 @@ class SplatsSqsListener(private val splatService: SplatService) {
           payload.errorMessage ?: "No error message received",
       )
     }
+
+    if (payload.birdnetSuccess != null) {
+      if (payload.birdnetSuccess) {
+        splatService.recordBirdnetSuccess(payload.jobId)
+      } else {
+        splatService.recordBirdnetError(
+            payload.jobId,
+            payload.birdnetErrorMessage ?: "No error message received",
+        )
+      }
+    }
   }
 }
 
@@ -37,4 +48,7 @@ data class SplatterResponsePayload(
     val jobId: FileId,
     val output: SplatterResponseOutputPayload?,
     val success: Boolean,
+    val birdnetSuccess: Boolean? = null,
+    val birdnetOutput: SplatterResponseOutputPayload? = null,
+    val birdnetErrorMessage: String? = null,
 )

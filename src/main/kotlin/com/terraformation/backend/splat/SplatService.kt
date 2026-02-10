@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
@@ -86,10 +87,11 @@ class SplatService(
       fileId: FileId,
       force: Boolean = false,
       params: SplatGenerationParams = SplatGenerationParams(),
+      runBirdnet: Boolean = true,
   ) {
     ensureObservationFile(observationId, fileId)
 
-    generateSplat(fileId, force, params)
+    generateSplat(fileId, force, params, runBirdnet)
   }
 
   fun recordSplatError(fileId: FileId, errorMessage: String) {
@@ -136,6 +138,33 @@ class SplatService(
     )
   }
 
+  fun recordBirdnetError(fileId: FileId, errorMessage: String) {
+    log.error("BirdNet generation failed for file $fileId: $errorMessage")
+
+    with(BIRDNET_RESULTS) {
+      dslContext
+          .update(BIRDNET_RESULTS)
+          .set(ASSET_STATUS_ID, AssetStatus.Errored)
+          .set(COMPLETED_TIME, clock.instant())
+          .set(ERROR_MESSAGE, errorMessage)
+          .where(FILE_ID.eq(fileId))
+          .execute()
+    }
+  }
+
+  fun recordBirdnetSuccess(fileId: FileId) {
+    log.info("BirdNet generation completed for file $fileId")
+
+    with(BIRDNET_RESULTS) {
+      dslContext
+          .update(BIRDNET_RESULTS)
+          .set(ASSET_STATUS_ID, AssetStatus.Ready)
+          .set(COMPLETED_TIME, clock.instant())
+          .where(FILE_ID.eq(fileId))
+          .execute()
+    }
+  }
+
   fun listObservationSplatAnnotations(
       observationId: ObservationId,
       fileId: FileId,
@@ -161,6 +190,7 @@ class SplatService(
       fileId: FileId,
       force: Boolean = false,
       params: SplatGenerationParams,
+      runBirdnet: Boolean = true,
   ) {
     val videoUrl =
         dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(fileId))
@@ -170,6 +200,20 @@ class SplatService(
     val splatPath = Path(videoPath.pathString.substringBeforeLast('.') + splatFileExtension)
     val splatUrl = fileStore.getUrl(splatPath)
     val splatKey = splatUrl.path.trimStart('/')
+
+    val birdnetUrl =
+        if (runBirdnet) {
+          val birdnetPath = Path(videoPath.pathString.substringBeforeLast('.') + "_birdnet.json")
+          fileStore.getUrl(birdnetPath)
+        } else {
+          null
+        }
+
+    val birdnetOutputLocation =
+        birdnetUrl?.let {
+          val birdnetKey = it.path.trimStart('/')
+          SplatterRequestFileLocation(s3BucketName, birdnetKey)
+        }
 
     dslContext.transaction { _ ->
       val rowsInserted =
@@ -195,6 +239,31 @@ class SplatService(
         }
       }
 
+      if (runBirdnet && birdnetUrl != null) {
+        val birdnetRowsInserted =
+            with(BIRDNET_RESULTS) {
+              dslContext
+                  .insertInto(BIRDNET_RESULTS)
+                  .set(ASSET_STATUS_ID, AssetStatus.Preparing)
+                  .set(CREATED_BY, currentUser().userId)
+                  .set(CREATED_TIME, clock.instant())
+                  .set(FILE_ID, fileId)
+                  .set(RESULTS_STORAGE_URL, birdnetUrl)
+                  .onConflictDoNothing()
+                  .execute()
+            }
+
+        if (birdnetRowsInserted == 0 && force) {
+          with(BIRDNET_RESULTS) {
+            dslContext
+                .update(BIRDNET_RESULTS)
+                .set(ASSET_STATUS_ID, AssetStatus.Preparing)
+                .where(FILE_ID.eq(fileId))
+                .execute()
+          }
+        }
+      }
+
       if (rowsInserted == 1 || force) {
         val requestMessage =
             SplatterRequestMessage(
@@ -214,11 +283,14 @@ class SplatService(
                 restartAt = params.restartAt,
                 restoreJob = params.restartAt != null,
                 stepArgs = params.stepArgs,
+                birdnetOutput = birdnetOutputLocation,
             )
 
         sqsTemplate.send(requestQueueUrl, requestMessage)
 
-        log.info("Requested splat generation for file $fileId")
+        log.info(
+            "Requested splat generation for file $fileId${if (runBirdnet) " with BirdNet" else ""}"
+        )
       } else {
         log.info(
             "Splat record already exists for file $fileId; ignoring additional generation request"

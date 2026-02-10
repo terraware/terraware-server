@@ -9,6 +9,7 @@ data class SplatterRequestFileLocation(
 
 data class SplatterRequestMessage(
     val abortAfter: String? = null,
+    val birdnetOutput: SplatterRequestFileLocation? = null,
     val input: SplatterRequestFileLocation,
     val jobId: String,
     val output: SplatterRequestFileLocation,

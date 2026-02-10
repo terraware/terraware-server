@@ -165,6 +165,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.keys.USERS_PKEY
 import com.terraformation.backend.db.default_schema.tables.daos.AutomationsDao
+import com.terraformation.backend.db.default_schema.tables.daos.BirdnetResultsDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountriesDao
 import com.terraformation.backend.db.default_schema.tables.daos.CountrySubdivisionsDao
 import com.terraformation.backend.db.default_schema.tables.daos.DeviceManagersDao
@@ -205,6 +206,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.UploadsDao
 import com.terraformation.backend.db.default_schema.tables.daos.UserDisclaimersDao
 import com.terraformation.backend.db.default_schema.tables.daos.UserGlobalRolesDao
 import com.terraformation.backend.db.default_schema.tables.daos.UsersDao
+import com.terraformation.backend.db.default_schema.tables.pojos.BirdnetResultsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DisclaimersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
@@ -616,6 +618,7 @@ abstract class DatabaseBackedTest {
   protected val batchQuantityHistoryDao: BatchQuantityHistoryDao by lazyDao()
   protected val batchSubLocationsDao: BatchSubLocationsDao by lazyDao()
   protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
+  protected val birdnetResultsDao: BirdnetResultsDao by lazyDao()
   protected val cohortModulesDao: CohortModulesDao by lazyDao()
   protected val cohortsDao: CohortsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
@@ -3084,6 +3087,30 @@ abstract class DatabaseBackedTest {
         )
 
     splatsDao.insert(rowWithDefaults)
+  }
+
+  fun insertBirdnetResult(
+      row: BirdnetResultsRow = BirdnetResultsRow(),
+      fileId: FileId = row.fileId ?: inserted.fileId,
+      assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      resultsStorageUrl: URI? = row.resultsStorageUrl,
+      errorMessage: String? = row.errorMessage,
+      completedTime: Instant? = row.completedTime,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            fileId = fileId,
+            assetStatusId = assetStatus,
+            createdBy = createdBy,
+            createdTime = createdTime,
+            resultsStorageUrl = resultsStorageUrl,
+            errorMessage = errorMessage,
+            completedTime = completedTime,
+        )
+
+    birdnetResultsDao.insert(rowWithDefaults)
   }
 
   private val nextAnnotationNumber = mutableMapOf<FileId, Int>()

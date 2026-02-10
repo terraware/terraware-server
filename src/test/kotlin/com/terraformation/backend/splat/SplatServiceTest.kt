@@ -7,14 +7,17 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
+import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.point
+import com.terraformation.backend.splat.sqs.SplatterRequestMessage
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import io.awspring.cloud.sqs.operations.SqsTemplate
 import io.mockk.every
@@ -680,6 +683,126 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<FileNotFoundException> {
         service.getObservationSplatInfo(observationId, fileWithoutSplat)
       }
+    }
+  }
+
+  @Nested
+  inner class RecordBirdnetSuccess {
+    private lateinit var fileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      fileId = insertFile()
+      insertBirdnetResult(fileId = fileId, assetStatus = AssetStatus.Preparing)
+    }
+
+    @Test
+    fun `updates status to Ready and sets completed time`() {
+      service.recordBirdnetSuccess(fileId)
+
+      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
+
+      assertEquals(AssetStatus.Ready, result?.assetStatusId, "Asset status")
+      assertEquals(clock.instant(), result?.completedTime, "Completed time")
+    }
+  }
+
+  @Nested
+  inner class RecordBirdnetError {
+    private lateinit var fileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      fileId = insertFile()
+      insertBirdnetResult(fileId = fileId, assetStatus = AssetStatus.Preparing)
+    }
+
+    @Test
+    fun `updates status to Errored and sets error message and completed time`() {
+      val errorMessage = "Test error message"
+
+      service.recordBirdnetError(fileId, errorMessage)
+
+      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
+
+      assertEquals(AssetStatus.Errored, result?.assetStatusId, "Asset status")
+      assertEquals(errorMessage, result?.errorMessage, "Error message")
+      assertEquals(clock.instant(), result?.completedTime, "Completed time")
+    }
+  }
+
+  @Nested
+  inner class GenerateObservationSplatWithBirdnet {
+    private lateinit var fileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      fileId = insertFile()
+      insertObservationPlot()
+      insertObservationMediaFile(fileId = fileId)
+
+      every { fileStore.getPath(any()) } answers { java.nio.file.Paths.get("/path/to/video.mp4") }
+      every { fileStore.getUrl(any()) } answers
+          {
+            val path = firstArg<java.nio.file.Path>()
+            URI("s3://bucket/${path.fileName}")
+          }
+      every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } returns
+          mockk(relaxed = true)
+    }
+
+    @Test
+    fun `creates BirdNet result record when runBirdnet is true`() {
+      service.generateObservationSplat(
+          observationId = observationId,
+          fileId = fileId,
+          runBirdnet = true,
+      )
+
+      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
+
+      assertEquals(fileId, result?.fileId, "File ID")
+      assertEquals(AssetStatus.Preparing, result?.assetStatusId, "Asset status")
+      assertEquals(user.userId, result?.createdBy, "Created by")
+      assertEquals(clock.instant(), result?.createdTime, "Created time")
+      assertEquals(
+          URI("s3://bucket/video_birdnet.json"),
+          result?.resultsStorageUrl,
+          "Results storage URL",
+      )
+    }
+
+    @Test
+    fun `does not create BirdNet result record when runBirdnet is false`() {
+      service.generateObservationSplat(
+          observationId = observationId,
+          fileId = fileId,
+          runBirdnet = false,
+      )
+
+      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
+
+      assertEquals(null, result, "BirdNet result should not exist")
+    }
+
+    @Test
+    fun `updates existing BirdNet result when force is true`() {
+      insertBirdnetResult(fileId = fileId, assetStatus = AssetStatus.Errored)
+
+      service.generateObservationSplat(
+          observationId = observationId,
+          fileId = fileId,
+          force = true,
+          runBirdnet = true,
+      )
+
+      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
+
+      assertEquals(
+          AssetStatus.Preparing,
+          result?.assetStatusId,
+          "Asset status should be reset to Preparing",
+      )
     }
   }
 }
