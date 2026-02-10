@@ -434,20 +434,6 @@ class ProjectReportsController(
     metricStore.updateProjectMetric(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
-
-  @ApiResponse200
-  @PostMapping("/targets")
-  @Operation(summary = "Update project metric targets.")
-  fun updateProjectMetricTargets(
-      @PathVariable projectId: ProjectId,
-      @RequestParam
-      @Schema(description = "Update targets for submitted reports. Require TF Experts privileges.")
-      updateSubmitted: Boolean?,
-      @RequestBody payload: UpdateMetricTargetsRequestPayload,
-  ): SimpleSuccessResponsePayload {
-    payload.metric.updateMetricTargets(reportStore, projectId, updateSubmitted ?: false)
-    return SimpleSuccessResponsePayload()
-  }
 }
 
 data class ExistingAcceleratorReportConfigPayload(
@@ -613,7 +599,6 @@ data class ReportStandardMetricEntriesPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportMetricStatus?,
-    val target: Int?,
     val value: Int?,
 ) {
   fun toModel() =
@@ -621,7 +606,6 @@ data class ReportStandardMetricEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          target = target,
           value = value,
       )
 }
@@ -666,14 +650,12 @@ data class ReportSystemMetricEntriesPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportMetricStatus?,
-    val target: Int?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          target = target,
           value = overrideValue,
       )
 }
@@ -729,7 +711,6 @@ data class ReportProjectMetricEntriesPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportMetricStatus?,
-    val target: Int?,
     val value: Int?,
 ) {
   fun toModel() =
@@ -737,7 +718,6 @@ data class ReportProjectMetricEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          target = target,
           value = value,
       )
 }
@@ -796,8 +776,6 @@ data class ListProjectMetricsResponsePayload(val metrics: List<ExistingProjectMe
 data class CreateProjectMetricRequestPayload(@field:Valid val metric: NewMetricPayload)
 
 data class UpdateProjectMetricRequestPayload(@field:Valid val metric: ExistingProjectMetricPayload)
-
-data class UpdateMetricTargetsRequestPayload(val metric: UpdateMetricTargetsPayload)
 
 data class UpdateAcceleratorReportPhotoRequestPayload(val caption: String?)
 

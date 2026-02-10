@@ -33,7 +33,10 @@ import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_PROJECT_METRIC_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_STANDARD_METRIC_TARGETS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
@@ -414,89 +417,6 @@ class ReportStore(
           .where(REPORTS.ID.eq(reportId))
           .execute()
     }
-  }
-
-  fun updateProjectMetricTargets(
-      projectId: ProjectId,
-      metricId: ProjectMetricId,
-      targets: Map<ReportId, Int?> = emptyMap(),
-      updateSubmitted: Boolean = false,
-  ): Int {
-    requirePermissions {
-      if (updateSubmitted) {
-        reviewReports()
-      } else {
-        updateProjectReports(projectId)
-      }
-    }
-
-    val metricExists =
-        dslContext.fetchExists(
-            dslContext
-                .selectOne()
-                .from(PROJECT_METRICS)
-                .where(PROJECT_METRICS.ID.eq(metricId))
-                .and(PROJECT_METRICS.PROJECT_ID.eq(projectId))
-        )
-    if (!metricExists) {
-      throw IllegalStateException(
-          "Project metric $metricId is not associated with project $projectId"
-      )
-    }
-
-    val reportIds = targets.keys
-    validateReportsInProject(reportIds, projectId)
-    if (!updateSubmitted) {
-      validateReportsUpdatable(reportIds)
-    }
-
-    return upsertReportMetricTargets(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID, metricId, targets)
-  }
-
-  fun updateStandardMetricTargets(
-      projectId: ProjectId,
-      metricId: StandardMetricId,
-      targets: Map<ReportId, Int?> = emptyMap(),
-      updateSubmitted: Boolean = false,
-  ): Int {
-    requirePermissions {
-      if (updateSubmitted) {
-        reviewReports()
-      } else {
-        updateProjectReports(projectId)
-      }
-    }
-
-    val reportIds = targets.keys
-    validateReportsInProject(reportIds, projectId)
-    if (!updateSubmitted) {
-      validateReportsUpdatable(reportIds)
-    }
-
-    return upsertReportMetricTargets(REPORT_STANDARD_METRICS.STANDARD_METRIC_ID, metricId, targets)
-  }
-
-  fun updateSystemMetricTargets(
-      projectId: ProjectId,
-      metric: SystemMetric,
-      targets: Map<ReportId, Int?> = emptyMap(),
-      updateSubmitted: Boolean = false,
-  ): Int {
-    requirePermissions {
-      if (updateSubmitted) {
-        reviewReports()
-      } else {
-        updateProjectReports(projectId)
-      }
-    }
-
-    val reportIds = targets.keys
-    validateReportsInProject(reportIds, projectId)
-    if (!updateSubmitted) {
-      validateReportsUpdatable(reportIds)
-    }
-
-    return upsertReportMetricTargets(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, metric, targets)
   }
 
   fun publishReport(reportId: ReportId) {
@@ -1047,7 +967,6 @@ class ReportStore(
     val table = metricIdField.table!!
     val reportIdField =
         table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
-    val targetField = table.field("target", Int::class.java)!!
     val valueField = table.field("value", Int::class.java)!!
     val projectsCommentsField = table.field("projects_comments", String::class.java)!!
     val progressNotesField = table.field("progress_notes", String::class.java)
@@ -1070,7 +989,6 @@ class ReportStore(
           insertQuery
               .set(reportIdField, reportId)
               .set(metricIdField, metricId)
-              .set(targetField, entry.target)
               .set(valueField, entry.value)
               .set(projectsCommentsField, entry.projectsComments)
               .set(statusField, entry.status)
@@ -1283,7 +1201,6 @@ class ReportStore(
           insertQuery
               .set(REPORT_SYSTEM_METRICS.REPORT_ID, reportId)
               .set(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, metricId)
-              .set(REPORT_SYSTEM_METRICS.TARGET, entry.target)
               .set(
                   REPORT_SYSTEM_METRICS.PROJECTS_COMMENTS,
                   entry.projectsComments,
@@ -1360,11 +1277,16 @@ class ReportStore(
               DSL.select(
                       STANDARD_METRICS.asterisk(),
                       REPORT_STANDARD_METRICS.asterisk(),
+                      PROJECT_STANDARD_METRIC_TARGETS.TARGET,
                   )
                   .from(STANDARD_METRICS)
                   .leftJoin(REPORT_STANDARD_METRICS)
                   .on(STANDARD_METRICS.ID.eq(REPORT_STANDARD_METRICS.STANDARD_METRIC_ID))
                   .and(REPORTS.ID.eq(REPORT_STANDARD_METRICS.REPORT_ID))
+                  .leftJoin(PROJECT_STANDARD_METRIC_TARGETS)
+                  .on(PROJECT_STANDARD_METRIC_TARGETS.STANDARD_METRIC_ID.eq(STANDARD_METRICS.ID))
+                  .and(PROJECT_STANDARD_METRIC_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                  .and(PROJECT_STANDARD_METRIC_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
                   .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID)
           )
           .convertFrom { results -> results.map { ReportStandardMetricModel.of(it) } }
@@ -1387,11 +1309,16 @@ class ReportStore(
               DSL.select(
                       PROJECT_METRICS.asterisk(),
                       REPORT_PROJECT_METRICS.asterisk(),
+                      PROJECT_PROJECT_METRIC_TARGETS.TARGET,
                   )
                   .from(PROJECT_METRICS)
                   .leftJoin(REPORT_PROJECT_METRICS)
                   .on(PROJECT_METRICS.ID.eq(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID))
                   .and(REPORTS.ID.eq(REPORT_PROJECT_METRICS.REPORT_ID))
+                  .leftJoin(PROJECT_PROJECT_METRIC_TARGETS)
+                  .on(PROJECT_PROJECT_METRIC_TARGETS.PROJECT_METRIC_ID.eq(PROJECT_METRICS.ID))
+                  .and(PROJECT_PROJECT_METRIC_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                  .and(PROJECT_PROJECT_METRIC_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
                   .where(PROJECT_METRICS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                   .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID)
           )
@@ -1718,11 +1645,16 @@ class ReportStore(
                       SYSTEM_METRICS.ID,
                       REPORT_SYSTEM_METRICS.asterisk(),
                       systemValueField,
+                      PROJECT_SYSTEM_METRIC_TARGETS.TARGET,
                   )
                   .from(SYSTEM_METRICS)
                   .leftJoin(REPORT_SYSTEM_METRICS)
                   .on(SYSTEM_METRICS.ID.eq(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID))
                   .and(REPORTS.ID.eq(REPORT_SYSTEM_METRICS.REPORT_ID))
+                  .leftJoin(PROJECT_SYSTEM_METRIC_TARGETS)
+                  .on(PROJECT_SYSTEM_METRIC_TARGETS.SYSTEM_METRIC_ID.eq(SYSTEM_METRICS.ID))
+                  .and(PROJECT_SYSTEM_METRIC_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                  .and(PROJECT_SYSTEM_METRIC_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
                   .orderBy(SYSTEM_METRICS.REFERENCE, SYSTEM_METRICS.ID)
           )
           .convertFrom { results ->

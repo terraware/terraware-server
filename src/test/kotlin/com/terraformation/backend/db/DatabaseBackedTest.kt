@@ -72,8 +72,11 @@ import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectS
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectMetricsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectOverallScoresDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectProjectMetricTargetsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectReportConfigsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectStandardMetricTargetsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectSystemMetricTargetsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVoteDecisionsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectVotesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ReportAchievementsDao
@@ -108,8 +111,11 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProject
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectMetricsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectOverallScoresRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectProjectMetricTargetsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectReportConfigsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectStandardMetricTargetsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectSystemMetricTargetsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVoteDecisionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectVotesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportAchievementsRow
@@ -314,11 +320,14 @@ import com.terraformation.backend.db.funder.tables.daos.PublishedActivityMediaFi
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectCarbonCertsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectDetailsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectLandUseDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedProjectMetricTargetsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectSdgDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportPhotosDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportProjectMetricsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportStandardMetricsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportSystemMetricsDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedStandardMetricTargetsDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedSystemMetricTargetsDao
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntitiesRow
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityProjectsRow
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityUsersRow
@@ -327,11 +336,14 @@ import com.terraformation.backend.db.funder.tables.pojos.PublishedActivityMediaF
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectCarbonCertsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectDetailsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectLandUseRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectMetricTargetsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectSdgRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportPhotosRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportProjectMetricsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportStandardMetricsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportSystemMetricsRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedStandardMetricTargetsRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedSystemMetricTargetsRow
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
@@ -684,6 +696,9 @@ abstract class DatabaseBackedTest {
   protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
   protected val projectMetricsDao: ProjectMetricsDao by lazyDao()
   protected val projectOverallScoresDao: ProjectOverallScoresDao by lazyDao()
+  protected val projectProjectMetricTargetsDao: ProjectProjectMetricTargetsDao by lazyDao()
+  protected val projectStandardMetricTargetsDao: ProjectStandardMetricTargetsDao by lazyDao()
+  protected val projectSystemMetricTargetsDao: ProjectSystemMetricTargetsDao by lazyDao()
   protected val projectReportConfigsDao: ProjectReportConfigsDao by lazyDao()
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
   protected val projectScoresDao: ProjectScoresDao by lazyDao()
@@ -700,6 +715,9 @@ abstract class DatabaseBackedTest {
   protected val publishedReportSystemMetricsDao: PublishedReportSystemMetricsDao by lazyDao()
   protected val publishedReportPhotosDao: PublishedReportPhotosDao by lazyDao()
   protected val publishedReportProjectMetricsDao: PublishedReportProjectMetricsDao by lazyDao()
+  protected val publishedProjectMetricTargetsDao: PublishedProjectMetricTargetsDao by lazyDao()
+  protected val publishedStandardMetricTargetsDao: PublishedStandardMetricTargetsDao by lazyDao()
+  protected val publishedSystemMetricTargetsDao: PublishedSystemMetricTargetsDao by lazyDao()
   protected val recordedPlantsDao: RecordedPlantsDao by lazyDao()
   protected val recordedTreesDao: RecordedTreesDao by lazyDao()
   protected val reportAchievementsDao: ReportAchievementsDao by lazyDao()
@@ -3628,7 +3646,6 @@ abstract class DatabaseBackedTest {
       row: ReportProjectMetricsRow = ReportProjectMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       metricId: ProjectMetricId = row.projectMetricId ?: inserted.projectMetricId,
-      target: Int? = row.target,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3640,7 +3657,6 @@ abstract class DatabaseBackedTest {
         row.copy(
             reportId = reportId,
             projectMetricId = metricId,
-            target = target,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
@@ -3656,7 +3672,6 @@ abstract class DatabaseBackedTest {
       row: ReportStandardMetricsRow = ReportStandardMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       metricId: StandardMetricId = row.standardMetricId ?: inserted.standardMetricId,
-      target: Int? = row.target,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3668,7 +3683,6 @@ abstract class DatabaseBackedTest {
         row.copy(
             reportId = reportId,
             standardMetricId = metricId,
-            target = target,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
@@ -3684,7 +3698,6 @@ abstract class DatabaseBackedTest {
       row: ReportSystemMetricsRow = ReportSystemMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       metric: SystemMetric = row.systemMetricId ?: SystemMetric.SeedsCollected,
-      target: Int? = row.target,
       systemValue: Int? = row.systemValue,
       systemTime: Instant? = row.systemTime ?: systemValue?.let { Instant.EPOCH },
       overrideValue: Int? = row.overrideValue,
@@ -3698,7 +3711,6 @@ abstract class DatabaseBackedTest {
         row.copy(
             reportId = reportId,
             systemMetricId = metric,
-            target = target,
             systemValue = systemValue,
             systemTime = systemTime,
             overrideValue = overrideValue,
@@ -3710,6 +3722,114 @@ abstract class DatabaseBackedTest {
         )
 
     reportSystemMetricsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertProjectMetricTarget(
+      row: ProjectProjectMetricTargetsRow = ProjectProjectMetricTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      projectMetricId: ProjectMetricId = row.projectMetricId ?: inserted.projectMetricId,
+      year: Int = row.year ?: 1970,
+      target: Int? = row.target,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            projectMetricId = projectMetricId,
+            year = year,
+            target = target,
+        )
+
+    projectProjectMetricTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertStandardMetricTarget(
+      row: ProjectStandardMetricTargetsRow = ProjectStandardMetricTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      standardMetricId: StandardMetricId = row.standardMetricId ?: inserted.standardMetricId,
+      year: Int = row.year ?: 1970,
+      target: Int? = row.target,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            standardMetricId = standardMetricId,
+            year = year,
+            target = target,
+        )
+
+    projectStandardMetricTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertSystemMetricTarget(
+      row: ProjectSystemMetricTargetsRow = ProjectSystemMetricTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      metric: SystemMetric = row.systemMetricId ?: SystemMetric.SeedsCollected,
+      year: Int = row.year ?: 1970,
+      target: Int? = row.target,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            systemMetricId = metric,
+            year = year,
+            target = target,
+        )
+
+    projectSystemMetricTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedProjectMetricTarget(
+      row: PublishedProjectMetricTargetsRow = PublishedProjectMetricTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      projectMetricId: ProjectMetricId = row.projectMetricId ?: inserted.projectMetricId,
+      year: Int = row.year ?: 2025,
+      target: Int? = row.target,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            projectMetricId = projectMetricId,
+            year = year,
+            target = target,
+        )
+
+    publishedProjectMetricTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedStandardMetricTarget(
+      row: PublishedStandardMetricTargetsRow = PublishedStandardMetricTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      standardMetricId: StandardMetricId = row.standardMetricId ?: inserted.standardMetricId,
+      year: Int = row.year ?: 2025,
+      target: Int? = row.target,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            standardMetricId = standardMetricId,
+            year = year,
+            target = target,
+        )
+
+    publishedStandardMetricTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedSystemMetricTarget(
+      row: PublishedSystemMetricTargetsRow = PublishedSystemMetricTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      metric: SystemMetric = row.systemMetricId ?: SystemMetric.SeedsCollected,
+      year: Int = row.year ?: 2025,
+      target: Int? = row.target,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            systemMetricId = metric,
+            year = year,
+            target = target,
+        )
+
+    publishedSystemMetricTargetsDao.insert(rowWithDefaults)
   }
 
   protected fun insertPublishedReport(
