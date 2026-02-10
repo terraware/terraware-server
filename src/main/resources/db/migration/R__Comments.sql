@@ -220,14 +220,12 @@ COMMENT ON TABLE species_problem_types IS '(Enum) Specific types of problems tha
 COMMENT ON TABLE species_problems IS 'Problems found in species data. Rows are deleted from this table when the problem is marked as ignored by the user or the user accepts the suggested fix.';
 
 COMMENT ON TABLE splats IS 'Information about 3D Gaussian splatting models generated from video files.';
+COMMENT ON COLUMN splats.origin_position_x IS 'Center point of the splat (along with y and z).';
 
 COMMENT ON TABLE splat_annotations IS 'Annotations that should be displayed inside splat models.';
 COMMENT ON COLUMN splat_annotations.label IS 'The text that displays over the annotations while it''s floating in space.';
 COMMENT ON COLUMN splat_annotations.title IS 'The text that displays at the top of the annotation box after it is clicked.';
 COMMENT ON COLUMN splat_annotations.body_text IS 'The text that displays in the annotation box after it is clicked.';
-
-COMMENT ON TABLE splat_information IS 'Information about splat models, such as center point of the splat.';
-COMMENT ON COLUMN splat_information.origin_position_x IS 'Center point of the splat (along with y and z).';
 
 COMMENT ON TABLE spring_session IS 'Active login sessions. Used by Spring Session, not the application.';
 

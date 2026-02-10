@@ -331,7 +331,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "species_problems" to setOf(ALL, SPECIES),
                   "species_successional_groups" to setOf(ALL, SPECIES),
                   "splat_annotations" to setOf(ALL),
-                  "splat_information" to setOf(ALL),
                   "splats" to setOf(ALL),
                   "sub_locations" to setOf(ALL, SEEDBANK),
                   "successional_groups" to setOf(ALL, SPECIES),

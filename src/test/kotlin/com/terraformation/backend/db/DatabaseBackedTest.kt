@@ -195,7 +195,6 @@ import com.terraformation.backend.db.default_schema.tables.daos.SpeciesPlantMate
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesProblemsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SpeciesSuccessionalGroupsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SplatAnnotationsDao
-import com.terraformation.backend.db.default_schema.tables.daos.SplatInformationDao
 import com.terraformation.backend.db.default_schema.tables.daos.SplatsDao
 import com.terraformation.backend.db.default_schema.tables.daos.SubLocationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.ThumbnailsDao
@@ -219,7 +218,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectReportSe
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SeedFundReportsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SplatAnnotationsRow
-import com.terraformation.backend.db.default_schema.tables.pojos.SplatInformationRow
 import com.terraformation.backend.db.default_schema.tables.pojos.SplatsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
@@ -719,7 +717,6 @@ abstract class DatabaseBackedTest {
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val speciesSuccessionalGroupsDao: SpeciesSuccessionalGroupsDao by lazyDao()
   protected val splatAnnotationsDao: SplatAnnotationsDao by lazyDao()
-  protected val splatInformationDao: SplatInformationDao by lazyDao()
   protected val splatsDao: SplatsDao by lazyDao()
   protected val standardMetricsDao: StandardMetricsDao by lazyDao()
   protected val stratumHistoriesDao: StratumHistoriesDao by lazyDao()
@@ -3061,6 +3058,10 @@ abstract class DatabaseBackedTest {
       row: SplatsRow = SplatsRow(),
       fileId: FileId = row.fileId ?: inserted.fileId,
       assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
+      originPosition: CoordinateModel? =
+          row.originPositionX?.let {
+            CoordinateModel(it, row.originPositionY!!, row.originPositionZ!!)
+          },
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
   ) {
@@ -3068,6 +3069,9 @@ abstract class DatabaseBackedTest {
         row.copy(
             fileId = fileId,
             assetStatusId = assetStatus,
+            originPositionX = originPosition?.x,
+            originPositionY = originPosition?.y,
+            originPositionZ = originPosition?.z,
             createdBy = createdBy,
             createdTime = createdTime,
         )
@@ -3118,33 +3122,6 @@ abstract class DatabaseBackedTest {
     nextAnnotationNumber[fileId] = nextAnnotationNumber.getOrDefault(fileId, 1) + 1
 
     return rowWithDefaults.id!!.also { inserted.splatAnnotationIds.add(it) }
-  }
-
-  fun insertSplatInformation(
-      row: SplatInformationRow = SplatInformationRow(),
-      fileId: FileId = row.fileId ?: inserted.fileId,
-      originPosition: CoordinateModel? =
-          row.originPositionX?.let {
-            CoordinateModel(it, row.originPositionY!!, row.originPositionZ!!)
-          },
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
-      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
-      modifiedBy: UserId = row.modifiedBy ?: createdBy,
-      modifiedTime: Instant = row.modifiedTime ?: createdTime,
-  ) {
-    val rowWithDefaults =
-        row.copy(
-            fileId = fileId,
-            originPositionX = originPosition?.x,
-            originPositionY = originPosition?.y,
-            originPositionZ = originPosition?.z,
-            createdBy = createdBy,
-            createdTime = createdTime,
-            modifiedBy = modifiedBy,
-            modifiedTime = modifiedTime,
-        )
-
-    splatInformationDao.insert(rowWithDefaults)
   }
 
   fun insertObservationPlot(

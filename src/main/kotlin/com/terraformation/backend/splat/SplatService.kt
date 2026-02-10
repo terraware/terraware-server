@@ -9,7 +9,6 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
-import com.terraformation.backend.db.default_schema.tables.references.SPLAT_INFORMATION
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
@@ -239,14 +238,14 @@ class SplatService(
   }
 
   private fun getSplatOriginPosition(fileId: FileId): CoordinateModel? {
-    with(SPLAT_INFORMATION) {
+    with(SPLATS) {
       return dslContext
           .select(
               ORIGIN_POSITION_X,
               ORIGIN_POSITION_Y,
               ORIGIN_POSITION_Z,
           )
-          .from(SPLAT_INFORMATION)
+          .from(SPLATS)
           .where(FILE_ID.eq(fileId))
           .fetchOne()
           ?.let { record ->

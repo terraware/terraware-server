@@ -60,11 +60,16 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fileId = insertFile()
     insertObservationPlot()
     insertObservationMediaFile()
-    insertSplat()
   }
 
   @Nested
   inner class ListObservationSplatAnnotations {
+
+    @BeforeEach
+    fun setUp() {
+      insertSplat()
+    }
+
     @Test
     fun `returns annotations for a given observation and file`() {
       val position1 = CoordinateModel(1.0, 2.0, 3.0)
@@ -154,6 +159,12 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class SetObservationSplatAnnotations {
+
+    @BeforeEach
+    fun setUp() {
+      insertSplat()
+    }
+
     @Test
     fun `creates new annotations when none exist`() {
       val position1 = CoordinateModel(1.0, 2.0, 3.0)
@@ -477,7 +488,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `returns origin position when it exists`() {
       val originPosition = CoordinateModel(10.0, 20.0, 30.0)
-      insertSplatInformation(originPosition = originPosition)
+      insertSplat(originPosition = originPosition)
 
       val position1 = CoordinateModel(1.0, 2.0, 3.0)
       val id1 = insertSplatAnnotation(title = "Annotation 1", position = position1)
@@ -501,6 +512,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `returns null origin position when record does not exist`() {
+      insertSplat()
       val position1 = CoordinateModel(1.0, 2.0, 3.0)
       val id1 = insertSplatAnnotation(title = "Annotation 1", position = position1)
 
@@ -523,7 +535,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `returns null origin position when all coordinates are null`() {
-      insertSplatInformation(originPosition = null)
+      insertSplat(originPosition = null)
 
       val position1 = CoordinateModel(1.0, 2.0, 3.0)
       val id1 = insertSplatAnnotation(title = "Annotation 1", position = position1)
@@ -548,7 +560,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `returns all annotations with origin position`() {
       val originPosition = CoordinateModel(5.0, 10.0, 15.0)
-      insertSplatInformation(originPosition = originPosition)
+      insertSplat(originPosition = originPosition)
 
       val position1 = CoordinateModel(1.0, 2.0, 3.0)
       val cameraPosition1 = CoordinateModel(4.0, 5.0, 6.0)
@@ -593,7 +605,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `returns empty annotations list when none exist`() {
       val originPosition = CoordinateModel(10.0, 20.0, 30.0)
-      insertSplatInformation(originPosition = originPosition)
+      insertSplat(originPosition = originPosition)
 
       val expected =
           SplatInfoModel(
@@ -615,6 +627,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception if user does not have permission to read observation`() {
+      insertSplat()
       deleteOrganizationUser()
 
       assertThrows<ObservationNotFoundException> {
@@ -624,6 +637,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception if splat does not exist for file`() {
+      insertSplat()
       val fileWithoutSplat = insertFile()
       insertObservationMediaFile(fileId = fileWithoutSplat)
 
