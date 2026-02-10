@@ -30,6 +30,7 @@ data class ObservationSplatModel(
 
 data class SplatInfoModel(
     val annotations: List<SplatAnnotationModel<SplatAnnotationId>>,
+    val cameraPosition: CoordinateModel?,
     val originPosition: CoordinateModel?,
 )
 

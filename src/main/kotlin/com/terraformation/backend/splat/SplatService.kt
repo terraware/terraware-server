@@ -127,10 +127,11 @@ class SplatService(
     ensureSplat(fileId)
 
     val annotations = listSplatAnnotations(fileId)
-    val originPosition = getSplatOriginPosition(fileId)
+    val (originPosition, cameraPosition) = getSplatPositions(fileId)
 
     return SplatInfoModel(
         annotations = annotations,
+        cameraPosition = cameraPosition,
         originPosition = originPosition,
     )
   }
@@ -237,26 +238,41 @@ class SplatService(
     }
   }
 
-  private fun getSplatOriginPosition(fileId: FileId): CoordinateModel? {
+  private fun getSplatPositions(fileId: FileId): Pair<CoordinateModel?, CoordinateModel?> {
     with(SPLATS) {
-      return dslContext
-          .select(
-              ORIGIN_POSITION_X,
-              ORIGIN_POSITION_Y,
-              ORIGIN_POSITION_Z,
-          )
-          .from(SPLATS)
-          .where(FILE_ID.eq(fileId))
-          .fetchOne()
-          ?.let { record ->
-            record[ORIGIN_POSITION_X]?.let {
-              CoordinateModel(
-                  it,
-                  record[ORIGIN_POSITION_Y]!!,
-                  record[ORIGIN_POSITION_Z]!!,
+      val record =
+          dslContext
+              .select(
+                  CAMERA_POSITION_X,
+                  CAMERA_POSITION_Y,
+                  CAMERA_POSITION_Z,
+                  ORIGIN_POSITION_X,
+                  ORIGIN_POSITION_Y,
+                  ORIGIN_POSITION_Z,
               )
-            }
+              .from(SPLATS)
+              .where(FILE_ID.eq(fileId))
+              .fetchOne()
+
+      val cameraPosition =
+          record?.get(CAMERA_POSITION_X)?.let {
+            CoordinateModel(
+                it,
+                record[CAMERA_POSITION_Y]!!,
+                record[CAMERA_POSITION_Z]!!,
+            )
           }
+
+      val originPosition =
+          record?.get(ORIGIN_POSITION_X)?.let {
+            CoordinateModel(
+                it,
+                record[ORIGIN_POSITION_Y]!!,
+                record[ORIGIN_POSITION_Z]!!,
+            )
+          }
+
+      return Pair(originPosition, cameraPosition)
     }
   }
 

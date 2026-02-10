@@ -218,12 +218,14 @@ data class SplatAnnotationPayload(
 
 data class GetObservationSplatInfoResponsePayload(
     val annotations: List<SplatAnnotationPayload>,
+    val cameraPosition: CoordinatePayload?,
     val originPosition: CoordinatePayload?,
 ) : SuccessResponsePayload {
   constructor(
       model: SplatInfoModel
   ) : this(
       annotations = model.annotations.map { SplatAnnotationPayload.of(it) },
+      cameraPosition = model.cameraPosition?.let { CoordinatePayload.of(it) },
       originPosition = model.originPosition?.let { CoordinatePayload.of(it) },
   )
 }

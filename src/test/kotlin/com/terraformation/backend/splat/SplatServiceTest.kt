@@ -495,7 +495,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           SplatInfoModel(
-              originPosition = originPosition,
               annotations =
                   listOf(
                       ExistingSplatAnnotationModel(
@@ -505,6 +504,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                           fileId = fileId,
                       ),
                   ),
+              cameraPosition = null,
+              originPosition = originPosition,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -518,7 +519,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           SplatInfoModel(
-              originPosition = null,
               annotations =
                   listOf(
                       ExistingSplatAnnotationModel(
@@ -528,6 +528,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                           fileId = fileId,
                       ),
                   ),
+              cameraPosition = null,
+              originPosition = null,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -542,7 +544,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           SplatInfoModel(
-              originPosition = null,
               annotations =
                   listOf(
                       ExistingSplatAnnotationModel(
@@ -552,6 +553,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                           fileId = fileId,
                       ),
                   ),
+              cameraPosition = null,
+              originPosition = null,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -578,7 +581,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           SplatInfoModel(
-              originPosition = originPosition,
               annotations =
                   listOf(
                       ExistingSplatAnnotationModel(
@@ -597,6 +599,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                           fileId = fileId,
                       ),
                   ),
+              cameraPosition = null,
+              originPosition = originPosition,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -609,8 +613,40 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           SplatInfoModel(
-              originPosition = originPosition,
               annotations = emptyList(),
+              cameraPosition = null,
+              originPosition = originPosition,
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
+    fun `returns camera position when it exists`() {
+      val cameraPosition = CoordinateModel(40.0, 50.0, 60.0)
+      insertSplat(cameraPosition = cameraPosition)
+
+      val expected =
+          SplatInfoModel(
+              annotations = emptyList(),
+              cameraPosition = cameraPosition,
+              originPosition = null,
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
+    fun `returns both origin and camera positions when they exist`() {
+      val originPosition = CoordinateModel(10.0, 20.0, 30.0)
+      val cameraPosition = CoordinateModel(40.0, 50.0, 60.0)
+      insertSplat(originPosition = originPosition, cameraPosition = cameraPosition)
+
+      val expected =
+          SplatInfoModel(
+              annotations = emptyList(),
+              cameraPosition = cameraPosition,
+              originPosition = originPosition,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
