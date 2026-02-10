@@ -672,16 +672,10 @@ COMMENT ON TABLE accelerator.project_metrics IS 'Metrics specific to one project
 
 COMMENT ON TABLE accelerator.project_overall_scores IS 'Overall scores assigned to project by scorers.';
 
-COMMENT ON TABLE accelerator.project_project_metric_targets IS 'Project targets for project-specific metrics by year';
-
 COMMENT ON TABLE accelerator.project_report_configs IS 'Configurations for accelerator project reports, including reporting dates and reporting frequencies.';
 
 COMMENT ON TABLE accelerator.project_scores IS 'Scores assigned to project by scorers.';
 COMMENT ON COLUMN accelerator.project_scores.score IS 'Integer score between -2 to 2. The score can be null to represent not yet scored. ';
-
-COMMENT ON TABLE accelerator.project_standard_metric_targets IS 'Project targets for standard metrics by year';
-
-COMMENT ON TABLE accelerator.project_system_metric_targets IS 'Project targets for system metrics by year';
 
 COMMENT ON VIEW accelerator.project_variables IS 'Latest Variables for projects. Only includes accelerator projects, and includes all accelerator projects, whether or not they have values for any variables.';
 
@@ -703,13 +697,19 @@ COMMENT ON TABLE accelerator.report_metric_statuses IS '(Enum) Statuses of accel
 COMMENT ON TABLE accelerator.report_photos IS 'Photos for the accelerator project report.';
 COMMENT ON COLUMN accelerator.report_photos.deleted IS 'Flag for photos to be deleted in the next publishing.';
 
+COMMENT ON TABLE accelerator.report_project_metric_targets IS 'Project targets for project-specific metrics by year';
+
 COMMENT ON TABLE accelerator.report_project_metrics IS 'Report entries of targets and values for project metrics.';
 
 COMMENT ON TABLE accelerator.report_quarters IS '(Enum) Quarters of accelerator project reports.';
 
+COMMENT ON TABLE accelerator.report_standard_metric_targets IS 'Project targets for standard metrics by year';
+
 COMMENT ON TABLE accelerator.report_standard_metrics IS 'Report entries of targets and values for standard metrics.';
 
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
+
+COMMENT ON TABLE accelerator.report_system_metric_targets IS 'Project targets for system metrics by year';
 
 COMMENT ON TABLE accelerator.report_system_metrics IS 'Report entries of targets and values for system metrics.';
 COMMENT ON COLUMN accelerator.report_system_metrics.override_value IS 'Value inputted by accelerator admin to override system value. Null for no overrides.';
