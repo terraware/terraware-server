@@ -74,7 +74,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun setUp() {
       fileId1 = insertFile()
       fileId2 = insertFile()
-      insertObservationPlot()
       insertObservationMediaFile(fileId = fileId1)
       insertObservationMediaFile(fileId = fileId2)
       insertBirdnetResult(fileId = fileId1, assetStatus = AssetStatus.Ready)
@@ -788,14 +787,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class GenerateObservationSplatWithBirdnet {
-    private lateinit var fileId: FileId
-
     @BeforeEach
     fun setUp() {
-      fileId = insertFile()
-      insertObservationPlot()
-      insertObservationMediaFile(fileId = fileId)
-
       every { fileStore.getPath(any()) } answers { java.nio.file.Paths.get("/path/to/video.mp4") }
       every { fileStore.getUrl(any()) } answers
           {
