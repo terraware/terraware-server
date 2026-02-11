@@ -92,8 +92,13 @@ class ProjectAcceleratorDetailsStore(
     val existing = fetchOneById(projectId, variableValues)
     val updated = applyFunc(existing)
 
-    require(updated.phase == null || updated.fileNaming != null) {
-      "File Naming is required if phase is selected"
+    require(
+        updated.phase == null ||
+            (updated.fileNaming != null &&
+                updated.dropboxFolderPath != null &&
+                updated.googleFolderUrl != null)
+    ) {
+      "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set."
     }
 
     val dropboxFolderPath: String?

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -534,7 +535,12 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           )
 
       store.update(projectId, existingValues) {
-        it.copy(phase = CohortPhase.Phase1FeasibilityStudy, fileNaming = "test-naming")
+        it.copy(
+            phase = CohortPhase.Phase1FeasibilityStudy,
+            fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
+        )
       }
 
       assertEquals(
@@ -559,6 +565,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
             numCommunities = 5,
             phase = CohortPhase.Phase0DueDiligence,
             fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
         )
       }
 
@@ -578,11 +586,23 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId,
           )
 
-      assertDoesNotThrow {
-        store.update(projectId, existingValues) {
-          it.copy(phase = CohortPhase.Phase1FeasibilityStudy, fileNaming = "test-naming")
-        }
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = CohortPhase.Phase1FeasibilityStudy,
+            fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
+        )
       }
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              fileNaming = "test-naming",
+              dropboxFolderPath = "/dropbox/test",
+              googleFolderUrl = URI("https://drive.google.com/test"),
+          )
+      )
     }
 
     @Test
@@ -594,40 +614,119 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       val exception =
           assertThrows<IllegalArgumentException> {
             store.update(projectId, existingValues) {
-              it.copy(phase = CohortPhase.Phase1FeasibilityStudy, fileNaming = null)
+              it.copy(
+                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  fileNaming = null,
+                  dropboxFolderPath = "/dropbox/test",
+                  googleFolderUrl = URI("https://drive.google.com/test"),
+              )
             }
           }
 
       assertEquals(
-          "File Naming is required if phase is selected",
+          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
           exception.message,
       )
     }
 
     @Test
-    fun `allows update when phase is null and fileNaming is null`() {
+    fun `throws exception when phase is set but dropboxFolderPath is null`() {
       val projectId = insertProject()
 
       val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
 
-      assertDoesNotThrow {
-        store.update(projectId, existingValues) {
-          it.copy(phase = null, fileNaming = null, numCommunities = 5)
-        }
-      }
+      val exception =
+          assertThrows<IllegalArgumentException> {
+            store.update(projectId, existingValues) {
+              it.copy(
+                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  fileNaming = "test-naming",
+                  dropboxFolderPath = null,
+                  googleFolderUrl = URI("https://drive.google.com/test"),
+              )
+            }
+          }
+
+      assertEquals(
+          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
+          exception.message,
+      )
     }
 
     @Test
-    fun `allows update when both phase and fileNaming are set`() {
+    fun `throws exception when phase is set but googleFolderUrl is null`() {
       val projectId = insertProject()
 
       val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
 
-      assertDoesNotThrow {
-        store.update(projectId, existingValues) {
-          it.copy(phase = CohortPhase.Phase1FeasibilityStudy, fileNaming = "test-naming")
-        }
+      val exception =
+          assertThrows<IllegalArgumentException> {
+            store.update(projectId, existingValues) {
+              it.copy(
+                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  fileNaming = "test-naming",
+                  dropboxFolderPath = "/dropbox/test",
+                  googleFolderUrl = null,
+              )
+            }
+          }
+
+      assertEquals(
+          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
+          exception.message,
+      )
+    }
+
+    @Test
+    fun `allows update when phase is null and document fields are null`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = null,
+            fileNaming = null,
+            dropboxFolderPath = null,
+            googleFolderUrl = null,
+            numCommunities = 5,
+        )
       }
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              fileNaming = null,
+              dropboxFolderPath = null,
+              googleFolderUrl = null,
+              numCommunities = 5,
+          )
+      )
+    }
+
+    @Test
+    fun `allows update when phase and all required document fields are set`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = CohortPhase.Phase1FeasibilityStudy,
+            fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
+        )
+      }
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              fileNaming = "test-naming",
+              dropboxFolderPath = "/dropbox/test",
+              googleFolderUrl = URI("https://drive.google.com/test"),
+          )
+      )
     }
   }
 }
