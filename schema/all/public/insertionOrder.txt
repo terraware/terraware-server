@@ -1,6 +1,6 @@
 time_zones
-seed_treatments
 asset_statuses
+seed_treatments
 land_use_model_types
 chat_memory_message_types
 conservation_categories
@@ -69,6 +69,7 @@ upload_problems
 user_disclaimers
 user_global_roles
 user_preferences
+birdnet_results
 notifications
 organization_internal_tags
 species_problems

@@ -1,3 +1,4 @@
+ab7b559380e Implemented BirdNet middleware API (#3883)
 66d9ac67396 Add position columns to splats table (#3884)
 a0a9afe7ca3 Support per-step splatter arguments (#3885)
 437d03b230f Accept observation video parameters as form fields (#3882)

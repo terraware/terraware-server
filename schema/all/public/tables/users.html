@@ -426,6 +426,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="birdnet_results.created_by references users.id via birdnet_results_created_by_fkey"><a href='birdnet_results.html'>birdnet_results</a><span class='relatedKey'>.created_by</span></td>
+                                                <td class="constraint detail">birdnet_results_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="chat_memory_conversations.created_by references users.id via chat_memory_conversations_created_by_fkey"><a href='chat_memory_conversations.html'>chat_memory_conversations</a><span class='relatedKey'>.created_by</span></td>
                                                 <td class="constraint detail">chat_memory_conversations_created_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -1150,12 +1155,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>users_first_name_check</td>
-                                    <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>users_auth_id_check</td>
                                     <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>users_first_name_check</td>
+                                    <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>users_last_name_check</td>
