@@ -697,13 +697,19 @@ COMMENT ON TABLE accelerator.report_metric_statuses IS '(Enum) Statuses of accel
 COMMENT ON TABLE accelerator.report_photos IS 'Photos for the accelerator project report.';
 COMMENT ON COLUMN accelerator.report_photos.deleted IS 'Flag for photos to be deleted in the next publishing.';
 
+COMMENT ON TABLE accelerator.report_project_metric_targets IS 'Project targets for project-specific metrics by year';
+
 COMMENT ON TABLE accelerator.report_project_metrics IS 'Report entries of targets and values for project metrics.';
 
 COMMENT ON TABLE accelerator.report_quarters IS '(Enum) Quarters of accelerator project reports.';
 
+COMMENT ON TABLE accelerator.report_standard_metric_targets IS 'Project targets for standard metrics by year';
+
 COMMENT ON TABLE accelerator.report_standard_metrics IS 'Report entries of targets and values for standard metrics.';
 
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
+
+COMMENT ON TABLE accelerator.report_system_metric_targets IS 'Project targets for system metrics by year';
 
 COMMENT ON TABLE accelerator.report_system_metrics IS 'Report entries of targets and values for system metrics.';
 COMMENT ON COLUMN accelerator.report_system_metrics.override_value IS 'Value inputted by accelerator admin to override system value. Null for no overrides.';
@@ -822,6 +828,8 @@ COMMENT ON TABLE funder.published_project_details IS 'Published Project Data vis
 
 COMMENT ON TABLE funder.published_project_land_use IS 'Land Use Model Types and hectares of each for published projects.';
 
+COMMENT ON TABLE funder.published_project_metric_targets IS 'Published project targets for project-specific metrics by year';
+
 COMMENT ON TABLE funder.published_project_sdg IS 'Sustainable Development Goals for published projects.';
 
 COMMENT ON TABLE funder.published_report_achievements IS 'Achievements of published reports.';
@@ -837,5 +845,9 @@ COMMENT ON TABLE funder.published_report_standard_metrics IS 'Standard metrics o
 COMMENT ON TABLE funder.published_report_system_metrics IS 'System metrics of published reports.';
 
 COMMENT ON TABLE funder.published_reports IS 'Published reports visible to funders.';
+
+COMMENT ON TABLE funder.published_standard_metric_targets IS 'Published project targets for standard metrics by year';
+
+COMMENT ON TABLE funder.published_system_metric_targets IS 'Published project targets for system metrics by year';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.
