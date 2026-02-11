@@ -654,7 +654,6 @@ class ReportStore(
     val startMonth =
         when (frequency) {
           ReportFrequency.Quarterly -> date.month.firstMonthOfQuarter()
-          ReportFrequency.Annual -> Month.JANUARY
         }
 
     return LocalDate.of(startYear, startMonth, 1)
@@ -668,7 +667,6 @@ class ReportStore(
     val durationMonths =
         when (config.frequency) {
           ReportFrequency.Quarterly -> 3L
-          ReportFrequency.Annual -> 12L
         }
 
     var startDate = getStartOfReportingPeriod(config.reportingStartDate, config.frequency)

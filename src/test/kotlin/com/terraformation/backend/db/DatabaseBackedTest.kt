@@ -3915,7 +3915,6 @@ abstract class DatabaseBackedTest {
       row: PublishedReportProjectMetricsRow = PublishedReportProjectMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       metricId: ProjectMetricId = row.projectMetricId ?: inserted.projectMetricId,
-      target: Int? = row.target,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3925,7 +3924,6 @@ abstract class DatabaseBackedTest {
         row.copy(
             reportId = reportId,
             projectMetricId = metricId,
-            target = target,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
@@ -3939,7 +3937,6 @@ abstract class DatabaseBackedTest {
       row: PublishedReportStandardMetricsRow = PublishedReportStandardMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       metricId: StandardMetricId = row.standardMetricId ?: inserted.standardMetricId,
-      target: Int? = row.target,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3949,7 +3946,6 @@ abstract class DatabaseBackedTest {
         row.copy(
             reportId = reportId,
             standardMetricId = metricId,
-            target = target,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
@@ -3963,7 +3959,6 @@ abstract class DatabaseBackedTest {
       row: PublishedReportSystemMetricsRow = PublishedReportSystemMetricsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       metric: SystemMetric = row.systemMetricId ?: SystemMetric.Seedlings,
-      target: Int? = row.target,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3973,7 +3968,6 @@ abstract class DatabaseBackedTest {
         row.copy(
             reportId = reportId,
             systemMetricId = metric,
-            target = target,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
