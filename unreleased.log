@@ -1,3 +1,4 @@
+8f4d8e013e7 Disable BirdNET by default (#3891)
 85d2f4bb66a Implemented report targets updates (#3889)
 a0629cef391 Implemented feature to publish report targets when a report of that year is published (#3888)
 b6d14cde91c Read targets for reports from new tables (#3887)
