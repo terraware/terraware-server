@@ -18,6 +18,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.splat.CoordinateModel
 import com.terraformation.backend.splat.ExistingSplatAnnotationModel
+import com.terraformation.backend.splat.ObservationBirdnetResultModel
 import com.terraformation.backend.splat.ObservationSplatModel
 import com.terraformation.backend.splat.SplatAnnotationModel
 import com.terraformation.backend.splat.SplatGenerationFailedException
@@ -287,7 +288,7 @@ data class ObservationBirdnetResultPayload(
     val resultsStorageUrl: String?,
 ) {
   companion object {
-    fun of(model: com.terraformation.backend.splat.ObservationBirdnetResultModel) =
+    fun of(model: ObservationBirdnetResultModel) =
         ObservationBirdnetResultPayload(
             fileId = model.fileId,
             monitoringPlotId = model.monitoringPlotId,
