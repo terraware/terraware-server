@@ -29,7 +29,6 @@ data class ProjectAcceleratorDetailsModel(
     val clickUpLink: URI? = null,
     val cohortId: CohortId? = null,
     val cohortName: String? = null,
-    val cohortPhase: CohortPhase? = null,
     val confirmedReforestableLand: BigDecimal? = null,
     val countryAlpha3: String? = null,
     val countryCode: String? = null,
@@ -53,6 +52,7 @@ data class ProjectAcceleratorDetailsModel(
     val numCommunities: Int? = null,
     val numNativeSpecies: Int? = null,
     val perHectareBudget: BigDecimal? = null,
+    val phase: CohortPhase? = null,
     val pipeline: Pipeline? = null,
     val plantingSitesCql: String? = null,
     val projectArea: BigDecimal? = null,
@@ -88,7 +88,6 @@ data class ProjectAcceleratorDetailsModel(
             clickUpLink = variableValues.clickUpLink,
             cohortId = record[COHORTS.ID],
             cohortName = record[COHORTS.NAME],
-            cohortPhase = record[COHORTS.PHASE_ID],
             confirmedReforestableLand = variableValues.confirmedReforestableLand,
             countryAlpha3 = variableValues.countryAlpha3,
             countryCode = variableValues.countryCode,
@@ -112,6 +111,7 @@ data class ProjectAcceleratorDetailsModel(
             numCommunities = record[NUM_COMMUNITIES],
             numNativeSpecies = variableValues.numNativeSpecies,
             perHectareBudget = variableValues.perHectareBudget,
+            phase = record[COHORTS.PHASE_ID],
             pipeline = record[PIPELINE_ID],
             plantingSitesCql = record[PLANTING_SITES_CQL],
             projectArea = variableValues.projectArea,
@@ -173,4 +173,8 @@ data class ProjectAcceleratorDetailsModel(
           verraLink = verraLink,
           whatNeedsToBeTrue = whatNeedsToBeTrue,
       )
+
+  @Deprecated("Use phase instead.")
+  val cohortPhase: CohortPhase?
+    get() = phase
 }

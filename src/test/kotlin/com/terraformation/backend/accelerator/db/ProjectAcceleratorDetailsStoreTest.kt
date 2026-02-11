@@ -131,7 +131,6 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               carbonCapacity = detailsRow.carbonCapacity,
               cohortId = inserted.cohortId,
               cohortName = "Cohort name",
-              cohortPhase = CohortPhase.Phase0DueDiligence,
               confirmedReforestableLand = detailsRow.confirmedReforestableLand,
               countryCode = "KE",
               dealDescription = detailsRow.dealDescription,
@@ -157,6 +156,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               numCommunities = detailsRow.numCommunities,
               numNativeSpecies = detailsRow.numNativeSpecies,
               perHectareBudget = detailsRow.perHectareBudget,
+              phase = CohortPhase.Phase0DueDiligence,
               pipeline = detailsRow.pipelineId,
               plantingSitesCql = "tf_accelerator:fid=123",
               projectBoundariesCql = "project_no=5",
@@ -520,6 +520,113 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       assertThrows<AccessDeniedException> {
         store.update(projectId, ProjectAcceleratorVariableValuesModel(projectId = projectId)) { it }
+      }
+    }
+
+    @Test
+    fun `updates cohort phase when project phase changes`() {
+      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(cohortId = inserted.cohortId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      store.update(projectId, existingValues) {
+        it.copy(phase = CohortPhase.Phase1FeasibilityStudy, fileNaming = "test-naming")
+      }
+
+      assertEquals(
+          CohortPhase.Phase1FeasibilityStudy,
+          cohortsDao.fetchOneById(inserted.cohortId)?.phaseId,
+          "Cohort phase should be updated to match project phase",
+      )
+    }
+
+    @Test
+    fun `does not update cohort phase when project phase is unchanged`() {
+      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(cohortId = inserted.cohortId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            numCommunities = 5,
+            phase = CohortPhase.Phase0DueDiligence,
+            fileNaming = "test-naming",
+        )
+      }
+
+      assertEquals(
+          CohortPhase.Phase0DueDiligence,
+          cohortsDao.fetchOneById(inserted.cohortId)?.phaseId,
+          "Cohort phase should remain unchanged",
+      )
+    }
+
+    @Test
+    fun `handles project with no cohort when phase changes`() {
+      val projectId = insertProject()
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      assertDoesNotThrow {
+        store.update(projectId, existingValues) {
+          it.copy(phase = CohortPhase.Phase1FeasibilityStudy, fileNaming = "test-naming")
+        }
+      }
+    }
+
+    @Test
+    fun `throws exception when phase is set but fileNaming is null`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      val exception =
+          assertThrows<IllegalArgumentException> {
+            store.update(projectId, existingValues) {
+              it.copy(phase = CohortPhase.Phase1FeasibilityStudy, fileNaming = null)
+            }
+          }
+
+      assertEquals(
+          "File Naming is required if phase is selected",
+          exception.message,
+      )
+    }
+
+    @Test
+    fun `allows update when phase is null and fileNaming is null`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      assertDoesNotThrow {
+        store.update(projectId, existingValues) {
+          it.copy(phase = null, fileNaming = null, numCommunities = 5)
+        }
+      }
+    }
+
+    @Test
+    fun `allows update when both phase and fileNaming are set`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      assertDoesNotThrow {
+        store.update(projectId, existingValues) {
+          it.copy(phase = CohortPhase.Phase1FeasibilityStudy, fileNaming = "test-naming")
+        }
       }
     }
   }

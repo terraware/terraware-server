@@ -92,6 +92,10 @@ class ProjectAcceleratorDetailsStore(
     val existing = fetchOneById(projectId, variableValues)
     val updated = applyFunc(existing)
 
+    require(updated.phase == null || updated.fileNaming != null) {
+      "File Naming is required if phase is selected"
+    }
+
     val dropboxFolderPath: String?
     val googleFolderUrl: URI?
 
@@ -168,6 +172,14 @@ class ProjectAcceleratorDetailsStore(
             .set(MODIFIED_BY, currentUser().userId)
             .set(MODIFIED_TIME, clock.instant())
             .where(ID.eq(projectId))
+            .execute()
+      }
+
+      if (existing.phase != updated.phase) {
+        dslContext
+            .update(COHORTS)
+            .set(COHORTS.PHASE_ID, updated.phase)
+            .where(COHORTS.ID.eq(existing.cohortId))
             .execute()
       }
 
