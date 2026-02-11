@@ -10,8 +10,11 @@ import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
+import com.terraformation.backend.accelerator.model.ReportProjectMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
+import com.terraformation.backend.accelerator.model.ReportStandardMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
+import com.terraformation.backend.accelerator.model.ReportSystemMetricTargetModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
@@ -485,6 +488,42 @@ class ProjectReportsController(
     )
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @GetMapping("/projectMetricTargets")
+  @Operation(summary = "Get all project metric targets for a project.")
+  fun getProjectMetricTargets(
+      @PathVariable projectId: ProjectId
+  ): GetProjectMetricTargetsResponsePayload {
+    val targets = reportStore.fetchReportProjectMetricTargets(projectId)
+    return GetProjectMetricTargetsResponsePayload(
+        targets.map { ReportProjectMetricTargetPayload(it) }
+    )
+  }
+
+  @ApiResponse200
+  @GetMapping("/standardMetricTargets")
+  @Operation(summary = "Get all standard metric targets for a project.")
+  fun getStandardMetricTargets(
+      @PathVariable projectId: ProjectId
+  ): GetStandardMetricTargetsResponsePayload {
+    val targets = reportStore.fetchReportStandardMetricTargets(projectId)
+    return GetStandardMetricTargetsResponsePayload(
+        targets.map { ReportStandardMetricTargetPayload(it) }
+    )
+  }
+
+  @ApiResponse200
+  @GetMapping("/systemMetricTargets")
+  @Operation(summary = "Get all system metric targets for a project.")
+  fun getSystemMetricTargets(
+      @PathVariable projectId: ProjectId
+  ): GetSystemMetricTargetsResponsePayload {
+    val targets = reportStore.fetchReportSystemMetricTargets(projectId)
+    return GetSystemMetricTargetsResponsePayload(
+        targets.map { ReportSystemMetricTargetPayload(it) }
+    )
+  }
 }
 
 data class ExistingAcceleratorReportConfigPayload(
@@ -849,3 +888,57 @@ data class UpdateProjectMetricRequestPayload(@field:Valid val metric: ExistingPr
 data class UpdateAcceleratorReportPhotoRequestPayload(val caption: String?)
 
 data class UploadAcceleratorReportPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
+
+data class ReportProjectMetricTargetPayload(
+    val metricId: ProjectMetricId,
+    val target: Number?,
+    val year: Number,
+) {
+  constructor(
+      model: ReportProjectMetricTargetModel
+  ) : this(
+      metricId = model.metricId,
+      target = model.target,
+      year = model.year,
+  )
+}
+
+data class ReportStandardMetricTargetPayload(
+    val metricId: StandardMetricId,
+    val target: Number?,
+    val year: Number,
+) {
+  constructor(
+      model: ReportStandardMetricTargetModel
+  ) : this(
+      metricId = model.metricId,
+      target = model.target,
+      year = model.year,
+  )
+}
+
+data class ReportSystemMetricTargetPayload(
+    val metric: SystemMetric,
+    val target: Number?,
+    val year: Number,
+) {
+  constructor(
+      model: ReportSystemMetricTargetModel
+  ) : this(
+      metric = model.metric,
+      target = model.target,
+      year = model.year,
+  )
+}
+
+data class GetProjectMetricTargetsResponsePayload(
+    val targets: List<ReportProjectMetricTargetPayload>
+) : SuccessResponsePayload
+
+data class GetStandardMetricTargetsResponsePayload(
+    val targets: List<ReportStandardMetricTargetPayload>
+) : SuccessResponsePayload
+
+data class GetSystemMetricTargetsResponsePayload(
+    val targets: List<ReportSystemMetricTargetPayload>
+) : SuccessResponsePayload
