@@ -44,6 +44,7 @@ class AdminSplatsController(
       @RequestParam maxSize: Int?,
       @RequestParam maxSteps: Int?,
       @RequestParam restartAt: String?,
+      @RequestParam runBirdNet: Boolean?,
       @RequestParam ssimLambda: Double?,
       @RequestParam tailPruning: Boolean?,
       payload: AdminProcessSplatRequestPayload,
@@ -88,7 +89,7 @@ class AdminSplatsController(
 
       val params = SplatGenerationParams(abortAfter, restartAt, stepArgs)
 
-      splatService.generateObservationSplat(observationId, fileId, true, params)
+      splatService.generateObservationSplat(observationId, fileId, true, params, runBirdNet ?: true)
 
       val storageUrl = filesDao.fetchOneById(fileId)?.storageUrl
       val modelUrl = splatsDao.fetchOneByFileId(fileId)?.splatStorageUrl

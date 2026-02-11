@@ -39,6 +39,8 @@ COMMENT ON TABLE automations IS 'Configuration of automatic processes run by the
 
 COMMENT ON TABLE seedbank.bags IS 'Individual bags of seeds that are part of an accession. An accession can consist of multiple bags.';
 
+COMMENT ON TABLE birdnet_results IS 'Results of BirdNET detection pipeline from video files.';
+
 COMMENT ON TABLE chat_memory_conversations IS 'Information about Ask Terraware conversations.';
 
 COMMENT ON TABLE chat_memory_message_types IS '(Enum) Message types that can be stored as part of the memory of an LLM chat conversation.';

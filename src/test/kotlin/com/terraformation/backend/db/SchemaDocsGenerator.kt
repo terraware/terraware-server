@@ -267,6 +267,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "app_versions" to setOf(ALL, CUSTOMER),
                   "asset_statuses" to setOf(ALL),
                   "automations" to setOf(ALL, DEVICE),
+                  "birdnet_results" to setOf(ALL),
                   "chat_memory_conversations" to setOf(ALL, ACCELERATOR),
                   "chat_memory_message_types" to setOf(ALL, ACCELERATOR),
                   "chat_memory_messages" to setOf(ALL, ACCELERATOR),
