@@ -131,9 +131,19 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="report_project_metric_targets.project_metric_id references project_metrics.id via report_project_metric_targets_project_metric_id_fkey"><a href='report_project_metric_targets.html'>report_project_metric_targets</a><span class='relatedKey'>.project_metric_id</span></td>
+                                                <td class="constraint detail">report_project_metric_targets_project_metric_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="report_project_metrics.project_metric_id references project_metrics.id via report_project_metrics_project_metric_id_fkey"><a href='report_project_metrics.html'>report_project_metrics</a><span class='relatedKey'>.project_metric_id</span></td>
                                                 <td class="constraint detail">report_project_metrics_project_metric_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="published_project_metric_targets.project_metric_id references project_metrics.id via published_project_metric_targets_project_metric_id_fkey"><a href='../../funder/tables/published_project_metric_targets.html'>published_project_metric_targets</a><span class='relatedKey'>.project_metric_id</span></td>
+                                                <td class="constraint detail">published_project_metric_targets_project_metric_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="published_report_project_metrics.project_metric_id references project_metrics.id via published_report_project_metrics_project_metric_id_fkey"><a href='../../funder/tables/published_report_project_metrics.html'>published_report_project_metrics</a><span class='relatedKey'>.project_metric_id</span></td>

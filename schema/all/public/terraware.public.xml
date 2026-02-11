@@ -918,6 +918,9 @@
             <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>
             <child column="project_id" foreignKey="project_vote_decisions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_vote_decisions"/>
             <child column="project_id" foreignKey="project_votes_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_votes"/>
+            <child column="project_id" foreignKey="report_project_metric_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_metric_targets"/>
+            <child column="project_id" foreignKey="report_standard_metric_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_standard_metric_targets"/>
+            <child column="project_id" foreignKey="report_system_metric_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_system_metric_targets"/>
             <child column="project_id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
             <child column="project_id" foreignKey="submission_documents_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="submission_documents"/>
             <child column="project_id" foreignKey="submissions_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="submissions"/>
@@ -930,8 +933,11 @@
             <child column="project_id" foreignKey="published_project_carbon_certs_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_carbon_certs"/>
             <child column="project_id" foreignKey="published_project_details_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_details"/>
             <child column="project_id" foreignKey="published_project_land_use_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_land_use"/>
+            <child column="project_id" foreignKey="published_project_metric_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_metric_targets"/>
             <child column="project_id" foreignKey="published_project_sdg_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_sdg"/>
             <child column="project_id" foreignKey="published_reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
+            <child column="project_id" foreignKey="published_standard_metric_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_standard_metric_targets"/>
+            <child column="project_id" foreignKey="published_system_metric_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_system_metric_targets"/>
             <child column="project_id" foreignKey="batch_details_history_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batch_details_history"/>
             <child column="project_id" foreignKey="batches_project_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <child column="project_id" foreignKey="project_internal_users_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="project_internal_users"/>

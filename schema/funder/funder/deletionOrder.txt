@@ -1,4 +1,7 @@
+published_system_metric_targets
+published_standard_metric_targets
 published_project_sdg
+published_project_metric_targets
 published_project_land_use
 published_project_details
 published_project_carbon_certs

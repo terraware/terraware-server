@@ -7,6 +7,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "report_photos":"elipses":w -> "reports":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_project_metrics":"elipses":w -> "reports":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_project_metrics":"elipses":w -> "report_metric_statuses":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_metric_targets":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_metric_targets":"elipses":w -> "standard_metrics":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_standard_metrics":"report_id":w -> "reports":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_standard_metrics":"standard_metric_id":w -> "standard_metrics":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_standard_metrics":"status_id":w -> "report_metric_statuses":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -28,6 +30,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funder.published_reports":"elipses":w -> "report_frequencies":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"elipses":w -> "reports":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"elipses":w -> "report_quarters":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_standard_metric_targets":"elipses":w -> "standard_metrics":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "metric_components" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -139,6 +142,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="report_quarters"
   ];
+  "report_standard_metric_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="189" HEIGHT="16"><B>report_standard_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/report_standard_metric_targets.html"
+    target="_top"
+    tooltip="report_standard_metric_targets"
+  ];
   "report_standard_metrics" [
    label=<
     <TABLE BORDER="2" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -206,7 +220,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">type_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="component_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16">component_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/standard_metrics.html"
     target="_top"
@@ -256,12 +270,23 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="funder.published_reports"
   ];
+  "funder.published_standard_metric_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="254" HEIGHT="16"><B>funder.published_standard_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_standard_metric_targets.html"
+    target="_top"
+    tooltip="funder.published_standard_metric_targets"
+  ];
   "public.projects" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="88" HEIGHT="16"><B>public.projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">18 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/projects.html"
     target="_top"

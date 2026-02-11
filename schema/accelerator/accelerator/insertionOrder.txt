@@ -20,15 +20,15 @@ event_types
 report_statuses
 score_categories
 modules
-cohorts
 standard_metrics
 system_metrics
+cohorts
 deliverable_categories
 project_report_configs
+project_metrics
 reports
 report_photos
 activities
-project_metrics
 deliverables
 applications
 submissions
@@ -45,6 +45,9 @@ deliverable_cohort_due_dates
 deliverable_project_due_dates
 event_projects
 participant_project_species
+report_project_metric_targets
+report_standard_metric_targets
+report_system_metric_targets
 submission_snapshots
 activity_media_files
 application_modules

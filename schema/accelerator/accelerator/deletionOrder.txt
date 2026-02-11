@@ -12,6 +12,9 @@ project_accelerator_details
 application_modules
 activity_media_files
 submission_snapshots
+report_system_metric_targets
+report_standard_metric_targets
+report_project_metric_targets
 participant_project_species
 event_projects
 deliverable_project_due_dates
@@ -28,15 +31,15 @@ deal_stages
 submissions
 applications
 deliverables
-project_metrics
 activities
 report_photos
 reports
+project_metrics
 project_report_configs
 deliverable_categories
+cohorts
 system_metrics
 standard_metrics
-cohorts
 modules
 score_categories
 report_statuses

@@ -22,8 +22,8 @@ score_categories
 standard_metrics
 system_metrics
 deliverable_categories
-report_photos
 project_metrics
+report_photos
 cohorts
 activities
 project_report_configs
@@ -42,6 +42,9 @@ deliverable_cohort_due_dates
 deliverable_project_due_dates
 deliverable_variables
 event_projects
+report_project_metric_targets
+report_standard_metric_targets
+report_system_metric_targets
 submission_snapshots
 activity_media_files
 application_histories

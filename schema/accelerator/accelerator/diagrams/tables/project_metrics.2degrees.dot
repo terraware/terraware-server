@@ -18,9 +18,15 @@ digraph "twoDegreesRelationshipsDiagram" {
   "project_vote_decisions":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_votes":"elipses":w -> "cohort_phases":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_votes":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_project_metric_targets":"project_id":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_project_metric_targets":"project_metric_id":w -> "project_metrics":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_project_metrics":"project_metric_id":w -> "project_metrics":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_project_metrics":"report_id":w -> "reports":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_project_metrics":"status_id":w -> "report_metric_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_metric_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_metric_targets":"elipses":w -> "standard_metrics":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_system_metric_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_system_metric_targets":"elipses":w -> "system_metrics":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"elipses":w -> "project_report_configs":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"elipses":w -> "project_report_configs":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -32,6 +38,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "submissions":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "system_metrics":"elipses":w -> "metric_components":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "system_metrics":"elipses":w -> "metric_types":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_project_metric_targets":"project_metric_id":w -> "project_metrics":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_report_project_metrics":"project_metric_id":w -> "project_metrics":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_report_project_metrics":"status_id":w -> "report_metric_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "public.projects":"cohort_id":w -> "cohorts":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -161,7 +168,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="reference" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">reference</TD></TR></TABLE></TD><TD PORT="reference.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="is_publishable" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">is_publishable</TD></TR></TABLE></TD><TD PORT="is_publishable.type" ALIGN="LEFT">bool[1]</TD></TR>
       <TR><TD PORT="unit" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">unit</TD></TR></TABLE></TD><TD PORT="unit.type" ALIGN="LEFT">text[2147483647]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/project_metrics.html"
     target="_top"
@@ -233,6 +240,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="report_metric_statuses"
   ];
+  "report_project_metric_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="177" HEIGHT="16"><B>report_project_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/report_project_metric_targets.html"
+    target="_top"
+    tooltip="report_project_metric_targets"
+  ];
   "report_project_metrics" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -246,6 +264,28 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/report_project_metrics.html"
     target="_top"
     tooltip="report_project_metrics"
+  ];
+  "report_standard_metric_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="189" HEIGHT="16"><B>report_standard_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/report_standard_metric_targets.html"
+    target="_top"
+    tooltip="report_standard_metric_targets"
+  ];
+  "report_system_metric_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="178" HEIGHT="16"><B>report_system_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/report_system_metric_targets.html"
+    target="_top"
+    tooltip="report_system_metric_targets"
   ];
   "reports" [
    label=<
@@ -263,7 +303,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16"><B>standard_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/standard_metrics.html"
     target="_top"
@@ -296,11 +336,23 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="93" HEIGHT="16"><B>system_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/system_metrics.html"
     target="_top"
     tooltip="system_metrics"
+  ];
+  "funder.published_project_metric_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="242" HEIGHT="16"><B>funder.published_project_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_metric_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="198" HEIGHT="16">project_metric_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_project_metric_targets.html"
+    target="_top"
+    tooltip="funder.published_project_metric_targets"
   ];
   "funder.published_report_project_metrics" [
    label=<
@@ -319,10 +371,8 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="88" HEIGHT="16"><B>public.projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="cohort_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">cohort_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="phase_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">phase_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">18 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/projects.html"
     target="_top"
