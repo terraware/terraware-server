@@ -713,7 +713,7 @@ data class IndividualUser(
   override fun canUpdateProjectInternalUsers(projectId: ProjectId) = isTFExpertOrHigher()
 
   override fun canUpdateProjectReports(projectId: ProjectId): Boolean =
-      isAdminOrHigher(parentStore.getOrganizationId(projectId))
+      isTFExpertOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
   override fun canUpdateProjectScores(projectId: ProjectId): Boolean = isTFExpertOrHigher()
 

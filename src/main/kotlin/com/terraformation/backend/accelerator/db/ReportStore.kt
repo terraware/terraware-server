@@ -583,6 +583,72 @@ class ReportStore(
     }
   }
 
+  fun updateProjectMetricTarget(
+      projectId: ProjectId,
+      year: Int,
+      metricId: ProjectMetricId,
+      target: Int?,
+  ) {
+    requirePermissions { updateProjectReports(projectId) }
+
+    with(REPORT_PROJECT_METRIC_TARGETS) {
+      dslContext
+          .insertInto(this)
+          .set(PROJECT_ID, projectId)
+          .set(PROJECT_METRIC_ID, metricId)
+          .set(YEAR, year)
+          .set(TARGET, target)
+          .onConflict(PROJECT_ID, PROJECT_METRIC_ID, YEAR)
+          .doUpdate()
+          .set(TARGET, target)
+          .execute()
+    }
+  }
+
+  fun updateStandardMetricTarget(
+      projectId: ProjectId,
+      year: Int,
+      metricId: StandardMetricId,
+      target: Int?,
+  ) {
+    requirePermissions { updateProjectReports(projectId) }
+
+    with(REPORT_STANDARD_METRIC_TARGETS) {
+      dslContext
+          .insertInto(this)
+          .set(PROJECT_ID, projectId)
+          .set(STANDARD_METRIC_ID, metricId)
+          .set(YEAR, year)
+          .set(TARGET, target)
+          .onConflict(PROJECT_ID, STANDARD_METRIC_ID, YEAR)
+          .doUpdate()
+          .set(TARGET, target)
+          .execute()
+    }
+  }
+
+  fun updateSystemMetricTarget(
+      projectId: ProjectId,
+      year: Int,
+      metricId: SystemMetric,
+      target: Int?,
+  ) {
+    requirePermissions { updateProjectReports(projectId) }
+
+    with(REPORT_SYSTEM_METRIC_TARGETS) {
+      dslContext
+          .insertInto(this)
+          .set(PROJECT_ID, projectId)
+          .set(SYSTEM_METRIC_ID, metricId)
+          .set(YEAR, year)
+          .set(TARGET, target)
+          .onConflict(PROJECT_ID, SYSTEM_METRIC_ID, YEAR)
+          .doUpdate()
+          .set(TARGET, target)
+          .execute()
+    }
+  }
+
   private fun getStartOfReportingPeriod(date: LocalDate, frequency: ReportFrequency): LocalDate {
     val startYear = date.year
     val startMonth =

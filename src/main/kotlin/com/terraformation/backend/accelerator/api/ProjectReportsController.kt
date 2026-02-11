@@ -434,6 +434,57 @@ class ProjectReportsController(
     metricStore.updateProjectMetric(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @ApiResponse400
+  @PostMapping("/projectMetricTarget")
+  @Operation(summary = "Update project metric target for a year.")
+  fun updateProjectMetricTarget(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateProjectMetricTargetRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateProjectMetricTarget(
+        projectId = projectId,
+        year = payload.year,
+        metricId = payload.metricId,
+        target = payload.target,
+    )
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @PostMapping("/standardMetricTarget")
+  @Operation(summary = "Update standard metric target for a year.")
+  fun updateStandardMetricTarget(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateStandardMetricTargetRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateStandardMetricTarget(
+        projectId = projectId,
+        year = payload.year,
+        metricId = payload.metricId,
+        target = payload.target,
+    )
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @PostMapping("/systemMetricTarget")
+  @Operation(summary = "Update system metric target for a year.")
+  fun updateSystemMetricTarget(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateSystemMetricTargetRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateSystemMetricTarget(
+        projectId = projectId,
+        year = payload.year,
+        metricId = payload.metric,
+        target = payload.target,
+    )
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ExistingAcceleratorReportConfigPayload(
@@ -755,6 +806,24 @@ data class UpdateAcceleratorReportValuesRequestPayload(
     val projectMetrics: List<ReportProjectMetricEntriesPayload>,
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
     val systemMetrics: List<ReportSystemMetricEntriesPayload>,
+)
+
+data class UpdateProjectMetricTargetRequestPayload(
+    val year: Int,
+    val metricId: ProjectMetricId,
+    val target: Int?,
+)
+
+data class UpdateStandardMetricTargetRequestPayload(
+    val year: Int,
+    val metricId: StandardMetricId,
+    val target: Int?,
+)
+
+data class UpdateSystemMetricTargetRequestPayload(
+    val year: Int,
+    val metric: SystemMetric,
+    val target: Int?,
 )
 
 data class ListAcceleratorReportsResponsePayload(val reports: List<AcceleratorReportPayload>) :
