@@ -39,20 +39,22 @@ data class ReportStandardMetricModel(
     }
 
     private fun entry(record: Record): ReportMetricEntryModel {
-      return ReportMetricEntryModel(
-          target = record[REPORT_STANDARD_METRIC_TARGETS.TARGET],
-          value = record[REPORT_STANDARD_METRICS.VALUE],
-          modifiedBy = record[REPORT_STANDARD_METRICS.MODIFIED_BY],
-          modifiedTime = record[REPORT_STANDARD_METRICS.MODIFIED_TIME],
-          progressNotes =
-              if (currentUser().canReadReportInternalComments()) {
-                record[REPORT_STANDARD_METRICS.PROGRESS_NOTES]
-              } else {
-                null
-              },
-          projectsComments = record[REPORT_STANDARD_METRICS.PROJECTS_COMMENTS],
-          status = record[REPORT_STANDARD_METRICS.STATUS_ID],
-      )
+      return with(REPORT_STANDARD_METRICS) {
+        ReportMetricEntryModel(
+            target = record[REPORT_STANDARD_METRIC_TARGETS.TARGET],
+            value = record[VALUE],
+            modifiedBy = record[MODIFIED_BY],
+            modifiedTime = record[MODIFIED_TIME],
+            progressNotes =
+                if (currentUser().canReadReportInternalComments()) {
+                  record[PROGRESS_NOTES]
+                } else {
+                  null
+                },
+            projectsComments = record[PROJECTS_COMMENTS],
+            status = record[STATUS_ID],
+        )
+      }
     }
   }
 }
@@ -70,20 +72,22 @@ data class ReportProjectMetricModel(
     }
 
     private fun entry(record: Record): ReportMetricEntryModel {
-      return ReportMetricEntryModel(
-          target = record[REPORT_PROJECT_METRIC_TARGETS.TARGET],
-          value = record[REPORT_PROJECT_METRICS.VALUE],
-          modifiedBy = record[REPORT_PROJECT_METRICS.MODIFIED_BY],
-          modifiedTime = record[REPORT_PROJECT_METRICS.MODIFIED_TIME],
-          progressNotes =
-              if (currentUser().canReadReportInternalComments()) {
-                record[REPORT_PROJECT_METRICS.PROGRESS_NOTES]
-              } else {
-                null
-              },
-          projectsComments = record[REPORT_PROJECT_METRICS.PROJECTS_COMMENTS],
-          status = record[REPORT_PROJECT_METRICS.STATUS_ID],
-      )
+      return with(REPORT_PROJECT_METRICS) {
+        ReportMetricEntryModel(
+            target = record[REPORT_PROJECT_METRIC_TARGETS.TARGET],
+            value = record[VALUE],
+            modifiedBy = record[MODIFIED_BY],
+            modifiedTime = record[MODIFIED_TIME],
+            progressNotes =
+                if (currentUser().canReadReportInternalComments()) {
+                  record[PROGRESS_NOTES]
+                } else {
+                  null
+                },
+            projectsComments = record[PROJECTS_COMMENTS],
+            status = record[STATUS_ID],
+        )
+      }
     }
   }
 }
@@ -102,22 +106,24 @@ data class ReportSystemMetricEntryModel(
 ) {
   companion object {
     fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricEntryModel {
-      return ReportSystemMetricEntryModel(
-          target = record[REPORT_SYSTEM_METRIC_TARGETS.TARGET],
-          systemValue = record[systemValueField],
-          systemTime = record[REPORT_SYSTEM_METRICS.SYSTEM_TIME],
-          overrideValue = record[REPORT_SYSTEM_METRICS.OVERRIDE_VALUE],
-          modifiedBy = record[REPORT_SYSTEM_METRICS.MODIFIED_BY],
-          modifiedTime = record[REPORT_SYSTEM_METRICS.MODIFIED_TIME],
-          progressNotes =
-              if (currentUser().canReadReportInternalComments()) {
-                record[REPORT_SYSTEM_METRICS.PROGRESS_NOTES]
-              } else {
-                null
-              },
-          projectsComments = record[REPORT_SYSTEM_METRICS.PROJECTS_COMMENTS],
-          status = record[REPORT_SYSTEM_METRICS.STATUS_ID],
-      )
+      return with(REPORT_SYSTEM_METRICS) {
+        ReportSystemMetricEntryModel(
+            target = record[REPORT_SYSTEM_METRIC_TARGETS.TARGET],
+            systemValue = record[systemValueField],
+            systemTime = record[SYSTEM_TIME],
+            overrideValue = record[OVERRIDE_VALUE],
+            modifiedBy = record[MODIFIED_BY],
+            modifiedTime = record[MODIFIED_TIME],
+            progressNotes =
+                if (currentUser().canReadReportInternalComments()) {
+                  record[PROGRESS_NOTES]
+                } else {
+                  null
+                },
+            projectsComments = record[PROJECTS_COMMENTS],
+            status = record[STATUS_ID],
+        )
+      }
     }
   }
 }
