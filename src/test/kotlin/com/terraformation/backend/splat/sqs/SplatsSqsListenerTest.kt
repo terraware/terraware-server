@@ -2,7 +2,9 @@ package com.terraformation.backend.splat.sqs
 
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.splat.SplatService
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
@@ -17,10 +19,10 @@ class SplatsSqsListenerTest {
 
   @BeforeEach
   fun setUp() {
-    every { splatService.recordSplatSuccess(any()) } returns Unit
-    every { splatService.recordSplatError(any(), any()) } returns Unit
-    every { splatService.recordBirdnetSuccess(any()) } returns Unit
-    every { splatService.recordBirdnetError(any(), any()) } returns Unit
+    every { splatService.recordSplatSuccess(any()) } just Runs
+    every { splatService.recordSplatError(any(), any()) } just Runs
+    every { splatService.recordBirdnetSuccess(any()) } just Runs
+    every { splatService.recordBirdnetError(any(), any()) } just Runs
   }
 
   @Nested
