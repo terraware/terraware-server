@@ -48,11 +48,13 @@ import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METR
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectIdConverter
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_METRIC_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
@@ -60,6 +62,8 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_P
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_STANDARD_METRIC_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
@@ -504,6 +508,41 @@ class ReportStore(
           reportId,
           PUBLISHED_REPORT_PROJECT_METRICS.PROJECT_METRIC_ID,
           publishableProjectMetrics,
+      )
+
+      // Publish metric targets for the report year
+      val reportYear = report.endDate.year
+
+      val systemMetricTargets =
+          report.systemMetrics
+              .filter { (metric) -> metric.isPublishable }
+              .associate { (metric, entry) -> metric to entry.target }
+      val standardMetricTargets =
+          report.standardMetrics
+              .filter { (metric) -> metric.isPublishable }
+              .associate { (metric, entry) -> metric.id to entry.target }
+      val projectMetricTargets =
+          report.projectMetrics
+              .filter { (metric) -> metric.isPublishable }
+              .associate { (metric, entry) -> metric.id to entry.target }
+
+      publishReportMetricTargets(
+          report.projectId,
+          reportYear,
+          PUBLISHED_SYSTEM_METRIC_TARGETS.SYSTEM_METRIC_ID,
+          systemMetricTargets,
+      )
+      publishReportMetricTargets(
+          report.projectId,
+          reportYear,
+          PUBLISHED_STANDARD_METRIC_TARGETS.STANDARD_METRIC_ID,
+          standardMetricTargets,
+      )
+      publishReportMetricTargets(
+          report.projectId,
+          reportYear,
+          PUBLISHED_PROJECT_METRIC_TARGETS.PROJECT_METRIC_ID,
+          projectMetricTargets,
       )
     }
 
@@ -1083,6 +1122,48 @@ class ReportStore(
           .and(metricIdField.notIn(entries.keys))
           .execute()
     }
+  }
+
+  private fun <ID : Any> publishReportMetricTargets(
+      projectId: ProjectId,
+      year: Int,
+      metricIdField: TableField<*, ID?>,
+      targets: Map<ID, Int?>,
+  ) {
+    if (targets.isEmpty()) {
+      return
+    }
+
+    val table = metricIdField.table!!
+    val projectIdField =
+        table.field("project_id", SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()))!!
+    val yearField = table.field("year", Int::class.java)!!
+    val targetField = table.field("target", Int::class.java)!!
+
+    var insertQuery = dslContext.insertInto(table).set()
+
+    val iterator = targets.iterator()
+
+    while (iterator.hasNext()) {
+      val (metricId, target) = iterator.next()
+      insertQuery =
+          insertQuery
+              .set(projectIdField, projectId)
+              .set(metricIdField, metricId)
+              .set(yearField, year)
+              .set(targetField, target)
+              .apply {
+                if (iterator.hasNext()) {
+                  this.newRecord()
+                }
+              }
+    }
+
+    insertQuery
+        .onConflict(projectIdField, metricIdField, yearField)
+        .doUpdate()
+        .setAllToExcluded()
+        .execute()
   }
 
   private fun publishReportPhotos(
