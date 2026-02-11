@@ -128,7 +128,7 @@ class SplatsController(
       @PathVariable observationId: ObservationId,
       @RequestBody payload: GenerateSplatRequestPayload,
   ): SimpleSuccessResponsePayload {
-    splatService.generateObservationSplat(observationId, payload.fileId, runBirdnet = true)
+    splatService.generateObservationSplat(observationId, payload.fileId)
 
     return SimpleSuccessResponsePayload()
   }

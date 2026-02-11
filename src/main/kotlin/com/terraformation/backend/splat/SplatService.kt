@@ -222,7 +222,7 @@ class SplatService(
       fileId: FileId,
       force: Boolean = false,
       params: SplatGenerationParams,
-      runBirdnet: Boolean = true,
+      runBirdnet: Boolean = false,
   ) {
     val videoUrl =
         dslContext.fetchValue(FILES.STORAGE_URL, FILES.ID.eq(fileId))
