@@ -5354,4 +5354,289 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
   }
+
+  @Nested
+  inner class UpdateProjectMetricTarget {
+    @Test
+    fun `inserts new target`() {
+      val projectMetricId =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Test metric",
+              name = "Test Metric",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+
+      store.updateProjectMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = projectMetricId,
+          target = 100,
+      )
+
+      val targets = reportProjectMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertEquals(projectId, targets[0].projectId)
+      assertEquals(projectMetricId, targets[0].projectMetricId)
+      assertEquals(2024, targets[0].year)
+      assertEquals(100, targets[0].target)
+    }
+
+    @Test
+    fun `updates existing target`() {
+      val projectMetricId =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Test metric",
+              name = "Test Metric",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+
+      insertProjectMetricTarget(
+          projectId = projectId,
+          projectMetricId = projectMetricId,
+          year = 2024,
+          target = 100,
+      )
+
+      store.updateProjectMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = projectMetricId,
+          target = 150,
+      )
+
+      val targets = reportProjectMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertEquals(150, targets[0].target)
+    }
+
+    @Test
+    fun `allows null target`() {
+      val projectMetricId =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Test metric",
+              name = "Test Metric",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+
+      store.updateProjectMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = projectMetricId,
+          target = null,
+      )
+
+      val targets = reportProjectMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertNull(targets[0].target)
+    }
+
+    @Test
+    fun `requires permission to update project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      val projectMetricId =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Test metric",
+              name = "Test Metric",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+
+      assertThrows<AccessDeniedException> {
+        store.updateProjectMetricTarget(
+            projectId = projectId,
+            year = 2024,
+            metricId = projectMetricId,
+            target = 100,
+        )
+      }
+    }
+  }
+
+  @Nested
+  inner class UpdateStandardMetricTarget {
+    @Test
+    fun `inserts new target`() {
+      val standardMetricId =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Test metric",
+              name = "Test Metric",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+
+      store.updateStandardMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = standardMetricId,
+          target = 200,
+      )
+
+      val targets = reportStandardMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertEquals(projectId, targets[0].projectId)
+      assertEquals(standardMetricId, targets[0].standardMetricId)
+      assertEquals(2024, targets[0].year)
+      assertEquals(200, targets[0].target)
+    }
+
+    @Test
+    fun `updates existing target`() {
+      val standardMetricId =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Test metric",
+              name = "Test Metric",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+
+      insertStandardMetricTarget(
+          projectId = projectId,
+          standardMetricId = standardMetricId,
+          year = 2024,
+          target = 200,
+      )
+
+      store.updateStandardMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = standardMetricId,
+          target = 250,
+      )
+
+      val targets = reportStandardMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertEquals(250, targets[0].target)
+    }
+
+    @Test
+    fun `allows null target`() {
+      val standardMetricId =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Test metric",
+              name = "Test Metric",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+
+      store.updateStandardMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = standardMetricId,
+          target = null,
+      )
+
+      val targets = reportStandardMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertNull(targets[0].target)
+    }
+
+    @Test
+    fun `requires permission to update project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      val standardMetricId =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Test metric",
+              name = "Test Metric",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+
+      assertThrows<AccessDeniedException> {
+        store.updateStandardMetricTarget(
+            projectId = projectId,
+            year = 2024,
+            metricId = standardMetricId,
+            target = 200,
+        )
+      }
+    }
+  }
+
+  @Nested
+  inner class UpdateSystemMetricTarget {
+    @Test
+    fun `inserts new target`() {
+      store.updateSystemMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = SystemMetric.TreesPlanted,
+          target = 500,
+      )
+
+      val targets = reportSystemMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertEquals(projectId, targets[0].projectId)
+      assertEquals(SystemMetric.TreesPlanted, targets[0].systemMetricId)
+      assertEquals(2024, targets[0].year)
+      assertEquals(500, targets[0].target)
+    }
+
+    @Test
+    fun `updates existing target`() {
+      insertSystemMetricTarget(
+          projectId = projectId,
+          metric = SystemMetric.TreesPlanted,
+          year = 2024,
+          target = 500,
+      )
+
+      store.updateSystemMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = SystemMetric.TreesPlanted,
+          target = 600,
+      )
+
+      val targets = reportSystemMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertEquals(600, targets[0].target)
+    }
+
+    @Test
+    fun `allows null target`() {
+      store.updateSystemMetricTarget(
+          projectId = projectId,
+          year = 2024,
+          metricId = SystemMetric.TreesPlanted,
+          target = null,
+      )
+
+      val targets = reportSystemMetricTargetsDao.findAll()
+      assertEquals(1, targets.size)
+      assertNull(targets[0].target)
+    }
+
+    @Test
+    fun `requires permission to update project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.updateSystemMetricTarget(
+            projectId = projectId,
+            year = 2024,
+            metricId = SystemMetric.TreesPlanted,
+            target = 500,
+        )
+      }
+    }
+  }
 }

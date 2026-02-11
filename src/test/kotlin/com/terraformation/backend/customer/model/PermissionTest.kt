@@ -1190,6 +1190,7 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectReports = true,
+        updateProjectReports = true,
     )
 
     permissions.expect(
@@ -1902,6 +1903,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectInternalUsers = true,
+        updateProjectReports = true,
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
@@ -2182,6 +2184,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProjectAcceleratorDetails = true,
         updateProjectDocumentSettings = true,
         updateProjectInternalUsers = true,
+        updateProjectReports = true,
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
@@ -2462,6 +2465,7 @@ internal class PermissionTest : DatabaseTest() {
         updateProject = true,
         updateProjectAcceleratorDetails = true,
         updateProjectInternalUsers = true,
+        updateProjectReports = true,
         updateProjectScores = true,
         updateProjectVotes = true,
         updateSubmissionStatus = true,
