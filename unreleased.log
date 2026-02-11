@@ -1,3 +1,4 @@
+a0629cef391 Implemented feature to publish report targets when a report of that year is published (#3888)
 b6d14cde91c Read targets for reports from new tables (#3887)
 04e9e67d85d Added new target tables and migrate existing ones (#3886)
 ab7b559380e Implemented BirdNet middleware API (#3883)

@@ -211,44 +211,10 @@
 <polygon fill="black" stroke="black" points="599.53,-1965.26 607.17,-1969.58 603.52,-1965.63 607.5,-1966 607.5,-1966 607.5,-1966 603.52,-1965.63 607.83,-1962.42 599.53,-1965.26 599.53,-1965.26"/>
 <ellipse fill="none" stroke="black" cx="596.35" cy="-1964.96" rx="3.2" ry="3.2"/>
 </g>
-<!-- published_project_carbon_certs -->
-<g id="node4" class="node">
-<title>published_project_carbon_certs</title>
-<g id="a_node4"><a xlink:href="../../tables/published_project_carbon_certs.html" xlink:title="published_project_carbon_certs" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="297,-878 297,-962 528,-962 528,-878 297,-878"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="297.5,-940 297.5,-962 528.5,-962 528.5,-940 297.5,-940"/>
-<polygon fill="none" stroke="black" points="297.5,-940 297.5,-962 528.5,-962 528.5,-940 297.5,-940"/>
-<text text-anchor="start" x="302.5" y="-949.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">published_project_carbon_certs</text>
-<text text-anchor="start" x="489.5" y="-948.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="297.5,-918 297.5,-940 528.5,-940 528.5,-918 297.5,-918"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="302.5" y="-935"/>
-<text text-anchor="start" x="329.5" y="-926.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
-<polygon fill="none" stroke="black" points="297.5,-896 297.5,-918 528.5,-918 528.5,-896 297.5,-896"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="302.5" y="-913"/>
-<text text-anchor="start" x="329.5" y="-904.2" font-family="Helvetica,sans-Serif" font-size="11.00">carbon_certification</text>
-<polygon fill="#ffffff" stroke="transparent" points="297.5,-878 297.5,-896 410.5,-896 410.5,-878 297.5,-878"/>
-<polygon fill="none" stroke="black" points="297.5,-878 297.5,-896 410.5,-896 410.5,-878 297.5,-878"/>
-<text text-anchor="start" x="300.5" y="-884.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="410.5,-878 410.5,-896 469.5,-896 469.5,-878 410.5,-878"/>
-<polygon fill="none" stroke="black" points="410.5,-878 410.5,-896 469.5,-896 469.5,-878 410.5,-878"/>
-<text text-anchor="start" x="459.5" y="-884.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="469.5,-878 469.5,-896 528.5,-896 528.5,-878 469.5,-878"/>
-<polygon fill="none" stroke="black" points="469.5,-878 469.5,-896 528.5,-896 528.5,-878 469.5,-878"/>
-<text text-anchor="start" x="518.5" y="-884.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- published_project_carbon_certs&#45;&gt;public.projects -->
-<g id="edge14" class="edge">
-<title>published_project_carbon_certs:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M281.98,-929.82C235.34,-935.03 190.39,-963.9 160.36,-987.79"/>
-<polygon fill="black" stroke="black" points="288.51,-929.45 296.7,-932.59 292.51,-929.23 296.5,-929 296.5,-929 296.5,-929 292.51,-929.23 296.3,-925.41 288.51,-929.45 288.51,-929.45"/>
-<ellipse fill="none" stroke="black" cx="285.32" cy="-929.63" rx="3.2" ry="3.2"/>
-</g>
 <!-- published_project_land_use -->
-<g id="node5" class="node">
+<g id="node4" class="node">
 <title>published_project_land_use</title>
-<g id="a_node5"><a xlink:href="../../tables/published_project_land_use.html" xlink:title="published_project_land_use" target="_top">
+<g id="a_node4"><a xlink:href="../../tables/published_project_land_use.html" xlink:title="published_project_land_use" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="309,-1379 309,-1481 516,-1481 516,-1379 309,-1379"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="309.5,-1459 309.5,-1481 516.5,-1481 516.5,-1459 309.5,-1459"/>
 <polygon fill="none" stroke="black" points="309.5,-1459 309.5,-1481 516.5,-1481 516.5,-1459 309.5,-1459"/>
@@ -310,6 +276,40 @@
 <path fill="none" stroke="black" d="M295.68,-1441.25C248.39,-1396.82 163.75,-1145.46 134.11,-1054.15"/>
 <polygon fill="black" stroke="black" points="301.42,-1444.27 306.82,-1451.19 304.96,-1446.14 308.5,-1448 308.5,-1448 308.5,-1448 304.96,-1446.14 310.18,-1444.81 301.42,-1444.27 301.42,-1444.27"/>
 <ellipse fill="none" stroke="black" cx="298.59" cy="-1442.78" rx="3.2" ry="3.2"/>
+</g>
+<!-- published_project_carbon_certs -->
+<g id="node5" class="node">
+<title>published_project_carbon_certs</title>
+<g id="a_node5"><a xlink:href="../../tables/published_project_carbon_certs.html" xlink:title="published_project_carbon_certs" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="297,-878 297,-962 528,-962 528,-878 297,-878"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="297.5,-940 297.5,-962 528.5,-962 528.5,-940 297.5,-940"/>
+<polygon fill="none" stroke="black" points="297.5,-940 297.5,-962 528.5,-962 528.5,-940 297.5,-940"/>
+<text text-anchor="start" x="302.5" y="-949.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">published_project_carbon_certs</text>
+<text text-anchor="start" x="489.5" y="-948.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="297.5,-918 297.5,-940 528.5,-940 528.5,-918 297.5,-918"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="302.5" y="-935"/>
+<text text-anchor="start" x="329.5" y="-926.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="none" stroke="black" points="297.5,-896 297.5,-918 528.5,-918 528.5,-896 297.5,-896"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="302.5" y="-913"/>
+<text text-anchor="start" x="329.5" y="-904.2" font-family="Helvetica,sans-Serif" font-size="11.00">carbon_certification</text>
+<polygon fill="#ffffff" stroke="transparent" points="297.5,-878 297.5,-896 410.5,-896 410.5,-878 297.5,-878"/>
+<polygon fill="none" stroke="black" points="297.5,-878 297.5,-896 410.5,-896 410.5,-878 297.5,-878"/>
+<text text-anchor="start" x="300.5" y="-884.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="410.5,-878 410.5,-896 469.5,-896 469.5,-878 410.5,-878"/>
+<polygon fill="none" stroke="black" points="410.5,-878 410.5,-896 469.5,-896 469.5,-878 410.5,-878"/>
+<text text-anchor="start" x="459.5" y="-884.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="469.5,-878 469.5,-896 528.5,-896 528.5,-878 469.5,-878"/>
+<polygon fill="none" stroke="black" points="469.5,-878 469.5,-896 528.5,-896 528.5,-878 469.5,-878"/>
+<text text-anchor="start" x="518.5" y="-884.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- published_project_carbon_certs&#45;&gt;public.projects -->
+<g id="edge14" class="edge">
+<title>published_project_carbon_certs:w&#45;&gt;public.projects:e</title>
+<path fill="none" stroke="black" d="M281.98,-929.82C235.34,-935.03 190.39,-963.9 160.36,-987.79"/>
+<polygon fill="black" stroke="black" points="288.51,-929.45 296.7,-932.59 292.51,-929.23 296.5,-929 296.5,-929 296.5,-929 292.51,-929.23 296.3,-925.41 288.51,-929.45 288.51,-929.45"/>
+<ellipse fill="none" stroke="black" cx="285.32" cy="-929.63" rx="3.2" ry="3.2"/>
 </g>
 <!-- accelerator.report_frequencies -->
 <g id="node22" class="node">
