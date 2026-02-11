@@ -89,7 +89,7 @@ class AdminSplatsController(
 
       val params = SplatGenerationParams(abortAfter, restartAt, stepArgs)
 
-      splatService.generateObservationSplat(observationId, fileId, true, params, runBirdNet ?: true)
+      splatService.generateObservationSplat(observationId, fileId, true, params, runBirdNet ?: false)
 
       val storageUrl = filesDao.fetchOneById(fileId)?.storageUrl
       val modelUrl = splatsDao.fetchOneByFileId(fileId)?.splatStorageUrl
