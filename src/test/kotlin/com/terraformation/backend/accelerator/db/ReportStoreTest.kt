@@ -48,6 +48,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.funder.tables.records.PublishedProjectMetricTargetsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportAchievementsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportChallengesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportPhotosRecord
@@ -55,6 +56,8 @@ import com.terraformation.backend.db.funder.tables.records.PublishedReportProjec
 import com.terraformation.backend.db.funder.tables.records.PublishedReportStandardMetricsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportSystemMetricsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedStandardMetricTargetsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedSystemMetricTargetsRecord
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -3674,7 +3677,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           deleted = true,
       )
 
-      insertStandardMetricTarget(standardMetricId = standardMetricId1, year = 1970, target = 10)
+      insertStandardMetricTarget(standardMetricId = standardMetricId1, year = 2030, target = 10)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
@@ -3684,7 +3687,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Standard Metric 1 Progress notes",
       )
 
-      insertStandardMetricTarget(standardMetricId = standardMetricId2, year = 1970, target = 20)
+      insertStandardMetricTarget(standardMetricId = standardMetricId2, year = 2030, target = 20)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
@@ -3695,7 +3698,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertStandardMetricTarget(
           standardMetricId = standardMetricNullValueId,
-          year = 1970,
+          year = 2030,
           target = 999,
       )
       insertReportStandardMetric(
@@ -3706,7 +3709,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertStandardMetricTarget(
           standardMetricId = standardMetricNotPublishableId,
-          year = 1970,
+          year = 2030,
           target = 999,
       )
       insertReportStandardMetric(
@@ -3715,7 +3718,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = 999,
       )
 
-      insertProjectMetricTarget(projectMetricId = projectMetricId1, year = 1970, target = 30)
+      insertProjectMetricTarget(projectMetricId = projectMetricId1, year = 2030, target = 30)
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId1,
@@ -3725,7 +3728,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Project Metric 1 Progress notes",
       )
 
-      insertProjectMetricTarget(projectMetricId = projectMetricId2, year = 1970, target = 40)
+      insertProjectMetricTarget(projectMetricId = projectMetricId2, year = 2030, target = 40)
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId2,
@@ -3736,7 +3739,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertProjectMetricTarget(
           projectMetricId = projectMetricNullValueId,
-          year = 1970,
+          year = 2030,
           target = 999,
       )
       insertReportProjectMetric(
@@ -3747,7 +3750,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertProjectMetricTarget(
           projectMetricId = projectMetricNotPublishableId,
-          year = 1970,
+          year = 2030,
           target = 999,
       )
       insertReportProjectMetric(
@@ -3757,7 +3760,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       // Seeds Collected is not publishable
-      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 999)
+      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 2030, target = 999)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SeedsCollected,
@@ -3765,7 +3768,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = 999,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.Seedlings, year = 1970, target = 50)
+      insertSystemMetricTarget(metric = SystemMetric.Seedlings, year = 2030, target = 50)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.Seedlings,
@@ -3776,7 +3779,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Seedlings progress notes",
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SpeciesPlanted, year = 1970, target = 10)
+      insertSystemMetricTarget(metric = SystemMetric.SpeciesPlanted, year = 2030, target = 10)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SpeciesPlanted,
@@ -3785,7 +3788,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       // Metrics can be published even with no target set
-      insertSystemMetricTarget(metric = SystemMetric.TreesPlanted, year = 1970, target = null)
+      insertSystemMetricTarget(metric = SystemMetric.TreesPlanted, year = 2030, target = null)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.TreesPlanted,
@@ -3793,7 +3796,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = 100,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SurvivalRate, year = 1970, target = 0)
+      insertSystemMetricTarget(metric = SystemMetric.SurvivalRate, year = 2030, target = 0)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SurvivalRate,
@@ -4097,6 +4100,91 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           ),
           "Published report photos table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedProjectMetricTargetsRecord(
+                  projectId = projectId,
+                  projectMetricId = projectMetricId1,
+                  year = 2030,
+                  target = 30,
+              ),
+              PublishedProjectMetricTargetsRecord(
+                  projectId = projectId,
+                  projectMetricId = projectMetricId2,
+                  year = 2030,
+                  target = 40,
+              ),
+              PublishedProjectMetricTargetsRecord(
+                  projectId = projectId,
+                  projectMetricId = projectMetricNullValueId,
+                  year = 2030,
+                  target = 999,
+              ),
+          ),
+          "Published project metric targets table",
+      )
+
+      // Assert published metric targets for the report year (2030)
+      assertTableEquals(
+          listOf(
+              PublishedStandardMetricTargetsRecord(
+                  projectId = projectId,
+                  standardMetricId = standardMetricId1,
+                  year = 2030,
+                  target = 10,
+              ),
+              PublishedStandardMetricTargetsRecord(
+                  projectId = projectId,
+                  standardMetricId = standardMetricId2,
+                  year = 2030,
+                  target = 20,
+              ),
+              PublishedStandardMetricTargetsRecord(
+                  projectId = projectId,
+                  standardMetricId = standardMetricNullValueId,
+                  year = 2030,
+                  target = 999,
+              ),
+          ),
+          "Published standard metric targets table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedSystemMetricTargetsRecord(
+                  projectId = projectId,
+                  systemMetricId = SystemMetric.Seedlings,
+                  year = 2030,
+                  target = 50,
+              ),
+              PublishedSystemMetricTargetsRecord(
+                  projectId = projectId,
+                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  year = 2030,
+                  target = 10,
+              ),
+              PublishedSystemMetricTargetsRecord(
+                  projectId = projectId,
+                  systemMetricId = SystemMetric.HectaresPlanted,
+                  year = 2030,
+                  target = null,
+              ),
+              PublishedSystemMetricTargetsRecord(
+                  projectId = projectId,
+                  systemMetricId = SystemMetric.TreesPlanted,
+                  year = 2030,
+                  target = null,
+              ),
+              PublishedSystemMetricTargetsRecord(
+                  projectId = projectId,
+                  systemMetricId = SystemMetric.SurvivalRate,
+                  year = 2030,
+                  target = 0,
+              ),
+          ),
+          "Published system metric targets table",
       )
     }
   }
