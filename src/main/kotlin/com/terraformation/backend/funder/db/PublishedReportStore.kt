@@ -14,6 +14,7 @@ import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRIC
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_METRIC_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
@@ -21,6 +22,8 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_P
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_STANDARD_METRIC_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.funder.model.PublishedReportMetricModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
@@ -112,8 +115,10 @@ class PublishedReportStore(
   private fun <ID : Any> publishedMetricsMultiset(
       metricTableIdField: TableField<*, ID?>,
       publishedMetricIdField: TableField<*, ID?>,
+      targetTableMetricIdField: TableField<*, ID?>,
   ): Field<List<PublishedReportMetricModel<ID>>> {
     val publishedMetricTable = publishedMetricIdField.table!!
+    val targetTable = targetTableMetricIdField.table!!
     val reportIdField =
         publishedMetricTable.field(
             "report_id",
@@ -125,7 +130,8 @@ class PublishedReportStore(
             "status_id",
             SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()),
         )!!
-    val targetField = publishedMetricTable.field("target", Int::class.java)!!
+    val targetField = targetTable.field("target", Int::class.java)!!
+    val targetYearField = targetTable.field("year", Int::class.java)!!
     val projectsCommentsField =
         publishedMetricTable.field("projects_comments", String::class.java)!!
     val valueField = publishedMetricTable.field("value", Int::class.java)!!
@@ -164,6 +170,14 @@ class PublishedReportStore(
                 .from(publishedMetricTable)
                 .join(metricTable)
                 .on(metricTableIdField.eq(publishedMetricIdField))
+                .leftJoin(targetTable)
+                .on(targetTableMetricIdField.eq(metricTableIdField))
+                .and(
+                    targetTable
+                        .field("project_id", ProjectId::class.java)!!
+                        .eq(PUBLISHED_REPORTS.PROJECT_ID)
+                )
+                .and(targetYearField.eq(DSL.year(PUBLISHED_REPORTS.END_DATE)))
                 .where(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
                 .orderBy(metricReferenceField)
         )
@@ -203,17 +217,20 @@ class PublishedReportStore(
       publishedMetricsMultiset(
           PROJECT_METRICS.ID,
           PUBLISHED_REPORT_PROJECT_METRICS.PROJECT_METRIC_ID,
+          PUBLISHED_PROJECT_METRIC_TARGETS.PROJECT_METRIC_ID,
       )
 
   private val standardMetricsMultiset =
       publishedMetricsMultiset(
           STANDARD_METRICS.ID,
           PUBLISHED_REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
+          PUBLISHED_STANDARD_METRIC_TARGETS.STANDARD_METRIC_ID,
       )
 
   private val systemMetricsMultiset =
       publishedMetricsMultiset(
           SYSTEM_METRICS.ID,
           PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID,
+          PUBLISHED_SYSTEM_METRIC_TARGETS.SYSTEM_METRIC_ID,
       )
 }

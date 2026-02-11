@@ -4,8 +4,11 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRIC_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRIC_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.UserId
@@ -38,7 +41,7 @@ data class ReportStandardMetricModel(
     private fun entry(record: Record): ReportMetricEntryModel {
       return with(REPORT_STANDARD_METRICS) {
         ReportMetricEntryModel(
-            target = record[TARGET],
+            target = record[REPORT_STANDARD_METRIC_TARGETS.TARGET],
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
@@ -71,7 +74,7 @@ data class ReportProjectMetricModel(
     private fun entry(record: Record): ReportMetricEntryModel {
       return with(REPORT_PROJECT_METRICS) {
         ReportMetricEntryModel(
-            target = record[TARGET],
+            target = record[REPORT_PROJECT_METRIC_TARGETS.TARGET],
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
@@ -105,7 +108,7 @@ data class ReportSystemMetricEntryModel(
     fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricEntryModel {
       return with(REPORT_SYSTEM_METRICS) {
         ReportSystemMetricEntryModel(
-            target = record[TARGET],
+            target = record[REPORT_SYSTEM_METRIC_TARGETS.TARGET],
             systemValue = record[systemValueField],
             systemTime = record[SYSTEM_TIME],
             overrideValue = record[OVERRIDE_VALUE],

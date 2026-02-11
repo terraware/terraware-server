@@ -280,10 +280,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = MetricType.Activity,
           )
 
+      // Insert target into new target table (report end date is 1970-01-02, so year is 1970)
+      insertProjectMetricTarget(projectMetricId = projectMetricId, year = 1970, target = 100)
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId,
-          target = 100,
           status = ReportMetricStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
@@ -340,10 +341,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = MetricType.Impact,
           )
 
+      // Insert targets into new target tables
+      insertStandardMetricTarget(standardMetricId = standardMetricId1, year = 1970, target = 55)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
-          target = 55,
           value = 45,
           projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
@@ -351,10 +353,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId2, year = 1970, target = 25)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
-          target = 25,
           status = ReportMetricStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
@@ -419,28 +421,28 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
+      insertSystemMetricTarget(metric = SystemMetric.Seedlings, year = 1970, target = 1000)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.Seedlings,
-          target = 1000,
           modifiedTime = Instant.ofEpochSecond(2500),
           modifiedBy = user.userId,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 2000)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SeedsCollected,
-          target = 2000,
           systemValue = 1800,
           systemTime = Instant.ofEpochSecond(8000),
           modifiedTime = Instant.ofEpochSecond(500),
           modifiedBy = user.userId,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.TreesPlanted, year = 1970, target = 600)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.TreesPlanted,
-          target = 600,
           systemValue = 300,
           systemTime = Instant.ofEpochSecond(7000),
           overrideValue = 800,
@@ -590,7 +592,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportSystemMetricEntryModel(
                           systemValue =
                               (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density))
-                                  .roundToInt()
+                                  .roundToInt(),
                       ),
               ),
           ),
@@ -613,7 +615,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   ReportSystemMetricEntryModel(
                       systemValue =
                           (sitesLiveSum * 100.0 / (site1T0DensityWithTemp + site2T0Density))
-                              .roundToInt()
+                              .roundToInt(),
                   ),
           ),
           systemMetrics.find { it.metric == SystemMetric.SurvivalRate },
@@ -644,7 +646,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               metric = SystemMetric.SurvivalRate,
               entry =
                   ReportSystemMetricEntryModel(
-                      systemValue = ((5 + 6 + 7 + 8) * 100.0 / (10 + 11 + 12 + 13)).roundToInt()
+                      systemValue = ((5 + 6 + 7 + 8) * 100.0 / (10 + 11 + 12 + 13)).roundToInt(),
                   ),
           ),
           systemMetrics.find { it.metric == SystemMetric.SurvivalRate },
@@ -665,7 +667,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   ReportSystemMetricEntryModel(
                       systemValue =
                           ((11 + 12 + 13 + 14) * 100.0 / (10 + 11 + 12 + 13 + 20 + 21 + 22 + 23))
-                              .roundToInt()
+                              .roundToInt(),
                   ),
           ),
           systemMetricsWithTemp.find { it.metric == SystemMetric.SurvivalRate },
@@ -999,10 +1001,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = MetricType.Activity,
           )
 
+      insertProjectMetricTarget(projectMetricId = projectMetricId, year = 1970, target = 100)
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId,
-          target = 100,
           status = ReportMetricStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
@@ -1060,10 +1062,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = MetricType.Impact,
           )
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId1, year = 1970, target = 55)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
-          target = 55,
           value = 45,
           projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
@@ -1071,10 +1073,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId2, year = 1970, target = 25)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
-          target = 25,
           status = ReportMetricStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
@@ -1139,28 +1141,28 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
+      insertSystemMetricTarget(metric = SystemMetric.Seedlings, year = 1970, target = 1000)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.Seedlings,
-          target = 1000,
           modifiedTime = Instant.ofEpochSecond(2500),
           modifiedBy = user.userId,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 2000)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SeedsCollected,
-          target = 2000,
           systemValue = 1800,
           systemTime = Instant.ofEpochSecond(8000),
           modifiedTime = Instant.ofEpochSecond(500),
           modifiedBy = user.userId,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.TreesPlanted, year = 1970, target = 600)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.TreesPlanted,
-          target = 600,
           systemValue = 300,
           systemTime = Instant.ofEpochSecond(7000),
           overrideValue = 800,
@@ -1609,10 +1611,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedTime = Instant.ofEpochSecond(3000),
           )
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId1, year = 1970, target = 55)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
-          target = 55,
           value = 45,
           projectsComments = "Existing metric 1 notes",
           status = ReportMetricStatus.OnTrack,
@@ -1620,10 +1622,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId2, year = 1970, target = 30)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
-          target = 30,
           value = null,
           projectsComments = "Existing metric 2 notes",
           progressNotes = "Existing metric 2 internal comment",
@@ -1631,10 +1633,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 1000)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SeedsCollected,
-          target = 1000,
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
           projectsComments = "Existing seeds collected metric notes",
@@ -1643,10 +1645,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.SpeciesPlanted, year = 1970, target = 10)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SpeciesPlanted,
-          target = 10,
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
@@ -1667,7 +1669,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   standardMetricId2 to
                       ReportMetricEntryModel(
-                          target = 99,
                           value = 88,
                           projectsComments = "New metric 2 notes",
                           progressNotes = "New metric 2 internal comment",
@@ -1679,7 +1680,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   standardMetricId3 to
                       ReportMetricEntryModel(
-                          target = 50,
                           value = 45,
                           projectsComments = "New metric 3 notes",
                           progressNotes = "New metric 3 internal comment",
@@ -1689,7 +1689,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   SystemMetric.SpeciesPlanted to
                       ReportMetricEntryModel(
-                          target = 5,
                           value = 4,
                           status = null,
                           projectsComments = "New species planted metric notes",
@@ -1697,7 +1696,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   SystemMetric.TreesPlanted to
                       ReportMetricEntryModel(
-                          target = 250,
                           value = 45,
                           status = ReportMetricStatus.Unlikely,
                           projectsComments = "New trees planted metric notes",
@@ -1708,7 +1706,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   projectMetricId to
                       ReportMetricEntryModel(
-                          target = 100,
                           value = 50,
                           projectsComments = "Project metric notes",
                           progressNotes = "Project metric internal comment",
@@ -1721,7 +1718,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportStandardMetricsRecord(
                   reportId = reportId,
                   standardMetricId = standardMetricId1,
-                  target = 55,
                   value = 45,
                   statusId = ReportMetricStatus.OnTrack,
                   projectsComments = "Existing metric 1 notes",
@@ -1731,7 +1727,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportStandardMetricsRecord(
                   reportId = reportId,
                   standardMetricId = standardMetricId2,
-                  target = 99,
                   value = 88,
                   statusId = ReportMetricStatus.OnTrack,
                   projectsComments = "New metric 2 notes",
@@ -1742,7 +1737,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportStandardMetricsRecord(
                   reportId = reportId,
                   standardMetricId = standardMetricId3,
-                  target = 50,
                   value = 45,
                   projectsComments = "New metric 3 notes",
                   progressNotes = "New metric 3 internal comment",
@@ -1759,7 +1753,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.SeedsCollected,
-                  target = 1000,
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
                   projectsComments = "Existing seeds collected metric notes",
@@ -1770,7 +1763,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.SpeciesPlanted,
-                  target = 5,
                   systemValue = 12,
                   systemTime = Instant.ofEpochSecond(5000),
                   overrideValue = 4,
@@ -1783,7 +1775,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.TreesPlanted,
-                  target = 250,
                   overrideValue = 45,
                   statusId = ReportMetricStatus.Unlikely,
                   projectsComments = "New trees planted metric notes",
@@ -1800,13 +1791,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportProjectMetricsRecord(
                   reportId = reportId,
                   projectMetricId = projectMetricId,
-                  target = 100,
                   value = 50,
                   projectsComments = "Project metric notes",
                   progressNotes = "Project metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
-              )
+              ),
           ),
           "Reports project metrics table",
       )
@@ -1975,7 +1965,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   financialSummaries = "New Financial Summaries",
                   modifiedTime = clock.instant,
                   modifiedBy = user.userId,
-              )
+              ),
           ),
           "Report table",
       )
@@ -2029,7 +2019,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   financialSummaries = null,
                   modifiedTime = clock.instant,
                   modifiedBy = user.userId,
-              )
+              ),
           ),
           "Report table",
       )
@@ -2086,10 +2076,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted, createdBy = otherUserId)
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId1, year = 1970, target = 55)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
-          target = 55,
           value = 45,
           projectsComments = "Existing metric 1 notes",
           status = ReportMetricStatus.OnTrack,
@@ -2097,10 +2087,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId2, year = 1970, target = 30)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
-          target = 30,
           value = null,
           projectsComments = "Existing metric 2 notes",
           progressNotes = "Existing metric 2 internal comment",
@@ -2108,10 +2098,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 1000)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SeedsCollected,
-          target = 1000,
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
           projectsComments = "Existing seeds collected metric notes",
@@ -2120,10 +2110,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.SpeciesPlanted, year = 1970, target = 10)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SpeciesPlanted,
-          target = 10,
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
@@ -2150,7 +2140,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   standardMetricId2 to
                       ReportMetricEntryModel(
-                          target = 99,
                           value = 88,
                           projectsComments = "New metric 2 notes",
                           status = ReportMetricStatus.OnTrack,
@@ -2162,7 +2151,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   standardMetricId3 to
                       ReportMetricEntryModel(
-                          target = 50,
                           value = null,
                           projectsComments = "New metric 3 notes",
                       ),
@@ -2171,7 +2159,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   SystemMetric.SpeciesPlanted to
                       ReportMetricEntryModel(
-                          target = 5,
                           projectsComments = "New species planted metric notes",
                           status = null,
 
@@ -2183,7 +2170,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   SystemMetric.TreesPlanted to
                       ReportMetricEntryModel(
-                          target = 250,
                           projectsComments = "New trees planted metric notes",
                           status = ReportMetricStatus.Unlikely,
 
@@ -2198,7 +2184,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   projectMetricId to
                       ReportMetricEntryModel(
-                          target = 100,
                           value = 50,
                           projectsComments = "Project metric notes",
                       ),
@@ -2210,7 +2195,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportStandardMetricsRecord(
                   reportId = reportId,
                   standardMetricId = standardMetricId1,
-                  target = 55,
                   value = 45,
                   statusId = ReportMetricStatus.OnTrack,
                   projectsComments = "Existing metric 1 notes",
@@ -2220,7 +2204,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportStandardMetricsRecord(
                   reportId = reportId,
                   standardMetricId = standardMetricId2,
-                  target = 99,
                   value = 88,
                   statusId = ReportMetricStatus.OnTrack,
                   projectsComments = "New metric 2 notes",
@@ -2231,7 +2214,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportStandardMetricsRecord(
                   reportId = reportId,
                   standardMetricId = standardMetricId3,
-                  target = 50,
                   projectsComments = "New metric 3 notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -2246,7 +2228,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.SeedsCollected,
-                  target = 1000,
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
                   projectsComments = "Existing seeds collected metric notes",
@@ -2257,7 +2238,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.SpeciesPlanted,
-                  target = 5,
                   systemValue = 12,
                   systemTime = Instant.ofEpochSecond(5000),
                   statusId = null,
@@ -2270,7 +2250,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.TreesPlanted,
-                  target = 250,
                   statusId = ReportMetricStatus.Unlikely,
                   projectsComments = "New trees planted metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -2285,12 +2264,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportProjectMetricsRecord(
                   reportId = reportId,
                   projectMetricId = projectMetricId,
-                  target = 100,
                   value = 50,
                   projectsComments = "Project metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
-              )
+              ),
           ),
           "Reports project metrics table",
       )
@@ -2312,549 +2290,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = Instant.ofEpochSecond(9000),
           ),
           "Reports table",
-      )
-    }
-  }
-
-  @Nested
-  inner class UpdateProjectMetricTargets {
-    @Test
-    fun `throws exception for non-organization admin users`() {
-      deleteOrganizationUser()
-      insertOrganizationUser(role = Role.Contributor)
-      val metricId = insertProjectMetric()
-      assertThrows<AccessDeniedException> {
-        store.updateProjectMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = emptyMap(),
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for non TF Experts for updating submitted reports`() {
-      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-      insertUserGlobalRole(role = GlobalRole.ReadOnly)
-      val metricId = insertProjectMetric()
-
-      assertThrows<AccessDeniedException> {
-        store.updateProjectMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = emptyMap(),
-            updateSubmitted = true,
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for reports in non-editable statuses`() {
-      insertProjectReportConfig()
-      val submittedReportId = insertReport(status = ReportStatus.Submitted)
-      val approvedReportId = insertReport(status = ReportStatus.Approved)
-      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
-
-      val metricId = insertProjectMetric()
-
-      assertThrows<IllegalStateException>("Submitted Report") {
-        store.updateProjectMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(submittedReportId to 0),
-        )
-      }
-
-      assertThrows<IllegalStateException>("Approved Report") {
-        store.updateProjectMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(approvedReportId to 0),
-        )
-      }
-
-      assertThrows<IllegalStateException>("Not Needed Report") {
-        store.updateProjectMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(notNeededReportId to 0),
-        )
-      }
-
-      assertDoesNotThrow("Update submitted flag on") {
-        store.updateProjectMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(submittedReportId to 0, approvedReportId to 0, notNeededReportId to 0),
-            updateSubmitted = true,
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for reports not in projects`() {
-      insertProjectReportConfig()
-      val reportId = insertReport()
-      val metricId = insertProjectMetric()
-
-      insertProject()
-      insertProjectReportConfig()
-      val otherReportId = insertReport()
-
-      assertThrows<IllegalStateException> {
-        store.updateProjectMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(reportId to 0, otherReportId to 0),
-        )
-      }
-
-      assertDoesNotThrow {
-        store.updateProjectMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(reportId to 0),
-        )
-      }
-    }
-
-    @Test
-    fun `upserts report targets`() {
-      insertProjectReportConfig()
-      val reportId1 = insertReport()
-      val reportId2 = insertReport()
-      val reportId3 = insertReport()
-      val reportId4 = insertReport()
-
-      val metricId = insertProjectMetric()
-
-      insertReportProjectMetric(
-          reportId = reportId1,
-          metricId = metricId,
-          target = 100,
-          value = 100,
-          status = ReportMetricStatus.Achieved,
-          progressNotes = "Existing notes",
-      )
-
-      insertReportProjectMetric(
-          reportId = reportId3,
-          metricId = metricId,
-          target = 300,
-      )
-
-      insertReportProjectMetric(
-          reportId = reportId4,
-          metricId = metricId,
-          target = 400,
-      )
-
-      clock.instant = Instant.ofEpochSecond(9000)
-      store.updateProjectMetricTargets(
-          projectId = projectId,
-          metricId = metricId,
-          targets =
-              mapOf(
-                  reportId1 to 101,
-                  reportId2 to 201,
-                  reportId3 to null,
-              ),
-      )
-
-      assertTableEquals(
-          listOf(
-              ReportProjectMetricsRecord(
-                  reportId = reportId1,
-                  projectMetricId = metricId,
-                  target = 101,
-                  value = 100,
-                  statusId = ReportMetricStatus.Achieved,
-                  progressNotes = "Existing notes",
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportProjectMetricsRecord(
-                  reportId = reportId2,
-                  projectMetricId = metricId,
-                  target = 201,
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportProjectMetricsRecord(
-                  reportId = reportId3,
-                  projectMetricId = metricId,
-                  target = null,
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportProjectMetricsRecord(
-                  reportId = reportId4,
-                  projectMetricId = metricId,
-                  target = 400,
-                  modifiedTime = Instant.EPOCH,
-                  modifiedBy = user.userId,
-              ),
-          )
-      )
-    }
-  }
-
-  @Nested
-  inner class UpdateStandardMetricTargets {
-    @Test
-    fun `throws exception for non-organization admin users`() {
-      deleteOrganizationUser()
-      insertOrganizationUser(role = Role.Contributor)
-      val metricId = insertStandardMetric()
-      assertThrows<AccessDeniedException> {
-        store.updateStandardMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = emptyMap(),
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for non TF Experts for updating submitted reports`() {
-      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-      insertUserGlobalRole(role = GlobalRole.ReadOnly)
-      val metricId = insertStandardMetric()
-
-      assertThrows<AccessDeniedException> {
-        store.updateStandardMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = emptyMap(),
-            updateSubmitted = true,
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for reports in non-editable statuses`() {
-      insertProjectReportConfig()
-      val submittedReportId = insertReport(status = ReportStatus.Submitted)
-      val approvedReportId = insertReport(status = ReportStatus.Approved)
-      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
-
-      val metricId = insertStandardMetric()
-
-      assertThrows<IllegalStateException>("Submitted Report") {
-        store.updateStandardMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(submittedReportId to 0),
-        )
-      }
-
-      assertThrows<IllegalStateException>("Approved Report") {
-        store.updateStandardMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(approvedReportId to 0),
-        )
-      }
-
-      assertThrows<IllegalStateException>("Not Needed Report") {
-        store.updateStandardMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(notNeededReportId to 0),
-        )
-      }
-
-      assertDoesNotThrow("Update submitted flag on") {
-        store.updateStandardMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(submittedReportId to 0, approvedReportId to 0, notNeededReportId to 0),
-            updateSubmitted = true,
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for reports not in projects`() {
-      insertProjectReportConfig()
-      val reportId = insertReport()
-
-      insertProject()
-      insertProjectReportConfig()
-      val otherReportId = insertReport()
-
-      val metricId = insertStandardMetric()
-
-      assertThrows<IllegalStateException> {
-        store.updateStandardMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(reportId to 0, otherReportId to 0),
-        )
-      }
-
-      assertDoesNotThrow {
-        store.updateStandardMetricTargets(
-            projectId = projectId,
-            metricId = metricId,
-            targets = mapOf(reportId to 0),
-        )
-      }
-    }
-
-    @Test
-    fun `upserts report targets`() {
-      insertProjectReportConfig()
-      val reportId1 = insertReport()
-      val reportId2 = insertReport()
-      val reportId3 = insertReport()
-      val reportId4 = insertReport()
-
-      val metricId = insertStandardMetric()
-
-      insertReportStandardMetric(
-          reportId = reportId1,
-          metricId = metricId,
-          target = 100,
-          value = 100,
-          status = ReportMetricStatus.Achieved,
-          progressNotes = "Existing notes",
-      )
-
-      insertReportStandardMetric(
-          reportId = reportId3,
-          metricId = metricId,
-          target = 300,
-      )
-
-      insertReportStandardMetric(
-          reportId = reportId4,
-          metricId = metricId,
-          target = 400,
-      )
-
-      clock.instant = Instant.ofEpochSecond(9000)
-      store.updateStandardMetricTargets(
-          projectId = projectId,
-          metricId = metricId,
-          targets =
-              mapOf(
-                  reportId1 to 101,
-                  reportId2 to 201,
-                  reportId3 to null,
-              ),
-      )
-
-      assertTableEquals(
-          listOf(
-              ReportStandardMetricsRecord(
-                  reportId = reportId1,
-                  standardMetricId = metricId,
-                  target = 101,
-                  value = 100,
-                  statusId = ReportMetricStatus.Achieved,
-                  progressNotes = "Existing notes",
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportStandardMetricsRecord(
-                  reportId = reportId2,
-                  standardMetricId = metricId,
-                  target = 201,
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportStandardMetricsRecord(
-                  reportId = reportId3,
-                  standardMetricId = metricId,
-                  target = null,
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportStandardMetricsRecord(
-                  reportId = reportId4,
-                  standardMetricId = metricId,
-                  target = 400,
-                  modifiedTime = Instant.EPOCH,
-                  modifiedBy = user.userId,
-              ),
-          )
-      )
-    }
-  }
-
-  @Nested
-  inner class UpdateSystemMetricTargets {
-    @Test
-    fun `throws exception for non-organization admin users`() {
-      deleteOrganizationUser()
-      insertOrganizationUser(role = Role.Contributor)
-      assertThrows<AccessDeniedException> {
-        store.updateSystemMetricTargets(
-            projectId = projectId,
-            metric = SystemMetric.SeedsCollected,
-            targets = emptyMap(),
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for non TF Experts for updating submitted reports`() {
-      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-      insertUserGlobalRole(role = GlobalRole.ReadOnly)
-
-      assertThrows<AccessDeniedException> {
-        store.updateSystemMetricTargets(
-            projectId = projectId,
-            metric = SystemMetric.SeedsCollected,
-            targets = emptyMap(),
-            updateSubmitted = true,
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for reports in non-editable statuses`() {
-      insertProjectReportConfig()
-      val submittedReportId = insertReport(status = ReportStatus.Submitted)
-      val approvedReportId = insertReport(status = ReportStatus.Approved)
-      val notNeededReportId = insertReport(status = ReportStatus.NotNeeded)
-
-      assertThrows<IllegalStateException>("Submitted Report") {
-        store.updateSystemMetricTargets(
-            projectId = projectId,
-            metric = SystemMetric.SeedsCollected,
-            targets = mapOf(submittedReportId to 0),
-        )
-      }
-
-      assertThrows<IllegalStateException>("Approved Report") {
-        store.updateSystemMetricTargets(
-            projectId = projectId,
-            metric = SystemMetric.SeedsCollected,
-            targets = mapOf(approvedReportId to 0),
-        )
-      }
-
-      assertThrows<IllegalStateException>("Not Needed Report") {
-        store.updateSystemMetricTargets(
-            projectId = projectId,
-            metric = SystemMetric.SeedsCollected,
-            targets = mapOf(notNeededReportId to 0),
-        )
-      }
-
-      assertDoesNotThrow("Update submitted flag on") {
-        store.updateSystemMetricTargets(
-            projectId = projectId,
-            metric = SystemMetric.SeedsCollected,
-            targets = mapOf(submittedReportId to 0, approvedReportId to 0, notNeededReportId to 0),
-            updateSubmitted = true,
-        )
-      }
-    }
-
-    @Test
-    fun `throws exception for reports not in projects`() {
-      insertProjectReportConfig()
-      val reportId = insertReport()
-
-      insertProject()
-      insertProjectReportConfig()
-      val otherReportId = insertReport()
-
-      assertThrows<IllegalStateException> {
-        store.updateSystemMetricTargets(
-            projectId = projectId,
-            metric = SystemMetric.SeedsCollected,
-            targets = mapOf(reportId to 0, otherReportId to 0),
-        )
-      }
-
-      assertDoesNotThrow {
-        store.updateSystemMetricTargets(
-            projectId = projectId,
-            metric = SystemMetric.SeedsCollected,
-            targets = mapOf(reportId to 0),
-        )
-      }
-    }
-
-    @Test
-    fun `upserts report targets`() {
-      insertProjectReportConfig()
-      val reportId1 = insertReport()
-      val reportId2 = insertReport()
-      val reportId3 = insertReport()
-      val reportId4 = insertReport()
-
-      insertReportSystemMetric(
-          reportId = reportId1,
-          metric = SystemMetric.SeedsCollected,
-          target = 100,
-          overrideValue = 100,
-          status = ReportMetricStatus.Achieved,
-          progressNotes = "Existing notes",
-      )
-
-      insertReportSystemMetric(
-          reportId = reportId3,
-          metric = SystemMetric.SeedsCollected,
-          target = 300,
-      )
-
-      insertReportSystemMetric(
-          reportId = reportId4,
-          metric = SystemMetric.SeedsCollected,
-          target = 400,
-      )
-
-      clock.instant = Instant.ofEpochSecond(9000)
-      store.updateSystemMetricTargets(
-          projectId = projectId,
-          metric = SystemMetric.SeedsCollected,
-          targets =
-              mapOf(
-                  reportId1 to 101,
-                  reportId2 to 201,
-                  reportId3 to null,
-              ),
-      )
-
-      assertTableEquals(
-          listOf(
-              ReportSystemMetricsRecord(
-                  reportId = reportId1,
-                  systemMetricId = SystemMetric.SeedsCollected,
-                  target = 101,
-                  overrideValue = 100,
-                  statusId = ReportMetricStatus.Achieved,
-                  progressNotes = "Existing notes",
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportSystemMetricsRecord(
-                  reportId = reportId2,
-                  systemMetricId = SystemMetric.SeedsCollected,
-                  target = 201,
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportSystemMetricsRecord(
-                  reportId = reportId3,
-                  systemMetricId = SystemMetric.SeedsCollected,
-                  target = null,
-                  modifiedTime = Instant.ofEpochSecond(9000),
-                  modifiedBy = user.userId,
-              ),
-              ReportSystemMetricsRecord(
-                  reportId = reportId4,
-                  systemMetricId = SystemMetric.SeedsCollected,
-                  target = 400,
-                  modifiedTime = Instant.EPOCH,
-                  modifiedBy = user.userId,
-              ),
-          )
       )
     }
   }
@@ -2899,7 +2334,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertReportSystemMetric(
           metric = SystemMetric.SeedsCollected,
-          target = 80,
           systemValue = 1000,
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = 74,
@@ -2908,7 +2342,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       insertReportSystemMetric(
           metric = SystemMetric.Seedlings,
-          target = 60,
           systemValue = 2000,
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = 98,
@@ -2935,7 +2368,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.SeedsCollected,
-                  target = 80,
                   systemValue = 1000,
                   systemTime = Instant.ofEpochSecond(3000),
                   overrideValue = 74,
@@ -2945,7 +2377,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.Seedlings,
-                  target = 60,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
@@ -2961,7 +2392,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-          )
+          ),
       )
 
       val updatedReport =
@@ -2991,7 +2422,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertReportSystemMetric(
           metric = SystemMetric.SeedsCollected,
-          target = 80,
           systemValue = 1000,
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = 74,
@@ -3000,7 +2430,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       insertReportSystemMetric(
           metric = SystemMetric.Seedlings,
-          target = 60,
           systemValue = 2000,
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = 98,
@@ -3027,7 +2456,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.SeedsCollected,
-                  target = 80,
                   systemValue = 1000,
                   systemTime = Instant.ofEpochSecond(3000),
                   overrideValue = 74,
@@ -3037,7 +2465,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.Seedlings,
-                  target = 60,
                   systemValue = 83,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
@@ -3059,7 +2486,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-          )
+          ),
       )
 
       val updatedReport =
@@ -3142,7 +2569,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.SeedsCollected,
-                  target = 0,
                   systemValue = 98,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
@@ -3151,7 +2577,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.HectaresPlanted,
-                  target = 0,
                   systemValue = 60,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
@@ -3160,7 +2585,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.Seedlings,
-                  target = 0,
                   systemValue = 83,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
@@ -3169,7 +2593,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.TreesPlanted,
-                  target = 0,
                   systemValue = 27,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
@@ -3177,7 +2600,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportSystemMetricsRecord(
                   reportId = reportId,
-                  target = 0,
                   systemMetricId = SystemMetric.SpeciesPlanted,
                   systemValue = 1,
                   systemTime = clock.instant,
@@ -3186,7 +2608,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportSystemMetricsRecord(
                   reportId = reportId,
-                  target = 0,
                   systemMetricId = SystemMetric.SurvivalRate,
                   systemValue =
                       (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt(),
@@ -3921,7 +3342,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = systemUser.userId,
                   modifiedTime = Instant.ofEpochSecond(900),
               ),
-          )
+          ),
       )
 
       assertTableEquals(
@@ -4079,7 +3500,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       systemUser.run { store.notifyUpcomingReports() }
 
       eventPublisher.assertExactEventsPublished(
-          setOf(AcceleratorReportUpcomingEvent(upcomingReportId))
+          setOf(AcceleratorReportUpcomingEvent(upcomingReportId)),
       )
 
       assertTableEquals(
@@ -4185,7 +3606,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = currentUser().userId,
                   modifiedTime = Instant.EPOCH,
               ),
-          )
+          ),
       )
     }
   }
@@ -4253,114 +3674,130 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           deleted = true,
       )
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId1, year = 1970, target = 10)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
           status = ReportMetricStatus.Achieved,
-          target = 10,
           value = 10,
           projectsComments = null,
           progressNotes = "Standard Metric 1 Progress notes",
       )
 
+      insertStandardMetricTarget(standardMetricId = standardMetricId2, year = 1970, target = 20)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
           status = ReportMetricStatus.OnTrack,
-          target = 20,
           value = 19,
           projectsComments = "Standard Metric 2 Underperformance",
       )
 
+      insertStandardMetricTarget(
+          standardMetricId = standardMetricNullValueId,
+          year = 1970,
+          target = 999,
+      )
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricNullValueId,
-          target = 999,
           value = null,
       )
 
+      insertStandardMetricTarget(
+          standardMetricId = standardMetricNotPublishableId,
+          year = 1970,
+          target = 999,
+      )
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricNotPublishableId,
-          target = 999,
           value = 999,
       )
 
+      insertProjectMetricTarget(projectMetricId = projectMetricId1, year = 1970, target = 30)
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId1,
           status = ReportMetricStatus.Achieved,
-          target = 30,
           value = 30,
           projectsComments = null,
           progressNotes = "Project Metric 1 Progress notes",
       )
 
+      insertProjectMetricTarget(projectMetricId = projectMetricId2, year = 1970, target = 40)
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId2,
           status = ReportMetricStatus.Unlikely,
-          target = 40,
           value = 39,
           projectsComments = "Project Metric 2 Underperformance",
       )
 
+      insertProjectMetricTarget(
+          projectMetricId = projectMetricNullValueId,
+          year = 1970,
+          target = 999,
+      )
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricNullValueId,
-          target = 999,
           value = null,
       )
 
+      insertProjectMetricTarget(
+          projectMetricId = projectMetricNotPublishableId,
+          year = 1970,
+          target = 999,
+      )
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricNotPublishableId,
-          target = 999,
           value = 999,
       )
 
       // Seeds Collected is not publishable
+      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 999)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SeedsCollected,
           status = ReportMetricStatus.Achieved,
-          target = 999,
           systemValue = 999,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.Seedlings, year = 1970, target = 50)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.Seedlings,
           status = ReportMetricStatus.OnTrack,
-          target = 50,
           overrideValue = 49,
           systemValue = 39,
           projectsComments = "Seedlings underperformance justification",
           progressNotes = "Seedlings progress notes",
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.SpeciesPlanted, year = 1970, target = 10)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SpeciesPlanted,
           status = ReportMetricStatus.Achieved,
-          target = 10,
           systemValue = 10,
       )
 
       // Metrics can be published even with no target set
+      insertSystemMetricTarget(metric = SystemMetric.TreesPlanted, year = 1970, target = null)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.TreesPlanted,
           status = ReportMetricStatus.Achieved,
-          target = null,
           systemValue = 100,
       )
 
+      insertSystemMetricTarget(metric = SystemMetric.SurvivalRate, year = 1970, target = 0)
       insertReportSystemMetric(
           reportId = reportId,
           metric = SystemMetric.SurvivalRate,
           status = ReportMetricStatus.Unlikely,
-          target = 0,
           systemValue = 51,
       )
     }
@@ -4443,7 +3880,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertPublishedReportStandardMetric(
           metricId = standardMetricId1,
-          target = 100,
           value = 100,
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
@@ -4451,19 +3887,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertPublishedReportStandardMetric(
           metricId = standardMetricNullValueId,
-          target = 100,
           value = 100,
       )
 
       insertPublishedReportStandardMetric(
           metricId = standardMetricNotPublishableId,
-          target = 100,
           value = 100,
       )
 
       insertPublishedReportProjectMetric(
           metricId = projectMetricId1,
-          target = 100,
           value = 100,
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
@@ -4471,26 +3904,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertPublishedReportProjectMetric(
           metricId = projectMetricId2,
-          target = 100,
           value = 100,
           projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportProjectMetric(
           metricId = projectMetricNotPublishableId,
-          target = 100,
           value = 100,
       )
 
       insertPublishedReportSystemMetric(
           metric = SystemMetric.SeedsCollected,
-          target = 100,
           value = 100,
       )
 
       insertPublishedReportSystemMetric(
           metric = SystemMetric.Seedlings,
-          target = 100,
           value = 100,
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
@@ -4498,7 +3927,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertPublishedReportSystemMetric(
           metric = SystemMetric.TreesPlanted,
-          target = 100,
           value = 100,
           projectsComments = "Existing underperformance justification",
       )
@@ -4581,7 +4009,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   standardMetricId = standardMetricId1,
                   statusId = ReportMetricStatus.Achieved,
-                  target = 10,
                   value = 10,
                   projectsComments = null,
                   progressNotes = "Standard Metric 1 Progress notes",
@@ -4590,7 +4017,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   standardMetricId = standardMetricId2,
                   statusId = ReportMetricStatus.OnTrack,
-                  target = 20,
                   value = 19,
                   projectsComments = "Standard Metric 2 Underperformance",
               ),
@@ -4604,7 +4030,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   projectMetricId = projectMetricId1,
                   statusId = ReportMetricStatus.Achieved,
-                  target = 30,
                   value = 30,
                   projectsComments = null,
                   progressNotes = "Project Metric 1 Progress notes",
@@ -4613,7 +4038,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   projectMetricId = projectMetricId2,
                   statusId = ReportMetricStatus.Unlikely,
-                  target = 40,
                   value = 39,
                   projectsComments = "Project Metric 2 Underperformance",
               ),
@@ -4627,7 +4051,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   systemMetricId = SystemMetric.Seedlings,
                   statusId = ReportMetricStatus.OnTrack,
-                  target = 50,
                   value = 49,
                   projectsComments = "Seedlings underperformance justification",
                   progressNotes = "Seedlings progress notes",
@@ -4636,28 +4059,24 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   systemMetricId = SystemMetric.SpeciesPlanted,
                   statusId = ReportMetricStatus.Achieved,
-                  target = 10,
                   value = 10,
               ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.TreesPlanted,
                   statusId = ReportMetricStatus.Achieved,
-                  target = null,
                   value = 100,
               ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.SurvivalRate,
                   statusId = ReportMetricStatus.Unlikely,
-                  target = 0,
                   value = 51,
               ),
               PublishedReportSystemMetricsRecord(
                   reportId = reportId,
                   systemMetricId = SystemMetric.HectaresPlanted,
                   statusId = null,
-                  target = null,
                   value = 0,
               ),
           ),
@@ -4773,7 +4192,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 readyQuantity = 3,
                 totalLost = 100,
                 speciesId = speciesId,
-            )
+            ),
         )
 
     val batchId2 =
@@ -4788,7 +4207,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 readyQuantity = 2,
                 totalLost = 100,
                 speciesId = otherSpeciesId,
-            )
+            ),
         )
 
     // Other project
@@ -4804,7 +4223,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 readyQuantity = 100,
                 totalLost = 100,
                 speciesId = speciesId,
-            )
+            ),
         )
 
     // Outside of date range
@@ -4820,7 +4239,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 readyQuantity = 100,
                 totalLost = 100,
                 speciesId = speciesId,
-            )
+            ),
         )
 
     val outplantWithdrawalId1 =
@@ -5844,7 +5263,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportSystemMetric(
           reportId = reportId,
           metric = metric,
-          target = 0,
       )
     }
   }

@@ -125,48 +125,64 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportPhoto(caption = "photo caption 2")
       insertPublishedReportPhoto(caption = "photo caption 2")
 
+      insertPublishedStandardMetricTarget(
+          standardMetricId = standardMetricId1,
+          year = 2025,
+          target = 100,
+      )
       insertPublishedReportStandardMetric(
           reportId = reportId1,
           metricId = standardMetricId1,
-          target = 100,
           value = 120,
           projectsComments = null,
           status = ReportMetricStatus.Achieved,
       )
 
+      insertPublishedStandardMetricTarget(
+          standardMetricId = standardMetricId2,
+          year = 2025,
+          target = 200,
+      )
       insertPublishedReportStandardMetric(
           reportId = reportId1,
           metricId = standardMetricId2,
-          target = 200,
           value = 180,
           progressNotes = "progress notes 2",
           projectsComments = "Underperformance justification 2",
           status = ReportMetricStatus.Unlikely,
       )
 
+      insertPublishedProjectMetricTarget(
+          projectMetricId = projectMetricId1,
+          year = 2025,
+          target = null,
+      )
       insertPublishedReportProjectMetric(
           reportId = reportId1,
           metricId = projectMetricId1,
-          target = null,
           value = 40,
           progressNotes = "progress notes 1",
           projectsComments = null,
           status = ReportMetricStatus.OnTrack,
       )
 
+      insertPublishedProjectMetricTarget(
+          projectMetricId = projectMetricId2,
+          year = 2025,
+          target = null,
+      )
       insertPublishedReportProjectMetric(
           reportId = reportId1,
           metricId = projectMetricId2,
-          target = null,
           value = null,
           projectsComments = null,
           status = null,
       )
 
+      insertPublishedSystemMetricTarget(metric = SystemMetric.SurvivalRate, year = 2025, target = 6)
       insertPublishedReportSystemMetric(
           reportId = reportId1,
           metric = SystemMetric.SurvivalRate,
-          target = 6,
           value = 6,
           projectsComments = null,
           status = ReportMetricStatus.Achieved,
