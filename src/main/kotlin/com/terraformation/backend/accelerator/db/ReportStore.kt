@@ -11,8 +11,11 @@ import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
+import com.terraformation.backend.accelerator.model.ReportProjectMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
+import com.terraformation.backend.accelerator.model.ReportStandardMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
+import com.terraformation.backend.accelerator.model.ReportSystemMetricTargetModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.SystemUser
@@ -173,6 +176,59 @@ class ReportStore(
               null
             }
           }
+    }
+  }
+
+  fun fetchReportProjectMetricTargets(projectId: ProjectId): List<ReportProjectMetricTargetModel> {
+    requirePermissions { readProjectReports(projectId) }
+
+    return with(REPORT_PROJECT_METRIC_TARGETS) {
+      dslContext
+          .select(
+              PROJECT_METRIC_ID,
+              TARGET,
+              YEAR,
+          )
+          .from(this)
+          .where(PROJECT_ID.eq(projectId))
+          .orderBy(YEAR, PROJECT_METRIC_ID)
+          .fetch { ReportProjectMetricTargetModel.of(it) }
+    }
+  }
+
+  fun fetchReportStandardMetricTargets(
+      projectId: ProjectId
+  ): List<ReportStandardMetricTargetModel> {
+    requirePermissions { readProjectReports(projectId) }
+
+    return with(REPORT_STANDARD_METRIC_TARGETS) {
+      dslContext
+          .select(
+              STANDARD_METRIC_ID,
+              TARGET,
+              YEAR,
+          )
+          .from(this)
+          .where(PROJECT_ID.eq(projectId))
+          .orderBy(YEAR, STANDARD_METRIC_ID)
+          .fetch { ReportStandardMetricTargetModel.of(it) }
+    }
+  }
+
+  fun fetchReportSystemMetricTargets(projectId: ProjectId): List<ReportSystemMetricTargetModel> {
+    requirePermissions { readProjectReports(projectId) }
+
+    return with(REPORT_SYSTEM_METRIC_TARGETS) {
+      dslContext
+          .select(
+              SYSTEM_METRIC_ID,
+              TARGET,
+              YEAR,
+          )
+          .from(this)
+          .where(PROJECT_ID.eq(projectId))
+          .orderBy(YEAR, SYSTEM_METRIC_ID)
+          .fetch { ReportSystemMetricTargetModel.of(it) }
     }
   }
 

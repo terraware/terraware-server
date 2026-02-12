@@ -14,9 +14,12 @@ import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
+import com.terraformation.backend.accelerator.model.ReportProjectMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
+import com.terraformation.backend.accelerator.model.ReportStandardMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
+import com.terraformation.backend.accelerator.model.ReportSystemMetricTargetModel
 import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
@@ -5637,6 +5640,175 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             target = 500,
         )
       }
+    }
+  }
+
+  @Nested
+  inner class FetchReportProjectMetricTargets {
+    @Test
+    fun `requires permission to read project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.fetchReportProjectMetricTargets(projectId) }
+    }
+
+    @Test
+    fun `returns all project metric targets for a project`() {
+      val projectMetricId1 =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Test metric 1",
+              name = "Test Metric 1",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+      val projectMetricId2 =
+          insertProjectMetric(
+              component = MetricComponent.ProjectObjectives,
+              description = "Test metric 2",
+              name = "Test Metric 2",
+              reference = "2.0",
+              type = MetricType.Activity,
+          )
+
+      insertProjectMetricTarget(
+          projectId = projectId,
+          projectMetricId = projectMetricId1,
+          year = 2024,
+          target = 100,
+      )
+      insertProjectMetricTarget(
+          projectId = projectId,
+          projectMetricId = projectMetricId2,
+          year = 2024,
+          target = 200,
+      )
+      insertProjectMetricTarget(
+          projectId = projectId,
+          projectMetricId = projectMetricId1,
+          year = 2025,
+          target = 150,
+      )
+
+      val targets = store.fetchReportProjectMetricTargets(projectId)
+
+      assertEquals(
+          listOf(
+              ReportProjectMetricTargetModel(projectMetricId1, 100, 2024),
+              ReportProjectMetricTargetModel(projectMetricId2, 200, 2024),
+              ReportProjectMetricTargetModel(projectMetricId1, 150, 2025),
+          ),
+          targets,
+      )
+    }
+  }
+
+  @Nested
+  inner class FetchReportStandardMetricTargets {
+    @Test
+    fun `requires permission to read project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.fetchReportStandardMetricTargets(projectId) }
+    }
+
+    @Test
+    fun `returns all standard metric targets for a project`() {
+      val standardMetricId1 =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Test metric 1",
+              name = "Test Metric 1",
+              reference = "1.0",
+              type = MetricType.Activity,
+          )
+      val standardMetricId2 =
+          insertStandardMetric(
+              component = MetricComponent.Climate,
+              description = "Test metric 2",
+              name = "Test Metric 2",
+              reference = "2.0",
+              type = MetricType.Activity,
+          )
+
+      insertStandardMetricTarget(
+          projectId = projectId,
+          standardMetricId = standardMetricId1,
+          year = 2024,
+          target = 300,
+      )
+      insertStandardMetricTarget(
+          projectId = projectId,
+          standardMetricId = standardMetricId2,
+          year = 2024,
+          target = 400,
+      )
+      insertStandardMetricTarget(
+          projectId = projectId,
+          standardMetricId = standardMetricId1,
+          year = 2025,
+          target = 350,
+      )
+
+      val targets = store.fetchReportStandardMetricTargets(projectId)
+
+      assertEquals(
+          listOf(
+              ReportStandardMetricTargetModel(standardMetricId1, 300, 2024),
+              ReportStandardMetricTargetModel(standardMetricId2, 400, 2024),
+              ReportStandardMetricTargetModel(standardMetricId1, 350, 2025),
+          ),
+          targets,
+      )
+    }
+  }
+
+  @Nested
+  inner class FetchReportSystemMetricTargets {
+    @Test
+    fun `requires permission to read project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.fetchReportSystemMetricTargets(projectId) }
+    }
+
+    @Test
+    fun `returns all system metric targets for a project`() {
+      insertSystemMetricTarget(
+          projectId = projectId,
+          metric = SystemMetric.TreesPlanted,
+          year = 2024,
+          target = 500,
+      )
+      insertSystemMetricTarget(
+          projectId = projectId,
+          metric = SystemMetric.SeedsCollected,
+          year = 2024,
+          target = 1000,
+      )
+      insertSystemMetricTarget(
+          projectId = projectId,
+          metric = SystemMetric.TreesPlanted,
+          year = 2025,
+          target = 600,
+      )
+
+      val targets = store.fetchReportSystemMetricTargets(projectId)
+
+      assertEquals(
+          listOf(
+              ReportSystemMetricTargetModel(SystemMetric.SeedsCollected, 1000, 2024),
+              ReportSystemMetricTargetModel(SystemMetric.TreesPlanted, 500, 2024),
+              ReportSystemMetricTargetModel(SystemMetric.TreesPlanted, 600, 2025),
+          ),
+          targets,
+      )
     }
   }
 }
