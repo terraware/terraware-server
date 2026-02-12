@@ -8,6 +8,8 @@ import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_METRICS
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
@@ -181,31 +183,7 @@ class ProjectAcceleratorDetailsStore(
       }
 
       if (existing.phase != updated.phase) {
-        val now = clock.instant()
-        if (existing.cohortId != null) {
-          dslContext
-              .update(COHORTS)
-              .set(COHORTS.PHASE_ID, updated.phase)
-              .set(COHORTS.MODIFIED_BY, currentUser().userId)
-              .set(COHORTS.MODIFIED_TIME, now)
-              .where(COHORTS.ID.eq(existing.cohortId))
-              .execute()
-        } else {
-          with(COHORTS) {
-            dslContext
-                .insertInto(COHORTS)
-                .set(
-                    NAME,
-                    DSL.select(PROJECTS.NAME).from(PROJECTS).where(PROJECTS.ID.eq(projectId)),
-                )
-                .set(PHASE_ID, updated.phase)
-                .set(CREATED_BY, currentUser().userId)
-                .set(CREATED_TIME, now)
-                .set(MODIFIED_BY, currentUser().userId)
-                .set(MODIFIED_TIME, now)
-                .execute()
-          }
-        }
+        updateProjectPhase(projectId, existing.cohortId, updated.phase)
       }
 
       if (existing.landUseModelTypes != updated.landUseModelTypes) {
@@ -266,4 +244,58 @@ class ProjectAcceleratorDetailsStore(
             }
           }
     }
+
+  private fun updateProjectPhase(
+      projectId: ProjectId,
+      existingCohortId: CohortId?,
+      newPhase: CohortPhase?,
+  ) {
+    val now = clock.instant()
+    if (existingCohortId == null) {
+      val newCohortId =
+          with(COHORTS) {
+            dslContext
+                .insertInto(COHORTS)
+                .set(
+                    NAME,
+                    DSL.select(PROJECTS.NAME).from(PROJECTS).where(PROJECTS.ID.eq(projectId)),
+                )
+                .set(PHASE_ID, newPhase)
+                .set(CREATED_BY, currentUser().userId)
+                .set(CREATED_TIME, now)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, now)
+                .returning(ID)
+                .fetchOne(ID)
+          }
+
+      dslContext
+          .update(PROJECTS)
+          .set(PROJECTS.COHORT_ID, newCohortId)
+          .where(PROJECTS.ID.eq(projectId))
+          .execute()
+    } else {
+      if (newPhase == null) {
+        dslContext
+            .update(PROJECTS)
+            .setNull(PROJECTS.COHORT_ID)
+            .where(PROJECTS.ID.eq(projectId))
+            .execute()
+
+        val projectsInCohort =
+            dslContext.fetchCount(PROJECTS, PROJECTS.COHORT_ID.eq(existingCohortId))
+        if (projectsInCohort == 0) {
+          dslContext.deleteFrom(COHORTS).where(COHORTS.ID.eq(existingCohortId)).execute()
+        }
+      } else {
+        dslContext
+            .update(COHORTS)
+            .set(COHORTS.PHASE_ID, newPhase)
+            .set(COHORTS.MODIFIED_BY, currentUser().userId)
+            .set(COHORTS.MODIFIED_TIME, now)
+            .where(COHORTS.ID.eq(existingCohortId))
+            .execute()
+      }
+    }
+  }
 }

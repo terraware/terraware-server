@@ -16,6 +16,7 @@ import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.CohortsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -628,6 +629,73 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
           )
+      )
+
+      val project = projectsDao.fetchOneById(projectId)
+      assertNotNull(project?.cohortId, "Project should have cohort_id set")
+    }
+
+    @Test
+    fun `clears cohort and deletes it when phase is set to null and no other projects use it`() {
+      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(cohortId = inserted.cohortId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = null,
+            fileNaming = null,
+            dropboxFolderPath = null,
+            googleFolderUrl = null,
+        )
+      }
+
+      val project = projectsDao.fetchOneById(projectId)
+      assertNull(project?.cohortId, "Project should have cohort_id cleared")
+
+      assertTableEmpty(COHORTS)
+    }
+
+    @Test
+    fun `clears cohort but keeps it when phase is set to null and other projects use it`() {
+      insertCohort(name = "Shared Cohort", phase = CohortPhase.Phase0DueDiligence)
+      val projectId1 = insertProject(name = "Project 1", cohortId = inserted.cohortId)
+      val projectId2 = insertProject(name = "Project 2", cohortId = inserted.cohortId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId1,
+          )
+
+      store.update(projectId1, existingValues) {
+        it.copy(
+            phase = null,
+            fileNaming = null,
+            dropboxFolderPath = null,
+            googleFolderUrl = null,
+        )
+      }
+
+      val project1 = projectsDao.fetchOneById(projectId1)
+      assertNull(project1?.cohortId, "Project 1 should have cohort_id cleared")
+
+      val project2 = projectsDao.fetchOneById(projectId2)
+      assertEquals(inserted.cohortId, project2?.cohortId, "Project 2 should still have cohort_id")
+
+      assertTableEquals(
+          CohortsRecord(
+              name = "Shared Cohort",
+              phaseId = CohortPhase.Phase0DueDiligence,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          ),
+          "Cohort should still exist when other projects reference it",
       )
     }
 
