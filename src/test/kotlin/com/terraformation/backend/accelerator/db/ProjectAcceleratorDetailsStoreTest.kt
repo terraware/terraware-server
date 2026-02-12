@@ -8,11 +8,13 @@ import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.assertSetEquals
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.accelerator.tables.records.CohortsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
@@ -525,7 +527,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `updates cohort phase when project phase changes`() {
+    fun `updates existing cohort phase when project phase changes`() {
       insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
       val projectId = insertProject(cohortId = inserted.cohortId)
 
@@ -533,6 +535,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           ProjectAcceleratorVariableValuesModel(
               projectId = projectId,
           )
+
+      clock.instant = clock.instant.plusSeconds(100)
 
       store.update(projectId, existingValues) {
         it.copy(
@@ -543,10 +547,15 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
 
-      assertEquals(
-          CohortPhase.Phase1FeasibilityStudy,
-          cohortsDao.fetchOneById(inserted.cohortId)?.phaseId,
-          "Cohort phase should be updated to match project phase",
+      assertTableEquals(
+          CohortsRecord(
+              name = "Test Cohort",
+              phaseId = CohortPhase.Phase1FeasibilityStudy,
+              createdBy = user.userId,
+              createdTime = clock.instant.minusSeconds(100),
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
       )
     }
 
@@ -570,16 +579,22 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
 
-      assertEquals(
-          CohortPhase.Phase0DueDiligence,
-          cohortsDao.fetchOneById(inserted.cohortId)?.phaseId,
-          "Cohort phase should remain unchanged",
+      assertTableEquals(
+          CohortsRecord(
+              name = "Test Cohort",
+              phaseId = CohortPhase.Phase0DueDiligence,
+              createdBy = currentUser().userId,
+              createdTime = clock.instant,
+              modifiedBy = currentUser().userId,
+              modifiedTime = clock.instant,
+          ),
+          "Cohort should remain unchanged",
       )
     }
 
     @Test
-    fun `handles project with no cohort when phase changes`() {
-      val projectId = insertProject()
+    fun `creates new cohort when project has no cohort and phase is set`() {
+      val projectId = insertProject(name = "Test Project 1")
 
       val existingValues =
           ProjectAcceleratorVariableValuesModel(
@@ -601,6 +616,17 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               fileNaming = "test-naming",
               dropboxFolderPath = "/dropbox/test",
               googleFolderUrl = URI("https://drive.google.com/test"),
+          )
+      )
+
+      assertTableEquals(
+          CohortsRecord(
+              name = "Test Project 1",
+              phaseId = CohortPhase.Phase1FeasibilityStudy,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
           )
       )
     }

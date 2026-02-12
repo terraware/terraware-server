@@ -181,11 +181,31 @@ class ProjectAcceleratorDetailsStore(
       }
 
       if (existing.phase != updated.phase) {
-        dslContext
-            .update(COHORTS)
-            .set(COHORTS.PHASE_ID, updated.phase)
-            .where(COHORTS.ID.eq(existing.cohortId))
-            .execute()
+        val now = clock.instant()
+        if (existing.cohortId != null) {
+          dslContext
+              .update(COHORTS)
+              .set(COHORTS.PHASE_ID, updated.phase)
+              .set(COHORTS.MODIFIED_BY, currentUser().userId)
+              .set(COHORTS.MODIFIED_TIME, now)
+              .where(COHORTS.ID.eq(existing.cohortId))
+              .execute()
+        } else {
+          with(COHORTS) {
+            dslContext
+                .insertInto(COHORTS)
+                .set(
+                    NAME,
+                    DSL.select(PROJECTS.NAME).from(PROJECTS).where(PROJECTS.ID.eq(projectId)),
+                )
+                .set(PHASE_ID, updated.phase)
+                .set(CREATED_BY, currentUser().userId)
+                .set(CREATED_TIME, now)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, now)
+                .execute()
+          }
+        }
       }
 
       if (existing.landUseModelTypes != updated.landUseModelTypes) {
