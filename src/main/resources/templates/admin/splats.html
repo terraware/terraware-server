@@ -97,9 +97,44 @@
         <tr><td colspan="4"><hr/></td></tr>
 
         <tbody>
+        <tr>
+            <td>feature-extractor</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[feature-extractor]"/></td>
+            <td>
+                Additional space-separated arguments to pass to colmap feature_extractor.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
             <tr>
-                <td rowspan="2">sfm</td>
-                <td>Mapper</td>
+                <td rowspan="2">feature-matcher</td>
+                <td>Subcommand</td>
+                <td>
+                    <input type="text" name="featureMatcherSubcommand" placeholder="sequential_matcher"/>
+                </td>
+                <td>
+                    Which colmap subcommand to use for feature matching.
+                </td>
+            </tr>
+            <tr>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[feature-matcher]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to colmap.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td rowspan="2">mapper</td>
+                <td>Command</td>
                 <td>
                     <select name="mapper">
                         <option value="colmap">COLMAP</option>
@@ -111,9 +146,22 @@
             </tr>
             <tr>
                 <td>Other Args</td>
-                <td><input type="text" name="stepArgs[sfm]"/></td>
+                <td><input type="text" name="stepArgs[mapper]"/></td>
                 <td>
-                    Additional space-separated arguments to pass to splat.py sfm.
+                    Additional space-separated arguments to pass to the colmap or glomap.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td>model-converter</td>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[model-converter]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to colmap model_converter.
                 </td>
             </tr>
         </tbody>
