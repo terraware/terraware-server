@@ -38,6 +38,7 @@ class AdminSplatsController(
       @RequestParam fileId: FileId,
       @RequestParam abortAfter: String?,
       @RequestParam dataFactor: Int?,
+      @RequestParam featureMatcherSubcommand: String?,
       @RequestParam fps: Int?,
       @RequestParam keepPercent: Double?,
       @RequestParam mapper: String?,
@@ -53,7 +54,8 @@ class AdminSplatsController(
     try {
       val stepArgs =
           listOfNotNull(
-                  dataFactor?.let { "gsplat" to listOf("--data-factor", "$dataFactor") },
+                  dataFactor?.let { "gsplat" to listOf("--data_factor", "$dataFactor") },
+                  featureMatcherSubcommand?.let { "feature-matcher" to listOf("--subcommand", it) },
                   fps?.let { "extract" to listOf("--fps", "$fps") },
                   keepPercent?.let {
                     if (keepPercent < 100.0) {
@@ -62,7 +64,7 @@ class AdminSplatsController(
                       "filter-blurry" to listOf("--no-filter-blurry")
                     }
                   },
-                  mapper?.ifBlank { null }?.let { "sfm" to listOf("--mapper", mapper) },
+                  mapper?.ifBlank { null }?.let { "mapper" to listOf("--mapper", mapper) },
                   maxSize?.let { "extract" to listOf("--max-size", "$maxSize") },
                   maxSteps?.let { "gsplat" to listOf("--max_steps", "$maxSteps") },
                   ssimLambda?.let { "gsplat" to listOf("--ssim_lambda", "$ssimLambda") },
