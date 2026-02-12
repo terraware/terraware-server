@@ -17,6 +17,7 @@ import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.CohortsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -636,8 +637,10 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `clears cohort and deletes it when phase is set to null and no other projects use it`() {
+    fun `clears cohort and deletes it with modules when phase is set to null and no other projects use it`() {
       insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
+      insertModule()
+      insertCohortModule()
       val projectId = insertProject(cohortId = inserted.cohortId)
 
       val existingValues =
@@ -658,6 +661,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       assertNull(project?.cohortId, "Project should have cohort_id cleared")
 
       assertTableEmpty(COHORTS)
+      assertTableEmpty(COHORT_MODULES)
     }
 
     @Test
