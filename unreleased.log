@@ -1,3 +1,4 @@
+2d4fe4612d6 Expose individual SfM steps in admin UI (#3894)
 efaabcbdd75 Added fetch report targets endpoints (#3892)
 8f4d8e013e7 Disable BirdNET by default (#3891)
 85d2f4bb66a Implemented report targets updates (#3889)
