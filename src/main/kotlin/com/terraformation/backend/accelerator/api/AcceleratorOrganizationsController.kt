@@ -15,13 +15,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @AcceleratorEndpoint
@@ -35,32 +33,9 @@ class AcceleratorOrganizationsController(
   @GetMapping
   @Operation(
       summary = "Lists accelerator related organizations and their projects.",
-      description =
-          "By default, only lists tagged organizations that have projects that have not been " +
-              "assigned to participants yet.",
   )
-  fun listAcceleratorOrganizations(
-      @Parameter(
-          description = "Whether to also include projects that have been assigned to participants."
-      )
-      @RequestParam
-      includeParticipants: Boolean?,
-      @Parameter(
-          description = "Whether to load all organizations with a project with an application."
-      )
-      @RequestParam
-      hasProjectApplication: Boolean?,
-  ): ListAcceleratorOrganizationsResponsePayload {
-    val organizations =
-        if (includeParticipants == true && hasProjectApplication == true) {
-          acceleratorOrganizationStore.findAll()
-        } else if (includeParticipants == true) {
-          acceleratorOrganizationStore.findAllWithAcceleratorTag()
-        } else if (hasProjectApplication == true) {
-          acceleratorOrganizationStore.findAllWithProjectApplication()
-        } else {
-          acceleratorOrganizationStore.fetchWithUnassignedProjects()
-        }
+  fun listAcceleratorOrganizations(): ListAcceleratorOrganizationsResponsePayload {
+    val organizations = acceleratorOrganizationStore.findAll()
 
     return ListAcceleratorOrganizationsResponsePayload(
         organizations.map { (organization, projects) ->

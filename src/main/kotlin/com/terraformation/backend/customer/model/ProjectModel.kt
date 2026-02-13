@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -20,6 +21,7 @@ data class ProjectModel<ID : ProjectId?>(
     val modifiedTime: Instant? = null,
     val name: String,
     val organizationId: OrganizationId,
+    val phase: CohortPhase? = null,
 ) {
   companion object {
     fun of(row: ProjectsRow): ExistingProjectModel {
@@ -34,6 +36,7 @@ data class ProjectModel<ID : ProjectId?>(
           row.modifiedTime,
           row.name!!,
           row.organizationId!!,
+          row.phaseId,
       )
     }
 
@@ -49,6 +52,7 @@ data class ProjectModel<ID : ProjectId?>(
           modifiedTime = record[PROJECTS.MODIFIED_TIME]!!,
           name = record[PROJECTS.NAME]!!,
           organizationId = record[PROJECTS.ORGANIZATION_ID]!!,
+          phase = record[PROJECTS.PHASE_ID],
       )
     }
   }
