@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
@@ -273,6 +274,9 @@ class ProjectAcceleratorDetailsStore(
       dslContext
           .update(PROJECTS)
           .set(PROJECTS.COHORT_ID, newCohortId)
+          .set(PROJECTS.MODIFIED_BY, currentUser().userId)
+          .set(PROJECTS.MODIFIED_TIME, now)
+          .set(PROJECTS.PHASE_ID, newPhase)
           .where(PROJECTS.ID.eq(projectId))
           .execute()
     } else {
@@ -280,6 +284,9 @@ class ProjectAcceleratorDetailsStore(
         dslContext
             .update(PROJECTS)
             .setNull(PROJECTS.COHORT_ID)
+            .set(PROJECTS.MODIFIED_BY, currentUser().userId)
+            .set(PROJECTS.MODIFIED_TIME, now)
+            .setNull(PROJECTS.PHASE_ID)
             .where(PROJECTS.ID.eq(projectId))
             .execute()
 
@@ -300,6 +307,8 @@ class ProjectAcceleratorDetailsStore(
             .set(COHORTS.MODIFIED_TIME, now)
             .where(COHORTS.ID.eq(existingCohortId))
             .execute()
+
+        eventPublisher.publishEvent(CohortPhaseUpdatedEvent(existingCohortId, newPhase))
       }
     }
   }

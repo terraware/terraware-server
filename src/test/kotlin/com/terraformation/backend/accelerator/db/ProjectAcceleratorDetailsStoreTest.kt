@@ -3,6 +3,8 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.ProjectPhaseService
+import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
@@ -26,7 +28,9 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.net.URI
 import org.jooq.impl.DSL
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -268,6 +272,11 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class Update {
+    @BeforeEach
+    fun setUp() {
+      eventPublisher.register<CohortPhaseUpdatedEvent> { ProjectPhaseService(dslContext).on(it) }
+    }
+
     @Test
     fun `updates details for project that has not previously had details saved`() {
       val projectId = insertProject()
@@ -531,7 +540,9 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `updates existing cohort phase when project phase changes`() {
       insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId =
+          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+      insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
       val existingValues =
           ProjectAcceleratorVariableValuesModel(
@@ -548,6 +559,12 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
             googleFolderUrl = URI("https://drive.google.com/test"),
         )
       }
+
+      assertEquals(
+          listOf(CohortPhase.Phase1FeasibilityStudy, CohortPhase.Phase1FeasibilityStudy),
+          projectsDao.findAll().map { it.phaseId },
+          "Project phases",
+      )
 
       assertTableEquals(
           CohortsRecord(
@@ -612,6 +629,10 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
         )
       }
 
+      val projectsRow = projectsDao.fetchOneById(projectId)!!
+      assertNotNull(projectsRow.cohortId, "Project cohort ID")
+      assertEquals(CohortPhase.Phase1FeasibilityStudy, projectsRow.phaseId, "Project phase")
+
       assertTableEquals(
           ProjectAcceleratorDetailsRecord(
               projectId = projectId,
@@ -658,7 +679,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       val project = projectsDao.fetchOneById(projectId)
-      assertNull(project?.cohortId, "Project should have cohort_id cleared")
+      assertNull(project!!.cohortId, "Project should have cohort_id cleared")
+      assertNull(project.phaseId, "Project should have phase_id cleared")
 
       assertTableEmpty(COHORTS)
       assertTableEmpty(COHORT_MODULES)
@@ -685,7 +707,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       val project1 = projectsDao.fetchOneById(projectId1)
-      assertNull(project1?.cohortId, "Project 1 should have cohort_id cleared")
+      assertNull(project1!!.cohortId, "Project 1 should have cohort_id cleared")
+      assertNull(project1.phaseId, "Project 1 should have phase_id cleared")
 
       val project2 = projectsDao.fetchOneById(projectId2)
       assertEquals(inserted.cohortId, project2?.cohortId, "Project 2 should still have cohort_id")
