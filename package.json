@@ -8,7 +8,7 @@
   "license": "UNLICENSED",
   "private": true,
   "devDependencies": {
-    "html-minifier-next": "^4.0.0",
+    "html-minifier-next": "^5.0.0",
     "llm-autotranslate": "^1.0.0",
     "mjml": "4.18.0",
     "mjml-bullet-list": "^1.2.2"
