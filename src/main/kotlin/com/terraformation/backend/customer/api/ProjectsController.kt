@@ -162,7 +162,7 @@ class ProjectsController(
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ProjectPayload(
     val cohortId: CohortId?,
-    val cohortPhase: CohortPhase?,
+    @Deprecated("Use phase instead.") val cohortPhase: CohortPhase?,
     val createdBy: UserId?,
     val createdTime: Instant?,
     val description: String?,
@@ -173,6 +173,7 @@ data class ProjectPayload(
     val organizationId: OrganizationId,
     @Deprecated("If using this to check whether project is in cohort, use cohortPhase instead.")
     val participantId: ProjectId?,
+    val phase: CohortPhase?,
 ) {
   constructor(
       model: ExistingProjectModel,
@@ -189,6 +190,7 @@ data class ProjectPayload(
       name = model.name,
       organizationId = model.organizationId,
       participantId = if (model.cohortId != null) model.id else null,
+      phase = model.phase,
   )
 }
 
