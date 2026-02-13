@@ -39,11 +39,6 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
                       "name": "Testing"
                     },
                     {
-                      "id": ${InternalTagIds.Accelerator},
-                      "isSystem": true,
-                      "name": "Accelerator"
-                    },
-                    {
                       "id": $newTagId,
                       "isSystem": false,
                       "name": "Random Tag"
@@ -68,7 +63,7 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
     fun `returns internal tag IDs for requested organization`() {
       insertUserGlobalRole(role = GlobalRole.SuperAdmin)
       val organizationId = insertOrganization()
-      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+      insertOrganizationInternalTag(tagId = InternalTagIds.Internal)
       val newTagId = insertInternalTag()
       insertOrganizationInternalTag()
 
@@ -81,7 +76,7 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
               """
                 {
                   "tagIds": [
-                    ${InternalTagIds.Accelerator},
+                    ${InternalTagIds.Internal},
                     $newTagId
                   ],
                   "status": "ok"

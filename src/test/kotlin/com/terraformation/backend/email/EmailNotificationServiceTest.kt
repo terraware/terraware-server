@@ -37,7 +37,6 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.FacilityModel
 import com.terraformation.backend.customer.model.FunderUser
 import com.terraformation.backend.customer.model.IndividualUser
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.SystemUser
@@ -256,7 +255,6 @@ internal class EmailNotificationServiceTest {
           OrganizationId(99),
           "Test Organization",
           createdTime = Instant.EPOCH,
-          internalTags = setOf(InternalTagIds.Accelerator),
           totalUsers = 1,
       )
   private val nonAcceleratorOrganization =
@@ -368,6 +366,7 @@ internal class EmailNotificationServiceTest {
           id = ProjectId(1),
           name = "My Project",
           organizationId = organization.id,
+          phase = CohortPhase.Phase1FeasibilityStudy,
       )
   private val species =
       ExistingSpeciesModel(
@@ -586,6 +585,8 @@ internal class EmailNotificationServiceTest {
     every { parentStore.getOrganizationId(upcomingObservation.id) } returns organization.id
     every { parentStore.getOrganizationId(plantingSite.id) } returns organization.id
     every { parentStore.getOrganizationId(project.id) } returns organization.id
+    every { parentStore.hasAcceleratorOrApplicationProjects(any()) } returns false
+    every { parentStore.hasAcceleratorOrApplicationProjects(organization.id) } returns true
     every { parentStore.getPlantingSiteId(monitoringPlot.id) } returns plantingSite.id
     every { plantingSiteStore.fetchSiteById(plantingSite.id, any()) } returns plantingSite
     every { projectAcceleratorDetailsService.fetchOneById(project.id) } returns

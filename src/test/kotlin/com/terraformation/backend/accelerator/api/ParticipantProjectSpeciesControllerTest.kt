@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -21,9 +20,8 @@ class ParticipantProjectSpeciesControllerTest : ControllerIntegrationTest() {
       insertModule(phase = CohortPhase.Phase1FeasibilityStudy)
       val cohortId = insertCohort()
       insertOrganization()
-      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
       insertOrganizationUser(role = Role.Owner)
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(cohortId = cohortId, phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       insertCohortModule()
       insertDeliverable(

@@ -10,5 +10,4 @@ object InternalTagIds {
   val Reporter = InternalTagId(1)
   val Internal = InternalTagId(2)
   val Testing = InternalTagId(3)
-  val Accelerator = InternalTagId(4)
 }

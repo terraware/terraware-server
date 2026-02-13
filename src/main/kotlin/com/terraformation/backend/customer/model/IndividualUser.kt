@@ -862,16 +862,12 @@ data class IndividualUser(
   /** Returns true if one of the user's global roles allows them to read an organization. */
   private fun isGlobalReader(organizationId: OrganizationId?) =
       GlobalRole.SuperAdmin in globalRoles ||
-          (isReadOnlyOrHigher() &&
-              (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
-                  parentStore.hasApplications(organizationId)))
+          (isReadOnlyOrHigher() && parentStore.hasAcceleratorOrApplicationProjects(organizationId))
 
   /** Returns true if one of the user's global roles allows them to write to an organization. */
   private fun isGlobalWriter(organizationId: OrganizationId) =
       GlobalRole.SuperAdmin in globalRoles ||
-          (isTFExpertOrHigher() &&
-              (parentStore.hasInternalTag(organizationId, InternalTagIds.Accelerator) ||
-                  parentStore.hasApplications(organizationId)))
+          (isTFExpertOrHigher() && parentStore.hasAcceleratorOrApplicationProjects(organizationId))
 
   /** History of permission checks performed in the current request or job. */
   val permissionChecks: MutableList<PermissionCheck> = mutableListOf()
