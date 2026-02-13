@@ -88,7 +88,6 @@ data class ProjectAcceleratorDetailsPayload(
     val clickUpLink: URI?,
     val cohortId: CohortId?,
     val cohortName: String?,
-    val cohortPhase: CohortPhase?,
     val confirmedReforestableLand: BigDecimal?,
     val countryAlpha3: String?,
     val countryCode: String?,
@@ -112,6 +111,7 @@ data class ProjectAcceleratorDetailsPayload(
     val numCommunities: Int?,
     val numNativeSpecies: Int?,
     val perHectareBudget: BigDecimal?,
+    val phase: CohortPhase?,
     val pipeline: Pipeline?,
     val plantingSitesCql: String?,
     val projectArea: BigDecimal?,
@@ -141,7 +141,6 @@ data class ProjectAcceleratorDetailsPayload(
       clickUpLink = model.clickUpLink,
       cohortId = model.cohortId,
       cohortName = model.cohortName,
-      cohortPhase = model.cohortPhase,
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryAlpha3 = model.countryAlpha3,
       countryCode = model.countryCode,
@@ -165,6 +164,7 @@ data class ProjectAcceleratorDetailsPayload(
       numCommunities = model.numCommunities,
       numNativeSpecies = model.numNativeSpecies,
       perHectareBudget = model.perHectareBudget,
+      phase = model.phase,
       pipeline = model.pipeline,
       plantingSitesCql = model.plantingSitesCql,
       projectArea = model.projectArea,
@@ -183,6 +183,10 @@ data class ProjectAcceleratorDetailsPayload(
       verraLink = model.verraLink,
       whatNeedsToBeTrue = model.whatNeedsToBeTrue,
   )
+
+  @Deprecated("Use phase instead.")
+  val cohortPhase: CohortPhase? // for backwards compatibility in response payloads
+    get() = phase
 }
 
 data class MetricProgressPayload(
@@ -243,6 +247,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     val numCommunities: Int?,
     val numNativeSpecies: Int?,
     val perHectareBudget: BigDecimal?,
+    val phase: CohortPhase?,
     val pipeline: Pipeline?,
     val projectArea: BigDecimal? = null,
     val riskTrackerLink: URI? = null,
@@ -285,6 +290,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
           numNativeSpecies = numNativeSpecies,
           perHectareBudget = perHectareBudget,
           pipeline = pipeline,
+          phase = phase,
           projectArea = projectArea,
           riskTrackerLink = riskTrackerLink,
           sdgList = sdgList.orEmpty(),

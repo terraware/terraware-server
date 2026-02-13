@@ -8,11 +8,16 @@ import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.assertSetEquals
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.accelerator.tables.records.CohortsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
+import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -131,7 +136,6 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               carbonCapacity = detailsRow.carbonCapacity,
               cohortId = inserted.cohortId,
               cohortName = "Cohort name",
-              cohortPhase = CohortPhase.Phase0DueDiligence,
               confirmedReforestableLand = detailsRow.confirmedReforestableLand,
               countryCode = "KE",
               dealDescription = detailsRow.dealDescription,
@@ -157,6 +161,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               numCommunities = detailsRow.numCommunities,
               numNativeSpecies = detailsRow.numNativeSpecies,
               perHectareBudget = detailsRow.perHectareBudget,
+              phase = CohortPhase.Phase0DueDiligence,
               pipeline = detailsRow.pipelineId,
               plantingSitesCql = "tf_accelerator:fid=123",
               projectBoundariesCql = "project_no=5",
@@ -521,6 +526,305 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         store.update(projectId, ProjectAcceleratorVariableValuesModel(projectId = projectId)) { it }
       }
+    }
+
+    @Test
+    fun `updates existing cohort phase when project phase changes`() {
+      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(cohortId = inserted.cohortId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      clock.instant = clock.instant.plusSeconds(100)
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = CohortPhase.Phase1FeasibilityStudy,
+            fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
+        )
+      }
+
+      assertTableEquals(
+          CohortsRecord(
+              name = "Test Cohort",
+              phaseId = CohortPhase.Phase1FeasibilityStudy,
+              createdBy = user.userId,
+              createdTime = clock.instant.minusSeconds(100),
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `does not update cohort phase when project phase is unchanged`() {
+      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(cohortId = inserted.cohortId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            numCommunities = 5,
+            phase = CohortPhase.Phase0DueDiligence,
+            fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
+        )
+      }
+
+      assertTableEquals(
+          CohortsRecord(
+              name = "Test Cohort",
+              phaseId = CohortPhase.Phase0DueDiligence,
+              createdBy = currentUser().userId,
+              createdTime = clock.instant,
+              modifiedBy = currentUser().userId,
+              modifiedTime = clock.instant,
+          ),
+          "Cohort should remain unchanged",
+      )
+    }
+
+    @Test
+    fun `creates new cohort when project has no cohort and phase is set`() {
+      val projectId = insertProject(name = "Test Project 1")
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = CohortPhase.Phase1FeasibilityStudy,
+            fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
+        )
+      }
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              fileNaming = "test-naming",
+              dropboxFolderPath = "/dropbox/test",
+              googleFolderUrl = URI("https://drive.google.com/test"),
+          )
+      )
+
+      assertTableEquals(
+          CohortsRecord(
+              name = "Test Project 1",
+              phaseId = CohortPhase.Phase1FeasibilityStudy,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+
+      val project = projectsDao.fetchOneById(projectId)
+      assertNotNull(project?.cohortId, "Project should have cohort_id set")
+    }
+
+    @Test
+    fun `clears cohort and deletes it with modules when phase is set to null and no other projects use it`() {
+      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
+      insertModule()
+      insertCohortModule()
+      val projectId = insertProject(cohortId = inserted.cohortId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = null,
+            fileNaming = null,
+            dropboxFolderPath = null,
+            googleFolderUrl = null,
+        )
+      }
+
+      val project = projectsDao.fetchOneById(projectId)
+      assertNull(project?.cohortId, "Project should have cohort_id cleared")
+
+      assertTableEmpty(COHORTS)
+      assertTableEmpty(COHORT_MODULES)
+    }
+
+    @Test
+    fun `clears cohort but keeps it when phase is set to null and other projects use it`() {
+      insertCohort(name = "Shared Cohort", phase = CohortPhase.Phase0DueDiligence)
+      val projectId1 = insertProject(name = "Project 1", cohortId = inserted.cohortId)
+      val projectId2 = insertProject(name = "Project 2", cohortId = inserted.cohortId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId1,
+          )
+
+      store.update(projectId1, existingValues) {
+        it.copy(
+            phase = null,
+            fileNaming = null,
+            dropboxFolderPath = null,
+            googleFolderUrl = null,
+        )
+      }
+
+      val project1 = projectsDao.fetchOneById(projectId1)
+      assertNull(project1?.cohortId, "Project 1 should have cohort_id cleared")
+
+      val project2 = projectsDao.fetchOneById(projectId2)
+      assertEquals(inserted.cohortId, project2?.cohortId, "Project 2 should still have cohort_id")
+
+      assertTableEquals(
+          CohortsRecord(
+              name = "Shared Cohort",
+              phaseId = CohortPhase.Phase0DueDiligence,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          ),
+          "Cohort should still exist when other projects reference it",
+      )
+    }
+
+    @Test
+    fun `throws exception when phase is set but fileNaming is null`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      val exception =
+          assertThrows<IllegalArgumentException> {
+            store.update(projectId, existingValues) {
+              it.copy(
+                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  fileNaming = null,
+                  dropboxFolderPath = "/dropbox/test",
+                  googleFolderUrl = URI("https://drive.google.com/test"),
+              )
+            }
+          }
+
+      assertEquals(
+          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
+          exception.message,
+      )
+    }
+
+    @Test
+    fun `throws exception when phase is set but dropboxFolderPath is null`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      val exception =
+          assertThrows<IllegalArgumentException> {
+            store.update(projectId, existingValues) {
+              it.copy(
+                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  fileNaming = "test-naming",
+                  dropboxFolderPath = null,
+                  googleFolderUrl = URI("https://drive.google.com/test"),
+              )
+            }
+          }
+
+      assertEquals(
+          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
+          exception.message,
+      )
+    }
+
+    @Test
+    fun `throws exception when phase is set but googleFolderUrl is null`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      val exception =
+          assertThrows<IllegalArgumentException> {
+            store.update(projectId, existingValues) {
+              it.copy(
+                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  fileNaming = "test-naming",
+                  dropboxFolderPath = "/dropbox/test",
+                  googleFolderUrl = null,
+              )
+            }
+          }
+
+      assertEquals(
+          "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set.",
+          exception.message,
+      )
+    }
+
+    @Test
+    fun `allows update when phase is null and document fields are null`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = null,
+            fileNaming = null,
+            dropboxFolderPath = null,
+            googleFolderUrl = null,
+            numCommunities = 5,
+        )
+      }
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              fileNaming = null,
+              dropboxFolderPath = null,
+              googleFolderUrl = null,
+              numCommunities = 5,
+          )
+      )
+    }
+
+    @Test
+    fun `allows update when phase and all required document fields are set`() {
+      val projectId = insertProject()
+
+      val existingValues = ProjectAcceleratorVariableValuesModel(projectId = projectId)
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            phase = CohortPhase.Phase1FeasibilityStudy,
+            fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
+        )
+      }
+
+      assertTableEquals(
+          ProjectAcceleratorDetailsRecord(
+              projectId = projectId,
+              fileNaming = "test-naming",
+              dropboxFolderPath = "/dropbox/test",
+              googleFolderUrl = URI("https://drive.google.com/test"),
+          )
+      )
     }
   }
 }

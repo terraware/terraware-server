@@ -8,8 +8,11 @@ import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_METRICS
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
+import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.ProjectLandUseModelTypesRecord
@@ -92,6 +95,15 @@ class ProjectAcceleratorDetailsStore(
     val existing = fetchOneById(projectId, variableValues)
     val updated = applyFunc(existing)
 
+    require(
+        updated.phase == null ||
+            (updated.fileNaming != null &&
+                updated.dropboxFolderPath != null &&
+                updated.googleFolderUrl != null)
+    ) {
+      "If phase is selected, file naming, dropbox folder path, and Google folder URL must be set."
+    }
+
     val dropboxFolderPath: String?
     val googleFolderUrl: URI?
 
@@ -171,6 +183,10 @@ class ProjectAcceleratorDetailsStore(
             .execute()
       }
 
+      if (existing.phase != updated.phase) {
+        updateProjectPhase(projectId, existing.cohortId, updated.phase)
+      }
+
       if (existing.landUseModelTypes != updated.landUseModelTypes) {
         with(PROJECT_LAND_USE_MODEL_TYPES) {
           dslContext.deleteFrom(this).where(PROJECT_ID.eq(projectId)).execute()
@@ -229,4 +245,62 @@ class ProjectAcceleratorDetailsStore(
             }
           }
     }
+
+  private fun updateProjectPhase(
+      projectId: ProjectId,
+      existingCohortId: CohortId?,
+      newPhase: CohortPhase?,
+  ) {
+    val now = clock.instant()
+    if (existingCohortId == null) {
+      val newCohortId =
+          with(COHORTS) {
+            dslContext
+                .insertInto(COHORTS)
+                .set(
+                    NAME,
+                    DSL.select(PROJECTS.NAME).from(PROJECTS).where(PROJECTS.ID.eq(projectId)),
+                )
+                .set(PHASE_ID, newPhase)
+                .set(CREATED_BY, currentUser().userId)
+                .set(CREATED_TIME, now)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, now)
+                .returning(ID)
+                .fetchOne(ID)
+          }
+
+      dslContext
+          .update(PROJECTS)
+          .set(PROJECTS.COHORT_ID, newCohortId)
+          .where(PROJECTS.ID.eq(projectId))
+          .execute()
+    } else {
+      if (newPhase == null) {
+        dslContext
+            .update(PROJECTS)
+            .setNull(PROJECTS.COHORT_ID)
+            .where(PROJECTS.ID.eq(projectId))
+            .execute()
+
+        val projectsInCohort =
+            dslContext.fetchCount(PROJECTS, PROJECTS.COHORT_ID.eq(existingCohortId))
+        if (projectsInCohort == 0) {
+          dslContext
+              .deleteFrom(COHORT_MODULES)
+              .where(COHORT_MODULES.COHORT_ID.eq(existingCohortId))
+              .execute()
+          dslContext.deleteFrom(COHORTS).where(COHORTS.ID.eq(existingCohortId)).execute()
+        }
+      } else {
+        dslContext
+            .update(COHORTS)
+            .set(COHORTS.PHASE_ID, newPhase)
+            .set(COHORTS.MODIFIED_BY, currentUser().userId)
+            .set(COHORTS.MODIFIED_TIME, now)
+            .where(COHORTS.ID.eq(existingCohortId))
+            .execute()
+      }
+    }
+  }
 }
