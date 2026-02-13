@@ -29,6 +29,10 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
           ),
           deliverables.asMultiValueSublist("deliverables", MODULES.ID.eq(DELIVERABLES.MODULE_ID)),
           events.asMultiValueSublist("events", MODULES.ID.eq(EVENTS.MODULE_ID)),
+          cohortModules.asMultiValueSublist(
+              "projectModules",
+              MODULES.ID.eq(COHORT_MODULES.MODULE_ID),
+          ),
       )
     }
   }
