@@ -17,7 +17,7 @@ class ProjectCohortFetcher(private val dslContext: DSLContext) {
     requirePermissions { readProject(projectId) }
 
     return dslContext
-        .select(COHORTS.ID, COHORTS.PHASE_ID, APPLICATIONS.APPLICATION_STATUS_ID)
+        .select(COHORTS.ID, PROJECTS.PHASE_ID, APPLICATIONS.APPLICATION_STATUS_ID)
         .from(PROJECTS)
         .leftJoin(COHORTS)
         .on(PROJECTS.COHORT_ID.eq(COHORTS.ID))

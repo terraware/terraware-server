@@ -47,9 +47,9 @@ class AcceleratorProjectService(
         .select(
             COHORTS.ID,
             COHORTS.NAME,
-            COHORTS.PHASE_ID,
             PROJECTS.ID,
             PROJECTS.NAME,
+            PROJECTS.PHASE_ID,
             decisionsMultiset,
         )
         .from(PROJECTS)

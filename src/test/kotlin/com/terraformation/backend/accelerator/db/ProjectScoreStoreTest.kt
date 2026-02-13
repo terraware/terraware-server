@@ -156,7 +156,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
   inner class UpdateScores {
     @Test
     fun `creates scores that do not exist`() {
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId =
+          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
       clock.instant = Instant.ofEpochSecond(123)
 
@@ -198,7 +199,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates scores that already exist`() {
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId =
+          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
       insertProjectScore(phase = CohortPhase.Phase0DueDiligence, category = ScoreCategory.Legal)
       insertProjectScore(
@@ -276,7 +278,8 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if updating scores for a different phase than the current one`() {
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId =
+          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
       assertThrows<ProjectNotInCohortPhaseException> {
         store.updateScores(

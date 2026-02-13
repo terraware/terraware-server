@@ -60,7 +60,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns all details fields`() {
       insertCohort(name = "Cohort name", phase = CohortPhase.Phase0DueDiligence)
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId =
+          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
 
@@ -662,7 +663,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
       insertModule()
       insertCohortModule()
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId =
+          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
       val existingValues =
           ProjectAcceleratorVariableValuesModel(
@@ -689,8 +691,18 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `clears cohort but keeps it when phase is set to null and other projects use it`() {
       insertCohort(name = "Shared Cohort", phase = CohortPhase.Phase0DueDiligence)
-      val projectId1 = insertProject(name = "Project 1", cohortId = inserted.cohortId)
-      val projectId2 = insertProject(name = "Project 2", cohortId = inserted.cohortId)
+      val projectId1 =
+          insertProject(
+              name = "Project 1",
+              cohortId = inserted.cohortId,
+              phase = CohortPhase.Phase0DueDiligence,
+          )
+      val projectId2 =
+          insertProject(
+              name = "Project 2",
+              cohortId = inserted.cohortId,
+              phase = CohortPhase.Phase0DueDiligence,
+          )
 
       val existingValues =
           ProjectAcceleratorVariableValuesModel(

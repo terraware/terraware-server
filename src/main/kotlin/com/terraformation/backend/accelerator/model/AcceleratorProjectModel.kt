@@ -26,7 +26,7 @@ data class AcceleratorProjectModel(
       return AcceleratorProjectModel(
           cohortId = record[COHORTS.ID]!!,
           cohortName = record[COHORTS.NAME]!!,
-          phase = record[COHORTS.PHASE_ID]!!,
+          phase = record[PROJECTS.PHASE_ID]!!,
           projectId = record[PROJECTS.ID]!!,
           projectName = record[PROJECTS.NAME]!!,
           voteDecisions = record[decisionsField] ?: emptyMap(),
