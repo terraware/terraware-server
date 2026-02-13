@@ -449,6 +449,10 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>organizations_description_check</td>
+                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
                                     <td>country_code_matches_subdivision</td>
                                     <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
                                 </tr>
@@ -463,10 +467,6 @@
                                 <tr>
                                     <td>organizations_country_code_check</td>
                                     <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>other_type_details_only_for_other</td>
