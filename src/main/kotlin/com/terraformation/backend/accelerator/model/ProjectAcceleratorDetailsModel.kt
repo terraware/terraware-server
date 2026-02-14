@@ -111,7 +111,7 @@ data class ProjectAcceleratorDetailsModel(
             numCommunities = record[NUM_COMMUNITIES],
             numNativeSpecies = variableValues.numNativeSpecies,
             perHectareBudget = variableValues.perHectareBudget,
-            phase = record[COHORTS.PHASE_ID],
+            phase = record[PROJECTS.PHASE_ID],
             pipeline = record[PIPELINE_ID],
             plantingSitesCql = record[PLANTING_SITES_CQL],
             projectArea = variableValues.projectArea,
@@ -173,8 +173,4 @@ data class ProjectAcceleratorDetailsModel(
           verraLink = verraLink,
           whatNeedsToBeTrue = whatNeedsToBeTrue,
       )
-
-  @Deprecated("Use phase instead.")
-  val cohortPhase: CohortPhase?
-    get() = phase
 }

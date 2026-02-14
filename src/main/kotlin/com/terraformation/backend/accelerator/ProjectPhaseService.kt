@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
+import org.springframework.core.annotation.Order
 
 /**
  * Temporary event listeners to keep the phase values up to date on the projects table based on the
@@ -16,6 +17,7 @@ import org.springframework.context.event.EventListener
 @Named
 class ProjectPhaseService(private val dslContext: DSLContext) {
   @EventListener
+  @Order(EVENT_LISTENER_ORDER)
   fun on(event: CohortProjectAddedEvent) {
     val phase = dslContext.fetchValue(COHORTS.PHASE_ID, COHORTS.ID.eq(event.cohortId))
 
@@ -25,6 +27,7 @@ class ProjectPhaseService(private val dslContext: DSLContext) {
   }
 
   @EventListener
+  @Order(EVENT_LISTENER_ORDER)
   fun on(event: CohortProjectRemovedEvent) {
     with(PROJECTS) {
       dslContext.update(PROJECTS).setNull(PHASE_ID).where(ID.eq(event.projectId)).execute()
@@ -32,6 +35,7 @@ class ProjectPhaseService(private val dslContext: DSLContext) {
   }
 
   @EventListener
+  @Order(EVENT_LISTENER_ORDER)
   fun on(event: CohortPhaseUpdatedEvent) {
     with(PROJECTS) {
       dslContext
@@ -40,5 +44,14 @@ class ProjectPhaseService(private val dslContext: DSLContext) {
           .where(COHORT_ID.eq(event.cohortId))
           .execute()
     }
+  }
+
+  companion object {
+    /**
+     * Execution order of the event listeners in this service. Listeners for the same events on
+     * other services that depend on the changes we apply in this service can configure themselves
+     * with higher order values than this to guarantee they'll be called after the listeners here.
+     */
+    const val EVENT_LISTENER_ORDER = 10
   }
 }

@@ -56,7 +56,7 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `inserts voters`() {
       val cohortId1 = insertCohort()
-      val projectId1 = insertProject(cohortId = cohortId1)
+      val projectId1 = insertProject(cohortId = cohortId1, phase = CohortPhase.Phase0DueDiligence)
 
       // Should leave these alone
       insertProject(cohortId = cohortId1)
@@ -85,8 +85,8 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts voters`() {
       val phase = CohortPhase.Phase1FeasibilityStudy
       val cohortId1 = insertCohort(phase = phase)
-      val projectId1 = insertProject(cohortId = cohortId1)
-      val projectId2 = insertProject(cohortId = cohortId1)
+      val projectId1 = insertProject(cohortId = cohortId1, phase = phase)
+      val projectId2 = insertProject(cohortId = cohortId1, phase = phase)
 
       // Should leave these alone
       val otherCohortId = insertCohort()

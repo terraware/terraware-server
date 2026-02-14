@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
+import org.springframework.core.annotation.Order
 
 @Named
 class VoteService(
@@ -23,6 +24,7 @@ class VoteService(
   }
 
   @EventListener
+  @Order(ProjectPhaseService.EVENT_LISTENER_ORDER + 10)
   fun on(event: CohortPhaseUpdatedEvent) {
     systemUser.run {
       val cohort = cohortStore.fetchOneById(event.cohortId, CohortDepth.Project)

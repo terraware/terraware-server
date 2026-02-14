@@ -27,7 +27,11 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertOrganization()
     insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
-    insertProject(cohortId = inserted.cohortId, countryCode = "KE")
+    insertProject(
+        cohortId = inserted.cohortId,
+        countryCode = "KE",
+        phase = CohortPhase.Phase1FeasibilityStudy,
+    )
     insertVoteDecision(
         projectId = inserted.projectId,
         phase = CohortPhase.Phase0DueDiligence,
@@ -49,12 +53,11 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Test
   fun `fetches one by Id, or throws not found exception`() {
-    val phase = cohortsDao.fetchOneById(inserted.cohortId)!!.phaseId!!
     assertEquals(
         AcceleratorProjectModel(
             cohortId = inserted.cohortId,
             cohortName = cohortsDao.fetchOneById(inserted.cohortId)!!.name!!,
-            phase = phase,
+            phase = CohortPhase.Phase1FeasibilityStudy,
             projectId = inserted.projectId,
             projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
             voteDecisions =
@@ -72,13 +75,12 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Test
   fun `returns accelerator projects`() {
-    val phase = cohortsDao.fetchOneById(inserted.cohortId)!!.phaseId!!
     assertEquals(
         listOf(
             AcceleratorProjectModel(
                 cohortId = inserted.cohortId,
                 cohortName = cohortsDao.fetchOneById(inserted.cohortId)!!.name!!,
-                phase = phase,
+                phase = CohortPhase.Phase1FeasibilityStudy,
                 projectId = inserted.projectId,
                 projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
                 voteDecisions =

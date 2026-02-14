@@ -64,10 +64,10 @@ class ProjectAcceleratorDetailsStore(
     return dslContext
         .select(
             PROJECT_ACCELERATOR_DETAILS.asterisk(),
-            PROJECTS.ID,
             COHORTS.ID,
             COHORTS.NAME,
-            COHORTS.PHASE_ID,
+            PROJECTS.ID,
+            PROJECTS.PHASE_ID,
             projectProgressMultiset,
         )
         .from(PROJECTS)

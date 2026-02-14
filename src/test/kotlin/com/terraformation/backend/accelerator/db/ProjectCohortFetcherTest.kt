@@ -36,7 +36,7 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `fetches project's cohort data`() {
       val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(cohortId = cohortId, phase = CohortPhase.Phase0DueDiligence)
 
       val expected =
           ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
@@ -48,7 +48,7 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `uses cohort data even if project has an application`() {
       val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(cohortId = cohortId, phase = CohortPhase.Phase0DueDiligence)
       insertApplication()
 
       val expected =
