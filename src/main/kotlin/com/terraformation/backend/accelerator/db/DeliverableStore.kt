@@ -12,7 +12,6 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
-import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_COHORT_DUE_DATES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_DOCUMENTS
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
@@ -111,12 +110,7 @@ class DeliverableStore(
             )
             .convertFrom { result -> result.map { SubmissionDocumentModel.of(it) } }
 
-    val dueDateField =
-        DSL.coalesce(
-            DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE,
-            DELIVERABLE_COHORT_DUE_DATES.DUE_DATE,
-            COHORT_MODULES.END_DATE,
-        )
+    val dueDateField = DSL.coalesce(DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE, COHORT_MODULES.END_DATE)
 
     val deliverableIdField = DELIVERABLES.ID.`as`("deliverable_id")
     val projectIdField = PROJECTS.ID.`as`("project_id")
@@ -192,9 +186,6 @@ class DeliverableStore(
               .leftJoin(SUBMISSIONS)
               .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID))
               .and(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
-              .leftJoin(DELIVERABLE_COHORT_DUE_DATES)
-              .on(DELIVERABLE_COHORT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-              .and(DELIVERABLE_COHORT_DUE_DATES.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
               .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
               .on(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
               .and(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID.eq(PROJECTS.ID))
@@ -222,9 +213,6 @@ class DeliverableStore(
               .leftJoin(SUBMISSIONS)
               .on(DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID))
               .and(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
-              .leftJoin(DELIVERABLE_COHORT_DUE_DATES)
-              .on(DELIVERABLE_COHORT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-              .and(DELIVERABLE_COHORT_DUE_DATES.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
               .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
               .on(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
               .and(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID.eq(PROJECTS.ID))

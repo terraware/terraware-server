@@ -258,7 +258,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `returns deliverable due date according to cohort or project overrides`() {
+  fun `returns deliverable due date according to project overrides`() {
     val projectId = insertProject(cohortId = inserted.cohortId)
     val deliverableId = insertDeliverable(moduleId = inserted.moduleId)
 
@@ -273,18 +273,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         ),
         searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())),
         "Search project deliverables with module end date",
-    )
-
-    val cohortDueDate = moduleEndDate.plusDays(5)
-    insertDeliverableCohortDueDate(deliverableId, inserted.cohortId, cohortDueDate)
-    assertJsonEquals(
-        SearchResults(
-            listOf(
-                mapOf("id" to "$deliverableId", "dueDate" to "$cohortDueDate"),
-            )
-        ),
-        searchService.search(prefix, fields, mapOf(prefix to NoConditionNode())),
-        "Search project deliverables with cohort due date override",
     )
 
     val projectDueDate = moduleEndDate.plusDays(5)

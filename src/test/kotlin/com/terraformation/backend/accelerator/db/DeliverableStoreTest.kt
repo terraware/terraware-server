@@ -591,7 +591,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       insertOrganization()
 
       val projectWithProjectDueDate = insertProject(cohortId = cohortWithDueDate)
-      val projectWithCohortDueDate = insertProject(cohortId = cohortWithDueDate)
       val projectWithDefaultDueDate = insertProject(cohortId = cohortWithoutDueDate)
 
       val cohortModuleEndDate = LocalDate.of(2024, 1, 2)
@@ -610,10 +609,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           endDate = cohortModuleEndDate,
       )
 
-      val cohortDueDate = LocalDate.of(2024, 2, 1)
       val projectDueDate = LocalDate.of(2024, 3, 1)
 
-      insertDeliverableCohortDueDate(deliverableId, cohortWithDueDate, cohortDueDate)
       insertDeliverableProjectDueDate(deliverableId, projectWithProjectDueDate, projectDueDate)
 
       assertEquals(
@@ -626,18 +623,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               .firstOrNull()
               ?.dueDate,
           "Deliverable for project with project due date",
-      )
-
-      assertEquals(
-          cohortDueDate,
-          store
-              .fetchDeliverableSubmissions(
-                  projectId = projectWithCohortDueDate,
-                  deliverableId = deliverableId,
-              )
-              .firstOrNull()
-              ?.dueDate,
-          "Deliverable for project with cohort due date and no project due date",
       )
 
       assertEquals(
