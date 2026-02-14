@@ -3,8 +3,8 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.mockUser
@@ -31,7 +31,7 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
         organizationId = inserted.organizationId,
         role = Role.Admin,
     )
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+    insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
@@ -39,7 +39,6 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns variable value options, ignoring old versions`() {
-    insertProject()
     val singleStableId = "123"
     val multiStableId = "456"
     val oldSingleVariableId = insertVariable(stableId = singleStableId, type = VariableType.Select)
@@ -142,7 +141,6 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `does not return if user can't read variables`() {
     every { user.canReadAllAcceleratorDetails() } returns false
-    insertProject()
     val variableId = insertVariable(type = VariableType.Select)
     insertSelectVariable(variableId, isMultiple = false)
     val optionId = insertSelectOption(variableId = variableId, name = "An option")

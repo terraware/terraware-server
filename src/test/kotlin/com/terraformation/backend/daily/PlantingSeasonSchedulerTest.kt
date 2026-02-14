@@ -6,10 +6,11 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -129,8 +130,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `sends support notifications for accelerator planting sites`() {
-      val plantingSiteId = insertPlantingSiteWithSubzone()
-      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+      insertProject(phase = CohortPhase.Phase2PlanAndScale)
+      val plantingSiteId = insertPlantingSiteWithSubzone(inserted.projectId)
 
       assertNoEventsBeforeWeekNumber(
           6,
@@ -223,8 +224,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `sends support notifications for accelerator planting sites`() {
-      val plantingSiteId = insertPlantingSiteWithSeason()
-      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+      insertProject(phase = CohortPhase.Phase2PlanAndScale)
+      val plantingSiteId = insertPlantingSiteWithSeason(projectId = inserted.projectId)
 
       assertNoEventsBeforeWeekNumber(
           8,
@@ -276,20 +277,23 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     eventPublisher.assertNoEventsPublished("Sent duplicate $weeks-weeks notification")
   }
 
-  private fun insertPlantingSiteWithSubzone(): PlantingSiteId {
-    val plantingSiteId = insertPlantingSite(createdTime = clock.instant)
+  private fun insertPlantingSiteWithSubzone(projectId: ProjectId? = null): PlantingSiteId {
+    val plantingSiteId = insertPlantingSite(createdTime = clock.instant, projectId = projectId)
     insertStratum()
     insertSubstratum()
 
     return plantingSiteId
   }
 
-  private fun insertPlantingSiteWithSeason(subzone: Boolean = true): PlantingSiteId {
+  private fun insertPlantingSiteWithSeason(
+      subzone: Boolean = true,
+      projectId: ProjectId? = null,
+  ): PlantingSiteId {
     val plantingSiteId =
         if (subzone) {
-          insertPlantingSiteWithSubzone()
+          insertPlantingSiteWithSubzone(projectId)
         } else {
-          insertPlantingSite(createdTime = clock.instant)
+          insertPlantingSite(createdTime = clock.instant, projectId = projectId)
         }
 
     // The end date is the day before initialDate so that calculating week numbers based on

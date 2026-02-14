@@ -3,7 +3,7 @@ package com.terraformation.backend.documentproducer.api
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.USER_GLOBAL_ROLES
@@ -26,8 +26,7 @@ class ValuesControllerTest : ControllerIntegrationTest() {
   fun setUp() {
     insertUserGlobalRole(userId = currentUser().userId, GlobalRole.TFExpert)
     insertOrganization()
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
-    insertProject()
+    insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
   }
 
   private fun path(projectId: ProjectId = inserted.projectId) =

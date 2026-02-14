@@ -3,8 +3,8 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.i18n.Locales
@@ -36,7 +36,6 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
         organizationId = inserted.organizationId,
         role = Role.Admin,
     )
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
@@ -44,7 +43,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns variable values for project, ignoring old values`() {
-    val projectId = insertProject()
+    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     val textStableId = "123"
     val numberStableId = "456"
@@ -202,7 +201,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can retrieve nested variableValues from projects`() {
-    val projectId = insertProject()
+    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
     val variableId1 = insertVariable()
     val variableId2 = insertVariable()
     val valueId1 = insertValue(variableId = variableId1)
@@ -244,7 +243,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `old variable with value doesn't show up when new version does not have value`() {
-    val projectId = insertProject()
+    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
     val stableId = "123"
     val oldVariableId = insertVariable(stableId = stableId)
     insertVariable(stableId = stableId, replacesVariableId = oldVariableId)
@@ -274,7 +273,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `deleted values exclude the variables fully`() {
-    insertProject()
+    insertProject(phase = CohortPhase.Phase0DueDiligence)
     val variableId1 = insertVariable()
     val variableId2 = insertVariable()
     insertValue(variableId = variableId1, textValue = "Value1")
@@ -302,7 +301,7 @@ class ProjectVariableValueSearchTest : DatabaseTest(), RunsAsUser {
   fun `returns only variables of projects visible to non-accelerator admin users`() {
     every { user.canReadAllAcceleratorDetails() } returns false
 
-    val projectId1 = insertProject()
+    val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
     val variableId1 = insertVariable()
     val valueId1 = insertValue(variableId = variableId1, textValue = "Visible")
 

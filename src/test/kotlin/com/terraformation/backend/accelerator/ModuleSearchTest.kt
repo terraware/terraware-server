@@ -3,7 +3,6 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.Role
@@ -35,7 +34,6 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
         organizationId = inserted.organizationId,
         role = Role.Admin,
     )
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
@@ -226,13 +224,21 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val invisibleModule = insertModule()
 
     val userCohort = insertCohort()
-    insertProject(cohortId = userCohort, organizationId = inserted.organizationId)
+    insertProject(
+        cohortId = userCohort,
+        organizationId = inserted.organizationId,
+        phase = CohortPhase.Phase0DueDiligence,
+    )
 
     val otherUser = insertUser()
     val otherCohort = insertCohort()
     val otherOrganization = insertOrganization()
     insertOrganizationUser(otherUser, otherOrganization)
-    insertProject(cohortId = otherCohort, organizationId = otherOrganization)
+    insertProject(
+        cohortId = otherCohort,
+        organizationId = otherOrganization,
+        phase = CohortPhase.Phase0DueDiligence,
+    )
 
     insertCohortModule(userCohort, module1)
     insertCohortModule(userCohort, module2)

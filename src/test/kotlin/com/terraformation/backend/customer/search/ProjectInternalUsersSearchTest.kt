@@ -3,8 +3,8 @@ package com.terraformation.backend.customer.search
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
@@ -84,14 +84,13 @@ class ProjectInternalUsersSearchTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `allows accelerator readers to see internal users of other organizations`() {
     every { user.canReadAllAcceleratorDetails() } returns true
-    val projectId = insertProject()
+    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
     val projectLead = insertUser()
     insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
     val otherOrg = insertOrganization()
-    val otherProject = insertProject()
+    val otherProject = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
     val otherOrgUser = insertUser()
     insertProjectInternalUser(role = ProjectInternalRole.RestorationLead)
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     val prefix = SearchFieldPrefix(searchTables.projectInternalUsers)
     val fields =

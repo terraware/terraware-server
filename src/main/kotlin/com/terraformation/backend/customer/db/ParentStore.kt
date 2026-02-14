@@ -29,7 +29,6 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
-import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -43,7 +42,6 @@ import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
@@ -412,19 +410,19 @@ class ParentStore(private val dslContext: DSLContext) {
           .fetch()
           .isNotEmpty
 
-  fun hasApplications(organizationId: OrganizationId?): Boolean =
+  /**
+   * Returns true if an organization has one or more projects that are either in the accelerator or
+   * have applied for the accelerator.
+   */
+  fun hasAcceleratorOrApplicationProjects(organizationId: OrganizationId?): Boolean =
       organizationId != null &&
           dslContext.fetchExists(
-              APPLICATIONS,
-              APPLICATIONS.projects.ORGANIZATION_ID.eq(organizationId),
-          )
-
-  fun hasInternalTag(organizationId: OrganizationId?, internalTag: InternalTagId): Boolean =
-      organizationId != null &&
-          dslContext.fetchExists(
-              ORGANIZATION_INTERNAL_TAGS,
-              ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(organizationId),
-              ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(internalTag),
+              DSL.selectOne()
+                  .from(PROJECTS)
+                  .leftJoin(APPLICATIONS)
+                  .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
+                  .where(PROJECTS.PHASE_ID.isNotNull.or(APPLICATIONS.ID.isNotNull))
+                  .and(PROJECTS.ORGANIZATION_ID.eq(organizationId))
           )
 
   fun isProjectInAccelerator(projectId: ProjectId?): Boolean =

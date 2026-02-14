@@ -3,11 +3,12 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.toGibberish
@@ -33,6 +34,8 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
   private val moduleStartDate = LocalDate.of(2024, 4, 1)
   private val moduleEndDate = LocalDate.of(2024, 4, 11)
 
+  private lateinit var projectId: ProjectId
+
   @BeforeEach
   fun setUp() {
     insertOrganization()
@@ -41,7 +44,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         organizationId = inserted.organizationId,
         role = Role.Admin,
     )
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort()
     insertModule()
     insertCohortModule(
@@ -50,6 +52,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         startDate = moduleStartDate,
         endDate = moduleEndDate,
     )
+    projectId = insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
@@ -57,8 +60,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns deliverable details with project submissions if present`() {
-    val projectId = insertProject(cohortId = inserted.cohortId)
-
     val deliverableWithSubmission =
         insertDeliverable(
             deliverableCategoryId = DeliverableCategory.Compliance,
@@ -152,7 +153,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `includes project and module as sublists`() {
-    val projectId = insertProject(cohortId = inserted.cohortId)
     val deliverableId = insertDeliverable(moduleId = inserted.moduleId)
     insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
@@ -178,7 +178,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `can filter by project and only includes deliverables that are part of project cohort`() {
     val moduleId = inserted.moduleId
-    val projectId = insertProject(cohortId = inserted.cohortId)
 
     val deliverableWithSubmission = insertDeliverable(moduleId = moduleId)
     val submissionId =
@@ -188,7 +187,8 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             submissionStatus = SubmissionStatus.Approved,
         )
 
-    val hiddenProject = insertProject(cohortId = inserted.cohortId)
+    val hiddenProject =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = hiddenProject,
@@ -229,7 +229,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for project deliverable as sublists with projects as prefix`() {
-    val projectId = insertProject(cohortId = inserted.cohortId)
     val deliverableWithSubmission = insertDeliverable(moduleId = inserted.moduleId)
     insertSubmission(deliverableId = deliverableWithSubmission, projectId = projectId)
 
@@ -259,7 +258,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns deliverable due date according to project overrides`() {
-    val projectId = insertProject(cohortId = inserted.cohortId)
     val deliverableId = insertDeliverable(moduleId = inserted.moduleId)
 
     val prefix = SearchFieldPrefix(searchTables.projectDeliverables)
@@ -293,7 +291,6 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAllAcceleratorDetails() } returns false
 
     val moduleId = inserted.moduleId
-    val projectId = insertProject(cohortId = inserted.cohortId)
 
     val deliverableWithSubmission = insertDeliverable(moduleId = moduleId)
     val submissionId =
@@ -308,7 +305,12 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
     insertCohortModule(cohortId = otherCohort, moduleId = inserted.moduleId)
 
     val otherOrganization = insertOrganization()
-    val otherProject = insertProject(cohortId = otherCohort, organizationId = otherOrganization)
+    val otherProject =
+        insertProject(
+            cohortId = otherCohort,
+            organizationId = otherOrganization,
+            phase = CohortPhase.Phase0DueDiligence,
+        )
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = otherProject,

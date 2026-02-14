@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
@@ -197,11 +197,8 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
   fun `should be able to retrieve internal users that are not in the same org`() {
     every { user.canReadAllAcceleratorDetails() } returns true
 
-    val projectId = insertProject(organizationId = organizationId)
-    insertOrganizationInternalTag(
-        organizationId = organizationId,
-        tagId = InternalTagIds.Accelerator,
-    )
+    val projectId =
+        insertProject(organizationId = organizationId, phase = CohortPhase.Phase0DueDiligence)
     insertProjectInternalUser(userId = bothOrgsUserId, role = ProjectInternalRole.RegionalExpert)
     insertProjectInternalUser(userId = otherOrgUserId, role = ProjectInternalRole.GISLead)
 

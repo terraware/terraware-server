@@ -1,8 +1,7 @@
 package com.terraformation.backend.tracking.model
 
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.default_schema.NotificationType
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
@@ -56,22 +55,20 @@ interface NotificationCriteria {
           null
         }
 
-    val hasAcceleratorTag =
+    val hasAcceleratorProject =
         if (acceleratorOnly) {
           DSL.exists(
               DSL.selectOne()
-                  .from(ORGANIZATION_INTERNAL_TAGS)
-                  .where(
-                      ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(PLANTING_SITES.ORGANIZATION_ID)
-                  )
-                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator))
+                  .from(PROJECTS)
+                  .where(PROJECTS.ORGANIZATION_ID.eq(PLANTING_SITES.ORGANIZATION_ID))
+                  .and(PROJECTS.PHASE_ID.isNotNull)
           )
         } else {
           null
         }
 
     return DSL.and(
-        listOfNotNull(thisNotificationNotSent, previousNotificationSent, hasAcceleratorTag)
+        listOfNotNull(thisNotificationNotSent, previousNotificationSent, hasAcceleratorProject)
     )
   }
 

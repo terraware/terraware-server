@@ -2,7 +2,6 @@ package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.accelerator.model.AcceleratorProjectModel
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AcceleratorProjectNotFoundException
 import com.terraformation.backend.db.DatabaseTest
@@ -25,7 +24,6 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
     insertProject(
         cohortId = inserted.cohortId,

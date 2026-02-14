@@ -9,6 +9,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -97,15 +98,15 @@ import org.springframework.beans.factory.annotation.Autowired
  * Organization 1 - Two of everything
  *   Facility 1000
  *   Facility 1001
- *   Project 1000
+ *   Project 1000 - In phase 1
  *   Project 1001
  *
  * Organization 2 - No facilities or planting sites or application
  *
- * Organization 3 - One of everything, but current user isn't a member
+ * Organization 3 - One of everything, project in phase 1, but current user isn't a member
  *
- * Organization 4 - Has the Accelerator internal tag
- *   Project 4000
+ * Organization 4
+ *   Project 4000 - In phase 1
  *
  * Upload 1 - created by the test's default user ID
  * ```
@@ -241,12 +242,6 @@ internal class PermissionTest : DatabaseTest() {
       putDatabaseId(SpeciesId(organizationId.value), insertSpecies(createdBy = userId))
     }
 
-    insertOrganizationInternalTag(
-        getDatabaseId(OrganizationId(4)),
-        InternalTagIds.Accelerator,
-        createdBy = userId,
-    )
-
     otherUserIds =
         mapOf(
             OrganizationId(1) to sameOrgUserId,
@@ -259,7 +254,12 @@ internal class PermissionTest : DatabaseTest() {
       insertOrganizationUser(otherUserId, getDatabaseId(organizationId), createdBy = userId)
     }
 
-    cohortIds.forEach { cohortId -> putDatabaseId(cohortId, insertCohort(createdBy = userId)) }
+    cohortIds.forEach { cohortId ->
+      putDatabaseId(
+          cohortId,
+          insertCohort(createdBy = userId, phase = CohortPhase.Phase1FeasibilityStudy),
+      )
+    }
 
     projectIds.forEach { projectId ->
       putDatabaseId(
@@ -268,6 +268,7 @@ internal class PermissionTest : DatabaseTest() {
               cohortId = getDatabaseId(CohortId(projectId.value / 1000)),
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(projectId.value / 1000)),
+              phase = CohortPhase.Phase1FeasibilityStudy,
           ),
       )
     }

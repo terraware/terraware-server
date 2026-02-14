@@ -3,8 +3,8 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.Role
@@ -39,7 +39,6 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         organizationId = inserted.organizationId,
         role = Role.Admin,
     )
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
     insertCohort()
     insertModule()
 
@@ -150,17 +149,23 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for associated projects`() {
-    val project1 = insertProject(cohortId = inserted.cohortId)
-    val project2 = insertProject(cohortId = inserted.cohortId)
-    val project3 = insertProject(cohortId = inserted.cohortId)
+    val project1 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    val project2 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    val project3 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
     val event1 = insertEvent()
     insertEventProject(event1, project1)
     insertEventProject(event1, project2)
     insertEventProject(event1, project3)
 
-    val project4 = insertProject(cohortId = inserted.cohortId)
-    val project5 = insertProject(cohortId = inserted.cohortId)
-    val project6 = insertProject(cohortId = inserted.cohortId)
+    val project4 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    val project5 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    val project6 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
     val event2 = insertEvent()
     insertEventProject(event2, project4)
     insertEventProject(event2, project5)
@@ -206,8 +211,10 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     val event3 = insertEvent()
     val hiddenEvent = insertEvent()
 
-    val project1 = insertProject(cohortId = inserted.cohortId)
-    val project2 = insertProject(cohortId = inserted.cohortId)
+    val project1 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    val project2 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
     insertEventProject(event1, project1)
     insertEventProject(event2, project1)
@@ -249,8 +256,10 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for events sublists using projects as prefix`() {
-    val project1 = insertProject(cohortId = inserted.cohortId)
-    val project2 = insertProject(cohortId = inserted.cohortId)
+    val project1 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    val project2 =
+        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
     val event1 = insertEvent()
     val event2 = insertEvent()
     val event3 = insertEvent()
@@ -295,6 +304,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         insertProject(
             cohortId = inserted.cohortId,
             organizationId = inserted.organizationId,
+            phase = CohortPhase.Phase0DueDiligence,
         )
 
     val otherUser = insertUser()
@@ -309,6 +319,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
         insertProject(
             cohortId = otherCohort,
             organizationId = otherOrganization,
+            phase = CohortPhase.Phase0DueDiligence,
             createdBy = otherUser,
         )
 

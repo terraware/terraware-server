@@ -3,8 +3,8 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -16,6 +16,7 @@ import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
+import com.terraformation.backend.search.NotNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
@@ -37,8 +38,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
-    insertProject(countryCode = "KE")
+    insertProject(countryCode = "KE", phase = CohortPhase.Phase0DueDiligence)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.canReadInternalTags() } returns true
@@ -148,8 +148,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser()
 
-    val otherAcceleratorOrgId = insertOrganization()
-    insertOrganizationInternalTag(otherAcceleratorOrgId, InternalTagIds.Accelerator)
+    insertOrganization()
+    insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     insertOrganization()
 
@@ -177,8 +177,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     insertOrganizationUser()
 
-    val otherAcceleratorOrgId = insertOrganization()
-    insertOrganizationInternalTag(otherAcceleratorOrgId, InternalTagIds.Accelerator)
+    insertOrganization()
+    insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     val prefix = SearchFieldPrefix(searchTables.organizations)
     val fields = listOf(prefix.resolve("name"))
@@ -219,8 +219,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser()
 
     val otherAcceleratorOrgId = insertOrganization()
-    insertOrganizationInternalTag(otherAcceleratorOrgId, InternalTagIds.Accelerator)
-    insertProject(organizationId = otherAcceleratorOrgId)
+    insertProject(organizationId = otherAcceleratorOrgId, phase = CohortPhase.Phase0DueDiligence)
 
     val prefix = SearchFieldPrefix(searchTables.projects)
     val fields = listOf(prefix.resolve("name"))
@@ -234,7 +233,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `can filter organizations by internal tag to only retrieve accelerator data`() {
+  fun `can filter organizations by project phase to only retrieve accelerator data`() {
     val nonAcceleratorOrgId = insertOrganization()
 
     insertOrganizationUser(organizationId = organizationId, role = Role.TerraformationContact)
@@ -245,7 +244,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
 
     val prefix = SearchFieldPrefix(searchTables.organizations)
     val fields = listOf(prefix.resolve("name"))
-    val condition = FieldNode(prefix.resolve("internalTags_name"), listOf("Accelerator"))
+    val condition = NotNode(FieldNode(prefix.resolve("projects_phase"), listOf(null)))
 
     val expected = SearchResults(listOf(mapOf("name" to "Organization 1")))
 
@@ -377,8 +376,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   fun `searches cohorts`() {
     val suffix = "${UUID.randomUUID()}"
     val cohortId1 = insertCohort(name = "Cohort 1 $suffix")
-    val projectId2 = insertProject(cohortId = cohortId1)
-    val projectId3 = insertProject(cohortId = cohortId1)
+    val projectId2 = insertProject(cohortId = cohortId1, phase = CohortPhase.Phase0DueDiligence)
+    val projectId3 = insertProject(cohortId = cohortId1, phase = CohortPhase.Phase0DueDiligence)
 
     // Test setup already inserts a project with no cohort; also insert a second cohort
     insertCohort(name = "Cohort 2 $suffix")

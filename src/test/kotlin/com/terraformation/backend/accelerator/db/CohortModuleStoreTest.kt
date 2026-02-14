@@ -2,7 +2,6 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.accelerator.model.ModuleModel
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -52,12 +51,11 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `filters by IDs, ordered by cohort ID, start date, end date, position`() {
       insertOrganization()
-      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
       val cohortA = insertCohort(phase = CohortPhase.Phase0DueDiligence)
       val cohortB = insertCohort(phase = CohortPhase.Phase0DueDiligence)
-      val projectA = insertProject(cohortId = cohortA)
-      val projectB = insertProject(cohortId = cohortB)
+      val projectA = insertProject(cohortId = cohortA, phase = CohortPhase.Phase0DueDiligence)
+      val projectB = insertProject(cohortId = cohortB, phase = CohortPhase.Phase0DueDiligence)
 
       val module1 =
           insertModule(name = "Module 1", position = 3, phase = CohortPhase.Phase1FeasibilityStudy)
