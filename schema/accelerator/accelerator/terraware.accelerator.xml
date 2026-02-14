@@ -261,7 +261,6 @@
       <table name="cohorts" remarks="Accelerator cohort details." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="cohort_id" foreignKey="cohort_modules_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_modules"/>
-            <child column="cohort_id" foreignKey="deliverable_cohort_due_dates_cohort_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_cohort_due_dates"/>
             <child column="cohort_id" foreignKey="projects_cohort_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -325,21 +324,6 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="deliverable_cohort_due_dates" remarks="Deliverable due dates overrides for cohorts. Can be overridden at the project level." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="deliverable_cohort_due_dates_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverables"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="cohort_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="deliverable_cohort_due_dates_cohort_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="cohorts"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="due_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
-         <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
-         <primaryKey column="cohort_id" sequenceNumberInPK="2"/>
-         <index name="deliverable_cohort_due_dates_pkey" unique="true">
-            <column ascending="true" name="deliverable_id"/>
-            <column ascending="true" name="cohort_id"/>
-         </index>
-      </table>
       <table name="deliverable_documents" remarks="Information about expected deliverables of type Document that isn't relevant for other deliverable types." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="deliverable_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
@@ -399,7 +383,6 @@
       </table>
       <table name="deliverables" remarks="Information about expected deliverables. This describes what we request from users; the data we get back from users in response is recorded in `project_deliverables` and its child tables." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="deliverable_id" foreignKey="deliverable_cohort_due_dates_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_cohort_due_dates"/>
             <child column="deliverable_id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_documents"/>
             <child column="deliverable_id" foreignKey="deliverable_project_due_dates_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_project_due_dates"/>
             <child column="deliverable_id" foreignKey="deliverable_variables_deliverable_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_variables"/>

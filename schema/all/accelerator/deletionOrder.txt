@@ -21,7 +21,6 @@ report_project_metric_targets
 event_projects
 deliverable_variables
 deliverable_project_due_dates
-deliverable_cohort_due_dates
 cohort_modules
 report_challenges
 report_achievements

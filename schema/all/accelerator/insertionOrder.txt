@@ -38,7 +38,6 @@ default_voters
 report_achievements
 report_challenges
 cohort_modules
-deliverable_cohort_due_dates
 deliverable_project_due_dates
 deliverable_variables
 event_projects
