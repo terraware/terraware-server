@@ -1,3 +1,4 @@
+f468d95cb14 SW-8059 Read phase from project, not cohort (#3901)
 ec294e17ef8 SW-7931 Remove ParticipantsController (#3900)
 ffa138f21e9 Apply project phase edit to project, not just to cohort (#3899)
 8e65c2cfb5b Add phase to ProjectPayload (#3898)
