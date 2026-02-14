@@ -13,6 +13,7 @@ import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.addImmutableCacheControlHeaders
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
@@ -166,7 +167,7 @@ class ActivitiesController(
   ): ResponseEntity<InputStreamResource> {
     return activityMediaService
         .readMedia(activityId, fileId, maxWidth, maxHeight, raw == true)
-        .toResponseEntity()
+        .toResponseEntity(addHeaders = addImmutableCacheControlHeaders)
   }
 
   @GetMapping("/{activityId}/media/{fileId}/stream")
