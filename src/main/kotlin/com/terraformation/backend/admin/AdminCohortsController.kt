@@ -165,7 +165,7 @@ class AdminCohortsController(
       @PathVariable cohortId: CohortId,
       @PathVariable deliverableId: DeliverableId,
       @RequestParam operation: String,
-      @RequestParam projectId: ProjectId?,
+      @RequestParam projectId: ProjectId,
       @RequestParam dueDate: LocalDate?,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -178,15 +178,11 @@ class AdminCohortsController(
         }
 
         try {
-          if (projectId != null) {
-            deliverableDueDateStore.upsertDeliverableProjectDueDate(
-                deliverableId,
-                projectId,
-                dueDate,
-            )
-          } else {
-            deliverableDueDateStore.upsertDeliverableCohortDueDate(deliverableId, cohortId, dueDate)
-          }
+          deliverableDueDateStore.upsertDeliverableProjectDueDate(
+              deliverableId,
+              projectId,
+              dueDate,
+          )
         } catch (e: Exception) {
           log.warn("Upsert deliverable due date failed", e)
           redirectAttributes.failureMessage = "Error updating deliverable due date: ${e.message}"
@@ -196,11 +192,7 @@ class AdminCohortsController(
       }
       "remove" -> {
         try {
-          if (projectId != null) {
-            deliverableDueDateStore.deleteDeliverableProjectDueDate(deliverableId, projectId)
-          } else {
-            deliverableDueDateStore.deleteDeliverableCohortDueDate(deliverableId, cohortId)
-          }
+          deliverableDueDateStore.deleteDeliverableProjectDueDate(deliverableId, projectId)
         } catch (e: Exception) {
           log.warn("Delete deliverable due date failed", e)
           redirectAttributes.failureMessage = "Error deleting deliverable due date: ${e.message}"

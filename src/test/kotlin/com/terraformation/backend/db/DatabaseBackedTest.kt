@@ -60,7 +60,6 @@ import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
-import com.terraformation.backend.db.accelerator.tables.daos.DeliverableCohortDueDatesDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableProjectDueDatesDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableVariablesDao
@@ -99,7 +98,6 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
-import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableCohortDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableVariablesRow
@@ -636,7 +634,6 @@ abstract class DatabaseBackedTest {
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
   protected val defaultVotersDao: DefaultVotersDao by lazyDao()
-  protected val deliverableCohortDueDatesDao: DeliverableCohortDueDatesDao by lazyDao()
   protected val deliverableDocumentsDao: DeliverableDocumentsDao by lazyDao()
   protected val deliverableProjectDueDatesDao: DeliverableProjectDueDatesDao by lazyDao()
   protected val deliverablesDao: DeliverablesDao by lazyDao()
@@ -1228,21 +1225,6 @@ abstract class DatabaseBackedTest {
     deliverablesDao.insert(row)
 
     return row.id!!.also { inserted.deliverableIds.add(it) }
-  }
-
-  protected fun insertDeliverableCohortDueDate(
-      deliverableId: DeliverableId = inserted.deliverableId,
-      cohortId: CohortId = inserted.cohortId,
-      dueDate: LocalDate,
-  ) {
-    val row =
-        DeliverableCohortDueDatesRow(
-            cohortId = cohortId,
-            deliverableId = deliverableId,
-            dueDate = dueDate,
-        )
-
-    deliverableCohortDueDatesDao.insert(row)
   }
 
   protected fun insertDeliverableDocument(

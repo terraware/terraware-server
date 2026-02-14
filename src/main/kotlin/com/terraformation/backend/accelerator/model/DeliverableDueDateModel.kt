@@ -11,7 +11,6 @@ data class DeliverableDueDateModel(
     val cohortId: CohortId,
     val deliverableId: DeliverableId,
     val moduleId: ModuleId,
-    val cohortDueDate: LocalDate? = null,
     val moduleDueDate: LocalDate,
     val projectDueDates: Map<ProjectId, LocalDate>,
 )

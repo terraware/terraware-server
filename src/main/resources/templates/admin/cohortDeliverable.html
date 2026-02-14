@@ -25,38 +25,8 @@
 <p> Deliverable due dates are project-specific, and follows the following order: </p>
 <ol>
     <li>The project due date, if set. </li>
-    <li>The cohort due date, if set. </li>
     <li>The module end date for the cohort. </li>
 </ol>
-
-<h3>Cohort Due Date </h3>
-
-<p th:text="|Current override: ${dueDates.cohortDueDate}|"></p>
-<form method="POST"
-      th:action="|/admin/cohorts/${cohort.id}/deliverables/${deliverable.id}|">
-    <input type="date"
-           name="dueDate"
-           required
-           th:disabled="${!canManageDeliverables}"
-           th:value="${dueDates.cohortDueDate}" />
-    <input type="hidden" name="operation" value="upsert" />
-    <input type="submit"
-           th:if="${dueDates.cohortDueDate != null}"
-           th:disabled="${!canManageDeliverables}"
-           value="Update" />
-    <input type="submit"
-           th:if="${dueDates.cohortDueDate == null}"
-           th:disabled="${!canManageDeliverables}"
-           value="Add" />
-</form>
-<form method="POST"
-      th:action="|/admin/cohorts/${cohort.id}/deliverables/${deliverable.id}|">
-    <input type="hidden" name="operation" value="remove" />
-    <input type="submit"
-           th:if="${dueDates.cohortDueDate != null}"
-           th:disabled="${!canManageDeliverables}"
-           value="Remove" />
-</form>
 
 <h3>Project Due Dates </h3>
 

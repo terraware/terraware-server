@@ -4,9 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.DeliverableDueDateModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableCohortDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
-import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_COHORT_DUE_DATES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
 import com.terraformation.backend.mockUser
 import io.mockk.every
@@ -74,9 +72,6 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       val deliverableId3 = insertDeliverable(moduleId = moduleId2)
       val deliverableId4 = insertDeliverable(moduleId = moduleId2)
 
-      val cohortDeliverableDueDate = LocalDate.of(2024, 4, 15)
-      insertDeliverableCohortDueDate(deliverableId2, cohortId1, cohortDeliverableDueDate)
-
       val projectDeliverableDueDate = LocalDate.of(2024, 5, 15)
       insertDeliverableProjectDueDate(deliverableId2, projectId1, projectDeliverableDueDate)
 
@@ -92,7 +87,6 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       val cohort1Deliverable2 =
           cohort1Deliverable1.copy(
               deliverableId = deliverableId2,
-              cohortDueDate = cohortDeliverableDueDate,
               projectDueDates = mapOf(projectId1 to projectDeliverableDueDate),
           )
 
@@ -178,7 +172,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       )
 
       assertSetEquals(
-          emptySet<DeliverableDueDateModel>(),
+          emptySet(),
           store
               .fetchDeliverableDueDates(deliverableId = deliverableId1, moduleId = moduleId2)
               .toSet(),
@@ -196,69 +190,6 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertDeliverable()
 
       assertThrows<AccessDeniedException> { store.fetchDeliverableDueDates() }
-    }
-  }
-
-  @Nested
-  inner class UpsertDeliverableCohortDueDate {
-    @Test
-    fun `inserts or updates deliverable cohort due date`() {
-      insertModule()
-      val cohortToUpdate = insertCohort()
-      val cohortToInsert = insertCohort()
-      insertCohortModule(cohortToUpdate, inserted.moduleId)
-      insertCohortModule(cohortToInsert, inserted.moduleId)
-      insertDeliverable()
-
-      insertDeliverableCohortDueDate(
-          inserted.deliverableId,
-          cohortToUpdate,
-          LocalDate.of(2024, 5, 1),
-      )
-
-      val existingRow = deliverableCohortDueDatesDao.findAll().firstOrNull()
-
-      store.upsertDeliverableCohortDueDate(
-          inserted.deliverableId,
-          cohortToUpdate,
-          LocalDate.of(2024, 6, 1),
-      )
-      store.upsertDeliverableCohortDueDate(
-          inserted.deliverableId,
-          cohortToInsert,
-          LocalDate.of(2024, 7, 1),
-      )
-
-      val updatedRow = existingRow?.copy(dueDate = LocalDate.of(2024, 6, 1))
-      val insertedRow =
-          DeliverableCohortDueDatesRow(
-              cohortId = cohortToInsert,
-              deliverableId = inserted.deliverableId,
-              dueDate = LocalDate.of(2024, 7, 1),
-          )
-
-      assertSetEquals(
-          setOf(updatedRow, insertedRow),
-          deliverableCohortDueDatesDao.findAll().toSet(),
-      )
-    }
-
-    @Test
-    fun `throws exception if no permission to manage deliverables`() {
-      every { user.canManageDeliverables() } returns false
-
-      insertModule()
-      insertCohort()
-      insertCohortModule()
-      insertDeliverable()
-
-      assertThrows<AccessDeniedException> {
-        store.upsertDeliverableCohortDueDate(
-            inserted.deliverableId,
-            inserted.cohortId,
-            LocalDate.of(2024, 5, 1),
-        )
-      }
     }
   }
 
@@ -324,58 +255,6 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
             projectId,
             LocalDate.of(2024, 5, 1),
         )
-      }
-    }
-  }
-
-  @Nested
-  inner class DeleteDeliverableCohortDueDate {
-    @Test
-    fun `deletes deliverable cohort due date`() {
-      insertModule()
-      insertCohort()
-      insertCohortModule()
-      insertDeliverable()
-
-      insertDeliverableCohortDueDate(
-          inserted.deliverableId,
-          inserted.cohortId,
-          LocalDate.of(2024, 5, 1),
-      )
-
-      assertEquals(
-          listOf(
-              DeliverableCohortDueDatesRow(
-                  inserted.deliverableId,
-                  inserted.cohortId,
-                  LocalDate.of(2024, 5, 1),
-              )
-          ),
-          deliverableCohortDueDatesDao.findAll(),
-          "Row exists before deletion",
-      )
-
-      store.deleteDeliverableCohortDueDate(inserted.deliverableId, inserted.cohortId)
-
-      assertTableEmpty(DELIVERABLE_COHORT_DUE_DATES, "Row no longer exists after deletion")
-    }
-
-    @Test
-    fun `throws exception if no permission to manage deliverables`() {
-      every { user.canManageDeliverables() } returns false
-
-      insertModule()
-      insertCohort()
-      insertCohortModule()
-      insertDeliverable()
-
-      insertDeliverableCohortDueDate(
-          inserted.deliverableId,
-          inserted.cohortId,
-          LocalDate.of(2024, 5, 1),
-      )
-      assertThrows<AccessDeniedException> {
-        store.deleteDeliverableCohortDueDate(inserted.deliverableId, inserted.cohortId)
       }
     }
   }
