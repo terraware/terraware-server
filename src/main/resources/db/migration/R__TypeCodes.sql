@@ -487,8 +487,7 @@ VALUES (1, 'Antarctica'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.report_frequencies (id, name)
-VALUES (1, 'Quarterly'),
-       (2, 'Annual')
+VALUES (1, 'Quarterly')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.report_metric_statuses (id, name)

@@ -350,7 +350,6 @@ class ProjectReportsController(
     reportStore.insertProjectReportConfig(
         payload.config.toModel(projectId, ReportFrequency.Quarterly)
     )
-    reportStore.insertProjectReportConfig(payload.config.toModel(projectId, ReportFrequency.Annual))
 
     return SimpleSuccessResponsePayload()
   }
