@@ -1,3 +1,6 @@
+eb4c29e384c Fix conflicting Flyway migration numbers (#3906)
+e7fe68af6e8 Upgrade to Spring Boot 4 (#3905)
+98f2260cbaf Added migration to delete report target columns and annual reports (#3890)
 52a320be107 SW-8055 Remove Accelerator internal tag (#3897)
 cbf6e2181d7 Update database dependencies (#3903)
 60bcbc6ec64 Update dependency ch.qos.logback.access:logback-access-tomcat to v2.0.12 (#3904)

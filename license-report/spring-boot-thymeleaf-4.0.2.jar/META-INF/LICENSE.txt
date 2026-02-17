@@ -1,0 +1,8 @@
+Develocity Gradle Plugin
+========================
+Copyright (c) 2025 Gradle Inc.
+All rights reserved.
+
+Use of this software is subject to the Develocity Software Agreement
+located at https://gradle.com/help/legal-terms-of-use
+
