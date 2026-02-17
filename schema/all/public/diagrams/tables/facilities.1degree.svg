@@ -372,14 +372,14 @@
 <polygon fill="none" stroke="black" points="8,-658 8,-680 118,-680 118,-658 8,-658"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-675"/>
 <text text-anchor="start" x="40" y="-666.2" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
-<polygon fill="#ffffff" stroke="transparent" points="8,-640 8,-658 32,-658 32,-640 8,-640"/>
-<polygon fill="none" stroke="black" points="8,-640 8,-658 32,-658 32,-640 8,-640"/>
+<polygon fill="#ffffff" stroke="transparent" points="8,-640 8,-658 52,-658 52,-640 8,-640"/>
+<polygon fill="none" stroke="black" points="8,-640 8,-658 52,-658 52,-640 8,-640"/>
 <text text-anchor="start" x="11" y="-646.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="32,-640 32,-658 90,-658 90,-640 32,-640"/>
-<polygon fill="none" stroke="black" points="32,-640 32,-658 90,-658 90,-640 32,-640"/>
-<text text-anchor="start" x="41" y="-646.2" font-family="Helvetica,sans-Serif" font-size="11.00">604 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="90,-640 90,-658 118,-658 118,-640 90,-640"/>
-<polygon fill="none" stroke="black" points="90,-640 90,-658 118,-658 118,-640 90,-640"/>
+<polygon fill="#ffffff" stroke="transparent" points="52,-640 52,-658 80,-658 80,-640 52,-640"/>
+<polygon fill="none" stroke="black" points="52,-640 52,-658 80,-658 80,-640 52,-640"/>
+<text text-anchor="start" x="70" y="-646.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="80,-640 80,-658 118,-658 118,-640 80,-640"/>
+<polygon fill="none" stroke="black" points="80,-640 80,-658 118,-658 118,-640 80,-640"/>
 <text text-anchor="start" x="99" y="-646.2" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
 </a>
 </g>

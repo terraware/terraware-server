@@ -238,14 +238,14 @@
 <text text-anchor="start" x="36" y="-4753.59" font-family="Helvetica,sans-Serif" font-size="11.00">code_alpha3</text>
 <polygon fill="none" stroke="black" points="13,-4727.39 13,-4745.39 113,-4745.39 113,-4727.39 13,-4727.39"/>
 <text text-anchor="start" x="16" y="-4733.59" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="13,-4709.39 13,-4727.39 37,-4727.39 37,-4709.39 13,-4709.39"/>
-<polygon fill="none" stroke="black" points="13,-4709.39 13,-4727.39 37,-4727.39 37,-4709.39 13,-4709.39"/>
+<polygon fill="#ffffff" stroke="transparent" points="13,-4709.39 13,-4727.39 56,-4727.39 56,-4709.39 13,-4709.39"/>
+<polygon fill="none" stroke="black" points="13,-4709.39 13,-4727.39 56,-4727.39 56,-4709.39 13,-4709.39"/>
 <text text-anchor="start" x="16" y="-4715.59" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="37,-4709.39 37,-4727.39 90,-4727.39 90,-4709.39 37,-4709.39"/>
-<polygon fill="none" stroke="black" points="37,-4709.39 37,-4727.39 90,-4727.39 90,-4709.39 37,-4709.39"/>
-<text text-anchor="start" x="41" y="-4715.59" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="90,-4709.39 90,-4727.39 113,-4727.39 113,-4709.39 90,-4709.39"/>
-<polygon fill="none" stroke="black" points="90,-4709.39 90,-4727.39 113,-4727.39 113,-4709.39 90,-4709.39"/>
+<polygon fill="#ffffff" stroke="transparent" points="56,-4709.39 56,-4727.39 80,-4727.39 80,-4709.39 56,-4709.39"/>
+<polygon fill="none" stroke="black" points="56,-4709.39 56,-4727.39 80,-4727.39 80,-4709.39 56,-4709.39"/>
+<text text-anchor="start" x="70" y="-4715.59" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="80,-4709.39 80,-4727.39 113,-4727.39 113,-4709.39 80,-4709.39"/>
+<polygon fill="none" stroke="black" points="80,-4709.39 80,-4727.39 113,-4727.39 113,-4709.39 80,-4709.39"/>
 <text text-anchor="start" x="94" y="-4715.59" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>
@@ -269,14 +269,14 @@
 <polygon fill="none" stroke="black" points="8,-6512.39 8,-6534.39 118,-6534.39 118,-6512.39 8,-6512.39"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-6529.39"/>
 <text text-anchor="start" x="40" y="-6520.59" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
-<polygon fill="#ffffff" stroke="transparent" points="8,-6494.39 8,-6512.39 32,-6512.39 32,-6494.39 8,-6494.39"/>
-<polygon fill="none" stroke="black" points="8,-6494.39 8,-6512.39 32,-6512.39 32,-6494.39 8,-6494.39"/>
+<polygon fill="#ffffff" stroke="transparent" points="8,-6494.39 8,-6512.39 52,-6512.39 52,-6494.39 8,-6494.39"/>
+<polygon fill="none" stroke="black" points="8,-6494.39 8,-6512.39 52,-6512.39 52,-6494.39 8,-6494.39"/>
 <text text-anchor="start" x="11" y="-6500.59" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="32,-6494.39 32,-6512.39 90,-6512.39 90,-6494.39 32,-6494.39"/>
-<polygon fill="none" stroke="black" points="32,-6494.39 32,-6512.39 90,-6512.39 90,-6494.39 32,-6494.39"/>
-<text text-anchor="start" x="41" y="-6500.59" font-family="Helvetica,sans-Serif" font-size="11.00">604 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="90,-6494.39 90,-6512.39 118,-6512.39 118,-6494.39 90,-6494.39"/>
-<polygon fill="none" stroke="black" points="90,-6494.39 90,-6512.39 118,-6512.39 118,-6494.39 90,-6494.39"/>
+<polygon fill="#ffffff" stroke="transparent" points="52,-6494.39 52,-6512.39 80,-6512.39 80,-6494.39 52,-6494.39"/>
+<polygon fill="none" stroke="black" points="52,-6494.39 52,-6512.39 80,-6512.39 80,-6494.39 52,-6494.39"/>
+<text text-anchor="start" x="70" y="-6500.59" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="80,-6494.39 80,-6512.39 118,-6512.39 118,-6494.39 80,-6494.39"/>
+<polygon fill="none" stroke="black" points="80,-6494.39 80,-6512.39 118,-6512.39 118,-6494.39 80,-6494.39"/>
 <text text-anchor="start" x="99" y="-6500.59" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
 </a>
 </g>
