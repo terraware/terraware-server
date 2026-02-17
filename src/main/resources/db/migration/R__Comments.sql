@@ -668,6 +668,9 @@ COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for
 
 COMMENT ON TABLE accelerator.project_metrics IS 'Metrics specific to one project to report on.';
 
+COMMENT ON TABLE accelerator.project_modules IS 'Which modules are assigned to which projects.';
+COMMENT ON COLUMN accelerator.project_modules.title IS 'The title for the module for the project. For example "Module 3A" for Module 3A: Title';
+
 COMMENT ON TABLE accelerator.project_overall_scores IS 'Overall scores assigned to project by scorers.';
 
 COMMENT ON TABLE accelerator.project_report_configs IS 'Configurations for accelerator project reports, including reporting dates and reporting frequencies.';

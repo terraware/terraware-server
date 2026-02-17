@@ -6,8 +6,10 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
+import com.terraformation.backend.db.accelerator.tables.records.CohortModulesRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectModulesRecord
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.default_schema.GlobalRole
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -211,6 +213,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertModule()
+      insertProject(cohortId = inserted.cohortId)
 
       store.assign(
           inserted.cohortId,
@@ -220,17 +223,24 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           LocalDate.of(2024, 1, 3),
       )
 
-      assertEquals(
-          listOf(
-              CohortModulesRow(
-                  cohortId = inserted.cohortId,
-                  moduleId = inserted.moduleId,
-                  title = "Module title",
-                  startDate = LocalDate.of(2024, 1, 1),
-                  endDate = LocalDate.of(2024, 1, 3),
-              )
-          ),
-          cohortModulesDao.findAll(),
+      assertTableEquals(
+          CohortModulesRecord(
+              cohortId = inserted.cohortId,
+              moduleId = inserted.moduleId,
+              title = "Module title",
+              startDate = LocalDate.of(2024, 1, 1),
+              endDate = LocalDate.of(2024, 1, 3),
+          )
+      )
+
+      assertTableEquals(
+          ProjectModulesRecord(
+              projectId = inserted.projectId,
+              moduleId = inserted.moduleId,
+              title = "Module title",
+              startDate = LocalDate.of(2024, 1, 1),
+              endDate = LocalDate.of(2024, 1, 3),
+          )
       )
     }
 
@@ -240,10 +250,15 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertModule()
+      insertProject(cohortId = inserted.cohortId)
 
       insertCohortModule(
-          cohortId = inserted.cohortId,
-          moduleId = inserted.moduleId,
+          title = "Old module title",
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3),
+      )
+
+      insertProjectModule(
           title = "Old module title",
           startDate = LocalDate.of(2024, 1, 1),
           endDate = LocalDate.of(2024, 1, 3),
@@ -257,17 +272,24 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           LocalDate.of(2024, 2, 3),
       )
 
-      assertEquals(
-          listOf(
-              CohortModulesRow(
-                  cohortId = inserted.cohortId,
-                  moduleId = inserted.moduleId,
-                  title = "New module title",
-                  startDate = LocalDate.of(2024, 2, 1),
-                  endDate = LocalDate.of(2024, 2, 3),
-              )
-          ),
-          cohortModulesDao.findAll(),
+      assertTableEquals(
+          CohortModulesRecord(
+              cohortId = inserted.cohortId,
+              moduleId = inserted.moduleId,
+              title = "New module title",
+              startDate = LocalDate.of(2024, 2, 1),
+              endDate = LocalDate.of(2024, 2, 3),
+          )
+      )
+
+      assertTableEquals(
+          ProjectModulesRecord(
+              projectId = inserted.projectId,
+              moduleId = inserted.moduleId,
+              title = "New module title",
+              startDate = LocalDate.of(2024, 2, 1),
+              endDate = LocalDate.of(2024, 2, 3),
+          )
       )
     }
   }
@@ -328,17 +350,24 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           LocalDate.of(2024, 1, 3),
       )
 
-      assertEquals(
-          listOf(
-              CohortModulesRow(
-                  cohortId = inserted.cohortId,
-                  moduleId = inserted.moduleId,
-                  title = "Module title",
-                  startDate = LocalDate.of(2024, 1, 1),
-                  endDate = LocalDate.of(2024, 1, 3),
-              )
-          ),
-          cohortModulesDao.findAll(),
+      assertTableEquals(
+          CohortModulesRecord(
+              cohortId = inserted.cohortId,
+              moduleId = inserted.moduleId,
+              title = "Module title",
+              startDate = LocalDate.of(2024, 1, 1),
+              endDate = LocalDate.of(2024, 1, 3),
+          )
+      )
+
+      assertTableEquals(
+          ProjectModulesRecord(
+              projectId = inserted.projectId,
+              moduleId = inserted.moduleId,
+              title = "Module title",
+              startDate = LocalDate.of(2024, 1, 1),
+              endDate = LocalDate.of(2024, 1, 3),
+          )
       )
     }
 
@@ -351,8 +380,12 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertModule()
 
       insertCohortModule(
-          cohortId = inserted.cohortId,
-          moduleId = inserted.moduleId,
+          title = "Old module title",
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3),
+      )
+
+      insertProjectModule(
           title = "Old module title",
           startDate = LocalDate.of(2024, 1, 1),
           endDate = LocalDate.of(2024, 1, 3),
@@ -366,17 +399,24 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           LocalDate.of(2024, 2, 3),
       )
 
-      assertEquals(
-          listOf(
-              CohortModulesRow(
-                  cohortId = inserted.cohortId,
-                  moduleId = inserted.moduleId,
-                  title = "New module title",
-                  startDate = LocalDate.of(2024, 2, 1),
-                  endDate = LocalDate.of(2024, 2, 3),
-              )
-          ),
-          cohortModulesDao.findAll(),
+      assertTableEquals(
+          CohortModulesRecord(
+              cohortId = inserted.cohortId,
+              moduleId = inserted.moduleId,
+              title = "New module title",
+              startDate = LocalDate.of(2024, 2, 1),
+              endDate = LocalDate.of(2024, 2, 3),
+          )
+      )
+
+      assertTableEquals(
+          ProjectModulesRecord(
+              projectId = inserted.projectId,
+              moduleId = inserted.moduleId,
+              title = "New module title",
+              startDate = LocalDate.of(2024, 2, 1),
+              endDate = LocalDate.of(2024, 2, 3),
+          )
       )
     }
   }
@@ -404,10 +444,15 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertCohort(phase = CohortPhase.Phase0DueDiligence)
       insertModule()
+      insertProject(cohortId = inserted.cohortId)
 
       insertCohortModule(
-          cohortId = inserted.cohortId,
-          moduleId = inserted.moduleId,
+          title = "Module Title",
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3),
+      )
+
+      insertProjectModule(
           title = "Module Title",
           startDate = LocalDate.of(2024, 1, 1),
           endDate = LocalDate.of(2024, 1, 3),
@@ -416,6 +461,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.remove(inserted.cohortId, inserted.moduleId)
 
       assertTableEmpty(COHORT_MODULES)
+      assertTableEmpty(PROJECT_MODULES)
     }
   }
 
@@ -456,8 +502,12 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertModule()
 
       insertCohortModule(
-          cohortId = inserted.cohortId,
-          moduleId = inserted.moduleId,
+          title = "Module Title",
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 3),
+      )
+
+      insertProjectModule(
           title = "Module Title",
           startDate = LocalDate.of(2024, 1, 1),
           endDate = LocalDate.of(2024, 1, 3),
@@ -466,6 +516,7 @@ class CohortModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.remove(inserted.projectId, inserted.moduleId)
 
       assertTableEmpty(COHORT_MODULES)
+      assertTableEmpty(PROJECT_MODULES)
     }
   }
 }

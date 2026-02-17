@@ -7,6 +7,7 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import jakarta.inject.Named
@@ -80,6 +81,30 @@ class CohortModuleStore(
           .set(END_DATE, endDate)
           .execute()
     }
+
+    // TEMPORARY: Keep project_modules in sync with cohort_modules. Once we've moved over to
+    //            the project/module relationship, this can move down to the other assign()
+    //            method (where it will only need to insert one row) and this method can go away.
+    with(PROJECT_MODULES) {
+      dslContext
+          .insertInto(PROJECT_MODULES, PROJECT_ID, MODULE_ID, START_DATE, END_DATE, TITLE)
+          .select(
+              DSL.select(
+                      PROJECTS.ID,
+                      DSL.value(moduleId),
+                      DSL.value(startDate),
+                      DSL.value(endDate),
+                      DSL.value(title),
+                  )
+                  .from(PROJECTS)
+                  .where(PROJECTS.COHORT_ID.eq(cohortId))
+          )
+          .onDuplicateKeyUpdate()
+          .set(END_DATE, endDate)
+          .set(START_DATE, startDate)
+          .set(TITLE, title)
+          .execute()
+    }
   }
 
   fun assign(
@@ -100,6 +125,18 @@ class CohortModuleStore(
           .deleteFrom(this)
           .where(COHORT_ID.eq(cohortId))
           .and(MODULE_ID.eq(moduleId))
+          .execute()
+    }
+
+    with(PROJECT_MODULES) {
+      dslContext
+          .deleteFrom(PROJECT_MODULES)
+          .where(MODULE_ID.eq(moduleId))
+          .and(
+              PROJECT_ID.`in`(
+                  DSL.select(PROJECTS.ID).from(PROJECTS).where(PROJECTS.COHORT_ID.eq(cohortId))
+              )
+          )
           .execute()
     }
   }

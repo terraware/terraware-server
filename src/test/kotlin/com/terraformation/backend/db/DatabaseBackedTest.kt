@@ -70,6 +70,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectMetricsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectOverallScoresDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectReportConfigsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectScoresDao
@@ -108,6 +109,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectMetricsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectOverallScoresRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectReportConfigsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
@@ -692,6 +694,7 @@ abstract class DatabaseBackedTest {
   protected val projectInternalUsersDao: ProjectInternalUsersDao by lazyDao()
   protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
   protected val projectMetricsDao: ProjectMetricsDao by lazyDao()
+  protected val projectModulesDao: ProjectModulesDao by lazyDao()
   protected val projectOverallScoresDao: ProjectOverallScoresDao by lazyDao()
   protected val projectReportConfigsDao: ProjectReportConfigsDao by lazyDao()
   protected val projectReportSettingsDao: ProjectReportSettingsDao by lazyDao()
@@ -4274,6 +4277,28 @@ abstract class DatabaseBackedTest {
 
     nextCohortModuleStartDate = endDate.plusDays(1)
     cohortModulesDao.insert(row)
+  }
+
+  private var nextProjectModuleStartDate = LocalDate.EPOCH
+
+  fun insertProjectModule(
+      projectId: ProjectId = inserted.projectId,
+      moduleId: ModuleId = inserted.moduleId,
+      title: String = "Module 1",
+      startDate: LocalDate = nextProjectModuleStartDate,
+      endDate: LocalDate = startDate.plusDays(6),
+  ) {
+    val row =
+        ProjectModulesRow(
+            endDate = endDate,
+            moduleId = moduleId,
+            projectId = projectId,
+            startDate = startDate,
+            title = title,
+        )
+
+    nextProjectModuleStartDate = endDate.plusDays(1)
+    projectModulesDao.insert(row)
   }
 
   fun insertEvent(
