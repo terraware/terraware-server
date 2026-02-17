@@ -99,11 +99,17 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
       )
 
   override fun conditionForVisibility(): Condition {
+    val projects2 = PROJECTS.`as`("projects2")
     val acceleratorCondition =
         if (currentUser().canReadAllAcceleratorDetails()) {
           PROJECTS.PHASE_ID.isNotNull.or(
               DSL.exists(
-                  DSL.selectOne().from(APPLICATIONS).where(APPLICATIONS.PROJECT_ID.eq(PROJECTS.ID))
+                  DSL.selectOne()
+                      .from(projects2)
+                      .leftJoin(APPLICATIONS)
+                      .on(projects2.ID.eq(APPLICATIONS.PROJECT_ID))
+                      .where(projects2.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+                      .and(projects2.PHASE_ID.isNotNull.or(APPLICATIONS.PROJECT_ID.isNotNull))
               )
           )
         } else {
