@@ -97,7 +97,6 @@ data class ReportModel(
 
       return when (frequency) {
         ReportFrequency.Quarterly -> "$reportYear $reportQuarter"
-        ReportFrequency.Annual -> "$reportYear Annual"
       }
     }
 
