@@ -27,6 +27,7 @@ import tools.jackson.databind.DeserializationFeature
 import tools.jackson.databind.MapperFeature
 import tools.jackson.databind.ObjectMapper
 import tools.jackson.dataformat.xml.XmlMapper
+import tools.jackson.module.kotlin.KotlinModule
 
 @Named
 class GeoServerClient(
@@ -122,6 +123,7 @@ class GeoServerClient(
                     .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
                     .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
                     .defaultUseWrapper(false)
+                    .addModule(KotlinModule.Builder().build())
                     .build()
             ),
         )
