@@ -24,7 +24,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "8.0.12"
   id("com.diffplug.spotless") version "8.2.1"
-  id("org.springframework.boot") version "3.5.10"
+  id("org.springframework.boot") version "4.0.2"
   id("io.spring.dependency-management") version "1.1.7"
 
   // Add the build target to generate Swagger docs
@@ -74,25 +74,21 @@ dependencies {
 
   jooqCodegen("org.postgresql:postgresql:$postgresJdbcVersion")
 
-  // Build autocomplete metadata for our config settings in application.yaml. This
-  // requires kapt which slows the build down significantly, so is commented out.
-  // Uncomment the kotlin("kapt") line above if you enable this.
-  // kapt("org.springframework.boot:spring-boot-configuration-processor")
-
-  implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.springframework.boot:spring-boot-starter-actuator")
-  implementation("org.springframework.boot:spring-boot-starter-jersey")
+  implementation("org.springframework.boot:spring-boot-starter-flyway")
+  implementation("org.springframework.boot:spring-boot-starter-freemarker")
   implementation("org.springframework.boot:spring-boot-starter-jooq")
   implementation("org.springframework.boot:spring-boot-starter-mail")
-  implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
-  implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+  implementation("org.springframework.boot:spring-boot-starter-security-oauth2-client")
+  implementation("org.springframework.boot:spring-boot-starter-security-oauth2-resource-server")
   implementation("org.springframework.boot:spring-boot-starter-security")
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
   implementation("org.springframework.boot:spring-boot-starter-validation")
   implementation("org.springframework.boot:spring-boot-starter-webflux")
+  implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.session:spring-session-jdbc")
 
-  implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2"))
+  implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.0"))
   implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
   implementation(platform("org.springframework.ai:spring-ai-bom:1.1.2"))
@@ -105,7 +101,6 @@ dependencies {
   implementation("ch.qos.logback.access:logback-access-tomcat:2.0.12")
   implementation("com.drewnoakes:metadata-extractor:2.19.0")
   implementation("com.dropbox.core:dropbox-core-sdk:7.0.0")
-  implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
   implementation("com.google.api-client:google-api-client:2.8.1")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.42.1")
   implementation("com.google.apis:google-api-services-drive:v3-rev20251210-2.0.0")
@@ -114,12 +109,12 @@ dependencies {
   implementation("com.squarespace.cldr-engine:cldr-engine:1.12.0")
   implementation("commons-codec:commons-codec:1.21.0")
   implementation("commons-validator:commons-validator:1.10.1")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.7.0")
+  implementation("io.github.seijikohara:logback-access-spring-boot-starter:1.2.0")
   implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
   implementation("io.ktor:ktor-client-java:$ktorVersion")
-  implementation("io.ktor:ktor-serialization-jackson:$ktorVersion")
+  implementation("io.ktor:ktor-serialization-jackson3:$ktorVersion")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.42")
   implementation("jakarta.inject:jakarta.inject-api:2.0.1")
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
@@ -129,18 +124,18 @@ dependencies {
   implementation("org.commonmark:commonmark:0.27.1")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
-  implementation("org.freemarker:freemarker:2.3.34")
   implementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   implementation("org.geotools:gt-geojson:$geoToolsVersion")
   implementation("org.geotools:gt-shapefile:$geoToolsVersion")
   implementation("org.geotools:gt-xml:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:8.4.2")
+  implementation("org.glassfish.jersey.core:jersey-common:4.0.0")
+  implementation("org.jobrunr:jobrunr-spring-boot-4-starter:8.4.2")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
-  implementation("net.logstash.logback:logstash-logback-encoder:8.1")
+  implementation("net.logstash.logback:logstash-logback-encoder:9.0")
   implementation(kotlin("reflect"))
   implementation("org.postgresql:postgresql:$postgresJdbcVersion")
   implementation(platform("software.amazon.awssdk:bom:$awsSdkVersion"))
@@ -149,6 +144,7 @@ dependencies {
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
   implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:3.2.0")
+  implementation("tools.jackson.dataformat:jackson-dataformat-xml")
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
@@ -160,11 +156,15 @@ dependencies {
   testImplementation("org.geotools:gt-epsg-hsql:$geoToolsVersion")
   testImplementation("org.hsqldb:hsqldb:2.7.4")
   testImplementation("org.junit.platform:junit-platform-launcher")
+  testImplementation("org.springframework.boot:spring-boot-starter-jooq-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-security-test")
   testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
   testImplementation("org.springframework.security:spring-security-test")
   testImplementation(platform("org.testcontainers:testcontainers-bom:2.0.3"))
-  testImplementation("org.testcontainers:junit-jupiter")
-  testImplementation("org.testcontainers:postgresql")
+  testImplementation("org.testcontainers:testcontainers-junit-jupiter")
+  testImplementation("org.testcontainers:testcontainers-postgresql")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
   developmentOnly("com.h2database:h2")

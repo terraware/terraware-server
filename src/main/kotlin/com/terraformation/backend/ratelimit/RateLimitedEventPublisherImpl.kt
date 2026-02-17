@@ -1,7 +1,5 @@
 package com.terraformation.backend.ratelimit
 
-import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.tables.references.RATE_LIMITED_EVENTS
@@ -14,6 +12,8 @@ import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
+import tools.jackson.databind.DatabindException
+import tools.jackson.databind.ObjectMapper
 
 /**
  * Limits the rate of events, deferring them if they are published too often.
@@ -164,7 +164,7 @@ class RateLimitedEventPublisherImpl(
                 } catch (e: ClassNotFoundException) {
                   log.error("Pending event class ${record.eventClass} no longer exists")
                   null
-                } catch (e: JsonMappingException) {
+                } catch (e: DatabindException) {
                   log.error("Cannot deserialize pending event of type ${record.eventClass}")
                   log.info("JSON that failed to deserialize: ${record.pendingEvent?.data()}")
                   null

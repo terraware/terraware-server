@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
@@ -119,6 +118,7 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()

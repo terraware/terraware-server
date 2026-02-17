@@ -1,6 +1,5 @@
 package com.terraformation.backend.eventlog.db
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser

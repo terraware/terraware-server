@@ -1,13 +1,6 @@
 package com.terraformation.backend.api
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.JsonMappingException
-import com.fasterxml.jackson.databind.exc.InvalidFormatException
-import com.fasterxml.jackson.databind.exc.InvalidNullException
-import com.fasterxml.jackson.databind.exc.InvalidTypeIdException
-import com.fasterxml.jackson.databind.exc.MismatchedInputException
-import com.fasterxml.jackson.databind.exc.PropertyBindingException
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException
 import com.opencsv.CSVWriter
 import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.db.DuplicateEntityException
@@ -40,6 +33,13 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
+import tools.jackson.databind.DatabindException
+import tools.jackson.databind.exc.InvalidFormatException
+import tools.jackson.databind.exc.InvalidNullException
+import tools.jackson.databind.exc.InvalidTypeIdException
+import tools.jackson.databind.exc.MismatchedInputException
+import tools.jackson.databind.exc.PropertyBindingException
+import tools.jackson.databind.exc.ValueInstantiationException
 
 /**
  * Renders exceptions thrown by controllers as responses in the format defined by the seed bank API.
@@ -136,16 +136,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
     controllerLogger(ex)
         .warn("Generic response exception thrown on $description use ClientFacingException", ex)
 
-    val exceptionMessage = ex.message
-    val statusCode = ex.statusCode
-    val message =
-        when {
-          exceptionMessage != null -> exceptionMessage
-          statusCode is HttpStatus -> statusCode.reasonPhrase
-          else -> "$statusCode"
-        }
-
-    return simpleErrorResponse(message, ex.statusCode, request)
+    return simpleErrorResponse(ex.message, ex.statusCode, request)
   }
 
   /**
@@ -249,7 +240,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
       request: WebRequest,
   ): ResponseEntity<Any> {
     val cause = ex.cause
-    if (cause is JsonMappingException) {
+    if (cause is DatabindException) {
       // The exception has a "path" which is the JSON parser's position in the parse tree. Array
       // fields are represented as two path elements, one with the field name and the next with the
       // array index; we want to render that as "fieldName[index]". We do it with a hack: it gets
@@ -269,7 +260,7 @@ class ControllerExceptionHandler : ResponseEntityExceptionHandler() {
           cause.path
               .joinToString(".") { reference ->
                 val arrayIndex = if (reference.index >= 0) "[${reference.index}]" else ""
-                val fieldName = reference.fieldName ?: ""
+                val fieldName = reference.propertyName ?: ""
                 "${fieldName}$arrayIndex"
               }
               .replace(".[", "[")

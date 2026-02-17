@@ -1,7 +1,5 @@
 package com.terraformation.backend.report.db
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.InternalTagIds
@@ -58,6 +56,8 @@ import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 
 @Named
 class SeedFundReportStore(

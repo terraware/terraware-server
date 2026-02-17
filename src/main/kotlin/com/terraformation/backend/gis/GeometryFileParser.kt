@@ -1,8 +1,5 @@
 package com.terraformation.backend.gis
 
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.db.SRID
 import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
@@ -17,6 +14,9 @@ import org.geotools.kml.v22.KMLConfiguration
 import org.geotools.util.ContentFormatException
 import org.geotools.xsd.Parser
 import org.locationtech.jts.geom.Geometry
+import tools.jackson.core.exc.StreamReadException
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.module.kotlin.readValue
 
 @Named
 class GeometryFileParser(private val objectMapper: ObjectMapper) {
@@ -40,7 +40,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
   private fun parseGeoJson(content: ByteArray): Geometry {
     return try {
       objectMapper.readValue<Geometry>(content)
-    } catch (e: JsonParseException) {
+    } catch (e: StreamReadException) {
       throw ContentFormatException("File does not appear to be valid GeoJSON")
     }
   }
