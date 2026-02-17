@@ -767,8 +767,7 @@ FROM (
      ) AS su, (
          VALUES (1, 'Reporter', 'Organization must submit reports to Terraformation.'),
                 (2, 'Internal', 'Terraformation-managed internal organization, not a customer.'),
-                (3, 'Testing', 'Used for internal testing; may contain invalid data.'),
-                (4, 'Accelerator', 'Organization is an accelerator participant.')
+                (3, 'Testing', 'Used for internal testing; may contain invalid data.')
      ) AS t (id, name, description)
 ON CONFLICT (id) DO UPDATE SET name = excluded.name,
                                description = excluded.description;

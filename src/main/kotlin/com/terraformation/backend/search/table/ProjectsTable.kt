@@ -1,7 +1,6 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
@@ -13,7 +12,6 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VARIA
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LAND_USE_MODEL_TYPES
@@ -101,13 +99,18 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
       )
 
   override fun conditionForVisibility(): Condition {
+    val projects2 = PROJECTS.`as`("projects2")
     val acceleratorCondition =
         if (currentUser().canReadAllAcceleratorDetails()) {
-          DSL.exists(
-              DSL.selectOne()
-                  .from(ORGANIZATION_INTERNAL_TAGS)
-                  .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator))
+          PROJECTS.PHASE_ID.isNotNull.or(
+              DSL.exists(
+                  DSL.selectOne()
+                      .from(projects2)
+                      .leftJoin(APPLICATIONS)
+                      .on(projects2.ID.eq(APPLICATIONS.PROJECT_ID))
+                      .where(projects2.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+                      .and(projects2.PHASE_ID.isNotNull.or(APPLICATIONS.PROJECT_ID.isNotNull))
+              )
           )
         } else {
           null

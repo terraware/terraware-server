@@ -151,7 +151,7 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
       val organizationIdWithOneTag = insertOrganization(name = "One Tag")
       insertOrganizationInternalTag(tagId = InternalTagIds.Testing)
       val organizationIdWithTwoTags = insertOrganization(name = "Two Tags")
-      insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
+      insertOrganizationInternalTag(tagId = InternalTagIds.Internal)
       insertOrganizationInternalTag(tagId = InternalTagIds.Reporter)
 
       val noTagsModel =
@@ -168,7 +168,7 @@ class InternalTagStoreTest : DatabaseTest(), RunsAsUser {
           mapOf(
               noTagsModel to emptySet(),
               oneTagModel to setOf(InternalTagIds.Testing),
-              twoTagsModel to setOf(InternalTagIds.Accelerator, InternalTagIds.Reporter),
+              twoTagsModel to setOf(InternalTagIds.Internal, InternalTagIds.Reporter),
           ),
           store.fetchAllOrganizationsWithTagIds(),
       )

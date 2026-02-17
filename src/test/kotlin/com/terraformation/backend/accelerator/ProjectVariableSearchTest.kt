@@ -3,8 +3,8 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.i18n.Locales
@@ -34,7 +34,6 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(userId = inserted.userId, role = Role.Admin)
-    insertOrganizationInternalTag(tagId = InternalTagIds.Accelerator)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
@@ -42,7 +41,7 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns variables for project, ignoring old variables`() {
-    val projectId = insertProject()
+    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     val textStableId = "123"
     val numberStableId = "456"
@@ -117,7 +116,7 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can retrieve nested variables from projects`() {
-    val projectId = insertProject()
+    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
     val variableId1 = insertVariable()
     val variableId2 = insertVariable()
     insertValue(variableId = variableId1)
@@ -156,7 +155,7 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
   fun `returns only variables of projects visible to non-accelerator admin users`() {
     every { user.canReadAllAcceleratorDetails() } returns false
 
-    val projectId1 = insertProject()
+    val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
     val variableId1 = insertVariable()
     insertValue(variableId = variableId1, textValue = "Visible")
 
@@ -193,8 +192,8 @@ class ProjectVariableSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `filters by stable id when prefix starts at project`() {
-    val projectId1 = insertProject(name = "Project 1")
-    val projectId2 = insertProject(name = "Project 2")
+    val projectId1 = insertProject(name = "Project 1", phase = CohortPhase.Phase0DueDiligence)
+    val projectId2 = insertProject(name = "Project 2", phase = CohortPhase.Phase0DueDiligence)
 
     val stableId1 = "123"
     val stableId2 = "456"

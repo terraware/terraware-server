@@ -1,7 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SUBDIVISIONS
@@ -96,9 +96,11 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
         if (currentUser().canReadAllAcceleratorDetails()) {
           DSL.exists(
               DSL.selectOne()
-                  .from(ORGANIZATION_INTERNAL_TAGS)
-                  .where(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                  .and(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Accelerator))
+                  .from(PROJECTS)
+                  .leftJoin(APPLICATIONS)
+                  .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
+                  .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                  .and(PROJECTS.PHASE_ID.isNotNull.or(APPLICATIONS.ID.isNotNull))
           )
         } else {
           null
