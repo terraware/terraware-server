@@ -36,11 +36,10 @@ class GeoServerProxyController(private val geoServerClient: GeoServerClient) {
               ?: MediaType.APPLICATION_OCTET_STREAM
       ResponseEntity.status(response.status.value)
           .contentType(mediaType)
-          .apply {
-            response.headers[HttpHeaders.CONTENT_DISPOSITION]?.let {
-              header(HttpHeaders.CONTENT_DISPOSITION, it)
-            }
-          }
+          .header(
+              HttpHeaders.CONTENT_DISPOSITION,
+              response.headers[HttpHeaders.CONTENT_DISPOSITION],
+          )
           .body(response.bodyAsBytes())
     }
   }

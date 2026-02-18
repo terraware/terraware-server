@@ -15,11 +15,11 @@ import kotlin.reflect.full.memberFunctions
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.jvm.jvmErasure
+import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -115,11 +115,11 @@ class PersistentEventTest {
   fun `fields-updated events have localizable names for all their fields`(kClass: KClass<*>) {
     val subjectName =
         EventSubjectName.entries.firstOrNull { kClass.isSubclassOf(it.eventInterface) }
-    assumeTrue(subjectName != null)
+    assumeNotNull(subjectName)
 
     val valuesClass =
         kClass.memberProperties.firstOrNull { it.name == "changedFrom" }?.returnType?.jvmErasure
-    assumeTrue(valuesClass != null)
+    assumeNotNull(valuesClass)
 
     val stringKeyPrefix = "eventSubject.${subjectName!!.name}.field"
     val expected =

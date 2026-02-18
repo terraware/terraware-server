@@ -1,6 +1,8 @@
 package com.terraformation.backend.device.balena
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -20,7 +22,6 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 /**
  * End-to-end tests for the Balena client. This talks to the actual Balena API. To run it, you will
@@ -79,7 +80,7 @@ internal class LiveBalenaClientExternalTest {
 
     val clientConfig = HttpClientConfig()
     val engine = clientConfig.ktorEngine()
-    val objectMapper = jacksonObjectMapper()
+    val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
 
     client = LiveBalenaClient(config, clientConfig.httpClient(engine, objectMapper))
 

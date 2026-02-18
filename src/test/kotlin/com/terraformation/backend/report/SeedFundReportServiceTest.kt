@@ -1,5 +1,7 @@
 package com.terraformation.backend.report
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
@@ -64,7 +66,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -72,7 +73,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val googleDriveWriter: GoogleDriveWriter = mockk()
   private val messages = Messages()
-  private val objectMapper = jacksonObjectMapper()
+  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val parentStore by lazy { ParentStore(dslContext) }
   private val seedFundReportRenderer: SeedFundReportRenderer = mockk()
