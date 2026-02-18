@@ -1,3 +1,4 @@
+89b074609aa Upgrade to Spring AI 2.0.0-M2 (#3907)
 5d91394bcff Update database dependencies to v12 (#3864)
 eb4c29e384c Fix conflicting Flyway migration numbers (#3906)
 e7fe68af6e8 Upgrade to Spring Boot 4 (#3905)

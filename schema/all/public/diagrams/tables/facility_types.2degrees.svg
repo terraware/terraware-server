@@ -240,14 +240,14 @@
 <text text-anchor="start" x="79" y="-222.93" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="8,-196.73 8,-214.73 118,-214.73 118,-196.73 8,-196.73"/>
 <text text-anchor="start" x="11" y="-202.93" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="8,-178.73 8,-196.73 52,-196.73 52,-178.73 8,-178.73"/>
-<polygon fill="none" stroke="black" points="8,-178.73 8,-196.73 52,-196.73 52,-178.73 8,-178.73"/>
+<polygon fill="#ffffff" stroke="transparent" points="8,-178.73 8,-196.73 32,-196.73 32,-178.73 8,-178.73"/>
+<polygon fill="none" stroke="black" points="8,-178.73 8,-196.73 32,-196.73 32,-178.73 8,-178.73"/>
 <text text-anchor="start" x="11" y="-184.93" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="52,-178.73 52,-196.73 80,-196.73 80,-178.73 52,-178.73"/>
-<polygon fill="none" stroke="black" points="52,-178.73 52,-196.73 80,-196.73 80,-178.73 52,-178.73"/>
-<text text-anchor="start" x="70" y="-184.93" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="80,-178.73 80,-196.73 118,-196.73 118,-178.73 80,-178.73"/>
-<polygon fill="none" stroke="black" points="80,-178.73 80,-196.73 118,-196.73 118,-178.73 80,-178.73"/>
+<polygon fill="#ffffff" stroke="transparent" points="32,-178.73 32,-196.73 90,-196.73 90,-178.73 32,-178.73"/>
+<polygon fill="none" stroke="black" points="32,-178.73 32,-196.73 90,-196.73 90,-178.73 32,-178.73"/>
+<text text-anchor="start" x="41" y="-184.93" font-family="Helvetica,sans-Serif" font-size="11.00">604 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="90,-178.73 90,-196.73 118,-196.73 118,-178.73 90,-178.73"/>
+<polygon fill="none" stroke="black" points="90,-178.73 90,-196.73 118,-196.73 118,-178.73 90,-178.73"/>
 <text text-anchor="start" x="99" y="-184.93" font-family="Helvetica,sans-Serif" font-size="11.00">5 &gt;</text>
 </a>
 </g>
