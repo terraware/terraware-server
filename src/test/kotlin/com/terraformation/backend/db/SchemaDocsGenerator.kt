@@ -167,6 +167,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "participant_project_species" to setOf(ALL, ACCELERATOR),
                   "project_accelerator_details" to setOf(ALL, ACCELERATOR),
                   "project_metrics" to setOf(ALL, ACCELERATOR),
+                  "project_modules" to setOf(ALL, Slice.ACCELERATOR),
                   "project_overall_scores" to setOf(ALL, ACCELERATOR),
                   "project_report_configs" to setOf(ALL, ACCELERATOR),
                   "project_scores" to setOf(ALL, ACCELERATOR),
