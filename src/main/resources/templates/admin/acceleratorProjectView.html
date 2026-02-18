@@ -7,14 +7,15 @@
 
 <a href="/admin/">Home</a>
  -
-<a href="/admin/cohorts">Cohorts</a>
+<a href="/admin/acceleratorProjects">Accelerator Projects</a>
 
-<h2 th:text="|(${cohort.id}) ${cohort.name}|"> Cohort Name </h2>
+<h2 th:text="|${project.name} (${project.id})|">Project (123)</h2>
 
 <h3>Phase</h3>
-<p th:text="${cohort.phase.getDisplayName(#locale.default)}"> Current Phase </p>
+<p th:text="${project.phase.getDisplayName(#locale.default)}">Phase</p>
 
 <h3>Modules</h3>
+
 <table>
     <thead>
     <tr>
@@ -28,7 +29,7 @@
     </thead>
 
     <tbody>
-    <tr th:each="module : ${cohortModules}" class="striped">
+    <tr th:each="module : ${projectModules}" class="striped">
         <td th:text="${module.title}">Module Title</td>
         <td>
             <a th:href="|/accelerator/modules/${module.id}|"
@@ -50,9 +51,8 @@
         <td>
             <form method="POST"
                   th:id="|deliverables-${module.id}|"
-                  th:action="|/admin/cohorts/${cohort.id}/deliverables|">
-                <input type="submit"
-                       value="View" />
+                  th:action="|/admin/acceleratorProjects/${project.id}/deliverables|">
+                <input type="submit" value="View" />
             </form>
         </td>
     </tr>

@@ -1,17 +1,14 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.accelerator.db.CohortModuleStore
-import com.terraformation.backend.accelerator.db.CohortNotFoundException
-import com.terraformation.backend.accelerator.db.CohortStore
 import com.terraformation.backend.accelerator.db.DeliverableDueDateStore
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleStore
-import com.terraformation.backend.accelerator.model.CohortDepth
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -28,47 +25,33 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.servlet.mvc.support.RedirectAttributes
 
 @Controller
-@RequestMapping("/admin")
+@RequestMapping("/admin/acceleratorProjects")
 @RequireGlobalRole(
     [GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin, GlobalRole.TFExpert, GlobalRole.ReadOnly]
 )
 @Validated
-class AdminCohortsController(
+class AdminAcceleratorProjectsController(
     private val deliverableDueDateStore: DeliverableDueDateStore,
     private val deliverableStore: DeliverableStore,
-    private val cohortStore: CohortStore,
     private val cohortModuleStore: CohortModuleStore,
     private val moduleStore: ModuleStore,
+    private val projectStore: ProjectStore,
 ) {
   private val log = perClassLogger()
 
-  @GetMapping("/cohorts")
-  fun cohortsHome(model: Model): String {
-    requirePermissions { readCohorts() }
-    val cohorts = cohortStore.findAll()
+  @GetMapping
+  fun acceleratorProjectsHome(model: Model): String {
+    val projects = projectStore.findAllWithPhase()
 
-    model.addAttribute("cohorts", cohorts)
+    model.addAttribute("projects", projects)
 
-    return "/admin/cohorts"
+    return "/admin/acceleratorProjects"
   }
 
-  @GetMapping("/cohorts/{cohortId}")
-  fun cohortView(
-      model: Model,
-      @PathVariable cohortId: CohortId,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    requirePermissions { readCohort(cohortId) }
-    val cohort =
-        try {
-          cohortStore.fetchOneById(cohortId, CohortDepth.Cohort)
-        } catch (e: CohortNotFoundException) {
-          log.warn("Cohort not found", e)
-          redirectAttributes.failureMessage = "Cohort not found: ${e.message}"
-          return redirectToCohortHome()
-        }
-
-    val cohortModules = cohortModuleStore.fetch(cohortId)
+  @GetMapping("/{projectId}")
+  fun acceleratorProjectView(model: Model, @PathVariable projectId: ProjectId): String {
+    val project = projectStore.fetchOneById(projectId)
+    val projectModules = cohortModuleStore.fetch(projectId = projectId)
 
     val modules = moduleStore.fetchAllModules()
     val allDeliverables = deliverableStore.fetchDeliverables().groupBy { it.moduleId }
@@ -76,62 +59,57 @@ class AdminCohortsController(
 
     val moduleNames = modules.associate { it.id to "(${it.id}) ${it.name}" }
 
-    val unassignedModules = modules.filter { module -> cohortModules.all { module.id != it.id } }
+    val unassignedModules = modules.filter { module -> projectModules.all { module.id != it.id } }
 
-    model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
-    model.addAttribute("cohort", cohort)
-    model.addAttribute("cohortModules", cohortModules)
+    model.addAttribute(
+        "canUpdateProjectAcceleratorDetails",
+        currentUser().canUpdateProjectAcceleratorDetails(projectId),
+    )
     model.addAttribute("moduleDeliverables", moduleDeliverables)
     model.addAttribute("moduleNames", moduleNames)
+    model.addAttribute("project", project)
+    model.addAttribute("projectModules", projectModules)
     model.addAttribute("unassignedModules", unassignedModules)
-    model.addAttribute("canUpdateCohort", currentUser().canUpdateCohort(cohortId))
 
-    return "/admin/cohortView"
+    return "/admin/acceleratorProjectView"
   }
 
-  @PostMapping("/cohorts/{cohortId}/deliverables")
-  fun deliverablesRedirect(
-      model: Model,
-      @PathVariable cohortId: CohortId,
+  @PostMapping("/{projectId}/deliverables")
+  fun projectDeliverablesRedirect(
+      @PathVariable projectId: ProjectId,
       @RequestParam deliverableId: DeliverableId,
-  ): String = redirectToCohortDeliverable(cohortId, deliverableId)
+  ): String = redirectToProjectDeliverable(projectId, deliverableId)
 
-  @GetMapping("/cohorts/{cohortId}/deliverables/{deliverableId}")
-  fun viewDeliverable(
+  @GetMapping("/{projectId}/deliverables/{deliverableId}")
+  fun viewProjectDeliverable(
       model: Model,
-      @PathVariable cohortId: CohortId,
+      @PathVariable projectId: ProjectId,
       @PathVariable deliverableId: DeliverableId,
       redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { readAllDeliverables() }
 
-    val cohort =
-        try {
-          cohortStore.fetchOneById(cohortId, CohortDepth.Project)
-        } catch (e: CohortNotFoundException) {
-          log.warn("Cohort not found", e)
-          redirectAttributes.failureMessage = "Cohort not found: ${e.message}"
-          return redirectToCohortHome()
-        }
+    val project = projectStore.fetchOneById(projectId)
 
     val dueDateModel =
         try {
           deliverableDueDateStore
-              .fetchDeliverableDueDates(cohortId = cohortId, deliverableId = deliverableId)
+              .fetchDeliverableDueDates(projectId = projectId, deliverableId = deliverableId)
               .firstOrNull()
         } catch (e: Exception) {
           log.warn("Fetch deliverable due dates failed", e)
           redirectAttributes.failureMessage = "Error looking up deliverable due date: ${e.message}"
-          return redirectToCohort(cohortId)
+          return redirectToAcceleratorProject(projectId)
         }
 
     if (dueDateModel == null) {
       redirectAttributes.failureMessage =
-          "Deliverable $deliverableId not associated with cohort $cohortId"
-      return redirectToCohort(cohortId)
+          "Deliverable $deliverableId not associated with project $projectId"
+      return redirectToAcceleratorProject(projectId)
     }
 
-    val cohortModule = cohortModuleStore.fetch(cohortId, moduleId = dueDateModel.moduleId).first()
+    val moduleModel =
+        cohortModuleStore.fetch(projectId = projectId, moduleId = dueDateModel.moduleId).first()
 
     val deliverable =
         try {
@@ -140,32 +118,29 @@ class AdminCohortsController(
         } catch (e: Exception) {
           log.warn("Fetch deliverable data failed", e)
           redirectAttributes.failureMessage = "Error looking up deliverable data: ${e.message}"
-          return redirectToCohort(cohortId)
+          return redirectToAcceleratorProject(projectId)
         }
 
-    val submissions =
+    val submission =
         deliverableStore
-            .fetchDeliverableSubmissions(deliverableId = deliverableId)
-            .filter { cohort.projectIds.contains(it.projectId) }
-            .sortedBy { it.projectId }
+            .fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId)
+            .first()
 
     model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())
-    model.addAttribute("cohort", cohort)
-    model.addAttribute("cohortModule", cohortModule)
     model.addAttribute("deliverable", deliverable)
     model.addAttribute("dueDates", dueDateModel)
-    model.addAttribute("submissions", submissions)
+    model.addAttribute("module", moduleModel)
+    model.addAttribute("project", project)
+    model.addAttribute("submission", submission)
 
-    return "/admin/cohortDeliverable"
+    return "/admin/acceleratorProjectDeliverable"
   }
 
-  @PostMapping("/cohorts/{cohortId}/deliverables/{deliverableId}")
-  fun updateDeliverableDueDate(
-      model: Model,
-      @PathVariable cohortId: CohortId,
+  @PostMapping("/{projectId}/deliverables/{deliverableId}")
+  fun updateProjectDeliverableDueDate(
+      @PathVariable projectId: ProjectId,
       @PathVariable deliverableId: DeliverableId,
       @RequestParam operation: String,
-      @RequestParam projectId: ProjectId,
       @RequestParam dueDate: LocalDate?,
       redirectAttributes: RedirectAttributes,
   ): String {
@@ -174,7 +149,7 @@ class AdminCohortsController(
       "upsert" -> {
         if (dueDate == null) {
           redirectAttributes.failureMessage = "Due date must be set for upsert"
-          return redirectToCohortDeliverable(cohortId, deliverableId)
+          return redirectToProjectDeliverable(projectId, deliverableId)
         }
 
         try {
@@ -204,13 +179,12 @@ class AdminCohortsController(
         redirectAttributes.failureMessage = "Operation not recognized. "
       }
     }
-    return redirectToCohortDeliverable(cohortId, deliverableId)
+    return redirectToProjectDeliverable(projectId, deliverableId)
   }
 
-  private fun redirectToCohort(cohortId: CohortId) = "redirect:/admin/cohorts/$cohortId"
+  private fun redirectToAcceleratorProject(projectId: ProjectId) =
+      "redirect:/admin/acceleratorProjects/$projectId"
 
-  private fun redirectToCohortDeliverable(cohortId: CohortId, deliverableId: DeliverableId) =
-      "redirect:/admin/cohorts/$cohortId/deliverables/$deliverableId"
-
-  private fun redirectToCohortHome() = "redirect:/admin/cohorts"
+  private fun redirectToProjectDeliverable(projectId: ProjectId, deliverableId: DeliverableId) =
+      "redirect:/admin/acceleratorProjects/$projectId/deliverables/$deliverableId"
 }
