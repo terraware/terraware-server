@@ -612,7 +612,7 @@ COMMENT ON TABLE accelerator.applications IS 'Information about projects that ar
 COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
 
 COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to which cohorts.';
-COMMENT ON COLUMN accelerator.cohort_modules.title IS 'The title for the module for the cohort. For example "Module 3A" for Module 3A: Title';
+COMMENT ON COLUMN accelerator.cohort_modules.title IS 'The title for the module for the cohort. This is shown above the module name in the module timeline.';
 
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
@@ -669,7 +669,7 @@ COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for
 COMMENT ON TABLE accelerator.project_metrics IS 'Metrics specific to one project to report on.';
 
 COMMENT ON TABLE accelerator.project_modules IS 'Which modules are assigned to which projects.';
-COMMENT ON COLUMN accelerator.project_modules.title IS 'The title for the module for the project. For example "Module 3A" for Module 3A: Title';
+COMMENT ON COLUMN accelerator.project_modules.title IS 'The title for the module for the project. This is shown above the module name in the module timeline.';
 
 COMMENT ON TABLE accelerator.project_overall_scores IS 'Overall scores assigned to project by scorers.';
 
