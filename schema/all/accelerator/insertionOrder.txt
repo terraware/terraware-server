@@ -41,6 +41,7 @@ cohort_modules
 deliverable_project_due_dates
 deliverable_variables
 event_projects
+project_modules
 report_project_metric_targets
 report_standard_metric_targets
 report_system_metric_targets

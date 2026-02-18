@@ -235,7 +235,7 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="start_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="end_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="title" nullable="false" remarks="The title for the module for the cohort. For example &quot;Module 3A&quot; for Module 3A: Title" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="title" nullable="false" remarks="The title for the module for the cohort. This is shown above the module name in the module timeline." size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="cohort_id" sequenceNumberInPK="1"/>
          <primaryKey column="module_id" sequenceNumberInPK="2"/>
          <index name="cohort_modules_pkey" unique="true">
@@ -349,8 +349,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
+            <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -586,6 +586,7 @@
             <child column="module_id" foreignKey="cohort_modules_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="cohort_modules"/>
             <child column="module_id" foreignKey="deliverables_module_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
             <child column="module_id" foreignKey="events_module_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="events"/>
+            <child column="module_id" foreignKey="project_modules_module_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_modules"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -729,6 +730,27 @@
          <index name="project_metrics_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
+      </table>
+      <table name="project_modules" remarks="Which modules are assigned to which projects." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_modules_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="module_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_modules_module_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="modules"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="start_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="end_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="title" nullable="false" remarks="The title for the module for the project. This is shown above the module name in the module timeline." size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="module_id" sequenceNumberInPK="2"/>
+         <index name="project_modules_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="module_id"/>
+         </index>
+         <index name="project_modules_module_id_idx" unique="false">
+            <column ascending="true" name="module_id"/>
+         </index>
+         <checkConstraint constraint="(start_date &lt; end_date)" name="dates_start_before_end"/>
       </table>
       <table name="project_overall_scores" remarks="Overall scores assigned to project by scorers." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -1180,8 +1202,8 @@
          <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="submitted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="highlights" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="report_frequency_id" nullable="false" remarks="Frequency of the report, that can determine report data. Must match with frequency of the configuration." size="10" type="int4" typeCode="4">
-            <parent column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
             <parent column="id" foreignKey="reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_frequencies"/>
+            <parent column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="report_quarter_id" nullable="true" remarks="Quarter of the report. Must be non-null for quarterly reports and null otherwise." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_report_quarter_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_quarters"/>

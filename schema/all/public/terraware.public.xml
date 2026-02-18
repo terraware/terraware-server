@@ -913,6 +913,7 @@
             <child column="project_id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
             <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
             <child column="project_id" foreignKey="project_metrics_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_metrics"/>
+            <child column="project_id" foreignKey="project_modules_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_modules"/>
             <child column="project_id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_overall_scores"/>
             <child column="project_id" foreignKey="project_report_configs_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_report_configs"/>
             <child column="project_id" foreignKey="project_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_scores"/>

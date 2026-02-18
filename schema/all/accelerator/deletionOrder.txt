@@ -18,6 +18,7 @@ submission_snapshots
 report_system_metric_targets
 report_standard_metric_targets
 report_project_metric_targets
+project_modules
 event_projects
 deliverable_variables
 deliverable_project_due_dates

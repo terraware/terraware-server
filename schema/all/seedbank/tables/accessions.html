@@ -1113,60 +1113,60 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>accessions_collection_site_country_code_check</td>
-                                    <td>(collection_site_country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_collection_site_country_subdivision_check</td>
-                                    <td>(collection_site_country_subdivision !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_founder_id_check</td>
-                                    <td>(founder_id !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>subset_weight_quantity_must_have_units</td>
-                                    <td>(((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL)))</td>
-                                </tr>
-                                <tr>
-                                    <td>subset_weight_units_must_not_be_seeds</td>
-                                    <td>((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_collection_site_name_check</td>
-                                    <td>(collection_site_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>observed_quantity_must_have_units</td>
-                                    <td>(((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL)))</td>
-                                </tr>
-                                <tr>
                                     <td>observed_quantity_must_have_time</td>
                                     <td>(((latest_observed_quantity IS NOT NULL) AND (latest_observed_time IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_time IS NULL)))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_processing_notes_check</td>
-                                    <td>(processing_notes !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>remaining_quantity_must_have_units</td>
-                                    <td>(((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL)))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_collection_site_city_check</td>
-                                    <td>(collection_site_city !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>accessions_collection_site_landowner_check</td>
-                                    <td>(collection_site_landowner !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>accessions_collection_site_notes_check</td>
                                     <td>(collection_site_notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
+                                    <td>accessions_processing_notes_check</td>
+                                    <td>(processing_notes !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>subset_weight_units_must_not_be_seeds</td>
+                                    <td>((subset_weight_units_id &lt;&gt; 1) OR (subset_weight_units_id IS NULL))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_collection_site_country_code_check</td>
+                                    <td>(collection_site_country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_collection_site_name_check</td>
+                                    <td>(collection_site_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_collection_site_country_subdivision_check</td>
+                                    <td>(collection_site_country_subdivision !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_collection_site_landowner_check</td>
+                                    <td>(collection_site_landowner !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>observed_quantity_must_have_units</td>
+                                    <td>(((latest_observed_quantity IS NOT NULL) AND (latest_observed_units_id IS NOT NULL)) OR ((latest_observed_quantity IS NULL) AND (latest_observed_units_id IS NULL)))</td>
+                                </tr>
+                                <tr>
+                                    <td>remaining_quantity_must_have_units</td>
+                                    <td>(((remaining_quantity IS NOT NULL) AND (remaining_units_id IS NOT NULL)) OR ((remaining_quantity IS NULL) AND (remaining_units_id IS NULL)))</td>
+                                </tr>
+                                <tr>
+                                    <td>subset_weight_quantity_must_have_units</td>
+                                    <td>(((subset_weight_quantity IS NOT NULL) AND (subset_weight_units_id IS NOT NULL)) OR ((subset_weight_quantity IS NULL) AND (subset_weight_units_id IS NULL)))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_founder_id_check</td>
+                                    <td>(founder_id !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
                                     <td>accessions_number_check</td>
                                     <td>(number !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>accessions_collection_site_city_check</td>
+                                    <td>(collection_site_city !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>
