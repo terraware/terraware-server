@@ -1,3 +1,4 @@
+ea0a67e64b5 Fix jOOQ warning on ProjectId type (#3908)
 333d3808f92 Revert Spring Boot 4 upgrade (#3910)
 71a29d73474 Remove override for fullyAuthenticated spring security config, use default (#3909)
 89b074609aa Upgrade to Spring AI 2.0.0-M2 (#3907)
