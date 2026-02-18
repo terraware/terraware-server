@@ -13,6 +13,7 @@ import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METR
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.ProjectIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_METRIC_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
@@ -174,7 +175,10 @@ class PublishedReportStore(
                 .on(targetTableMetricIdField.eq(metricTableIdField))
                 .and(
                     targetTable
-                        .field("project_id", ProjectId::class.java)!!
+                        .field(
+                            "project_id",
+                            SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()),
+                        )!!
                         .eq(PUBLISHED_REPORTS.PROJECT_ID)
                 )
                 .and(targetYearField.eq(DSL.year(PUBLISHED_REPORTS.END_DATE)))
