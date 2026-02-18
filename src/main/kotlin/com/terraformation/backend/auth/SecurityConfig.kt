@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.security.authorization.AuthenticatedAuthorizationManager
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.invoke
@@ -19,7 +18,6 @@ import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInit
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
 import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.access.intercept.RequestAuthorizationContext
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.header.writers.StaticHeadersWriter
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher
@@ -63,10 +61,6 @@ class SecurityConfig(
       http: HttpSecurity,
       clientRegistrationRepository: ClientRegistrationRepository,
   ): SecurityFilterChain {
-    // https://github.com/spring-projects/spring-security/issues/16162
-    val fullyAuthenticated =
-        AuthenticatedAuthorizationManager.fullyAuthenticated<RequestAuthorizationContext>()
-
     http {
       cors {}
       csrf { disable() }
