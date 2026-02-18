@@ -1,10 +1,11 @@
 package com.terraformation.backend.api
 
-import tools.jackson.core.JsonParser
-import tools.jackson.databind.BeanProperty
-import tools.jackson.databind.DeserializationContext
-import tools.jackson.databind.ValueDeserializer
-import tools.jackson.databind.deser.jdk.StringDeserializer
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.BeanProperty
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer
+import com.fasterxml.jackson.databind.deser.std.StringDeserializer
 
 /**
  * Deserializes blank or empty strings in JSON objects as null. Doing this as part of JSON
@@ -16,11 +17,11 @@ import tools.jackson.databind.deser.jdk.StringDeserializer
  *
  * Does not affect fields annotated with [AllowBlankString].
  */
-class BlankStringDeserializer : ValueDeserializer<String?>() {
+class BlankStringDeserializer : JsonDeserializer<String?>(), ContextualDeserializer {
   override fun createContextual(
       ctxt: DeserializationContext,
       property: BeanProperty?,
-  ): ValueDeserializer<*> {
+  ): JsonDeserializer<*> {
     return if (property?.getAnnotation(AllowBlankString::class.java) != null) {
       StringDeserializer.instance
     } else {

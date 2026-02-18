@@ -1,13 +1,13 @@
 package com.terraformation.backend.customer.model
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.tables.pojos.AutomationsRow
 import java.time.Instant
 import org.jooq.JSONB
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.module.kotlin.readValue
 
 data class AutomationModel(
     val createdTime: Instant,

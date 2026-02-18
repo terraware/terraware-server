@@ -52,16 +52,21 @@ class TerrawareChatMemoryRepository(
               MessageType.SYSTEM -> ChatMemoryMessageType.System
               MessageType.TOOL -> ChatMemoryMessageType.ToolResponse
               MessageType.USER -> ChatMemoryMessageType.User
+              else -> null
             }
 
-        with(CHAT_MEMORY_MESSAGES) {
-          dslContext
-              .insertInto(CHAT_MEMORY_MESSAGES)
-              .set(CONVERSATION_ID, UUID.fromString(conversationId))
-              .set(CREATED_TIME, clock.instant())
-              .set(MESSAGE_TYPE_ID, messageType)
-              .set(CONTENT, message.text)
-              .execute()
+        if (messageType != null) {
+          with(CHAT_MEMORY_MESSAGES) {
+            dslContext
+                .insertInto(CHAT_MEMORY_MESSAGES)
+                .set(CONVERSATION_ID, UUID.fromString(conversationId))
+                .set(CREATED_TIME, clock.instant())
+                .set(MESSAGE_TYPE_ID, messageType)
+                .set(CONTENT, message.text)
+                .execute()
+          }
+        } else {
+          log.error("Unknown message type ${message.messageType}")
         }
       }
     }

@@ -1,15 +1,15 @@
 package com.terraformation.backend.integration
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.db.DatabaseTest
 import java.time.Duration
 import javax.sql.DataSource
 import org.jobrunr.jobs.mappers.JobMapper
 import org.jobrunr.scheduling.JobScheduler
 import org.jobrunr.storage.sql.postgres.PostgresStorageProvider
-import org.jobrunr.utils.mapper.jackson3.Jackson3JsonMapper
+import org.jobrunr.utils.mapper.jackson.JacksonJsonMapper
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 /**
  * Sanity check to make sure JobRunr doesn't break with the other dependency versions we're using.
@@ -21,7 +21,7 @@ internal class JobRunrCompatibilityTest : DatabaseTest() {
 
   private val scheduler by lazy {
     val storageProvider = PostgresStorageProvider(dataSource)
-    storageProvider.setJobMapper(JobMapper(Jackson3JsonMapper(jacksonMapperBuilder())))
+    storageProvider.setJobMapper(JobMapper(JacksonJsonMapper(jacksonObjectMapper())))
     JobScheduler(storageProvider)
   }
 

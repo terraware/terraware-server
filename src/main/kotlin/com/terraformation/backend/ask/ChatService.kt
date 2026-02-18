@@ -78,8 +78,8 @@ class ChatService(
    */
   private val loggerAdvisor =
       SimpleLoggerAdvisor(
-          { request -> request?.prompt?.contents ?: "null" },
-          { response -> response?.result?.output?.text ?: "null" },
+          { request -> request.prompt.contents },
+          { response -> response.result.output.text },
           100,
       )
 

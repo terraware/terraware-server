@@ -1,6 +1,10 @@
 package com.terraformation.backend
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
@@ -9,8 +13,8 @@ import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
+import org.junit.Assume.assumeNotNull
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXY
 import org.locationtech.jts.geom.Geometry
@@ -19,22 +23,19 @@ import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.databind.SerializationFeature
-import tools.jackson.module.kotlin.jacksonMapperBuilder
 
 /**
  * ObjectMapper configured to pretty print. This is lazily instantiated since ObjectMappers aren't
  * terribly lightweight.
  */
 private val prettyPrintingObjectMapper: ObjectMapper by lazy {
-  jacksonMapperBuilder()
-      .addModule(GeometryModule())
+  jacksonObjectMapper()
+      .registerModule(GeometryModule())
+      .registerModule(JavaTimeModule())
       .enable(SerializationFeature.INDENT_OUTPUT)
       .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
-      .changeDefaultPropertyInclusion { it.withValueInclusion(JsonInclude.Include.NON_EMPTY) }
-      .changeDefaultPropertyInclusion { it.withContentInclusion(JsonInclude.Include.NON_EMPTY) }
-      .build()
+      .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+      .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
 }
 
 /**
@@ -234,7 +235,7 @@ fun <T : Any, FAKE_ID : Any, ACTUAL_ID : Any> mapTo1IndexedIds(
  */
 fun getEnvOrSkipTest(name: String): String {
   val value = System.getenv(name)
-  assumeTrue(value != null, "$name not set; skipping test")
+  assumeNotNull(value, "$name not set; skipping test")
   return value
 }
 

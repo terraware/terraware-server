@@ -30,12 +30,7 @@ class SessionConfig {
   fun sessionRepositoryCustomizer(): SessionRepositoryCustomizer<JdbcIndexedSessionRepository> {
     val service = GenericConversionService()
     service.addConverter(Any::class.java, ByteArray::class.java, SerializingConverter())
-    @Suppress("UNCHECKED_CAST")
-    service.addConverter(
-        ByteArray::class.java,
-        Any::class.java,
-        SessionInvalidatingConverter() as Converter<ByteArray, Any>,
-    )
+    service.addConverter(ByteArray::class.java, Any::class.java, SessionInvalidatingConverter())
 
     return SessionRepositoryCustomizer { repository -> repository.setConversionService(service) }
   }
@@ -48,14 +43,14 @@ class SessionConfig {
    * existing sessions that aren't serialization-compatible with the current version of the code
    * cause HTTP 500 responses.
    */
-  class SessionInvalidatingConverter : Converter<ByteArray, Any?> {
+  class SessionInvalidatingConverter : Converter<ByteArray, Any> {
     private val deserializer = DefaultDeserializer(javaClass.classLoader)
     private val log = perClassLogger()
 
     override fun convert(source: ByteArray): Any? {
       return try {
         deserializer.deserialize(source.inputStream())
-      } catch (_: Exception) {
+      } catch (e: Exception) {
         log.warn("Failed to deserialize session data; will start a new session")
         null
       }
