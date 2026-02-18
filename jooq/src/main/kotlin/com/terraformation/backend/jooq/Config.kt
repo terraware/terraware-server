@@ -594,6 +594,10 @@ val EMBEDDABLES =
             .withTables("project_land_use_model_types")
             .withColumns("project_id", "land_use_model_type_id"),
         EmbeddableDefinitionType()
+            .withName("project_module_id")
+            .withTables("accelerator.project_modules")
+            .withColumns("project_id", "module_id"),
+        EmbeddableDefinitionType()
             .withName("project_variable_id")
             .withTables("project_variables")
             .withColumns("project_id", "stable_id"),

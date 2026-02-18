@@ -6,6 +6,7 @@ import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULE
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -29,9 +30,9 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
           ),
           deliverables.asMultiValueSublist("deliverables", MODULES.ID.eq(DELIVERABLES.MODULE_ID)),
           events.asMultiValueSublist("events", MODULES.ID.eq(EVENTS.MODULE_ID)),
-          cohortModules.asMultiValueSublist(
+          projectModules.asMultiValueSublist(
               "projectModules",
-              MODULES.ID.eq(COHORT_MODULES.MODULE_ID),
+              MODULES.ID.eq(PROJECT_MODULES.MODULE_ID),
           ),
       )
     }

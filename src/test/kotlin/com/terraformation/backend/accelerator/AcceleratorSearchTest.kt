@@ -328,6 +328,15 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     insertCohortModule(cohortId1, moduleId1)
     insertCohortModule(cohortId2, moduleId1)
     insertCohortModule(cohortId2, moduleId2)
+    val projectId1a = insertProject(cohortId = cohortId1, phase = CohortPhase.Phase0DueDiligence)
+    insertProjectModule(moduleId = moduleId1)
+    val projectId1b = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    insertProjectModule(moduleId = moduleId1)
+    val projectId2 = insertProject(cohortId = cohortId2, phase = CohortPhase.Phase0DueDiligence)
+    insertProjectModule(moduleId = moduleId1)
+    insertProjectModule(moduleId = moduleId2)
+    insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+    insertProjectModule(moduleId = moduleId2)
 
     val prefix = SearchFieldPrefix(searchTables.modules)
     val fields =
@@ -335,6 +344,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                 "id",
                 "name",
                 "cohortModules.cohort_id",
+                "projectModules.project_id",
                 "deliverables.id",
             )
             .map { prefix.resolve(it) }
@@ -354,6 +364,12 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                         listOf(
                             mapOf("id" to "$deliverableId1"),
                             mapOf("id" to "$deliverableId2"),
+                        ),
+                    "projectModules" to
+                        listOf(
+                            mapOf("project_id" to "$projectId1a"),
+                            mapOf("project_id" to "$projectId1b"),
+                            mapOf("project_id" to "$projectId2"),
                         ),
                 )
             ),

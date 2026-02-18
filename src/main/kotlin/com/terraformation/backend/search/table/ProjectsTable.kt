@@ -8,6 +8,7 @@ import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECT
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DELIVERABLES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VARIABLES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
@@ -79,6 +80,10 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           projectLandUseModelTypes.asMultiValueSublist(
               "landUseModelTypes",
               PROJECTS.ID.eq(PROJECT_LAND_USE_MODEL_TYPES.PROJECT_ID),
+          ),
+          projectModules.asMultiValueSublist(
+              "projectModules",
+              PROJECTS.ID.eq(PROJECT_MODULES.PROJECT_ID),
           ),
           projectVariables.asMultiValueSublist(
               "variables",
