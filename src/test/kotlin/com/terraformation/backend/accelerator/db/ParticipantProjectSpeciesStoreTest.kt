@@ -12,6 +12,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -63,8 +64,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchLastCreatedSpeciesTime {
     @Test
     fun `fetches the last created species time for a given project`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       val speciesId3 = insertSpecies()
@@ -105,8 +105,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchLastModifiedSpeciesTime {
     @Test
     fun `fetches the last updated species time for a given project`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       val speciesId3 = insertSpecies()
@@ -147,8 +146,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `populates all fields and includes associated entities where applicable`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(
@@ -180,8 +178,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read participant project species`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(
@@ -203,16 +200,16 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchParticipantProjectsForSpecies {
     @Test
     fun `fetches the projects a species is associated to by species ID with an active deliverable`() {
-      val cohortId = insertCohort()
       val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
       // This one should not be returned because it is not a species type deliverable
       insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Document)
 
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
 
       val speciesId = insertSpecies()
       val participantProjectSpeciesId1 =
@@ -247,16 +244,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches the projects a species is associated to by species ID with the most recent deliverable if there is no active deliverable`() {
-      val cohortId = insertCohort()
-
-      // This cohort module goes from 0 to 6 days
+      // This module goes from 0 to 6 days
       val moduleIdOld = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
       insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
 
-      // This cohort module goes from 7 to 13 days
+      // This module goes from 7 to 13 days
       val moduleIdMostRecent = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
       val deliverableIdMostRecent =
           insertDeliverable(
               moduleId = moduleIdMostRecent,
@@ -265,21 +258,29 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
       // The clock is between these two modules
 
-      // This cohort module goes from 21 to 27 days
+      // This module goes from 21 to 27 days
       val moduleIdFuture = insertModule()
-      insertCohortModule(
-          cohortId = cohortId,
-          endDate = LocalDate.EPOCH.plusDays(27),
-          moduleId = moduleIdFuture,
-          startDate = LocalDate.EPOCH.plusDays(21),
-      )
       insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
 
       // Between the most recent and future module
       clock.instant = Instant.EPOCH.plus(20, ChronoUnit.DAYS)
 
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule(moduleId = moduleIdOld)
+      insertProjectModule(moduleId = moduleIdMostRecent)
+      insertProjectModule(
+          moduleId = moduleIdFuture,
+          startDate = LocalDate.EPOCH.plusDays(21),
+          endDate = LocalDate.EPOCH.plusDays(27),
+      )
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule(moduleId = moduleIdOld)
+      insertProjectModule(moduleId = moduleIdMostRecent)
+      insertProjectModule(
+          moduleId = moduleIdFuture,
+          startDate = LocalDate.EPOCH.plusDays(21),
+          endDate = LocalDate.EPOCH.plusDays(27),
+      )
 
       val speciesId = insertSpecies()
       val participantProjectSpeciesId1 =
@@ -314,9 +315,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches the projects a species is associated to by species ID without an active or recent deliverable`() {
-      val cohortId = insertCohort()
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       val speciesId = insertSpecies()
       val participantProjectSpeciesId1 =
@@ -351,13 +351,13 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not include active deliverable ID if the user does not have permission to view project deliverables`() {
-      val cohortId = insertCohort()
       val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
 
       val speciesId = insertSpecies()
       val participantProjectSpeciesId1 =
@@ -394,12 +394,11 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns an empty list of the user does not have permission to read the project`() {
-      val cohortId = insertCohort()
       val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
 
       val speciesId = insertSpecies()
       insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -417,8 +416,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchSpeciesForParticipantProject {
     @Test
     fun `fetches the species and participant project species data associated to a participant project`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       val speciesId1 = insertSpecies(scientificName = "Acacia Kochi")
       val speciesId2 = insertSpecies(scientificName = "Juniperus scopulorum")
@@ -453,7 +451,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                           modifiedTime = now,
                           name = "Project 1",
                           organizationId = inserted.organizationId,
-                          cohortId = cohortId,
+                          phase = CohortPhase.Phase0DueDiligence,
                       ),
                   species =
                       ExistingSpeciesModel(
@@ -486,7 +484,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
                           modifiedTime = now,
                           name = "Project 1",
                           organizationId = inserted.organizationId,
-                          cohortId = cohortId,
+                          phase = CohortPhase.Phase0DueDiligence,
                       ),
                   species =
                       ExistingSpeciesModel(
@@ -505,8 +503,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `returns an empty list of the user does not have permission to read the project`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       val speciesId = insertSpecies()
       insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -524,14 +521,12 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class FindAll {
     @Test
     fun `only includes participant project species the user has permission to read`() {
-      val cohortId1 = insertCohort()
-      val projectId1 = insertProject(cohortId = cohortId1)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId1 = insertSpecies()
       val participantProjectSpeciesId1 =
           insertParticipantProjectSpecies(projectId = projectId1, speciesId = speciesId1)
 
-      val cohortId2 = insertCohort()
-      val projectId2 = insertProject(cohortId = cohortId2)
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId2 = insertSpecies()
       val participantProjectSpeciesId2 =
           insertParticipantProjectSpecies(projectId = projectId2, speciesId = speciesId2)
@@ -555,8 +550,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `creates the entity with the supplied fields`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
 
       val participantProjectSpecies =
@@ -595,7 +589,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject()
       val speciesId = insertSpecies()
 
-      assertThrows<ProjectNotInCohortException> {
+      assertThrows<ProjectNotInCohortPhaseException> {
         store.create(
             NewParticipantProjectSpeciesModel(
                 feedback = "feedback",
@@ -610,8 +604,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws an exception if no permission to create a participant project species`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
 
       every { user.canCreateParticipantProjectSpecies(projectId) } returns false
@@ -631,9 +624,8 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates an entity for each project ID and species ID pairing`() {
-      val cohortId = insertCohort()
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+      val projectId2 = insertProject(phase = CohortPhase.Phase2PlanAndScale)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -700,8 +692,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class Update {
     @Test
     fun `updates the entity with the supplied fields`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -778,8 +769,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to update the entry`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val participantProjectSpeciesId =
           insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
@@ -796,8 +786,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
   inner class Delete {
     @Test
     fun `deletes the supplied list of entities by ID`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       val speciesId3 = insertSpecies()
@@ -838,8 +827,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to delete an entry`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
       val participantProjectSpeciesId1 =

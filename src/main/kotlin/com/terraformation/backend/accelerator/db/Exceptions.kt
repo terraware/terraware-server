@@ -68,8 +68,8 @@ class ProjectModuleNotFoundException(projectId: ProjectId, moduleId: ModuleId) :
 class ProjectNotInCohortException(id: ProjectId) :
     MismatchedStateException("Project $id is not assigned to any cohorts")
 
-class ProjectNotInCohortPhaseException(id: ProjectId, phase: CohortPhase) :
-    MismatchedStateException("Project $id is not currently in $phase")
+class ProjectNotInCohortPhaseException(id: ProjectId, phase: CohortPhase? = null) :
+    MismatchedStateException("Project $id is not currently in ${phase ?: "an accelerator phase"}")
 
 class ProjectVoteNotFoundException(
     projectId: ProjectId,
@@ -79,9 +79,6 @@ class ProjectVoteNotFoundException(
     EntityNotFoundException(
         "Vote not found for project $projectId, phase ${phase?.id}, user $userId"
     )
-
-class SpeciesDeliverableNotFoundException(id: ProjectId) :
-    EntityNotFoundException("Species Deliverable for project $id not found")
 
 class SubmissionDocumentNotFoundException(id: SubmissionDocumentId) :
     EntityNotFoundException("Submission document $id not found")

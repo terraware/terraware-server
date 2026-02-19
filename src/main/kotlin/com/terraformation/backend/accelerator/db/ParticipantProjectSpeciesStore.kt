@@ -15,10 +15,10 @@ import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.records.ParticipantProjectSpeciesRecord
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
@@ -46,11 +46,10 @@ class ParticipantProjectSpeciesStore(
   fun create(model: NewParticipantProjectSpeciesModel): ExistingParticipantProjectSpeciesModel {
     requirePermissions { createParticipantProjectSpecies(model.projectId) }
 
-    // Participant project species can only be associated
-    // to projects that are associated to a participant
+    // Participant project species can only be associated with projects that are in a phase
     val project = projectsDao.fetchOneById(model.projectId)
-    if (project?.cohortId == null) {
-      throw ProjectNotInCohortException(model.projectId)
+    if (project?.phaseId == null) {
+      throw ProjectNotInCohortPhaseException(model.projectId)
     }
 
     val userId = currentUser().userId
@@ -79,14 +78,13 @@ class ParticipantProjectSpeciesStore(
       projectIds: Set<ProjectId>,
       speciesIds: Set<SpeciesId>,
   ): List<ExistingParticipantProjectSpeciesModel> {
-    // Participant project species can only be associated
-    // to projects that are associated to a participant
+    // Participant project species can only be associated with projects that are in a phase
     val projects = projectsDao.fetchById(*projectIds.toTypedArray())
     projects.forEach {
       requirePermissions { createParticipantProjectSpecies(it.id!!) }
 
-      if (it.cohortId == null) {
-        throw ProjectNotInCohortException(it.id!!)
+      if (it.phaseId == null) {
+        throw ProjectNotInCohortPhaseException(it.id!!)
       }
     }
 
@@ -94,8 +92,8 @@ class ParticipantProjectSpeciesStore(
     val now = clock.instant()
 
     dslContext.transactionResult { _ ->
-      projectIds.toSet().forEach { projectId ->
-        speciesIds.toSet().forEach { speciesId ->
+      projectIds.forEach { projectId ->
+        speciesIds.forEach { speciesId ->
           with(PARTICIPANT_PROJECT_SPECIES) {
             dslContext
                 .insertInto(PARTICIPANT_PROJECT_SPECIES)
@@ -152,14 +150,12 @@ class ParticipantProjectSpeciesStore(
         .on(SPECIES.ID.eq(PARTICIPANT_PROJECT_SPECIES.SPECIES_ID))
         .join(PROJECTS)
         .on(PARTICIPANT_PROJECT_SPECIES.PROJECT_ID.eq(PROJECTS.ID))
-        .leftOuterJoin(COHORT_MODULES)
-        .on(
-            COHORT_MODULES.COHORT_ID.eq(PROJECTS.COHORT_ID),
-            COHORT_MODULES.START_DATE.lessOrEqual(today),
-        )
-        .leftOuterJoin(MODULES)
-        .on(COHORT_MODULES.MODULE_ID.eq(MODULES.ID))
-        .leftOuterJoin(DELIVERABLES)
+        .leftJoin(PROJECT_MODULES)
+        .on(PROJECTS.ID.eq(PROJECT_MODULES.PROJECT_ID))
+        .and(PROJECT_MODULES.START_DATE.lessOrEqual(today))
+        .leftJoin(MODULES)
+        .on(PROJECT_MODULES.MODULE_ID.eq(MODULES.ID))
+        .leftJoin(DELIVERABLES)
         .on(
             DELIVERABLES.MODULE_ID.eq(MODULES.ID),
             DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species),

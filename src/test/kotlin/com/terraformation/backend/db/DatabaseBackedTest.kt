@@ -4279,13 +4279,13 @@ abstract class DatabaseBackedTest {
     cohortModulesDao.insert(row)
   }
 
-  private var nextProjectModuleStartDate = LocalDate.EPOCH
+  private val nextProjectModuleStartDates = mutableMapOf<ProjectId, LocalDate>()
 
   fun insertProjectModule(
       projectId: ProjectId = inserted.projectId,
       moduleId: ModuleId = inserted.moduleId,
       title: String = "Module 1",
-      startDate: LocalDate = nextProjectModuleStartDate,
+      startDate: LocalDate = nextProjectModuleStartDates.getOrPut(projectId) { LocalDate.EPOCH },
       endDate: LocalDate = startDate.plusDays(6),
   ) {
     val row =
@@ -4297,7 +4297,7 @@ abstract class DatabaseBackedTest {
             title = title,
         )
 
-    nextProjectModuleStartDate = endDate.plusDays(1)
+    nextProjectModuleStartDates[projectId] = endDate.plusDays(1)
     projectModulesDao.insert(row)
   }
 
