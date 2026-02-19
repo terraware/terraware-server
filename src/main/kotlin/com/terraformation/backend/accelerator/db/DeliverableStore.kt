@@ -161,7 +161,7 @@ class DeliverableStore(
     val query =
         if (projectId != null && deliverableId != null) {
           // Project and deliverable both specified, so return a single result (possibly an empty
-          // submission) regardless of which cohort phase the deliverable's module is in.
+          // submission) regardless of which phase the deliverable's module is in.
           dslContext
               .select(*fieldList, dueDateField)
               .from(DELIVERABLES)
@@ -214,7 +214,7 @@ class DeliverableStore(
                   // There are "submissions" from importing project data from the old project data
                   // hub. The projects can have submissions for deliverables that would ordinarily
                   // only appear for projects in phases. Return these submissions if they exist,
-                  // even if there's no cohort in the picture.
+                  // even if the projects aren't in phases.
                   DSL.select(*fieldList, DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE.`as`(dueDateField))
                       .from(SUBMISSIONS)
                       .join(DELIVERABLES)
