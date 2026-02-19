@@ -435,7 +435,7 @@ internal class PermissionTest : DatabaseTest() {
     moduleIds.forEach { moduleId ->
       putDatabaseId(moduleId, insertModule(createdBy = userId))
 
-      insertCohortModule(getDatabaseId(CohortId(moduleId.value / 1000)), inserted.moduleId)
+      insertProjectModule(getDatabaseId(ProjectId(moduleId.value)), inserted.moduleId)
     }
 
     deliverableIds.forEach { deliverableId ->
