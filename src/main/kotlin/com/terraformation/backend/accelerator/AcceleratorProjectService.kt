@@ -3,7 +3,6 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.accelerator.model.AcceleratorProjectModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.AcceleratorProjectNotFoundException
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -45,18 +44,15 @@ class AcceleratorProjectService(
 
     return dslContext
         .select(
-            COHORTS.ID,
-            COHORTS.NAME,
             PROJECTS.ID,
             PROJECTS.NAME,
             PROJECTS.PHASE_ID,
             decisionsMultiset,
         )
         .from(PROJECTS)
-        .join(COHORTS)
-        .on(PROJECTS.COHORT_ID.eq(COHORTS.ID))
         .where(condition)
-        .orderBy(COHORTS.ID, PROJECTS.ID)
+        .and(PROJECTS.PHASE_ID.isNotNull)
+        .orderBy(PROJECTS.ID)
         .fetch { AcceleratorProjectModel.of(it, decisionsMultiset) }
   }
 }
