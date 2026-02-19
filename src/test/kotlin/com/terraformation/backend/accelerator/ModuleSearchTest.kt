@@ -93,15 +93,15 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `searches for cohort modules and events by modules`() {
+  fun `searches for project modules and events by modules`() {
     val prefix = SearchFieldPrefix(searchTables.modules)
     val fields =
         listOf(
                 "id",
-                "cohortModules.title",
-                "cohortModules.startDate",
-                "cohortModules.endDate",
-                "cohortModules.cohort.id",
+                "projectModules.title",
+                "projectModules.startDate",
+                "projectModules.endDate",
+                "projectModules.project.id",
                 "events.id",
             )
             .map { prefix.resolve(it) }
@@ -110,33 +110,33 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val module2 = insertModule()
     val module3 = insertModule()
 
-    val cohort1 = insertCohort()
-    val cohort2 = insertCohort()
+    val project1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
-    insertCohortModule(
-        cohort1,
+    insertProjectModule(
+        project1,
         module1,
         "Week 1",
         LocalDate.of(2024, 1, 1),
         LocalDate.of(2024, 1, 2),
     )
-    insertCohortModule(
-        cohort1,
+    insertProjectModule(
+        project1,
         module2,
         "Week 2",
         LocalDate.of(2024, 1, 3),
         LocalDate.of(2024, 1, 4),
     )
 
-    insertCohortModule(
-        cohort2,
+    insertProjectModule(
+        project2,
         module2,
         "Module 1",
         LocalDate.of(2024, 2, 1),
         LocalDate.of(2024, 2, 2),
     )
-    insertCohortModule(
-        cohort2,
+    insertProjectModule(
+        project2,
         module3,
         "Module 2",
         LocalDate.of(2024, 2, 3),
@@ -154,13 +154,13 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
             listOf(
                 mapOf(
                     "id" to "$module1",
-                    "cohortModules" to
+                    "projectModules" to
                         listOf(
                             mapOf(
                                 "title" to "Week 1",
                                 "startDate" to LocalDate.of(2024, 1, 1).toString(),
                                 "endDate" to LocalDate.of(2024, 1, 2).toString(),
-                                "cohort" to mapOf("id" to "$cohort1"),
+                                "project" to mapOf("id" to "$project1"),
                             ),
                         ),
                     "events" to
@@ -171,31 +171,31 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
                 ),
                 mapOf(
                     "id" to "$module2",
-                    "cohortModules" to
+                    "projectModules" to
                         listOf(
                             mapOf(
                                 "title" to "Week 2",
                                 "startDate" to LocalDate.of(2024, 1, 3).toString(),
                                 "endDate" to LocalDate.of(2024, 1, 4).toString(),
-                                "cohort" to mapOf("id" to "$cohort1"),
+                                "project" to mapOf("id" to "$project1"),
                             ),
                             mapOf(
                                 "title" to "Module 1",
                                 "startDate" to LocalDate.of(2024, 2, 1).toString(),
                                 "endDate" to LocalDate.of(2024, 2, 2).toString(),
-                                "cohort" to mapOf("id" to "$cohort2"),
+                                "project" to mapOf("id" to "$project2"),
                             ),
                         ),
                 ),
                 mapOf(
                     "id" to "$module3",
-                    "cohortModules" to
+                    "projectModules" to
                         listOf(
                             mapOf(
                                 "title" to "Module 2",
                                 "startDate" to LocalDate.of(2024, 2, 3).toString(),
                                 "endDate" to LocalDate.of(2024, 2, 4).toString(),
-                                "cohort" to mapOf("id" to "$cohort2"),
+                                "project" to mapOf("id" to "$project2"),
                             ),
                         ),
                     "events" to
@@ -213,7 +213,7 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `returns only modules assigned to cohorts visible to non accelerator admin users`() {
+  fun `returns only modules assigned to projects visible to non accelerator admin users`() {
     every { user.canReadAllAcceleratorDetails() } returns false
 
     val prefix = SearchFieldPrefix(searchTables.modules)
@@ -223,38 +223,28 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val module2 = insertModule()
     val invisibleModule = insertModule()
 
-    val userCohort = insertCohort()
-    insertProject(
-        cohortId = userCohort,
-        organizationId = inserted.organizationId,
-        phase = CohortPhase.Phase0DueDiligence,
-    )
+    val userProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     val otherUser = insertUser()
-    val otherCohort = insertCohort()
     val otherOrganization = insertOrganization()
     insertOrganizationUser(otherUser, otherOrganization)
-    insertProject(
-        cohortId = otherCohort,
-        organizationId = otherOrganization,
-        phase = CohortPhase.Phase0DueDiligence,
-    )
+    val otherProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
-    insertCohortModule(userCohort, module1)
-    insertCohortModule(userCohort, module2)
-    insertCohortModule(otherCohort, module2)
-    insertCohortModule(otherCohort, invisibleModule)
+    insertProjectModule(userProject, module1)
+    insertProjectModule(userProject, module2)
+    insertProjectModule(otherProject, module2)
+    insertProjectModule(otherProject, invisibleModule)
 
     val expected =
         SearchResults(
             listOf(
                 mapOf(
                     "id" to "$module1",
-                    "cohortModules" to listOf(mapOf("cohort" to mapOf("id" to "$userCohort"))),
+                    "projectModules" to listOf(mapOf("project" to mapOf("id" to "$userProject"))),
                 ),
                 mapOf(
                     "id" to "$module2",
-                    "cohortModules" to listOf(mapOf("cohort" to mapOf("id" to "$userCohort"))),
+                    "projectModules" to listOf(mapOf("project" to mapOf("id" to "$userProject"))),
                 ),
             ),
             null,

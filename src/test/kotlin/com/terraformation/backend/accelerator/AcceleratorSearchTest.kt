@@ -321,18 +321,13 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     val moduleId1 = insertModule(name = "Module 1 $suffix")
     val deliverableId1 = insertDeliverable(name = "Deliverable 1 $suffix")
     val deliverableId2 = insertDeliverable(name = "Deliverable 2 $suffix")
-    val cohortId1 = insertCohort(name = "Cohort 1 $suffix")
-    val cohortId2 = insertCohort(name = "Cohort 2 $suffix")
     val moduleId2 = insertModule(name = "Module 2 $suffix")
     insertDeliverable(name = "Deliverable 3 $suffix")
-    insertCohortModule(cohortId1, moduleId1)
-    insertCohortModule(cohortId2, moduleId1)
-    insertCohortModule(cohortId2, moduleId2)
-    val projectId1a = insertProject(cohortId = cohortId1, phase = CohortPhase.Phase0DueDiligence)
+    val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
     insertProjectModule(moduleId = moduleId1)
-    val projectId1b = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
     insertProjectModule(moduleId = moduleId1)
-    val projectId2 = insertProject(cohortId = cohortId2, phase = CohortPhase.Phase0DueDiligence)
+    val projectId3 = insertProject(phase = CohortPhase.Phase0DueDiligence)
     insertProjectModule(moduleId = moduleId1)
     insertProjectModule(moduleId = moduleId2)
     insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
@@ -343,7 +338,6 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
         listOf(
                 "id",
                 "name",
-                "cohortModules.cohort_id",
                 "projectModules.project_id",
                 "deliverables.id",
             )
@@ -355,11 +349,6 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                 mapOf(
                     "id" to "$moduleId1",
                     "name" to "Module 1 $suffix",
-                    "cohortModules" to
-                        listOf(
-                            mapOf("cohort_id" to "$cohortId1"),
-                            mapOf("cohort_id" to "$cohortId2"),
-                        ),
                     "deliverables" to
                         listOf(
                             mapOf("id" to "$deliverableId1"),
@@ -367,9 +356,9 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
                         ),
                     "projectModules" to
                         listOf(
-                            mapOf("project_id" to "$projectId1a"),
-                            mapOf("project_id" to "$projectId1b"),
+                            mapOf("project_id" to "$projectId1"),
                             mapOf("project_id" to "$projectId2"),
+                            mapOf("project_id" to "$projectId3"),
                         ),
                 )
             ),
@@ -381,7 +370,8 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
             prefix,
             fields,
             mapOf(
-                prefix to FieldNode(prefix.resolve("cohortModules.cohort_id"), listOf("$cohortId1"))
+                prefix to
+                    FieldNode(prefix.resolve("projectModules.project_id"), listOf("$projectId1"))
             ),
         )
 

@@ -3,7 +3,6 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -20,10 +19,6 @@ class CohortsTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          cohortModules.asMultiValueSublist(
-              "cohortModules",
-              COHORTS.ID.eq(COHORT_MODULES.COHORT_ID),
-          ),
           projects.asMultiValueSublist("projects", COHORTS.ID.eq(PROJECTS.COHORT_ID)),
       )
     }
