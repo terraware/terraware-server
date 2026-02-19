@@ -9,9 +9,9 @@ import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.records.SubmissionsRecord
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.attach
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -82,19 +82,19 @@ class SubmissionStore(
             .from(DELIVERABLES)
             .join(MODULES)
             .on(DELIVERABLES.MODULE_ID.eq(MODULES.ID))
-            .join(COHORT_MODULES)
-            .on(MODULES.ID.eq(COHORT_MODULES.MODULE_ID))
+            .join(PROJECT_MODULES)
+            .on(MODULES.ID.eq(PROJECT_MODULES.MODULE_ID))
             .join(PROJECTS)
-            .on(COHORT_MODULES.COHORT_ID.eq(PROJECTS.COHORT_ID))
+            .on(PROJECT_MODULES.PROJECT_ID.eq(PROJECTS.ID))
             .leftJoin(SUBMISSIONS)
             .on(
                 DELIVERABLES.ID.eq(SUBMISSIONS.DELIVERABLE_ID),
                 PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID),
             )
-            .where(COHORT_MODULES.START_DATE.lessOrEqual(today))
+            .where(PROJECT_MODULES.START_DATE.lessOrEqual(today))
             .and(PROJECTS.ID.eq(projectId))
             .and(DELIVERABLES.DELIVERABLE_TYPE_ID.eq(DeliverableType.Species))
-            .orderBy(COHORT_MODULES.END_DATE.desc())
+            .orderBy(PROJECT_MODULES.END_DATE.desc())
             .limit(1)
             .fetchOne { ExistingSpeciesDeliverableSubmissionModel.of(it) }
 

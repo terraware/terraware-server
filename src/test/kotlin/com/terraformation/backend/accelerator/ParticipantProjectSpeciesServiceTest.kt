@@ -10,6 +10,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAdd
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
@@ -92,13 +93,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `creates a submission for the project and deliverable if one does not exist for the active module when a species is added to a project`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      insertProjectModule()
 
       val existingModel =
           service.create(
@@ -151,13 +151,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not create another submission for a project if a deliverable submission for the active module already exists`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      insertProjectModule()
       val submissionId =
           insertSubmission(
               deliverableId = deliverableId,
@@ -196,14 +195,14 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each active project deliverable`() {
-      val cohortId = insertCohort()
       val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -256,16 +255,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each most recent project deliverable, if there is no active one`() {
-      val cohortId = insertCohort()
-
       // This cohort module goes from 0 to 6 days
       val moduleIdOld = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
       insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
 
       // This cohort module goes from 7 to 13 days
       val moduleIdMostRecent = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
       val deliverableIdMostRecent =
           insertDeliverable(
               moduleId = moduleIdMostRecent,
@@ -276,19 +271,27 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
       // This cohort module goes from 21 to 27 days
       val moduleIdFuture = insertModule()
-      insertCohortModule(
-          cohortId = cohortId,
-          endDate = LocalDate.EPOCH.plusDays(27),
-          moduleId = moduleIdFuture,
-          startDate = LocalDate.EPOCH.plusDays(21),
-      )
       insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
 
       // Between the most recent and future module
       clock.instant = Instant.EPOCH.plus(20, ChronoUnit.DAYS)
 
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule(moduleId = moduleIdOld)
+      insertProjectModule(moduleId = moduleIdMostRecent)
+      insertProjectModule(
+          endDate = LocalDate.EPOCH.plusDays(27),
+          startDate = LocalDate.EPOCH.plusDays(21),
+          moduleId = moduleIdFuture,
+      )
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule(moduleId = moduleIdOld)
+      insertProjectModule(moduleId = moduleIdMostRecent)
+      insertProjectModule(
+          endDate = LocalDate.EPOCH.plusDays(27),
+          startDate = LocalDate.EPOCH.plusDays(21),
+          moduleId = moduleIdFuture,
+      )
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -341,9 +344,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates an entity for each project ID and species ID pairing even if there isn't any associated deliverable`() {
-      val cohortId = insertCohort()
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 

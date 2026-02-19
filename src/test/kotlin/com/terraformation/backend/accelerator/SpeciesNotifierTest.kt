@@ -12,6 +12,7 @@ import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSp
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
@@ -42,10 +43,9 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertModule()
-    insertCohort()
-    insertCohortModule()
 
-    projectId = insertProject(cohortId = inserted.cohortId)
+    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    insertProjectModule()
     deliverableId = insertDeliverable(deliverableTypeId = DeliverableType.Species)
 
     every { user.canReadProjectDeliverables(any()) } returns true

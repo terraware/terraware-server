@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.model.ExistingSpeciesDeliverableSubmissionModel
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
@@ -38,26 +39,25 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchActiveSpeciesDeliverable {
+  inner class FetchMostRecentSpeciesDeliverableSubmission {
     @Test
     fun `fetches the deliverable ID if no submission present for an active deliverable`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertProjectModule()
       insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
 
       // Module goes from epoch + 6 days -> epoch + 12 days
       val moduleIdActive = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdActive)
+      insertProjectModule()
       val deliverableIdActive =
           insertDeliverable(moduleId = moduleIdActive, deliverableTypeId = DeliverableType.Species)
 
       // Module goes from epoch + 12 days -> epoch + 18 days
       val moduleIdFuture = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdFuture)
+      insertProjectModule()
       insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
 
       clock.instant = Instant.EPOCH.plus(7, ChronoUnit.DAYS)
@@ -73,17 +73,16 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches the deliverable ID if no submission present for the most recent inactive deliverable if there is no active deliverable`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertProjectModule()
       insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
 
       // Module goes from epoch + 6 days -> epoch + 12 days
       val moduleIdMostRecent = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
+      insertProjectModule()
       val deliverableIdMostRecent =
           insertDeliverable(
               moduleId = moduleIdMostRecent,
@@ -94,10 +93,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
       // Module goes from epoch + 20 days -> epoch + 30 days
       val moduleIdFuture = insertModule()
-      insertCohortModule(
-          cohortId = cohortId,
+      insertProjectModule(
           endDate = LocalDate.EPOCH.plusDays(30),
-          moduleId = moduleIdFuture,
           startDate = LocalDate.EPOCH.plusDays(20),
       )
       insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
@@ -116,19 +113,18 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches both deliverable ID and submission ID if present for active deliverable`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertProjectModule()
       val deliverableIdOld =
           insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
       insertSubmission(deliverableId = deliverableIdOld, projectId = projectId)
 
       // Module goes from epoch + 6 days -> epoch + 12 days
       val moduleIdActive = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdActive)
+      insertProjectModule()
       val deliverableIdActive =
           insertDeliverable(moduleId = moduleIdActive, deliverableTypeId = DeliverableType.Species)
       val submissionIdActive =
@@ -136,7 +132,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
       // Module goes from epoch + 12 days -> epoch + 18 days
       val moduleIdFuture = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdFuture)
+      insertProjectModule()
       val deliverableIdFuture =
           insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
       insertSubmission(deliverableId = deliverableIdFuture, projectId = projectId)
@@ -154,19 +150,18 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches both deliverable ID and submission ID if present for most recent deliverable if there is no active deliverable`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase2PlanAndScale)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdOld)
+      insertProjectModule()
       val deliverableIdOld =
           insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
       insertSubmission(deliverableId = deliverableIdOld, projectId = projectId)
 
       // Module goes from epoch + 6 days -> epoch + 12 days
       val moduleIdMostRecent = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleIdMostRecent)
+      insertProjectModule()
       val deliverableIdActive =
           insertDeliverable(
               moduleId = moduleIdMostRecent,
@@ -179,10 +174,8 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
       // Module goes from epoch + 20 days -> epoch + 30 days
       val moduleIdFuture = insertModule()
-      insertCohortModule(
-          cohortId = cohortId,
+      insertProjectModule(
           endDate = LocalDate.EPOCH.plusDays(30),
-          moduleId = moduleIdFuture,
           startDate = LocalDate.EPOCH.plusDays(20),
       )
       val deliverableIdFuture =
@@ -203,11 +196,10 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws an exception if no permission to read the submission`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
+      insertProjectModule()
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
