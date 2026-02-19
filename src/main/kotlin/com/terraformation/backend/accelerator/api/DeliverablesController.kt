@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.DeliverableService
-import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.SubmissionService
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
@@ -20,7 +19,6 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessOrError
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.getFilename
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -64,7 +62,6 @@ class DeliverablesController(
     private val deliverablesImporter: DeliverablesImporter,
     private val deliverableService: DeliverableService,
     private val deliverableStore: DeliverableStore,
-    private val projectAcceleratorDetailsService: ProjectAcceleratorDetailsService,
     private val submissionService: SubmissionService,
     private val submissionStore: SubmissionStore,
 ) {
@@ -266,8 +263,6 @@ class DeliverablesController(
 
 data class ListDeliverablesElement(
     val category: DeliverableCategory,
-    val cohortId: CohortId?,
-    val cohortName: String?,
     @Schema(description = "Optional description of the deliverable in HTML form.")
     val descriptionHtml: String?,
     val dueDate: LocalDate?,
@@ -297,8 +292,6 @@ data class ListDeliverablesElement(
       model: DeliverableSubmissionModel,
   ) : this(
       model.category,
-      model.cohortId,
-      model.cohortName,
       model.descriptionHtml,
       model.dueDate,
       model.deliverableId,
