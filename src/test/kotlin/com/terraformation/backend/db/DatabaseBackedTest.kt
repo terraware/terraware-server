@@ -57,7 +57,6 @@ import com.terraformation.backend.db.accelerator.tables.daos.ActivityMediaFilesD
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
-import com.terraformation.backend.db.accelerator.tables.daos.CohortModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
@@ -96,7 +95,6 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFiles
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
-import com.terraformation.backend.db.accelerator.tables.pojos.CohortModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
@@ -631,7 +629,6 @@ abstract class DatabaseBackedTest {
   protected val batchSubLocationsDao: BatchSubLocationsDao by lazyDao()
   protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
   protected val birdnetResultsDao: BirdnetResultsDao by lazyDao()
-  protected val cohortModulesDao: CohortModulesDao by lazyDao()
   protected val cohortsDao: CohortsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
@@ -4255,28 +4252,6 @@ abstract class DatabaseBackedTest {
     cohortsDao.insert(row)
 
     return row.id!!.also { inserted.cohortIds.add(it) }
-  }
-
-  private var nextCohortModuleStartDate = LocalDate.EPOCH
-
-  fun insertCohortModule(
-      cohortId: CohortId = inserted.cohortId,
-      moduleId: ModuleId = inserted.moduleId,
-      title: String = "Module 1",
-      startDate: LocalDate = nextCohortModuleStartDate,
-      endDate: LocalDate = startDate.plusDays(6),
-  ) {
-    val row =
-        CohortModulesRow(
-            cohortId = cohortId,
-            moduleId = moduleId,
-            title = title,
-            startDate = startDate,
-            endDate = endDate,
-        )
-
-    nextCohortModuleStartDate = endDate.plusDays(1)
-    cohortModulesDao.insert(row)
   }
 
   private val nextProjectModuleStartDates = mutableMapOf<ProjectId, LocalDate>()

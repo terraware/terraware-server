@@ -7,10 +7,7 @@ import com.terraformation.backend.accelerator.event.CohortProjectRemovedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
-import com.terraformation.backend.db.accelerator.tables.records.ProjectModulesRecord
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
-import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -47,56 +44,6 @@ class ProjectPhaseServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(expected)
     }
-
-    @Test
-    fun `populates project modules based on cohort modules`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
-      val moduleId1 = insertModule()
-      insertCohortModule(
-          startDate = LocalDate.of(2026, 1, 1),
-          endDate = LocalDate.of(2026, 1, 2),
-          title = "Module 1",
-      )
-      insertProjectModule(
-          startDate = LocalDate.of(2026, 1, 3),
-          endDate = LocalDate.of(2026, 1, 4),
-          title = "Module 1 (Project)",
-      )
-      val moduleId2 = insertModule()
-      insertCohortModule(
-          startDate = LocalDate.of(2026, 1, 5),
-          endDate = LocalDate.of(2026, 1, 6),
-          title = "Module 2",
-      )
-
-      insertCohort()
-      insertModule()
-      insertCohortModule()
-
-      service.on(CohortProjectAddedEvent(user.userId, cohortId, projectId))
-
-      assertTableEquals(
-          setOf(
-              // Existing association with module 1 should remain untouched
-              ProjectModulesRecord(
-                  projectId,
-                  moduleId1,
-                  LocalDate.of(2026, 1, 3),
-                  LocalDate.of(2026, 1, 4),
-                  "Module 1 (Project)",
-              ),
-              // New record should be inserted from cohort modules
-              ProjectModulesRecord(
-                  projectId,
-                  moduleId2,
-                  LocalDate.of(2026, 1, 5),
-                  LocalDate.of(2026, 1, 6),
-                  "Module 2",
-              ),
-          )
-      )
-    }
   }
 
   @Nested
@@ -114,46 +61,6 @@ class ProjectPhaseServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               record.phaseId = null
             }
           }
-
-      service.on(CohortProjectRemovedEvent(cohortId, projectId, user.userId))
-
-      assertTableEquals(expected)
-    }
-
-    @Test
-    fun `removes project modules based on cohort modules`() {
-      insertCohort()
-      insertModule()
-      insertCohortModule()
-      insertProject()
-      insertProjectModule()
-
-      val expected = dslContext.fetch(PROJECT_MODULES)
-
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
-      insertModule()
-      insertCohortModule(
-          startDate = LocalDate.of(2026, 1, 1),
-          endDate = LocalDate.of(2026, 1, 2),
-          title = "Module 1",
-      )
-      insertProjectModule(
-          startDate = LocalDate.of(2026, 1, 3),
-          endDate = LocalDate.of(2026, 1, 4),
-          title = "Module 1 (Project)",
-      )
-      insertModule()
-      insertCohortModule(
-          startDate = LocalDate.of(2026, 1, 5),
-          endDate = LocalDate.of(2026, 1, 6),
-          title = "Module 2",
-      )
-      insertProjectModule(
-          startDate = LocalDate.of(2026, 1, 5),
-          endDate = LocalDate.of(2026, 1, 6),
-          title = "Module 2",
-      )
 
       service.on(CohortProjectRemovedEvent(cohortId, projectId, user.userId))
 

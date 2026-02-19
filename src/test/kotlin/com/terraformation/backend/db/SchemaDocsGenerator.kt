@@ -143,7 +143,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "application_statuses" to setOf(ALL, ACCELERATOR),
                   "applications" to setOf(ALL, ACCELERATOR),
                   "cohorts" to setOf(ALL, ACCELERATOR),
-                  "cohort_modules" to setOf(ALL, ACCELERATOR),
                   "cohort_phases" to setOf(ALL, ACCELERATOR),
                   "deal_stages" to setOf(ALL, ACCELERATOR),
                   "default_voters" to setOf(ALL, ACCELERATOR),

@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
-import com.terraformation.backend.accelerator.db.CohortModuleStore
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
+import com.terraformation.backend.accelerator.db.ProjectModuleStore
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 class ProjectModulesController(
     private val clock: InstantSource,
-    private val cohortModuleStore: CohortModuleStore,
+    private val projectModuleStore: ProjectModuleStore,
 ) {
   @ApiResponse200
   @ApiResponse404
@@ -38,7 +38,7 @@ class ProjectModulesController(
   fun listProjectModules(
       @PathVariable projectId: ProjectId,
   ): ListProjectModulesResponsePayload {
-    val models = cohortModuleStore.fetch(projectId = projectId)
+    val models = projectModuleStore.fetch(projectId = projectId)
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
     return ListProjectModulesResponsePayload(
         models.map { model -> ProjectModulePayload(model, today) }
@@ -54,7 +54,7 @@ class ProjectModulesController(
       @PathVariable moduleId: ModuleId,
   ): GetProjectModuleResponsePayload {
     val model =
-        cohortModuleStore.fetch(projectId = projectId, moduleId = moduleId).firstOrNull()
+        projectModuleStore.fetch(projectId = projectId, moduleId = moduleId).firstOrNull()
             ?: throw ModuleNotFoundException(moduleId)
     val today = LocalDate.ofInstant(clock.instant(), TimeZones.UTC)
     return GetProjectModuleResponsePayload(ProjectModulePayload(model, today))
@@ -76,7 +76,13 @@ class ProjectModulesController(
       throw BadRequestException("Start date must be before end date")
     }
 
-    cohortModuleStore.assign(projectId, moduleId, payload.title, payload.startDate, payload.endDate)
+    projectModuleStore.assign(
+        projectId,
+        moduleId,
+        payload.title,
+        payload.startDate,
+        payload.endDate,
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -84,12 +90,12 @@ class ProjectModulesController(
   @ApiResponse200
   @ApiResponse404
   @DeleteMapping("/{moduleId}")
-  @Operation(summary = "Deletes a module from a cohort if it is currently associated.")
+  @Operation(summary = "Deletes a module from a project if it is currently associated.")
   fun deleteProjectModule(
       @PathVariable projectId: ProjectId,
       @PathVariable moduleId: ModuleId,
   ): SimpleSuccessResponsePayload {
-    cohortModuleStore.remove(projectId, moduleId)
+    projectModuleStore.remove(projectId, moduleId)
 
     return SimpleSuccessResponsePayload()
   }

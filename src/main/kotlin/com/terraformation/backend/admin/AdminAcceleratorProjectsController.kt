@@ -1,11 +1,11 @@
 package com.terraformation.backend.admin
 
-import com.terraformation.backend.accelerator.db.CohortModuleStore
 import com.terraformation.backend.accelerator.db.DeliverableDueDateStore
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleStore
+import com.terraformation.backend.accelerator.db.ProjectModuleStore
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ProjectStore
@@ -34,8 +34,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 class AdminAcceleratorProjectsController(
     private val deliverableDueDateStore: DeliverableDueDateStore,
     private val deliverableStore: DeliverableStore,
-    private val cohortModuleStore: CohortModuleStore,
     private val moduleStore: ModuleStore,
+    private val projectModuleStore: ProjectModuleStore,
     private val projectStore: ProjectStore,
 ) {
   private val log = perClassLogger()
@@ -52,7 +52,7 @@ class AdminAcceleratorProjectsController(
   @GetMapping("/{projectId}")
   fun acceleratorProjectView(model: Model, @PathVariable projectId: ProjectId): String {
     val project = projectStore.fetchOneById(projectId)
-    val projectModules = cohortModuleStore.fetch(projectId = projectId)
+    val projectModules = projectModuleStore.fetch(projectId = projectId)
 
     val modules = moduleStore.fetchAllModules()
     val allDeliverables = deliverableStore.fetchDeliverables().groupBy { it.moduleId }
@@ -105,7 +105,7 @@ class AdminAcceleratorProjectsController(
       }
 
       val moduleModel =
-          cohortModuleStore
+          projectModuleStore
               .fetch(projectId = projectId, moduleId = dueDateModel.moduleId)
               .firstOrNull() ?: throw ModuleNotFoundException(dueDateModel.moduleId)
 
