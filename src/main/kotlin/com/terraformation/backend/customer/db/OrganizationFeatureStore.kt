@@ -5,9 +5,9 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -66,10 +66,10 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .on(MODULES.ID.eq(DELIVERABLES.MODULE_ID))
                   .leftJoin(SUBMISSIONS)
                   .on(SUBMISSIONS.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-                  .leftJoin(COHORT_MODULES)
-                  .on(COHORT_MODULES.MODULE_ID.eq(DELIVERABLES.MODULE_ID))
+                  .leftJoin(PROJECT_MODULES)
+                  .on(MODULES.ID.eq(PROJECT_MODULES.MODULE_ID))
                   .leftJoin(PROJECTS)
-                  .on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+                  .on(PROJECT_MODULES.PROJECT_ID.eq(PROJECTS.ID))
                   .or(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
                   .and(MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application))
@@ -78,10 +78,10 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
 
   private val moduleProjectIdsField =
       DSL.multiset(
-              DSL.select(PROJECTS.ID)
-                  .from(COHORT_MODULES)
+              DSL.selectDistinct(PROJECTS.ID)
+                  .from(PROJECT_MODULES)
                   .join(PROJECTS)
-                  .on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+                  .on(PROJECT_MODULES.PROJECT_ID.eq(PROJECTS.ID))
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
           )
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }

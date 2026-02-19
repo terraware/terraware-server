@@ -87,11 +87,10 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         "No modules",
     )
 
-    val cohortId = insertCohort()
-    val projectId = insertProject(cohortId = cohortId)
+    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     insertModule()
-    insertCohortModule()
+    insertProjectModule()
 
     val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
     expectedFeatureProjects[OrganizationFeature.Modules] = setOf(projectId)
@@ -111,12 +110,11 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         "No deliverables",
     )
 
-    val cohortId = insertCohort()
-    val projectId = insertProject(cohortId = cohortId)
+    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     insertModule()
     insertDeliverable()
-    insertCohortModule()
+    insertProjectModule()
 
     val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
     expectedFeatureProjects[OrganizationFeature.Deliverables] = setOf(projectId)
@@ -233,11 +231,11 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         "One application project",
     )
 
-    val cohortId = insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
-    val moduleProjectId = insertProject(name = "Cohort project", cohortId = cohortId)
+    val moduleProjectId =
+        insertProject(name = "Phase 1 project", phase = CohortPhase.Phase1FeasibilityStudy)
     insertModule(phase = CohortPhase.Phase1FeasibilityStudy)
     insertDeliverable()
-    insertCohortModule()
+    insertProjectModule()
 
     expectedFeatureProjects[OrganizationFeature.Deliverables] = setOf(moduleProjectId)
     expectedFeatureProjects[OrganizationFeature.Modules] = setOf(moduleProjectId)
