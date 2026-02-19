@@ -9,7 +9,7 @@ import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EventNotFoundException
-import com.terraformation.backend.db.accelerator.CohortId
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
@@ -17,12 +17,15 @@ import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.pojos.EventProjectsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.net.URI
 import java.time.Duration
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -38,19 +41,19 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
   private val store: ModuleEventStore by lazy {
     ModuleEventStore(clock, dslContext, eventPublisher, eventsDao)
   }
-  private lateinit var cohortId: CohortId
   private lateinit var moduleId: ModuleId
+  private lateinit var projectId: ProjectId
 
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    cohortId = insertCohort()
+    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
     moduleId =
         insertModule(
             liveSessionDescription = "Live session description",
             workshopDescription = "Workshop description",
         )
-    insertCohortModule(cohortId, moduleId)
+    insertProjectModule()
 
     every { user.canManageModules() } returns true
     every { user.canManageModuleEvents() } returns true
@@ -70,7 +73,6 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `throws exception no permission to view event`() {
       every { user.canReadModuleEvent(any()) } returns false
-      insertProject(cohortId = inserted.cohortId)
       val eventId = insertEvent()
       assertThrows<EventNotFoundException> { store.fetchOneById(eventId) }
     }
@@ -80,9 +82,9 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
       val endTime = startTime.plusSeconds(3600)
-      val project1 = insertProject(cohortId = inserted.cohortId)
-      val project2 = insertProject(cohortId = inserted.cohortId)
-      val invisibleProject = insertProject(cohortId = inserted.cohortId)
+      val project1 = projectId
+      val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val invisibleProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       val workshop =
           insertEvent(
@@ -131,12 +133,13 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val time3 = time2.plusSeconds(3600)
       val time4 = time3.plusSeconds(3600)
 
-      val project1 = insertProject(cohortId = inserted.cohortId)
-      val project2 = insertProject(cohortId = inserted.cohortId)
-      val invisibleProject = insertProject(cohortId = inserted.cohortId)
+      val project1 = projectId
+      val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val invisibleProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       val otherModule = insertModule(oneOnOneSessionDescription = "1:1 description")
-      insertCohortModule(cohortId, otherModule)
+      insertProjectModule(projectId = project1)
+      insertProjectModule(projectId = project2)
 
       every { user.canReadProject(invisibleProject) } returns false
 
@@ -360,8 +363,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
     fun `creates event project rows when projects are provided`() {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
-      val project1 = insertProject(cohortId = inserted.cohortId)
-      val project2 = insertProject(cohortId = inserted.cohortId)
+      val project1 = projectId
+      val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val model =
           store.create(
               moduleId,

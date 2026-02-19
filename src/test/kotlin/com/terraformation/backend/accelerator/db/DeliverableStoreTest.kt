@@ -478,7 +478,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val deliverableId = insertDeliverable()
       val submissionId = insertSubmission(submissionStatus = SubmissionStatus.Approved)
       insertModule(phase = CohortPhase.Phase0DueDiligence)
-      insertCohortModule()
+      insertProjectModule()
 
       assertEquals(
           listOf(

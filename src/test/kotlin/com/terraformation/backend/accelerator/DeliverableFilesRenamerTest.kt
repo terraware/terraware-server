@@ -104,7 +104,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class ApplicationInternalNameUpdated {
     @Test
-    fun `Updates Google folder name if drive url exists, but project file naming does not`() {
+    fun `updates Google folder name if drive url exists, but project file naming does not`() {
       every { projectAcceleratorDetailsService.fetchOneById(projectId) } returns
           ProjectAcceleratorDetailsModel(projectId = projectId, googleFolderUrl = oldFolderUrl)
 
@@ -117,7 +117,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `Creates Google folder name if drive url does not exist`() {
+    fun `creates Google folder name if drive url does not exist`() {
       every { projectAcceleratorDetailsService.fetchOneById(projectId) } returns
           ProjectAcceleratorDetailsModel(projectId = projectId, googleFolderUrl = null)
 
@@ -134,7 +134,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `Renames project document submissions and moves them to the folder`() {
+    fun `renames project document submissions and moves them to the folder`() {
       // Application Modules
       insertModule(phase = CohortPhase.Application)
       insertApplicationModule()
@@ -157,7 +157,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
 
       // Participant Modules
       insertModule()
-      insertCohortModule()
+      insertProjectModule()
       insertDeliverable(name = "Test Documents", deliverableTypeId = DeliverableType.Document)
       insertSubmission()
 

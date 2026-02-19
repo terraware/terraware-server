@@ -190,8 +190,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadAllDeliverables() } returns false
 
       insertModule()
-      insertCohort()
-      insertCohortModule()
+      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
       insertDeliverable()
 
       assertThrows<AccessDeniedException> { store.fetchDeliverableDueDates() }
@@ -203,12 +203,12 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `inserts or updates deliverable project due date`() {
       insertModule()
-      insertCohort()
-      insertCohortModule(inserted.cohortId, inserted.moduleId)
       insertDeliverable()
 
-      val projectToUpdate = insertProject(cohortId = inserted.cohortId)
-      val projectToInsert = insertProject(cohortId = inserted.cohortId)
+      val projectToUpdate = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
+      val projectToInsert = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
 
       insertDeliverableProjectDueDate(
           inserted.deliverableId,
@@ -248,11 +248,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canManageDeliverables() } returns false
 
       insertModule()
-      insertCohort()
-      insertCohortModule()
       insertDeliverable()
 
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
 
       assertThrows<AccessDeniedException> {
         store.upsertDeliverableProjectDueDate(
@@ -269,11 +268,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `deletes deliverable project due date`() {
       insertModule()
-      insertCohort()
-      insertCohortModule()
       insertDeliverable()
 
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
 
       insertDeliverableProjectDueDate(
           inserted.deliverableId,
@@ -303,11 +301,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canManageDeliverables() } returns false
 
       insertModule()
-      insertCohort()
-      insertCohortModule()
       insertDeliverable()
 
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
 
       insertDeliverableProjectDueDate(
           inserted.deliverableId,

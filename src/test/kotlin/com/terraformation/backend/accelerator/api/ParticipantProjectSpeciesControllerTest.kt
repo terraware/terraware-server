@@ -23,7 +23,7 @@ class ParticipantProjectSpeciesControllerTest : ControllerIntegrationTest() {
       insertOrganizationUser(role = Role.Owner)
       val projectId = insertProject(cohortId = cohortId, phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
-      insertCohortModule()
+      insertProjectModule()
       insertDeliverable(
           deliverableTypeId = DeliverableType.Species,
           deliverableCategoryId = DeliverableCategory.CarbonEligibility,
