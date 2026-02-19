@@ -59,6 +59,14 @@ class ProjectStore(
         .map { ProjectModel.of(it) }
   }
 
+  fun findAllWithPhase(): List<ExistingProjectModel> {
+    requirePermissions { readAllAcceleratorDetails() }
+
+    return dslContext.selectFrom(PROJECTS).where(PROJECTS.PHASE_ID.isNotNull).fetch {
+      ProjectModel.of(it)
+    }
+  }
+
   fun create(model: NewProjectModel): ProjectId {
     requirePermissions { createProject(model.organizationId) }
 

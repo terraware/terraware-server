@@ -26,13 +26,13 @@
         <a href="/accelerator/modules">accelerator console</a>.
     </p>
 
-    <h3>Projects, Participants, Cohorts</h3>
+    <h3>Projects</h3>
 
     <p th:if="${canQueryGeoServer}">
         <a href="/admin/geoServer">GeoServer (GIS) maps</a>
     </p>
-    <p th:if="${canReadCohorts}">
-        <a href="/admin/cohorts">Manage cohorts</a>
+    <p th:if="${canReadAllAcceleratorDetails}">
+        <a href="/admin/acceleratorProjects">Manage accelerator projects</a>
     </p>
     <p th:if="${canUpdateDefaultVoters}">
         <a href="/admin/voters">Manage project voters</a>

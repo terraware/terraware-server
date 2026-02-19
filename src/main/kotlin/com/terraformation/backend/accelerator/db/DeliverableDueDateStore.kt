@@ -2,24 +2,22 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.model.DeliverableDueDateModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
 import java.time.LocalDate
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 
 @Named
 class DeliverableDueDateStore(
     private val dslContext: DSLContext,
 ) {
   fun fetchDeliverableDueDates(
-      cohortId: CohortId? = null,
+      projectId: ProjectId? = null,
       moduleId: ModuleId? = null,
       deliverableId: DeliverableId? = null,
   ): List<DeliverableDueDateModel> {
@@ -27,46 +25,33 @@ class DeliverableDueDateStore(
 
     val conditions =
         listOfNotNull(
-            cohortId?.let { COHORT_MODULES.COHORT_ID.eq(cohortId) },
+            projectId?.let { PROJECT_MODULES.PROJECT_ID.eq(projectId) },
             deliverableId?.let { DELIVERABLES.ID.eq(deliverableId) },
             moduleId?.let { DELIVERABLES.MODULE_ID.eq(moduleId) },
         )
 
-    val projectDueDatesMultiset =
-        DSL.multiset(
-                DSL.select(
-                        DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID,
-                        DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE,
-                    )
-                    .from(DELIVERABLE_PROJECT_DUE_DATES)
-                    .where(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-            )
-            .convertFrom { result ->
-              result.associate { record ->
-                record[DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID]!! to
-                    record[DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE]!!
-              }
-            }
-
     return dslContext
         .select(
-            COHORT_MODULES.COHORT_ID,
-            COHORT_MODULES.END_DATE,
-            COHORT_MODULES.MODULE_ID,
+            PROJECT_MODULES.PROJECT_ID,
+            PROJECT_MODULES.END_DATE,
+            PROJECT_MODULES.MODULE_ID,
             DELIVERABLES.ID,
-            projectDueDatesMultiset,
+            DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE,
         )
-        .from(COHORT_MODULES)
+        .from(PROJECT_MODULES)
         .join(DELIVERABLES)
-        .on(DELIVERABLES.MODULE_ID.eq(COHORT_MODULES.MODULE_ID))
+        .on(DELIVERABLES.MODULE_ID.eq(PROJECT_MODULES.MODULE_ID))
+        .leftJoin(DELIVERABLE_PROJECT_DUE_DATES)
+        .on(PROJECT_MODULES.PROJECT_ID.eq(DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID))
+        .and(DELIVERABLES.ID.eq(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID))
         .where(conditions)
         .fetch { record ->
           DeliverableDueDateModel(
-              cohortId = record[COHORT_MODULES.COHORT_ID]!!,
               deliverableId = record[DELIVERABLES.ID]!!,
-              moduleId = record[COHORT_MODULES.MODULE_ID]!!,
-              moduleDueDate = record[COHORT_MODULES.END_DATE]!!,
-              projectDueDates = record[projectDueDatesMultiset],
+              moduleId = record[PROJECT_MODULES.MODULE_ID]!!,
+              moduleDueDate = record[PROJECT_MODULES.END_DATE]!!,
+              projectId = record[PROJECT_MODULES.PROJECT_ID]!!,
+              projectDueDate = record[DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE],
           )
         }
   }

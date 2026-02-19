@@ -7,7 +7,8 @@
 
 <a href="/admin/">Home</a>
 
-<h2>Cohorts</h2>
+<h2>Accelerator Projects</h2>
+
 <table>
     <thead>
     <tr>
@@ -18,14 +19,14 @@
     </thead>
 
     <tbody>
-    <tr th:each="cohort : ${cohorts}" class="striped">
-        <td th:text="${cohort.id}">ID</td>
+    <tr th:each="project : ${projects}" class="striped">
+        <td th:text="${project.id}">ID</td>
         <td>
-            <a th:href="|/admin/cohorts/${cohort.id}|" th:text="${cohort.name}">
-                Cohort Name
+            <a th:href="|/admin/acceleratorProjects/${project.id}|" th:text="${project.name}">
+                Project Name
             </a>
         </td>
-        <td th:text="${cohort.phase.getDisplayName(#locale.default)}">Phase</td>
+        <td th:text="${project.phase.getDisplayName(#locale.default)}">Phase</td>
     </tr>
     </tbody>
 </table>

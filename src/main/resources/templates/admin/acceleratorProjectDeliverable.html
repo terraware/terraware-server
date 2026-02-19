@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+-
+<a href="/admin/acceleratorProjects">Accelerator Projects</a>
+-
+<a th:href="|/admin/acceleratorProjects/${project.id}|" th:text="${project.name}">Project</a>
+
+<h2 th:text="|Deliverable ${deliverable.id}: ${deliverable.name}|">Deliverable Title</h2>
+
+<p>
+    <a th:href="|/accelerator/modules/${module.id}|">Module Details</a>
+    (in accelerator console)
+</p>
+
+<p th:text="|Dates: ${module.startDate} - ${module.endDate}|">Module Dates</p>
+
+<h2>Due Date</h2>
+
+<p>
+    The default due date for a deliverable is the end date of its module. The due date can
+    be overridden on a per-project basis.
+</p>
+
+<table>
+    <tr>
+        <td>Due Date</td>
+        <td th:text="${submission.dueDate}">11/22/3333</td>
+    </tr>
+    <tr>
+        <td>Status</td>
+        <td th:text="${submission.status.getDisplayName(#locale.default)}">Done</td>
+    </tr>
+    <tr>
+        <td>Submission ID</td>
+        <td th:text="${submission.submissionId}">123</td>
+    </tr>
+    <tr>
+        <td>Has Override</td>
+        <td th:text="${dueDates.projectDueDate != null}">Override</td>
+    </tr>
+    <tr>
+        <td>Set Override</td>
+        <td>
+            <form method="POST" th:action="|/admin/acceleratorProjects/${project.id}/deliverables/${deliverable.id}|">
+                <input type="hidden" name="operation" value="upsert" />
+                <input type="date"
+                       name="dueDate"
+                       required
+                       th:disabled="${!canManageDeliverables}"
+                       th:value="${dueDates.projectDueDate}" />
+                <input type="submit"
+                       th:if="${dueDates.projectDueDate != null}"
+                       th:disabled="${!canManageDeliverables}"
+                       value="Update" />
+                <input type="submit"
+                       th:if="${dueDates.projectDueDate == null}"
+                       th:disabled="${!canManageDeliverables}"
+                       value="Add" />
+            </form>
+        </td>
+    </tr>
+    <tr th:if="${dueDates.projectDueDate != null}">
+        <td>Remove Override</td>
+        <td>
+            <form method="POST"
+                  th:action="|/admin/acceleratorProjects/${project.id}/deliverables/${deliverable.id}|">
+                <input type="hidden" name="operation" value="remove" />
+                <input type="submit"
+                       th:disabled="${!canManageDeliverables}"
+                       value="Remove" />
+            </form>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

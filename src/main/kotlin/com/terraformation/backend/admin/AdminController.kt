@@ -79,7 +79,7 @@ class AdminController(
                 .intersect(setOf(GlobalRole.SuperAdmin, GlobalRole.AcceleratorAdmin))
                 .isNotEmpty(),
     )
-    model.addAttribute("canReadCohorts", currentUser().canReadCohorts())
+    model.addAttribute("canReadAllAcceleratorDetails", currentUser().canReadAllAcceleratorDetails())
     model.addAttribute(
         "canRecalculateSurvivalRates",
         GlobalRole.SuperAdmin in currentUser().globalRoles,

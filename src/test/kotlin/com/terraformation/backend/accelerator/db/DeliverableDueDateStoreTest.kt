@@ -4,12 +4,13 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.DeliverableDueDateModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -33,36 +34,35 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchDeliverableDueDates {
     @Test
     fun `can filter by IDs`() {
-      val cohortId1 = insertCohort()
-      val cohortId2 = insertCohort()
-      val projectId1 = insertProject(cohortId = cohortId1)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
 
       val moduleId1 = insertModule()
       val moduleId2 = insertModule()
 
-      val cohort1Module1EndDate = LocalDate.of(2024, 1, 15)
-      val cohort1Module2EndDate = LocalDate.of(2024, 2, 15)
-      val cohort2Module2EndDate = LocalDate.of(2024, 3, 15)
+      val project1Module1EndDate = LocalDate.of(2024, 1, 15)
+      val project1Module2EndDate = LocalDate.of(2024, 2, 15)
+      val project2Module2EndDate = LocalDate.of(2024, 3, 15)
 
-      insertCohortModule(
-          cohortId = cohortId1,
+      insertProjectModule(
+          projectId = projectId1,
           moduleId = moduleId1,
-          startDate = cohort1Module1EndDate.minusDays(1),
-          endDate = cohort1Module1EndDate,
+          startDate = project1Module1EndDate.minusDays(1),
+          endDate = project1Module1EndDate,
       )
 
-      insertCohortModule(
-          cohortId = cohortId1,
+      insertProjectModule(
+          projectId = projectId1,
           moduleId = moduleId2,
-          startDate = cohort1Module2EndDate.minusDays(1),
-          endDate = cohort1Module2EndDate,
+          startDate = project1Module2EndDate.minusDays(1),
+          endDate = project1Module2EndDate,
       )
 
-      insertCohortModule(
-          cohortId = cohortId2,
+      insertProjectModule(
+          projectId = projectId2,
           moduleId = moduleId2,
-          startDate = cohort2Module2EndDate.minusDays(1),
-          endDate = cohort2Module2EndDate,
+          startDate = project2Module2EndDate.minusDays(1),
+          endDate = project2Module2EndDate,
       )
 
       val deliverableId1 = insertDeliverable(moduleId = moduleId1)
@@ -75,52 +75,52 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       val projectDeliverableDueDate = LocalDate.of(2024, 5, 15)
       insertDeliverableProjectDueDate(deliverableId2, projectId1, projectDeliverableDueDate)
 
-      val cohort1Deliverable1 =
+      val project1Deliverable1 =
           DeliverableDueDateModel(
-              cohortId = cohortId1,
+              projectId = projectId1,
               deliverableId = deliverableId1,
               moduleId = moduleId1,
-              moduleDueDate = cohort1Module1EndDate,
-              projectDueDates = emptyMap(),
+              moduleDueDate = project1Module1EndDate,
+              projectDueDate = null,
           )
 
-      val cohort1Deliverable2 =
-          cohort1Deliverable1.copy(
+      val project1Deliverable2 =
+          project1Deliverable1.copy(
               deliverableId = deliverableId2,
-              projectDueDates = mapOf(projectId1 to projectDeliverableDueDate),
+              projectDueDate = projectDeliverableDueDate,
           )
 
-      val cohort1Deliverable3 =
-          cohort1Deliverable1.copy(
+      val project1Deliverable3 =
+          project1Deliverable1.copy(
               deliverableId = deliverableId3,
               moduleId = moduleId2,
-              moduleDueDate = cohort1Module2EndDate,
+              moduleDueDate = project1Module2EndDate,
           )
 
-      val cohort1Deliverable4 =
-          cohort1Deliverable3.copy(
+      val project1Deliverable4 =
+          project1Deliverable3.copy(
               deliverableId = deliverableId4,
           )
 
-      val cohort2Deliverable3 =
-          cohort1Deliverable3.copy(
-              cohortId = cohortId2,
-              moduleDueDate = cohort2Module2EndDate,
+      val project2Deliverable3 =
+          project1Deliverable3.copy(
+              projectId = projectId2,
+              moduleDueDate = project2Module2EndDate,
           )
 
-      val cohort2Deliverable4 =
-          cohort2Deliverable3.copy(
+      val project2Deliverable4 =
+          project2Deliverable3.copy(
               deliverableId = deliverableId4,
           )
 
       assertSetEquals(
           setOf(
-              cohort1Deliverable1,
-              cohort1Deliverable2,
-              cohort1Deliverable3,
-              cohort1Deliverable4,
-              cohort2Deliverable3,
-              cohort2Deliverable4,
+              project1Deliverable1,
+              project1Deliverable2,
+              project1Deliverable3,
+              project1Deliverable4,
+              project2Deliverable3,
+              project2Deliverable4,
           ),
           store.fetchDeliverableDueDates().toSet(),
           "Fetch with no filters",
@@ -128,34 +128,39 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              cohort1Deliverable1,
-              cohort1Deliverable2,
-              cohort1Deliverable3,
-              cohort1Deliverable4,
+              project1Deliverable1,
+              project1Deliverable2,
+              project1Deliverable3,
+              project1Deliverable4,
           ),
-          store.fetchDeliverableDueDates(cohortId = cohortId1).toSet(),
+          store.fetchDeliverableDueDates(projectId = projectId1).toSet(),
           "Fetch with cohort filter",
       )
 
       assertSetEquals(
-          setOf(cohort1Deliverable3, cohort1Deliverable4, cohort2Deliverable3, cohort2Deliverable4),
+          setOf(
+              project1Deliverable3,
+              project1Deliverable4,
+              project2Deliverable3,
+              project2Deliverable4,
+          ),
           store.fetchDeliverableDueDates(moduleId = moduleId2).toSet(),
           "Fetch with module filter",
       )
 
       assertSetEquals(
           setOf(
-              cohort1Deliverable3,
-              cohort1Deliverable4,
+              project1Deliverable3,
+              project1Deliverable4,
           ),
-          store.fetchDeliverableDueDates(cohortId = cohortId1, moduleId = moduleId2).toSet(),
+          store.fetchDeliverableDueDates(projectId = projectId1, moduleId = moduleId2).toSet(),
           "Fetch with cohort and module filter",
       )
 
       assertSetEquals(
           setOf(
-              cohort1Deliverable3,
-              cohort2Deliverable3,
+              project1Deliverable3,
+              project2Deliverable3,
           ),
           store.fetchDeliverableDueDates(deliverableId = deliverableId3).toSet(),
           "Fetch with deliverable filter",
@@ -163,10 +168,10 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
 
       assertSetEquals(
           setOf(
-              cohort1Deliverable3,
+              project1Deliverable3,
           ),
           store
-              .fetchDeliverableDueDates(cohortId = cohortId1, deliverableId = deliverableId3)
+              .fetchDeliverableDueDates(projectId = projectId1, deliverableId = deliverableId3)
               .toSet(),
           "Fetch with cohort and deliverable filter",
       )
