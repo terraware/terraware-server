@@ -2,7 +2,6 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ModuleId
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
 import com.terraformation.backend.db.accelerator.tables.references.EVENTS
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
@@ -53,10 +52,10 @@ class ModulesTable(tables: SearchTables) : SearchTable() {
       } else {
         DSL.exists(
             DSL.selectOne()
-                .from(COHORT_MODULES)
+                .from(PROJECT_MODULES)
                 .join(PROJECTS)
-                .on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
-                .where(COHORT_MODULES.MODULE_ID.eq(MODULES.ID))
+                .on(PROJECTS.ID.eq(PROJECT_MODULES.PROJECT_ID))
+                .where(PROJECT_MODULES.MODULE_ID.eq(MODULES.ID))
                 .and(PROJECTS.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys))
         )
       }

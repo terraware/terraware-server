@@ -217,7 +217,7 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     every { user.canReadAllAcceleratorDetails() } returns false
 
     val prefix = SearchFieldPrefix(searchTables.modules)
-    val fields = listOf("id", "cohortModules.cohort.id").map { prefix.resolve(it) }
+    val fields = listOf("id", "projectModules.project.id").map { prefix.resolve(it) }
 
     val module1 = insertModule()
     val module2 = insertModule()
