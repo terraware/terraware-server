@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.db.CohortModuleStore
 import com.terraformation.backend.accelerator.db.DeliverableDueDateStore
 import com.terraformation.backend.accelerator.db.DeliverableNotFoundException
 import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
@@ -89,51 +90,49 @@ class AdminAcceleratorProjectsController(
   ): String {
     requirePermissions { readAllDeliverables() }
 
-    val project = projectStore.fetchOneById(projectId)
+    try {
+      val project = projectStore.fetchOneById(projectId)
 
-    val dueDateModel =
-        try {
+      val dueDateModel =
           deliverableDueDateStore
               .fetchDeliverableDueDates(projectId = projectId, deliverableId = deliverableId)
               .firstOrNull()
-        } catch (e: Exception) {
-          log.warn("Fetch deliverable due dates failed", e)
-          redirectAttributes.failureMessage = "Error looking up deliverable due date: ${e.message}"
-          return redirectToAcceleratorProject(projectId)
-        }
 
-    if (dueDateModel == null) {
-      redirectAttributes.failureMessage =
-          "Deliverable $deliverableId not associated with project $projectId"
-      return redirectToAcceleratorProject(projectId)
-    }
+      if (dueDateModel == null) {
+        redirectAttributes.failureMessage =
+            "Deliverable $deliverableId not associated with project $projectId"
+        return redirectToAcceleratorProject(projectId)
+      }
 
-    val moduleModel =
-        cohortModuleStore.fetch(projectId = projectId, moduleId = dueDateModel.moduleId).first()
+      val moduleModel =
+          cohortModuleStore
+              .fetch(projectId = projectId, moduleId = dueDateModel.moduleId)
+              .firstOrNull() ?: throw ModuleNotFoundException(dueDateModel.moduleId)
 
-    val deliverable =
-        try {
+      val deliverable =
           deliverableStore.fetchDeliverables(deliverableId).firstOrNull()
               ?: throw DeliverableNotFoundException(deliverableId)
-        } catch (e: Exception) {
-          log.warn("Fetch deliverable data failed", e)
-          redirectAttributes.failureMessage = "Error looking up deliverable data: ${e.message}"
-          return redirectToAcceleratorProject(projectId)
-        }
 
-    val submission =
-        deliverableStore
-            .fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId)
-            .first()
+      val submission =
+          deliverableStore
+              .fetchDeliverableSubmissions(deliverableId = deliverableId, projectId = projectId)
+              .firstOrNull()
+              ?: throw Exception("No submission for project $projectId deliverable $deliverableId")
 
-    model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())
-    model.addAttribute("deliverable", deliverable)
-    model.addAttribute("dueDates", dueDateModel)
-    model.addAttribute("module", moduleModel)
-    model.addAttribute("project", project)
-    model.addAttribute("submission", submission)
+      model.addAttribute("canManageDeliverables", currentUser().canManageDeliverables())
+      model.addAttribute("deliverable", deliverable)
+      model.addAttribute("dueDates", dueDateModel)
+      model.addAttribute("module", moduleModel)
+      model.addAttribute("project", project)
+      model.addAttribute("submission", submission)
 
-    return "/admin/acceleratorProjectDeliverable"
+      return "/admin/acceleratorProjectDeliverable"
+    } catch (e: Exception) {
+      log.warn("Project deliverable view failed", e)
+      redirectAttributes.failureMessage =
+          "Error looking up deliverable data for project: ${e.message}"
+      return redirectToAcceleratorProject(projectId)
+    }
   }
 
   @PostMapping("/{projectId}/deliverables/{deliverableId}")

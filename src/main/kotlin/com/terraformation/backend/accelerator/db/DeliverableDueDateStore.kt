@@ -11,7 +11,6 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
 import java.time.LocalDate
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 
 @Named
 class DeliverableDueDateStore(
@@ -31,22 +30,6 @@ class DeliverableDueDateStore(
             moduleId?.let { DELIVERABLES.MODULE_ID.eq(moduleId) },
         )
 
-    val projectDueDatesMultiset =
-        DSL.multiset(
-                DSL.select(
-                        DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID,
-                        DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE,
-                    )
-                    .from(DELIVERABLE_PROJECT_DUE_DATES)
-                    .where(DELIVERABLE_PROJECT_DUE_DATES.DELIVERABLE_ID.eq(DELIVERABLES.ID))
-            )
-            .convertFrom { result ->
-              result.associate { record ->
-                record[DELIVERABLE_PROJECT_DUE_DATES.PROJECT_ID]!! to
-                    record[DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE]!!
-              }
-            }
-
     return dslContext
         .select(
             PROJECT_MODULES.PROJECT_ID,
@@ -54,7 +37,6 @@ class DeliverableDueDateStore(
             PROJECT_MODULES.MODULE_ID,
             DELIVERABLES.ID,
             DELIVERABLE_PROJECT_DUE_DATES.DUE_DATE,
-            projectDueDatesMultiset,
         )
         .from(PROJECT_MODULES)
         .join(DELIVERABLES)
