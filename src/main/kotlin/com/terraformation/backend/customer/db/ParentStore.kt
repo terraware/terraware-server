@@ -16,10 +16,10 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.EVENT_PROJECTS
 import com.terraformation.backend.db.accelerator.tables.references.PARTICIPANT_PROJECT_SPECIES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.SUBMISSIONS
 import com.terraformation.backend.db.asNonNullable
@@ -361,13 +361,13 @@ class ParentStore(private val dslContext: DSLContext) {
     val cohortModuleExists =
         dslContext
             .selectOne()
-            .from(COHORT_MODULES)
+            .from(PROJECT_MODULES)
             .join(PROJECTS)
-            .on(PROJECTS.COHORT_ID.eq(COHORT_MODULES.COHORT_ID))
+            .on(PROJECTS.ID.eq(PROJECT_MODULES.PROJECT_ID))
             .join(ORGANIZATION_USERS)
             .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
             .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-            .and(COHORT_MODULES.MODULE_ID.eq(moduleId))
+            .and(PROJECT_MODULES.MODULE_ID.eq(moduleId))
             .fetch()
             .isNotEmpty
     val applicationModuleExists =
