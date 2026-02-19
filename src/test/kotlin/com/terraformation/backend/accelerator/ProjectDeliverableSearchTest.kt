@@ -46,13 +46,13 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
     )
     insertCohort()
     insertModule()
-    insertCohortModule(
-        inserted.cohortId,
+    projectId = insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    insertProjectModule(
+        projectId,
         inserted.moduleId,
         startDate = moduleStartDate,
         endDate = moduleEndDate,
     )
-    projectId = insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)
@@ -301,16 +301,9 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         )
     val deliverableWithoutSubmissions = insertDeliverable(moduleId = moduleId)
 
-    val otherCohort = insertCohort()
-    insertCohortModule(cohortId = otherCohort, moduleId = inserted.moduleId)
-
-    val otherOrganization = insertOrganization()
-    val otherProject =
-        insertProject(
-            cohortId = otherCohort,
-            organizationId = otherOrganization,
-            phase = CohortPhase.Phase0DueDiligence,
-        )
+    insertOrganization()
+    val otherProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    insertProjectModule()
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = otherProject,
