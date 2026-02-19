@@ -43,13 +43,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchDeliverableSubmissions {
     @Test
     fun `can filter by IDs`() {
-      // Organization 1
-      //   Project 1
-      //   Project 2
-      // Organization 2
-      //   Project 3
-      //   Project 4
-      //
       // Module 1
       //   Deliverable 1
       //     Submission 1 (project 1)
@@ -59,29 +52,26 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       // Module 2
       //   Deliverable 3
       //
-      // Cohort 1
-      //   Module 1
-      //   Module 2
-      //   Project 1 (organization 1)
-      //   Project 2 (organization 1)
-      //   Project 3 (organization 2)
-      // Cohort 2
-      //   Module 2
-      //   Participant 3
-      //     Project 4 (organization 2)
+      // Organization 1
+      //   Project 1
+      //     Module 1
+      //     Module 2
+      //   Project 2
+      //     Module 1
+      // Organization 2
+      //   Project 3
+      //     Module 2
+      //   Project 4 (not in accelerator phase)
 
       val now = Instant.ofEpochSecond(30)
       clock.instant = now
 
-      val cohortId1 = insertCohort(name = "Cohort 1")
-      val cohortId2 = insertCohort(name = "Cohort 2")
-
       val organizationId1 = insertOrganization()
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
       val organizationId2 = insertOrganization()
-      val projectId1 = insertProject(organizationId = organizationId1, cohortId = cohortId1)
-      val projectId2 = insertProject(organizationId = organizationId1, cohortId = cohortId1)
-      val projectId3 = insertProject(organizationId = organizationId2, cohortId = cohortId1)
-      val projectId4 = insertProject(organizationId = organizationId2, cohortId = cohortId2)
+      val projectId3 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId4 = insertProject()
 
       val moduleId1 = insertModule(name = "Name 1")
       val deliverableId1 = insertDeliverable()
@@ -90,26 +80,33 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val deliverableId3 = insertDeliverable(descriptionHtml = null)
       insertDeliverableDocument(templateUrl = "https://example.com/")
 
-      insertCohortModule(
-          cohortId1,
+      insertProjectModule(
+          projectId1,
           moduleId1,
           startDate = LocalDate.of(2024, 1, 1),
           endDate = LocalDate.of(2024, 1, 2),
           title = "Module 1",
       )
-      insertCohortModule(
-          cohortId1,
+      insertProjectModule(
+          projectId1,
           moduleId2,
           startDate = LocalDate.of(2024, 2, 1),
           endDate = LocalDate.of(2024, 2, 2),
           title = "Module 2",
       )
-      insertCohortModule(
-          cohortId2,
+      insertProjectModule(
+          projectId2,
+          moduleId1,
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 1, 2),
+          title = "Module 1",
+      )
+      insertProjectModule(
+          projectId3,
           moduleId2,
-          startDate = LocalDate.of(2024, 3, 1),
-          endDate = LocalDate.of(2024, 3, 2),
-          title = "Module 3",
+          startDate = LocalDate.of(2024, 2, 1),
+          endDate = LocalDate.of(2024, 2, 2),
+          title = "Module 2 Renamed",
       )
 
       val submissionId1 =
@@ -137,13 +134,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               projectId = projectId3,
               projectName = "Project 3",
           )
-
       fun DeliverableSubmissionModel.forProject4() =
           copy(
-              cohortId = cohortId2,
-              cohortName = "Cohort 2",
-              dueDate = LocalDate.of(2024, 3, 2),
-              moduleTitle = "Module 3",
               organizationId = organizationId2,
               organizationName = "Organization 2",
               projectId = projectId4,
@@ -163,8 +155,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val deliverable1Project1 =
           DeliverableSubmissionModel(
               category = DeliverableCategory.FinancialViability,
-              cohortId = cohortId1,
-              cohortName = "Cohort 1",
               deliverableId = deliverableId1,
               descriptionHtml = "Description 1",
               documents =
@@ -235,13 +225,12 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
       val deliverable1Project2 = deliverable1Project1.withoutSubmission().forProject2()
       val deliverable2Project2 = deliverable2Project1.forProject2()
-      val deliverable3Project2 = deliverable3Project1.forProject2()
 
-      val deliverable1Project3 = deliverable1Project2.forProject3()
-      val deliverable2Project3 = deliverable2Project2.forProject3()
-      val deliverable3Project3 = deliverable3Project2.forProject3()
+      val deliverable3Project3 =
+          deliverable3Project1.forProject3().copy(moduleTitle = "Module 2 Renamed")
 
-      val deliverable3Project4 = deliverable3Project1.forProject4()
+      val deliverable1Project4 =
+          deliverable1Project2.forProject4().copy(dueDate = null, moduleTitle = null)
 
       assertEquals(
           listOf(
@@ -250,17 +239,13 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               deliverable2Project1,
               deliverable2Project2,
               deliverable3Project1,
-              deliverable3Project2,
           ),
           store.fetchDeliverableSubmissions(organizationId = organizationId1),
           "All deliverables for organization 1",
       )
       assertEquals(
           listOf(
-              deliverable1Project3,
-              deliverable2Project3,
               deliverable3Project3,
-              deliverable3Project4,
           ),
           store.fetchDeliverableSubmissions(organizationId = organizationId2),
           "All deliverables for organization 2",
@@ -279,22 +264,19 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               deliverable1Project2,
               deliverable2Project2,
-              deliverable3Project2,
           ),
           store.fetchDeliverableSubmissions(projectId = projectId2),
           "All deliverables for project 2",
       )
       assertEquals(
           listOf(
-              deliverable1Project3,
-              deliverable2Project3,
               deliverable3Project3,
           ),
           store.fetchDeliverableSubmissions(projectId = projectId3),
           "All deliverables for project 3",
       )
       assertEquals(
-          listOf(deliverable3Project4),
+          emptyList<DeliverableSubmissionModel>(),
           store.fetchDeliverableSubmissions(projectId = projectId4),
           "All deliverables for project 4",
       )
@@ -303,7 +285,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               deliverable1Project1,
               deliverable1Project2,
-              deliverable1Project3,
           ),
           store.fetchDeliverableSubmissions(deliverableId = deliverableId1),
           "Deliverable 1 for all projects",
@@ -313,14 +294,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               deliverable1Project1,
               deliverable1Project2,
-              deliverable1Project3,
               deliverable2Project1,
               deliverable2Project2,
-              deliverable2Project3,
               deliverable3Project1,
-              deliverable3Project2,
               deliverable3Project3,
-              deliverable3Project4,
           ),
           store.fetchDeliverableSubmissions(),
           "All deliverables",
@@ -332,8 +309,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           "Single deliverable with submitted documents for project 1",
       )
       assertEquals(
-          listOf(deliverable1Project3),
-          store.fetchDeliverableSubmissions(projectId = projectId3, deliverableId = deliverableId1),
+          listOf(deliverable3Project3),
+          store.fetchDeliverableSubmissions(projectId = projectId3, deliverableId = deliverableId3),
           "Single deliverable with no submissions for project 3",
       )
 
@@ -341,10 +318,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               deliverable1Project1,
               deliverable1Project2,
-              deliverable1Project3,
               deliverable2Project1,
               deliverable2Project2,
-              deliverable2Project3,
           ),
           store.fetchDeliverableSubmissions(moduleId = moduleId1),
           "All deliverables by module",
@@ -365,6 +340,12 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(deliverable1Project1, deliverable2Project1),
           store.fetchDeliverableSubmissions(projectId = projectId1, moduleId = moduleId1),
           "Deliverables by module for project 1",
+      )
+
+      assertEquals(
+          listOf(deliverable1Project4),
+          store.fetchDeliverableSubmissions(projectId = projectId4, deliverableId = deliverableId1),
+          "Single deliverable for project not in module",
       )
 
       assertEquals(
@@ -395,8 +376,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               DeliverableSubmissionModel(
                   category = DeliverableCategory.FinancialViability,
-                  cohortId = null,
-                  cohortName = null,
                   deliverableId = deliverableId,
                   descriptionHtml = "Description 1",
                   documents =
@@ -450,8 +429,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               DeliverableSubmissionModel(
                   category = DeliverableCategory.FinancialViability,
-                  cohortId = null,
-                  cohortName = null,
                   deliverableId = deliverableId,
                   descriptionHtml = "Description 1",
                   documents =
@@ -507,8 +484,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               DeliverableSubmissionModel(
                   category = DeliverableCategory.FinancialViability,
-                  cohortId = cohortId,
-                  cohortName = "Cohort Name",
                   deliverableId = deliverableId,
                   descriptionHtml = "Description 1",
                   documents = emptyList(),
@@ -549,8 +524,6 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
           listOf(
               DeliverableSubmissionModel(
                   category = DeliverableCategory.FinancialViability,
-                  cohortId = null,
-                  cohortName = null,
                   deliverableId = deliverableId,
                   descriptionHtml = "Description 1",
                   documents = emptyList(),
@@ -581,32 +554,29 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `returns due dates according to cohort or project overrides`() {
-      val cohortWithDueDate = insertCohort()
-      val cohortWithoutDueDate = insertCohort()
-
+    fun `returns due dates according to project overrides`() {
       val moduleId = insertModule()
       val deliverableId = insertDeliverable()
 
       insertOrganization()
 
-      val projectWithProjectDueDate = insertProject(cohortId = cohortWithDueDate)
-      val projectWithDefaultDueDate = insertProject(cohortId = cohortWithoutDueDate)
+      val projectWithProjectDueDate = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectWithDefaultDueDate = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
-      val cohortModuleEndDate = LocalDate.of(2024, 1, 2)
+      val projectModuleEndDate = LocalDate.of(2024, 1, 2)
 
-      insertCohortModule(
-          cohortWithDueDate,
+      insertProjectModule(
+          projectWithProjectDueDate,
           moduleId,
-          startDate = cohortModuleEndDate.minusDays(1),
-          endDate = cohortModuleEndDate,
+          startDate = projectModuleEndDate.minusDays(1),
+          endDate = projectModuleEndDate,
       )
 
-      insertCohortModule(
-          cohortWithoutDueDate,
+      insertProjectModule(
+          projectWithDefaultDueDate,
           moduleId,
-          startDate = cohortModuleEndDate.minusDays(1),
-          endDate = cohortModuleEndDate,
+          startDate = projectModuleEndDate.minusDays(1),
+          endDate = projectModuleEndDate,
       )
 
       val projectDueDate = LocalDate.of(2024, 3, 1)
@@ -626,7 +596,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       )
 
       assertEquals(
-          cohortModuleEndDate,
+          projectModuleEndDate,
           store
               .fetchDeliverableSubmissions(
                   projectId = projectWithDefaultDueDate,

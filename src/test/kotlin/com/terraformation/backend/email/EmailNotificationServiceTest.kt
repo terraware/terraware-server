@@ -429,8 +429,6 @@ internal class EmailNotificationServiceTest {
   private val deliverable =
       DeliverableSubmissionModel(
           category = deliverableCategory,
-          cohortId = cohort.id,
-          cohortName = cohort.name,
           deliverableId = DeliverableId(1),
           descriptionHtml = null,
           documents = emptyList(),

@@ -267,8 +267,6 @@ class ApplicationStore(
         .fetch { record ->
           DeliverableSubmissionModel(
               category = record[DELIVERABLES.DELIVERABLE_CATEGORY_ID]!!,
-              cohortId = null,
-              cohortName = null,
               deliverableId = record[DELIVERABLES.ID]!!,
               descriptionHtml = record[DELIVERABLES.DESCRIPTION_HTML],
               documents = record[documentsMultiset],
