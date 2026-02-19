@@ -322,7 +322,7 @@ class AppNotificationService(
     )
 
     val project = projectStore.fetchOneById(event.projectId)
-    if (project.cohortId == null) {
+    if (project.phase == null) {
       log.error(
           "Got approved participant project species edited notification for non-cohort project ${event.projectId}"
       )
@@ -357,7 +357,7 @@ class AppNotificationService(
     )
 
     val project = projectStore.fetchOneById(event.projectId)
-    if (project.cohortId == null) {
+    if (project.phase == null) {
       log.error(
           "Got participant project species added to project notification for non-cohort project ${event.projectId}"
       )
@@ -452,7 +452,7 @@ class AppNotificationService(
     // org.
     systemUser.run {
       val project = projectStore.fetchOneById(event.projectId)
-      if (project.cohortId == null) {
+      if (project.phase == null) {
         // We don't send notifications about individual deliverables in applications.
         return@run
       }
