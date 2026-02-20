@@ -452,13 +452,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   inner class SaveSnapshot {
     @Test
     fun `it saves a snapshot of species data if the associated submission is approved`() {
-      val cohortId = insertCohort()
       val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
       val speciesId1 = insertSpecies()
@@ -523,13 +522,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `it does nothing if the submission is not approved`() {
-      val cohortId = insertCohort()
       val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
       val speciesId = insertSpecies()
@@ -560,13 +558,12 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `it does nothing if the submission is not for a species list deliverable`() {
-      val cohortId = insertCohort()
       val moduleId = insertModule()
-      insertCohortModule(cohortId = cohortId, moduleId = moduleId)
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Document)
 
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProjectModule()
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
       service.on(

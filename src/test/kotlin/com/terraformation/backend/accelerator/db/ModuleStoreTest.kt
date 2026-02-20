@@ -3,7 +3,6 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -23,14 +22,12 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
 
   private val store: ModuleStore by lazy { ModuleStore(dslContext) }
-  private lateinit var cohortId: CohortId
   private lateinit var projectId: ProjectId
 
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    cohortId = insertCohort()
-    projectId = insertProject(cohortId = inserted.cohortId)
+    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     every { user.canManageModules() } returns true
     every { user.canReadModule(any()) } returns true
@@ -39,11 +36,11 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class ModulesTableConstraints {
     @Test
-    fun `throws exception if cohort module end date is before start date`() {
+    fun `throws exception if project module end date is before start date`() {
       val moduleId = insertModule()
       assertThrows<DataIntegrityViolationException> {
-        insertCohortModule(
-            cohortId,
+        insertProjectModule(
+            projectId,
             moduleId,
             startDate = LocalDate.of(2024, 1, 31),
             endDate = LocalDate.of(2024, 1, 30),
