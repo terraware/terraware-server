@@ -15,7 +15,6 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesApp
 import com.terraformation.backend.accelerator.event.RateLimitedAcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
-import com.terraformation.backend.accelerator.model.ExistingCohortModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.assertIsEventListener
@@ -47,7 +46,6 @@ import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -349,20 +347,8 @@ internal class EmailNotificationServiceTest {
           strata = listOf(plantingZone),
           timeZone = ZoneId.of("Asia/Tokyo"),
       )
-  private val cohort =
-      ExistingCohortModel(
-          createdBy = UserId(1),
-          createdTime = Instant.EPOCH,
-          id = CohortId(1),
-          modifiedBy = UserId(1),
-          modifiedTime = Instant.EPOCH,
-          name = "My Cohort",
-          phase = CohortPhase.Phase1FeasibilityStudy,
-          projectIds = setOf(ProjectId(1)),
-      )
   private val project =
       ExistingProjectModel(
-          cohortId = cohort.id,
           id = ProjectId(1),
           name = "My Project",
           organizationId = organization.id,

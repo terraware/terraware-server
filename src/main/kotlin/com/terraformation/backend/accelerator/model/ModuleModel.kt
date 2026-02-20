@@ -1,6 +1,5 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -18,7 +17,6 @@ data class ModuleModel(
     val eventDescriptions: Map<EventType, String> = emptyMap(),
     val overview: String? = null,
     val preparationMaterials: String? = null,
-    val cohortId: CohortId? = null,
     val projectId: ProjectId? = null,
     val title: String? = null,
     val startDate: LocalDate? = null,
