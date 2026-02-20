@@ -1,3 +1,4 @@
+303adbeff71 SW-8060 Use project modules for project deliverables (#3924)
 8d66d5b0e3f SW-8060 Notify about deliverables if project in phase (#3923)
 8140457573b SW-8060 Add ProjectModuleStore (#3922)
 01c17499388 SW-8059 List accelerator projects based on phase (#3927)
