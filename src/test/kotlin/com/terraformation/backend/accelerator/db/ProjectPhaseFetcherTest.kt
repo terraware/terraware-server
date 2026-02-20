@@ -1,7 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsUser
-import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -11,16 +10,17 @@ import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
 import io.mockk.every
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
+class ProjectPhaseFetcherTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
-  private val fetcher: ProjectCohortFetcher by lazy { ProjectCohortFetcher(dslContext) }
+  private val fetcher: ProjectPhaseFetcher by lazy { ProjectPhaseFetcher(dslContext) }
 
   private lateinit var organizationId: OrganizationId
 
@@ -32,30 +32,20 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchCohortData {
+  inner class GetProjectPhase {
     @Test
-    fun `fetches project's cohort data`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId, phase = CohortPhase.Phase0DueDiligence)
+    fun `fetches project's phase`() {
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
-      val expected =
-          ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
-      val actual = fetcher.fetchCohortData(projectId)
-
-      assertEquals(expected, actual)
+      assertEquals(CohortPhase.Phase0DueDiligence, fetcher.getProjectPhase(projectId))
     }
 
     @Test
-    fun `uses cohort data even if project has an application`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId, phase = CohortPhase.Phase0DueDiligence)
+    fun `uses project phase even if project has an application`() {
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       insertApplication()
 
-      val expected =
-          ProjectCohortData(cohortId = cohortId, cohortPhase = CohortPhase.Phase0DueDiligence)
-      val actual = fetcher.fetchCohortData(projectId)
-
-      assertEquals(expected, actual)
+      assertEquals(CohortPhase.Phase0DueDiligence, fetcher.getProjectPhase(projectId))
     }
 
     @Test
@@ -66,13 +56,7 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
       val phasesByState =
           ApplicationStatus.entries.associateWith { state ->
             dslContext.update(APPLICATIONS).set(APPLICATIONS.APPLICATION_STATUS_ID, state).execute()
-
-            val cohortData = fetcher.fetchCohortData(projectId)
-
-            assertNotNull(cohortData, "Cohort data")
-            assertNull(cohortData!!.cohortId, "Cohort ID")
-
-            cohortData.cohortPhase
+            fetcher.getProjectPhase(projectId)
           }
 
       assertEquals(
@@ -102,22 +86,13 @@ class ProjectCohortFetcherTest : DatabaseTest(), RunsAsUser {
 
       every { user.canReadProject(projectId) } returns false
 
-      assertThrows<ProjectNotFoundException> { fetcher.fetchCohortData(projectId) }
+      assertThrows<ProjectNotFoundException> { fetcher.getProjectPhase(projectId) }
     }
 
     @Test
-    fun `returns null if the project is not associated to a cohort`() {
+    fun `returns null if the project is not in a phase and has no application`() {
       val projectId = insertProject()
-
-      val actual = fetcher.fetchCohortData(projectId)
-      assertNull(actual)
-    }
-
-    @Test
-    fun `returns null if the project is not associated to a participant and has no application`() {
-      val projectId = insertProject()
-      val actual = fetcher.fetchCohortData(projectId)
-      assertNull(actual)
+      assertNull(fetcher.getProjectPhase(projectId), "Project phase")
     }
   }
 }

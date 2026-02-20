@@ -1,8 +1,6 @@
 package com.terraformation.backend.customer.api
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.terraformation.backend.accelerator.db.ProjectCohortFetcher
-import com.terraformation.backend.accelerator.model.ProjectCohortData
 import com.terraformation.backend.api.CustomerEndpoint
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -13,7 +11,6 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -40,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/projects")
 @RestController
 class ProjectsController(
-    private val projectCohortFetcher: ProjectCohortFetcher,
     private val projectService: ProjectService,
     private val projectStore: ProjectStore,
     private val userStore: UserStore,
@@ -60,18 +56,15 @@ class ProjectsController(
         organizationId?.let { projectStore.fetchByOrganizationId(organizationId) }
             ?: projectStore.findAll()
 
-    return ListProjectsResponsePayload(
-        projects.map { ProjectPayload(it, projectCohortFetcher.fetchCohortData(it.id)) }
-    )
+    return ListProjectsResponsePayload(projects.map { ProjectPayload(it) })
   }
 
   @GetMapping("/{id}")
   @Operation(summary = "Gets information about a specific project.")
   fun getProject(@PathVariable id: ProjectId): GetProjectResponsePayload {
     val project = projectStore.fetchOneById(id)
-    val cohortData = projectCohortFetcher.fetchCohortData(id)
 
-    return GetProjectResponsePayload(ProjectPayload(project, cohortData))
+    return GetProjectResponsePayload(ProjectPayload(project))
   }
 
   @Operation(summary = "Creates a new project.")
@@ -161,8 +154,6 @@ class ProjectsController(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ProjectPayload(
-    val cohortId: CohortId?,
-    @Deprecated("Use phase instead.") val cohortPhase: CohortPhase?,
     val createdBy: UserId?,
     val createdTime: Instant?,
     val description: String?,
@@ -171,16 +162,11 @@ data class ProjectPayload(
     val modifiedTime: Instant?,
     val name: String,
     val organizationId: OrganizationId,
-    @Deprecated("If using this to check whether project is in cohort, use cohortPhase instead.")
-    val participantId: ProjectId?,
     val phase: CohortPhase?,
 ) {
   constructor(
-      model: ExistingProjectModel,
-      cohortData: ProjectCohortData? = null,
+      model: ExistingProjectModel
   ) : this(
-      cohortId = model.cohortId,
-      cohortPhase = cohortData?.cohortPhase,
       createdBy = model.createdBy,
       createdTime = model.createdTime,
       description = model.description,
@@ -189,7 +175,6 @@ data class ProjectPayload(
       modifiedTime = model.modifiedTime,
       name = model.name,
       organizationId = model.organizationId,
-      participantId = if (model.cohortId != null) model.id else null,
       phase = model.phase,
   )
 }

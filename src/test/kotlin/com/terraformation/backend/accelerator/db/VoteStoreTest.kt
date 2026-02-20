@@ -27,7 +27,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val store: VoteStore by lazy {
-    VoteStore(clock, dslContext, ProjectCohortFetcher(dslContext))
+    VoteStore(clock, dslContext, ProjectPhaseFetcher(dslContext))
   }
 
   data class VoteKey(val userId: UserId, val projectId: ProjectId, val phase: CohortPhase)
@@ -389,7 +389,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      assertThrows<ProjectNotInCohortException> { store.delete(projectId, phase, newUser) }
+      assertThrows<ProjectNotInCohortPhaseException> { store.delete(projectId, phase, newUser) }
     }
 
     @Test
@@ -735,7 +735,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      assertThrows<ProjectNotInCohortException> {
+      assertThrows<ProjectNotInCohortPhaseException> {
         store.upsert(projectId, phase, newUser, null, null)
       }
     }
