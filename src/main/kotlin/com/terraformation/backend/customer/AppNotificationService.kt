@@ -324,7 +324,7 @@ class AppNotificationService(
     val project = projectStore.fetchOneById(event.projectId)
     if (project.phase == null) {
       log.error(
-          "Got approved participant project species edited notification for non-cohort project ${event.projectId}"
+          "Got approved participant project species edited notification for non-accelerator project ${event.projectId}"
       )
       return
     }
@@ -359,7 +359,7 @@ class AppNotificationService(
     val project = projectStore.fetchOneById(event.projectId)
     if (project.phase == null) {
       log.error(
-          "Got participant project species added to project notification for non-cohort project ${event.projectId}"
+          "Got participant project species added to project notification for non-accelerator project ${event.projectId}"
       )
       return
     }
