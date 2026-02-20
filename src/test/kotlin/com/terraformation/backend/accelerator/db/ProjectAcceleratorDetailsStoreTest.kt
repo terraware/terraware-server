@@ -3,23 +3,18 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.accelerator.ProjectPhaseService
-import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.accelerator.event.ProjectPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.assertSetEquals
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.SystemMetric
-import com.terraformation.backend.db.accelerator.tables.records.CohortsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -29,8 +24,6 @@ import java.math.BigDecimal
 import java.net.URI
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -273,11 +266,6 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
   @Nested
   inner class Update {
-    @BeforeEach
-    fun setUp() {
-      eventPublisher.register<CohortPhaseUpdatedEvent> { ProjectPhaseService(dslContext).on(it) }
-    }
-
     @Test
     fun `updates details for project that has not previously had details saved`() {
       val projectId = insertProject()
@@ -539,11 +527,9 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `updates existing cohort phase when project phase changes`() {
-      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
-      val projectId =
-          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
-      insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    fun `updates phase and publishes event when project phase changes`() {
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       val existingValues =
           ProjectAcceleratorVariableValuesModel(
@@ -562,58 +548,13 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       assertEquals(
-          listOf(CohortPhase.Phase1FeasibilityStudy, CohortPhase.Phase1FeasibilityStudy),
-          projectsDao.findAll().map { it.phaseId },
+          setOf(CohortPhase.Phase0DueDiligence, CohortPhase.Phase1FeasibilityStudy),
+          projectsDao.findAll().map { it.phaseId }.toSet(),
           "Project phases",
-      )
-
-      assertTableEquals(
-          CohortsRecord(
-              name = "Test Cohort",
-              phaseId = CohortPhase.Phase1FeasibilityStudy,
-              createdBy = user.userId,
-              createdTime = clock.instant.minusSeconds(100),
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-          )
       )
 
       eventPublisher.assertEventPublished(
           ProjectPhaseUpdatedEvent(projectId, CohortPhase.Phase1FeasibilityStudy)
-      )
-    }
-
-    @Test
-    fun `does not update cohort phase when project phase is unchanged`() {
-      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
-      val projectId =
-          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
-
-      val existingValues =
-          ProjectAcceleratorVariableValuesModel(
-              projectId = projectId,
-          )
-
-      store.update(projectId, existingValues) {
-        it.copy(
-            numCommunities = 5,
-            phase = CohortPhase.Phase0DueDiligence,
-            fileNaming = "test-naming",
-            dropboxFolderPath = "/dropbox/test",
-            googleFolderUrl = URI("https://drive.google.com/test"),
-        )
-      }
-
-      assertTableEquals(
-          CohortsRecord(
-              name = "Test Cohort",
-              phaseId = CohortPhase.Phase0DueDiligence,
-              createdBy = currentUser().userId,
-              createdTime = clock.instant,
-              modifiedBy = currentUser().userId,
-              modifiedTime = clock.instant,
-          ),
-          "Cohort should remain unchanged",
       )
     }
 
@@ -637,131 +578,6 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       eventPublisher.assertEventNotPublished<ProjectPhaseUpdatedEvent>()
-    }
-
-    @Test
-    fun `creates new cohort when project has no cohort and phase is set`() {
-      val projectId = insertProject(name = "Test Project 1")
-
-      val existingValues =
-          ProjectAcceleratorVariableValuesModel(
-              projectId = projectId,
-          )
-
-      store.update(projectId, existingValues) {
-        it.copy(
-            phase = CohortPhase.Phase1FeasibilityStudy,
-            fileNaming = "test-naming",
-            dropboxFolderPath = "/dropbox/test",
-            googleFolderUrl = URI("https://drive.google.com/test"),
-        )
-      }
-
-      val projectsRow = projectsDao.fetchOneById(projectId)!!
-      assertNotNull(projectsRow.cohortId, "Project cohort ID")
-      assertEquals(CohortPhase.Phase1FeasibilityStudy, projectsRow.phaseId, "Project phase")
-
-      assertTableEquals(
-          ProjectAcceleratorDetailsRecord(
-              projectId = projectId,
-              fileNaming = "test-naming",
-              dropboxFolderPath = "/dropbox/test",
-              googleFolderUrl = URI("https://drive.google.com/test"),
-          )
-      )
-
-      assertTableEquals(
-          CohortsRecord(
-              name = "Test Project 1",
-              phaseId = CohortPhase.Phase1FeasibilityStudy,
-              createdBy = user.userId,
-              createdTime = clock.instant,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-          )
-      )
-
-      val project = projectsDao.fetchOneById(projectId)
-      assertNotNull(project?.cohortId, "Project should have cohort_id set")
-    }
-
-    @Test
-    fun `clears cohort and deletes it when phase is set to null and no other projects use it`() {
-      insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
-      insertModule()
-      val projectId =
-          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
-      insertProjectModule()
-
-      val existingValues =
-          ProjectAcceleratorVariableValuesModel(
-              projectId = projectId,
-          )
-
-      store.update(projectId, existingValues) {
-        it.copy(
-            phase = null,
-            fileNaming = null,
-            dropboxFolderPath = null,
-            googleFolderUrl = null,
-        )
-      }
-
-      val project = projectsDao.fetchOneById(projectId)
-      assertNull(project!!.cohortId, "Project should have cohort_id cleared")
-      assertNull(project.phaseId, "Project should have phase_id cleared")
-
-      assertTableEmpty(COHORTS)
-    }
-
-    @Test
-    fun `clears cohort but keeps it when phase is set to null and other projects use it`() {
-      insertCohort(name = "Shared Cohort", phase = CohortPhase.Phase0DueDiligence)
-      val projectId1 =
-          insertProject(
-              name = "Project 1",
-              cohortId = inserted.cohortId,
-              phase = CohortPhase.Phase0DueDiligence,
-          )
-      val projectId2 =
-          insertProject(
-              name = "Project 2",
-              cohortId = inserted.cohortId,
-              phase = CohortPhase.Phase0DueDiligence,
-          )
-
-      val existingValues =
-          ProjectAcceleratorVariableValuesModel(
-              projectId = projectId1,
-          )
-
-      store.update(projectId1, existingValues) {
-        it.copy(
-            phase = null,
-            fileNaming = null,
-            dropboxFolderPath = null,
-            googleFolderUrl = null,
-        )
-      }
-
-      val project1 = projectsDao.fetchOneById(projectId1)
-      assertNull(project1!!.cohortId, "Project 1 should have cohort_id cleared")
-      assertNull(project1.phaseId, "Project 1 should have phase_id cleared")
-
-      val project2 = projectsDao.fetchOneById(projectId2)
-      assertEquals(inserted.cohortId, project2?.cohortId, "Project 2 should still have cohort_id")
-
-      assertTableEquals(
-          CohortsRecord(
-              name = "Shared Cohort",
-              phaseId = CohortPhase.Phase0DueDiligence,
-              createdBy = user.userId,
-              createdTime = clock.instant,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-          ),
-          "Cohort should still exist when other projects reference it",
-      )
     }
 
     @Test
