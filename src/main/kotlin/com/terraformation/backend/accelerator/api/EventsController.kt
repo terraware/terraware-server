@@ -12,7 +12,6 @@ import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
@@ -168,16 +167,12 @@ class EventsController(
 data class ModuleEventProject(
     val projectId: ProjectId,
     val projectName: String,
-    val cohortId: CohortId,
-    val cohortName: String,
 ) {
   constructor(
       model: AcceleratorProjectModel
   ) : this(
       model.projectId,
       model.projectName,
-      model.cohortId,
-      model.cohortName,
   )
 }
 

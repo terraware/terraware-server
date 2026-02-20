@@ -24,9 +24,7 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    insertCohort(phase = CohortPhase.Phase1FeasibilityStudy)
     insertProject(
-        cohortId = inserted.cohortId,
         countryCode = "KE",
         phase = CohortPhase.Phase1FeasibilityStudy,
     )
@@ -53,8 +51,6 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   fun `fetches one by Id, or throws not found exception`() {
     assertEquals(
         AcceleratorProjectModel(
-            cohortId = inserted.cohortId,
-            cohortName = cohortsDao.fetchOneById(inserted.cohortId)!!.name!!,
             phase = CohortPhase.Phase1FeasibilityStudy,
             projectId = inserted.projectId,
             projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
@@ -76,8 +72,6 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         listOf(
             AcceleratorProjectModel(
-                cohortId = inserted.cohortId,
-                cohortName = cohortsDao.fetchOneById(inserted.cohortId)!!.name!!,
                 phase = CohortPhase.Phase1FeasibilityStudy,
                 projectId = inserted.projectId,
                 projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
