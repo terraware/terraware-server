@@ -33,8 +33,8 @@ class ActivityStore(
   fun create(model: NewActivityModel): ExistingActivityModel {
     requirePermissions { createActivity(model.projectId) }
 
-    if (!parentStore.isProjectInCohort(model.projectId)) {
-      throw ProjectNotInCohortException(model.projectId)
+    if (!parentStore.isProjectInPhase(model.projectId)) {
+      throw ProjectNotInCohortPhaseException(model.projectId)
     }
 
     val now = clock.instant()
