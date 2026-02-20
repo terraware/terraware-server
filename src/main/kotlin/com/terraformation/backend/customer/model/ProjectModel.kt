@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer.model
 
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -11,7 +10,6 @@ import java.time.Instant
 import org.jooq.Record
 
 data class ProjectModel<ID : ProjectId?>(
-    val cohortId: CohortId? = null,
     val countryCode: String? = null,
     val createdBy: UserId? = null,
     val createdTime: Instant? = null,
@@ -26,7 +24,6 @@ data class ProjectModel<ID : ProjectId?>(
   companion object {
     fun of(row: ProjectsRow): ExistingProjectModel {
       return ExistingProjectModel(
-          row.cohortId,
           row.countryCode,
           row.createdBy,
           row.createdTime,
@@ -42,7 +39,6 @@ data class ProjectModel<ID : ProjectId?>(
 
     fun of(record: Record): ExistingProjectModel {
       return ExistingProjectModel(
-          cohortId = record[PROJECTS.COHORT_ID],
           countryCode = record[PROJECTS.COUNTRY_CODE],
           createdBy = record[PROJECTS.CREATED_BY]!!,
           createdTime = record[PROJECTS.CREATED_TIME]!!,
