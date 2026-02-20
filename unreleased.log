@@ -1,3 +1,4 @@
+528f589c822 SW-8060 Remove cohort module API endpoints (#3920)
 7b744f991bf SW-8060 Remove cohort modules from search API (#3919)
 dc433ef6460 SW-8060 Stop inserting cohort modules in tests (#3925)
 303adbeff71 SW-8060 Use project modules for project deliverables (#3924)
