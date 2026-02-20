@@ -5,6 +5,7 @@ import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
+import com.terraformation.backend.db.default_schema.ProjectId
 import java.time.LocalDate
 import org.jooq.Record
 
@@ -18,6 +19,7 @@ data class ModuleModel(
     val overview: String? = null,
     val preparationMaterials: String? = null,
     val cohortId: CohortId? = null,
+    val projectId: ProjectId? = null,
     val title: String? = null,
     val startDate: LocalDate? = null,
     val endDate: LocalDate? = null,
