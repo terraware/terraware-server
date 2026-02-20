@@ -611,9 +611,6 @@ COMMENT ON TABLE accelerator.applications IS 'Information about projects that ar
 
 COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
 
-COMMENT ON TABLE accelerator.cohort_modules IS 'Which modules are assigned to which cohorts.';
-COMMENT ON COLUMN accelerator.cohort_modules.title IS 'The title for the module for the cohort. This is shown above the module name in the module timeline.';
-
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
 COMMENT ON TABLE accelerator.deal_stages IS '(Enum) Stages in the deal workflow that a project progresses through.';

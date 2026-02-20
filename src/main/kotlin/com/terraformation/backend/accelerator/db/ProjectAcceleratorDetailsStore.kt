@@ -13,7 +13,6 @@ import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.COHORTS
-import com.terraformation.backend.db.accelerator.tables.references.COHORT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.records.ProjectLandUseModelTypesRecord
@@ -293,10 +292,6 @@ class ProjectAcceleratorDetailsStore(
         val projectsInCohort =
             dslContext.fetchCount(PROJECTS, PROJECTS.COHORT_ID.eq(existingCohortId))
         if (projectsInCohort == 0) {
-          dslContext
-              .deleteFrom(COHORT_MODULES)
-              .where(COHORT_MODULES.COHORT_ID.eq(existingCohortId))
-              .execute()
           dslContext.deleteFrom(COHORTS).where(COHORTS.ID.eq(existingCohortId)).execute()
         }
       } else {
