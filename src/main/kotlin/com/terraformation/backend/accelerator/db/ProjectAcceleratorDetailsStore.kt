@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
+import com.terraformation.backend.accelerator.event.ProjectPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
@@ -303,8 +304,12 @@ class ProjectAcceleratorDetailsStore(
             .where(COHORTS.ID.eq(existingCohortId))
             .execute()
 
+        // This will duplicate the work of the project event below; this event will go away when
+        // we get rid of cohorts, but the other one will still exist.
         eventPublisher.publishEvent(CohortPhaseUpdatedEvent(existingCohortId, newPhase))
       }
     }
+
+    eventPublisher.publishEvent(ProjectPhaseUpdatedEvent(projectId, newPhase))
   }
 }

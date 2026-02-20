@@ -6,6 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.ProjectPhaseService
 import com.terraformation.backend.accelerator.event.CohortPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
+import com.terraformation.backend.accelerator.event.ProjectPhaseUpdatedEvent
 import com.terraformation.backend.accelerator.model.MetricProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
@@ -576,12 +577,17 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               modifiedTime = clock.instant,
           )
       )
+
+      eventPublisher.assertEventPublished(
+          ProjectPhaseUpdatedEvent(projectId, CohortPhase.Phase1FeasibilityStudy)
+      )
     }
 
     @Test
     fun `does not update cohort phase when project phase is unchanged`() {
       insertCohort(name = "Test Cohort", phase = CohortPhase.Phase0DueDiligence)
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId =
+          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
 
       val existingValues =
           ProjectAcceleratorVariableValuesModel(
@@ -609,6 +615,28 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           ),
           "Cohort should remain unchanged",
       )
+    }
+
+    @Test
+    fun `does not publish event when project phase is unchanged`() {
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(
+              projectId = projectId,
+          )
+
+      store.update(projectId, existingValues) {
+        it.copy(
+            numCommunities = 5,
+            phase = CohortPhase.Phase0DueDiligence,
+            fileNaming = "test-naming",
+            dropboxFolderPath = "/dropbox/test",
+            googleFolderUrl = URI("https://drive.google.com/test"),
+        )
+      }
+
+      eventPublisher.assertEventNotPublished<ProjectPhaseUpdatedEvent>()
     }
 
     @Test
