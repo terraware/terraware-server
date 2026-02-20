@@ -22,7 +22,6 @@ project_modules
 event_projects
 deliverable_variables
 deliverable_project_due_dates
-cohort_modules
 report_challenges
 report_achievements
 default_voters

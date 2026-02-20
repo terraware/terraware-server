@@ -40,7 +40,6 @@ report_achievements
 report_challenges
 user_internal_interests
 application_histories
-cohort_modules
 deliverable_project_due_dates
 event_projects
 participant_project_species

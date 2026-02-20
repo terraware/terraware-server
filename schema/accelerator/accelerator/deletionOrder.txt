@@ -19,7 +19,6 @@ project_modules
 participant_project_species
 event_projects
 deliverable_project_due_dates
-cohort_modules
 application_histories
 user_internal_interests
 report_challenges
