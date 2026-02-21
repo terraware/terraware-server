@@ -121,7 +121,7 @@ class VoteStore(
   }
 
   /**
-   * Assigns the correct set of voters to a project for its cohort's current phase, if any.
+   * Assigns the correct set of voters to a project for its current phase, if any.
    *
    * The initial implementation assigns all the default voters.
    */

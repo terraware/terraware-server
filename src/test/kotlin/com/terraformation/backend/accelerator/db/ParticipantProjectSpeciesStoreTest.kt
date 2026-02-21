@@ -585,7 +585,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not create the species association if the project is not associated to a cohort`() {
+    fun `does not create the species association if the project is not in an accelerator phase`() {
       val projectId = insertProject()
       val speciesId = insertSpecies()
 

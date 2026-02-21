@@ -255,11 +255,11 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates an entity for each project ID and species ID pairing and ensures there is a submission for each most recent project deliverable, if there is no active one`() {
-      // This cohort module goes from 0 to 6 days
+      // This module goes from 0 to 6 days
       val moduleIdOld = insertModule()
       insertDeliverable(moduleId = moduleIdOld, deliverableTypeId = DeliverableType.Species)
 
-      // This cohort module goes from 7 to 13 days
+      // This module goes from 7 to 13 days
       val moduleIdMostRecent = insertModule()
       val deliverableIdMostRecent =
           insertDeliverable(
@@ -267,9 +267,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
               deliverableTypeId = DeliverableType.Species,
           )
 
-      // The clock is between these two cohort modules
+      // The clock is between these two modules
 
-      // This cohort module goes from 21 to 27 days
+      // This module goes from 21 to 27 days
       val moduleIdFuture = insertModule()
       insertDeliverable(moduleId = moduleIdFuture, deliverableTypeId = DeliverableType.Species)
 

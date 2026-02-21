@@ -175,7 +175,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `can filter by project and only includes deliverables that are part of project cohort`() {
+  fun `can filter by project and only includes deliverables that are part of project modules`() {
     val moduleId = inserted.moduleId
 
     val deliverableWithSubmission = insertDeliverable(moduleId = moduleId)
