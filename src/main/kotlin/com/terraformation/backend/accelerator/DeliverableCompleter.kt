@@ -48,7 +48,7 @@ class DeliverableCompleter(
   ) {
     systemUser.run {
       val moduleId = deliverableStore.fetchDeliverableModuleId(deliverableId)
-      val phase = moduleStore.fetchCohortPhase(moduleId)
+      val phase = moduleStore.fetchAcceleratorPhase(moduleId)
 
       if (phase == AcceleratorPhase.PreScreen || phase == AcceleratorPhase.Application) {
         if (predicate == null || predicate()) {

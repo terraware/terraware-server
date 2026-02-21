@@ -22,7 +22,7 @@ class ModuleStore(
     return fetch()
   }
 
-  fun fetchCohortPhase(moduleId: ModuleId): AcceleratorPhase {
+  fun fetchAcceleratorPhase(moduleId: ModuleId): AcceleratorPhase {
     requirePermissions { readModule(moduleId) }
 
     return dslContext

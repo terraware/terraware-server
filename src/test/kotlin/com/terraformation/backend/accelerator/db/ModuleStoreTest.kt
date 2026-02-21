@@ -175,23 +175,23 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchCohortPhase {
+  inner class FetchAcceleratorPhase {
     @Test
-    fun `returns module cohort phase`() {
+    fun `returns module accelerator phase`() {
       val moduleId = insertModule(phase = AcceleratorPhase.Phase1FeasibilityStudy)
-      assertEquals(AcceleratorPhase.Phase1FeasibilityStudy, store.fetchCohortPhase(moduleId))
+      assertEquals(AcceleratorPhase.Phase1FeasibilityStudy, store.fetchAcceleratorPhase(moduleId))
     }
 
     @Test
     fun `throws exception if no permission to read module`() {
       val moduleId = insertModule()
       every { user.canReadModule(any()) } returns false
-      assertThrows<ModuleNotFoundException> { store.fetchCohortPhase(moduleId) }
+      assertThrows<ModuleNotFoundException> { store.fetchAcceleratorPhase(moduleId) }
     }
 
     @Test
     fun `throws exception if no module found`() {
-      assertThrows<ModuleNotFoundException> { store.fetchCohortPhase(ModuleId(-1)) }
+      assertThrows<ModuleNotFoundException> { store.fetchAcceleratorPhase(ModuleId(-1)) }
     }
   }
 }
