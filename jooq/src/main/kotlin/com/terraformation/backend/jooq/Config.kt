@@ -276,8 +276,6 @@ val ID_WRAPPERS =
                 IdWrapper("ActivityId", listOf("activities\\.id", ".*\\.activity_id")),
                 IdWrapper("ApplicationHistoryId", listOf("application_histories\\.id")),
                 IdWrapper("ApplicationId", listOf("applications\\.id", ".*\\.application_id")),
-                IdWrapper("CohortId", listOf("cohorts\\.id", ".*\\.cohort_id")),
-                IdWrapper("CohortModuleId", listOf("cohort_modules\\.id")),
                 IdWrapper("DeliverableId", listOf("deliverables\\.id", ".*\\.deliverable_id")),
                 IdWrapper("EventId", listOf("events\\.id", ".*\\.event_id")),
                 IdWrapper("ModuleId", listOf("modules\\.id", ".*\\.module_id")),
@@ -529,10 +527,6 @@ val EMBEDDABLES =
             .withName("batch_withdrawal_id")
             .withTables("nursery.batch_withdrawals")
             .withColumns("batch_id", "withdrawal_id"),
-        EmbeddableDefinitionType()
-            .withName("cohort_module_id")
-            .withTables("accelerator.cohort_modules")
-            .withColumns("cohort_id", "module_id"),
         EmbeddableDefinitionType()
             .withName("facility_inventory_id")
             .withTables("nursery.facility_inventories")
