@@ -7,8 +7,8 @@ import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadedEvent
 import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAddedEvent
 import com.terraformation.backend.customer.model.SystemUser
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -50,7 +50,7 @@ class DeliverableCompleter(
       val moduleId = deliverableStore.fetchDeliverableModuleId(deliverableId)
       val phase = moduleStore.fetchCohortPhase(moduleId)
 
-      if (phase == CohortPhase.PreScreen || phase == CohortPhase.Application) {
+      if (phase == AcceleratorPhase.PreScreen || phase == AcceleratorPhase.Application) {
         if (predicate == null || predicate()) {
           submissionStore.createSubmission(deliverableId, projectId, SubmissionStatus.Completed)
 

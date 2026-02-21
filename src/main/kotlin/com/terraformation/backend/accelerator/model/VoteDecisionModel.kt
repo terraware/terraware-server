@@ -1,13 +1,13 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTE_DECISIONS
 import java.time.Instant
 import org.jooq.Record
 
 data class VoteDecisionModel(
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val modifiedTime: Instant,
     val decision: VoteOption? = null,
 ) {

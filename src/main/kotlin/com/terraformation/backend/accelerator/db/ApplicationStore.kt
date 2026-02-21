@@ -11,10 +11,10 @@ import com.terraformation.backend.accelerator.model.PreScreenProjectType
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -147,18 +147,18 @@ class ApplicationStore(
 
   fun fetchModulesByApplicationId(
       applicationId: ApplicationId,
-      phase: CohortPhase? = null,
+      phase: AcceleratorPhase? = null,
   ): List<ApplicationModuleModel> {
     requirePermissions { readApplication(applicationId) }
 
     val phaseCondition =
         when (phase) {
-          CohortPhase.PreScreen -> MODULES.PHASE_ID.eq(CohortPhase.PreScreen)
-          CohortPhase.Application -> MODULES.PHASE_ID.eq(CohortPhase.Application)
+          AcceleratorPhase.PreScreen -> MODULES.PHASE_ID.eq(AcceleratorPhase.PreScreen)
+          AcceleratorPhase.Application -> MODULES.PHASE_ID.eq(AcceleratorPhase.Application)
           else ->
               DSL.or(
-                  MODULES.PHASE_ID.eq(CohortPhase.PreScreen),
-                  MODULES.PHASE_ID.eq(CohortPhase.Application),
+                  MODULES.PHASE_ID.eq(AcceleratorPhase.PreScreen),
+                  MODULES.PHASE_ID.eq(AcceleratorPhase.Application),
               )
         }
 
@@ -207,8 +207,8 @@ class ApplicationStore(
             deliverableId?.let { DELIVERABLES.ID.eq(it) },
             moduleId?.let { DELIVERABLES.MODULE_ID.eq(it) },
             DSL.or(
-                MODULES.PHASE_ID.eq(CohortPhase.PreScreen),
-                MODULES.PHASE_ID.eq(CohortPhase.Application),
+                MODULES.PHASE_ID.eq(AcceleratorPhase.PreScreen),
+                MODULES.PHASE_ID.eq(AcceleratorPhase.Application),
             ),
         )
 
@@ -320,8 +320,8 @@ class ApplicationStore(
 
       insertHistory(applicationId)
 
-      assignModules(applicationId, CohortPhase.PreScreen)
-      assignModules(applicationId, CohortPhase.Application)
+      assignModules(applicationId, AcceleratorPhase.PreScreen)
+      assignModules(applicationId, AcceleratorPhase.Application)
 
       updateInternalName(applicationId)
 
@@ -392,14 +392,14 @@ class ApplicationStore(
         updateStatus(applicationId, ApplicationStatus.FailedPreScreen)
       } else {
         updateStatus(applicationId, ApplicationStatus.PassedPreScreen)
-        assignModules(applicationId, CohortPhase.Application)
+        assignModules(applicationId, AcceleratorPhase.Application)
 
         applicationVariableValues.countryCode?.let { updateCountryCode(applicationId, it) }
       }
 
       ApplicationSubmissionResult(fetchOneById(applicationId), problems)
     } else if (existing.status == ApplicationStatus.PassedPreScreen) {
-      val modules = fetchModulesByApplicationId(existing.id, CohortPhase.Application)
+      val modules = fetchModulesByApplicationId(existing.id, AcceleratorPhase.Application)
       if (modules.all { it.applicationModuleStatus == ApplicationModuleStatus.Complete }) {
         updateStatus(applicationId, ApplicationStatus.Submitted)
         eventPublisher.publishEvent(ApplicationSubmittedEvent(applicationId))
@@ -610,8 +610,8 @@ class ApplicationStore(
         .execute()
   }
 
-  private fun assignModules(applicationId: ApplicationId, phase: CohortPhase) {
-    if (phase == CohortPhase.PreScreen || phase == CohortPhase.Application) {
+  private fun assignModules(applicationId: ApplicationId, phase: AcceleratorPhase) {
+    if (phase == AcceleratorPhase.PreScreen || phase == AcceleratorPhase.Application) {
       with(APPLICATION_MODULES) {
         dslContext
             .insertInto(

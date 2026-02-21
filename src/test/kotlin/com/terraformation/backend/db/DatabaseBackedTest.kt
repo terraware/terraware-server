@@ -12,6 +12,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityStatus
@@ -20,7 +21,6 @@ import com.terraformation.backend.db.accelerator.ApplicationHistoryId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
@@ -867,7 +867,7 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
-      phase: CohortPhase? = null,
+      phase: AcceleratorPhase? = null,
       countryCode: String? = null,
   ): ProjectId {
     val row =
@@ -1155,7 +1155,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertProjectScore(
       projectId: ProjectId = inserted.projectId,
-      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
+      phase: AcceleratorPhase = AcceleratorPhase.Phase0DueDiligence,
       category: ScoreCategory = ScoreCategory.Legal,
       score: Int? = null,
       qualitative: String? = null,
@@ -2490,7 +2490,7 @@ abstract class DatabaseBackedTest {
       workshopDescription: String? = null,
       oneOnOneSessionDescription: String? = null,
       additionalResources: String? = null,
-      phase: CohortPhase = CohortPhase.Phase1FeasibilityStudy,
+      phase: AcceleratorPhase = AcceleratorPhase.Phase1FeasibilityStudy,
   ): ModuleId {
     nextModuleNumber++
 
@@ -4294,7 +4294,7 @@ abstract class DatabaseBackedTest {
 
   fun insertVote(
       projectId: ProjectId = inserted.projectId,
-      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
+      phase: AcceleratorPhase = AcceleratorPhase.Phase0DueDiligence,
       user: UserId = currentUser().userId,
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,
@@ -4321,7 +4321,7 @@ abstract class DatabaseBackedTest {
 
   fun insertVoteDecision(
       projectId: ProjectId = inserted.projectId,
-      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
+      phase: AcceleratorPhase = AcceleratorPhase.Phase0DueDiligence,
       voteOption: VoteOption? = null,
       modifiedTime: Instant = Instant.EPOCH,
   ): ProjectVoteDecisionsRow {

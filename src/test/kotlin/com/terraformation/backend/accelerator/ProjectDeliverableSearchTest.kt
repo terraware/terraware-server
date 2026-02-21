@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -45,7 +45,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         role = Role.Admin,
     )
     insertModule()
-    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule(
         projectId,
         inserted.moduleId,
@@ -186,7 +186,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             submissionStatus = SubmissionStatus.Approved,
         )
 
-    val hiddenProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val hiddenProject = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = hiddenProject,
@@ -300,7 +300,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
     val deliverableWithoutSubmissions = insertDeliverable(moduleId = moduleId)
 
     insertOrganization()
-    val otherProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val otherProject = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule()
     insertSubmission(
         deliverableId = deliverableWithSubmission,

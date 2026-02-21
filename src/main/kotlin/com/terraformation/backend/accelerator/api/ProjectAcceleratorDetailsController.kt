@@ -12,7 +12,7 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.SystemMetric
@@ -108,7 +108,7 @@ data class ProjectAcceleratorDetailsPayload(
     val numCommunities: Int?,
     val numNativeSpecies: Int?,
     val perHectareBudget: BigDecimal?,
-    val phase: CohortPhase?,
+    val phase: AcceleratorPhase?,
     val pipeline: Pipeline?,
     val plantingSitesCql: String?,
     val projectArea: BigDecimal?,
@@ -238,7 +238,7 @@ data class UpdateProjectAcceleratorDetailsRequestPayload(
     val numCommunities: Int?,
     val numNativeSpecies: Int?,
     val perHectareBudget: BigDecimal?,
-    val phase: CohortPhase?,
+    val phase: AcceleratorPhase?,
     val pipeline: Pipeline?,
     val projectArea: BigDecimal? = null,
     val riskTrackerLink: URI? = null,

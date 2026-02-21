@@ -5,7 +5,7 @@ import com.terraformation.backend.customer.model.OrganizationFeature
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
@@ -87,7 +87,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         "No modules",
     )
 
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     insertModule()
     insertProjectModule()
@@ -110,7 +110,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         "No deliverables",
     )
 
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     insertModule()
     insertDeliverable()
@@ -135,7 +135,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         "No submission",
     )
 
-    insertModule(phase = CohortPhase.Application)
+    insertModule(phase = AcceleratorPhase.Application)
     insertDeliverable()
     insertProject()
     insertSubmission()
@@ -219,7 +219,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     val applicationProjectId = insertProject(name = "Application project")
     insertApplication()
-    insertModule(phase = CohortPhase.Application)
+    insertModule(phase = AcceleratorPhase.Application)
     insertDeliverable()
     insertSubmission()
 
@@ -232,8 +232,8 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     val moduleProjectId =
-        insertProject(name = "Phase 1 project", phase = CohortPhase.Phase1FeasibilityStudy)
-    insertModule(phase = CohortPhase.Phase1FeasibilityStudy)
+        insertProject(name = "Phase 1 project", phase = AcceleratorPhase.Phase1FeasibilityStudy)
+    insertModule(phase = AcceleratorPhase.Phase1FeasibilityStudy)
     insertDeliverable()
     insertProjectModule()
 

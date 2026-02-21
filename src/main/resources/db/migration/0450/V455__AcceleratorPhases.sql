@@ -1,0 +1,3 @@
+ALTER TABLE accelerator.cohort_phases RENAME TO accelerator_phases;
+ALTER TABLE accelerator.accelerator_phases RENAME CONSTRAINT cohort_phases_pkey TO accelerator_phases_pkey;
+ALTER TABLE accelerator.accelerator_phases RENAME CONSTRAINT cohort_phases_name_key TO accelerator_phases_name_key;

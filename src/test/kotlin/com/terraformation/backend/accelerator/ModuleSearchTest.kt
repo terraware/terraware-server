@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.use
@@ -64,7 +64,7 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
             oneOnOneSessionDescription = "1:1 meetings",
             overview = "<h> Overview </h>",
             preparationMaterials = "<i> Preps </i>",
-            phase = CohortPhase.Phase1FeasibilityStudy,
+            phase = AcceleratorPhase.Phase1FeasibilityStudy,
             workshopDescription = "Workshop ideas",
         )
 
@@ -79,7 +79,8 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
                     "oneOnOneSessionDescription" to "1:1 meetings",
                     "overview" to "<h> Overview </h>",
                     "preparationMaterials" to "<i> Preps </i>",
-                    "phase" to CohortPhase.Phase1FeasibilityStudy.getDisplayName(Locales.GIBBERISH),
+                    "phase" to
+                        AcceleratorPhase.Phase1FeasibilityStudy.getDisplayName(Locales.GIBBERISH),
                     "workshopDescription" to "Workshop ideas",
                 )
             )
@@ -110,8 +111,8 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val module2 = insertModule()
     val module3 = insertModule()
 
-    val project1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-    val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val project1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    val project2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     insertProjectModule(
         project1,
@@ -223,12 +224,12 @@ class ModuleSearchTest : DatabaseTest(), RunsAsUser {
     val module2 = insertModule()
     val invisibleModule = insertModule()
 
-    val userProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val userProject = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     val otherUser = insertUser()
     val otherOrganization = insertOrganization()
     insertOrganizationUser(otherUser, otherOrganization)
-    val otherProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val otherProject = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     insertProjectModule(userProject, module1)
     insertProjectModule(userProject, module2)

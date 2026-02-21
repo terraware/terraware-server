@@ -9,7 +9,7 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.records.ProjectVotesRecord
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -49,12 +49,12 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class ProjectPhaseUpdated {
     @Test
     fun `inserts voters`() {
-      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       // Should leave this one alone
-      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
-      service.on(ProjectPhaseUpdatedEvent(projectId1, CohortPhase.Phase0DueDiligence))
+      service.on(ProjectPhaseUpdatedEvent(projectId1, AcceleratorPhase.Phase0DueDiligence))
 
       assertTableEquals(
           setOf(
@@ -73,7 +73,7 @@ class VoteServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private fun votesRecord(
       userId: UserId,
       projectId: ProjectId = inserted.projectId,
-      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
+      phase: AcceleratorPhase = AcceleratorPhase.Phase0DueDiligence,
       createdTime: Instant = clock.instant,
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,

@@ -11,7 +11,7 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponse409
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -126,7 +126,7 @@ data class VoteSelection(
 
 data class PhaseVotes(
     val decision: VoteOption? = null,
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val votes: List<VoteSelection> = emptyList(),
 )
 
@@ -138,12 +138,12 @@ data class UpsertVoteSelection(
 )
 
 data class UpsertProjectVotesRequestPayload(
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val votes: List<UpsertVoteSelection>,
 )
 
 data class DeleteProjectVotesRequestPayload(
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     @Schema(
         description =
             "A safeguard flag that must be set to `true` for deleting all voters in " +

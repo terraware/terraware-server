@@ -13,11 +13,11 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.records.ActivitiesRecord
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -49,7 +49,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
   }
 
   @Nested

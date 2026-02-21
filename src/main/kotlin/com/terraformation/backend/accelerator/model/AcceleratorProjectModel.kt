@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -8,16 +8,16 @@ import org.jooq.Field
 import org.jooq.Record
 
 data class AcceleratorProjectModel(
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val phaseName: String = phase.getDisplayName(null),
     val projectId: ProjectId,
     val projectName: String,
-    val voteDecisions: Map<CohortPhase, VoteOption> = emptyMap(),
+    val voteDecisions: Map<AcceleratorPhase, VoteOption> = emptyMap(),
 ) {
   companion object {
     fun of(
         record: Record,
-        decisionsField: Field<Map<CohortPhase, VoteOption>>,
+        decisionsField: Field<Map<AcceleratorPhase, VoteOption>>,
     ): AcceleratorProjectModel {
       return AcceleratorProjectModel(
           phase = record[PROJECTS.PHASE_ID]!!,

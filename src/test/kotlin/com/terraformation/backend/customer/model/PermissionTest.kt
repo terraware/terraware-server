@@ -6,9 +6,9 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -258,7 +258,7 @@ internal class PermissionTest : DatabaseTest() {
           insertProject(
               createdBy = userId,
               organizationId = getDatabaseId(OrganizationId(projectId.value / 1000)),
-              phase = CohortPhase.Phase1FeasibilityStudy,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
           ),
       )
     }

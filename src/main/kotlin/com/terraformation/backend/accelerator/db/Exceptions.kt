@@ -2,9 +2,9 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
@@ -60,12 +60,12 @@ class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
 class ProjectModuleNotFoundException(projectId: ProjectId, moduleId: ModuleId) :
     MismatchedStateException("Project $projectId is not associated with module $moduleId")
 
-class ProjectNotInCohortPhaseException(id: ProjectId, phase: CohortPhase? = null) :
+class ProjectNotInCohortPhaseException(id: ProjectId, phase: AcceleratorPhase? = null) :
     MismatchedStateException("Project $id is not currently in ${phase ?: "an accelerator phase"}")
 
 class ProjectVoteNotFoundException(
     projectId: ProjectId,
-    phase: CohortPhase? = null,
+    phase: AcceleratorPhase? = null,
     userId: UserId? = null,
 ) :
     EntityNotFoundException(

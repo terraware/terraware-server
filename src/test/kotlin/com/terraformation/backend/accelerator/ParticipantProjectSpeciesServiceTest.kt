@@ -10,7 +10,7 @@ import com.terraformation.backend.accelerator.event.ParticipantProjectSpeciesAdd
 import com.terraformation.backend.accelerator.model.NewParticipantProjectSpeciesModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
@@ -93,7 +93,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `creates a submission for the project and deliverable if one does not exist for the active module when a species is added to a project`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
@@ -151,7 +151,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not create another submission for a project if a deliverable submission for the active module already exists`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
@@ -199,9 +199,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
-      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
@@ -276,7 +276,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       // Between the most recent and future module
       clock.instant = Instant.EPOCH.plus(20, ChronoUnit.DAYS)
 
-      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule(moduleId = moduleIdOld)
       insertProjectModule(moduleId = moduleIdMostRecent)
       insertProjectModule(
@@ -284,7 +284,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
           startDate = LocalDate.EPOCH.plusDays(21),
           moduleId = moduleIdFuture,
       )
-      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule(moduleId = moduleIdOld)
       insertProjectModule(moduleId = moduleIdMostRecent)
       insertProjectModule(
@@ -344,8 +344,8 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `creates an entity for each project ID and species ID pairing even if there isn't any associated deliverable`() {
-      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val speciesId1 = insertSpecies()
       val speciesId2 = insertSpecies()
 
@@ -371,9 +371,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   inner class UpdateStatusEvent {
     @Test
     fun `updates the status for the participant project species if species fields are edited by non-accelerator-users`() {
-      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val projectId3 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val projectId3 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
 
       val participantProjectSpeciesId1 =
@@ -418,7 +418,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not update the status of the participant project species if the species fields are edited by accelerator-users`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
 
       insertParticipantProjectSpecies(
@@ -454,7 +454,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
@@ -524,7 +524,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Species)
 
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 
@@ -560,7 +560,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
       val deliverableId =
           insertDeliverable(moduleId = moduleId, deliverableTypeId = DeliverableType.Document)
 
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
       val submissionId = insertSubmission(deliverableId = deliverableId, projectId = projectId)
 

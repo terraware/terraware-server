@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.api.ControllerIntegrationTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -17,10 +17,10 @@ class ParticipantProjectSpeciesControllerTest : ControllerIntegrationTest() {
   inner class CreateParticipantProjectSpecies {
     @Test
     fun `can add species to approved species list`() {
-      insertModule(phase = CohortPhase.Phase1FeasibilityStudy)
+      insertModule(phase = AcceleratorPhase.Phase1FeasibilityStudy)
       insertOrganization()
       insertOrganizationUser(role = Role.Owner)
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       insertProjectModule()
       insertDeliverable(

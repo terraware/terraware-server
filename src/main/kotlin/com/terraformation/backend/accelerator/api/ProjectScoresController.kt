@@ -8,7 +8,7 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.default_schema.ProjectId
 import io.swagger.v3.oas.annotations.Operation
@@ -99,13 +99,13 @@ data class UpsertScore(
 }
 
 data class PhaseScores(
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val scores: List<Score>,
     val totalScore: BigDecimal? = null,
 )
 
 data class UpsertProjectScoresRequestPayload(
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     @field:Valid val scores: List<UpsertScore>,
 )
 

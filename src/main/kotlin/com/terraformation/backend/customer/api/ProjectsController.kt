@@ -11,7 +11,7 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
@@ -162,7 +162,7 @@ data class ProjectPayload(
     val modifiedTime: Instant?,
     val name: String,
     val organizationId: OrganizationId,
-    val phase: CohortPhase?,
+    val phase: AcceleratorPhase?,
 ) {
   constructor(
       model: ExistingProjectModel

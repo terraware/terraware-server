@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
@@ -84,11 +84,11 @@ class ProjectInternalUsersSearchTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `allows accelerator readers to see internal users of other organizations`() {
     every { user.canReadAllAcceleratorDetails() } returns true
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     val projectLead = insertUser()
     insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
     val otherOrg = insertOrganization()
-    val otherProject = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+    val otherProject = insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
     val otherOrgUser = insertUser()
     insertProjectInternalUser(role = ProjectInternalRole.RestorationLead)
 

@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -31,7 +31,7 @@ class ProjectScoreModelTest {
       // Average of 7 values of 1.0 (finance counted twice) and 1 value of 2.0
       assertEquals(
           BigDecimal(9.0 / 8.0).setScale(2, RoundingMode.HALF_UP),
-          ProjectScoreModel.totalScore(CohortPhase.Phase0DueDiligence, scores),
+          ProjectScoreModel.totalScore(AcceleratorPhase.Phase0DueDiligence, scores),
       )
     }
 
@@ -55,7 +55,7 @@ class ProjectScoreModelTest {
       // (finance counted twice)
       assertEquals(
           BigDecimal(10.0 / 8.0).setScale(2, RoundingMode.HALF_UP),
-          ProjectScoreModel.totalScore(CohortPhase.Phase0DueDiligence, scores),
+          ProjectScoreModel.totalScore(AcceleratorPhase.Phase0DueDiligence, scores),
       )
     }
 
@@ -75,7 +75,7 @@ class ProjectScoreModelTest {
               // Missing ValuesAlignment
           )
 
-      assertNull(ProjectScoreModel.totalScore(CohortPhase.Phase0DueDiligence, scores))
+      assertNull(ProjectScoreModel.totalScore(AcceleratorPhase.Phase0DueDiligence, scores))
     }
   }
 
@@ -94,7 +94,7 @@ class ProjectScoreModelTest {
       // Average of 1 value of 1.0 and 1 value of 2.5 (average of the two project lead scores)
       assertEquals(
           BigDecimal(3.5 / 2.0).setScale(2, RoundingMode.HALF_UP),
-          ProjectScoreModel.totalScore(CohortPhase.Phase1FeasibilityStudy, scores),
+          ProjectScoreModel.totalScore(AcceleratorPhase.Phase1FeasibilityStudy, scores),
       )
     }
 
@@ -109,7 +109,7 @@ class ProjectScoreModelTest {
 
       assertEquals(
           BigDecimal(3.0 / 2.0).setScale(2, RoundingMode.HALF_UP),
-          ProjectScoreModel.totalScore(CohortPhase.Phase1FeasibilityStudy, scores),
+          ProjectScoreModel.totalScore(AcceleratorPhase.Phase1FeasibilityStudy, scores),
       )
     }
 
@@ -121,7 +121,7 @@ class ProjectScoreModelTest {
               newModel(ScoreCategory.SocialImpact, null),
           )
 
-      assertNull(ProjectScoreModel.totalScore(CohortPhase.Phase1FeasibilityStudy, scores))
+      assertNull(ProjectScoreModel.totalScore(AcceleratorPhase.Phase1FeasibilityStudy, scores))
     }
   }
 
@@ -129,9 +129,9 @@ class ProjectScoreModelTest {
   fun `returns null for non-scored cohort phases`() {
     val scores = listOf(NewProjectScoreModel(ScoreCategory.GIS, null, null, 1))
 
-    assertNull(ProjectScoreModel.totalScore(CohortPhase.Phase2PlanAndScale, scores), "Phase 2")
+    assertNull(ProjectScoreModel.totalScore(AcceleratorPhase.Phase2PlanAndScale, scores), "Phase 2")
     assertNull(
-        ProjectScoreModel.totalScore(CohortPhase.Phase3ImplementAndMonitor, scores),
+        ProjectScoreModel.totalScore(AcceleratorPhase.Phase3ImplementAndMonitor, scores),
         "Phase 3",
     )
   }

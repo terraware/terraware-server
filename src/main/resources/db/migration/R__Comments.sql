@@ -587,6 +587,8 @@ COMMENT ON TABLE tracking.tree_growth_forms IS '(Enum) Growth form of each speci
 
 COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings IS 'If the planting represents the "from" side of a reassignment or an undo of a withdrawal, the number of plants must be negative. Otherwise it must be positive.';
 
+COMMENT ON TABLE accelerator.accelerator_phases IS '(Enum) Phases that accelerator projects go through.';
+
 COMMENT ON VIEW accelerator.accelerator_projects IS 'All projects that are in the accelerator, by any of the definitions. The 3 definitions at the time of creation were: having an application, having a cohort, or the project''s org having an internal tag of "Accelerator".';
 
 COMMENT ON TABLE accelerator.activities IS 'User-supplied descriptions of project activities.';
@@ -608,8 +610,6 @@ COMMENT ON TABLE accelerator.application_modules IS 'Current states of the modul
 COMMENT ON TABLE accelerator.application_statuses IS '(Enum) Possible statuses for an application to the accelerator program.';
 
 COMMENT ON TABLE accelerator.applications IS 'Information about projects that are applying for the accelerator program.';
-
-COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
 COMMENT ON TABLE accelerator.deal_stages IS '(Enum) Stages in the deal workflow that a project progresses through.';
 

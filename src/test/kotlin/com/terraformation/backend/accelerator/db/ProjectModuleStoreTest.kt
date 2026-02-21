@@ -5,7 +5,7 @@ import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.tables.records.ProjectModulesRecord
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -38,7 +38,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `throws exceptions if no associated permissions`() {
       insertOrganization()
-      insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+      insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
 
       deleteUserGlobalRole(role = GlobalRole.ReadOnly)
 
@@ -50,17 +50,33 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `filters by IDs, ordered by project ID, start date, end date, position`() {
       insertOrganization()
 
-      val projectA = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val projectB = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectA = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val projectB = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       val module1 =
-          insertModule(name = "Module 1", position = 3, phase = CohortPhase.Phase1FeasibilityStudy)
+          insertModule(
+              name = "Module 1",
+              position = 3,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
+          )
       val module2 =
-          insertModule(name = "Module 2", position = 1, phase = CohortPhase.Phase1FeasibilityStudy)
+          insertModule(
+              name = "Module 2",
+              position = 1,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
+          )
       val module3 =
-          insertModule(name = "Module 3", position = 2, phase = CohortPhase.Phase1FeasibilityStudy)
+          insertModule(
+              name = "Module 3",
+              position = 2,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
+          )
       val module4 =
-          insertModule(name = "Module 4", position = 10, phase = CohortPhase.Phase1FeasibilityStudy)
+          insertModule(
+              name = "Module 4",
+              position = 10,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
+          )
       insertModule(name = "Hidden Module")
 
       val date1 = LocalDate.of(2024, 1, 5)
@@ -79,7 +95,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ModuleModel(
               id = module1,
               name = "Module 1",
-              phase = CohortPhase.Phase1FeasibilityStudy,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
               position = 3,
               projectId = projectA,
               title = "Equal dates, later position",
@@ -91,7 +107,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ModuleModel(
               id = module2,
               name = "Module 2",
-              phase = CohortPhase.Phase1FeasibilityStudy,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
               position = 1,
               projectId = projectA,
               title = "Equal dates, earlier position",
@@ -103,7 +119,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ModuleModel(
               id = module3,
               name = "Module 3",
-              phase = CohortPhase.Phase1FeasibilityStudy,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
               position = 2,
               projectId = projectA,
               title = "Equal start date, later end date",
@@ -115,7 +131,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ModuleModel(
               id = module4,
               name = "Module 4",
-              phase = CohortPhase.Phase1FeasibilityStudy,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
               position = 10,
               projectId = projectA,
               title = "Earliest Start Date",
@@ -187,7 +203,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if no associated permissions`() {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertModule()
 
       assertThrows<AccessDeniedException> {
@@ -223,7 +239,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `assigns new module to project`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
-      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertModule()
 
       store.assign(
@@ -249,7 +265,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `updates existing project module`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
-      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertModule()
 
       insertProjectModule(
@@ -284,7 +300,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws exception if no associated permissions`() {
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
-      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertModule()
       insertProjectModule()
 
@@ -309,7 +325,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `removes existing project module`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
 
-      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertModule()
 
       insertProjectModule(

@@ -1,8 +1,8 @@
 package com.terraformation.backend.accelerator.model
 
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
@@ -48,7 +48,7 @@ data class ProjectAcceleratorDetailsModel(
     val numCommunities: Int? = null,
     val numNativeSpecies: Int? = null,
     val perHectareBudget: BigDecimal? = null,
-    val phase: CohortPhase? = null,
+    val phase: AcceleratorPhase? = null,
     val pipeline: Pipeline? = null,
     val plantingSitesCql: String? = null,
     val projectArea: BigDecimal? = null,

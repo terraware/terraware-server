@@ -9,8 +9,8 @@ import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.SubmissionStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
@@ -58,7 +58,7 @@ class DeliverableServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     insertProject()
     insertApplication()
-    insertModule(phase = CohortPhase.PreScreen)
+    insertModule(phase = AcceleratorPhase.PreScreen)
     insertApplicationModule(
         inserted.applicationId,
         inserted.moduleId,

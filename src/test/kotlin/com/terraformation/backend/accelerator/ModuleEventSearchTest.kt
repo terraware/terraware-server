@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.default_schema.Role
@@ -148,17 +148,17 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for associated projects`() {
-    val project1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-    val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-    val project3 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val project1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    val project2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    val project3 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     val event1 = insertEvent()
     insertEventProject(event1, project1)
     insertEventProject(event1, project2)
     insertEventProject(event1, project3)
 
-    val project4 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-    val project5 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-    val project6 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val project4 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    val project5 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    val project6 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     val event2 = insertEvent()
     insertEventProject(event2, project4)
     insertEventProject(event2, project5)
@@ -204,8 +204,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     val event3 = insertEvent()
     val hiddenEvent = insertEvent()
 
-    val project1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-    val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val project1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    val project2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     insertEventProject(event1, project1)
     insertEventProject(event2, project1)
@@ -247,8 +247,8 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `can search for events sublists using projects as prefix`() {
-    val project1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-    val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val project1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    val project2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     val event1 = insertEvent()
     val event2 = insertEvent()
     val event3 = insertEvent()
@@ -292,7 +292,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     val userProject =
         insertProject(
             organizationId = inserted.organizationId,
-            phase = CohortPhase.Phase0DueDiligence,
+            phase = AcceleratorPhase.Phase0DueDiligence,
         )
 
     val otherUser = insertUser()
@@ -305,7 +305,7 @@ class ModuleEventSearchTest : DatabaseTest(), RunsAsUser {
     val otherProject =
         insertProject(
             organizationId = otherOrganization,
-            phase = CohortPhase.Phase0DueDiligence,
+            phase = AcceleratorPhase.Phase0DueDiligence,
             createdBy = otherUser,
         )
 

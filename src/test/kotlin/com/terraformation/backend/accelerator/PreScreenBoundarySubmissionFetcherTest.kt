@@ -7,7 +7,7 @@ import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -42,7 +42,7 @@ class PreScreenBoundarySubmissionFetcherTest : DatabaseTest(), RunsAsUser {
     insertOrganization(name = "Org name")
     insertProject(name = "Project name")
     insertApplication(internalName = "XXX_internalName")
-    insertModule(name = "Pre-screen module", phase = CohortPhase.PreScreen)
+    insertModule(name = "Pre-screen module", phase = AcceleratorPhase.PreScreen)
     insertApplicationModule()
 
     deliverableId =

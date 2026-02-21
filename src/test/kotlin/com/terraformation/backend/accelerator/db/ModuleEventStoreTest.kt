@@ -9,7 +9,7 @@ import com.terraformation.backend.accelerator.model.EventModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.EventNotFoundException
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
@@ -47,7 +47,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     moduleId =
         insertModule(
             liveSessionDescription = "Live session description",
@@ -83,8 +83,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val startTime = clock.instant.plusSeconds(3600)
       val endTime = startTime.plusSeconds(3600)
       val project1 = projectId
-      val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val invisibleProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val project2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val invisibleProject = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       val workshop =
           insertEvent(
@@ -134,8 +134,8 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       val time4 = time3.plusSeconds(3600)
 
       val project1 = projectId
-      val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val invisibleProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val project2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val invisibleProject = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       val otherModule = insertModule(oneOnOneSessionDescription = "1:1 description")
       insertProjectModule(projectId = project1)
@@ -364,7 +364,7 @@ class ModuleEventStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = Instant.EPOCH.plusSeconds(500)
       val startTime = clock.instant.plusSeconds(3600)
       val project1 = projectId
-      val project2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val project2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val model =
           store.create(
               moduleId,

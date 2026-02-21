@@ -2,7 +2,7 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.customer.model.OrganizationFeature
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLES
@@ -72,7 +72,12 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                   .on(PROJECT_MODULES.PROJECT_ID.eq(PROJECTS.ID))
                   .or(PROJECTS.ID.eq(SUBMISSIONS.PROJECT_ID))
                   .where(PROJECTS.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                  .and(MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application))
+                  .and(
+                      MODULES.PHASE_ID.notIn(
+                          AcceleratorPhase.PreScreen,
+                          AcceleratorPhase.Application,
+                      )
+                  )
           )
           .convertFrom { result -> result.map { record -> record[PROJECTS.ID] }.toSet() }
 
