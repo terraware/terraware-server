@@ -52,9 +52,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `returns all details fields`() {
-      insertCohort(name = "Cohort name", phase = CohortPhase.Phase0DueDiligence)
-      val projectId =
-          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
 
@@ -132,8 +130,6 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               annualCarbon = detailsRow.annualCarbon,
               applicationReforestableLand = detailsRow.applicationReforestableLand,
               carbonCapacity = detailsRow.carbonCapacity,
-              cohortId = inserted.cohortId,
-              cohortName = "Cohort name",
               confirmedReforestableLand = detailsRow.confirmedReforestableLand,
               countryCode = "KE",
               dealDescription = detailsRow.dealDescription,
