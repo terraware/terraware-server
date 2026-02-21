@@ -44,9 +44,8 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
         organizationId = inserted.organizationId,
         role = Role.Admin,
     )
-    insertCohort()
     insertModule()
-    projectId = insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
     insertProjectModule(
         projectId,
         inserted.moduleId,
@@ -187,8 +186,7 @@ class ProjectDeliverableSearchTest : DatabaseTest(), RunsAsUser {
             submissionStatus = SubmissionStatus.Approved,
         )
 
-    val hiddenProject =
-        insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+    val hiddenProject = insertProject(phase = CohortPhase.Phase0DueDiligence)
     insertSubmission(
         deliverableId = deliverableWithSubmission,
         projectId = hiddenProject,

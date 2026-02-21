@@ -30,7 +30,6 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    insertCohort(phase = CohortPhase.Phase0DueDiligence)
 
     every { user.canReadProject(any()) } returns true
     every { user.canReadProjectScores(any()) } returns true
@@ -45,7 +44,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
       val time2 = Instant.ofEpochSecond(2)
       val time3 = Instant.ofEpochSecond(3)
 
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       insertProjectScore(
           phase = CohortPhase.Phase0DueDiligence,
@@ -89,7 +88,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
       val time3 = Instant.ofEpochSecond(3)
       val time4 = Instant.ofEpochSecond(4)
 
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       insertProjectScore(
           phase = CohortPhase.Phase0DueDiligence,
@@ -144,7 +143,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read scores`() {
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       every { user.canReadProjectScores(projectId) } returns false
 
@@ -156,8 +155,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
   inner class UpdateScores {
     @Test
     fun `creates scores that do not exist`() {
-      val projectId =
-          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       clock.instant = Instant.ofEpochSecond(123)
 
@@ -199,8 +197,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates scores that already exist`() {
-      val projectId =
-          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       insertProjectScore(phase = CohortPhase.Phase0DueDiligence, category = ScoreCategory.Legal)
       insertProjectScore(
@@ -250,7 +247,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to update scores`() {
-      val projectId = insertProject(cohortId = inserted.cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       every { user.canUpdateProjectScores(projectId) } returns false
 
@@ -278,8 +275,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if updating scores for a different phase than the current one`() {
-      val projectId =
-          insertProject(cohortId = inserted.cohortId, phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       assertThrows<ProjectNotInCohortPhaseException> {
         store.updateScores(

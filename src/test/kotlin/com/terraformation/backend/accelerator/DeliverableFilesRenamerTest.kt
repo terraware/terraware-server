@@ -79,8 +79,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    insertCohort()
-    projectId = insertProject(cohortId = inserted.cohortId)
+    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
     applicationId = insertApplication(internalName = "XXX_Organization")
 
     every { config.accelerator } returns
