@@ -49,7 +49,7 @@ class ParticipantProjectSpeciesStore(
     // Participant project species can only be associated with projects that are in a phase
     val project = projectsDao.fetchOneById(model.projectId)
     if (project?.phaseId == null) {
-      throw ProjectNotInCohortPhaseException(model.projectId)
+      throw ProjectNotInAcceleratorPhaseException(model.projectId)
     }
 
     val userId = currentUser().userId
@@ -84,7 +84,7 @@ class ParticipantProjectSpeciesStore(
       requirePermissions { createParticipantProjectSpecies(it.id!!) }
 
       if (it.phaseId == null) {
-        throw ProjectNotInCohortPhaseException(it.id!!)
+        throw ProjectNotInAcceleratorPhaseException(it.id!!)
       }
     }
 

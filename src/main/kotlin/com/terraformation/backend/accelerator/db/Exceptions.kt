@@ -60,8 +60,13 @@ class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
 class ProjectModuleNotFoundException(projectId: ProjectId, moduleId: ModuleId) :
     MismatchedStateException("Project $projectId is not associated with module $moduleId")
 
-class ProjectNotInCohortPhaseException(id: ProjectId, phase: AcceleratorPhase? = null) :
-    MismatchedStateException("Project $id is not currently in ${phase ?: "an accelerator phase"}")
+class ProjectNotInAcceleratorPhaseException(
+    id: ProjectId,
+    expectedPhase: AcceleratorPhase? = null,
+) :
+    MismatchedStateException(
+        "Project $id is not currently in ${expectedPhase ?: "an accelerator phase"}"
+    )
 
 class ProjectVoteNotFoundException(
     projectId: ProjectId,

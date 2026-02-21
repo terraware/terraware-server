@@ -117,7 +117,7 @@ class ProjectModuleStore(
       throw ProjectNotFoundException(projectId)
     }
     if (projectPhases.first() == null) {
-      throw ProjectNotInCohortPhaseException(projectId)
+      throw ProjectNotInAcceleratorPhaseException(projectId)
     }
   }
 }

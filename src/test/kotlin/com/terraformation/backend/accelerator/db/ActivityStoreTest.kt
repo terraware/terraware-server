@@ -152,7 +152,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
           )
 
-      assertThrows<ProjectNotInCohortPhaseException> { store.create(model) }
+      assertThrows<ProjectNotInAcceleratorPhaseException> { store.create(model) }
     }
   }
 

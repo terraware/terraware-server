@@ -267,7 +267,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if updating scores for a non-phase project`() {
       val projectId = insertProject()
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.updateScores(
             projectId,
             AcceleratorPhase.Phase0DueDiligence,
@@ -280,7 +280,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if updating scores for a different phase than the current one`() {
       val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.updateScores(
             projectId,
             AcceleratorPhase.Phase1FeasibilityStudy,

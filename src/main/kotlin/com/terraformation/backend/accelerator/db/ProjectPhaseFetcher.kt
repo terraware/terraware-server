@@ -38,7 +38,7 @@ class ProjectPhaseFetcher(private val dslContext: DSLContext) {
    * Ensures the project is in the specified phase, or that the project has an application and is in
    * phase 0.
    *
-   * @throws ProjectNotInCohortPhaseException The project is not in the requested phase.
+   * @throws ProjectNotInAcceleratorPhaseException The project is not in the requested phase.
    */
   fun ensureProjectPhase(projectId: ProjectId, phase: AcceleratorPhase) {
     val currentPhase = getProjectPhase(projectId)
@@ -54,7 +54,7 @@ class ProjectPhaseFetcher(private val dslContext: DSLContext) {
         }
 
     if (!samePhase) {
-      throw ProjectNotInCohortPhaseException(projectId, phase)
+      throw ProjectNotInAcceleratorPhaseException(projectId, phase)
     }
   }
 }

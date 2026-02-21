@@ -388,7 +388,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      assertThrows<ProjectNotInCohortPhaseException> { store.delete(projectId, phase, newUser) }
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
+        store.delete(projectId, phase, newUser)
+      }
     }
 
     @Test
@@ -399,7 +401,9 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      assertThrows<ProjectNotInCohortPhaseException> { store.delete(projectId, phase, newUser) }
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
+        store.delete(projectId, phase, newUser)
+      }
     }
 
     @Test
@@ -733,7 +737,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.upsert(projectId, phase, newUser, null, null)
       }
     }
@@ -746,7 +750,7 @@ class VoteStoreTest : DatabaseTest(), RunsAsUser {
       val vote = VoteOption.No
       insertVote(projectId, phase, newUser, vote)
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.upsert(projectId, phase, newUser, null, null)
       }
     }

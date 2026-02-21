@@ -589,7 +589,7 @@ class ParticipantProjectSpeciesStoreTest : DatabaseTest(), RunsAsUser {
       val projectId = insertProject()
       val speciesId = insertSpecies()
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.create(
             NewParticipantProjectSpeciesModel(
                 feedback = "feedback",

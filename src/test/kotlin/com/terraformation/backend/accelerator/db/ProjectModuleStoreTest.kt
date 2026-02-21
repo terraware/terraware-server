@@ -224,7 +224,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProject()
       insertModule()
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.assign(
             inserted.projectId,
             inserted.moduleId,
@@ -316,7 +316,7 @@ class ProjectModuleStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProject()
       insertModule()
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.remove(inserted.projectId, inserted.moduleId)
       }
     }
