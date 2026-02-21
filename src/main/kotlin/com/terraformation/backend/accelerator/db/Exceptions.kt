@@ -4,7 +4,6 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -24,8 +23,6 @@ class CannotDeletePublishedActivityException(activityId: ActivityId) :
 
 class CannotUpdatePublishedActivityException(activityId: ActivityId) :
     MismatchedStateException("Activity $activityId has been published and cannot be updated")
-
-class CohortNotFoundException(id: CohortId) : EntityNotFoundException("Cohort $id not found")
 
 class DeliverableNotFoundException(id: DeliverableId) :
     EntityNotFoundException("Deliverable $id not found")

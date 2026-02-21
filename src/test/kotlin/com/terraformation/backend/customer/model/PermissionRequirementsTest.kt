@@ -3,7 +3,6 @@ package com.terraformation.backend.customer.model
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
-import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
@@ -26,7 +25,6 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -130,7 +128,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val automationId: AutomationId by
       readableId(AutomationNotFoundException::class) { canReadAutomation(it) }
   private val batchId: BatchId by readableId(BatchNotFoundException::class) { canReadBatch(it) }
-  private val cohortId: CohortId by readableId(CohortNotFoundException::class) { canReadCohort(it) }
   private val deliverableId: DeliverableId = DeliverableId(1)
   private val deliveryId: DeliveryId by
       readableId(DeliveryNotFoundException::class) { canReadDelivery(it) }
@@ -275,20 +272,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { acceptCurrentDisclaimer() } ifUser { canAcceptCurrentDisclaimer() }
 
   @Test
-  fun addCohortProject() {
-    assertThrows<CohortNotFoundException> { requirements.addCohortProject(cohortId, projectId) }
-
-    grant { user.canReadCohort(cohortId) }
-    assertThrows<ProjectNotFoundException> { requirements.addCohortProject(cohortId, projectId) }
-
-    grant { user.canReadProject(projectId) }
-    assertThrows<AccessDeniedException> { requirements.addCohortProject(cohortId, projectId) }
-
-    grant { user.canAddCohortProject(cohortId, projectId) }
-    requirements.addCohortProject(cohortId, projectId)
-  }
-
-  @Test
   fun addOrganizationUser() =
       allow { addOrganizationUser(organizationId) } ifUser
           {
@@ -345,10 +328,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createAutomation(facilityId) } ifUser { canCreateAutomation(facilityId) }
 
   @Test fun createBatch() = allow { createBatch(facilityId) } ifUser { canCreateBatch(facilityId) }
-
-  @Test fun createCohort() = allow { createCohort() } ifUser { canCreateCohort() }
-
-  @Test fun createCohortModule() = allow { createCohortModule() } ifUser { canCreateCohortModule() }
 
   @Test
   fun createDelivery() =
@@ -449,15 +428,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { deleteAutomation(automationId) } ifUser { canDeleteAutomation(automationId) }
 
   @Test fun deleteBatch() = allow { deleteBatch(batchId) } ifUser { canDeleteBatch(batchId) }
-
-  @Test fun deleteCohort() = allow { deleteCohort(cohortId) } ifUser { canDeleteCohort(cohortId) }
-
-  @Test
-  fun deleteCohortProject() =
-      allow { deleteCohortProject(cohortId, projectId) } ifUser
-          {
-            canDeleteCohortProject(cohortId, projectId)
-          }
 
   @Test
   fun deleteDraftPlantingSite() =
@@ -632,21 +602,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun readAutomation() = testRead { readAutomation(automationId) }
 
   @Test fun readBatch() = testRead { readBatch(batchId) }
-
-  @Test fun readCohort() = testRead { readCohort(cohortId) }
-
-  @Test
-  fun readCohortProjects() {
-    assertThrows<CohortNotFoundException> { requirements.readCohortProjects(cohortId) }
-
-    grant { user.canReadCohort(cohortId) }
-    assertThrows<AccessDeniedException> { requirements.readCohortProjects(cohortId) }
-
-    grant { user.canReadCohortProjects(cohortId) }
-    requirements.readCohortProjects(cohortId)
-  }
-
-  @Test fun readCohorts() = allow { readCohorts() } ifUser { canReadCohorts() }
 
   @Test
   fun readCurrentDisclaimer() =
@@ -1015,8 +970,6 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { updateAutomation(automationId) } ifUser { canUpdateAutomation(automationId) }
 
   @Test fun updateBatch() = allow { updateBatch(batchId) } ifUser { canUpdateBatch(batchId) }
-
-  @Test fun updateCohort() = allow { updateCohort(cohortId) } ifUser { canUpdateCohort(cohortId) }
 
   @Test
   fun updateDelivery() =
