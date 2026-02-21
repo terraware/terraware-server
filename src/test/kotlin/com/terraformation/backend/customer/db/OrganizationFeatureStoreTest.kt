@@ -128,7 +128,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `checks for projects of submissions for projects not in a cohort for the deliverables feature`() {
+  fun `checks for projects of submissions for projects not in a phase for the deliverables feature`() {
     assertEquals(
         emptyOrganizationFeatureProjects,
         store.listOrganizationFeatureProjects(organizationId),
@@ -243,7 +243,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "One application project and one cohort phase 1 project",
+        "One application project and one phase 1 project",
     )
 
     val reportProjectId = insertProject(name = "Report project")
@@ -255,7 +255,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         expectedFeatureProjects.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
-        "One application project, one cohort phase 1 project, and one report projects",
+        "One application project, one phase 1 project, and one report project",
     )
 
     val seedFundProjectId = insertProject()

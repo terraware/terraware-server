@@ -49,7 +49,7 @@ class ProjectPhaseFetcherTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `returns correct cohort phase for each application state`() {
+    fun `returns correct phase for each application state`() {
       val projectId = insertProject()
       insertApplication()
 

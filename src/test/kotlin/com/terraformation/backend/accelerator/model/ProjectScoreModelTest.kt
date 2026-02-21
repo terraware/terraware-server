@@ -126,7 +126,7 @@ class ProjectScoreModelTest {
   }
 
   @Test
-  fun `returns null for non-scored cohort phases`() {
+  fun `returns null for non-scored phases`() {
     val scores = listOf(NewProjectScoreModel(ScoreCategory.GIS, null, null, 1))
 
     assertNull(ProjectScoreModel.totalScore(AcceleratorPhase.Phase2PlanAndScale, scores), "Phase 2")

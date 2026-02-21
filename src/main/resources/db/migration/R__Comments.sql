@@ -648,7 +648,7 @@ COMMENT ON TABLE accelerator.metric_components IS '(Enum) Components of metrics 
 
 COMMENT ON TABLE accelerator.metric_types IS '(Enum) Types of metrics for reports.';
 
-COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of a cohort phase.';
+COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of an accelerator phase.';
 COMMENT ON COLUMN accelerator.modules.position IS 'This model''s ordinal position in the modules spreadsheet. This can be used to present modules in the same order they appear in the spreadsheet.';
 
 COMMENT ON TABLE accelerator.participant_project_species IS 'Species that are associated to a participant project';
