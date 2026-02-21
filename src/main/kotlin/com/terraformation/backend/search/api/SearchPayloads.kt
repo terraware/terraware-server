@@ -85,13 +85,6 @@ data class SearchSortOrderElement(
         "A search criterion. The search will return results that match this criterion. The " +
             "criterion can be composed of other search criteria to form arbitrary Boolean " +
             "search expressions. TYPESCRIPT-OVERRIDE-TYPE-WITH-ANY",
-    oneOf =
-        [
-            AndNodePayload::class,
-            FieldNodePayload::class,
-            NotNodePayload::class,
-            OrNodePayload::class,
-        ],
 )
 sealed interface SearchNodePayload {
   fun toSearchNode(prefix: SearchFieldPrefix): SearchNode
