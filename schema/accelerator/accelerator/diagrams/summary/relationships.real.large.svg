@@ -844,10 +844,57 @@
 <polygon fill="black" stroke="black" points="973.01,-4425.58 980.81,-4429.6 977.01,-4425.79 981,-4426 981,-4426 981,-4426 977.01,-4425.79 981.19,-4422.4 973.01,-4425.58 973.01,-4425.58"/>
 <ellipse fill="none" stroke="black" cx="969.82" cy="-4425.41" rx="3.2" ry="3.2"/>
 </g>
-<!-- project_accelerator_details -->
+<!-- project_modules -->
 <g id="node11" class="node">
+<title>project_modules</title>
+<g id="a_node11"><a xlink:href="../../tables/project_modules.html" xlink:title="project_modules" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="725,-1408 725,-1558 867,-1558 867,-1408 725,-1408"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="725,-1536 725,-1558 867,-1558 867,-1536 725,-1536"/>
+<polygon fill="none" stroke="black" points="725,-1536 725,-1558 867,-1558 867,-1536 725,-1536"/>
+<text text-anchor="start" x="730" y="-1545.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">project_modules</text>
+<text text-anchor="start" x="828" y="-1544.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="725,-1514 725,-1536 867,-1536 867,-1514 725,-1514"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="730" y="-1531"/>
+<text text-anchor="start" x="757" y="-1522.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="none" stroke="black" points="725,-1492 725,-1514 867,-1514 867,-1492 725,-1492"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="730" y="-1509"/>
+<text text-anchor="start" x="757" y="-1500.2" font-family="Helvetica,sans-Serif" font-size="11.00">module_id</text>
+<polygon fill="none" stroke="black" points="725,-1470 725,-1492 867,-1492 867,-1470 725,-1470"/>
+<text text-anchor="start" x="757" y="-1478.2" font-family="Helvetica,sans-Serif" font-size="11.00">start_date</text>
+<polygon fill="none" stroke="black" points="725,-1448 725,-1470 867,-1470 867,-1448 725,-1448"/>
+<text text-anchor="start" x="757" y="-1456.2" font-family="Helvetica,sans-Serif" font-size="11.00">end_date</text>
+<polygon fill="none" stroke="black" points="725,-1426 725,-1448 867,-1448 867,-1426 725,-1426"/>
+<text text-anchor="start" x="757" y="-1434.2" font-family="Helvetica,sans-Serif" font-size="11.00">title</text>
+<polygon fill="#ffffff" stroke="transparent" points="725,-1408 725,-1426 794,-1426 794,-1408 725,-1408"/>
+<polygon fill="none" stroke="black" points="725,-1408 725,-1426 794,-1426 794,-1408 725,-1408"/>
+<text text-anchor="start" x="728" y="-1414.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="794,-1408 794,-1426 830,-1426 830,-1408 794,-1408"/>
+<polygon fill="none" stroke="black" points="794,-1408 794,-1426 830,-1426 830,-1408 794,-1408"/>
+<text text-anchor="start" x="820" y="-1414.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="830,-1408 830,-1426 867,-1426 867,-1408 830,-1408"/>
+<polygon fill="none" stroke="black" points="830,-1408 830,-1426 867,-1426 867,-1408 830,-1408"/>
+<text text-anchor="start" x="857" y="-1414.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- project_modules&#45;&gt;modules -->
+<g id="edge40" class="edge">
+<title>project_modules:w&#45;&gt;modules:e</title>
+<path fill="none" stroke="black" d="M709.56,-1503.59C555.73,-1516.45 585.24,-1736 420,-1736"/>
+<polygon fill="black" stroke="black" points="716.01,-1503.33 724.15,-1506.6 720,-1503.16 724,-1503 724,-1503 724,-1503 720,-1503.16 723.85,-1499.4 716.01,-1503.33 716.01,-1503.33"/>
+<ellipse fill="none" stroke="black" cx="712.81" cy="-1503.46" rx="3.2" ry="3.2"/>
+</g>
+<!-- project_modules&#45;&gt;public.projects -->
+<g id="edge41" class="edge">
+<title>project_modules:w&#45;&gt;public.projects:e</title>
+<path fill="none" stroke="black" d="M709.5,-1525.18C614.39,-1528.05 678.56,-1572.38 643,-2123 637.95,-2201.25 696.91,-2475 618.5,-2475"/>
+<polygon fill="black" stroke="black" points="716,-1525.1 724.04,-1528.6 720,-1525.05 724,-1525 724,-1525 724,-1525 720,-1525.05 723.96,-1521.4 716,-1525.1 716,-1525.1"/>
+<ellipse fill="none" stroke="black" cx="712.8" cy="-1525.14" rx="3.2" ry="3.2"/>
+</g>
+<!-- project_accelerator_details -->
+<g id="node12" class="node">
 <title>project_accelerator_details</title>
-<g id="a_node11"><a xlink:href="../../tables/project_accelerator_details.html" xlink:title="project_accelerator_details" target="_top">
+<g id="a_node12"><a xlink:href="../../tables/project_accelerator_details.html" xlink:title="project_accelerator_details" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="693.5,-1579 693.5,-2191 898.5,-2191 898.5,-1579 693.5,-1579"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="694,-2169 694,-2191 899,-2191 899,-2169 694,-2169"/>
 <polygon fill="none" stroke="black" points="694,-2169 694,-2191 899,-2191 899,-2169 694,-2169"/>
@@ -998,53 +1045,6 @@
 <polygon fill="black" stroke="black" points="691.96,-2154.06 692.44,-2162.04 690.85,-2162.14 690.36,-2154.15 691.96,-2154.06"/>
 <polyline fill="none" stroke="black" points="693,-2158 689.01,-2158.24 "/>
 <ellipse fill="none" stroke="black" cx="685.81" cy="-2158.44" rx="3.2" ry="3.2"/>
-</g>
-<!-- project_modules -->
-<g id="node12" class="node">
-<title>project_modules</title>
-<g id="a_node12"><a xlink:href="../../tables/project_modules.html" xlink:title="project_modules" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="725,-1408 725,-1558 867,-1558 867,-1408 725,-1408"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="725,-1536 725,-1558 867,-1558 867,-1536 725,-1536"/>
-<polygon fill="none" stroke="black" points="725,-1536 725,-1558 867,-1558 867,-1536 725,-1536"/>
-<text text-anchor="start" x="730" y="-1545.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">project_modules</text>
-<text text-anchor="start" x="828" y="-1544.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="725,-1514 725,-1536 867,-1536 867,-1514 725,-1514"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="730" y="-1531"/>
-<text text-anchor="start" x="757" y="-1522.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
-<polygon fill="none" stroke="black" points="725,-1492 725,-1514 867,-1514 867,-1492 725,-1492"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="730" y="-1509"/>
-<text text-anchor="start" x="757" y="-1500.2" font-family="Helvetica,sans-Serif" font-size="11.00">module_id</text>
-<polygon fill="none" stroke="black" points="725,-1470 725,-1492 867,-1492 867,-1470 725,-1470"/>
-<text text-anchor="start" x="757" y="-1478.2" font-family="Helvetica,sans-Serif" font-size="11.00">start_date</text>
-<polygon fill="none" stroke="black" points="725,-1448 725,-1470 867,-1470 867,-1448 725,-1448"/>
-<text text-anchor="start" x="757" y="-1456.2" font-family="Helvetica,sans-Serif" font-size="11.00">end_date</text>
-<polygon fill="none" stroke="black" points="725,-1426 725,-1448 867,-1448 867,-1426 725,-1426"/>
-<text text-anchor="start" x="757" y="-1434.2" font-family="Helvetica,sans-Serif" font-size="11.00">title</text>
-<polygon fill="#ffffff" stroke="transparent" points="725,-1408 725,-1426 794,-1426 794,-1408 725,-1408"/>
-<polygon fill="none" stroke="black" points="725,-1408 725,-1426 794,-1426 794,-1408 725,-1408"/>
-<text text-anchor="start" x="728" y="-1414.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="794,-1408 794,-1426 830,-1426 830,-1408 794,-1408"/>
-<polygon fill="none" stroke="black" points="794,-1408 794,-1426 830,-1426 830,-1408 794,-1408"/>
-<text text-anchor="start" x="820" y="-1414.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="830,-1408 830,-1426 867,-1426 867,-1408 830,-1408"/>
-<polygon fill="none" stroke="black" points="830,-1408 830,-1426 867,-1426 867,-1408 830,-1408"/>
-<text text-anchor="start" x="857" y="-1414.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- project_modules&#45;&gt;modules -->
-<g id="edge40" class="edge">
-<title>project_modules:w&#45;&gt;modules:e</title>
-<path fill="none" stroke="black" d="M709.56,-1503.59C555.73,-1516.45 585.24,-1736 420,-1736"/>
-<polygon fill="black" stroke="black" points="716.01,-1503.33 724.15,-1506.6 720,-1503.16 724,-1503 724,-1503 724,-1503 720,-1503.16 723.85,-1499.4 716.01,-1503.33 716.01,-1503.33"/>
-<ellipse fill="none" stroke="black" cx="712.81" cy="-1503.46" rx="3.2" ry="3.2"/>
-</g>
-<!-- project_modules&#45;&gt;public.projects -->
-<g id="edge41" class="edge">
-<title>project_modules:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M709.5,-1525.18C614.39,-1528.05 678.56,-1572.38 643,-2123 637.95,-2201.25 696.91,-2475 618.5,-2475"/>
-<polygon fill="black" stroke="black" points="716,-1525.1 724.04,-1528.6 720,-1525.05 724,-1525 724,-1525 724,-1525 720,-1525.05 723.96,-1521.4 716,-1525.1 716,-1525.1"/>
-<ellipse fill="none" stroke="black" cx="712.8" cy="-1525.14" rx="3.2" ry="3.2"/>
 </g>
 <!-- report_project_metric_targets -->
 <g id="node14" class="node">
