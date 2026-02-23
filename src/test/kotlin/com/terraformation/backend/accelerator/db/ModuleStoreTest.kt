@@ -61,7 +61,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FetchOneById {
     @Test
-    fun `returns one module with all cohorts`() {
+    fun `returns one module`() {
       val moduleId =
           insertModule(
               additionalResources = "<b> Additional Resources </b>",

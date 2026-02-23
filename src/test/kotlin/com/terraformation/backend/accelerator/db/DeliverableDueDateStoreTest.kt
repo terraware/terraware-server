@@ -66,8 +66,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       )
 
       val deliverableId1 = insertDeliverable(moduleId = moduleId1)
-      val deliverableId2 =
-          insertDeliverable(moduleId = moduleId1) // Has project and cohort overrides
+      val deliverableId2 = insertDeliverable(moduleId = moduleId1) // Has project override
 
       val deliverableId3 = insertDeliverable(moduleId = moduleId2)
       val deliverableId4 = insertDeliverable(moduleId = moduleId2)
@@ -134,7 +133,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               project1Deliverable4,
           ),
           store.fetchDeliverableDueDates(projectId = projectId1).toSet(),
-          "Fetch with cohort filter",
+          "Fetch with project filter",
       )
 
       assertSetEquals(
@@ -154,7 +153,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
               project1Deliverable4,
           ),
           store.fetchDeliverableDueDates(projectId = projectId1, moduleId = moduleId2).toSet(),
-          "Fetch with cohort and module filter",
+          "Fetch with project and module filter",
       )
 
       assertSetEquals(
@@ -173,7 +172,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
           store
               .fetchDeliverableDueDates(projectId = projectId1, deliverableId = deliverableId3)
               .toSet(),
-          "Fetch with cohort and deliverable filter",
+          "Fetch with project and deliverable filter",
       )
 
       assertSetEquals(

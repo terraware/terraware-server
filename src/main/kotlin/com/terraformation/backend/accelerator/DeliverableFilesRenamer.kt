@@ -76,7 +76,7 @@ class DeliverableFilesRenamer(
       fileNaming: String,
       folderUrl: URI,
   ) {
-    val cohortDeliverables =
+    val projectDeliverables =
         deliverableStore.fetchDeliverableSubmissions(projectId = projectId).filter {
           it.documents.isNotEmpty()
         }
@@ -93,7 +93,7 @@ class DeliverableFilesRenamer(
           log.warn("Folder $folderUrl is not a valid Google drive")
           null
         }
-    val allDeliverables = listOf(cohortDeliverables, applicationDeliverables).flatten()
+    val allDeliverables = listOf(projectDeliverables, applicationDeliverables).flatten()
 
     allDeliverables.forEach { deliverable ->
       deliverable.documents

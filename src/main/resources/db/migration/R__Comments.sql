@@ -589,7 +589,7 @@ COMMENT ON CONSTRAINT num_plants_sign_consistent_with_type ON tracking.plantings
 
 COMMENT ON TABLE accelerator.accelerator_phases IS '(Enum) Phases that accelerator projects go through.';
 
-COMMENT ON VIEW accelerator.accelerator_projects IS 'All projects that are in the accelerator, by any of the definitions. The 3 definitions at the time of creation were: having an application, having a cohort, or the project''s org having an internal tag of "Accelerator".';
+COMMENT ON VIEW accelerator.accelerator_projects IS 'All projects that are in the accelerator, due to either having an application or being in an accelerator phase.';
 
 COMMENT ON TABLE accelerator.activities IS 'User-supplied descriptions of project activities.';
 

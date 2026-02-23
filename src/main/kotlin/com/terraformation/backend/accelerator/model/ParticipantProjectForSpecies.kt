@@ -15,7 +15,7 @@ import org.jooq.impl.DSL
 
 data class ParticipantProjectsForSpecies(
     /**
-     * This deliverable ID is associated to the active or most recent cohort module, if available
+     * This deliverable ID is associated with the project's active or most recent module, if any.
      */
     val deliverableId: DeliverableId? = null,
     val participantProjectSpeciesId: ParticipantProjectSpeciesId,

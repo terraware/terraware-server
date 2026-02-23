@@ -356,7 +356,7 @@ class ParentStore(private val dslContext: DSLContext) {
           .isNotEmpty
 
   fun exists(moduleId: ModuleId, userId: UserId): Boolean {
-    val cohortModuleExists =
+    val projectModuleExists =
         dslContext
             .selectOne()
             .from(PROJECT_MODULES)
@@ -383,7 +383,7 @@ class ParentStore(private val dslContext: DSLContext) {
             .fetch()
             .isNotEmpty
 
-    return cohortModuleExists || applicationModuleExists
+    return projectModuleExists || applicationModuleExists
   }
 
   fun exists(fundingEntityId: FundingEntityId, userId: UserId): Boolean =

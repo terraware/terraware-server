@@ -603,7 +603,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
               )
               .firstOrNull()
               ?.dueDate,
-          "Deliverable for project with neither project nor cohort due date",
+          "Deliverable for project with no project due date",
       )
     }
 
