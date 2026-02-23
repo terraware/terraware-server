@@ -20,7 +20,6 @@ import com.terraformation.backend.db.accelerator.ApplicationHistoryId
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.DeliverableCategory
@@ -51,13 +50,11 @@ import com.terraformation.backend.db.accelerator.SubmissionSnapshotId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.VoteOption
-import com.terraformation.backend.db.accelerator.keys.COHORTS_PKEY
 import com.terraformation.backend.db.accelerator.tables.daos.ActivitiesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ActivityMediaFilesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
-import com.terraformation.backend.db.accelerator.tables.daos.CohortsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableProjectDueDatesDao
@@ -95,7 +92,6 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFiles
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
-import com.terraformation.backend.db.accelerator.tables.pojos.CohortsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
@@ -629,7 +625,6 @@ abstract class DatabaseBackedTest {
   protected val batchSubLocationsDao: BatchSubLocationsDao by lazyDao()
   protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
   protected val birdnetResultsDao: BirdnetResultsDao by lazyDao()
-  protected val cohortsDao: CohortsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
   protected val defaultVotersDao: DefaultVotersDao by lazyDao()
@@ -869,7 +864,6 @@ abstract class DatabaseBackedTest {
   protected fun insertProject(
       organizationId: OrganizationId = inserted.organizationId,
       name: String = "Project ${nextProjectNumber++}",
-      cohortId: CohortId? = null,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
@@ -878,7 +872,6 @@ abstract class DatabaseBackedTest {
   ): ProjectId {
     val row =
         ProjectsRow(
-            cohortId = cohortId,
             countryCode = countryCode,
             createdBy = createdBy,
             createdTime = createdTime,
@@ -4231,29 +4224,6 @@ abstract class DatabaseBackedTest {
     return row.id!!.also { inserted.participantProjectSpeciesIds.add(it) }
   }
 
-  fun insertCohort(
-      name: String = "Cohort ${UUID.randomUUID()}",
-      phase: CohortPhase = CohortPhase.Phase0DueDiligence,
-      createdBy: UserId = currentUser().userId,
-      createdTime: Instant = Instant.EPOCH,
-      modifiedBy: UserId = createdBy,
-      modifiedTime: Instant = createdTime,
-  ): CohortId {
-    val row =
-        CohortsRow(
-            createdBy = createdBy,
-            createdTime = createdTime,
-            modifiedBy = modifiedBy,
-            modifiedTime = modifiedTime,
-            name = name,
-            phaseId = phase,
-        )
-
-    cohortsDao.insert(row)
-
-    return row.id!!.also { inserted.cohortIds.add(it) }
-  }
-
   private val nextProjectModuleStartDates = mutableMapOf<ProjectId, LocalDate>()
 
   fun insertProjectModule(
@@ -5234,7 +5204,6 @@ abstract class DatabaseBackedTest {
     val bagsIds = mutableListOf<BagId>()
     val batchIds = mutableListOf<BatchId>()
     val biomassSpeciesIds = mutableListOf<BiomassSpeciesId>()
-    val cohortIds = mutableListOf<CohortId>()
     val deliverableIds = mutableListOf<DeliverableId>()
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
@@ -5311,9 +5280,6 @@ abstract class DatabaseBackedTest {
 
     val biomassSpeciesId
       get() = biomassSpeciesIds.last()
-
-    val cohortId
-      get() = cohortIds.last()
 
     val deliverableId
       get() = deliverableIds.last()
@@ -5491,7 +5457,6 @@ abstract class DatabaseBackedTest {
       // from the generated Keys.kt file for each schema.
       ACCESSION_PKEY
       BATCHES_PKEY
-      COHORTS_PKEY
       PLANTING_SITES_PKEY
       USERS_PKEY
       VARIABLES_PKEY

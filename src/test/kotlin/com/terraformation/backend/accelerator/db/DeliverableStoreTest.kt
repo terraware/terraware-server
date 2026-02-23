@@ -472,8 +472,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns application submissions for participant projects if deliverable ID is specified`() {
       val organizationId = insertOrganization()
-      val cohortId = insertCohort(name = "Cohort Name")
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val moduleId = insertModule(phase = CohortPhase.PreScreen)
       val deliverableId = insertDeliverable()
       val submissionId = insertSubmission(submissionStatus = SubmissionStatus.Approved)

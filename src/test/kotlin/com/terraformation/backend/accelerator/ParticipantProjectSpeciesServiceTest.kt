@@ -371,10 +371,9 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
   inner class UpdateStatusEvent {
     @Test
     fun `updates the status for the participant project species if species fields are edited by non-accelerator-users`() {
-      val cohortId = insertCohort()
-      val projectId1 = insertProject(cohortId = cohortId)
-      val projectId2 = insertProject(cohortId = cohortId)
-      val projectId3 = insertProject(cohortId = cohortId)
+      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId3 = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
 
       val participantProjectSpeciesId1 =
@@ -419,8 +418,7 @@ class ParticipantProjectSpeciesServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not update the status of the participant project species if the species fields are edited by accelerator-users`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
 
       insertParticipantProjectSpecies(

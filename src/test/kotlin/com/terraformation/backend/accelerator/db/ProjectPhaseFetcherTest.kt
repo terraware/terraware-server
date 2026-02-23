@@ -81,8 +81,7 @@ class ProjectPhaseFetcherTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read project`() {
-      val cohortId = insertCohort()
-      val projectId = insertProject(cohortId = cohortId)
+      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
       every { user.canReadProject(projectId) } returns false
 

@@ -10,6 +10,7 @@ import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -55,9 +56,8 @@ class ModuleEventServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertModule()
-    insertCohort()
 
-    projectId = insertProject(cohortId = inserted.cohortId)
+    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
 
     every { scheduler.schedule<ModuleEventService>(any<Instant>(), any()) } returns
         JobId(UUID.randomUUID())

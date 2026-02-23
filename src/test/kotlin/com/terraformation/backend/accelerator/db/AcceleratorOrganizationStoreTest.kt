@@ -33,7 +33,6 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val acceleratorOrgId1 = insertOrganization()
       val nonAcceleratorOrgId = insertOrganization()
       val untaggedOrgId = insertOrganization()
-      val cohortId = insertCohort()
       val currentUserId = user.userId
 
       insertOrganizationInternalTag(nonAcceleratorOrgId, InternalTagIds.Internal)
@@ -44,7 +43,6 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertProject(
               organizationId = acceleratorOrgId1,
               name = "D",
-              cohortId = cohortId,
               phase = CohortPhase.Phase0DueDiligence,
           )
       val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
