@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>cohort_phases - terraware.accelerator</title>
+        <title>accelerator_phases - terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>cohort_phases</h1><p><span id="recordNumber">-1</span> rows</p><br />
+                    <h1>accelerator_phases</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>(Enum) Available cohort phases</p>
+                            <p>(Enum) Phases that accelerator projects go through.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -131,32 +131,27 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="cohorts.phase_id references cohort_phases.id via cohorts_phase_id_fkey"><a href='cohorts.html'>cohorts</a><span class='relatedKey'>.phase_id</span></td>
-                                                <td class="constraint detail">cohorts_phase_id_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="modules.phase_id references cohort_phases.id via modules_phase_id_fkey"><a href='modules.html'>modules</a><span class='relatedKey'>.phase_id</span></td>
+                                                <td title="modules.phase_id references accelerator_phases.id via modules_phase_id_fkey"><a href='modules.html'>modules</a><span class='relatedKey'>.phase_id</span></td>
                                                 <td class="constraint detail">modules_phase_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="project_scores.phase_id references cohort_phases.id via project_scores_phase_id_fkey"><a href='project_scores.html'>project_scores</a><span class='relatedKey'>.phase_id</span></td>
+                                                <td title="project_scores.phase_id references accelerator_phases.id via project_scores_phase_id_fkey"><a href='project_scores.html'>project_scores</a><span class='relatedKey'>.phase_id</span></td>
                                                 <td class="constraint detail">project_scores_phase_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="project_vote_decisions.phase_id references cohort_phases.id via project_vote_decisions_phase_id_fkey"><a href='project_vote_decisions.html'>project_vote_decisions</a><span class='relatedKey'>.phase_id</span></td>
+                                                <td title="project_vote_decisions.phase_id references accelerator_phases.id via project_vote_decisions_phase_id_fkey"><a href='project_vote_decisions.html'>project_vote_decisions</a><span class='relatedKey'>.phase_id</span></td>
                                                 <td class="constraint detail">project_vote_decisions_phase_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="project_votes.phase_id references cohort_phases.id via project_votes_phase_id_fkey"><a href='project_votes.html'>project_votes</a><span class='relatedKey'>.phase_id</span></td>
+                                                <td title="project_votes.phase_id references accelerator_phases.id via project_votes_phase_id_fkey"><a href='project_votes.html'>project_votes</a><span class='relatedKey'>.phase_id</span></td>
                                                 <td class="constraint detail">project_votes_phase_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="projects.phase_id references cohort_phases.id via projects_phase_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.phase_id</span></td>
+                                                <td title="projects.phase_id references accelerator_phases.id via projects_phase_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.phase_id</span></td>
                                                 <td class="constraint detail">projects_phase_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
@@ -216,13 +211,13 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> cohort_phases_pkey</td>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> accelerator_phases_pkey</td>
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>id</td>
                                 </tr>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> cohort_phases_name_key</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> accelerator_phases_name_key</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>name</td>
@@ -250,11 +245,11 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         
-                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/cohort_phases.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/accelerator_phases.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         
-                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/cohort_phases.2degrees.svg" class="diagram" border="0" align="left"></object></a>
+                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/accelerator_phases.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
                             </div>

@@ -161,16 +161,6 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="cohorts.created_by references users.id via cohorts_created_by_fkey"><a href='../../accelerator/tables/cohorts.html'>cohorts</a><span class='relatedKey'>.created_by</span></td>
-                                                <td class="constraint detail">cohorts_created_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="cohorts.modified_by references users.id via cohorts_modified_by_fkey"><a href='../../accelerator/tables/cohorts.html'>cohorts</a><span class='relatedKey'>.modified_by</span></td>
-                                                <td class="constraint detail">cohorts_modified_by_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="default_voters.user_id references users.id via default_voters_user_id_fkey"><a href='../../accelerator/tables/default_voters.html'>default_voters</a><span class='relatedKey'>.user_id</span></td>
                                                 <td class="constraint detail">default_voters_user_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -1060,16 +1050,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>users_auth_id_check</td>
+                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
                                     <td>users_first_name_check</td>
                                     <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>users_last_name_check</td>
                                     <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
-                                    <td>users_auth_id_check</td>
-                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

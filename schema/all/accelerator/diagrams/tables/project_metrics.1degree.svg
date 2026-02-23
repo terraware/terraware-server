@@ -111,37 +111,34 @@
 <g id="node3" class="node">
 <title>public.projects</title>
 <g id="a_node3"><a xlink:href="../../../public/tables/projects.html" xlink:title="public.projects" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="23,-410 23,-512 155,-512 155,-410 23,-410"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="23,-490 23,-512 155,-512 155,-490 23,-490"/>
-<polygon fill="none" stroke="black" points="23,-490 23,-512 155,-512 155,-490 23,-490"/>
-<text text-anchor="start" x="28" y="-499.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.projects</text>
-<text text-anchor="start" x="116" y="-498.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="23,-468 23,-490 155,-490 155,-468 23,-468"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="28" y="-485"/>
-<text text-anchor="start" x="53" y="-476.2" font-family="Helvetica,sans-Serif" font-size="11.00">cohort_id</text>
-<polygon fill="none" stroke="black" points="23,-446 23,-468 155,-468 155,-446 23,-446"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="28" y="-463"/>
-<text text-anchor="start" x="53" y="-454.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
-<polygon fill="none" stroke="black" points="23,-428 23,-446 155,-446 155,-428 23,-428"/>
-<text text-anchor="start" x="26" y="-434.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="23,-410 23,-428 66,-428 66,-410 23,-410"/>
-<polygon fill="none" stroke="black" points="23,-410 23,-428 66,-428 66,-410 23,-410"/>
-<text text-anchor="start" x="26" y="-416.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="66,-410 66,-428 116,-428 116,-410 66,-410"/>
-<polygon fill="none" stroke="black" points="66,-410 66,-428 116,-428 116,-410 66,-410"/>
-<text text-anchor="start" x="79" y="-416.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="116,-410 116,-428 155,-428 155,-410 116,-410"/>
-<polygon fill="none" stroke="black" points="116,-410 116,-428 155,-428 155,-410 116,-410"/>
-<text text-anchor="start" x="130" y="-416.2" font-family="Helvetica,sans-Serif" font-size="11.00">19 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="23,-412 23,-492 155,-492 155,-412 23,-412"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="23,-470 23,-492 155,-492 155,-470 23,-470"/>
+<polygon fill="none" stroke="black" points="23,-470 23,-492 155,-492 155,-470 23,-470"/>
+<text text-anchor="start" x="28" y="-479.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.projects</text>
+<text text-anchor="start" x="116" y="-478.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="23,-448 23,-470 155,-470 155,-448 23,-448"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="28" y="-465"/>
+<text text-anchor="start" x="53" y="-456.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
+<polygon fill="none" stroke="black" points="23,-430 23,-448 155,-448 155,-430 23,-430"/>
+<text text-anchor="start" x="26" y="-436.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="23,-412 23,-430 66,-430 66,-412 23,-412"/>
+<polygon fill="none" stroke="black" points="23,-412 23,-430 66,-430 66,-412 23,-412"/>
+<text text-anchor="start" x="26" y="-418.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="66,-412 66,-430 116,-430 116,-412 66,-412"/>
+<polygon fill="none" stroke="black" points="66,-412 66,-430 116,-430 116,-412 66,-412"/>
+<text text-anchor="start" x="79" y="-418.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="116,-412 116,-430 155,-430 155,-412 116,-412"/>
+<polygon fill="none" stroke="black" points="116,-412 116,-430 155,-430 155,-412 116,-412"/>
+<text text-anchor="start" x="130" y="-418.2" font-family="Helvetica,sans-Serif" font-size="11.00">19 &gt;</text>
 </a>
 </g>
 </g>
 <!-- project_metrics&#45;&gt;public.projects -->
 <g id="edge2" class="edge">
 <title>project_metrics:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M206.35,-333.48C190.51,-343.59 197.16,-373.57 178,-394 173.4,-398.9 168.42,-403.72 163.24,-408.38"/>
-<polygon fill="black" stroke="black" points="212.73,-331.91 221.36,-333.5 216.62,-330.95 220.5,-330 220.5,-330 220.5,-330 216.62,-330.95 219.64,-326.5 212.73,-331.91 212.73,-331.91"/>
-<ellipse fill="none" stroke="black" cx="209.62" cy="-332.67" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M206.41,-333.54C190.75,-343.83 197.84,-374.23 178,-394 173.2,-398.78 167.96,-403.39 162.49,-407.78"/>
+<polygon fill="black" stroke="black" points="212.74,-331.95 221.38,-333.49 216.62,-330.98 220.5,-330 220.5,-330 220.5,-330 216.62,-330.98 219.62,-326.51 212.74,-331.95 212.74,-331.95"/>
+<ellipse fill="none" stroke="black" cx="209.64" cy="-332.73" rx="3.2" ry="3.2"/>
 </g>
 <!-- metric_types -->
 <g id="node4" class="node">
@@ -219,9 +216,9 @@
 <!-- report_project_metric_targets&#45;&gt;public.projects -->
 <g id="edge4" class="edge">
 <title>report_project_metric_targets:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M496.99,-518.89C377.36,-517.09 243.51,-493.72 163.06,-477.23"/>
-<polygon fill="black" stroke="black" points="503.5,-518.94 511.47,-522.6 507.5,-518.97 511.5,-519 511.5,-519 511.5,-519 507.5,-518.97 511.53,-515.4 503.5,-518.94 503.5,-518.94"/>
-<ellipse fill="none" stroke="black" cx="500.3" cy="-518.91" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M496.97,-518.87C377.19,-516.8 243.67,-489.88 163.3,-470.84"/>
+<polygon fill="black" stroke="black" points="503.5,-518.93 511.47,-522.6 507.5,-518.96 511.5,-519 511.5,-519 511.5,-519 507.5,-518.96 511.53,-515.4 503.5,-518.93 503.5,-518.93"/>
+<ellipse fill="none" stroke="black" cx="500.3" cy="-518.9" rx="3.2" ry="3.2"/>
 </g>
 <!-- report_project_metrics -->
 <g id="node6" class="node">

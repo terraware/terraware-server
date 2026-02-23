@@ -172,29 +172,29 @@
 <g id="node4" class="node">
 <title>public.users</title>
 <g id="a_node4"><a xlink:href="../../../public/tables/users.html" xlink:title="public.users" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="33,-266 33,-324 149,-324 149,-266 33,-266"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="33,-302 33,-324 149,-324 149,-302 33,-302"/>
-<polygon fill="none" stroke="black" points="33,-302 33,-324 149,-324 149,-302 33,-302"/>
-<text text-anchor="start" x="38" y="-311.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.users</text>
-<text text-anchor="start" x="110" y="-310.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="33,-284 33,-302 149,-302 149,-284 33,-284"/>
-<text text-anchor="start" x="36" y="-290.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="33,-266 33,-284 63,-284 63,-266 33,-266"/>
-<polygon fill="none" stroke="black" points="33,-266 33,-284 63,-284 63,-266 33,-266"/>
-<text text-anchor="start" x="36" y="-272.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="63,-266 63,-284 112,-284 112,-266 63,-266"/>
-<polygon fill="none" stroke="black" points="63,-266 63,-284 112,-284 112,-266 63,-266"/>
-<text text-anchor="start" x="75" y="-272.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="112,-266 112,-284 149,-284 149,-266 112,-266"/>
-<polygon fill="none" stroke="black" points="112,-266 112,-284 149,-284 149,-266 112,-266"/>
-<text text-anchor="start" x="124" y="-272.2" font-family="Helvetica,sans-Serif" font-size="11.00">35 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="33,-272 33,-330 149,-330 149,-272 33,-272"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="33,-308 33,-330 149,-330 149,-308 33,-308"/>
+<polygon fill="none" stroke="black" points="33,-308 33,-330 149,-330 149,-308 33,-308"/>
+<text text-anchor="start" x="38" y="-317.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.users</text>
+<text text-anchor="start" x="110" y="-316.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="33,-290 33,-308 149,-308 149,-290 33,-290"/>
+<text text-anchor="start" x="36" y="-296.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="33,-272 33,-290 63,-290 63,-272 33,-272"/>
+<polygon fill="none" stroke="black" points="33,-272 33,-290 63,-290 63,-272 33,-272"/>
+<text text-anchor="start" x="36" y="-278.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="63,-272 63,-290 112,-290 112,-272 63,-272"/>
+<polygon fill="none" stroke="black" points="63,-272 63,-290 112,-290 112,-272 63,-272"/>
+<text text-anchor="start" x="75" y="-278.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="112,-272 112,-290 149,-290 149,-272 112,-272"/>
+<polygon fill="none" stroke="black" points="112,-272 112,-290 149,-290 149,-272 112,-272"/>
+<text text-anchor="start" x="124" y="-278.2" font-family="Helvetica,sans-Serif" font-size="11.00">33 &gt;</text>
 </a>
 </g>
 </g>
 <!-- application_histories&#45;&gt;public.users -->
 <g id="edge3" class="edge">
 <title>application_histories:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M544.07,-114.72C458.99,-111.78 273.83,-87.49 215,-129 182.9,-151.65 204.22,-178.6 182,-211 169.06,-229.86 151.22,-247.63 134.83,-261.92"/>
+<path fill="none" stroke="black" d="M544.07,-114.72C458.99,-111.78 273.83,-87.49 215,-129 182.9,-151.65 203.66,-178.23 182,-211 168.23,-231.83 149.08,-251.81 131.99,-267.63"/>
 <polygon fill="black" stroke="black" points="550.5,-114.85 558.43,-118.6 554.5,-114.92 558.5,-115 558.5,-115 558.5,-115 554.5,-114.92 558.57,-111.4 550.5,-114.85 550.5,-114.85"/>
 <ellipse fill="none" stroke="black" cx="547.3" cy="-114.78" rx="3.2" ry="3.2"/>
 </g>
@@ -208,16 +208,16 @@
 <!-- applications&#45;&gt;public.users -->
 <g id="edge7" class="edge">
 <title>applications:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M209.94,-343.86C195.38,-340.37 176,-333.05 157.16,-325.11"/>
-<polygon fill="black" stroke="black" points="216.59,-344.83 223.98,-349.56 220.54,-345.42 224.5,-346 224.5,-346 224.5,-346 220.54,-345.42 225.02,-342.44 216.59,-344.83 216.59,-344.83"/>
-<ellipse fill="none" stroke="black" cx="213.42" cy="-344.37" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M210.09,-345.25C192.04,-343.42 173.82,-338.47 157.27,-332.5"/>
+<polygon fill="black" stroke="black" points="216.51,-345.58 224.31,-349.6 220.51,-345.79 224.5,-346 224.5,-346 224.5,-346 220.51,-345.79 224.69,-342.4 216.51,-345.58 216.51,-345.58"/>
+<ellipse fill="none" stroke="black" cx="213.32" cy="-345.42" rx="3.2" ry="3.2"/>
 </g>
 <!-- applications&#45;&gt;public.users -->
 <g id="edge8" class="edge">
 <title>applications:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M209.9,-301.87C192.28,-301.57 174.05,-300.77 157.34,-299.82"/>
-<polygon fill="black" stroke="black" points="216.5,-301.93 224.47,-305.6 220.5,-301.96 224.5,-302 224.5,-302 224.5,-302 220.5,-301.96 224.53,-298.4 216.5,-301.93 216.5,-301.93"/>
-<ellipse fill="none" stroke="black" cx="213.3" cy="-301.9" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M209.84,-301.98C192.14,-301.94 173.82,-301.82 157.03,-301.69"/>
+<polygon fill="black" stroke="black" points="216.5,-301.99 224.5,-305.6 220.5,-301.99 224.5,-302 224.5,-302 224.5,-302 220.5,-301.99 224.5,-298.4 216.5,-301.99 216.5,-301.99"/>
+<ellipse fill="none" stroke="black" cx="213.3" cy="-301.99" rx="3.2" ry="3.2"/>
 </g>
 <!-- public.countries -->
 <g id="node6" class="node">
@@ -253,38 +253,35 @@
 <g id="node7" class="node">
 <title>public.projects</title>
 <g id="a_node7"><a xlink:href="../../../public/tables/projects.html" xlink:title="public.projects" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="25,-345 25,-447 157,-447 157,-345 25,-345"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="25,-425 25,-447 157,-447 157,-425 25,-425"/>
-<polygon fill="none" stroke="black" points="25,-425 25,-447 157,-447 157,-425 25,-425"/>
-<text text-anchor="start" x="30" y="-434.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.projects</text>
-<text text-anchor="start" x="118" y="-433.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="25,-403 25,-425 157,-425 157,-403 25,-403"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="30" y="-420"/>
-<text text-anchor="start" x="55" y="-411.2" font-family="Helvetica,sans-Serif" font-size="11.00">cohort_id</text>
-<polygon fill="none" stroke="black" points="25,-381 25,-403 157,-403 157,-381 25,-381"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="30" y="-398"/>
-<text text-anchor="start" x="55" y="-389.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
-<polygon fill="none" stroke="black" points="25,-363 25,-381 157,-381 157,-363 25,-363"/>
-<text text-anchor="start" x="28" y="-369.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="25,-345 25,-363 68,-363 68,-345 25,-345"/>
-<polygon fill="none" stroke="black" points="25,-345 25,-363 68,-363 68,-345 25,-345"/>
-<text text-anchor="start" x="28" y="-351.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="68,-345 68,-363 118,-363 118,-345 68,-345"/>
-<polygon fill="none" stroke="black" points="68,-345 68,-363 118,-363 118,-345 68,-345"/>
-<text text-anchor="start" x="81" y="-351.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="118,-345 118,-363 157,-363 157,-345 118,-345"/>
-<polygon fill="none" stroke="black" points="118,-345 118,-363 157,-363 157,-345 118,-345"/>
-<text text-anchor="start" x="132" y="-351.2" font-family="Helvetica,sans-Serif" font-size="11.00">19 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="25,-351 25,-431 157,-431 157,-351 25,-351"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="25,-409 25,-431 157,-431 157,-409 25,-409"/>
+<polygon fill="none" stroke="black" points="25,-409 25,-431 157,-431 157,-409 25,-409"/>
+<text text-anchor="start" x="30" y="-418.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.projects</text>
+<text text-anchor="start" x="118" y="-417.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="25,-387 25,-409 157,-409 157,-387 25,-387"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="30" y="-404"/>
+<text text-anchor="start" x="55" y="-395.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
+<polygon fill="none" stroke="black" points="25,-369 25,-387 157,-387 157,-369 25,-369"/>
+<text text-anchor="start" x="28" y="-375.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="25,-351 25,-369 68,-369 68,-351 25,-351"/>
+<polygon fill="none" stroke="black" points="25,-351 25,-369 68,-369 68,-351 25,-351"/>
+<text text-anchor="start" x="28" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="68,-351 68,-369 118,-369 118,-351 68,-351"/>
+<polygon fill="none" stroke="black" points="68,-351 68,-369 118,-369 118,-351 68,-351"/>
+<text text-anchor="start" x="81" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="118,-351 118,-369 157,-369 157,-351 118,-351"/>
+<polygon fill="none" stroke="black" points="118,-351 118,-369 157,-369 157,-351 118,-351"/>
+<text text-anchor="start" x="132" y="-357.2" font-family="Helvetica,sans-Serif" font-size="11.00">19 &gt;</text>
 </a>
 </g>
 </g>
 <!-- applications&#45;&gt;public.projects -->
 <g id="edge9" class="edge">
 <title>applications:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M214,-390.06C197.85,-390.24 181.03,-390.79 165.22,-391.5"/>
-<polygon fill="black" stroke="black" points="223.68,-386 223.72,-394 222.12,-394.01 222.08,-386.01 223.68,-386"/>
-<polyline fill="none" stroke="black" points="224.5,-390 220.5,-390.02 "/>
-<ellipse fill="none" stroke="black" cx="217.3" cy="-390.04" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M214.01,-390.01C197.87,-390.04 181.05,-390.13 165.24,-390.25"/>
+<polygon fill="black" stroke="black" points="223.7,-386 223.7,-394 222.1,-394 222.1,-386 223.7,-386"/>
+<polyline fill="none" stroke="black" points="224.5,-390 220.5,-390 "/>
+<ellipse fill="none" stroke="black" cx="217.3" cy="-390.01" rx="3.2" ry="3.2"/>
 </g>
 <!-- application_modules -->
 <g id="node5" class="node">

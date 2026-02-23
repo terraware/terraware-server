@@ -8,8 +8,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "accelerator.applications":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.applications":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.applications":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.cohorts":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.cohorts":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.deliverable_project_due_dates":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.event_projects":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.participant_project_species":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -81,12 +79,11 @@ digraph "twoDegreesRelationshipsDiagram" {
   "project_internal_users":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_land_use_model_types":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_report_settings":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "projects":"cohort_id":w -> "accelerator.cohorts":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"country_code":w -> "countries":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"created_by":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"modified_by":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "projects":"organization_id":w -> "organizations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "projects":"phase_id":w -> "accelerator.cohort_phases":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "projects":"phase_id":w -> "accelerator.accelerator_phases":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "seed_fund_reports":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "seed_fund_reports":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "seed_fund_reports":"elipses":w -> "organizations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -107,6 +104,17 @@ digraph "twoDegreesRelationshipsDiagram" {
   "tracking.planting_sites":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_sites":"elipses":w -> "organizations":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "tracking.planting_sites":"elipses":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.accelerator_phases" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="186" HEIGHT="16"><B>accelerator.accelerator_phases</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/accelerator_phases.html"
+    target="_top"
+    tooltip="accelerator.accelerator_phases"
+  ];
   "accelerator.activities" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -128,28 +136,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../accelerator/tables/applications.html"
     target="_top"
     tooltip="accelerator.applications"
-  ];
-  "accelerator.cohort_phases" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="157" HEIGHT="16"><B>accelerator.cohort_phases</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../../accelerator/tables/cohort_phases.html"
-    target="_top"
-    tooltip="accelerator.cohort_phases"
-  ];
-  "accelerator.cohorts" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16"><B>accelerator.cohorts</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../../accelerator/tables/cohorts.html"
-    target="_top"
-    tooltip="accelerator.cohorts"
   ];
   "accelerator.deliverable_project_due_dates" [
    label=<
@@ -580,10 +566,9 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="organization_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="country_code" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">country_code</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="cohort_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">cohort_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="phase_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">phase_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">43 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">43 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/projects.html"
     target="_top"
@@ -605,7 +590,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="32" HEIGHT="16"><B>users</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">134 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">132 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/users.html"
     target="_top"

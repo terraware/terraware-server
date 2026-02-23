@@ -1,5 +1,5 @@
-cohort_phases
 report_metric_statuses
+accelerator_phases
 metric_components
 metric_types
 report_frequencies
@@ -22,7 +22,6 @@ score_categories
 modules
 standard_metrics
 system_metrics
-cohorts
 deliverable_categories
 project_report_configs
 project_metrics

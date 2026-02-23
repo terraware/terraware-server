@@ -36,7 +36,6 @@ reports
 project_metrics
 project_report_configs
 deliverable_categories
-cohorts
 system_metrics
 standard_metrics
 modules
@@ -59,5 +58,5 @@ activity_media_types
 report_frequencies
 metric_types
 metric_components
+accelerator_phases
 report_metric_statuses
-cohort_phases

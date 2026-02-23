@@ -12,9 +12,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "applications":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "applications":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "applications":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
-  "cohorts":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "cohorts":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "cohorts":"elipses":w -> "cohort_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "default_voters":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "deliverable_documents":"elipses":w -> "deliverables":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "deliverable_documents":"elipses":w -> "deliverable_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -36,7 +33,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "events":"module_id":w -> "modules":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "modules":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "modules":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "modules":"phase_id":w -> "cohort_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "modules":"phase_id":w -> "accelerator_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "participant_project_species":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "participant_project_species":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "participant_project_species":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -47,13 +44,13 @@ digraph "twoDegreesRelationshipsDiagram" {
   "project_overall_scores":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "project_scores":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_scores":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_scores":"elipses":w -> "cohort_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "project_scores":"elipses":w -> "accelerator_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_scores":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_vote_decisions":"elipses":w -> "cohort_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "project_vote_decisions":"elipses":w -> "accelerator_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_vote_decisions":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_votes":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_votes":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_votes":"elipses":w -> "cohort_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "project_votes":"elipses":w -> "accelerator_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_votes":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_votes":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_project_metrics":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -75,8 +72,19 @@ digraph "twoDegreesRelationshipsDiagram" {
   "submissions":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "user_internal_interests":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "user_internal_interests":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "public.projects":"elipses":w -> "cohorts":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "public.projects":"elipses":w -> "cohort_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "public.projects":"elipses":w -> "accelerator_phases":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator_phases" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16"><B>accelerator_phases</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="114" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">5 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/accelerator_phases.html"
+    target="_top"
+    tooltip="accelerator_phases"
+  ];
   "activities" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -133,29 +141,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/applications.html"
     target="_top"
     tooltip="applications"
-  ];
-  "cohort_phases" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16"><B>cohort_phases</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="86" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/cohort_phases.html"
-    target="_top"
-    tooltip="cohort_phases"
-  ];
-  "cohorts" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="45" HEIGHT="16"><B>cohorts</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/cohorts.html"
-    target="_top"
-    tooltip="cohorts"
   ];
   "default_voters" [
    label=<
@@ -453,7 +438,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="88" HEIGHT="16"><B>public.projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">19 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">19 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/projects.html"
     target="_top"
@@ -464,7 +449,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="72" HEIGHT="16"><B>public.users</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">35 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">33 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/users.html"
     target="_top"
