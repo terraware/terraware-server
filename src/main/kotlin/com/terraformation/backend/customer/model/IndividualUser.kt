@@ -6,7 +6,6 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -139,8 +138,6 @@ data class IndividualUser(
 
   override fun canAddAnyOrganizationUser() = isSuperAdmin()
 
-  override fun canAddCohortProject(cohortId: CohortId, projectId: ProjectId) = isAcceleratorAdmin()
-
   override fun canAddOrganizationUser(organizationId: OrganizationId) =
       isSuperAdmin() || isAdminOrHigher(organizationId)
 
@@ -162,10 +159,6 @@ data class IndividualUser(
   override fun canCreateAutomation(facilityId: FacilityId) = isAdminOrHigher(facilityId)
 
   override fun canCreateBatch(facilityId: FacilityId) = isMember(facilityId)
-
-  override fun canCreateCohort() = isAcceleratorAdmin()
-
-  override fun canCreateCohortModule() = isAcceleratorAdmin()
 
   override fun canCreateDelivery(plantingSiteId: PlantingSiteId) = isManagerOrHigher(plantingSiteId)
 
@@ -229,11 +222,6 @@ data class IndividualUser(
       isAdminOrHigher(parentStore.getFacilityId(automationId))
 
   override fun canDeleteBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
-
-  override fun canDeleteCohort(cohortId: CohortId) = isAcceleratorAdmin()
-
-  override fun canDeleteCohortProject(cohortId: CohortId, projectId: ProjectId) =
-      isAcceleratorAdmin()
 
   override fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId) =
       userId == parentStore.getUserId(draftPlantingSiteId) &&
@@ -361,13 +349,6 @@ data class IndividualUser(
   override fun canReadBatch(batchId: BatchId) =
       canReadAcceleratorProject(parentStore.getProjectId(batchId)) ||
           isMember(parentStore.getFacilityId(batchId))
-
-  override fun canReadCohort(cohortId: CohortId) =
-      isReadOnlyOrHigher() || parentStore.exists(cohortId, userId)
-
-  override fun canReadCohortProjects(cohortId: CohortId): Boolean = isReadOnlyOrHigher()
-
-  override fun canReadCohorts(): Boolean = isReadOnlyOrHigher()
 
   override fun canReadCurrentDisclaimer(): Boolean = isSuperAdmin()
 
@@ -617,8 +598,6 @@ data class IndividualUser(
 
   // All users in the organization have read/write access to batches.
   override fun canUpdateBatch(batchId: BatchId) = isMember(parentStore.getFacilityId(batchId))
-
-  override fun canUpdateCohort(cohortId: CohortId) = isAcceleratorAdmin()
 
   override fun canUpdateDefaultVoters(): Boolean = isAcceleratorAdmin()
 

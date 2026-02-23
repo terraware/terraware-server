@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -222,8 +221,6 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canAddAnyOrganizationUser(): Boolean = defaultPermission
 
-  fun canAddCohortProject(cohortId: CohortId, projectId: ProjectId): Boolean = defaultPermission
-
   fun canAddOrganizationUser(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canAddTerraformationContact(organizationId: OrganizationId): Boolean = defaultPermission
@@ -241,10 +238,6 @@ interface TerrawareUser : Principal, UserDetails {
   fun canCreateAutomation(facilityId: FacilityId): Boolean = defaultPermission
 
   fun canCreateBatch(facilityId: FacilityId): Boolean = defaultPermission
-
-  fun canCreateCohort(): Boolean = defaultPermission
-
-  fun canCreateCohortModule(): Boolean = defaultPermission
 
   fun canCreateDelivery(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
@@ -265,8 +258,6 @@ interface TerrawareUser : Principal, UserDetails {
   fun canCreateNotification(targetUserId: UserId): Boolean = defaultPermission
 
   fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
-
-  fun canCreateParticipant(): Boolean = defaultPermission
 
   fun canCreateParticipantProjectSpecies(projectId: ProjectId): Boolean = defaultPermission
 
@@ -297,10 +288,6 @@ interface TerrawareUser : Principal, UserDetails {
   fun canDeleteAutomation(automationId: AutomationId): Boolean = defaultPermission
 
   fun canDeleteBatch(batchId: BatchId): Boolean = defaultPermission
-
-  fun canDeleteCohort(cohortId: CohortId): Boolean = defaultPermission
-
-  fun canDeleteCohortProject(cohortId: CohortId, projectId: ProjectId): Boolean = defaultPermission
 
   fun canDeleteDraftPlantingSite(draftPlantingSiteId: DraftPlantingSiteId): Boolean =
       defaultPermission
@@ -396,12 +383,6 @@ interface TerrawareUser : Principal, UserDetails {
   fun canReadAutomation(automationId: AutomationId): Boolean = defaultPermission
 
   fun canReadBatch(batchId: BatchId): Boolean = defaultPermission
-
-  fun canReadCohort(cohortId: CohortId): Boolean = defaultPermission
-
-  fun canReadCohortProjects(cohortId: CohortId): Boolean = defaultPermission
-
-  fun canReadCohorts(): Boolean = defaultPermission
 
   fun canReadCurrentDisclaimer(): Boolean = defaultPermission
 
@@ -567,8 +548,6 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUpdateAutomation(automationId: AutomationId): Boolean = defaultPermission
 
   fun canUpdateBatch(batchId: BatchId): Boolean = defaultPermission
-
-  fun canUpdateCohort(cohortId: CohortId): Boolean = defaultPermission
 
   fun canUpdateDefaultVoters(): Boolean = defaultPermission
 

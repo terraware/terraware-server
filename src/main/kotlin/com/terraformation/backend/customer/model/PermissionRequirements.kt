@@ -2,7 +2,6 @@ package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
 import com.terraformation.backend.accelerator.db.ApplicationNotFoundException
-import com.terraformation.backend.accelerator.db.CohortNotFoundException
 import com.terraformation.backend.accelerator.db.ModuleNotFoundException
 import com.terraformation.backend.accelerator.db.ParticipantProjectSpeciesNotFoundException
 import com.terraformation.backend.accelerator.db.SubmissionDocumentNotFoundException
@@ -27,7 +26,6 @@ import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.ViabilityTestNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -135,16 +133,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
-  fun addCohortProject(cohortId: CohortId, projectId: ProjectId) {
-    user.recordPermissionChecks {
-      if (!user.canAddCohortProject(cohortId, projectId)) {
-        readCohort(cohortId)
-        readProject(projectId)
-        throw AccessDeniedException("No permission to add project $projectId to cohort $cohortId")
-      }
-    }
-  }
-
   fun addOrganizationUser(organizationId: OrganizationId) {
     user.recordPermissionChecks {
       if (!user.canAddOrganizationUser(organizationId)) {
@@ -225,22 +213,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canCreateBatch(facilityId)) {
         readFacility(facilityId)
         throw AccessDeniedException("No permission to create seedling batch")
-      }
-    }
-  }
-
-  fun createCohort() {
-    user.recordPermissionChecks {
-      if (!user.canCreateCohort()) {
-        throw AccessDeniedException("No permission to create cohort")
-      }
-    }
-  }
-
-  fun createCohortModule() {
-    user.recordPermissionChecks {
-      if (!user.canCreateCohortModule()) {
-        throw AccessDeniedException("No permission to create cohort module")
       }
     }
   }
@@ -469,25 +441,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canDeleteBatch(batchId)) {
         readBatch(batchId)
         throw AccessDeniedException("No permission to delete seedling batch $batchId")
-      }
-    }
-  }
-
-  fun deleteCohort(cohortId: CohortId) {
-    user.recordPermissionChecks {
-      if (!user.canDeleteCohort(cohortId)) {
-        readCohort(cohortId)
-        throw AccessDeniedException("No permission to delete cohort $cohortId")
-      }
-    }
-  }
-
-  fun deleteCohortProject(cohortId: CohortId, projectId: ProjectId) {
-    user.recordPermissionChecks {
-      if (!user.canDeleteCohortProject(cohortId, projectId)) {
-        readCohort(cohortId)
-        readProject(projectId)
-        throw AccessDeniedException("No permission to delete project from cohort $cohortId")
       }
     }
   }
@@ -869,31 +822,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canReadBatch(batchId)) {
         throw BatchNotFoundException(batchId)
-      }
-    }
-  }
-
-  fun readCohort(cohortId: CohortId) {
-    user.recordPermissionChecks {
-      if (!user.canReadCohort(cohortId)) {
-        throw CohortNotFoundException(cohortId)
-      }
-    }
-  }
-
-  fun readCohortProjects(cohortId: CohortId) {
-    user.recordPermissionChecks {
-      if (!user.canReadCohortProjects(cohortId)) {
-        readCohort(cohortId)
-        throw AccessDeniedException("No permission to read projects for cohort $cohortId")
-      }
-    }
-  }
-
-  fun readCohorts() {
-    user.recordPermissionChecks {
-      if (!user.canReadCohorts()) {
-        throw AccessDeniedException("No permission to read cohorts")
       }
     }
   }
@@ -1576,15 +1504,6 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateBatch(batchId)) {
         readBatch(batchId)
         throw AccessDeniedException("No permission to update seedling batch $batchId")
-      }
-    }
-  }
-
-  fun updateCohort(cohortId: CohortId) {
-    user.recordPermissionChecks {
-      if (!user.canUpdateCohort(cohortId)) {
-        readCohort(cohortId)
-        throw AccessDeniedException("No permission to update cohort $cohortId")
       }
     }
   }
