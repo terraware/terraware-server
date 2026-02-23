@@ -1,3 +1,7 @@
+0016f0c907d Update dependency com.google.auth:google-auth-library-oauth2-http to v1.43.0 (#3932)
+5e7ec73fc72 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.43 (#3930)
+e75c516a4c9 Update dependency html-minifier-next to v5.1.2 (#3929)
+e44cd2265e8 Update plugin com.github.jk1.dependency-license-report to v3.1.1 (#3921)
 028838006af Update plugin org.springframework.boot to v3.5.11 (#3931)
 0a382a9e361 SW-8060 Drop cohort_modules table (#3926)
 528f589c822 SW-8060 Remove cohort module API endpoints (#3920)
