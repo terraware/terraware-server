@@ -661,7 +661,7 @@ COMMENT ON COLUMN accelerator.project_accelerator_details.logframe_url IS 'Link 
 
 COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for projects including submission status and due dates.';
 
-COMMENT ON TABLE accelerator.project_metrics IS 'Metrics specific to one project to report on.';
+COMMENT ON TABLE accelerator.project_indicators IS 'Indicators specific to one project to report on.';
 
 COMMENT ON TABLE accelerator.project_modules IS 'Which modules are assigned to which projects.';
 COMMENT ON COLUMN accelerator.project_modules.title IS 'The title for the module for the project. This is shown above the module name in the module timeline.';
@@ -693,9 +693,9 @@ COMMENT ON TABLE accelerator.report_metric_statuses IS '(Enum) Statuses of accel
 COMMENT ON TABLE accelerator.report_photos IS 'Photos for the accelerator project report.';
 COMMENT ON COLUMN accelerator.report_photos.deleted IS 'Flag for photos to be deleted in the next publishing.';
 
-COMMENT ON TABLE accelerator.report_project_metric_targets IS 'Project targets for project-specific metrics by year';
+COMMENT ON TABLE accelerator.report_project_indicator_targets IS 'Project targets for project-specific indicators by year';
 
-COMMENT ON TABLE accelerator.report_project_metrics IS 'Report entries of targets and values for project metrics.';
+COMMENT ON TABLE accelerator.report_project_indicators IS 'Report entries of targets and values for project indicators.';
 
 COMMENT ON TABLE accelerator.report_quarters IS '(Enum) Quarters of accelerator project reports.';
 
@@ -822,9 +822,9 @@ COMMENT ON TABLE funder.published_project_carbon_certs IS 'Carbon Certifications
 
 COMMENT ON TABLE funder.published_project_details IS 'Published Project Data visible to funders.';
 
-COMMENT ON TABLE funder.published_project_land_use IS 'Land Use Model Types and hectares of each for published projects.';
+COMMENT ON TABLE funder.published_project_indicator_targets IS 'Published project targets for project-specific indicators by year';
 
-COMMENT ON TABLE funder.published_project_metric_targets IS 'Published project targets for project-specific metrics by year';
+COMMENT ON TABLE funder.published_project_land_use IS 'Land Use Model Types and hectares of each for published projects.';
 
 COMMENT ON TABLE funder.published_project_sdg IS 'Sustainable Development Goals for published projects.';
 
@@ -834,7 +834,7 @@ COMMENT ON TABLE funder.published_report_challenges IS 'Challenges and mitigatio
 
 COMMENT ON TABLE funder.published_report_photos IS 'Photos for the published accelerator project report.';
 
-COMMENT ON TABLE funder.published_report_project_metrics IS 'Project-specific metrics of published reports.';
+COMMENT ON TABLE funder.published_report_project_indicators IS 'Project-specific indicators of published reports.';
 
 COMMENT ON TABLE funder.published_report_standard_metrics IS 'Standard metrics of published reports.';
 

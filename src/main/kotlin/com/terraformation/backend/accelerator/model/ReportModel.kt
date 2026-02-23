@@ -2,7 +2,7 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
-import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
@@ -114,7 +114,7 @@ data class ReportModel(
 
   fun validateMetricEntries(
       standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
-      projectMetricEntries: Map<ProjectMetricId, ReportMetricEntryModel> = emptyMap(),
+      projectMetricEntries: Map<ProjectIndicatorId, ReportMetricEntryModel> = emptyMap(),
   ) {
     val invalidProjectMetricIds =
         projectMetricEntries.keys.filter { metricId ->

@@ -6,13 +6,13 @@ import com.terraformation.backend.accelerator.model.NewProjectMetricModel
 import com.terraformation.backend.accelerator.model.NewStandardMetricModel
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
-import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.validation.constraints.Size
 
 data class ExistingProjectMetricPayload(
-    val id: ProjectMetricId,
+    val id: ProjectIndicatorId,
     val projectId: ProjectId,
     val name: String,
     val description: String?,

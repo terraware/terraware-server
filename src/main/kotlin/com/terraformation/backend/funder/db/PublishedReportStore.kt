@@ -8,19 +8,19 @@ import com.terraformation.backend.db.accelerator.MetricTypeConverter
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_METRIC_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_STANDARD_METRIC_TARGETS
@@ -219,9 +219,9 @@ class PublishedReportStore(
 
   private val projectMetricsMultiset =
       publishedMetricsMultiset(
-          PROJECT_METRICS.ID,
-          PUBLISHED_REPORT_PROJECT_METRICS.PROJECT_METRIC_ID,
-          PUBLISHED_PROJECT_METRIC_TARGETS.PROJECT_METRIC_ID,
+          PROJECT_INDICATORS.ID,
+          PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
+          PUBLISHED_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
       )
 
   private val standardMetricsMultiset =
