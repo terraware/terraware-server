@@ -12,7 +12,6 @@ import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
@@ -86,8 +85,6 @@ data class ProjectAcceleratorDetailsPayload(
     val carbonCapacity: BigDecimal?,
     val carbonCertifications: Set<CarbonCertification>?,
     val clickUpLink: URI?,
-    val cohortId: CohortId?,
-    val cohortName: String?,
     val confirmedReforestableLand: BigDecimal?,
     val countryAlpha3: String?,
     val countryCode: String?,
@@ -139,8 +136,6 @@ data class ProjectAcceleratorDetailsPayload(
       carbonCapacity = model.carbonCapacity,
       carbonCertifications = model.carbonCertifications,
       clickUpLink = model.clickUpLink,
-      cohortId = model.cohortId,
-      cohortName = model.cohortName,
       confirmedReforestableLand = model.confirmedReforestableLand,
       countryAlpha3 = model.countryAlpha3,
       countryCode = model.countryCode,
@@ -183,10 +178,6 @@ data class ProjectAcceleratorDetailsPayload(
       verraLink = model.verraLink,
       whatNeedsToBeTrue = model.whatNeedsToBeTrue,
   )
-
-  @Deprecated("Use phase instead.")
-  val cohortPhase: CohortPhase? // for backwards compatibility in response payloads
-    get() = phase
 }
 
 data class MetricProgressPayload(

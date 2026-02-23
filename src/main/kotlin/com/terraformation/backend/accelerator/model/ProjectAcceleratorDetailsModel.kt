@@ -2,11 +2,9 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortId
 import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
-import com.terraformation.backend.db.accelerator.tables.references.COHORTS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -27,8 +25,6 @@ data class ProjectAcceleratorDetailsModel(
     val carbonCapacity: BigDecimal? = null,
     val carbonCertifications: Set<CarbonCertification> = emptySet(),
     val clickUpLink: URI? = null,
-    val cohortId: CohortId? = null,
-    val cohortName: String? = null,
     val confirmedReforestableLand: BigDecimal? = null,
     val countryAlpha3: String? = null,
     val countryCode: String? = null,
@@ -86,8 +82,6 @@ data class ProjectAcceleratorDetailsModel(
             carbonCapacity = variableValues.carbonCapacity,
             carbonCertifications = variableValues.carbonCertifications,
             clickUpLink = variableValues.clickUpLink,
-            cohortId = record[COHORTS.ID],
-            cohortName = record[COHORTS.NAME],
             confirmedReforestableLand = variableValues.confirmedReforestableLand,
             countryAlpha3 = variableValues.countryAlpha3,
             countryCode = variableValues.countryCode,
