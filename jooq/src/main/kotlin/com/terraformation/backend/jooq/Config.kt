@@ -44,8 +44,8 @@ val ENUM_TABLES =
                 EnumTable("event_types"),
                 EnumTable("internal_interests"),
                 EnumTable(
-                    "metric_components",
-                    listOf("[a-z_]+_indicators\\.component_id"),
+                    "indicator_categories",
+                    listOf("[a-z_]+_indicators\\.category_id"),
                 ),
                 EnumTable(
                     "metric_types",
@@ -79,8 +79,8 @@ val ENUM_TABLES =
                                 true,
                             ),
                             EnumTableColumnInfo(
-                                "component_id",
-                                "MetricComponent",
+                                "category_id",
+                                "IndicatorCategory",
                                 true,
                             ),
                             EnumTableColumnInfo(

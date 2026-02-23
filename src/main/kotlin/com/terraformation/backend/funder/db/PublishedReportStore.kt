@@ -3,7 +3,7 @@ package com.terraformation.backend.funder.db
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.MetricComponentConverter
+import com.terraformation.backend.db.accelerator.IndicatorCategoryConverter
 import com.terraformation.backend.db.accelerator.MetricTypeConverter
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
@@ -140,8 +140,8 @@ class PublishedReportStore(
     val metricTable = metricTableIdField.table!!
     val metricComponentField =
         metricTable.field(
-            "component_id",
-            SQLDataType.INTEGER.asConvertedDataType(MetricComponentConverter()),
+            "category_id",
+            SQLDataType.INTEGER.asConvertedDataType(IndicatorCategoryConverter()),
         )!!
     val metricDescriptionField = metricTable.field("description", String::class.java)!!
     val metricNameField = metricTable.field("name", String::class.java)!!

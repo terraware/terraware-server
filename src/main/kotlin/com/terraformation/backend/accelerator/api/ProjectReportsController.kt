@@ -31,7 +31,7 @@ import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
-import com.terraformation.backend.db.accelerator.MetricComponent
+import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
@@ -652,7 +652,7 @@ data class ReportReviewPayload(
 )
 
 data class ReportStandardMetricPayload(
-    val component: MetricComponent,
+    val component: IndicatorCategory,
     val description: String?,
     val id: StandardIndicatorId,
     val isPublishable: Boolean,
@@ -700,7 +700,7 @@ data class ReportStandardMetricEntriesPayload(
 }
 
 data class ReportSystemMetricPayload(
-    val component: MetricComponent,
+    val component: IndicatorCategory,
     val description: String?,
     val isPublishable: Boolean,
     val metric: AutoCalculatedIndicator,
@@ -717,7 +717,7 @@ data class ReportSystemMetricPayload(
   constructor(
       model: ReportSystemMetricModel
   ) : this(
-      component = model.metric.componentId,
+      component = model.metric.categoryId,
       description = model.metric.description,
       isPublishable = model.metric.isPublishable,
       metric = model.metric,
@@ -762,7 +762,7 @@ data class ReportPhotoPayload(
 }
 
 data class ReportProjectMetricPayload(
-    val component: MetricComponent,
+    val component: IndicatorCategory,
     val description: String?,
     val id: ProjectIndicatorId,
     val isPublishable: Boolean,

@@ -644,9 +644,9 @@ COMMENT ON TABLE accelerator.events IS 'Events with meeting links and time withi
 
 COMMENT ON TABLE accelerator.hubspot_token IS 'If the server has been authorized to make HubSpot API requests, the refresh token to use to generate new access tokens.';
 
-COMMENT ON TABLE accelerator.internal_interests IS '(Enum) Types of notification categories for internal users.';
+COMMENT ON TABLE accelerator.indicator_categories IS '(Enum) Categories of indicators for reports.';
 
-COMMENT ON TABLE accelerator.metric_components IS '(Enum) Components of metrics for reports.';
+COMMENT ON TABLE accelerator.internal_interests IS '(Enum) Types of notification categories for internal users.';
 
 COMMENT ON TABLE accelerator.metric_types IS '(Enum) Types of metrics for reports.';
 

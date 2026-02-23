@@ -30,8 +30,8 @@ import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
+import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.InternalInterest
-import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
@@ -1113,7 +1113,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertProjectMetric(
       row: ProjectIndicatorsRow = ProjectIndicatorsRow(),
-      component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
+      component: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
       description: String? = row.description,
       isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
@@ -1124,7 +1124,7 @@ abstract class DatabaseBackedTest {
   ): ProjectIndicatorId {
     val rowWithDefaults =
         row.copy(
-            componentId = component,
+            categoryId = component,
             description = description,
             isPublishable = isPublishable,
             name = name,
@@ -2822,7 +2822,7 @@ abstract class DatabaseBackedTest {
 
   fun insertStandardMetric(
       row: StandardIndicatorsRow = StandardIndicatorsRow(),
-      component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
+      component: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
       description: String? = row.description,
       isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
@@ -2832,7 +2832,7 @@ abstract class DatabaseBackedTest {
   ): StandardIndicatorId {
     val rowWithDefaults =
         row.copy(
-            componentId = component,
+            categoryId = component,
             description = description,
             isPublishable = isPublishable,
             name = name,

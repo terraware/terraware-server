@@ -10,7 +10,7 @@ import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.toResponseEntity
-import com.terraformation.backend.db.accelerator.MetricComponent
+import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
@@ -84,7 +84,7 @@ data class ReportChallengePayload(
 )
 
 data class PublishedReportMetricPayload(
-    val component: MetricComponent,
+    val component: IndicatorCategory,
     val description: String?,
     val name: String,
     val progressNotes: String?,

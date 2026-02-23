@@ -10,7 +10,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
-import com.terraformation.backend.db.accelerator.MetricComponent
+import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
@@ -45,7 +45,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `returns one standard metric`() {
         val metricId =
             insertStandardMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 isPublishable = true,
                 name = "Climate Standard Metric",
@@ -57,7 +57,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         assertEquals(
             ExistingStandardMetricModel(
                 id = metricId,
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 isPublishable = true,
                 name = "Climate Standard Metric",
@@ -80,7 +80,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `throws access denied exception for non-global role users`() {
         val metricId =
             insertStandardMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
@@ -102,7 +102,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `returns all standard metrics`() {
         val standardMetricId1 =
             insertStandardMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
@@ -112,7 +112,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         val standardMetricId2 =
             insertStandardMetric(
-                component = MetricComponent.Community,
+                component = IndicatorCategory.Community,
                 description = "Community metric description",
                 name = "Community Metric",
                 reference = "5.0",
@@ -122,7 +122,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         val standardMetricId3 =
             insertStandardMetric(
-                component = MetricComponent.ProjectObjectives,
+                component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 isPublishable = false,
                 name = "Project Objectives Metric",
@@ -136,7 +136,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 // Ordered by reference then ID
                 ExistingStandardMetricModel(
                     id = standardMetricId1,
-                    component = MetricComponent.Climate,
+                    component = IndicatorCategory.Climate,
                     description = "Climate standard metric description",
                     isPublishable = true,
                     name = "Climate Standard Metric",
@@ -146,7 +146,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ),
                 ExistingStandardMetricModel(
                     id = standardMetricId3,
-                    component = MetricComponent.ProjectObjectives,
+                    component = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = false,
                     name = "Project Objectives Metric",
@@ -156,7 +156,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ),
                 ExistingStandardMetricModel(
                     id = standardMetricId2,
-                    component = MetricComponent.Community,
+                    component = IndicatorCategory.Community,
                     description = "Community metric description",
                     isPublishable = true,
                     name = "Community Metric",
@@ -211,7 +211,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val projectId = insertProject()
         val metricId =
             insertProjectMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate project metric description",
                 name = "Climate Project Metric",
                 isPublishable = false,
@@ -225,7 +225,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             ExistingProjectMetricModel(
                 id = metricId,
                 projectId = projectId,
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate project metric description",
                 isPublishable = false,
                 name = "Climate Project Metric",
@@ -277,7 +277,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val projectId = insertProject()
         val metricId =
             insertProjectMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 projectId = projectId,
@@ -301,7 +301,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val projectId = insertProject()
         val metricId1 =
             insertProjectMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 projectId = projectId,
@@ -312,7 +312,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         val metricId2 =
             insertProjectMetric(
-                component = MetricComponent.Community,
+                component = IndicatorCategory.Community,
                 description = "Community metric description",
                 isPublishable = false,
                 name = "Community Metric",
@@ -324,7 +324,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         val metricId3 =
             insertProjectMetric(
-                component = MetricComponent.ProjectObjectives,
+                component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
                 projectId = projectId,
@@ -343,7 +343,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ExistingProjectMetricModel(
                     id = metricId1,
                     projectId = projectId,
-                    component = MetricComponent.Climate,
+                    component = IndicatorCategory.Climate,
                     description = "Climate standard metric description",
                     isPublishable = true,
                     name = "Climate Standard Metric",
@@ -354,7 +354,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ExistingProjectMetricModel(
                     id = metricId3,
                     projectId = projectId,
-                    component = MetricComponent.ProjectObjectives,
+                    component = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = true,
                     name = "Project Objectives Metric",
@@ -365,7 +365,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ExistingProjectMetricModel(
                     id = metricId2,
                     projectId = projectId,
-                    component = MetricComponent.Community,
+                    component = IndicatorCategory.Community,
                     description = "Community metric description",
                     isPublishable = false,
                     name = "Community Metric",
@@ -432,7 +432,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `inserts new record`() {
         val existingMetricId =
             insertStandardMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
@@ -443,7 +443,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val model =
             NewStandardMetricModel(
                 id = null,
-                component = MetricComponent.ProjectObjectives,
+                component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 isPublishable = false,
                 name = "Project Objectives Metric",
@@ -458,7 +458,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(
                 StandardIndicatorsRecord(
                     id = existingMetricId,
-                    componentId = MetricComponent.Climate,
+                    categoryId = IndicatorCategory.Climate,
                     description = "Climate standard metric description",
                     isPublishable = true,
                     name = "Climate Standard Metric",
@@ -468,7 +468,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ),
                 StandardIndicatorsRecord(
                     id = newMetricId,
-                    componentId = MetricComponent.ProjectObjectives,
+                    categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = false,
                     name = "Project Objectives Metric",
@@ -485,7 +485,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val model =
             NewStandardMetricModel(
                 id = null,
-                component = MetricComponent.ProjectObjectives,
+                component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 isPublishable = true,
                 name = "Project Objectives Metric",
@@ -508,7 +508,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val projectId = insertProject()
         val existingMetricId =
             insertProjectMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 projectId = projectId,
@@ -521,7 +521,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             NewProjectMetricModel(
                 id = null,
                 projectId = projectId,
-                component = MetricComponent.ProjectObjectives,
+                component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 isPublishable = false,
                 name = "Project Objectives Metric",
@@ -536,7 +536,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(
                 ProjectIndicatorsRecord(
                     id = existingMetricId,
-                    componentId = MetricComponent.Climate,
+                    categoryId = IndicatorCategory.Climate,
                     description = "Climate standard metric description",
                     isPublishable = true,
                     name = "Climate Standard Metric",
@@ -547,7 +547,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ),
                 ProjectIndicatorsRecord(
                     id = newMetricId,
-                    componentId = MetricComponent.ProjectObjectives,
+                    categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = false,
                     name = "Project Objectives Metric",
@@ -567,7 +567,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val model =
             NewProjectMetricModel(
                 id = null,
-                component = MetricComponent.ProjectObjectives,
+                component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 isPublishable = true,
                 name = "Project Objectives Metric",
@@ -591,7 +591,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `updates existing record`() {
         val existingMetricId =
             insertStandardMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
@@ -602,7 +602,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val updated =
             ExistingStandardMetricModel(
                 id = StandardIndicatorId(99), // this field is ignored
-                component = MetricComponent.ProjectObjectives,
+                component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 isPublishable = false,
                 name = "Project Objectives Metric",
@@ -617,7 +617,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(
                 StandardIndicatorsRecord(
                     id = existingMetricId,
-                    componentId = MetricComponent.ProjectObjectives,
+                    categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = false,
                     name = "Project Objectives Metric",
@@ -633,7 +633,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `throws access denied exception for non-accelerator admin`() {
         val existingMetricId =
             insertStandardMetric(
-                component = MetricComponent.Climate,
+                component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
@@ -658,7 +658,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectId = insertProject()
       val existingMetricId =
           insertProjectMetric(
-              component = MetricComponent.Climate,
+              component = IndicatorCategory.Climate,
               description = "Climate standard metric description",
               isPublishable = false,
               name = "Climate Standard Metric",
@@ -671,7 +671,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updated =
           ExistingProjectMetricModel(
               id = ProjectIndicatorId(99), // this field is ignored
-              component = MetricComponent.ProjectObjectives,
+              component = IndicatorCategory.ProjectObjectives,
               description = "Project objectives metric description",
               isPublishable = true,
               name = "Project Objectives Metric",
@@ -687,7 +687,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ProjectIndicatorsRecord(
                   id = existingMetricId,
-                  componentId = MetricComponent.ProjectObjectives,
+                  categoryId = IndicatorCategory.ProjectObjectives,
                   description = "Project objectives metric description",
                   isPublishable = true,
                   name = "Project Objectives Metric",
@@ -706,7 +706,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectId = insertProject()
       val existingMetricId =
           insertProjectMetric(
-              component = MetricComponent.Climate,
+              component = IndicatorCategory.Climate,
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
               projectId = projectId,

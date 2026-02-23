@@ -7,7 +7,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
-import com.terraformation.backend.db.accelerator.MetricComponent
+import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
@@ -50,7 +50,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val standardMetricId1 =
           insertStandardMetric(
-              component = MetricComponent.Climate,
+              component = IndicatorCategory.Climate,
               description = "Standard Metric Description 1",
               name = "Standard Metric 1",
               reference = "1.1.2",
@@ -59,7 +59,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val standardMetricId2 =
           insertStandardMetric(
-              component = MetricComponent.Community,
+              component = IndicatorCategory.Community,
               description = "Standard Metric Description 2",
               name = "Standard Metric 2",
               reference = "1.1.1",
@@ -68,7 +68,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val projectMetricId1 =
           insertProjectMetric(
-              component = MetricComponent.Biodiversity,
+              component = IndicatorCategory.Biodiversity,
               description = "Project Metric Description 1",
               name = "Project Metric 1",
               reference = "1.2.1",
@@ -78,7 +78,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val projectMetricId2 =
           insertProjectMetric(
-              component = MetricComponent.ProjectObjectives,
+              component = IndicatorCategory.ProjectObjectives,
               description = "Project Metric Description 2",
               name = "Project Metric 2",
               reference = "1.2.11",
@@ -248,7 +248,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectMetrics =
                       listOf(
                           PublishedReportMetricModel(
-                              component = MetricComponent.Biodiversity,
+                              component = IndicatorCategory.Biodiversity,
                               description = "Project Metric Description 1",
                               metricId = projectMetricId1,
                               name = "Project Metric 1",
@@ -262,7 +262,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               unit = "%",
                           ),
                           PublishedReportMetricModel(
-                              component = MetricComponent.ProjectObjectives,
+                              component = IndicatorCategory.ProjectObjectives,
                               description = "Project Metric Description 2",
                               metricId = projectMetricId2,
                               name = "Project Metric 2",
@@ -284,7 +284,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   standardMetrics =
                       listOf(
                           PublishedReportMetricModel(
-                              component = MetricComponent.Community,
+                              component = IndicatorCategory.Community,
                               description = "Standard Metric Description 2",
                               metricId = standardMetricId2,
                               name = "Standard Metric 2",
@@ -298,7 +298,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               unit = null,
                           ),
                           PublishedReportMetricModel(
-                              component = MetricComponent.Climate,
+                              component = IndicatorCategory.Climate,
                               description = "Standard Metric Description 1",
                               metricId = standardMetricId1,
                               name = "Standard Metric 1",
@@ -316,7 +316,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemMetrics =
                       listOf(
                           PublishedReportMetricModel(
-                              component = AutoCalculatedIndicator.SurvivalRate.componentId,
+                              component = AutoCalculatedIndicator.SurvivalRate.categoryId,
                               description = AutoCalculatedIndicator.SurvivalRate.description,
                               metricId = AutoCalculatedIndicator.SurvivalRate,
                               name = AutoCalculatedIndicator.SurvivalRate.jsonValue,

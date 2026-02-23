@@ -1,0 +1,15 @@
+-- component_id columns
+ALTER TABLE accelerator.project_indicators RENAME COLUMN component_id TO category_id;
+ALTER TABLE accelerator.standard_indicators RENAME COLUMN component_id TO category_id;
+ALTER TABLE accelerator.auto_calculated_indicators RENAME COLUMN component_id TO category_id;
+
+-- table
+ALTER TABLE accelerator.metric_components RENAME TO indicator_categories;
+
+-- constraints
+ALTER TABLE accelerator.indicator_categories RENAME CONSTRAINT metric_components_pkey TO indicator_categories_pkey;
+ALTER TABLE accelerator.indicator_categories RENAME CONSTRAINT metric_components_name_key TO indicator_categories_name_key;
+
+ALTER TABLE accelerator.project_indicators RENAME CONSTRAINT project_indicators_component_id_fkey TO project_indicators_category_id_fkey;
+ALTER TABLE accelerator.standard_indicators RENAME CONSTRAINT standard_indicators_component_id_fkey TO standard_indicators_category_id_fkey;
+ALTER TABLE accelerator.auto_calculated_indicators RENAME CONSTRAINT auto_calculated_indicators_component_id_fkey TO auto_calculated_indicators_category_id_fkey;
