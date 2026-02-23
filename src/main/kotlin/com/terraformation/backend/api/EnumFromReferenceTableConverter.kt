@@ -1,11 +1,11 @@
 package com.terraformation.backend.api
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.db.EnumFromReferenceTable
 import jakarta.inject.Named
 import org.jooq.exception.IOException
 import org.springframework.core.convert.TypeDescriptor
 import org.springframework.core.convert.converter.GenericConverter
+import tools.jackson.databind.ObjectMapper
 
 /**
  * Customizes how web request parameters are converted to an [EnumFromReferenceTableConverter],
