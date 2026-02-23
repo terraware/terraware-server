@@ -132,6 +132,7 @@ class SchemaDocsGenerator : DatabaseTest() {
       mapOf(
           "accelerator" to
               mapOf(
+                  "accelerator_phases" to setOf(ALL, ACCELERATOR),
                   "activities" to setOf(ALL, ACCELERATOR),
                   "activity_media_files" to setOf(ALL, ACCELERATOR),
                   "activity_media_types" to setOf(ALL, ACCELERATOR),
@@ -142,7 +143,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "application_modules" to setOf(ALL, ACCELERATOR),
                   "application_statuses" to setOf(ALL, ACCELERATOR),
                   "applications" to setOf(ALL, ACCELERATOR),
-                  "cohort_phases" to setOf(ALL, ACCELERATOR),
                   "deal_stages" to setOf(ALL, ACCELERATOR),
                   "default_voters" to setOf(ALL, ACCELERATOR),
                   "deliverable_categories" to setOf(ALL, ACCELERATOR),

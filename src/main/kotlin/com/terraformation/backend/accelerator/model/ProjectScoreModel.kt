@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_SCORES
 import com.terraformation.backend.log.perClassLogger
@@ -30,10 +30,10 @@ data class ProjectScoreModel<INSTANT : Instant?>(
      * Returns the total (average) score for a set of per-category scores, rounded to 2 decimal
      * places.
      */
-    fun totalScore(phase: CohortPhase, scores: Collection<ProjectScoreModel<*>>): BigDecimal? {
+    fun totalScore(phase: AcceleratorPhase, scores: Collection<ProjectScoreModel<*>>): BigDecimal? {
       return when (phase) {
-        CohortPhase.Phase0DueDiligence -> phase0Total(scores)
-        CohortPhase.Phase1FeasibilityStudy -> phase1Total(scores)
+        AcceleratorPhase.Phase0DueDiligence -> phase0Total(scores)
+        AcceleratorPhase.Phase1FeasibilityStudy -> phase1Total(scores)
         else -> {
           log.error("BUG! Should not be trying to calculate score for phase $phase")
           null

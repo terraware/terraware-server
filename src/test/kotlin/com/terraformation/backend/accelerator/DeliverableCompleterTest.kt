@@ -14,9 +14,9 @@ import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSp
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -73,8 +73,8 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
     projectId = insertProject()
     applicationId = insertApplication()
 
-    applicationModuleId = insertModule(phase = CohortPhase.Application)
-    preScreenModuleId = insertModule(phase = CohortPhase.PreScreen)
+    applicationModuleId = insertModule(phase = AcceleratorPhase.Application)
+    preScreenModuleId = insertModule(phase = AcceleratorPhase.PreScreen)
 
     every { user.adminOrganizations() } returns setOf(organizationId)
     every { user.canCreateSubmission(projectId) } returns true
@@ -169,7 +169,7 @@ class DeliverableCompleterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not update deliverable status for non-application phase`() {
-      insertModule(phase = CohortPhase.Phase0DueDiligence)
+      insertModule(phase = AcceleratorPhase.Phase0DueDiligence)
       val otherModuleDeliverableId = insertDeliverable()
 
       completer.on(

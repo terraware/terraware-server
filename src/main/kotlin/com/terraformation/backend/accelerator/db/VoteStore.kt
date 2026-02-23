@@ -4,7 +4,7 @@ import com.terraformation.backend.accelerator.model.VoteDecisionModel
 import com.terraformation.backend.accelerator.model.VoteModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.references.DEFAULT_VOTERS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
@@ -24,7 +24,7 @@ class VoteStore(
     private val dslContext: DSLContext,
     private val projectPhaseFetcher: ProjectPhaseFetcher,
 ) {
-  fun fetchAllVotes(projectId: ProjectId, phase: CohortPhase? = null): List<VoteModel> {
+  fun fetchAllVotes(projectId: ProjectId, phase: AcceleratorPhase? = null): List<VoteModel> {
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTES) {
       dslContext
@@ -41,7 +41,7 @@ class VoteStore(
 
   fun fetchAllVoteDecisions(
       projectId: ProjectId,
-      phase: CohortPhase? = null,
+      phase: AcceleratorPhase? = null,
   ): List<VoteDecisionModel> {
     requirePermissions { readProjectVotes(projectId) }
     return with(PROJECT_VOTE_DECISIONS) {
@@ -60,7 +60,7 @@ class VoteStore(
    *
    * Returns the vote decision after the removal of voter.
    */
-  fun delete(projectId: ProjectId, phase: CohortPhase, userId: UserId? = null) {
+  fun delete(projectId: ProjectId, phase: AcceleratorPhase, userId: UserId? = null) {
     requirePermissions { updateProjectVotes(projectId) }
 
     projectPhaseFetcher.ensureProjectPhase(projectId, phase)
@@ -85,7 +85,7 @@ class VoteStore(
   /** Returns the vote decision after the upsert. */
   fun upsert(
       projectId: ProjectId,
-      phase: CohortPhase,
+      phase: AcceleratorPhase,
       userId: UserId,
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,
@@ -168,7 +168,7 @@ class VoteStore(
 
   private fun updateProjectVoteDecisions(
       projectId: ProjectId,
-      phase: CohortPhase,
+      phase: AcceleratorPhase,
       now: Instant = clock.instant(),
   ) {
     val votes =

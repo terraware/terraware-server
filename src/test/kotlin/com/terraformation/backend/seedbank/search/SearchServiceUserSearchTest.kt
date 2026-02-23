@@ -1,7 +1,7 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.assertJsonEquals
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
 import com.terraformation.backend.db.default_schema.Role
@@ -198,7 +198,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     every { user.canReadAllAcceleratorDetails() } returns true
 
     val projectId =
-        insertProject(organizationId = organizationId, phase = CohortPhase.Phase0DueDiligence)
+        insertProject(organizationId = organizationId, phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectInternalUser(userId = bothOrgsUserId, role = ProjectInternalRole.RegionalExpert)
     insertProjectInternalUser(userId = otherOrgUserId, role = ProjectInternalRole.GISLead)
 

@@ -6,7 +6,7 @@ import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.GlobalRole
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.*
@@ -43,7 +43,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertProject(
               organizationId = acceleratorOrgId1,
               name = "D",
-              phase = CohortPhase.Phase0DueDiligence,
+              phase = AcceleratorPhase.Phase0DueDiligence,
           )
       val unassignedProjectId1 = insertProject(organizationId = acceleratorOrgId1, name = "A")
 
@@ -93,7 +93,7 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.EPOCH,
                           name = "D",
                           organizationId = acceleratorOrgId1,
-                          phase = CohortPhase.Phase0DueDiligence,
+                          phase = AcceleratorPhase.Phase0DueDiligence,
                       ),
                   ),
               OrganizationModel(

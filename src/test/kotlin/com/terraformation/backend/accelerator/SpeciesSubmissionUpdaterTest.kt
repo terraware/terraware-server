@@ -9,7 +9,7 @@ import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSp
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
@@ -47,7 +47,7 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
   inner class ResetSubmission {
     @Test
     fun `resets the submission status if it exists and is currently 'Approved'`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =
@@ -100,7 +100,7 @@ class SpeciesSubmissionUpdaterTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does nothing if the submission status is not 'Approved'`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val speciesId = insertSpecies()
       val moduleId = insertModule()
       val deliverableId =

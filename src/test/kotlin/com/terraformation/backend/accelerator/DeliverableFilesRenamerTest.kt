@@ -12,9 +12,9 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -79,7 +79,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     applicationId = insertApplication(internalName = "XXX_Organization")
 
     every { config.accelerator } returns
@@ -135,7 +135,7 @@ class DeliverableFilesRenamerTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `renames project document submissions and moves them to the folder`() {
       // Application Modules
-      insertModule(phase = CohortPhase.Application)
+      insertModule(phase = AcceleratorPhase.Application)
       insertApplicationModule()
       insertDeliverable(
           name = "Application Documents",

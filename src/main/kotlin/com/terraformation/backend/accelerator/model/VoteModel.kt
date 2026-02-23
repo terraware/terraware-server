@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VOTES
 import com.terraformation.backend.db.default_schema.UserId
@@ -12,7 +12,7 @@ data class VoteModel(
     val email: String,
     val firstName: String? = null,
     val lastName: String? = null,
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val userId: UserId,
     val voteOption: VoteOption? = null,
 ) {

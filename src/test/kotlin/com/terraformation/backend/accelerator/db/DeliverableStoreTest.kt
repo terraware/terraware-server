@@ -7,7 +7,7 @@ import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.DocumentStore
@@ -67,10 +67,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       clock.instant = now
 
       val organizationId1 = insertOrganization()
-      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val projectId2 = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+      val projectId1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
       val organizationId2 = insertOrganization()
-      val projectId3 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId3 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       val projectId4 = insertProject()
 
       val moduleId1 = insertModule(name = "Name 1")
@@ -365,10 +365,10 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
       val documentId = insertSubmissionDocument()
 
       // Pre-screen and application submissions should not be included
-      insertModule(phase = CohortPhase.PreScreen)
+      insertModule(phase = AcceleratorPhase.PreScreen)
       insertDeliverable()
       insertSubmission()
-      insertModule(phase = CohortPhase.Application)
+      insertModule(phase = AcceleratorPhase.Application)
       insertDeliverable()
       insertSubmission()
 
@@ -420,7 +420,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns application submissions for non-participant projects if deliverable ID is specified`() {
       val organizationId = insertOrganization()
       val projectId = insertProject()
-      val moduleId = insertModule(phase = CohortPhase.PreScreen)
+      val moduleId = insertModule(phase = AcceleratorPhase.PreScreen)
       val deliverableId = insertDeliverable()
       val submissionId = insertSubmission(submissionStatus = SubmissionStatus.Approved)
       val documentId = insertSubmissionDocument()
@@ -472,11 +472,11 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `returns application submissions for participant projects if deliverable ID is specified`() {
       val organizationId = insertOrganization()
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val moduleId = insertModule(phase = CohortPhase.PreScreen)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val moduleId = insertModule(phase = AcceleratorPhase.PreScreen)
       val deliverableId = insertDeliverable()
       val submissionId = insertSubmission(submissionStatus = SubmissionStatus.Approved)
-      insertModule(phase = CohortPhase.Phase0DueDiligence)
+      insertModule(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
 
       assertEquals(
@@ -516,7 +516,7 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
     fun `returns default submission for non-participant project if deliverable and project IDs are specified`() {
       val organizationId = insertOrganization()
       val projectId = insertProject()
-      val moduleId = insertModule(phase = CohortPhase.PreScreen)
+      val moduleId = insertModule(phase = AcceleratorPhase.PreScreen)
       val deliverableId = insertDeliverable()
 
       assertEquals(
@@ -559,8 +559,8 @@ class DeliverableStoreTest : DatabaseTest(), RunsAsUser {
 
       insertOrganization()
 
-      val projectWithProjectDueDate = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val projectWithDefaultDueDate = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectWithProjectDueDate = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val projectWithDefaultDueDate = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       val projectModuleEndDate = LocalDate.of(2024, 1, 2)
 

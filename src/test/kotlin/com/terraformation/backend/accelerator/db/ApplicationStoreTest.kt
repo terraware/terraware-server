@@ -17,10 +17,10 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -101,9 +101,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
   inner class Create {
     @Test
     fun `populates initial values and creates history entry`() {
-      val prescreenModuleId = insertModule(phase = CohortPhase.PreScreen)
-      val applicationModuleId = insertModule(phase = CohortPhase.Application)
-      insertModule(name = "Not assigned", phase = CohortPhase.Phase1FeasibilityStudy)
+      val prescreenModuleId = insertModule(phase = AcceleratorPhase.PreScreen)
+      val applicationModuleId = insertModule(phase = AcceleratorPhase.Application)
+      insertModule(name = "Not assigned", phase = AcceleratorPhase.Phase1FeasibilityStudy)
       val now = Instant.ofEpochSecond(30)
       clock.instant = now
 
@@ -539,13 +539,13 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertModule(
                 name = "Pre-screen",
                 overview = "Pre-screen Overview",
-                phase = CohortPhase.PreScreen,
+                phase = AcceleratorPhase.PreScreen,
             )
         val applicationModule2 =
             insertModule(
                 name = "Application 2",
                 overview = "Application 2 Overview",
-                phase = CohortPhase.Application,
+                phase = AcceleratorPhase.Application,
                 position = 2,
             )
 
@@ -553,10 +553,10 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertModule(
                 name = "Application 1",
                 overview = "Application 1 Overview",
-                phase = CohortPhase.Application,
+                phase = AcceleratorPhase.Application,
                 position = 1,
             )
-        insertModule(name = "Hidden module", phase = CohortPhase.Phase1FeasibilityStudy)
+        insertModule(name = "Hidden module", phase = AcceleratorPhase.Phase1FeasibilityStudy)
 
         insertApplicationModule(
             inserted.applicationId,
@@ -579,7 +579,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 ApplicationModuleModel(
                     id = prescreenModule,
                     name = "Pre-screen",
-                    phase = CohortPhase.PreScreen,
+                    phase = AcceleratorPhase.PreScreen,
                     overview = "Pre-screen Overview",
                     applicationId = inserted.applicationId,
                     applicationModuleStatus = ApplicationModuleStatus.Complete,
@@ -587,7 +587,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 ApplicationModuleModel(
                     id = applicationModule1,
                     name = "Application 1",
-                    phase = CohortPhase.Application,
+                    phase = AcceleratorPhase.Application,
                     overview = "Application 1 Overview",
                     applicationId = inserted.applicationId,
                     applicationModuleStatus = ApplicationModuleStatus.Incomplete,
@@ -595,7 +595,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
                 ApplicationModuleModel(
                     id = applicationModule2,
                     name = "Application 2",
-                    phase = CohortPhase.Application,
+                    phase = AcceleratorPhase.Application,
                     overview = "Application 2 Overview",
                     applicationId = inserted.applicationId,
                     applicationModuleStatus = ApplicationModuleStatus.Incomplete,
@@ -648,13 +648,13 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertModule(
                 name = "Pre-screen",
                 overview = "Pre-screen Overview",
-                phase = CohortPhase.PreScreen,
+                phase = AcceleratorPhase.PreScreen,
             )
         applicationModuleId =
             insertModule(
                 name = "Application",
                 overview = "Application Overview",
-                phase = CohortPhase.Application,
+                phase = AcceleratorPhase.Application,
             )
 
         // Extra module only for org 2 project 1, not visible to Org 1.
@@ -662,7 +662,7 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
             insertModule(
                 name = "Extra Application",
                 overview = "Extra Application Overview",
-                phase = CohortPhase.Application,
+                phase = AcceleratorPhase.Application,
             )
 
         insertApplicationModule(org1Project1ApplicationId, prescreenModuleId)
@@ -1585,9 +1585,9 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
       val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
       val applicationId = insertApplication(boundary = boundary, createdBy = otherUserId)
       val initial = applicationsDao.findAll().single()
-      val moduleId1 = insertModule(phase = CohortPhase.Application)
-      val moduleId2 = insertModule(phase = CohortPhase.Application)
-      insertModule(phase = CohortPhase.PreScreen)
+      val moduleId1 = insertModule(phase = AcceleratorPhase.Application)
+      val moduleId2 = insertModule(phase = AcceleratorPhase.Application)
+      insertModule(phase = AcceleratorPhase.PreScreen)
 
       clock.instant = Instant.ofEpochSecond(30)
 
@@ -1642,8 +1642,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           insertApplication(createdBy = otherUserId, status = ApplicationStatus.PassedPreScreen)
       val initial = applicationsDao.findAll().single()
 
-      val moduleId1 = insertModule(phase = CohortPhase.Application)
-      val moduleId2 = insertModule(phase = CohortPhase.Application)
+      val moduleId1 = insertModule(phase = AcceleratorPhase.Application)
+      val moduleId2 = insertModule(phase = AcceleratorPhase.Application)
 
       insertApplicationModule(applicationId, moduleId1, ApplicationModuleStatus.Complete)
       insertApplicationModule(applicationId, moduleId2, ApplicationModuleStatus.Complete)
@@ -1685,8 +1685,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
           insertApplication(createdBy = otherUserId, status = ApplicationStatus.PassedPreScreen)
       val initial = applicationsDao.findAll()
 
-      val moduleId1 = insertModule(phase = CohortPhase.Application)
-      val moduleId2 = insertModule(phase = CohortPhase.Application)
+      val moduleId1 = insertModule(phase = AcceleratorPhase.Application)
+      val moduleId2 = insertModule(phase = AcceleratorPhase.Application)
 
       insertApplicationModule(applicationId, moduleId1, ApplicationModuleStatus.Complete)
       insertApplicationModule(applicationId, moduleId2, ApplicationModuleStatus.Incomplete)
@@ -1701,8 +1701,8 @@ class ApplicationStoreTest : DatabaseTest(), RunsAsUser {
     fun `does not update existing module status on resubmit`() {
       val boundary = Turtle(point(-100, 41)).makePolygon { rectangle(10000, 20000) }
       val applicationId = insertApplication(boundary = boundary)
-      val moduleId1 = insertModule(phase = CohortPhase.Application)
-      val moduleId2 = insertModule(phase = CohortPhase.Application)
+      val moduleId1 = insertModule(phase = AcceleratorPhase.Application)
+      val moduleId2 = insertModule(phase = AcceleratorPhase.Application)
 
       insertApplicationModule(applicationId, moduleId1, ApplicationModuleStatus.Complete)
 

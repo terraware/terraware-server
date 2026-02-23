@@ -1,8 +1,8 @@
 package com.terraformation.backend.accelerator.model
 
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
@@ -11,7 +11,7 @@ import org.jooq.Record
 data class ApplicationModuleModel(
     val id: ModuleId,
     val name: String,
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val overview: String? = null,
     val applicationId: ApplicationId?,
     val applicationModuleStatus: ApplicationModuleStatus?,

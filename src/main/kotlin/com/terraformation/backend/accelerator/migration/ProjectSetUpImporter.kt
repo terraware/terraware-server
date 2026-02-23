@@ -10,8 +10,8 @@ import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATION_HISTORIES
@@ -146,8 +146,8 @@ class ProjectSetUpImporter(
   private fun updateScores(valuesByName: Map<String, String>, project: ExistingProjectModel) {
     val columnNamePrefixes =
         listOf(
-            "Phase 0: " to CohortPhase.Phase0DueDiligence,
-            "Phase 1: " to CohortPhase.Phase1FeasibilityStudy,
+            "Phase 0: " to AcceleratorPhase.Phase0DueDiligence,
+            "Phase 1: " to AcceleratorPhase.Phase1FeasibilityStudy,
         )
 
     val userId = currentUser().userId

@@ -9,7 +9,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
@@ -130,7 +130,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `sends support notifications for accelerator planting sites`() {
-      insertProject(phase = CohortPhase.Phase2PlanAndScale)
+      insertProject(phase = AcceleratorPhase.Phase2PlanAndScale)
       val plantingSiteId = insertPlantingSiteWithSubzone(inserted.projectId)
 
       assertNoEventsBeforeWeekNumber(
@@ -224,7 +224,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `sends support notifications for accelerator planting sites`() {
-      insertProject(phase = CohortPhase.Phase2PlanAndScale)
+      insertProject(phase = AcceleratorPhase.Phase2PlanAndScale)
       val plantingSiteId = insertPlantingSiteWithSeason(projectId = inserted.projectId)
 
       assertNoEventsBeforeWeekNumber(

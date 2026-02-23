@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
@@ -11,7 +11,7 @@ import org.jooq.Record
 data class ModuleModel(
     val id: ModuleId,
     val name: String,
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val position: Int,
     val additionalResources: String? = null,
     val eventDescriptions: Map<EventType, String> = emptyMap(),

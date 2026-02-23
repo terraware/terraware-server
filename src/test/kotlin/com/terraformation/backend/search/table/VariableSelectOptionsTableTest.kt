@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.docprod.VariableType
 import com.terraformation.backend.mockUser
@@ -31,7 +31,7 @@ class VariableSelectOptionsTableTest : DatabaseTest(), RunsAsUser {
         organizationId = inserted.organizationId,
         role = Role.Admin,
     )
-    insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+    insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.organizationRoles } returns mapOf(inserted.organizationId to Role.Admin)

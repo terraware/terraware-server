@@ -4,7 +4,7 @@ import com.terraformation.backend.accelerator.model.DeliverableSubmissionModel
 import com.terraformation.backend.accelerator.model.ModuleDeliverableModel
 import com.terraformation.backend.accelerator.model.SubmissionDocumentModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -122,7 +122,7 @@ class DeliverableStore(
                 // Exclude pre-screen and application deliverables unless the caller is asking for
                 // specific deliverables.
                 if (deliverableId == null) {
-                  MODULES.PHASE_ID.notIn(CohortPhase.PreScreen, CohortPhase.Application)
+                  MODULES.PHASE_ID.notIn(AcceleratorPhase.PreScreen, AcceleratorPhase.Application)
                 } else {
                   null
                 },

@@ -16,10 +16,10 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.toInputStream
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationId
 import com.terraformation.backend.db.accelerator.ApplicationModuleStatus
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -384,7 +384,7 @@ data class ApplicationModulePayload(
     val applicationId: ApplicationId?,
     val moduleId: ModuleId,
     val name: String,
-    val phase: CohortPhase,
+    val phase: AcceleratorPhase,
     val overview: String? = null,
     val status: ApplicationModuleStatus?,
 ) {

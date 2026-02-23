@@ -5,7 +5,7 @@ import com.terraformation.backend.accelerator.model.NewProjectScoreModel
 import com.terraformation.backend.accelerator.model.ProjectScoreModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_SCORES
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -26,8 +26,8 @@ class ProjectScoreStore(
    */
   fun fetchScores(
       projectId: ProjectId,
-      phases: Collection<CohortPhase>? = null,
-  ): Map<CohortPhase, List<ExistingProjectScoreModel>> {
+      phases: Collection<AcceleratorPhase>? = null,
+  ): Map<AcceleratorPhase, List<ExistingProjectScoreModel>> {
     requirePermissions { readProjectScores(projectId) }
 
     return with(PROJECT_SCORES) {
@@ -48,7 +48,7 @@ class ProjectScoreStore(
 
   fun updateScores(
       projectId: ProjectId,
-      phase: CohortPhase,
+      phase: AcceleratorPhase,
       scores: Collection<NewProjectScoreModel>,
   ) {
     requirePermissions { updateProjectScores(projectId) }

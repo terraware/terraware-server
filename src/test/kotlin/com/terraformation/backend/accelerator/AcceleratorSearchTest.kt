@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -38,7 +38,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
-    insertProject(countryCode = "KE", phase = CohortPhase.Phase0DueDiligence)
+    insertProject(countryCode = "KE", phase = AcceleratorPhase.Phase0DueDiligence)
 
     every { user.canReadAllAcceleratorDetails() } returns true
     every { user.canReadInternalTags() } returns true
@@ -149,7 +149,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser()
 
     insertOrganization()
-    insertProject(phase = CohortPhase.Phase0DueDiligence)
+    insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     insertOrganization()
 
@@ -178,7 +178,7 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser()
 
     insertOrganization()
-    insertProject(phase = CohortPhase.Phase0DueDiligence)
+    insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     val prefix = SearchFieldPrefix(searchTables.organizations)
     val fields = listOf(prefix.resolve("name"))
@@ -219,7 +219,10 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser()
 
     val otherAcceleratorOrgId = insertOrganization()
-    insertProject(organizationId = otherAcceleratorOrgId, phase = CohortPhase.Phase0DueDiligence)
+    insertProject(
+        organizationId = otherAcceleratorOrgId,
+        phase = AcceleratorPhase.Phase0DueDiligence,
+    )
 
     val prefix = SearchFieldPrefix(searchTables.projects)
     val fields = listOf(prefix.resolve("name"))
@@ -323,14 +326,14 @@ class AcceleratorSearchTest : DatabaseTest(), RunsAsUser {
     val deliverableId2 = insertDeliverable(name = "Deliverable 2 $suffix")
     val moduleId2 = insertModule(name = "Module 2 $suffix")
     insertDeliverable(name = "Deliverable 3 $suffix")
-    val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule(moduleId = moduleId1)
-    val projectId2 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId2 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule(moduleId = moduleId1)
-    val projectId3 = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId3 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule(moduleId = moduleId1)
     insertProjectModule(moduleId = moduleId2)
-    insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+    insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
     insertProjectModule(moduleId = moduleId2)
 
     val prefix = SearchFieldPrefix(searchTables.modules)

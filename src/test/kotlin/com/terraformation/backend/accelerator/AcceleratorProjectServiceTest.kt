@@ -6,7 +6,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.AcceleratorProjectNotFoundException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.VoteOption
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.Role
@@ -26,21 +26,21 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     insertOrganization()
     insertProject(
         countryCode = "KE",
-        phase = CohortPhase.Phase1FeasibilityStudy,
+        phase = AcceleratorPhase.Phase1FeasibilityStudy,
     )
     insertVoteDecision(
         projectId = inserted.projectId,
-        phase = CohortPhase.Phase0DueDiligence,
+        phase = AcceleratorPhase.Phase0DueDiligence,
         voteOption = VoteOption.Yes,
     )
     insertVoteDecision(
         projectId = inserted.projectId,
-        phase = CohortPhase.Phase1FeasibilityStudy,
+        phase = AcceleratorPhase.Phase1FeasibilityStudy,
         voteOption = VoteOption.No,
     )
     insertVoteDecision(
         projectId = inserted.projectId,
-        phase = CohortPhase.Phase2PlanAndScale,
+        phase = AcceleratorPhase.Phase2PlanAndScale,
         voteOption = null,
     )
 
@@ -51,13 +51,13 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   fun `fetches one by Id, or throws not found exception`() {
     assertEquals(
         AcceleratorProjectModel(
-            phase = CohortPhase.Phase1FeasibilityStudy,
+            phase = AcceleratorPhase.Phase1FeasibilityStudy,
             projectId = inserted.projectId,
             projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
             voteDecisions =
                 mapOf(
-                    CohortPhase.Phase0DueDiligence to VoteOption.Yes,
-                    CohortPhase.Phase1FeasibilityStudy to VoteOption.No,
+                    AcceleratorPhase.Phase0DueDiligence to VoteOption.Yes,
+                    AcceleratorPhase.Phase1FeasibilityStudy to VoteOption.No,
                 ),
         ),
         service.fetchOneById(inserted.projectId),
@@ -72,13 +72,13 @@ class AcceleratorProjectServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     assertEquals(
         listOf(
             AcceleratorProjectModel(
-                phase = CohortPhase.Phase1FeasibilityStudy,
+                phase = AcceleratorPhase.Phase1FeasibilityStudy,
                 projectId = inserted.projectId,
                 projectName = projectsDao.fetchOneById(inserted.projectId)!!.name!!,
                 voteDecisions =
                     mapOf(
-                        CohortPhase.Phase0DueDiligence to VoteOption.Yes,
-                        CohortPhase.Phase1FeasibilityStudy to VoteOption.No,
+                        AcceleratorPhase.Phase0DueDiligence to VoteOption.Yes,
+                        AcceleratorPhase.Phase1FeasibilityStudy to VoteOption.No,
                     ),
             )
         ),

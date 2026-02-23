@@ -12,7 +12,7 @@ import com.terraformation.backend.accelerator.model.ExistingParticipantProjectSp
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
@@ -44,7 +44,7 @@ class SpeciesNotifierTest : DatabaseTest(), RunsAsUser {
     insertOrganization()
     insertModule()
 
-    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule()
     deliverableId = insertDeliverable(deliverableTypeId = DeliverableType.Species)
 

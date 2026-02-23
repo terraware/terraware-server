@@ -10,7 +10,7 @@ import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsMod
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.SystemMetric
@@ -52,7 +52,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchOneById {
     @Test
     fun `returns all details fields`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Agroforestry)
       insertProjectLandUseModelType(landUseModelType = LandUseModelType.Mangroves)
 
@@ -155,7 +155,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               numCommunities = detailsRow.numCommunities,
               numNativeSpecies = detailsRow.numNativeSpecies,
               perHectareBudget = detailsRow.perHectareBudget,
-              phase = CohortPhase.Phase0DueDiligence,
+              phase = AcceleratorPhase.Phase0DueDiligence,
               pipeline = detailsRow.pipelineId,
               plantingSitesCql = "tf_accelerator:fid=123",
               projectBoundariesCql = "project_no=5",
@@ -524,8 +524,8 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates phase and publishes event when project phase changes`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       val existingValues =
           ProjectAcceleratorVariableValuesModel(
@@ -536,7 +536,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       store.update(projectId, existingValues) {
         it.copy(
-            phase = CohortPhase.Phase1FeasibilityStudy,
+            phase = AcceleratorPhase.Phase1FeasibilityStudy,
             fileNaming = "test-naming",
             dropboxFolderPath = "/dropbox/test",
             googleFolderUrl = URI("https://drive.google.com/test"),
@@ -544,19 +544,19 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       }
 
       assertEquals(
-          setOf(CohortPhase.Phase0DueDiligence, CohortPhase.Phase1FeasibilityStudy),
+          setOf(AcceleratorPhase.Phase0DueDiligence, AcceleratorPhase.Phase1FeasibilityStudy),
           projectsDao.findAll().map { it.phaseId }.toSet(),
           "Project phases",
       )
 
       eventPublisher.assertEventPublished(
-          ProjectPhaseUpdatedEvent(projectId, CohortPhase.Phase1FeasibilityStudy)
+          ProjectPhaseUpdatedEvent(projectId, AcceleratorPhase.Phase1FeasibilityStudy)
       )
     }
 
     @Test
     fun `does not publish event when project phase is unchanged`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       val existingValues =
           ProjectAcceleratorVariableValuesModel(
@@ -566,7 +566,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       store.update(projectId, existingValues) {
         it.copy(
             numCommunities = 5,
-            phase = CohortPhase.Phase0DueDiligence,
+            phase = AcceleratorPhase.Phase0DueDiligence,
             fileNaming = "test-naming",
             dropboxFolderPath = "/dropbox/test",
             googleFolderUrl = URI("https://drive.google.com/test"),
@@ -586,7 +586,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           assertThrows<IllegalArgumentException> {
             store.update(projectId, existingValues) {
               it.copy(
-                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  phase = AcceleratorPhase.Phase1FeasibilityStudy,
                   fileNaming = null,
                   dropboxFolderPath = "/dropbox/test",
                   googleFolderUrl = URI("https://drive.google.com/test"),
@@ -610,7 +610,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           assertThrows<IllegalArgumentException> {
             store.update(projectId, existingValues) {
               it.copy(
-                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  phase = AcceleratorPhase.Phase1FeasibilityStudy,
                   fileNaming = "test-naming",
                   dropboxFolderPath = null,
                   googleFolderUrl = URI("https://drive.google.com/test"),
@@ -634,7 +634,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
           assertThrows<IllegalArgumentException> {
             store.update(projectId, existingValues) {
               it.copy(
-                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  phase = AcceleratorPhase.Phase1FeasibilityStudy,
                   fileNaming = "test-naming",
                   dropboxFolderPath = "/dropbox/test",
                   googleFolderUrl = null,
@@ -683,7 +683,7 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
       store.update(projectId, existingValues) {
         it.copy(
-            phase = CohortPhase.Phase1FeasibilityStudy,
+            phase = AcceleratorPhase.Phase1FeasibilityStudy,
             fileNaming = "test-naming",
             dropboxFolderPath = "/dropbox/test",
             googleFolderUrl = URI("https://drive.google.com/test"),

@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.DeliverableDueDateModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableProjectDueDatesRow
 import com.terraformation.backend.db.accelerator.tables.references.DELIVERABLE_PROJECT_DUE_DATES
 import com.terraformation.backend.mockUser
@@ -34,8 +34,8 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchDeliverableDueDates {
     @Test
     fun `can filter by IDs`() {
-      val projectId1 = insertProject(phase = CohortPhase.Phase0DueDiligence)
-      val projectId2 = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+      val projectId1 = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+      val projectId2 = insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
 
       val moduleId1 = insertModule()
       val moduleId2 = insertModule()
@@ -190,7 +190,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       every { user.canReadAllDeliverables() } returns false
 
       insertModule()
-      insertProject(phase = CohortPhase.Phase0DueDiligence)
+      insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
       insertDeliverable()
 
@@ -205,9 +205,9 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertModule()
       insertDeliverable()
 
-      val projectToUpdate = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectToUpdate = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
-      val projectToInsert = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectToInsert = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
 
       insertDeliverableProjectDueDate(
@@ -250,7 +250,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertModule()
       insertDeliverable()
 
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
 
       assertThrows<AccessDeniedException> {
@@ -270,7 +270,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertModule()
       insertDeliverable()
 
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
 
       insertDeliverableProjectDueDate(
@@ -303,7 +303,7 @@ class DeliverableDueDateStoreTest : DatabaseTest(), RunsAsUser {
       insertModule()
       insertDeliverable()
 
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertProjectModule()
 
       insertDeliverableProjectDueDate(

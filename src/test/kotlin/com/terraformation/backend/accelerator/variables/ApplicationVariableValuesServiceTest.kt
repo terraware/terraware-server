@@ -9,7 +9,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.StableId
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.docprod.VariableId
 import com.terraformation.backend.db.docprod.VariableSelectOptionId
@@ -72,7 +72,7 @@ class ApplicationVariableValuesServiceTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     insertOrganization()
     insertProject()
-    insertModule(phase = CohortPhase.PreScreen)
+    insertModule(phase = AcceleratorPhase.PreScreen)
 
     variableIdsByStableId = setupStableIdVariables()
 

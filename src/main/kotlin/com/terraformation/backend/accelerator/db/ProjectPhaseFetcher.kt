@@ -1,8 +1,8 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -12,7 +12,7 @@ import org.jooq.DSLContext
 @Named
 class ProjectPhaseFetcher(private val dslContext: DSLContext) {
   /** Returns the current phase of a project, or null if the project has no phase or application. */
-  fun getProjectPhase(projectId: ProjectId): CohortPhase? {
+  fun getProjectPhase(projectId: ProjectId): AcceleratorPhase? {
     requirePermissions { readProject(projectId) }
 
     return dslContext
@@ -26,10 +26,10 @@ class ProjectPhaseFetcher(private val dslContext: DSLContext) {
               ?: when (applicationStatus) {
                 ApplicationStatus.NotSubmitted,
                 ApplicationStatus.FailedPreScreen,
-                ApplicationStatus.PassedPreScreen -> CohortPhase.PreScreen
+                ApplicationStatus.PassedPreScreen -> AcceleratorPhase.PreScreen
 
                 null -> null
-                else -> CohortPhase.Application
+                else -> AcceleratorPhase.Application
               }
         }
   }
@@ -38,23 +38,23 @@ class ProjectPhaseFetcher(private val dslContext: DSLContext) {
    * Ensures the project is in the specified phase, or that the project has an application and is in
    * phase 0.
    *
-   * @throws ProjectNotInCohortPhaseException The project is not in the requested phase.
+   * @throws ProjectNotInAcceleratorPhaseException The project is not in the requested phase.
    */
-  fun ensureProjectPhase(projectId: ProjectId, phase: CohortPhase) {
+  fun ensureProjectPhase(projectId: ProjectId, phase: AcceleratorPhase) {
     val currentPhase = getProjectPhase(projectId)
 
     val samePhase =
         when (phase) {
-          CohortPhase.Phase0DueDiligence ->
+          AcceleratorPhase.Phase0DueDiligence ->
               // Application phases are considered to be part of phase 0.
-              currentPhase == CohortPhase.PreScreen ||
-                  currentPhase == CohortPhase.Application ||
+              currentPhase == AcceleratorPhase.PreScreen ||
+                  currentPhase == AcceleratorPhase.Application ||
                   currentPhase == phase
           else -> currentPhase == phase
         }
 
     if (!samePhase) {
-      throw ProjectNotInCohortPhaseException(projectId, phase)
+      throw ProjectNotInAcceleratorPhaseException(projectId, phase)
     }
   }
 }

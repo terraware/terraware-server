@@ -6,7 +6,7 @@ import com.terraformation.backend.accelerator.model.ExistingProjectScoreModel
 import com.terraformation.backend.accelerator.model.NewProjectScoreModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ScoreCategory
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.mockUser
@@ -44,17 +44,17 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
       val time2 = Instant.ofEpochSecond(2)
       val time3 = Instant.ofEpochSecond(3)
 
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       insertProjectScore(
-          phase = CohortPhase.Phase0DueDiligence,
+          phase = AcceleratorPhase.Phase0DueDiligence,
           category = ScoreCategory.Legal,
           qualitative = "q1",
           score = 1,
           createdTime = time1,
       )
       insertProjectScore(
-          phase = CohortPhase.Phase1FeasibilityStudy,
+          phase = AcceleratorPhase.Phase1FeasibilityStudy,
           category = ScoreCategory.Carbon,
           createdTime = time2,
       )
@@ -62,7 +62,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
       insertProject()
 
       insertProjectScore(
-          phase = CohortPhase.Phase0DueDiligence,
+          phase = AcceleratorPhase.Phase0DueDiligence,
           category = ScoreCategory.SocialImpact,
           score = -1,
           createdTime = time3,
@@ -70,9 +70,9 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           mapOf(
-              CohortPhase.Phase0DueDiligence to
+              AcceleratorPhase.Phase0DueDiligence to
                   listOf(ExistingProjectScoreModel(ScoreCategory.Legal, time1, "q1", 1)),
-              CohortPhase.Phase1FeasibilityStudy to
+              AcceleratorPhase.Phase1FeasibilityStudy to
                   listOf(ExistingProjectScoreModel(ScoreCategory.Carbon, time2, null, null)),
           )
 
@@ -88,28 +88,28 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
       val time3 = Instant.ofEpochSecond(3)
       val time4 = Instant.ofEpochSecond(4)
 
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       insertProjectScore(
-          phase = CohortPhase.Phase0DueDiligence,
+          phase = AcceleratorPhase.Phase0DueDiligence,
           category = ScoreCategory.Legal,
           qualitative = "q1",
           score = 1,
           createdTime = time1,
       )
       insertProjectScore(
-          phase = CohortPhase.Phase0DueDiligence,
+          phase = AcceleratorPhase.Phase0DueDiligence,
           category = ScoreCategory.Carbon,
           score = 2,
           createdTime = time2,
       )
       insertProjectScore(
-          phase = CohortPhase.Phase1FeasibilityStudy,
+          phase = AcceleratorPhase.Phase1FeasibilityStudy,
           category = ScoreCategory.Carbon,
           createdTime = time3,
       )
       insertProjectScore(
-          phase = CohortPhase.Phase2PlanAndScale,
+          phase = AcceleratorPhase.Phase2PlanAndScale,
           category = ScoreCategory.Carbon,
           score = -1,
           createdTime = time4,
@@ -117,12 +117,12 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
       val expected =
           mapOf(
-              CohortPhase.Phase0DueDiligence to
+              AcceleratorPhase.Phase0DueDiligence to
                   listOf(
                       ExistingProjectScoreModel(ScoreCategory.Carbon, time2, null, 2),
                       ExistingProjectScoreModel(ScoreCategory.Legal, time1, "q1", 1),
                   ),
-              CohortPhase.Phase1FeasibilityStudy to
+              AcceleratorPhase.Phase1FeasibilityStudy to
                   listOf(
                       ExistingProjectScoreModel(ScoreCategory.Carbon, time3, null, null),
                   ),
@@ -132,9 +132,9 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
           store.fetchScores(
               projectId,
               setOf(
-                  CohortPhase.Phase0DueDiligence,
-                  CohortPhase.Phase1FeasibilityStudy,
-                  CohortPhase.Phase3ImplementAndMonitor,
+                  AcceleratorPhase.Phase0DueDiligence,
+                  AcceleratorPhase.Phase1FeasibilityStudy,
+                  AcceleratorPhase.Phase3ImplementAndMonitor,
               ),
           )
 
@@ -143,7 +143,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read scores`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       every { user.canReadProjectScores(projectId) } returns false
 
@@ -155,13 +155,13 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
   inner class UpdateScores {
     @Test
     fun `creates scores that do not exist`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       clock.instant = Instant.ofEpochSecond(123)
 
       store.updateScores(
           projectId,
-          CohortPhase.Phase0DueDiligence,
+          AcceleratorPhase.Phase0DueDiligence,
           listOf(
               NewProjectScoreModel(ScoreCategory.Carbon, null, "q1", 1),
               NewProjectScoreModel(ScoreCategory.Legal, null, null, null),
@@ -171,7 +171,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
       val commonRow =
           ProjectScoresRow(
               projectId = projectId,
-              phaseId = CohortPhase.Phase0DueDiligence,
+              phaseId = AcceleratorPhase.Phase0DueDiligence,
               createdBy = user.userId,
               createdTime = clock.instant,
               modifiedBy = user.userId,
@@ -197,11 +197,14 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `updates scores that already exist`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
-      insertProjectScore(phase = CohortPhase.Phase0DueDiligence, category = ScoreCategory.Legal)
       insertProjectScore(
-          phase = CohortPhase.Phase0DueDiligence,
+          phase = AcceleratorPhase.Phase0DueDiligence,
+          category = ScoreCategory.Legal,
+      )
+      insertProjectScore(
+          phase = AcceleratorPhase.Phase0DueDiligence,
           category = ScoreCategory.Forestry,
           qualitative = "q",
           score = 1,
@@ -211,7 +214,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
       store.updateScores(
           projectId,
-          CohortPhase.Phase0DueDiligence,
+          AcceleratorPhase.Phase0DueDiligence,
           listOf(
               NewProjectScoreModel(ScoreCategory.Legal, null, "q1", 1),
               NewProjectScoreModel(ScoreCategory.Forestry, null, null, null),
@@ -221,7 +224,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
       val commonRow =
           ProjectScoresRow(
               projectId = projectId,
-              phaseId = CohortPhase.Phase0DueDiligence,
+              phaseId = AcceleratorPhase.Phase0DueDiligence,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
@@ -247,14 +250,14 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to update scores`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       every { user.canUpdateProjectScores(projectId) } returns false
 
       assertThrows<AccessDeniedException> {
         store.updateScores(
             projectId,
-            CohortPhase.Phase0DueDiligence,
+            AcceleratorPhase.Phase0DueDiligence,
             listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)),
         )
       }
@@ -264,10 +267,10 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
     fun `throws exception if updating scores for a non-phase project`() {
       val projectId = insertProject()
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.updateScores(
             projectId,
-            CohortPhase.Phase0DueDiligence,
+            AcceleratorPhase.Phase0DueDiligence,
             listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)),
         )
       }
@@ -275,12 +278,12 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if updating scores for a different phase than the current one`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
-      assertThrows<ProjectNotInCohortPhaseException> {
+      assertThrows<ProjectNotInAcceleratorPhaseException> {
         store.updateScores(
             projectId,
-            CohortPhase.Phase1FeasibilityStudy,
+            AcceleratorPhase.Phase1FeasibilityStudy,
             listOf(NewProjectScoreModel(ScoreCategory.Legal, null, null, 1)),
         )
       }

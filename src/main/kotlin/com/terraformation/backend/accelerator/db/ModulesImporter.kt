@@ -3,7 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.accelerator.event.ModulesUploadedEvent
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
 import com.terraformation.backend.importer.processCsvFile
@@ -34,9 +34,9 @@ class ModulesImporter(
     private const val NUM_COLUMNS = COLUMN_RECORDED_SESSION_INFO + 1
 
     /** Lookup table for phases with both lower-case names and numeric IDs. */
-    private val phases: Map<String, CohortPhase> =
-        CohortPhase.entries.associateBy { it.jsonValue.lowercase() } +
-            CohortPhase.entries.associateBy { "${it.id}" }
+    private val phases: Map<String, AcceleratorPhase> =
+        AcceleratorPhase.entries.associateBy { it.jsonValue.lowercase() } +
+            AcceleratorPhase.entries.associateBy { "${it.id}" }
   }
 
   fun importModules(inputStream: InputStream) {

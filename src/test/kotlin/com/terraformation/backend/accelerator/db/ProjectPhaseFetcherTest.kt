@@ -4,8 +4,8 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ApplicationStatus
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
@@ -35,21 +35,21 @@ class ProjectPhaseFetcherTest : DatabaseTest(), RunsAsUser {
   inner class GetProjectPhase {
     @Test
     fun `fetches project's phase`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
-      assertEquals(CohortPhase.Phase0DueDiligence, fetcher.getProjectPhase(projectId))
+      assertEquals(AcceleratorPhase.Phase0DueDiligence, fetcher.getProjectPhase(projectId))
     }
 
     @Test
     fun `uses project phase even if project has an application`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
       insertApplication()
 
-      assertEquals(CohortPhase.Phase0DueDiligence, fetcher.getProjectPhase(projectId))
+      assertEquals(AcceleratorPhase.Phase0DueDiligence, fetcher.getProjectPhase(projectId))
     }
 
     @Test
-    fun `returns correct cohort phase for each application state`() {
+    fun `returns correct phase for each application state`() {
       val projectId = insertProject()
       insertApplication()
 
@@ -61,19 +61,19 @@ class ProjectPhaseFetcherTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           mapOf(
-              ApplicationStatus.Accepted to CohortPhase.Application,
-              ApplicationStatus.CarbonAssessment to CohortPhase.Application,
-              ApplicationStatus.ExpertReview to CohortPhase.Application,
-              ApplicationStatus.FailedPreScreen to CohortPhase.PreScreen,
-              ApplicationStatus.GISAssessment to CohortPhase.Application,
-              ApplicationStatus.IssueActive to CohortPhase.Application,
-              ApplicationStatus.IssueReassessment to CohortPhase.Application,
-              ApplicationStatus.NotEligible to CohortPhase.Application,
-              ApplicationStatus.NotSubmitted to CohortPhase.PreScreen,
-              ApplicationStatus.P0Eligible to CohortPhase.Application,
-              ApplicationStatus.PassedPreScreen to CohortPhase.PreScreen,
-              ApplicationStatus.SourcingTeamReview to CohortPhase.Application,
-              ApplicationStatus.Submitted to CohortPhase.Application,
+              ApplicationStatus.Accepted to AcceleratorPhase.Application,
+              ApplicationStatus.CarbonAssessment to AcceleratorPhase.Application,
+              ApplicationStatus.ExpertReview to AcceleratorPhase.Application,
+              ApplicationStatus.FailedPreScreen to AcceleratorPhase.PreScreen,
+              ApplicationStatus.GISAssessment to AcceleratorPhase.Application,
+              ApplicationStatus.IssueActive to AcceleratorPhase.Application,
+              ApplicationStatus.IssueReassessment to AcceleratorPhase.Application,
+              ApplicationStatus.NotEligible to AcceleratorPhase.Application,
+              ApplicationStatus.NotSubmitted to AcceleratorPhase.PreScreen,
+              ApplicationStatus.P0Eligible to AcceleratorPhase.Application,
+              ApplicationStatus.PassedPreScreen to AcceleratorPhase.PreScreen,
+              ApplicationStatus.SourcingTeamReview to AcceleratorPhase.Application,
+              ApplicationStatus.Submitted to AcceleratorPhase.Application,
           ),
           phasesByState,
       )
@@ -81,7 +81,7 @@ class ProjectPhaseFetcherTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to read project`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       every { user.canReadProject(projectId) } returns false
 

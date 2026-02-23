@@ -43,8 +43,8 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityType
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.EventType
@@ -798,7 +798,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store deliverable ready for review notification for admin with correct category`() {
     insertModule()
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule()
 
     insertUserInternalInterest(InternalInterest.GIS, user.userId)
@@ -819,7 +819,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertModule()
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
 
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule()
 
     insertUserInternalInterest(InternalInterest.Compliance, user.userId)
@@ -838,7 +838,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     val tfContact = insertUser(email = "tfcontact@terraformation.com")
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
 
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertProjectModule()
 
     // TF contact has the wrong deliverable category but we should notify them anyway because
@@ -869,7 +869,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(tfContact, role = Role.TerraformationContact)
     insertUserGlobalRole(tfContact, role = GlobalRole.TFExpert)
 
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     insertModule()
     insertProjectModule()
     val deliverableId =
@@ -950,7 +950,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store species added to project notification for global users with interest`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
     insertModule()
@@ -976,7 +976,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store species approved species edited notification`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
-    val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
     insertModule()

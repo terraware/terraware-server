@@ -6,7 +6,7 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.DeliverableStatusUpdatedEvent
 import com.terraformation.backend.accelerator.model.ExistingSpeciesDeliverableSubmissionModel
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
@@ -42,7 +42,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
   inner class FetchMostRecentSpeciesDeliverableSubmission {
     @Test
     fun `fetches the deliverable ID if no submission present for an active deliverable`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
@@ -73,7 +73,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches the deliverable ID if no submission present for the most recent inactive deliverable if there is no active deliverable`() {
-      val projectId = insertProject(phase = CohortPhase.Phase1FeasibilityStudy)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase1FeasibilityStudy)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
@@ -113,7 +113,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches both deliverable ID and submission ID if present for active deliverable`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
@@ -150,7 +150,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `fetches both deliverable ID and submission ID if present for most recent deliverable if there is no active deliverable`() {
-      val projectId = insertProject(phase = CohortPhase.Phase2PlanAndScale)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase2PlanAndScale)
 
       // Module goes from epoch -> epoch + 6 days
       val moduleIdOld = insertModule()
@@ -196,7 +196,7 @@ class SubmissionStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws an exception if no permission to read the submission`() {
-      val projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+      val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
       val moduleId = insertModule()
       insertProjectModule()

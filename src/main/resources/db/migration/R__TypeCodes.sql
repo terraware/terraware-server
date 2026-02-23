@@ -1,3 +1,12 @@
+INSERT INTO accelerator.accelerator_phases (id, name)
+VALUES (0, 'Phase 0 - Due Diligence'),
+       (1, 'Phase 1 - Feasibility Study'),
+       (2, 'Phase 2 - Plan and Scale'),
+       (3, 'Phase 3 - Implement and Monitor'),
+       (100, 'Pre-Screen'),
+       (101, 'Application')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO seedbank.accession_quantity_history_types (id, name)
 VALUES (1, 'Observed'),
        (2, 'Computed')
@@ -92,15 +101,6 @@ VALUES (1, 'Assistant'),
        (2, 'System'),
        (3, 'ToolResponse'),
        (4, 'User')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO accelerator.cohort_phases (id, name)
-VALUES (0, 'Phase 0 - Due Diligence'),
-       (1, 'Phase 1 - Feasibility Study'),
-       (2, 'Phase 2 - Plan and Scale'),
-       (3, 'Phase 3 - Implement and Monitor'),
-       (100, 'Pre-Screen'),
-       (101, 'Application')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO seedbank.collection_sources (id, name)

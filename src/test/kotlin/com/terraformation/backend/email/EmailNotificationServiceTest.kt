@@ -42,11 +42,11 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.daily.NotificationJobFinishedEvent
 import com.terraformation.backend.daily.NotificationJobSucceededEvent
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.ApplicationId
-import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.DeliverableCategory
 import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
@@ -352,7 +352,7 @@ internal class EmailNotificationServiceTest {
           id = ProjectId(1),
           name = "My Project",
           organizationId = organization.id,
-          phase = CohortPhase.Phase1FeasibilityStudy,
+          phase = AcceleratorPhase.Phase1FeasibilityStudy,
       )
   private val species =
       ExistingSpeciesModel(

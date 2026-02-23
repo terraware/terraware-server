@@ -3,7 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.accelerator.model.ModuleModel
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -27,7 +27,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
+    projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
 
     every { user.canManageModules() } returns true
     every { user.canReadModule(any()) } returns true
@@ -70,7 +70,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               oneOnOneSessionDescription = "1:1 meetings",
               overview = "<h> Overview </h>",
               preparationMaterials = "<i> Preps </i>",
-              phase = CohortPhase.Phase1FeasibilityStudy,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
               workshopDescription = "Workshop ideas",
           )
 
@@ -78,7 +78,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
           ModuleModel(
               id = moduleId,
               name = "TestModule",
-              phase = CohortPhase.Phase1FeasibilityStudy,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
               position = 1,
               additionalResources = "<b> Additional Resources </b>",
               eventDescriptions =
@@ -130,7 +130,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               oneOnOneSessionDescription = "1:1 meetings",
               overview = "<h> Overview </h>",
               preparationMaterials = "<i> Preps </i>",
-              phase = CohortPhase.Phase1FeasibilityStudy,
+              phase = AcceleratorPhase.Phase1FeasibilityStudy,
               workshopDescription = "Workshop ideas",
           )
 
@@ -148,7 +148,7 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
               ModuleModel(
                   id = moduleId,
                   name = "TestModule",
-                  phase = CohortPhase.Phase1FeasibilityStudy,
+                  phase = AcceleratorPhase.Phase1FeasibilityStudy,
                   position = 1,
                   additionalResources = "<b> Additional Resources </b>",
                   eventDescriptions =
@@ -175,23 +175,23 @@ class ModuleStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchCohortPhase {
+  inner class FetchAcceleratorPhase {
     @Test
-    fun `returns module cohort phase`() {
-      val moduleId = insertModule(phase = CohortPhase.Phase1FeasibilityStudy)
-      assertEquals(CohortPhase.Phase1FeasibilityStudy, store.fetchCohortPhase(moduleId))
+    fun `returns module accelerator phase`() {
+      val moduleId = insertModule(phase = AcceleratorPhase.Phase1FeasibilityStudy)
+      assertEquals(AcceleratorPhase.Phase1FeasibilityStudy, store.fetchAcceleratorPhase(moduleId))
     }
 
     @Test
     fun `throws exception if no permission to read module`() {
       val moduleId = insertModule()
       every { user.canReadModule(any()) } returns false
-      assertThrows<ModuleNotFoundException> { store.fetchCohortPhase(moduleId) }
+      assertThrows<ModuleNotFoundException> { store.fetchAcceleratorPhase(moduleId) }
     }
 
     @Test
     fun `throws exception if no module found`() {
-      assertThrows<ModuleNotFoundException> { store.fetchCohortPhase(ModuleId(-1)) }
+      assertThrows<ModuleNotFoundException> { store.fetchAcceleratorPhase(ModuleId(-1)) }
     }
   }
 }

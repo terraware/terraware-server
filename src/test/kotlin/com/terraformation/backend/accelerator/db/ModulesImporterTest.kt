@@ -5,7 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ModulesUploadedEvent
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.accelerator.CohortPhase
+import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.tables.records.ModulesRecord
 import com.terraformation.backend.db.accelerator.tables.references.MODULES
@@ -52,13 +52,13 @@ class ModulesImporterTest : DatabaseTest(), RunsAsUser {
       val newModuleId2 = getUnusedModuleId()
 
       val existingModuleCsv =
-          "Existing Module,$existingModuleId,${CohortPhase.Application.jsonValue},New Overview,,,,,New Workshop,"
+          "Existing Module,$existingModuleId,${AcceleratorPhase.Application.jsonValue},New Overview,,,,,New Workshop,"
 
       val module1Csv =
-          "Module 1,$newModuleId1,${CohortPhase.Phase1FeasibilityStudy.jsonValue},Phase 1 Overview,Phase 1 Prep,Phase 1 Add,Phase 1 Live,Phase 1 1:1,Phase 1 Workshop,"
+          "Module 1,$newModuleId1,${AcceleratorPhase.Phase1FeasibilityStudy.jsonValue},Phase 1 Overview,Phase 1 Prep,Phase 1 Add,Phase 1 Live,Phase 1 1:1,Phase 1 Workshop,"
 
       val module2Csv =
-          "Module 2,$newModuleId2,${CohortPhase.Phase2PlanAndScale.id},Phase 2 Overview,Phase 2 Prep,Phase 2 Add,Phase 2 Live,Phase 2 1:1,Phase 2 Workshop,Phase 2 Recorded"
+          "Module 2,$newModuleId2,${AcceleratorPhase.Phase2PlanAndScale.id},Phase 2 Overview,Phase 2 Prep,Phase 2 Add,Phase 2 Live,Phase 2 1:1,Phase 2 Workshop,Phase 2 Recorded"
 
       clock.instant = Instant.ofEpochSecond(3000)
 
@@ -70,7 +70,7 @@ class ModulesImporterTest : DatabaseTest(), RunsAsUser {
               ModulesRecord(
                   id = existingModuleId,
                   name = "Existing Module",
-                  phaseId = CohortPhase.Application,
+                  phaseId = AcceleratorPhase.Application,
                   overview = "New Overview",
                   preparationMaterials = null,
                   additionalResources = null,
@@ -86,7 +86,7 @@ class ModulesImporterTest : DatabaseTest(), RunsAsUser {
               ModulesRecord(
                   id = newModuleId1,
                   name = "Module 1",
-                  phaseId = CohortPhase.Phase1FeasibilityStudy,
+                  phaseId = AcceleratorPhase.Phase1FeasibilityStudy,
                   overview = "Phase 1 Overview",
                   preparationMaterials = "Phase 1 Prep",
                   additionalResources = "Phase 1 Add",
@@ -102,7 +102,7 @@ class ModulesImporterTest : DatabaseTest(), RunsAsUser {
               ModulesRecord(
                   id = newModuleId2,
                   name = "Module 2",
-                  phaseId = CohortPhase.Phase2PlanAndScale,
+                  phaseId = AcceleratorPhase.Phase2PlanAndScale,
                   overview = "Phase 2 Overview",
                   preparationMaterials = "Phase 2 Prep",
                   additionalResources = "Phase 2 Add",
