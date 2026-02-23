@@ -25,8 +25,6 @@ class CannotDeletePublishedActivityException(activityId: ActivityId) :
 class CannotUpdatePublishedActivityException(activityId: ActivityId) :
     MismatchedStateException("Activity $activityId has been published and cannot be updated")
 
-class CohortHasProjectsException(id: CohortId) : MismatchedStateException("Cohort $id has projects")
-
 class CohortNotFoundException(id: CohortId) : EntityNotFoundException("Cohort $id not found")
 
 class DeliverableNotFoundException(id: DeliverableId) :
@@ -64,9 +62,6 @@ class ProjectDocumentSettingsNotConfiguredException(id: ProjectId) :
 
 class ProjectModuleNotFoundException(projectId: ProjectId, moduleId: ModuleId) :
     MismatchedStateException("Project $projectId is not associated with module $moduleId")
-
-class ProjectNotInCohortException(id: ProjectId) :
-    MismatchedStateException("Project $id is not assigned to any cohorts")
 
 class ProjectNotInCohortPhaseException(id: ProjectId, phase: CohortPhase? = null) :
     MismatchedStateException("Project $id is not currently in ${phase ?: "an accelerator phase"}")
