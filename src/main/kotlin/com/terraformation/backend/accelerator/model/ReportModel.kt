@@ -8,7 +8,7 @@ import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
-import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
@@ -113,7 +113,7 @@ data class ReportModel(
   }
 
   fun validateMetricEntries(
-      standardMetricEntries: Map<StandardMetricId, ReportMetricEntryModel> = emptyMap(),
+      standardMetricEntries: Map<StandardIndicatorId, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectIndicatorId, ReportMetricEntryModel> = emptyMap(),
   ) {
     val invalidProjectMetricIds =

@@ -7,7 +7,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
-import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.accelerator.SystemMetric
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -45,7 +45,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   @PostMapping("/standardMetrics/{metricId}")
   @Operation(summary = "Update one standard metric by ID.")
   fun updateStandardMetric(
-      @PathVariable metricId: StandardMetricId,
+      @PathVariable metricId: StandardIndicatorId,
       @RequestBody payload: UpdateStandardMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
     metricStore.updateStandardMetric(metricId) { payload.metric.toModel() }

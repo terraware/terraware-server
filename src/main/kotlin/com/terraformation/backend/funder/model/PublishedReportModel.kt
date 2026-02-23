@@ -6,7 +6,7 @@ import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportQuarter
-import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -30,7 +30,7 @@ data class PublishedReportModel(
     val publishedTime: Instant,
     val quarter: ReportQuarter?,
     val reportId: ReportId,
-    val standardMetrics: List<PublishedReportMetricModel<StandardMetricId>>,
+    val standardMetrics: List<PublishedReportMetricModel<StandardIndicatorId>>,
     val startDate: LocalDate,
     val systemMetrics: List<PublishedReportMetricModel<SystemMetric>>,
 )

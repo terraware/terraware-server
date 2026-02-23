@@ -39,7 +39,7 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
-import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -654,7 +654,7 @@ data class ReportReviewPayload(
 data class ReportStandardMetricPayload(
     val component: MetricComponent,
     val description: String?,
-    val id: StandardMetricId,
+    val id: StandardIndicatorId,
     val isPublishable: Boolean,
     val name: String,
     val progressNotes: String?,
@@ -684,7 +684,7 @@ data class ReportStandardMetricPayload(
 }
 
 data class ReportStandardMetricEntriesPayload(
-    val id: StandardMetricId,
+    val id: StandardIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportMetricStatus?,
@@ -854,7 +854,7 @@ data class UpdateProjectMetricTargetRequestPayload(
 
 data class UpdateStandardMetricTargetRequestPayload(
     val year: Int,
-    val metricId: StandardMetricId,
+    val metricId: StandardIndicatorId,
     val target: Int?,
 )
 
@@ -903,7 +903,7 @@ data class ReportProjectMetricTargetPayload(
 }
 
 data class ReportStandardMetricTargetPayload(
-    val metricId: StandardMetricId,
+    val metricId: StandardIndicatorId,
     val target: Number?,
     val year: Number,
 ) {
