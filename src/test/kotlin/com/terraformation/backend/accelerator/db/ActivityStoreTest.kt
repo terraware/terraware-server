@@ -17,6 +17,7 @@ import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
+import com.terraformation.backend.db.accelerator.CohortPhase
 import com.terraformation.backend.db.accelerator.tables.records.ActivitiesRecord
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -48,8 +49,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    val cohortId = insertCohort()
-    projectId = insertProject(cohortId = cohortId)
+    projectId = insertProject(phase = CohortPhase.Phase0DueDiligence)
   }
 
   @Nested
@@ -140,9 +140,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `throws exception if project is not in a cohort`() {
+    fun `throws exception if project is not in a phase`() {
       insertOrganizationUser(role = Role.Admin)
-      dslContext.update(PROJECTS).setNull(PROJECTS.COHORT_ID).execute()
+      dslContext.update(PROJECTS).setNull(PROJECTS.PHASE_ID).execute()
 
       val model =
           NewActivityModel(
@@ -152,7 +152,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
           )
 
-      assertThrows<ProjectNotInCohortException> { store.create(model) }
+      assertThrows<ProjectNotInCohortPhaseException> { store.create(model) }
     }
   }
 

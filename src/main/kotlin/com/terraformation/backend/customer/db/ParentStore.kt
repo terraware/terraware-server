@@ -430,14 +430,14 @@ class ParentStore(private val dslContext: DSLContext) {
           (dslContext.fetchExists(
               PROJECT_ACCELERATOR_DETAILS,
               PROJECT_ACCELERATOR_DETAILS.PROJECT_ID.eq(projectId),
-          ) || isProjectInCohort(projectId))
+          ) || isProjectInPhase(projectId))
 
-  fun isProjectInCohort(projectId: ProjectId?): Boolean =
+  fun isProjectInPhase(projectId: ProjectId?): Boolean =
       projectId != null &&
           dslContext.fetchExists(
               PROJECTS,
               PROJECTS.ID.eq(projectId),
-              PROJECTS.COHORT_ID.isNotNull,
+              PROJECTS.PHASE_ID.isNotNull,
           )
 
   /**
