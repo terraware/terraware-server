@@ -88,7 +88,6 @@ class AcceleratorOrganizationStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           organizationId = acceleratorOrgId1,
                       ),
                       ExistingProjectModel(
-                          cohortId = cohortId,
                           createdBy = currentUserId,
                           createdTime = Instant.EPOCH,
                           id = assignedProjectId,
