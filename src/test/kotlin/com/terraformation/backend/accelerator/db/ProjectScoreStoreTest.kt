@@ -12,7 +12,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ProjectScoresRow
 import com.terraformation.backend.mockUser
 import io.mockk.every
 import java.time.Instant
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val store: ProjectScoreStore by lazy {
-    ProjectScoreStore(clock, dslContext, ProjectCohortFetcher(dslContext))
+    ProjectScoreStore(clock, dslContext, ProjectPhaseFetcher(dslContext))
   }
 
   @BeforeEach
@@ -264,10 +264,10 @@ class ProjectScoreStoreTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `throws exception if updating scores for a non-participant project`() {
+    fun `throws exception if updating scores for a non-phase project`() {
       val projectId = insertProject()
 
-      assertThrows<ProjectNotInCohortException> {
+      assertThrows<ProjectNotInCohortPhaseException> {
         store.updateScores(
             projectId,
             CohortPhase.Phase0DueDiligence,
