@@ -609,8 +609,6 @@ COMMENT ON TABLE accelerator.application_statuses IS '(Enum) Possible statuses f
 
 COMMENT ON TABLE accelerator.applications IS 'Information about projects that are applying for the accelerator program.';
 
-COMMENT ON TABLE accelerator.cohorts IS 'Accelerator cohort details.';
-
 COMMENT ON TABLE accelerator.cohort_phases IS '(Enum) Available cohort phases';
 
 COMMENT ON TABLE accelerator.deal_stages IS '(Enum) Stages in the deal workflow that a project progresses through.';
