@@ -6,12 +6,12 @@ import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
-import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.funder.model.PublishedReportMetricModel
@@ -179,10 +179,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = null,
       )
 
-      insertPublishedSystemMetricTarget(metric = SystemMetric.SurvivalRate, year = 2025, target = 6)
+      insertPublishedSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SurvivalRate,
+          year = 2025,
+          target = 6,
+      )
       insertPublishedReportSystemMetric(
           reportId = reportId1,
-          metric = SystemMetric.SurvivalRate,
+          metric = AutoCalculatedIndicator.SurvivalRate,
           value = 6,
           projectsComments = null,
           status = ReportMetricStatus.Achieved,
@@ -312,14 +316,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemMetrics =
                       listOf(
                           PublishedReportMetricModel(
-                              component = SystemMetric.SurvivalRate.componentId,
-                              description = SystemMetric.SurvivalRate.description,
-                              metricId = SystemMetric.SurvivalRate,
-                              name = SystemMetric.SurvivalRate.jsonValue,
-                              reference = SystemMetric.SurvivalRate.reference,
+                              component = AutoCalculatedIndicator.SurvivalRate.componentId,
+                              description = AutoCalculatedIndicator.SurvivalRate.description,
+                              metricId = AutoCalculatedIndicator.SurvivalRate,
+                              name = AutoCalculatedIndicator.SurvivalRate.jsonValue,
+                              reference = AutoCalculatedIndicator.SurvivalRate.reference,
                               status = ReportMetricStatus.Achieved,
                               target = 6,
-                              type = SystemMetric.SurvivalRate.typeId,
+                              type = AutoCalculatedIndicator.SurvivalRate.typeId,
                               progressNotes = null,
                               projectsComments = null,
                               value = 6,

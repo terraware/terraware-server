@@ -7,24 +7,24 @@ import com.terraformation.backend.db.accelerator.MetricComponentConverter
 import com.terraformation.backend.db.accelerator.MetricTypeConverter
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
+import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_INDICATORS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_STANDARD_INDICATOR_TARGETS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.funder.model.PublishedReportMetricModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
@@ -233,8 +233,8 @@ class PublishedReportStore(
 
   private val systemMetricsMultiset =
       publishedMetricsMultiset(
-          SYSTEM_METRICS.ID,
-          PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID,
-          PUBLISHED_SYSTEM_METRIC_TARGETS.SYSTEM_METRIC_ID,
+          AUTO_CALCULATED_INDICATORS.ID,
+          PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
+          PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
       )
 }

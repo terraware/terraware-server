@@ -9,7 +9,7 @@ import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.StableId
-import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.docprod.VariableId
@@ -162,17 +162,29 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
       insertReport()
       insertPublishedReport()
-      insertPublishedReportSystemMetric(metric = SystemMetric.HectaresPlanted, value = 100)
-      insertPublishedReportSystemMetric(metric = SystemMetric.TreesPlanted, value = 10)
-      insertPublishedReportSystemMetric(metric = SystemMetric.SeedsCollected, value = 1000)
-      insertPublishedReportSystemMetric(metric = SystemMetric.SpeciesPlanted, value = 1)
+      insertPublishedReportSystemMetric(
+          metric = AutoCalculatedIndicator.HectaresPlanted,
+          value = 100,
+      )
+      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.TreesPlanted, value = 10)
+      insertPublishedReportSystemMetric(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          value = 1000,
+      )
+      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.SpeciesPlanted, value = 1)
 
       insertReport()
       insertPublishedReport()
-      insertPublishedReportSystemMetric(metric = SystemMetric.HectaresPlanted, value = 200)
-      insertPublishedReportSystemMetric(metric = SystemMetric.TreesPlanted, value = 20)
-      insertPublishedReportSystemMetric(metric = SystemMetric.SeedsCollected, value = 2000)
-      insertPublishedReportSystemMetric(metric = SystemMetric.SpeciesPlanted, value = 2)
+      insertPublishedReportSystemMetric(
+          metric = AutoCalculatedIndicator.HectaresPlanted,
+          value = 200,
+      )
+      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.TreesPlanted, value = 20)
+      insertPublishedReportSystemMetric(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          value = 2000,
+      )
+      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.SpeciesPlanted, value = 2)
 
       val expected =
           FunderProjectDetailsModel(
@@ -185,10 +197,10 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               methodologyNumber = "methodology",
               metricProgress =
                   listOf(
-                      MetricProgressModel(metric = SystemMetric.TreesPlanted, 30),
+                      MetricProgressModel(metric = AutoCalculatedIndicator.TreesPlanted, 30),
                       // Species Planted utilitze max instead of sum
-                      MetricProgressModel(metric = SystemMetric.SpeciesPlanted, 2),
-                      MetricProgressModel(metric = SystemMetric.HectaresPlanted, 300),
+                      MetricProgressModel(metric = AutoCalculatedIndicator.SpeciesPlanted, 2),
+                      MetricProgressModel(metric = AutoCalculatedIndicator.HectaresPlanted, 300),
                       // Seeds Collected and other metric progress is not tracked
                   ),
               minProjectArea = BigDecimal(3),

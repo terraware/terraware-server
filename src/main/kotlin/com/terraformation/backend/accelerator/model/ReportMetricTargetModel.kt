@@ -1,8 +1,9 @@
 package com.terraformation.backend.accelerator.model
 
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
-import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATOR_TARGETS
 import org.jooq.Record
@@ -44,17 +45,15 @@ data class ReportStandardMetricTargetModel(
 }
 
 data class ReportSystemMetricTargetModel(
-    val metric: SystemMetric,
+    val metric: AutoCalculatedIndicator,
     val target: Number?,
     val year: Number,
 ) {
   companion object {
     fun of(record: Record): ReportSystemMetricTargetModel {
-      return with(
-          com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRIC_TARGETS
-      ) {
+      return with(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS) {
         ReportSystemMetricTargetModel(
-            metric = record[SYSTEM_METRIC_ID]!!,
+            metric = record[AUTO_CALCULATED_INDICATOR_ID]!!,
             target = record[TARGET],
             year = record[YEAR]!!,
         )

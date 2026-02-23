@@ -5,10 +5,10 @@ import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
-import com.terraformation.backend.db.accelerator.SystemMetric
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
@@ -62,7 +62,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
 }
 
 data class SystemMetricPayload(
-    val metric: SystemMetric,
+    val metric: AutoCalculatedIndicator,
     val name: String = metric.jsonValue,
     val description: String = metric.description,
     val component: MetricComponent = metric.componentId,
