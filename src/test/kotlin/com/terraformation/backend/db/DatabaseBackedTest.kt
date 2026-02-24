@@ -3671,10 +3671,10 @@ abstract class DatabaseBackedTest {
     reportCommonIndicatorsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertReportSystemMetric(
+  protected fun insertReportAutoCalculatedIndicator(
       row: ReportAutoCalculatedIndicatorsRow = ReportAutoCalculatedIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
-      metric: AutoCalculatedIndicator =
+      indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
       systemValue: Int? = row.systemValue,
       systemTime: Instant? = row.systemTime ?: systemValue?.let { Instant.EPOCH },
@@ -3688,7 +3688,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             reportId = reportId,
-            autoCalculatedIndicatorId = metric,
+            autoCalculatedIndicatorId = indicator,
             systemValue = systemValue,
             systemTime = systemTime,
             overrideValue = overrideValue,
@@ -3739,10 +3739,10 @@ abstract class DatabaseBackedTest {
     reportCommonIndicatorTargetsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertSystemMetricTarget(
+  protected fun insertAutoCalculatedIndicatorTarget(
       row: ReportAutoCalculatedIndicatorTargetsRow = ReportAutoCalculatedIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      metric: AutoCalculatedIndicator =
+      indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
       year: Int = row.year ?: 1970,
       target: Int? = row.target,
@@ -3750,7 +3750,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             projectId = projectId,
-            autoCalculatedIndicatorId = metric,
+            autoCalculatedIndicatorId = indicator,
             year = year,
             target = target,
         )
@@ -3795,11 +3795,11 @@ abstract class DatabaseBackedTest {
     publishedCommonIndicatorTargetsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertPublishedSystemMetricTarget(
+  protected fun insertPublishedAutoCalculatedIndicatorTarget(
       row: PublishedAutoCalculatedIndicatorTargetsRow =
           PublishedAutoCalculatedIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      metric: AutoCalculatedIndicator =
+      indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
       year: Int = row.year ?: 2025,
       target: Int? = row.target,
@@ -3807,7 +3807,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             projectId = projectId,
-            autoCalculatedIndicatorId = metric,
+            autoCalculatedIndicatorId = indicator,
             year = year,
             target = target,
         )
@@ -3936,11 +3936,11 @@ abstract class DatabaseBackedTest {
     publishedReportCommonIndicatorsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertPublishedReportSystemMetric(
+  protected fun insertPublishedReportAutoCalculatedIndicator(
       row: PublishedReportAutoCalculatedIndicatorsRow =
           PublishedReportAutoCalculatedIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
-      metric: AutoCalculatedIndicator =
+      indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.Seedlings,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
@@ -3950,7 +3950,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             reportId = reportId,
-            autoCalculatedIndicatorId = metric,
+            autoCalculatedIndicatorId = indicator,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,

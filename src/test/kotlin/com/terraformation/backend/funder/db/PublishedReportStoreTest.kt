@@ -178,14 +178,14 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = null,
       )
 
-      insertPublishedSystemMetricTarget(
-          metric = AutoCalculatedIndicator.SurvivalRate,
+      insertPublishedAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.SurvivalRate,
           year = 2025,
           target = 6,
       )
-      insertPublishedReportSystemMetric(
+      insertPublishedReportAutoCalculatedIndicator(
           reportId = reportId1,
-          metric = AutoCalculatedIndicator.SurvivalRate,
+          indicator = AutoCalculatedIndicator.SurvivalRate,
           value = 6,
           projectsComments = null,
           status = ReportIndicatorStatus.Achieved,
@@ -223,7 +223,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId2,
                   commonIndicators = emptyList(),
                   startDate = LocalDate.of(2025, 4, 1),
-                  systemMetrics = emptyList(),
+                  autoCalculatedIndicators = emptyList(),
               ),
               PublishedReportModel(
                   achievements = listOf("achievement 1", "achievement 2"),
@@ -310,7 +310,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ),
                       ),
                   startDate = LocalDate.of(2025, 1, 1),
-                  systemMetrics =
+                  autoCalculatedIndicators =
                       listOf(
                           PublishedReportMetricModel(
                               component = AutoCalculatedIndicator.SurvivalRate.categoryId,

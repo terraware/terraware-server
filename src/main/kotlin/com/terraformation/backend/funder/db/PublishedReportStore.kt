@@ -51,7 +51,7 @@ class PublishedReportStore(
             photosMultiset,
             projectIndicatorsMultiset,
             commonIndicatorsMultiset,
-            systemMetricsMultiset,
+            autoCalculatedIndicatorsMultiset,
         )
         .from(PUBLISHED_REPORTS)
         .join(PROJECTS)
@@ -79,7 +79,7 @@ class PublishedReportStore(
               reportId = record[PUBLISHED_REPORTS.REPORT_ID]!!,
               startDate = record[PUBLISHED_REPORTS.START_DATE]!!,
               commonIndicators = record[commonIndicatorsMultiset],
-              systemMetrics = record[systemMetricsMultiset],
+              autoCalculatedIndicators = record[autoCalculatedIndicatorsMultiset],
           )
         }
   }
@@ -230,7 +230,7 @@ class PublishedReportStore(
           PUBLISHED_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
       )
 
-  private val systemMetricsMultiset =
+  private val autoCalculatedIndicatorsMultiset =
       publishedMetricsMultiset(
           AUTO_CALCULATED_INDICATORS.ID,
           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,

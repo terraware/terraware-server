@@ -44,16 +44,16 @@ data class ReportCommonIndicatorTargetModel(
   }
 }
 
-data class ReportSystemMetricTargetModel(
-    val metric: AutoCalculatedIndicator,
+data class ReportAutoCalculatedIndicatorTargetModel(
+    val indicator: AutoCalculatedIndicator,
     val target: Number?,
     val year: Number,
 ) {
   companion object {
-    fun of(record: Record): ReportSystemMetricTargetModel {
+    fun of(record: Record): ReportAutoCalculatedIndicatorTargetModel {
       return with(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS) {
-        ReportSystemMetricTargetModel(
-            metric = record[AUTO_CALCULATED_INDICATOR_ID]!!,
+        ReportAutoCalculatedIndicatorTargetModel(
+            indicator = record[AUTO_CALCULATED_INDICATOR_ID]!!,
             target = record[TARGET],
             year = record[YEAR]!!,
         )

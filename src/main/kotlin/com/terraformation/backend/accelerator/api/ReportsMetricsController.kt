@@ -56,8 +56,8 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   @GetMapping("/systemMetrics")
   @Operation(summary = "List all system metrics.")
   fun listSystemMetrics(): ListSystemMetricsResponsePayload {
-    val metrics = metricStore.fetchSystemMetrics()
-    return ListSystemMetricsResponsePayload(metrics.map { SystemMetricPayload(it) })
+    val indicators = metricStore.fetchAutoCalculatedIndicators()
+    return ListSystemMetricsResponsePayload(indicators.map { SystemMetricPayload(it) })
   }
 }
 

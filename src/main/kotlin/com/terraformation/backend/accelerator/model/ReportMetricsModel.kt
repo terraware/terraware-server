@@ -92,7 +92,7 @@ data class ReportProjectIndicatorModel(
   }
 }
 
-data class ReportSystemMetricEntryModel(
+data class ReportAutoCalculatedIndicatorEntryModel(
     val target: Int? = null,
     val systemValue: Int?,
     /** Time when system value is recorded. If null, the system value is current. */
@@ -105,9 +105,9 @@ data class ReportSystemMetricEntryModel(
     val status: ReportIndicatorStatus? = null,
 ) {
   companion object {
-    fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricEntryModel {
+    fun of(record: Record, systemValueField: Field<Int?>): ReportAutoCalculatedIndicatorEntryModel {
       return with(REPORT_AUTO_CALCULATED_INDICATORS) {
-        ReportSystemMetricEntryModel(
+        ReportAutoCalculatedIndicatorEntryModel(
             target = record[REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET],
             systemValue = record[systemValueField],
             systemTime = record[SYSTEM_TIME],
@@ -128,15 +128,15 @@ data class ReportSystemMetricEntryModel(
   }
 }
 
-data class ReportSystemMetricModel(
-    val metric: AutoCalculatedIndicator,
-    val entry: ReportSystemMetricEntryModel,
+data class ReportAutoCalculatedIndicatorModel(
+    val indicator: AutoCalculatedIndicator,
+    val entry: ReportAutoCalculatedIndicatorEntryModel,
 ) {
   companion object {
-    fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricModel {
-      return ReportSystemMetricModel(
-          metric = record[AUTO_CALCULATED_INDICATORS.ID.asNonNullable()],
-          entry = ReportSystemMetricEntryModel.of(record, systemValueField),
+    fun of(record: Record, systemValueField: Field<Int?>): ReportAutoCalculatedIndicatorModel {
+      return ReportAutoCalculatedIndicatorModel(
+          indicator = record[AUTO_CALCULATED_INDICATORS.ID.asNonNullable()],
+          entry = ReportAutoCalculatedIndicatorEntryModel.of(record, systemValueField),
       )
     }
   }

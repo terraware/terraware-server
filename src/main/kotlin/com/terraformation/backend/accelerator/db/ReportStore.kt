@@ -6,6 +6,8 @@ import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEve
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorModel
+import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportCommonIndicatorTargetModel
@@ -14,8 +16,6 @@ import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
-import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
-import com.terraformation.backend.accelerator.model.ReportSystemMetricTargetModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.SystemUser
@@ -216,7 +216,9 @@ class ReportStore(
     }
   }
 
-  fun fetchReportSystemMetricTargets(projectId: ProjectId): List<ReportSystemMetricTargetModel> {
+  fun fetchReportAutoCalculatedIndicatorTargets(
+      projectId: ProjectId
+  ): List<ReportAutoCalculatedIndicatorTargetModel> {
     requirePermissions { readProjectReports(projectId) }
 
     return with(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS) {
@@ -229,7 +231,7 @@ class ReportStore(
           .from(this)
           .where(PROJECT_ID.eq(projectId))
           .orderBy(YEAR, AUTO_CALCULATED_INDICATOR_ID)
-          .fetch { ReportSystemMetricTargetModel.of(it) }
+          .fetch { ReportAutoCalculatedIndicatorTargetModel.of(it) }
     }
   }
 
@@ -308,13 +310,16 @@ class ReportStore(
     )
   }
 
-  fun refreshSystemMetricValues(reportId: ReportId, metrics: Collection<AutoCalculatedIndicator>) {
+  fun refreshAutoCalculatedIndicatorValues(
+      reportId: ReportId,
+      indicators: Collection<AutoCalculatedIndicator>,
+  ) {
     requirePermissions { reviewReports() }
 
     fetchOne(reportId)
 
     dslContext.transaction { _ ->
-      updateReportSystemMetricWithTerrawareData(reportId, metrics)
+      updateReportAutoCalculatedIndicatorWithTerrawareData(reportId, indicators)
       updateReportModifiedTime(reportId)
     }
   }
@@ -378,7 +383,8 @@ class ReportStore(
   fun reviewReportMetrics(
       reportId: ReportId,
       commonIndicatorEntries: Map<CommonIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
-      systemMetricEntries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel> = emptyMap(),
+      autoCalculatedIndicatorEntries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel> =
+          emptyMap(),
       projectIndicatorEntries: Map<ProjectIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
   ) {
     requirePermissions { reviewReports() }
@@ -393,7 +399,7 @@ class ReportStore(
     dslContext.transaction { _ ->
       val rowsUpdated =
           upsertReportCommonIndicators(reportId, commonIndicatorEntries, true) +
-              upsertReportSystemMetrics(reportId, systemMetricEntries, true) +
+              upsertReportAutoCalculatedIndicators(reportId, autoCalculatedIndicatorEntries, true) +
               upsertReportProjectIndicators(reportId, projectIndicatorEntries, true)
       if (rowsUpdated > 0) {
         updateReportModifiedTime(reportId)
@@ -426,8 +432,11 @@ class ReportStore(
         throw IllegalStateException("Failed to submit report $reportId")
       }
 
-      // Update all system metrics values at submission time
-      updateReportSystemMetricWithTerrawareData(reportId, AutoCalculatedIndicator.entries)
+      // Update all auto calculated indicators values at submission time
+      updateReportAutoCalculatedIndicatorWithTerrawareData(
+          reportId,
+          AutoCalculatedIndicator.entries,
+      )
     }
 
     eventPublisher.publishEvent(AcceleratorReportSubmittedEvent(reportId))
@@ -441,7 +450,8 @@ class ReportStore(
       financialSummaries: String? = null,
       additionalComments: String? = null,
       commonIndicatorEntries: Map<CommonIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
-      systemMetricEntries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel> = emptyMap(),
+      autoCalculatedIndicatorEntries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel> =
+          emptyMap(),
       projectIndicatorEntries: Map<ProjectIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
   ) {
     requirePermissions { updateReport(reportId) }
@@ -464,7 +474,7 @@ class ReportStore(
       mergeReportChallenges(REPORT_CHALLENGES, reportId, challenges)
 
       upsertReportCommonIndicators(reportId, commonIndicatorEntries, false)
-      upsertReportSystemMetrics(reportId, systemMetricEntries, false)
+      upsertReportAutoCalculatedIndicators(reportId, autoCalculatedIndicatorEntries, false)
       upsertReportProjectIndicators(reportId, projectIndicatorEntries, false)
 
       dslContext
@@ -526,11 +536,11 @@ class ReportStore(
       mergeReportChallenges(PUBLISHED_REPORT_CHALLENGES, report.id, report.challenges)
       publishReportPhotos(report.id, report.photos)
 
-      val publishableSystemMetrics =
-          report.systemMetrics
-              .filter { it.metric.isPublishable }
-              .associate { (metric, entry) ->
-                metric to
+      val publishableAutoCalculatedIndicators =
+          report.autoCalculatedIndicators
+              .filter { it.indicator.isPublishable }
+              .associate { (indicator, entry) ->
+                indicator to
                     ReportIndicatorEntryModel(
                         target = entry.target,
                         value = entry.overrideValue ?: entry.systemValue,
@@ -551,7 +561,7 @@ class ReportStore(
       publishReportMetrics(
           reportId,
           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
-          publishableSystemMetrics,
+          publishableAutoCalculatedIndicators,
       )
       publishReportMetrics(
           reportId,
@@ -567,10 +577,10 @@ class ReportStore(
       // Publish metric targets for the report year
       val reportYear = report.endDate.year
 
-      val systemMetricTargets =
-          report.systemMetrics
-              .filter { (metric) -> metric.isPublishable }
-              .associate { (metric, entry) -> metric to entry.target }
+      val autoCalculatedIndicatorTargets =
+          report.autoCalculatedIndicators
+              .filter { (indicator) -> indicator.isPublishable }
+              .associate { (indicator, entry) -> indicator to entry.target }
       val commonIndicatorTargets =
           report.commonIndicators
               .filter { (indicator) -> indicator.isPublishable }
@@ -584,7 +594,7 @@ class ReportStore(
           report.projectId,
           reportYear,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
-          systemMetricTargets,
+          autoCalculatedIndicatorTargets,
       )
       publishReportMetricTargets(
           report.projectId,
@@ -680,10 +690,10 @@ class ReportStore(
     }
   }
 
-  fun updateSystemMetricTarget(
+  fun updateAutoCalculatedIndicatorTarget(
       projectId: ProjectId,
       year: Int,
-      metricId: AutoCalculatedIndicator,
+      indicatorId: AutoCalculatedIndicator,
       target: Int?,
   ) {
     requirePermissions { updateProjectReports(projectId) }
@@ -692,7 +702,7 @@ class ReportStore(
       dslContext
           .insertInto(this)
           .set(PROJECT_ID, projectId)
-          .set(AUTO_CALCULATED_INDICATOR_ID, metricId)
+          .set(AUTO_CALCULATED_INDICATOR_ID, indicatorId)
           .set(YEAR, year)
           .set(TARGET, target)
           .onConflict(PROJECT_ID, AUTO_CALCULATED_INDICATOR_ID, YEAR)
@@ -913,9 +923,9 @@ class ReportStore(
           null
         }
 
-    val systemMetricsField =
+    val autoCalculatedIndicatorsField =
         if (includeMetrics) {
-          systemMetricsMultiset
+          autoCalculatedIndicatorsMultiset
         } else {
           null
         }
@@ -933,7 +943,7 @@ class ReportStore(
                 usersField,
                 projectIndicatorsField,
                 commonIndicatorsField,
-                systemMetricsField,
+                autoCalculatedIndicatorsField,
             )
             .from(REPORTS)
             .leftJoin(PROJECT_ACCELERATOR_DETAILS)
@@ -949,28 +959,30 @@ class ReportStore(
                   usersField = usersField,
                   projectIndicatorsField = projectIndicatorsField,
                   commonIndicatorsField = commonIndicatorsField,
-                  systemMetricsField = systemMetricsField,
+                  autoCalculatedIndicatorsField = autoCalculatedIndicatorsField,
               )
             }
             .filter { currentUser().canReadReport(it.id) }
 
-    // Post-process survival rate metrics
+    // Post-process survival rate indicators
     if (includeMetrics) {
       return reports.map { report ->
-        val survivalRateMetric =
-            report.systemMetrics.find { it.metric == AutoCalculatedIndicator.SurvivalRate }
+        val survivalRateIndicator =
+            report.autoCalculatedIndicators.find {
+              it.indicator == AutoCalculatedIndicator.SurvivalRate
+            }
         // only calculate if systemValue is 0 from the jOOQ
-        if (survivalRateMetric != null && survivalRateMetric.entry.systemTime == null) {
+        if (survivalRateIndicator != null && survivalRateIndicator.entry.systemTime == null) {
           val calculatedSurvivalRate = calculateSurvivalRateForReport(report.id)
-          val updatedMetrics =
-              report.systemMetrics.map { metric ->
-                if (metric.metric == AutoCalculatedIndicator.SurvivalRate) {
-                  metric.copy(entry = metric.entry.copy(systemValue = calculatedSurvivalRate))
+          val updatedIndicators =
+              report.autoCalculatedIndicators.map { indicator ->
+                if (indicator.indicator == AutoCalculatedIndicator.SurvivalRate) {
+                  indicator.copy(entry = indicator.entry.copy(systemValue = calculatedSurvivalRate))
                 } else {
-                  metric
+                  indicator
                 }
               }
-          report.copy(systemMetrics = updatedMetrics)
+          report.copy(autoCalculatedIndicators = updatedIndicators)
         } else {
           report
         }
@@ -1292,16 +1304,16 @@ class ReportStore(
     }
   }
 
-  private fun updateReportSystemMetricWithTerrawareData(
+  private fun updateReportAutoCalculatedIndicatorWithTerrawareData(
       reportId: ReportId,
-      metrics: Collection<AutoCalculatedIndicator>,
+      indicators: Collection<AutoCalculatedIndicator>,
   ): Int {
-    if (metrics.isEmpty()) {
+    if (indicators.isEmpty()) {
       return 0
     }
 
     val survivalRate =
-        if (metrics.contains(AutoCalculatedIndicator.SurvivalRate)) {
+        if (indicators.contains(AutoCalculatedIndicator.SurvivalRate)) {
           calculateSurvivalRateForReport(reportId)
         } else {
           null
@@ -1350,7 +1362,7 @@ class ReportStore(
                   .from(AUTO_CALCULATED_INDICATORS)
                   .join(REPORTS)
                   .on(REPORTS.ID.eq(reportId))
-                  .where(AUTO_CALCULATED_INDICATORS.ID.`in`(metrics))
+                  .where(AUTO_CALCULATED_INDICATORS.ID.`in`(indicators))
           )
           .onConflict(REPORT_ID, AUTO_CALCULATED_INDICATOR_ID)
           .doUpdate()
@@ -1371,7 +1383,7 @@ class ReportStore(
           updateProgressNotes = updateProgressNotes,
       )
 
-  private fun upsertReportSystemMetrics(
+  private fun upsertReportAutoCalculatedIndicators(
       reportId: ReportId,
       entries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel>,
       updateProgressNotes: Boolean,
@@ -1850,7 +1862,7 @@ class ReportStore(
           .`when`(REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_TIME.isNull(), systemTerrawareValueField)
           .else_(REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_VALUE)
 
-  private val systemMetricsMultiset: Field<List<ReportSystemMetricModel>> =
+  private val autoCalculatedIndicatorsMultiset: Field<List<ReportAutoCalculatedIndicatorModel>> =
       DSL.multiset(
               DSL.select(
                       AUTO_CALCULATED_INDICATORS.ID,
@@ -1877,6 +1889,6 @@ class ReportStore(
                   .orderBy(AUTO_CALCULATED_INDICATORS.REF_ID, AUTO_CALCULATED_INDICATORS.ID)
           )
           .convertFrom { results ->
-            results.map { ReportSystemMetricModel.of(it, systemValueField) }
+            results.map { ReportAutoCalculatedIndicatorModel.of(it, systemValueField) }
           }
 }
