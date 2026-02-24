@@ -152,8 +152,8 @@ class OrganizationNotFoundException(val organizationId: OrganizationId) :
 class PlantingSiteInUseException(val plantingSiteId: PlantingSiteId) :
     MismatchedStateException("Planting site $plantingSiteId is in use")
 
-class ProjectMetricNotFoundException(val metricId: ProjectIndicatorId) :
-    EntityNotFoundException("Project Metric $metricId not found")
+class ProjectIndicatorNotFoundException(val indicatorId: ProjectIndicatorId) :
+    EntityNotFoundException("Project Indicator $indicatorId not found")
 
 class ProjectNameInUseException(val name: String) :
     DuplicateEntityException("Project name $name already in use")

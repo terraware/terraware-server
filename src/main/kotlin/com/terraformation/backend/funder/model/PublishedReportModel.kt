@@ -22,7 +22,7 @@ data class PublishedReportModel(
     val highlights: String?,
     val photos: List<ReportPhotoModel>,
     val projectId: ProjectId,
-    val projectMetrics: List<PublishedReportMetricModel<ProjectIndicatorId>>,
+    val projectIndicators: List<PublishedReportMetricModel<ProjectIndicatorId>>,
     val projectName: String,
     val publishedBy: UserId,
     val publishedTime: Instant,

@@ -27,15 +27,15 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequestMapping("/admin")
 @RequireGlobalRole([GlobalRole.SuperAdmin])
 @Validated
-class AdminProjectMetricsController(
+class AdminProjectIndicatorsController(
     val dslContext: DSLContext,
     val reportMetricStore: ReportMetricStore,
     val projectStore: ProjectStore,
 ) {
-  @GetMapping("/projectMetrics")
-  fun projectMetricsProjectList(model: Model): String {
+  @GetMapping("/projectIndicators")
+  fun projectIndicatorsProjectList(model: Model): String {
     requirePermissions { manageProjectReportConfigs() }
-    val projectsWithMetrics =
+    val projectsWithIndicators =
         dslContext
             .selectDistinct(PROJECTS.ID, PROJECTS.NAME)
             .from(PROJECT_INDICATORS)
@@ -43,27 +43,27 @@ class AdminProjectMetricsController(
             .on(PROJECTS.ID.eq(PROJECT_INDICATORS.PROJECT_ID))
             .fetchMap(PROJECTS.ID.asNonNullable(), PROJECTS.NAME.asNonNullable())
 
-    model.addAttribute("projectsWithMetrics", projectsWithMetrics)
+    model.addAttribute("projectsWithIndicators", projectsWithIndicators)
 
-    return "/admin/projectsWithMetrics"
+    return "/admin/projectsWithIndicators"
   }
 
-  @GetMapping("/projectMetrics/{projectId}")
-  fun projectMetricsSingleProjectView(model: Model, @PathVariable projectId: ProjectId): String {
+  @GetMapping("/projectIndicators/{projectId}")
+  fun projectIndicatorsSingleProjectView(model: Model, @PathVariable projectId: ProjectId): String {
     requirePermissions { manageProjectReportConfigs() }
 
     val project = projectStore.fetchOneById(projectId)
-    val projectMetrics = reportMetricStore.fetchProjectMetricsForProject(projectId)
+    val projectIndicators = reportMetricStore.fetchProjectIndicatorsForProject(projectId)
 
-    model.addAttribute("projectMetrics", projectMetrics)
+    model.addAttribute("projectIndicators", projectIndicators)
     model.addAttribute("project", project)
 
-    return "/admin/projectMetrics"
+    return "/admin/projectIndicators"
   }
 
-  @PostMapping("/deleteProjectMetrics")
-  fun deleteProjectMetrics(
-      @RequestParam metricId: ProjectIndicatorId,
+  @PostMapping("/deleteProjectIndicators")
+  fun deleteProjectIndicators(
+      @RequestParam indicatorId: ProjectIndicatorId,
       redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { manageProjectReportConfigs() }
@@ -72,24 +72,24 @@ class AdminProjectMetricsController(
       dslContext.transaction { _ ->
         dslContext
             .deleteFrom(PUBLISHED_REPORT_PROJECT_INDICATORS)
-            .where(PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(metricId))
+            .where(PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(indicatorId))
             .execute()
 
         dslContext
             .deleteFrom(REPORT_PROJECT_INDICATORS)
-            .where(REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(metricId))
+            .where(REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(indicatorId))
             .execute()
 
         dslContext
             .deleteFrom(PROJECT_INDICATORS)
-            .where(PROJECT_INDICATORS.ID.eq(metricId))
+            .where(PROJECT_INDICATORS.ID.eq(indicatorId))
             .execute()
       }
-      redirectAttributes.successMessage = "Successfully deleted project metrics"
+      redirectAttributes.successMessage = "Successfully deleted project indicators"
     } catch (e: Exception) {
-      redirectAttributes.failureMessage = "Failed to delete project metrics: ${e.message}"
+      redirectAttributes.failureMessage = "Failed to delete project indicators: ${e.message}"
     }
 
-    return "redirect:/admin/projectMetrics"
+    return "redirect:/admin/projectIndicators"
   }
 }

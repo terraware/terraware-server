@@ -8,13 +8,13 @@ import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEv
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
-import com.terraformation.backend.accelerator.model.ProjectMetricModel
+import com.terraformation.backend.accelerator.model.ProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
-import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
+import com.terraformation.backend.accelerator.model.ReportIndicatorEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
-import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
-import com.terraformation.backend.accelerator.model.ReportProjectMetricTargetModel
+import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
+import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricEntryModel
@@ -275,41 +275,45 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
 
-      val projectMetricId =
-          insertProjectMetric(
+      val projectIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project Metric description",
-              name = "Project Metric Name",
+              description = "Project Indicator description",
+              name = "Project Indicator Name",
               reference = "2.0",
               type = IndicatorLevel.Activity,
           )
 
       // Insert target into new target table (report end date is 1970-01-02, so year is 1970)
-      insertProjectMetricTarget(projectMetricId = projectMetricId, year = 1970, target = 100)
-      insertReportProjectMetric(
+      insertProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId,
+          year = 1970,
+          target = 100,
+      )
+      insertReportProjectIndicator(
           reportId = reportId,
-          metricId = projectMetricId,
+          indicatorId = projectIndicatorId,
           status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
 
-      val projectMetrics =
+      val projectIndicators =
           listOf(
-              ReportProjectMetricModel(
-                  metric =
-                      ProjectMetricModel(
-                          id = projectMetricId,
+              ReportProjectIndicatorModel(
+                  indicator =
+                      ProjectIndicatorModel(
+                          id = projectIndicatorId,
                           projectId = projectId,
                           component = IndicatorCategory.ProjectObjectives,
-                          description = "Project Metric description",
+                          description = "Project Indicator description",
                           isPublishable = true,
-                          name = "Project Metric Name",
+                          name = "Project Indicator Name",
                           reference = "2.0",
                           type = IndicatorLevel.Activity,
                       ),
                   entry =
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           target = 100,
                           status = ReportIndicatorStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
@@ -381,7 +385,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           type = IndicatorLevel.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
-                  entry = ReportMetricEntryModel(),
+                  entry = ReportIndicatorEntryModel(),
               ),
               ReportStandardMetricModel(
                   metric =
@@ -395,7 +399,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           type = IndicatorLevel.Activity,
                       ),
                   entry =
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           target = 55,
                           value = 45,
                           projectsComments = "Almost at target",
@@ -416,7 +420,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           type = IndicatorLevel.Outcome,
                       ),
                   entry =
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           target = 25,
                           status = ReportIndicatorStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
@@ -540,7 +544,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedBy = user.userId,
               modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
-              projectMetrics = projectMetrics,
+              projectIndicators = projectIndicators,
               standardMetrics = standardMetrics,
               systemMetrics = systemMetrics,
           )
@@ -1000,40 +1004,44 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
 
-      val projectMetricId =
-          insertProjectMetric(
+      val projectIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project Metric description",
-              name = "Project Metric Name",
+              description = "Project Indicator description",
+              name = "Project Indicator Name",
               reference = "2.0",
               type = IndicatorLevel.Activity,
           )
 
-      insertProjectMetricTarget(projectMetricId = projectMetricId, year = 1970, target = 100)
-      insertReportProjectMetric(
+      insertProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId,
+          year = 1970,
+          target = 100,
+      )
+      insertReportProjectIndicator(
           reportId = reportId,
-          metricId = projectMetricId,
+          indicatorId = projectIndicatorId,
           status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
 
-      val projectMetrics =
+      val projectIndicators =
           listOf(
-              ReportProjectMetricModel(
-                  metric =
-                      ProjectMetricModel(
-                          id = projectMetricId,
+              ReportProjectIndicatorModel(
+                  indicator =
+                      ProjectIndicatorModel(
+                          id = projectIndicatorId,
                           projectId = projectId,
                           component = IndicatorCategory.ProjectObjectives,
-                          description = "Project Metric description",
+                          description = "Project Indicator description",
                           isPublishable = true,
-                          name = "Project Metric Name",
+                          name = "Project Indicator Name",
                           reference = "2.0",
                           type = IndicatorLevel.Activity,
                       ),
                   entry =
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           target = 100,
                           status = ReportIndicatorStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
@@ -1105,7 +1113,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           type = IndicatorLevel.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
-                  entry = ReportMetricEntryModel(),
+                  entry = ReportIndicatorEntryModel(),
               ),
               ReportStandardMetricModel(
                   metric =
@@ -1119,7 +1127,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           type = IndicatorLevel.Activity,
                       ),
                   entry =
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           target = 55,
                           value = 45,
                           projectsComments = "Almost at target",
@@ -1140,7 +1148,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           type = IndicatorLevel.Outcome,
                       ),
                   entry =
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           target = 25,
                           status = ReportIndicatorStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
@@ -1279,7 +1287,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedBy = user.userId,
               modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
-              projectMetrics = projectMetrics,
+              projectIndicators = projectIndicators,
               standardMetrics = standardMetrics,
               systemMetrics = systemMetrics,
           )
@@ -1292,7 +1300,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           reportModel.copy(
-              projectMetrics = emptyList(),
+              projectIndicators = emptyList(),
               standardMetrics = emptyList(),
               systemMetrics = emptyList(),
           ),
@@ -1604,11 +1612,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           type = IndicatorLevel.Impact,
       )
 
-      val projectMetricId =
-          insertProjectMetric(
+      val projectIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project Metric description",
-              name = "Project Metric Name",
+              description = "Project Indicator description",
+              name = "Project Indicator Name",
               reference = "2.0",
               type = IndicatorLevel.Activity,
           )
@@ -1688,7 +1696,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           standardMetricEntries =
               mapOf(
                   standardMetricId2 to
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           value = 88,
                           projectsComments = "New metric 2 notes",
                           progressNotes = "New metric 2 internal comment",
@@ -1699,7 +1707,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = UserId(99),
                       ),
                   standardMetricId3 to
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           value = 45,
                           projectsComments = "New metric 3 notes",
                           progressNotes = "New metric 3 internal comment",
@@ -1708,27 +1716,27 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemMetricEntries =
               mapOf(
                   AutoCalculatedIndicator.SpeciesPlanted to
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           value = 4,
                           status = null,
                           projectsComments = "New species planted metric notes",
                           progressNotes = "New species planted metric internal comment",
                       ),
                   AutoCalculatedIndicator.TreesPlanted to
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           value = 45,
                           status = ReportIndicatorStatus.Unlikely,
                           projectsComments = "New trees planted metric notes",
                           progressNotes = "New trees planted metric internal comment",
                       ),
               ),
-          projectMetricEntries =
+          projectIndicatorEntries =
               mapOf(
-                  projectMetricId to
-                      ReportMetricEntryModel(
+                  projectIndicatorId to
+                      ReportIndicatorEntryModel(
                           value = 50,
-                          projectsComments = "Project metric notes",
-                          progressNotes = "Project metric internal comment",
+                          projectsComments = "Project indicator notes",
+                          progressNotes = "Project indicator internal comment",
                       ),
               ),
       )
@@ -1810,15 +1818,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ReportProjectIndicatorsRecord(
                   reportId = reportId,
-                  projectIndicatorId = projectMetricId,
+                  projectIndicatorId = projectIndicatorId,
                   value = 50,
-                  projectsComments = "Project metric notes",
-                  progressNotes = "Project metric internal comment",
+                  projectsComments = "Project indicator notes",
+                  progressNotes = "Project indicator internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
           ),
-          "Reports project metrics table",
+          "Reports project indicators table",
       )
 
       assertTableEquals(
@@ -2083,11 +2091,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           type = IndicatorLevel.Impact,
       )
 
-      val projectMetricId =
-          insertProjectMetric(
+      val projectIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project Metric description",
-              name = "Project Metric Name",
+              description = "Project Indicator description",
+              name = "Project Indicator Name",
               reference = "2.0",
               type = IndicatorLevel.Activity,
           )
@@ -2157,7 +2165,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = Instant.ofEpochSecond(9000)
 
       // We add new entries for standard metric 2 and 3. Standard metric 1 and 4 are not modified.
-      // We also add a new entry for project metric
+      // We also add a new entry for project indicator
       store.updateReport(
           reportId = reportId,
           highlights = null,
@@ -2166,7 +2174,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           standardMetricEntries =
               mapOf(
                   standardMetricId2 to
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           value = 88,
                           projectsComments = "New metric 2 notes",
                           status = ReportIndicatorStatus.OnTrack,
@@ -2177,7 +2185,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = UserId(99),
                       ),
                   standardMetricId3 to
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           value = null,
                           projectsComments = "New metric 3 notes",
                       ),
@@ -2185,7 +2193,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemMetricEntries =
               mapOf(
                   AutoCalculatedIndicator.SpeciesPlanted to
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           projectsComments = "New species planted metric notes",
                           status = null,
 
@@ -2196,7 +2204,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = UserId(99),
                       ),
                   AutoCalculatedIndicator.TreesPlanted to
-                      ReportMetricEntryModel(
+                      ReportIndicatorEntryModel(
                           projectsComments = "New trees planted metric notes",
                           status = ReportIndicatorStatus.Unlikely,
 
@@ -2207,12 +2215,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = UserId(99),
                       ),
               ),
-          projectMetricEntries =
+          projectIndicatorEntries =
               mapOf(
-                  projectMetricId to
-                      ReportMetricEntryModel(
+                  projectIndicatorId to
+                      ReportIndicatorEntryModel(
                           value = 50,
-                          projectsComments = "Project metric notes",
+                          projectsComments = "Project indicator notes",
                       ),
               ),
       )
@@ -2290,14 +2298,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ReportProjectIndicatorsRecord(
                   reportId = reportId,
-                  projectIndicatorId = projectMetricId,
+                  projectIndicatorId = projectIndicatorId,
                   value = 50,
-                  projectsComments = "Project metric notes",
+                  projectsComments = "Project indicator notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
           ),
-          "Reports project metrics table",
+          "Reports project indicators table",
       )
 
       assertTableEquals(
@@ -3423,10 +3431,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertStandardMetric(isPublishable = false)
     }
 
-    private val projectMetricId1 by lazy { insertProjectMetric() }
-    private val projectMetricId2 by lazy { insertProjectMetric() }
-    private val projectMetricNullValueId by lazy { insertProjectMetric() }
-    private val projectMetricNotPublishableId by lazy { insertProjectMetric(isPublishable = false) }
+    private val projectIndicatorId1 by lazy { insertProjectIndicator() }
+    private val projectIndicatorId2 by lazy { insertProjectIndicator() }
+    private val projectIndicatorNullValueId by lazy { insertProjectIndicator() }
+    private val projectIndicatorNotPublishableId by lazy {
+      insertProjectIndicator(isPublishable = false)
+    }
 
     private val fileId1 by lazy { insertFile() }
     private val fileId2 by lazy { insertFile() }
@@ -3517,44 +3527,52 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = 999,
       )
 
-      insertProjectMetricTarget(projectMetricId = projectMetricId1, year = 2030, target = 30)
-      insertReportProjectMetric(
+      insertProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId1,
+          year = 2030,
+          target = 30,
+      )
+      insertReportProjectIndicator(
           reportId = reportId,
-          metricId = projectMetricId1,
+          indicatorId = projectIndicatorId1,
           status = ReportIndicatorStatus.Achieved,
           value = 30,
           projectsComments = null,
-          progressNotes = "Project Metric 1 Progress notes",
+          progressNotes = "Project Indicator 1 Progress notes",
       )
 
-      insertProjectMetricTarget(projectMetricId = projectMetricId2, year = 2030, target = 40)
-      insertReportProjectMetric(
+      insertProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId2,
+          year = 2030,
+          target = 40,
+      )
+      insertReportProjectIndicator(
           reportId = reportId,
-          metricId = projectMetricId2,
+          indicatorId = projectIndicatorId2,
           status = ReportIndicatorStatus.Unlikely,
           value = 39,
-          projectsComments = "Project Metric 2 Underperformance",
+          projectsComments = "Project Indicator 2 Underperformance",
       )
 
-      insertProjectMetricTarget(
-          projectMetricId = projectMetricNullValueId,
+      insertProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorNullValueId,
           year = 2030,
           target = 999,
       )
-      insertReportProjectMetric(
+      insertReportProjectIndicator(
           reportId = reportId,
-          metricId = projectMetricNullValueId,
+          indicatorId = projectIndicatorNullValueId,
           value = null,
       )
 
-      insertProjectMetricTarget(
-          projectMetricId = projectMetricNotPublishableId,
+      insertProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorNotPublishableId,
           year = 2030,
           target = 999,
       )
-      insertReportProjectMetric(
+      insertReportProjectIndicator(
           reportId = reportId,
-          metricId = projectMetricNotPublishableId,
+          indicatorId = projectIndicatorNotPublishableId,
           value = 999,
       )
 
@@ -3713,21 +3731,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = 100,
       )
 
-      insertPublishedReportProjectMetric(
-          metricId = projectMetricId1,
+      insertPublishedReportProjectIndicator(
+          indicatorId = projectIndicatorId1,
           value = 100,
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
 
-      insertPublishedReportProjectMetric(
-          metricId = projectMetricId2,
+      insertPublishedReportProjectIndicator(
+          indicatorId = projectIndicatorId2,
           value = 100,
           projectsComments = "Existing underperformance justification",
       )
 
-      insertPublishedReportProjectMetric(
-          metricId = projectMetricNotPublishableId,
+      insertPublishedReportProjectIndicator(
+          indicatorId = projectIndicatorNotPublishableId,
           value = 100,
       )
 
@@ -3845,21 +3863,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
-                  projectIndicatorId = projectMetricId1,
+                  projectIndicatorId = projectIndicatorId1,
                   statusId = ReportIndicatorStatus.Achieved,
                   value = 30,
                   projectsComments = null,
-                  progressNotes = "Project Metric 1 Progress notes",
+                  progressNotes = "Project Indicator 1 Progress notes",
               ),
               PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
-                  projectIndicatorId = projectMetricId2,
+                  projectIndicatorId = projectIndicatorId2,
                   statusId = ReportIndicatorStatus.Unlikely,
                   value = 39,
-                  projectsComments = "Project Metric 2 Underperformance",
+                  projectsComments = "Project Indicator 2 Underperformance",
               ),
           ),
-          "Published report project metrics table",
+          "Published report project indicators table",
       )
 
       assertTableEquals(
@@ -3920,24 +3938,24 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               PublishedProjectIndicatorTargetsRecord(
                   projectId = projectId,
-                  projectIndicatorId = projectMetricId1,
+                  projectIndicatorId = projectIndicatorId1,
                   year = 2030,
                   target = 30,
               ),
               PublishedProjectIndicatorTargetsRecord(
                   projectId = projectId,
-                  projectIndicatorId = projectMetricId2,
+                  projectIndicatorId = projectIndicatorId2,
                   year = 2030,
                   target = 40,
               ),
               PublishedProjectIndicatorTargetsRecord(
                   projectId = projectId,
-                  projectIndicatorId = projectMetricNullValueId,
+                  projectIndicatorId = projectIndicatorNullValueId,
                   year = 2030,
                   target = 999,
               ),
           ),
-          "Published project metric targets table",
+          "Published project indicator targets table",
       )
 
       // Assert published metric targets for the report year (2030)
@@ -5170,11 +5188,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class UpdateProjectMetricTarget {
+  inner class UpdateProjectIndicatorTarget {
     @Test
     fun `inserts new target`() {
-      val projectMetricId =
-          insertProjectMetric(
+      val projectIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Test metric",
               name = "Test Metric",
@@ -5182,25 +5200,25 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Activity,
           )
 
-      store.updateProjectMetricTarget(
+      store.updateProjectIndicatorTarget(
           projectId = projectId,
           year = 2024,
-          metricId = projectMetricId,
+          indicatorId = projectIndicatorId,
           target = 100,
       )
 
       val targets = reportProjectIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertEquals(projectId, targets[0].projectId)
-      assertEquals(projectMetricId, targets[0].projectIndicatorId)
+      assertEquals(projectIndicatorId, targets[0].projectIndicatorId)
       assertEquals(2024, targets[0].year)
       assertEquals(100, targets[0].target)
     }
 
     @Test
     fun `updates existing target`() {
-      val projectMetricId =
-          insertProjectMetric(
+      val projectIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Test metric",
               name = "Test Metric",
@@ -5208,17 +5226,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Activity,
           )
 
-      insertProjectMetricTarget(
+      insertProjectIndicatorTarget(
           projectId = projectId,
-          projectMetricId = projectMetricId,
+          projectIndicatorId = projectIndicatorId,
           year = 2024,
           target = 100,
       )
 
-      store.updateProjectMetricTarget(
+      store.updateProjectIndicatorTarget(
           projectId = projectId,
           year = 2024,
-          metricId = projectMetricId,
+          indicatorId = projectIndicatorId,
           target = 150,
       )
 
@@ -5229,8 +5247,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `allows null target`() {
-      val projectMetricId =
-          insertProjectMetric(
+      val projectIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Test metric",
               name = "Test Metric",
@@ -5238,10 +5256,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Activity,
           )
 
-      store.updateProjectMetricTarget(
+      store.updateProjectIndicatorTarget(
           projectId = projectId,
           year = 2024,
-          metricId = projectMetricId,
+          indicatorId = projectIndicatorId,
           target = null,
       )
 
@@ -5256,8 +5274,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
-      val projectMetricId =
-          insertProjectMetric(
+      val projectIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Test metric",
               name = "Test Metric",
@@ -5266,10 +5284,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       assertThrows<AccessDeniedException> {
-        store.updateProjectMetricTarget(
+        store.updateProjectIndicatorTarget(
             projectId = projectId,
             year = 2024,
-            metricId = projectMetricId,
+            indicatorId = projectIndicatorId,
             target = 100,
         )
       }
@@ -5455,28 +5473,28 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class FetchReportProjectMetricTargets {
+  inner class FetchReportProjectIndicatorTargets {
     @Test
     fun `requires permission to read project reports`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
-      assertThrows<AccessDeniedException> { store.fetchReportProjectMetricTargets(projectId) }
+      assertThrows<AccessDeniedException> { store.fetchReportProjectIndicatorTargets(projectId) }
     }
 
     @Test
-    fun `returns all project metric targets for a project`() {
-      val projectMetricId1 =
-          insertProjectMetric(
+    fun `returns all project indicator targets for a project`() {
+      val projectIndicatorId1 =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Test metric 1",
               name = "Test Metric 1",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
-      val projectMetricId2 =
-          insertProjectMetric(
+      val projectIndicatorId2 =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Test metric 2",
               name = "Test Metric 2",
@@ -5484,32 +5502,32 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Activity,
           )
 
-      insertProjectMetricTarget(
+      insertProjectIndicatorTarget(
           projectId = projectId,
-          projectMetricId = projectMetricId1,
+          projectIndicatorId = projectIndicatorId1,
           year = 2024,
           target = 100,
       )
-      insertProjectMetricTarget(
+      insertProjectIndicatorTarget(
           projectId = projectId,
-          projectMetricId = projectMetricId2,
+          projectIndicatorId = projectIndicatorId2,
           year = 2024,
           target = 200,
       )
-      insertProjectMetricTarget(
+      insertProjectIndicatorTarget(
           projectId = projectId,
-          projectMetricId = projectMetricId1,
+          projectIndicatorId = projectIndicatorId1,
           year = 2025,
           target = 150,
       )
 
-      val targets = store.fetchReportProjectMetricTargets(projectId)
+      val targets = store.fetchReportProjectIndicatorTargets(projectId)
 
       assertEquals(
           listOf(
-              ReportProjectMetricTargetModel(projectMetricId1, 100, 2024),
-              ReportProjectMetricTargetModel(projectMetricId2, 200, 2024),
-              ReportProjectMetricTargetModel(projectMetricId1, 150, 2025),
+              ReportProjectIndicatorTargetModel(projectIndicatorId1, 100, 2024),
+              ReportProjectIndicatorTargetModel(projectIndicatorId2, 200, 2024),
+              ReportProjectIndicatorTargetModel(projectIndicatorId1, 150, 2025),
           ),
           targets,
       )

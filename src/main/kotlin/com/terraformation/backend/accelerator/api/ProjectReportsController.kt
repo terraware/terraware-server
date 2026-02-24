@@ -6,11 +6,11 @@ import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
-import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
+import com.terraformation.backend.accelerator.model.ReportIndicatorEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
-import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
-import com.terraformation.backend.accelerator.model.ReportProjectMetricTargetModel
+import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
+import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
@@ -142,7 +142,7 @@ class ProjectReportsController(
   ): SimpleSuccessResponsePayload {
     val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
     val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
-    val projectMetricUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
+    val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.updateReport(
         reportId = reportId,
@@ -153,7 +153,7 @@ class ProjectReportsController(
         additionalComments = payload.additionalComments,
         standardMetricEntries = standardMetricUpdates,
         systemMetricEntries = systemMetricUpdates,
-        projectMetricEntries = projectMetricUpdates,
+        projectIndicatorEntries = projectIndicatorUpdates,
     )
 
     return SimpleSuccessResponsePayload()
@@ -211,13 +211,13 @@ class ProjectReportsController(
   ): SimpleSuccessResponsePayload {
     val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
     val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
-    val projectMetricUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
+    val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.reviewReportMetrics(
         reportId = reportId,
         standardMetricEntries = standardMetricUpdates,
         systemMetricEntries = systemMetricUpdates,
-        projectMetricEntries = projectMetricUpdates,
+        projectIndicatorEntries = projectIndicatorUpdates,
     )
 
     return SimpleSuccessResponsePayload()
@@ -406,7 +406,7 @@ class ProjectReportsController(
   @GetMapping("/metrics")
   @Operation(summary = "List all project metrics for one project.")
   fun listProjectMetrics(@PathVariable projectId: ProjectId): ListProjectMetricsResponsePayload {
-    val models = metricStore.fetchProjectMetricsForProject(projectId)
+    val models = metricStore.fetchProjectIndicatorsForProject(projectId)
     return ListProjectMetricsResponsePayload(models.map { ExistingProjectMetricPayload(it) })
   }
 
@@ -417,7 +417,7 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: CreateProjectMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.createProjectMetric(payload.metric.toProjectMetricModel(projectId))
+    metricStore.createProjectIndicator(payload.metric.toProjectIndicatorModel(projectId))
     return SimpleSuccessResponsePayload()
   }
 
@@ -430,7 +430,7 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: UpdateProjectMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.updateProjectMetric(metricId) { payload.metric.toModel() }
+    metricStore.updateProjectIndicator(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
 
@@ -442,10 +442,10 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: UpdateProjectMetricTargetRequestPayload,
   ): SimpleSuccessResponsePayload {
-    reportStore.updateProjectMetricTarget(
+    reportStore.updateProjectIndicatorTarget(
         projectId = projectId,
         year = payload.year,
-        metricId = payload.metricId,
+        indicatorId = payload.metricId,
         target = payload.target,
     )
     return SimpleSuccessResponsePayload()
@@ -491,7 +491,7 @@ class ProjectReportsController(
   fun getProjectMetricTargets(
       @PathVariable projectId: ProjectId
   ): GetProjectMetricTargetsResponsePayload {
-    val targets = reportStore.fetchReportProjectMetricTargets(projectId)
+    val targets = reportStore.fetchReportProjectIndicatorTargets(projectId)
     return GetProjectMetricTargetsResponsePayload(
         targets.map { ReportProjectMetricTargetPayload(it) }
     )
@@ -610,7 +610,7 @@ data class AcceleratorReportPayload(
       modifiedTime = model.modifiedTime,
       photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,
-      projectMetrics = model.projectMetrics.map { ReportProjectMetricPayload(it) },
+      projectMetrics = model.projectIndicators.map { ReportProjectMetricPayload(it) },
       quarter = model.quarter,
       standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) },
       startDate = model.startDate,
@@ -683,7 +683,7 @@ data class ReportStandardMetricEntriesPayload(
     val value: Int?,
 ) {
   fun toModel() =
-      ReportMetricEntryModel(
+      ReportIndicatorEntryModel(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
@@ -733,7 +733,7 @@ data class ReportSystemMetricEntriesPayload(
     val status: ReportIndicatorStatus?,
 ) {
   fun toModel() =
-      ReportMetricEntryModel(
+      ReportIndicatorEntryModel(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
@@ -769,20 +769,20 @@ data class ReportProjectMetricPayload(
     val value: Int?,
 ) {
   constructor(
-      model: ReportProjectMetricModel
+      model: ReportProjectIndicatorModel
   ) : this(
-      component = model.metric.component,
-      description = model.metric.description,
-      id = model.metric.id,
-      isPublishable = model.metric.isPublishable,
-      name = model.metric.name,
+      component = model.indicator.component,
+      description = model.indicator.description,
+      id = model.indicator.id,
+      isPublishable = model.indicator.isPublishable,
+      name = model.indicator.name,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
-      reference = model.metric.reference,
+      reference = model.indicator.reference,
       status = model.entry.status,
       target = model.entry.target,
-      type = model.metric.type,
-      unit = model.metric.unit,
+      type = model.indicator.type,
+      unit = model.indicator.unit,
       value = model.entry.value,
   )
 }
@@ -795,7 +795,7 @@ data class ReportProjectMetricEntriesPayload(
     val value: Int?,
 ) {
   fun toModel() =
-      ReportMetricEntryModel(
+      ReportIndicatorEntryModel(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
@@ -886,9 +886,9 @@ data class ReportProjectMetricTargetPayload(
     val year: Number,
 ) {
   constructor(
-      model: ReportProjectMetricTargetModel
+      model: ReportProjectIndicatorTargetModel
   ) : this(
-      metricId = model.metricId,
+      metricId = model.indicatorId,
       target = model.target,
       year = model.year,
   )

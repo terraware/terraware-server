@@ -142,7 +142,7 @@ data class PublishedReportPayload(
       highlights = model.highlights,
       photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,
-      projectMetrics = model.projectMetrics.map { PublishedReportMetricPayload(it) },
+      projectMetrics = model.projectIndicators.map { PublishedReportMetricPayload(it) },
       projectName = model.projectName,
       publishedBy = model.publishedBy,
       publishedTime = model.publishedTime,

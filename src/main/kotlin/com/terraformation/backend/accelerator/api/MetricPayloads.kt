@@ -1,8 +1,8 @@
 package com.terraformation.backend.accelerator.api
 
-import com.terraformation.backend.accelerator.model.ExistingProjectMetricModel
+import com.terraformation.backend.accelerator.model.ExistingProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingStandardMetricModel
-import com.terraformation.backend.accelerator.model.NewProjectMetricModel
+import com.terraformation.backend.accelerator.model.NewProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.NewStandardMetricModel
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
@@ -23,7 +23,7 @@ data class ExistingProjectMetricPayload(
     @field:Size(max = 25) val unit: String?,
 ) {
   constructor(
-      model: ExistingProjectMetricModel
+      model: ExistingProjectIndicatorModel
   ) : this(
       id = model.id,
       projectId = model.projectId,
@@ -36,8 +36,8 @@ data class ExistingProjectMetricPayload(
       unit = model.unit,
   )
 
-  fun toModel(): ExistingProjectMetricModel {
-    return ExistingProjectMetricModel(
+  fun toModel(): ExistingProjectIndicatorModel {
+    return ExistingProjectIndicatorModel(
         id = id,
         projectId = projectId,
         name = name,
@@ -97,8 +97,8 @@ data class NewMetricPayload(
     val isPublishable: Boolean,
     @field:Size(max = 25) val unit: String? = null,
 ) {
-  fun toProjectMetricModel(projectId: ProjectId): NewProjectMetricModel {
-    return NewProjectMetricModel(
+  fun toProjectIndicatorModel(projectId: ProjectId): NewProjectIndicatorModel {
+    return NewProjectIndicatorModel(
         id = null,
         projectId = projectId,
         name = name,

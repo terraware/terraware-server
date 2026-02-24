@@ -7,7 +7,7 @@
 
 <a href="/admin/">Home</a>
 
-<h2>Projects with Metrics</h2>
+<h2>Projects with Indicators</h2>
 <table>
     <thead>
     <tr>
@@ -17,10 +17,11 @@
     </thead>
 
     <tbody>
-    <tr th:each="projectId : ${projectsWithMetrics.keySet()}" class="striped">
+    <tr th:each="projectId : ${projectsWithIndicators.keySet()}" class="striped">
         <td th:text="${projectId}">ID</td>
         <td>
-            <a th:href="|/admin/projectMetrics/${projectId}|" th:text="${projectsWithMetrics.get(projectId)}">
+            <a th:href="|/admin/projectIndicators/${projectId}|"
+               th:text="${projectsWithIndicators.get(projectId)}">
                 Project Name
             </a>
         </td>

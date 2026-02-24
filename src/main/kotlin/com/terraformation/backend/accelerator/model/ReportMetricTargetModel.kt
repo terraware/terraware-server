@@ -8,16 +8,16 @@ import com.terraformation.backend.db.accelerator.tables.references.REPORT_COMMON
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
 import org.jooq.Record
 
-data class ReportProjectMetricTargetModel(
-    val metricId: ProjectIndicatorId,
+data class ReportProjectIndicatorTargetModel(
+    val indicatorId: ProjectIndicatorId,
     val target: Number?,
     val year: Number,
 ) {
   companion object {
-    fun of(record: Record): ReportProjectMetricTargetModel {
+    fun of(record: Record): ReportProjectIndicatorTargetModel {
       return with(REPORT_PROJECT_INDICATOR_TARGETS) {
-        ReportProjectMetricTargetModel(
-            metricId = record[PROJECT_INDICATOR_ID]!!,
+        ReportProjectIndicatorTargetModel(
+            indicatorId = record[PROJECT_INDICATOR_ID]!!,
             target = record[TARGET],
             year = record[YEAR]!!,
         )

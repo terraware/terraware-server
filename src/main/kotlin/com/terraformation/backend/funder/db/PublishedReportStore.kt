@@ -49,7 +49,7 @@ class PublishedReportStore(
             achievementsMultiset,
             challengesMultiset,
             photosMultiset,
-            projectMetricsMultiset,
+            projectIndicatorsMultiset,
             standardMetricsMultiset,
             systemMetricsMultiset,
         )
@@ -70,7 +70,7 @@ class PublishedReportStore(
               highlights = record[PUBLISHED_REPORTS.HIGHLIGHTS],
               photos = record[photosMultiset],
               projectId = record[PUBLISHED_REPORTS.PROJECT_ID]!!,
-              projectMetrics = record[projectMetricsMultiset],
+              projectIndicators = record[projectIndicatorsMultiset],
               projectName =
                   record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME] ?: record[PROJECTS.NAME]!!,
               publishedBy = record[PUBLISHED_REPORTS.PUBLISHED_BY]!!,
@@ -216,7 +216,7 @@ class PublishedReportStore(
           )
           .convertFrom { results -> results.map { ReportPhotoModel.ofPublished(it) } }
 
-  private val projectMetricsMultiset =
+  private val projectIndicatorsMultiset =
       publishedMetricsMultiset(
           PROJECT_INDICATORS.ID,
           PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
