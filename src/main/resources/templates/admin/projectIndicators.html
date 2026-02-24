@@ -7,11 +7,11 @@
 
 <a href="/admin/">Home</a>
 -
-<a href="/admin/projectMetrics">Projects with Metrics</a>
+<a href="/admin/projectIndicators">Projects with Indicators</a>
 
 <h2 th:text="|(${project.id}) ${project.name}|"> Project Name </h2>
 
-<h2>Project Metrics</h2>
+<h2>Project Indicators</h2>
 <table>
     <thead>
     <tr>
@@ -23,15 +23,15 @@
     </thead>
 
     <tbody>
-    <tr th:each="metric : ${projectMetrics}" class="striped">
-        <td th:text="${metric.id}">ID</td>
-        <td th:text="${metric.name}">Metric Name</td>
-        <td th:text="${metric.reference}">Metric Reference</td>
+    <tr th:each="indicator : ${projectIndicators}" class="striped">
+        <td th:text="${indicator.id}">ID</td>
+        <td th:text="${indicator.name}">Indicator Name</td>
+        <td th:text="${indicator.reference}">Indicator Reference</td>
         <td>
             <form method="POST"
-                  th:id="|delete-${metric.id}|"
-                  action="/admin/deleteProjectMetrics">
-                <input type="hidden" name="metricId" th:value="${metric.id}"/>
+                  th:id="|delete-${indicator.id}|"
+                  action="/admin/deleteProjectIndicators">
+                <input type="hidden" name="indicatorId" th:value="${indicator.id}"/>
                 <input type="submit" value="Delete"/>
             </form>
         </td>

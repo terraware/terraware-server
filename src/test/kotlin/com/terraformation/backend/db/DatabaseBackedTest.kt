@@ -1108,7 +1108,7 @@ abstract class DatabaseBackedTest {
     )
   }
 
-  protected fun insertProjectMetric(
+  protected fun insertProjectIndicator(
       row: ProjectIndicatorsRow = ProjectIndicatorsRow(),
       component: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
       description: String? = row.description,
@@ -3619,10 +3619,10 @@ abstract class DatabaseBackedTest {
     reportPhotosDao.insert(rowWithDefaults)
   }
 
-  protected fun insertReportProjectMetric(
+  protected fun insertReportProjectIndicator(
       row: ReportProjectIndicatorsRow = ReportProjectIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
-      metricId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectMetricId,
+      indicatorId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectIndicatorId,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3633,7 +3633,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             reportId = reportId,
-            projectIndicatorId = metricId,
+            projectIndicatorId = indicatorId,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
@@ -3702,17 +3702,18 @@ abstract class DatabaseBackedTest {
     reportAutoCalculatedIndicatorsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertProjectMetricTarget(
+  protected fun insertProjectIndicatorTarget(
       row: ReportProjectIndicatorTargetsRow = ReportProjectIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      projectMetricId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectMetricId,
+      projectIndicatorId: ProjectIndicatorId =
+          row.projectIndicatorId ?: inserted.projectIndicatorId,
       year: Int = row.year ?: 1970,
       target: Int? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
             projectId = projectId,
-            projectIndicatorId = projectMetricId,
+            projectIndicatorId = projectIndicatorId,
             year = year,
             target = target,
         )
@@ -3757,17 +3758,18 @@ abstract class DatabaseBackedTest {
     reportAutoCalculatedIndicatorTargetsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertPublishedProjectMetricTarget(
+  protected fun insertPublishedProjectIndicatorTarget(
       row: PublishedProjectIndicatorTargetsRow = PublishedProjectIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      projectMetricId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectMetricId,
+      projectIndicatorId: ProjectIndicatorId =
+          row.projectIndicatorId ?: inserted.projectIndicatorId,
       year: Int = row.year ?: 2025,
       target: Int? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
             projectId = projectId,
-            projectIndicatorId = projectMetricId,
+            projectIndicatorId = projectIndicatorId,
             year = year,
             target = target,
         )
@@ -3890,10 +3892,10 @@ abstract class DatabaseBackedTest {
     publishedReportPhotosDao.insert(rowWithDefaults)
   }
 
-  protected fun insertPublishedReportProjectMetric(
+  protected fun insertPublishedReportProjectIndicator(
       row: PublishedReportProjectIndicatorsRow = PublishedReportProjectIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
-      metricId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectMetricId,
+      indicatorId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectIndicatorId,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3902,7 +3904,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             reportId = reportId,
-            projectIndicatorId = metricId,
+            projectIndicatorId = indicatorId,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
@@ -5362,7 +5364,7 @@ abstract class DatabaseBackedTest {
     val projectId
       get() = projectIds.last()
 
-    val projectMetricId
+    val projectIndicatorId
       get() = projectIndicatorIds.last()
 
     val projectReportConfigId

@@ -65,21 +65,21 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Outcome,
           )
 
-      val projectMetricId1 =
-          insertProjectMetric(
+      val projectIndicatorId1 =
+          insertProjectIndicator(
               component = IndicatorCategory.Biodiversity,
-              description = "Project Metric Description 1",
-              name = "Project Metric 1",
+              description = "Project Indicator Description 1",
+              name = "Project Indicator 1",
               reference = "1.2.1",
               type = IndicatorLevel.Output,
               unit = "%",
           )
 
-      val projectMetricId2 =
-          insertProjectMetric(
+      val projectIndicatorId2 =
+          insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project Metric Description 2",
-              name = "Project Metric 2",
+              description = "Project Indicator Description 2",
+              name = "Project Indicator 2",
               reference = "1.2.11",
               type = IndicatorLevel.Outcome,
               unit = "USD",
@@ -151,28 +151,28 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportIndicatorStatus.Unlikely,
       )
 
-      insertPublishedProjectMetricTarget(
-          projectMetricId = projectMetricId1,
+      insertPublishedProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId1,
           year = 2025,
           target = null,
       )
-      insertPublishedReportProjectMetric(
+      insertPublishedReportProjectIndicator(
           reportId = reportId1,
-          metricId = projectMetricId1,
+          indicatorId = projectIndicatorId1,
           value = 40,
           progressNotes = "progress notes 1",
           projectsComments = null,
           status = ReportIndicatorStatus.OnTrack,
       )
 
-      insertPublishedProjectMetricTarget(
-          projectMetricId = projectMetricId2,
+      insertPublishedProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId2,
           year = 2025,
           target = null,
       )
-      insertPublishedReportProjectMetric(
+      insertPublishedReportProjectIndicator(
           reportId = reportId1,
-          metricId = projectMetricId2,
+          indicatorId = projectIndicatorId2,
           value = null,
           projectsComments = null,
           status = null,
@@ -215,7 +215,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   highlights = null,
                   photos = emptyList(),
                   projectId = projectId,
-                  projectMetrics = emptyList(),
+                  projectIndicators = emptyList(),
                   projectName = dealName,
                   publishedBy = user.userId,
                   publishedTime = Instant.ofEpochSecond(1),
@@ -242,13 +242,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ReportPhotoModel(fileId = fileId2, caption = "photo caption 2"),
                       ),
                   projectId = projectId,
-                  projectMetrics =
+                  projectIndicators =
                       listOf(
                           PublishedReportMetricModel(
                               component = IndicatorCategory.Biodiversity,
-                              description = "Project Metric Description 1",
-                              metricId = projectMetricId1,
-                              name = "Project Metric 1",
+                              description = "Project Indicator Description 1",
+                              metricId = projectIndicatorId1,
+                              name = "Project Indicator 1",
                               reference = "1.2.1",
                               status = ReportIndicatorStatus.OnTrack,
                               target = null,
@@ -260,9 +260,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ),
                           PublishedReportMetricModel(
                               component = IndicatorCategory.ProjectObjectives,
-                              description = "Project Metric Description 2",
-                              metricId = projectMetricId2,
-                              name = "Project Metric 2",
+                              description = "Project Indicator Description 2",
+                              metricId = projectIndicatorId2,
+                              name = "Project Indicator 2",
                               reference = "1.2.11",
                               status = null,
                               target = null,

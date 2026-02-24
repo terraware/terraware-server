@@ -7,11 +7,11 @@ import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigM
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
-import com.terraformation.backend.accelerator.model.ReportMetricEntryModel
+import com.terraformation.backend.accelerator.model.ReportIndicatorEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
-import com.terraformation.backend.accelerator.model.ReportProjectMetricModel
-import com.terraformation.backend.accelerator.model.ReportProjectMetricTargetModel
+import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
+import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
 import com.terraformation.backend.accelerator.model.ReportStandardMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
@@ -178,7 +178,9 @@ class ReportStore(
     }
   }
 
-  fun fetchReportProjectMetricTargets(projectId: ProjectId): List<ReportProjectMetricTargetModel> {
+  fun fetchReportProjectIndicatorTargets(
+      projectId: ProjectId
+  ): List<ReportProjectIndicatorTargetModel> {
     requirePermissions { readProjectReports(projectId) }
 
     return with(REPORT_PROJECT_INDICATOR_TARGETS) {
@@ -191,7 +193,7 @@ class ReportStore(
           .from(this)
           .where(PROJECT_ID.eq(projectId))
           .orderBy(YEAR, PROJECT_INDICATOR_ID)
-          .fetch { ReportProjectMetricTargetModel.of(it) }
+          .fetch { ReportProjectIndicatorTargetModel.of(it) }
     }
   }
 
@@ -375,9 +377,9 @@ class ReportStore(
 
   fun reviewReportMetrics(
       reportId: ReportId,
-      standardMetricEntries: Map<CommonIndicatorId, ReportMetricEntryModel> = emptyMap(),
-      systemMetricEntries: Map<AutoCalculatedIndicator, ReportMetricEntryModel> = emptyMap(),
-      projectMetricEntries: Map<ProjectIndicatorId, ReportMetricEntryModel> = emptyMap(),
+      standardMetricEntries: Map<CommonIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
+      systemMetricEntries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel> = emptyMap(),
+      projectIndicatorEntries: Map<ProjectIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
   ) {
     requirePermissions { reviewReports() }
 
@@ -385,14 +387,14 @@ class ReportStore(
 
     report.validateMetricEntries(
         standardMetricEntries = standardMetricEntries,
-        projectMetricEntries = projectMetricEntries,
+        projectIndicatorEntries = projectIndicatorEntries,
     )
 
     dslContext.transaction { _ ->
       val rowsUpdated =
           upsertReportStandardMetrics(reportId, standardMetricEntries, true) +
               upsertReportSystemMetrics(reportId, systemMetricEntries, true) +
-              upsertReportProjectMetrics(reportId, projectMetricEntries, true)
+              upsertReportProjectIndicators(reportId, projectIndicatorEntries, true)
       if (rowsUpdated > 0) {
         updateReportModifiedTime(reportId)
       }
@@ -438,9 +440,9 @@ class ReportStore(
       challenges: List<ReportChallengeModel>,
       financialSummaries: String? = null,
       additionalComments: String? = null,
-      standardMetricEntries: Map<CommonIndicatorId, ReportMetricEntryModel> = emptyMap(),
-      systemMetricEntries: Map<AutoCalculatedIndicator, ReportMetricEntryModel> = emptyMap(),
-      projectMetricEntries: Map<ProjectIndicatorId, ReportMetricEntryModel> = emptyMap(),
+      standardMetricEntries: Map<CommonIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
+      systemMetricEntries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel> = emptyMap(),
+      projectIndicatorEntries: Map<ProjectIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
   ) {
     requirePermissions { updateReport(reportId) }
 
@@ -454,7 +456,7 @@ class ReportStore(
 
     report.validateMetricEntries(
         standardMetricEntries = standardMetricEntries,
-        projectMetricEntries = projectMetricEntries,
+        projectIndicatorEntries = projectIndicatorEntries,
     )
 
     dslContext.transaction { _ ->
@@ -463,7 +465,7 @@ class ReportStore(
 
       upsertReportStandardMetrics(reportId, standardMetricEntries, false)
       upsertReportSystemMetrics(reportId, systemMetricEntries, false)
-      upsertReportProjectMetrics(reportId, projectMetricEntries, false)
+      upsertReportProjectIndicators(reportId, projectIndicatorEntries, false)
 
       dslContext
           .update(REPORTS)
@@ -529,7 +531,7 @@ class ReportStore(
               .filter { it.metric.isPublishable }
               .associate { (metric, entry) ->
                 metric to
-                    ReportMetricEntryModel(
+                    ReportIndicatorEntryModel(
                         target = entry.target,
                         value = entry.overrideValue ?: entry.systemValue,
                         progressNotes = entry.progressNotes,
@@ -541,10 +543,10 @@ class ReportStore(
           report.standardMetrics
               .filter { it.metric.isPublishable && it.entry.value != null }
               .associate { it.metric.id to it.entry }
-      val publishableProjectMetrics =
-          report.projectMetrics
-              .filter { it.metric.isPublishable && it.entry.value != null }
-              .associate { it.metric.id to it.entry }
+      val publishableProjectIndicators =
+          report.projectIndicators
+              .filter { it.indicator.isPublishable && it.entry.value != null }
+              .associate { it.indicator.id to it.entry }
 
       publishReportMetrics(
           reportId,
@@ -559,7 +561,7 @@ class ReportStore(
       publishReportMetrics(
           reportId,
           PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
-          publishableProjectMetrics,
+          publishableProjectIndicators,
       )
 
       // Publish metric targets for the report year
@@ -573,10 +575,10 @@ class ReportStore(
           report.standardMetrics
               .filter { (metric) -> metric.isPublishable }
               .associate { (metric, entry) -> metric.id to entry.target }
-      val projectMetricTargets =
-          report.projectMetrics
-              .filter { (metric) -> metric.isPublishable }
-              .associate { (metric, entry) -> metric.id to entry.target }
+      val projectIndicatorTargets =
+          report.projectIndicators
+              .filter { (indicator) -> indicator.isPublishable }
+              .associate { (indicator, entry) -> indicator.id to entry.target }
 
       publishReportMetricTargets(
           report.projectId,
@@ -594,7 +596,7 @@ class ReportStore(
           report.projectId,
           reportYear,
           PUBLISHED_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
-          projectMetricTargets,
+          projectIndicatorTargets,
       )
     }
 
@@ -634,10 +636,10 @@ class ReportStore(
     }
   }
 
-  fun updateProjectMetricTarget(
+  fun updateProjectIndicatorTarget(
       projectId: ProjectId,
       year: Int,
-      metricId: ProjectIndicatorId,
+      indicatorId: ProjectIndicatorId,
       target: Int?,
   ) {
     requirePermissions { updateProjectReports(projectId) }
@@ -646,7 +648,7 @@ class ReportStore(
       dslContext
           .insertInto(this)
           .set(PROJECT_ID, projectId)
-          .set(PROJECT_INDICATOR_ID, metricId)
+          .set(PROJECT_INDICATOR_ID, indicatorId)
           .set(YEAR, year)
           .set(TARGET, target)
           .onConflict(PROJECT_ID, PROJECT_INDICATOR_ID, YEAR)
@@ -897,9 +899,9 @@ class ReportStore(
       condition: Condition,
       includeMetrics: Boolean = false,
   ): List<ReportModel> {
-    val projectMetricsField =
+    val projectIndicatorsField =
         if (includeMetrics) {
-          projectMetricsMultiset
+          projectIndicatorsMultiset
         } else {
           null
         }
@@ -929,7 +931,7 @@ class ReportStore(
                 challengesMultiset,
                 photosMultiset,
                 usersField,
-                projectMetricsField,
+                projectIndicatorsField,
                 standardMetricsField,
                 systemMetricsField,
             )
@@ -945,7 +947,7 @@ class ReportStore(
                   challengesField = challengesMultiset,
                   photosField = photosMultiset,
                   usersField = usersField,
-                  projectMetricsField = projectMetricsField,
+                  projectIndicatorsField = projectIndicatorsField,
                   standardMetricsField = standardMetricsField,
                   systemMetricsField = systemMetricsField,
               )
@@ -1099,7 +1101,7 @@ class ReportStore(
   private fun <ID : Any> upsertReportMetrics(
       reportId: ReportId,
       metricIdField: TableField<*, ID?>,
-      entries: Map<ID, ReportMetricEntryModel>,
+      entries: Map<ID, ReportIndicatorEntryModel>,
       updateProgressNotes: Boolean,
   ): Int {
     if (entries.isEmpty()) {
@@ -1208,7 +1210,7 @@ class ReportStore(
   private fun <ID : Any> publishReportMetrics(
       reportId: ReportId,
       metricIdField: TableField<*, ID?>,
-      entries: Map<ID, ReportMetricEntryModel>,
+      entries: Map<ID, ReportIndicatorEntryModel>,
   ) {
     val table = metricIdField.table!!
     val reportIdField =
@@ -1359,7 +1361,7 @@ class ReportStore(
 
   private fun upsertReportStandardMetrics(
       reportId: ReportId,
-      entries: Map<CommonIndicatorId, ReportMetricEntryModel>,
+      entries: Map<CommonIndicatorId, ReportIndicatorEntryModel>,
       updateProgressNotes: Boolean,
   ) =
       upsertReportMetrics(
@@ -1371,7 +1373,7 @@ class ReportStore(
 
   private fun upsertReportSystemMetrics(
       reportId: ReportId,
-      entries: Map<AutoCalculatedIndicator, ReportMetricEntryModel>,
+      entries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel>,
       updateProgressNotes: Boolean,
   ): Int {
     if (entries.isEmpty()) {
@@ -1421,9 +1423,9 @@ class ReportStore(
     return rowsUpdated
   }
 
-  private fun upsertReportProjectMetrics(
+  private fun upsertReportProjectIndicators(
       reportId: ReportId,
-      entries: Map<ProjectIndicatorId, ReportMetricEntryModel>,
+      entries: Map<ProjectIndicatorId, ReportIndicatorEntryModel>,
       updateProgressNotes: Boolean,
   ) =
       upsertReportMetrics(
@@ -1494,7 +1496,7 @@ class ReportStore(
           )
           .convertFrom { results -> results.map { ReportPhotoModel.of(it) } }
 
-  private val projectMetricsMultiset: Field<List<ReportProjectMetricModel>> =
+  private val projectIndicatorsMultiset: Field<List<ReportProjectIndicatorModel>> =
       DSL.multiset(
               DSL.select(
                       PROJECT_INDICATORS.asterisk(),
@@ -1516,7 +1518,7 @@ class ReportStore(
                   .where(PROJECT_INDICATORS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                   .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
           )
-          .convertFrom { results -> results.map { ReportProjectMetricModel.of(it) } }
+          .convertFrom { results -> results.map { ReportProjectIndicatorModel.of(it) } }
 
   private fun userIsInSameOrg() =
       with(ORGANIZATION_USERS) {

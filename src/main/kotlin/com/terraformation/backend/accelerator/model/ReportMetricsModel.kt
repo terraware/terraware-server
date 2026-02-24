@@ -16,7 +16,7 @@ import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
 
-data class ReportMetricEntryModel(
+data class ReportIndicatorEntryModel(
     val target: Int? = null,
     val value: Int? = null,
     val modifiedBy: UserId? = null,
@@ -28,7 +28,7 @@ data class ReportMetricEntryModel(
 
 data class ReportStandardMetricModel(
     val metric: ExistingStandardMetricModel,
-    val entry: ReportMetricEntryModel,
+    val entry: ReportIndicatorEntryModel,
 ) {
   companion object {
     fun of(record: Record): ReportStandardMetricModel {
@@ -38,9 +38,9 @@ data class ReportStandardMetricModel(
       )
     }
 
-    private fun entry(record: Record): ReportMetricEntryModel {
+    private fun entry(record: Record): ReportIndicatorEntryModel {
       return with(REPORT_COMMON_INDICATORS) {
-        ReportMetricEntryModel(
+        ReportIndicatorEntryModel(
             target = record[REPORT_COMMON_INDICATOR_TARGETS.TARGET],
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
@@ -59,21 +59,21 @@ data class ReportStandardMetricModel(
   }
 }
 
-data class ReportProjectMetricModel(
-    val metric: ExistingProjectMetricModel,
-    val entry: ReportMetricEntryModel,
+data class ReportProjectIndicatorModel(
+    val indicator: ExistingProjectIndicatorModel,
+    val entry: ReportIndicatorEntryModel,
 ) {
   companion object {
-    fun of(record: Record): ReportProjectMetricModel {
-      return ReportProjectMetricModel(
-          metric = ExistingProjectMetricModel.of(record),
+    fun of(record: Record): ReportProjectIndicatorModel {
+      return ReportProjectIndicatorModel(
+          indicator = ExistingProjectIndicatorModel.of(record),
           entry = entry(record),
       )
     }
 
-    private fun entry(record: Record): ReportMetricEntryModel {
+    private fun entry(record: Record): ReportIndicatorEntryModel {
       return with(REPORT_PROJECT_INDICATORS) {
-        ReportMetricEntryModel(
+        ReportIndicatorEntryModel(
             target = record[REPORT_PROJECT_INDICATOR_TARGETS.TARGET],
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],

@@ -1,13 +1,13 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
-import com.terraformation.backend.accelerator.model.ExistingProjectMetricModel
+import com.terraformation.backend.accelerator.model.ExistingProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingStandardMetricModel
-import com.terraformation.backend.accelerator.model.NewProjectMetricModel
+import com.terraformation.backend.accelerator.model.NewProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.NewStandardMetricModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.ProjectMetricNotFoundException
+import com.terraformation.backend.db.ProjectIndicatorNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
@@ -204,16 +204,16 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Nested
-    inner class FetchOneProjectMetric {
+    inner class FetchOneProjectIndicator {
       @Test
-      fun `returns one project metric`() {
+      fun `returns one project indicator`() {
         insertOrganization()
         val projectId = insertProject()
-        val metricId =
-            insertProjectMetric(
+        val indicatorId =
+            insertProjectIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate project metric description",
-                name = "Climate Project Metric",
+                description = "Climate project indicator description",
+                name = "Climate Project Indicator",
                 isPublishable = false,
                 projectId = projectId,
                 reference = "3.0",
@@ -222,25 +222,25 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         assertEquals(
-            ExistingProjectMetricModel(
-                id = metricId,
+            ExistingProjectIndicatorModel(
+                id = indicatorId,
                 projectId = projectId,
                 component = IndicatorCategory.Climate,
-                description = "Climate project metric description",
+                description = "Climate project indicator description",
                 isPublishable = false,
-                name = "Climate Project Metric",
+                name = "Climate Project Indicator",
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
                 unit = "degrees",
             ),
-            store.fetchOneProjectMetric(metricId),
+            store.fetchOneProjectIndicator(indicatorId),
         )
       }
 
       @Test
       fun `throws not found exception if no metric found`() {
-        assertThrows<ProjectMetricNotFoundException> {
-          store.fetchOneProjectMetric(ProjectIndicatorId(-1))
+        assertThrows<ProjectIndicatorNotFoundException> {
+          store.fetchOneProjectIndicator(ProjectIndicatorId(-1))
         }
       }
 
@@ -249,25 +249,25 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertOrganization()
         val projectId = insertProject()
 
-        val metricId1 = insertProjectMetric(reference = "2.0.2")
-        val metricId2 = insertProjectMetric(reference = "10.0")
-        val metricId3 = insertProjectMetric(reference = "1.0")
-        val metricId4 = insertProjectMetric(reference = "2.0")
-        val metricId5 = insertProjectMetric(reference = "1.1")
-        val metricId6 = insertProjectMetric(reference = "1.1.1")
-        val metricId7 = insertProjectMetric(reference = "1.2")
+        val indicatorId1 = insertProjectIndicator(reference = "2.0.2")
+        val indicatorId2 = insertProjectIndicator(reference = "10.0")
+        val indicatorId3 = insertProjectIndicator(reference = "1.0")
+        val indicatorId4 = insertProjectIndicator(reference = "2.0")
+        val indicatorId5 = insertProjectIndicator(reference = "1.1")
+        val indicatorId6 = insertProjectIndicator(reference = "1.1.1")
+        val indicatorId7 = insertProjectIndicator(reference = "1.2")
 
         assertEquals(
             listOf(
-                metricId3, // 1.0
-                metricId5, // 1.1
-                metricId6, // 1.1.1
-                metricId7, // 1.2
-                metricId4, // 2.0
-                metricId1, // 2.0.2
-                metricId2, // 10.0
+                indicatorId3, // 1.0
+                indicatorId5, // 1.1
+                indicatorId6, // 1.1.1
+                indicatorId7, // 1.2
+                indicatorId4, // 2.0
+                indicatorId1, // 2.0.2
+                indicatorId2, // 10.0
             ),
-            store.fetchProjectMetricsForProject(projectId).map { it.id },
+            store.fetchProjectIndicatorsForProject(projectId).map { it.id },
         )
       }
 
@@ -275,8 +275,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `throws access denied exception for non-global role users`() {
         insertOrganization()
         val projectId = insertProject()
-        val metricId =
-            insertProjectMetric(
+        val indicatorId =
+            insertProjectIndicator(
                 component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
@@ -286,21 +286,21 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        assertThrows<AccessDeniedException> { store.fetchOneProjectMetric(metricId) }
+        assertThrows<AccessDeniedException> { store.fetchOneProjectIndicator(indicatorId) }
 
         insertUserGlobalRole(role = GlobalRole.ReadOnly)
-        assertDoesNotThrow { store.fetchOneProjectMetric(metricId) }
+        assertDoesNotThrow { store.fetchOneProjectIndicator(indicatorId) }
       }
     }
 
     @Nested
-    inner class FetchProjectMetricsForProject {
+    inner class FetchProjectIndicatorsForProject {
       @Test
-      fun `returns all project metrics for one project`() {
+      fun `returns all project indicators for one project`() {
         insertOrganization()
         val projectId = insertProject()
-        val metricId1 =
-            insertProjectMetric(
+        val indicatorId1 =
+            insertProjectIndicator(
                 component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
@@ -310,8 +310,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 unit = "%",
             )
 
-        val metricId2 =
-            insertProjectMetric(
+        val indicatorId2 =
+            insertProjectIndicator(
                 component = IndicatorCategory.Community,
                 description = "Community metric description",
                 isPublishable = false,
@@ -322,8 +322,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 unit = "meters",
             )
 
-        val metricId3 =
-            insertProjectMetric(
+        val indicatorId3 =
+            insertProjectIndicator(
                 component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 name = "Project Objectives Metric",
@@ -333,15 +333,15 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 unit = "cm",
             )
 
-        // Other project metrics will not be returned
+        // Other project indicators will not be returned
         val otherProjectId = insertProject()
-        insertProjectMetric(projectId = otherProjectId)
+        insertProjectIndicator(projectId = otherProjectId)
 
         assertEquals(
             listOf(
                 // Ordered by reference then ID
-                ExistingProjectMetricModel(
-                    id = metricId1,
+                ExistingProjectIndicatorModel(
+                    id = indicatorId1,
                     projectId = projectId,
                     component = IndicatorCategory.Climate,
                     description = "Climate standard metric description",
@@ -351,8 +351,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     type = IndicatorLevel.Activity,
                     unit = "%",
                 ),
-                ExistingProjectMetricModel(
-                    id = metricId3,
+                ExistingProjectIndicatorModel(
+                    id = indicatorId3,
                     projectId = projectId,
                     component = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
@@ -362,8 +362,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     type = IndicatorLevel.Impact,
                     unit = "cm",
                 ),
-                ExistingProjectMetricModel(
-                    id = metricId2,
+                ExistingProjectIndicatorModel(
+                    id = indicatorId2,
                     projectId = projectId,
                     component = IndicatorCategory.Community,
                     description = "Community metric description",
@@ -374,7 +374,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     unit = "meters",
                 ),
             ),
-            store.fetchProjectMetricsForProject(projectId),
+            store.fetchProjectIndicatorsForProject(projectId),
         )
       }
 
@@ -383,10 +383,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertOrganization()
         val projectId = insertProject()
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        assertThrows<AccessDeniedException> { store.fetchProjectMetricsForProject(projectId) }
+        assertThrows<AccessDeniedException> { store.fetchProjectIndicatorsForProject(projectId) }
 
         insertUserGlobalRole(role = GlobalRole.ReadOnly)
-        assertDoesNotThrow { store.fetchProjectMetricsForProject(projectId) }
+        assertDoesNotThrow { store.fetchProjectIndicatorsForProject(projectId) }
       }
     }
 
@@ -503,13 +503,13 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Nested
-    inner class ProjectMetric {
+    inner class ProjectIndicator {
       @Test
       fun `inserts new record`() {
         insertOrganization()
         val projectId = insertProject()
-        val existingMetricId =
-            insertProjectMetric(
+        val existingIndicatorId =
+            insertProjectIndicator(
                 component = IndicatorCategory.Climate,
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
@@ -520,7 +520,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
 
         val model =
-            NewProjectMetricModel(
+            NewProjectIndicatorModel(
                 id = null,
                 projectId = projectId,
                 component = IndicatorCategory.ProjectObjectives,
@@ -532,12 +532,12 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 unit = "%",
             )
 
-        val newMetricId = store.createProjectMetric(model)
+        val newIndicatorId = store.createProjectIndicator(model)
 
         assertTableEquals(
             listOf(
                 ProjectIndicatorsRecord(
-                    id = existingMetricId,
+                    id = existingIndicatorId,
                     categoryId = IndicatorCategory.Climate,
                     description = "Climate standard metric description",
                     isPublishable = true,
@@ -549,7 +549,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     active = true,
                 ),
                 ProjectIndicatorsRecord(
-                    id = newMetricId,
+                    id = newIndicatorId,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = false,
@@ -569,7 +569,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertOrganization()
         val projectId = insertProject()
         val model =
-            NewProjectMetricModel(
+            NewProjectIndicatorModel(
                 id = null,
                 component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
@@ -582,7 +582,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         insertUserGlobalRole(role = GlobalRole.TFExpert)
-        assertThrows<AccessDeniedException> { store.createProjectMetric(model) }
+        assertThrows<AccessDeniedException> { store.createProjectIndicator(model) }
       }
     }
   }
@@ -661,8 +661,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `updates existing record`() {
       insertOrganization()
       val projectId = insertProject()
-      val existingMetricId =
-          insertProjectMetric(
+      val existingIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.Climate,
               description = "Climate standard metric description",
               isPublishable = false,
@@ -674,7 +674,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       val updated =
-          ExistingProjectMetricModel(
+          ExistingProjectIndicatorModel(
               id = ProjectIndicatorId(99), // this field is ignored
               component = IndicatorCategory.ProjectObjectives,
               description = "Project objectives metric description",
@@ -686,12 +686,12 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               unit = "inches",
           )
 
-      store.updateProjectMetric(existingMetricId) { updated }
+      store.updateProjectIndicator(existingIndicatorId) { updated }
 
       assertTableEquals(
           listOf(
               ProjectIndicatorsRecord(
-                  id = existingMetricId,
+                  id = existingIndicatorId,
                   categoryId = IndicatorCategory.ProjectObjectives,
                   description = "Project objectives metric description",
                   isPublishable = true,
@@ -710,8 +710,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `throws access denied exception for non-accelerator admin`() {
       insertOrganization()
       val projectId = insertProject()
-      val existingMetricId =
-          insertProjectMetric(
+      val existingIndicatorId =
+          insertProjectIndicator(
               component = IndicatorCategory.Climate,
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
@@ -723,7 +723,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
       assertThrows<AccessDeniedException> {
-        store.updateProjectMetric(existingMetricId) { it.copy(reference = "1.0") }
+        store.updateProjectIndicator(existingIndicatorId) { it.copy(reference = "1.0") }
       }
     }
   }
