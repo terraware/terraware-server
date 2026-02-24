@@ -52,7 +52,6 @@ import com.terraformation.backend.db.accelerator.DeliverableId
 import com.terraformation.backend.db.accelerator.DeliverableType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
@@ -484,7 +483,6 @@ internal class EmailNotificationServiceTest {
           configId = ProjectReportConfigId(1),
           projectId = project.id,
           projectDealName = "Deal name",
-          frequency = ReportFrequency.Quarterly,
           quarter = ReportQuarter.Q1,
           status = ReportStatus.Submitted,
           startDate = LocalDate.of(2025, Month.JANUARY, 1),

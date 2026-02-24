@@ -9,7 +9,6 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -213,7 +212,6 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   challenges = emptyList(),
                   endDate = LocalDate.of(2025, 6, 30),
                   financialSummaries = null,
-                  frequency = ReportFrequency.Quarterly,
                   highlights = null,
                   photos = emptyList(),
                   projectId = projectId,
@@ -237,7 +235,6 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   endDate = LocalDate.of(2025, 3, 31),
                   financialSummaries = "financial summaries",
-                  frequency = ReportFrequency.Quarterly,
                   highlights = "highlights",
                   photos =
                       listOf(

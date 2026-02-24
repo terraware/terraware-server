@@ -12,7 +12,6 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
@@ -119,7 +118,6 @@ data class PublishedReportPayload(
     val challenges: List<ReportChallengePayload>,
     val endDate: LocalDate,
     val financialSummaries: String?,
-    val frequency: ReportFrequency,
     val highlights: String?,
     val photos: List<ReportPhotoPayload>,
     val projectId: ProjectId,
@@ -141,7 +139,6 @@ data class PublishedReportPayload(
       challenges = model.challenges.map { ReportChallengePayload(it.challenge, it.mitigationPlan) },
       endDate = model.endDate,
       financialSummaries = model.financialSummaries,
-      frequency = model.frequency,
       highlights = model.highlights,
       photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,

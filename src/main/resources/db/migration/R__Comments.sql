@@ -695,8 +695,6 @@ COMMENT ON COLUMN accelerator.report_auto_calculated_indicators.system_value IS 
 
 COMMENT ON TABLE accelerator.report_challenges IS 'List of challenges and mitigation plans for accelerator project reports.';
 
-COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports. Acts as the report type as well.';
-
 COMMENT ON TABLE accelerator.report_indicator_statuses IS '(Enum) Statuses of accelerator project report indicators.';
 
 COMMENT ON TABLE accelerator.report_photos IS 'Photos for the accelerator project report.';
@@ -715,7 +713,6 @@ COMMENT ON TABLE accelerator.report_standard_indicators IS 'Report entries of ta
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
 
 COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
-COMMENT ON COLUMN accelerator.reports.report_frequency_id IS 'Frequency of the report, that can determine report data. Must match with frequency of the configuration.';
 COMMENT ON COLUMN accelerator.reports.report_quarter_id IS 'Quarter of the report. Must be non-null for quarterly reports and null otherwise.';
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
