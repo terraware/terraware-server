@@ -66,6 +66,7 @@ class EnumTable(
     private val suffixSubstitutions =
         listOf(
             "categorie" to "category",
+            "classe" to "class",
             "frequencie" to "frequency",
             "statuse" to "status",
         )

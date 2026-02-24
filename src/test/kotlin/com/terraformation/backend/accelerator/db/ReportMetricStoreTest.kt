@@ -396,8 +396,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `returns all system metrics, ordered by reference`() {
         val sortedSystemMetrics =
             AutoCalculatedIndicator.entries.sortedWith { metric1, metric2 ->
-              val metric1Parts = metric1.reference.split(".").map { it.toInt() }
-              val metric2Parts = metric2.reference.split(".").map { it.toInt() }
+              val metric1Parts = metric1.refId.split(".").map { it.toInt() }
+              val metric2Parts = metric2.refId.split(".").map { it.toInt() }
 
               val size = maxOf(metric1Parts.size, metric2Parts.size)
               for (i in 0 until size) {
@@ -462,9 +462,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Climate standard metric description",
                     isPublishable = true,
                     name = "Climate Standard Metric",
-                    reference = "3.0",
+                    refId = "3.0",
                     levelId = IndicatorLevel.Activity,
                     unit = "%",
+                    active = true,
                 ),
                 StandardIndicatorsRecord(
                     id = newMetricId,
@@ -472,9 +473,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Project objectives metric description",
                     isPublishable = false,
                     name = "Project Objectives Metric",
-                    reference = "1.0",
+                    refId = "1.0",
                     levelId = IndicatorLevel.Impact,
                     unit = "meters",
+                    active = true,
                 ),
             )
         )
@@ -541,9 +543,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = true,
                     name = "Climate Standard Metric",
                     projectId = projectId,
-                    reference = "3.0",
+                    refId = "3.0",
                     levelId = IndicatorLevel.Activity,
                     unit = "meters",
+                    active = true,
                 ),
                 ProjectIndicatorsRecord(
                     id = newMetricId,
@@ -552,9 +555,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = false,
                     name = "Project Objectives Metric",
                     projectId = projectId,
-                    reference = "1.0",
+                    refId = "1.0",
                     levelId = IndicatorLevel.Impact,
                     unit = "%",
+                    active = true,
                 ),
             )
         )
@@ -621,9 +625,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Project objectives metric description",
                     isPublishable = false,
                     name = "Project Objectives Metric",
-                    reference = "1.0",
+                    refId = "1.0",
                     levelId = IndicatorLevel.Impact,
                     unit = "meters",
+                    active = true,
                 )
             )
         )
@@ -692,9 +697,10 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   isPublishable = true,
                   name = "Project Objectives Metric",
                   projectId = projectId,
-                  reference = "1.0",
+                  refId = "1.0",
                   levelId = IndicatorLevel.Impact,
                   unit = "inches",
+                  active = true,
               )
           )
       )

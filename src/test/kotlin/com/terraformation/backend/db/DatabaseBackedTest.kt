@@ -1117,7 +1117,7 @@ abstract class DatabaseBackedTest {
       isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      reference: String = row.reference ?: "1.1",
+      reference: String = row.refId ?: "1.1",
       type: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       unit: String? = row.unit,
   ): ProjectIndicatorId {
@@ -1127,7 +1127,7 @@ abstract class DatabaseBackedTest {
             description = description,
             isPublishable = isPublishable,
             name = name,
-            reference = reference,
+            refId = reference,
             projectId = projectId,
             levelId = type,
             unit = unit,
@@ -2825,7 +2825,7 @@ abstract class DatabaseBackedTest {
       description: String? = row.description,
       isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
-      reference: String = row.reference ?: "1.1",
+      reference: String = row.refId ?: "1.1",
       type: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       unit: String? = row.unit,
   ): StandardIndicatorId {
@@ -2835,7 +2835,7 @@ abstract class DatabaseBackedTest {
             description = description,
             isPublishable = isPublishable,
             name = name,
-            reference = reference,
+            refId = reference,
             levelId = type,
             unit = unit,
         )

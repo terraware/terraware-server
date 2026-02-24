@@ -67,7 +67,7 @@ data class SystemMetricPayload(
     val description: String = metric.description,
     val component: IndicatorCategory = metric.categoryId,
     val type: IndicatorLevel = metric.levelId,
-    val reference: String = metric.reference,
+    val reference: String = metric.refId,
 )
 
 data class CreateStandardMetricRequestPayload(@field:Valid val metric: NewMetricPayload)

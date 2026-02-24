@@ -159,6 +159,8 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "event_types" to setOf(ALL, ACCELERATOR),
                   "hubspot_token" to setOf(ALL, ACCELERATOR),
                   "indicator_categories" to setOf(ALL, ACCELERATOR),
+                  "indicator_classes" to setOf(ALL, ACCELERATOR),
+                  "indicator_frequencies" to setOf(ALL, ACCELERATOR),
                   "indicator_levels" to setOf(ALL, ACCELERATOR),
                   "internal_interests" to setOf(ALL, ACCELERATOR),
                   "modules" to setOf(ALL, ACCELERATOR),

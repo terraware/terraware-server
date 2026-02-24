@@ -1481,7 +1481,7 @@ class ReportStore(
                   )
                   .and(REPORT_STANDARD_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                   .and(REPORT_STANDARD_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
-                  .orderBy(STANDARD_INDICATORS.REFERENCE, STANDARD_INDICATORS.ID)
+                  .orderBy(STANDARD_INDICATORS.REF_ID, STANDARD_INDICATORS.ID)
           )
           .convertFrom { results -> results.map { ReportStandardMetricModel.of(it) } }
 
@@ -1518,7 +1518,7 @@ class ReportStore(
                   .and(REPORT_PROJECT_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                   .and(REPORT_PROJECT_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
                   .where(PROJECT_INDICATORS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  .orderBy(PROJECT_INDICATORS.REFERENCE, PROJECT_INDICATORS.ID)
+                  .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
           )
           .convertFrom { results -> results.map { ReportProjectMetricModel.of(it) } }
 
@@ -1876,7 +1876,7 @@ class ReportStore(
                   )
                   .and(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                   .and(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
-                  .orderBy(AUTO_CALCULATED_INDICATORS.REFERENCE, AUTO_CALCULATED_INDICATORS.ID)
+                  .orderBy(AUTO_CALCULATED_INDICATORS.REF_ID, AUTO_CALCULATED_INDICATORS.ID)
           )
           .convertFrom { results ->
             results.map { ReportSystemMetricModel.of(it, systemValueField) }

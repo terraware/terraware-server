@@ -486,6 +486,17 @@ VALUES (1, 'Antarctica'),
        (9, 'Sub-Saharan Africa')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.indicator_classes (id, name)
+VALUES (1, 'Cumulative'),
+       (2, 'Level')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
+INSERT INTO accelerator.indicator_frequencies (id, name)
+VALUES (1, 'Annual'),
+       (2, 'Bi-Annual'),
+       (3, 'MRV Cycle')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.report_indicator_statuses (id, name)
 VALUES (1, 'Achieved'),
        (2, 'On-Track'),
@@ -531,20 +542,21 @@ VALUES (1, 'Carbon'),
        (12, 'Values Alignment')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO accelerator.auto_calculated_indicators (id, name, description, level_id, category_id, reference, is_publishable)
-VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 2, 2, '1.1', false),
-       (2, 'Seedlings', 'Plants in the nursery, including those provided by partners, where available. Not applicable for mangrove projects (input 0).', 2, 2, '1.2', true),
-       (3, 'Trees Planted', 'Total trees (and plants) planted in the field.', 2, 2, '1.3', true),
-       (4, 'Species Planted', 'Total species of the plants/trees planted.', 2, 2, '1.4', true),
-       (6, 'Hectares Planted', 'This is the hectares marked as “Planting Complete” within the Project Area.', 2, 2, '1.1.1.1', true),
-       (7, 'Survival Rate', 'Survival rate of plantings.', 3, 2, '2', true)
+INSERT INTO accelerator.auto_calculated_indicators (id, name, description, level_id, category_id, ref_id, is_publishable, unit)
+VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 2, 2, '1.1', false, 'Seeds'),
+       (2, 'Seedlings', 'Plants in the nursery, including those provided by partners, where available. Not applicable for mangrove projects (input 0).', 2, 2, '1.2', true, 'Seedlings'),
+       (3, 'Trees Planted', 'Total trees (and plants) planted in the field.', 2, 2, '1.3', true, 'Trees'),
+       (4, 'Species Planted', 'Total species of the plants/trees planted.', 2, 2, '1.4', true, 'Species'),
+       (6, 'Hectares Planted', 'This is the hectares marked as “Planting Complete” within the Project Area.', 2, 2, '1.1.1.1', true, 'Hectares'),
+       (7, 'Survival Rate', 'Survival rate of plantings.', 3, 2, '2', true, '%')
 ON CONFLICT (id) DO UPDATE
 SET name = excluded.name,
     description = excluded.description,
     level_id = excluded.level_id,
     category_id = excluded.category_id,
-    reference = excluded.reference,
-    is_publishable = excluded.is_publishable;
+    ref_id = excluded.ref_id,
+    is_publishable = excluded.is_publishable,
+    unit = excluded.unit;
 
 INSERT INTO seed_fund_report_statuses (id, name)
 VALUES (1, 'New'),
