@@ -4,10 +4,10 @@ import com.terraformation.backend.accelerator.model.ExistingProjectMetricModel
 import com.terraformation.backend.accelerator.model.ExistingStandardMetricModel
 import com.terraformation.backend.accelerator.model.NewProjectMetricModel
 import com.terraformation.backend.accelerator.model.NewStandardMetricModel
+import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
-import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.validation.constraints.Size
 
@@ -52,7 +52,7 @@ data class ExistingProjectMetricPayload(
 }
 
 data class ExistingStandardMetricPayload(
-    val id: StandardIndicatorId,
+    val id: CommonIndicatorId,
     val name: String,
     val description: String?,
     val component: IndicatorCategory,

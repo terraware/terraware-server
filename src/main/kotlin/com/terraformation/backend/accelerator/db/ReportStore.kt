@@ -23,6 +23,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ReportConfigNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
+import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportId
@@ -30,10 +31,10 @@ import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatusConverter
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
-import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
@@ -42,12 +43,11 @@ import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEV
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_COMMON_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_COMMON_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PHOTOS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATOR_TARGETS
-import com.terraformation.backend.db.accelerator.tables.references.STANDARD_INDICATORS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectIdConverter
@@ -57,15 +57,15 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_COMMON_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_COMMON_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_INDICATORS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_STANDARD_INDICATOR_TARGETS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
@@ -200,16 +200,16 @@ class ReportStore(
   ): List<ReportStandardMetricTargetModel> {
     requirePermissions { readProjectReports(projectId) }
 
-    return with(REPORT_STANDARD_INDICATOR_TARGETS) {
+    return with(REPORT_COMMON_INDICATOR_TARGETS) {
       dslContext
           .select(
-              STANDARD_INDICATOR_ID,
+              COMMON_INDICATOR_ID,
               TARGET,
               YEAR,
           )
           .from(this)
           .where(PROJECT_ID.eq(projectId))
-          .orderBy(YEAR, STANDARD_INDICATOR_ID)
+          .orderBy(YEAR, COMMON_INDICATOR_ID)
           .fetch { ReportStandardMetricTargetModel.of(it) }
     }
   }
@@ -375,7 +375,7 @@ class ReportStore(
 
   fun reviewReportMetrics(
       reportId: ReportId,
-      standardMetricEntries: Map<StandardIndicatorId, ReportMetricEntryModel> = emptyMap(),
+      standardMetricEntries: Map<CommonIndicatorId, ReportMetricEntryModel> = emptyMap(),
       systemMetricEntries: Map<AutoCalculatedIndicator, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectIndicatorId, ReportMetricEntryModel> = emptyMap(),
   ) {
@@ -438,7 +438,7 @@ class ReportStore(
       challenges: List<ReportChallengeModel>,
       financialSummaries: String? = null,
       additionalComments: String? = null,
-      standardMetricEntries: Map<StandardIndicatorId, ReportMetricEntryModel> = emptyMap(),
+      standardMetricEntries: Map<CommonIndicatorId, ReportMetricEntryModel> = emptyMap(),
       systemMetricEntries: Map<AutoCalculatedIndicator, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectIndicatorId, ReportMetricEntryModel> = emptyMap(),
   ) {
@@ -553,7 +553,7 @@ class ReportStore(
       )
       publishReportMetrics(
           reportId,
-          PUBLISHED_REPORT_STANDARD_INDICATORS.STANDARD_INDICATOR_ID,
+          PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           publishableStandardMetrics,
       )
       publishReportMetrics(
@@ -587,7 +587,7 @@ class ReportStore(
       publishReportMetricTargets(
           report.projectId,
           reportYear,
-          PUBLISHED_STANDARD_INDICATOR_TARGETS.STANDARD_INDICATOR_ID,
+          PUBLISHED_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
           standardMetricTargets,
       )
       publishReportMetricTargets(
@@ -659,19 +659,19 @@ class ReportStore(
   fun updateStandardMetricTarget(
       projectId: ProjectId,
       year: Int,
-      metricId: StandardIndicatorId,
+      metricId: CommonIndicatorId,
       target: Int?,
   ) {
     requirePermissions { updateProjectReports(projectId) }
 
-    with(REPORT_STANDARD_INDICATOR_TARGETS) {
+    with(REPORT_COMMON_INDICATOR_TARGETS) {
       dslContext
           .insertInto(this)
           .set(PROJECT_ID, projectId)
-          .set(STANDARD_INDICATOR_ID, metricId)
+          .set(COMMON_INDICATOR_ID, metricId)
           .set(YEAR, year)
           .set(TARGET, target)
-          .onConflict(PROJECT_ID, STANDARD_INDICATOR_ID, YEAR)
+          .onConflict(PROJECT_ID, COMMON_INDICATOR_ID, YEAR)
           .doUpdate()
           .set(TARGET, target)
           .execute()
@@ -1359,12 +1359,12 @@ class ReportStore(
 
   private fun upsertReportStandardMetrics(
       reportId: ReportId,
-      entries: Map<StandardIndicatorId, ReportMetricEntryModel>,
+      entries: Map<CommonIndicatorId, ReportMetricEntryModel>,
       updateProgressNotes: Boolean,
   ) =
       upsertReportMetrics(
           reportId = reportId,
-          metricIdField = REPORT_STANDARD_INDICATORS.STANDARD_INDICATOR_ID,
+          metricIdField = REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           entries = entries,
           updateProgressNotes = updateProgressNotes,
       )
@@ -1465,23 +1465,19 @@ class ReportStore(
   private val standardMetricsMultiset: Field<List<ReportStandardMetricModel>> =
       DSL.multiset(
               DSL.select(
-                      STANDARD_INDICATORS.asterisk(),
-                      REPORT_STANDARD_INDICATORS.asterisk(),
-                      REPORT_STANDARD_INDICATOR_TARGETS.TARGET,
+                      COMMON_INDICATORS.asterisk(),
+                      REPORT_COMMON_INDICATORS.asterisk(),
+                      REPORT_COMMON_INDICATOR_TARGETS.TARGET,
                   )
-                  .from(STANDARD_INDICATORS)
-                  .leftJoin(REPORT_STANDARD_INDICATORS)
-                  .on(STANDARD_INDICATORS.ID.eq(REPORT_STANDARD_INDICATORS.STANDARD_INDICATOR_ID))
-                  .and(REPORTS.ID.eq(REPORT_STANDARD_INDICATORS.REPORT_ID))
-                  .leftJoin(REPORT_STANDARD_INDICATOR_TARGETS)
-                  .on(
-                      REPORT_STANDARD_INDICATOR_TARGETS.STANDARD_INDICATOR_ID.eq(
-                          STANDARD_INDICATORS.ID
-                      )
-                  )
-                  .and(REPORT_STANDARD_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  .and(REPORT_STANDARD_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
-                  .orderBy(STANDARD_INDICATORS.REF_ID, STANDARD_INDICATORS.ID)
+                  .from(COMMON_INDICATORS)
+                  .leftJoin(REPORT_COMMON_INDICATORS)
+                  .on(COMMON_INDICATORS.ID.eq(REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID))
+                  .and(REPORTS.ID.eq(REPORT_COMMON_INDICATORS.REPORT_ID))
+                  .leftJoin(REPORT_COMMON_INDICATOR_TARGETS)
+                  .on(REPORT_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID))
+                  .and(REPORT_COMMON_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                  .and(REPORT_COMMON_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
+                  .orderBy(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
           )
           .convertFrom { results -> results.map { ReportStandardMetricModel.of(it) } }
 

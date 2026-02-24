@@ -40,8 +40,8 @@ import com.terraformation.backend.db.accelerator.tables.records.ProjectReportCon
 import com.terraformation.backend.db.accelerator.tables.records.ReportAchievementsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportAutoCalculatedIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportChallengesRecord
+import com.terraformation.backend.db.accelerator.tables.records.ReportCommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportProjectIndicatorsRecord
-import com.terraformation.backend.db.accelerator.tables.records.ReportStandardIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
@@ -51,15 +51,15 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.tables.records.PublishedAutoCalculatedIndicatorTargetsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedCommonIndicatorTargetsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedProjectIndicatorTargetsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportAchievementsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportAutoCalculatedIndicatorsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportChallengesRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportCommonIndicatorsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportPhotosRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportProjectIndicatorsRecord
-import com.terraformation.backend.db.funder.tables.records.PublishedReportStandardIndicatorsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportsRecord
-import com.terraformation.backend.db.funder.tables.records.PublishedStandardIndicatorTargetsRecord
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -346,7 +346,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       // Insert targets into new target tables
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId1, year = 1970, target = 55)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 1970, target = 55)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
@@ -357,7 +357,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId2, year = 1970, target = 25)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 1970, target = 25)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
@@ -1070,7 +1070,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Impact,
           )
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId1, year = 1970, target = 55)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 1970, target = 55)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
@@ -1081,7 +1081,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId2, year = 1970, target = 25)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 1970, target = 25)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
@@ -1623,7 +1623,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedTime = Instant.ofEpochSecond(3000),
           )
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId1, year = 1970, target = 55)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 1970, target = 55)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
@@ -1634,7 +1634,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId2, year = 1970, target = 30)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 1970, target = 30)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
@@ -1735,18 +1735,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ReportStandardIndicatorsRecord(
+              ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  standardIndicatorId = standardMetricId1,
+                  commonIndicatorId = standardMetricId1,
                   value = 45,
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing metric 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
               ),
-              ReportStandardIndicatorsRecord(
+              ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  standardIndicatorId = standardMetricId2,
+                  commonIndicatorId = standardMetricId2,
                   value = 88,
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New metric 2 notes",
@@ -1754,9 +1754,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
-              ReportStandardIndicatorsRecord(
+              ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  standardIndicatorId = standardMetricId3,
+                  commonIndicatorId = standardMetricId3,
                   value = 45,
                   projectsComments = "New metric 3 notes",
                   progressNotes = "New metric 3 internal comment",
@@ -2095,7 +2095,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted, createdBy = otherUserId)
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId1, year = 1970, target = 55)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 1970, target = 55)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
@@ -2106,7 +2106,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId2, year = 1970, target = 30)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 1970, target = 30)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
@@ -2219,18 +2219,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ReportStandardIndicatorsRecord(
+              ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  standardIndicatorId = standardMetricId1,
+                  commonIndicatorId = standardMetricId1,
                   value = 45,
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing metric 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
               ),
-              ReportStandardIndicatorsRecord(
+              ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  standardIndicatorId = standardMetricId2,
+                  commonIndicatorId = standardMetricId2,
                   value = 88,
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New metric 2 notes",
@@ -2238,9 +2238,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
-              ReportStandardIndicatorsRecord(
+              ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  standardIndicatorId = standardMetricId3,
+                  commonIndicatorId = standardMetricId3,
                   projectsComments = "New metric 3 notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -3476,7 +3476,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           deleted = true,
       )
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId1, year = 2030, target = 10)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 2030, target = 10)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
@@ -3486,7 +3486,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Standard Metric 1 Progress notes",
       )
 
-      insertStandardMetricTarget(standardIndicatorId = standardMetricId2, year = 2030, target = 20)
+      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 2030, target = 20)
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
@@ -3496,7 +3496,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       insertStandardMetricTarget(
-          standardIndicatorId = standardMetricNullValueId,
+          commonIndicatorId = standardMetricNullValueId,
           year = 2030,
           target = 999,
       )
@@ -3507,7 +3507,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       insertStandardMetricTarget(
-          standardIndicatorId = standardMetricNotPublishableId,
+          commonIndicatorId = standardMetricNotPublishableId,
           year = 2030,
           target = 999,
       )
@@ -3822,17 +3822,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PublishedReportStandardIndicatorsRecord(
+              PublishedReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  standardIndicatorId = standardMetricId1,
+                  commonIndicatorId = standardMetricId1,
                   statusId = ReportIndicatorStatus.Achieved,
                   value = 10,
                   projectsComments = null,
                   progressNotes = "Standard Metric 1 Progress notes",
               ),
-              PublishedReportStandardIndicatorsRecord(
+              PublishedReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  standardIndicatorId = standardMetricId2,
+                  commonIndicatorId = standardMetricId2,
                   statusId = ReportIndicatorStatus.OnTrack,
                   value = 19,
                   projectsComments = "Standard Metric 2 Underperformance",
@@ -3943,21 +3943,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // Assert published metric targets for the report year (2030)
       assertTableEquals(
           listOf(
-              PublishedStandardIndicatorTargetsRecord(
+              PublishedCommonIndicatorTargetsRecord(
                   projectId = projectId,
-                  standardIndicatorId = standardMetricId1,
+                  commonIndicatorId = standardMetricId1,
                   year = 2030,
                   target = 10,
               ),
-              PublishedStandardIndicatorTargetsRecord(
+              PublishedCommonIndicatorTargetsRecord(
                   projectId = projectId,
-                  standardIndicatorId = standardMetricId2,
+                  commonIndicatorId = standardMetricId2,
                   year = 2030,
                   target = 20,
               ),
-              PublishedStandardIndicatorTargetsRecord(
+              PublishedCommonIndicatorTargetsRecord(
                   projectId = projectId,
-                  standardIndicatorId = standardMetricNullValueId,
+                  commonIndicatorId = standardMetricNullValueId,
                   year = 2030,
                   target = 999,
               ),
@@ -5296,10 +5296,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 200,
       )
 
-      val targets = reportStandardIndicatorTargetsDao.findAll()
+      val targets = reportCommonIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertEquals(projectId, targets[0].projectId)
-      assertEquals(standardMetricId, targets[0].standardIndicatorId)
+      assertEquals(standardMetricId, targets[0].commonIndicatorId)
       assertEquals(2024, targets[0].year)
       assertEquals(200, targets[0].target)
     }
@@ -5317,7 +5317,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertStandardMetricTarget(
           projectId = projectId,
-          standardIndicatorId = standardMetricId,
+          commonIndicatorId = standardMetricId,
           year = 2024,
           target = 200,
       )
@@ -5329,7 +5329,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 250,
       )
 
-      val targets = reportStandardIndicatorTargetsDao.findAll()
+      val targets = reportCommonIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertEquals(250, targets[0].target)
     }
@@ -5352,7 +5352,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = null,
       )
 
-      val targets = reportStandardIndicatorTargetsDao.findAll()
+      val targets = reportCommonIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertNull(targets[0].target)
     }
@@ -5548,19 +5548,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertStandardMetricTarget(
           projectId = projectId,
-          standardIndicatorId = standardMetricId1,
+          commonIndicatorId = standardMetricId1,
           year = 2024,
           target = 300,
       )
       insertStandardMetricTarget(
           projectId = projectId,
-          standardIndicatorId = standardMetricId2,
+          commonIndicatorId = standardMetricId2,
           year = 2024,
           target = 400,
       )
       insertStandardMetricTarget(
           projectId = projectId,
-          standardIndicatorId = standardMetricId1,
+          commonIndicatorId = standardMetricId1,
           year = 2025,
           target = 350,
       )

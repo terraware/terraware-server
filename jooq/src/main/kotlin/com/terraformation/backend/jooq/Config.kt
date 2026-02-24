@@ -64,10 +64,10 @@ val ENUM_TABLES =
                     "report_indicator_statuses",
                     listOf(
                         "report_project_indicators\\.status_id",
-                        "report_standard_indicators\\.status_id",
+                        "report_common_indicators\\.status_id",
                         "report_auto_calculated_indicators\\.status_id",
                         "funder\\.published_report_project_indicators\\.status_id",
-                        "funder\\.published_report_standard_indicators\\.status_id",
+                        "funder\\.published_report_common_indicators\\.status_id",
                         "funder\\.published_report_auto_calculated_indicators\\.status_id",
                     ),
                 ),
@@ -317,8 +317,8 @@ val ID_WRAPPERS =
                     ),
                 ),
                 IdWrapper(
-                    "StandardIndicatorId",
-                    listOf("standard_indicators\\.id", ".*\\.standard_indicator_id"),
+                    "CommonIndicatorId",
+                    listOf("common_indicators\\.id", ".*\\.common_indicator_id"),
                 ),
                 IdWrapper("SubmissionDocumentId", listOf("submission_documents\\.id")),
                 IdWrapper("SubmissionId", listOf("submissions\\.id", ".*\\.submission_id")),

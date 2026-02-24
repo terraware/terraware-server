@@ -31,6 +31,7 @@ import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
+import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
@@ -39,7 +40,6 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
-import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -646,7 +646,7 @@ data class ReportReviewPayload(
 data class ReportStandardMetricPayload(
     val component: IndicatorCategory,
     val description: String?,
-    val id: StandardIndicatorId,
+    val id: CommonIndicatorId,
     val isPublishable: Boolean,
     val name: String,
     val progressNotes: String?,
@@ -676,7 +676,7 @@ data class ReportStandardMetricPayload(
 }
 
 data class ReportStandardMetricEntriesPayload(
-    val id: StandardIndicatorId,
+    val id: CommonIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportIndicatorStatus?,
@@ -846,7 +846,7 @@ data class UpdateProjectMetricTargetRequestPayload(
 
 data class UpdateStandardMetricTargetRequestPayload(
     val year: Int,
-    val metricId: StandardIndicatorId,
+    val metricId: CommonIndicatorId,
     val target: Int?,
 )
 
@@ -895,7 +895,7 @@ data class ReportProjectMetricTargetPayload(
 }
 
 data class ReportStandardMetricTargetPayload(
-    val metricId: StandardIndicatorId,
+    val metricId: CommonIndicatorId,
     val target: Number?,
     val year: Number,
 ) {
