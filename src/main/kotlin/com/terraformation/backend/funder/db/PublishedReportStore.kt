@@ -50,7 +50,7 @@ class PublishedReportStore(
             challengesMultiset,
             photosMultiset,
             projectIndicatorsMultiset,
-            standardMetricsMultiset,
+            commonIndicatorsMultiset,
             systemMetricsMultiset,
         )
         .from(PUBLISHED_REPORTS)
@@ -78,7 +78,7 @@ class PublishedReportStore(
               quarter = record[PUBLISHED_REPORTS.REPORT_QUARTER_ID],
               reportId = record[PUBLISHED_REPORTS.REPORT_ID]!!,
               startDate = record[PUBLISHED_REPORTS.START_DATE]!!,
-              standardMetrics = record[standardMetricsMultiset],
+              commonIndicators = record[commonIndicatorsMultiset],
               systemMetrics = record[systemMetricsMultiset],
           )
         }
@@ -223,7 +223,7 @@ class PublishedReportStore(
           PUBLISHED_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
       )
 
-  private val standardMetricsMultiset =
+  private val commonIndicatorsMultiset =
       publishedMetricsMultiset(
           COMMON_INDICATORS.ID,
           PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,

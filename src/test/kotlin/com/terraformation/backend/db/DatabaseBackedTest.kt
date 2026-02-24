@@ -2817,7 +2817,7 @@ abstract class DatabaseBackedTest {
     return rowWithDefaults.id!!.also { inserted.seedFundReportIds.add(it) }
   }
 
-  fun insertStandardMetric(
+  fun insertCommonIndicator(
       row: CommonIndicatorsRow = CommonIndicatorsRow(),
       component: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
       description: String? = row.description,
@@ -3645,10 +3645,10 @@ abstract class DatabaseBackedTest {
     reportProjectIndicatorsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertReportStandardMetric(
+  protected fun insertReportCommonIndicator(
       row: ReportCommonIndicatorsRow = ReportCommonIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
-      metricId: CommonIndicatorId = row.commonIndicatorId ?: inserted.standardMetricId,
+      indicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3659,7 +3659,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             reportId = reportId,
-            commonIndicatorId = metricId,
+            commonIndicatorId = indicatorId,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
@@ -3721,10 +3721,10 @@ abstract class DatabaseBackedTest {
     reportProjectIndicatorTargetsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertStandardMetricTarget(
+  protected fun insertCommonIndicatorTarget(
       row: ReportCommonIndicatorTargetsRow = ReportCommonIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.standardMetricId,
+      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
       year: Int = row.year ?: 1970,
       target: Int? = row.target,
   ) {
@@ -3777,17 +3777,17 @@ abstract class DatabaseBackedTest {
     publishedProjectIndicatorTargetsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertPublishedStandardMetricTarget(
+  protected fun insertPublishedCommonIndicatorTarget(
       row: PublishedCommonIndicatorTargetsRow = PublishedCommonIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      standardMetricId: CommonIndicatorId = row.commonIndicatorId ?: inserted.standardMetricId,
+      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
       year: Int = row.year ?: 2025,
       target: Int? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
             projectId = projectId,
-            commonIndicatorId = standardMetricId,
+            commonIndicatorId = commonIndicatorId,
             year = year,
             target = target,
         )
@@ -3914,10 +3914,10 @@ abstract class DatabaseBackedTest {
     publishedReportProjectIndicatorsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertPublishedReportStandardMetric(
+  protected fun insertPublishedReportCommonIndicator(
       row: PublishedReportCommonIndicatorsRow = PublishedReportCommonIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
-      metricId: CommonIndicatorId = row.commonIndicatorId ?: inserted.standardMetricId,
+      indicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
@@ -3926,7 +3926,7 @@ abstract class DatabaseBackedTest {
     val rowWithDefaults =
         row.copy(
             reportId = reportId,
-            commonIndicatorId = metricId,
+            commonIndicatorId = indicatorId,
             value = value,
             projectsComments = projectsComments,
             progressNotes = progressNotes,
@@ -5212,6 +5212,7 @@ abstract class DatabaseBackedTest {
     val bagsIds = mutableListOf<BagId>()
     val batchIds = mutableListOf<BatchId>()
     val biomassSpeciesIds = mutableListOf<BiomassSpeciesId>()
+    val commonIndicatorIds = mutableListOf<CommonIndicatorId>()
     val deliverableIds = mutableListOf<DeliverableId>()
     val deliveryIds = mutableListOf<DeliveryId>()
     val deviceIds = mutableListOf<DeviceId>()
@@ -5245,7 +5246,6 @@ abstract class DatabaseBackedTest {
     val seedFundReportIds = mutableListOf<SeedFundReportId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val splatAnnotationIds = mutableListOf<SplatAnnotationId>()
-    val commonIndicatorIds = mutableListOf<CommonIndicatorId>()
     val stratumHistoryIds = mutableListOf<StratumHistoryId>()
     val stratumIds = mutableListOf<StratumId>()
     val subLocationIds = mutableListOf<SubLocationId>()
@@ -5288,6 +5288,9 @@ abstract class DatabaseBackedTest {
 
     val biomassSpeciesId
       get() = biomassSpeciesIds.last()
+
+    val commonIndicatorId
+      get() = commonIndicatorIds.last()
 
     val deliverableId
       get() = deliverableIds.last()
@@ -5384,9 +5387,6 @@ abstract class DatabaseBackedTest {
 
     val splatAnnotationId
       get() = splatAnnotationIds.last()
-
-    val standardMetricId
-      get() = commonIndicatorIds.last()
 
     val stratumHistoryId
       get() = stratumHistoryIds.last()

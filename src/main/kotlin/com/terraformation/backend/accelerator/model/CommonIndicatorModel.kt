@@ -6,7 +6,7 @@ import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
 import org.jooq.Record
 
-data class StandardMetricModel<ID : CommonIndicatorId?>(
+data class CommonIndicatorModel<ID : CommonIndicatorId?>(
     val id: ID,
     val name: String,
     val description: String?,
@@ -17,9 +17,9 @@ data class StandardMetricModel<ID : CommonIndicatorId?>(
     val unit: String? = null,
 ) {
   companion object {
-    fun of(record: Record): ExistingStandardMetricModel {
+    fun of(record: Record): ExistingCommonIndicatorModel {
       return with(COMMON_INDICATORS) {
-        ExistingStandardMetricModel(
+        ExistingCommonIndicatorModel(
             id = record[ID]!!,
             name = record[NAME]!!,
             description = record[DESCRIPTION],
@@ -34,6 +34,6 @@ data class StandardMetricModel<ID : CommonIndicatorId?>(
   }
 }
 
-typealias ExistingStandardMetricModel = StandardMetricModel<CommonIndicatorId>
+typealias ExistingCommonIndicatorModel = CommonIndicatorModel<CommonIndicatorId>
 
-typealias NewStandardMetricModel = StandardMetricModel<Nothing?>
+typealias NewCommonIndicatorModel = CommonIndicatorModel<Nothing?>

@@ -1,14 +1,14 @@
 package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.accelerator.model.ExistingCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingProjectIndicatorModel
-import com.terraformation.backend.accelerator.model.ExistingStandardMetricModel
+import com.terraformation.backend.accelerator.model.NewCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.NewProjectIndicatorModel
-import com.terraformation.backend.accelerator.model.NewStandardMetricModel
 import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.CommonIndicatorNotFoundException
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectIndicatorNotFoundException
-import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
@@ -40,78 +40,78 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class Fetch {
 
     @Nested
-    inner class FetchOneStandardMetric {
+    inner class FetchOneCommonIndicator {
       @Test
-      fun `returns one standard metric`() {
-        val metricId =
-            insertStandardMetric(
+      fun `returns one common indicator`() {
+        val indicatorId =
+            insertCommonIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
+                description = "Climate common indicator description",
                 isPublishable = true,
-                name = "Climate Standard Metric",
+                name = "Climate Common Indicator",
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
                 unit = "degrees",
             )
 
         assertEquals(
-            ExistingStandardMetricModel(
-                id = metricId,
+            ExistingCommonIndicatorModel(
+                id = indicatorId,
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
+                description = "Climate common indicator description",
                 isPublishable = true,
-                name = "Climate Standard Metric",
+                name = "Climate Common Indicator",
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
                 unit = "degrees",
             ),
-            store.fetchOneStandardMetric(metricId),
+            store.fetchOneCommonIndicator(indicatorId),
         )
       }
 
       @Test
-      fun `throws not found exception if no metric found`() {
-        assertThrows<StandardMetricNotFoundException> {
-          store.fetchOneStandardMetric(CommonIndicatorId(-1))
+      fun `throws not found exception if no indicator found`() {
+        assertThrows<CommonIndicatorNotFoundException> {
+          store.fetchOneCommonIndicator(CommonIndicatorId(-1))
         }
       }
 
       @Test
       fun `throws access denied exception for non-global role users`() {
-        val metricId =
-            insertStandardMetric(
+        val indicatorId =
+            insertCommonIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
-                name = "Climate Standard Metric",
+                description = "Climate common indicator description",
+                name = "Climate Common Indicator",
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        assertThrows<AccessDeniedException> { store.fetchOneStandardMetric(metricId) }
+        assertThrows<AccessDeniedException> { store.fetchOneCommonIndicator(indicatorId) }
 
         insertUserGlobalRole(role = GlobalRole.ReadOnly)
-        assertDoesNotThrow { store.fetchOneStandardMetric(metricId) }
+        assertDoesNotThrow { store.fetchOneCommonIndicator(indicatorId) }
       }
     }
 
     @Nested
-    inner class FetchAllStandardMetrics {
+    inner class FetchAllCommonIndicators {
       @Test
-      fun `returns all standard metrics`() {
-        val standardMetricId1 =
-            insertStandardMetric(
+      fun `returns all common indicators`() {
+        val commonIndicatorId1 =
+            insertCommonIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
-                name = "Climate Standard Metric",
+                description = "Climate common indicator description",
+                name = "Climate Common Indicator",
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
-        val standardMetricId2 =
-            insertStandardMetric(
+        val commonIndicatorId2 =
+            insertCommonIndicator(
                 component = IndicatorCategory.Community,
                 description = "Community metric description",
                 name = "Community Metric",
@@ -120,8 +120,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 unit = "meters",
             )
 
-        val standardMetricId3 =
-            insertStandardMetric(
+        val commonIndicatorId3 =
+            insertCommonIndicator(
                 component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 isPublishable = false,
@@ -134,18 +134,18 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         assertEquals(
             listOf(
                 // Ordered by reference then ID
-                ExistingStandardMetricModel(
-                    id = standardMetricId1,
+                ExistingCommonIndicatorModel(
+                    id = commonIndicatorId1,
                     component = IndicatorCategory.Climate,
-                    description = "Climate standard metric description",
+                    description = "Climate common indicator description",
                     isPublishable = true,
-                    name = "Climate Standard Metric",
+                    name = "Climate Common Indicator",
                     reference = "3.0",
                     type = IndicatorLevel.Activity,
                     unit = "%",
                 ),
-                ExistingStandardMetricModel(
-                    id = standardMetricId3,
+                ExistingCommonIndicatorModel(
+                    id = commonIndicatorId3,
                     component = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = false,
@@ -154,8 +154,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     type = IndicatorLevel.Impact,
                     unit = "cm",
                 ),
-                ExistingStandardMetricModel(
-                    id = standardMetricId2,
+                ExistingCommonIndicatorModel(
+                    id = commonIndicatorId2,
                     component = IndicatorCategory.Community,
                     description = "Community metric description",
                     isPublishable = true,
@@ -165,41 +165,41 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     unit = "meters",
                 ),
             ),
-            store.fetchAllStandardMetrics(),
+            store.fetchAllCommonIndicators(),
         )
       }
 
       @Test
       fun `sorted by reference correctly`() {
-        val metricId1 = insertStandardMetric(reference = "2.0.2")
-        val metricId2 = insertStandardMetric(reference = "10.0")
-        val metricId3 = insertStandardMetric(reference = "1.0")
-        val metricId4 = insertStandardMetric(reference = "2.0")
-        val metricId5 = insertStandardMetric(reference = "1.1")
-        val metricId6 = insertStandardMetric(reference = "1.1.1")
-        val metricId7 = insertStandardMetric(reference = "1.2")
+        val indicatorId1 = insertCommonIndicator(reference = "2.0.2")
+        val indicatorId2 = insertCommonIndicator(reference = "10.0")
+        val indicatorId3 = insertCommonIndicator(reference = "1.0")
+        val indicatorId4 = insertCommonIndicator(reference = "2.0")
+        val indicatorId5 = insertCommonIndicator(reference = "1.1")
+        val indicatorId6 = insertCommonIndicator(reference = "1.1.1")
+        val indicatorId7 = insertCommonIndicator(reference = "1.2")
 
         assertEquals(
             listOf(
-                metricId3, // 1.0
-                metricId5, // 1.1
-                metricId6, // 1.1.1
-                metricId7, // 1.2
-                metricId4, // 2.0
-                metricId1, // 2.0.2
-                metricId2, // 10.0
+                indicatorId3, // 1.0
+                indicatorId5, // 1.1
+                indicatorId6, // 1.1.1
+                indicatorId7, // 1.2
+                indicatorId4, // 2.0
+                indicatorId1, // 2.0.2
+                indicatorId2, // 10.0
             ),
-            store.fetchAllStandardMetrics().map { it.id },
+            store.fetchAllCommonIndicators().map { it.id },
         )
       }
 
       @Test
       fun `throws access denied exception for non-global role users`() {
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        assertThrows<AccessDeniedException> { store.fetchAllStandardMetrics() }
+        assertThrows<AccessDeniedException> { store.fetchAllCommonIndicators() }
 
         insertUserGlobalRole(role = GlobalRole.ReadOnly)
-        assertDoesNotThrow { store.fetchAllStandardMetrics() }
+        assertDoesNotThrow { store.fetchAllCommonIndicators() }
       }
     }
 
@@ -278,8 +278,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val indicatorId =
             insertProjectIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
-                name = "Climate Standard Metric",
+                description = "Climate common indicator description",
+                name = "Climate Common Indicator",
                 projectId = projectId,
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
@@ -302,8 +302,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val indicatorId1 =
             insertProjectIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
-                name = "Climate Standard Metric",
+                description = "Climate common indicator description",
+                name = "Climate Common Indicator",
                 projectId = projectId,
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
@@ -344,9 +344,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     id = indicatorId1,
                     projectId = projectId,
                     component = IndicatorCategory.Climate,
-                    description = "Climate standard metric description",
+                    description = "Climate common indicator description",
                     isPublishable = true,
-                    name = "Climate Standard Metric",
+                    name = "Climate Common Indicator",
                     reference = "3.0",
                     type = IndicatorLevel.Activity,
                     unit = "%",
@@ -427,21 +427,21 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class Create {
     @Nested
-    inner class StandardMetrics {
+    inner class CommonIndicators {
       @Test
       fun `inserts new record`() {
         val existingMetricId =
-            insertStandardMetric(
+            insertCommonIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
-                name = "Climate Standard Metric",
+                description = "Climate common indicator description",
+                name = "Climate Common Indicator",
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
         val model =
-            NewStandardMetricModel(
+            NewCommonIndicatorModel(
                 id = null,
                 component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
@@ -452,23 +452,23 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 unit = "meters",
             )
 
-        val newMetricId = store.createStandardMetric(model)
+        val newIndicatorId = store.createCommonIndicator(model)
 
         assertTableEquals(
             listOf(
                 CommonIndicatorsRecord(
                     id = existingMetricId,
                     categoryId = IndicatorCategory.Climate,
-                    description = "Climate standard metric description",
+                    description = "Climate common indicator description",
                     isPublishable = true,
-                    name = "Climate Standard Metric",
+                    name = "Climate Common Indicator",
                     refId = "3.0",
                     levelId = IndicatorLevel.Activity,
                     unit = "%",
                     active = true,
                 ),
                 CommonIndicatorsRecord(
-                    id = newMetricId,
+                    id = newIndicatorId,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = false,
@@ -485,7 +485,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `throws access denied exception for non-accelerator admin`() {
         val model =
-            NewStandardMetricModel(
+            NewCommonIndicatorModel(
                 id = null,
                 component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
@@ -498,7 +498,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         insertUserGlobalRole(role = GlobalRole.TFExpert)
-        assertThrows<AccessDeniedException> { store.createStandardMetric(model) }
+        assertThrows<AccessDeniedException> { store.createCommonIndicator(model) }
       }
     }
 
@@ -511,8 +511,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val existingIndicatorId =
             insertProjectIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
-                name = "Climate Standard Metric",
+                description = "Climate common indicator description",
+                name = "Climate Common Indicator",
                 projectId = projectId,
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
@@ -539,9 +539,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ProjectIndicatorsRecord(
                     id = existingIndicatorId,
                     categoryId = IndicatorCategory.Climate,
-                    description = "Climate standard metric description",
+                    description = "Climate common indicator description",
                     isPublishable = true,
-                    name = "Climate Standard Metric",
+                    name = "Climate Common Indicator",
                     projectId = projectId,
                     refId = "3.0",
                     levelId = IndicatorLevel.Activity,
@@ -590,21 +590,21 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class Update {
     @Nested
-    inner class StandardMetrics {
+    inner class CommonIndicators {
       @Test
       fun `updates existing record`() {
-        val existingMetricId =
-            insertStandardMetric(
+        val existingIndicatorId =
+            insertCommonIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
-                name = "Climate Standard Metric",
+                description = "Climate common indicator description",
+                name = "Climate Common Indicator",
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
         val updated =
-            ExistingStandardMetricModel(
+            ExistingCommonIndicatorModel(
                 id = CommonIndicatorId(99), // this field is ignored
                 component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
@@ -615,12 +615,12 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 unit = "meters",
             )
 
-        store.updateStandardMetric(existingMetricId) { updated }
+        store.updateCommonIndicator(existingIndicatorId) { updated }
 
         assertTableEquals(
             listOf(
                 CommonIndicatorsRecord(
-                    id = existingMetricId,
+                    id = existingIndicatorId,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
                     isPublishable = false,
@@ -636,11 +636,11 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       @Test
       fun `throws access denied exception for non-accelerator admin`() {
-        val existingMetricId =
-            insertStandardMetric(
+        val existingIndicatorId =
+            insertCommonIndicator(
                 component = IndicatorCategory.Climate,
-                description = "Climate standard metric description",
-                name = "Climate Standard Metric",
+                description = "Climate common indicator description",
+                name = "Climate Common Indicator",
                 reference = "3.0",
                 type = IndicatorLevel.Activity,
                 unit = "%",
@@ -649,7 +649,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> {
-          store.updateStandardMetric(existingMetricId) { it.copy(reference = "1.0") }
+          store.updateCommonIndicator(existingIndicatorId) { it.copy(reference = "1.0") }
         }
       }
     }
@@ -664,9 +664,9 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val existingIndicatorId =
           insertProjectIndicator(
               component = IndicatorCategory.Climate,
-              description = "Climate standard metric description",
+              description = "Climate common indicator description",
               isPublishable = false,
-              name = "Climate Standard Metric",
+              name = "Climate Common Indicator",
               projectId = projectId,
               reference = "3.0",
               type = IndicatorLevel.Activity,
@@ -713,8 +713,8 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val existingIndicatorId =
           insertProjectIndicator(
               component = IndicatorCategory.Climate,
-              description = "Climate standard metric description",
-              name = "Climate Standard Metric",
+              description = "Climate common indicator description",
+              name = "Climate Common Indicator",
               projectId = projectId,
               reference = "3.0",
               type = IndicatorLevel.Activity,

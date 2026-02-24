@@ -26,14 +26,14 @@ data class ReportIndicatorEntryModel(
     val status: ReportIndicatorStatus? = null,
 )
 
-data class ReportStandardMetricModel(
-    val metric: ExistingStandardMetricModel,
+data class ReportCommonIndicatorModel(
+    val indicator: ExistingCommonIndicatorModel,
     val entry: ReportIndicatorEntryModel,
 ) {
   companion object {
-    fun of(record: Record): ReportStandardMetricModel {
-      return ReportStandardMetricModel(
-          metric = ExistingStandardMetricModel.of(record),
+    fun of(record: Record): ReportCommonIndicatorModel {
+      return ReportCommonIndicatorModel(
+          indicator = ExistingCommonIndicatorModel.of(record),
           entry = entry(record),
       )
     }

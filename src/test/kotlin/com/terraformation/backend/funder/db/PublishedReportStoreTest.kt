@@ -47,20 +47,20 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns all published report data`() {
       insertFundingEntityProject()
 
-      val standardMetricId1 =
-          insertStandardMetric(
+      val commonIndicatorId1 =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Standard Metric Description 1",
-              name = "Standard Metric 1",
+              description = "Common Indicator Description 1",
+              name = "Common Indicator 1",
               reference = "1.1.2",
               type = IndicatorLevel.Output,
           )
 
-      val standardMetricId2 =
-          insertStandardMetric(
+      val commonIndicatorId2 =
+          insertCommonIndicator(
               component = IndicatorCategory.Community,
-              description = "Standard Metric Description 2",
-              name = "Standard Metric 2",
+              description = "Common Indicator Description 2",
+              name = "Common Indicator 2",
               reference = "1.1.1",
               type = IndicatorLevel.Outcome,
           )
@@ -124,27 +124,27 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportPhoto(caption = "photo caption 2")
       insertPublishedReportPhoto(caption = "photo caption 2")
 
-      insertPublishedStandardMetricTarget(
-          standardMetricId = standardMetricId1,
+      insertPublishedCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
           year = 2025,
           target = 100,
       )
-      insertPublishedReportStandardMetric(
+      insertPublishedReportCommonIndicator(
           reportId = reportId1,
-          metricId = standardMetricId1,
+          indicatorId = commonIndicatorId1,
           value = 120,
           projectsComments = null,
           status = ReportIndicatorStatus.Achieved,
       )
 
-      insertPublishedStandardMetricTarget(
-          standardMetricId = standardMetricId2,
+      insertPublishedCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
           year = 2025,
           target = 200,
       )
-      insertPublishedReportStandardMetric(
+      insertPublishedReportCommonIndicator(
           reportId = reportId1,
-          metricId = standardMetricId2,
+          indicatorId = commonIndicatorId2,
           value = 180,
           progressNotes = "progress notes 2",
           projectsComments = "Underperformance justification 2",
@@ -221,7 +221,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   publishedTime = Instant.ofEpochSecond(1),
                   quarter = ReportQuarter.Q2,
                   reportId = reportId2,
-                  standardMetrics = emptyList(),
+                  commonIndicators = emptyList(),
                   startDate = LocalDate.of(2025, 4, 1),
                   systemMetrics = emptyList(),
               ),
@@ -278,13 +278,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   publishedTime = Instant.EPOCH,
                   quarter = ReportQuarter.Q1,
                   reportId = reportId1,
-                  standardMetrics =
+                  commonIndicators =
                       listOf(
                           PublishedReportMetricModel(
                               component = IndicatorCategory.Community,
-                              description = "Standard Metric Description 2",
-                              metricId = standardMetricId2,
-                              name = "Standard Metric 2",
+                              description = "Common Indicator Description 2",
+                              metricId = commonIndicatorId2,
+                              name = "Common Indicator 2",
                               reference = "1.1.1",
                               type = IndicatorLevel.Outcome,
                               target = 200,
@@ -296,9 +296,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ),
                           PublishedReportMetricModel(
                               component = IndicatorCategory.Climate,
-                              description = "Standard Metric Description 1",
-                              metricId = standardMetricId1,
-                              name = "Standard Metric 1",
+                              description = "Common Indicator Description 1",
+                              metricId = commonIndicatorId1,
+                              name = "Common Indicator 1",
                               status = ReportIndicatorStatus.Achieved,
                               reference = "1.1.2",
                               target = 100,

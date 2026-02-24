@@ -6,13 +6,13 @@ import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
+import com.terraformation.backend.accelerator.model.ReportCommonIndicatorModel
+import com.terraformation.backend.accelerator.model.ReportCommonIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportIndicatorEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
-import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
-import com.terraformation.backend.accelerator.model.ReportStandardMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricTargetModel
 import com.terraformation.backend.api.AcceleratorEndpoint
@@ -140,7 +140,7 @@ class ProjectReportsController(
       @PathVariable reportId: ReportId,
       @RequestBody payload: UpdateAcceleratorReportValuesRequestPayload,
   ): SimpleSuccessResponsePayload {
-    val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
+    val commonIndicatorUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
     val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
     val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
@@ -151,7 +151,7 @@ class ProjectReportsController(
         challenges = payload.challenges.map { it.toModel() },
         financialSummaries = payload.financialSummaries,
         additionalComments = payload.additionalComments,
-        standardMetricEntries = standardMetricUpdates,
+        commonIndicatorEntries = commonIndicatorUpdates,
         systemMetricEntries = systemMetricUpdates,
         projectIndicatorEntries = projectIndicatorUpdates,
     )
@@ -209,13 +209,13 @@ class ProjectReportsController(
       @PathVariable reportId: ReportId,
       @RequestBody payload: ReviewAcceleratorReportMetricsRequestPayload,
   ): SimpleSuccessResponsePayload {
-    val standardMetricUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
+    val commonIndicatorUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
     val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
     val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.reviewReportMetrics(
         reportId = reportId,
-        standardMetricEntries = standardMetricUpdates,
+        commonIndicatorEntries = commonIndicatorUpdates,
         systemMetricEntries = systemMetricUpdates,
         projectIndicatorEntries = projectIndicatorUpdates,
     )
@@ -459,10 +459,10 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: UpdateStandardMetricTargetRequestPayload,
   ): SimpleSuccessResponsePayload {
-    reportStore.updateStandardMetricTarget(
+    reportStore.updateCommonIndicatorTarget(
         projectId = projectId,
         year = payload.year,
-        metricId = payload.metricId,
+        indicatorId = payload.metricId,
         target = payload.target,
     )
     return SimpleSuccessResponsePayload()
@@ -503,7 +503,7 @@ class ProjectReportsController(
   fun getStandardMetricTargets(
       @PathVariable projectId: ProjectId
   ): GetStandardMetricTargetsResponsePayload {
-    val targets = reportStore.fetchReportStandardMetricTargets(projectId)
+    val targets = reportStore.fetchReportCommonIndicatorTargets(projectId)
     return GetStandardMetricTargetsResponsePayload(
         targets.map { ReportStandardMetricTargetPayload(it) }
     )
@@ -612,7 +612,7 @@ data class AcceleratorReportPayload(
       projectId = model.projectId,
       projectMetrics = model.projectIndicators.map { ReportProjectMetricPayload(it) },
       quarter = model.quarter,
-      standardMetrics = model.standardMetrics.map { ReportStandardMetricPayload(it) },
+      standardMetrics = model.commonIndicators.map { ReportStandardMetricPayload(it) },
       startDate = model.startDate,
       status = model.status,
       submittedBy = model.submittedBy,
@@ -658,19 +658,19 @@ data class ReportStandardMetricPayload(
     val value: Int?,
 ) {
   constructor(
-      model: ReportStandardMetricModel
+      model: ReportCommonIndicatorModel
   ) : this(
-      component = model.metric.component,
-      description = model.metric.description,
-      id = model.metric.id,
-      isPublishable = model.metric.isPublishable,
-      name = model.metric.name,
+      component = model.indicator.component,
+      description = model.indicator.description,
+      id = model.indicator.id,
+      isPublishable = model.indicator.isPublishable,
+      name = model.indicator.name,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
-      reference = model.metric.reference,
+      reference = model.indicator.reference,
       status = model.entry.status,
       target = model.entry.target,
-      type = model.metric.type,
+      type = model.indicator.type,
       value = model.entry.value,
   )
 }
@@ -900,9 +900,9 @@ data class ReportStandardMetricTargetPayload(
     val year: Number,
 ) {
   constructor(
-      model: ReportStandardMetricTargetModel
+      model: ReportCommonIndicatorTargetModel
   ) : this(
-      metricId = model.metricId,
+      metricId = model.indicatorId,
       target = model.target,
       year = model.year,
   )

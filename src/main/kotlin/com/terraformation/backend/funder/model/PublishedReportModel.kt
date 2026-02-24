@@ -28,7 +28,7 @@ data class PublishedReportModel(
     val publishedTime: Instant,
     val quarter: ReportQuarter?,
     val reportId: ReportId,
-    val standardMetrics: List<PublishedReportMetricModel<CommonIndicatorId>>,
+    val commonIndicators: List<PublishedReportMetricModel<CommonIndicatorId>>,
     val startDate: LocalDate,
     val systemMetrics: List<PublishedReportMetricModel<AutoCalculatedIndicator>>,
 )
