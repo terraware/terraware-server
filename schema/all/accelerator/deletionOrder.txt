@@ -55,8 +55,9 @@ deliverable_types
 application_statuses
 activity_types
 activity_media_types
-report_frequencies
 indicator_levels
+indicator_frequencies
+indicator_classes
 indicator_categories
 accelerator_phases
 report_indicator_statuses

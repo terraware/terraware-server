@@ -1,3 +1,5 @@
+f7acdc352ee SW-8082 Add new indicator columns (#3973)
+fdb2ddb5377 SW-8082 Remove report_frequencies table (#3972)
 07a3a44dd6b SW-8081 Rename metric tangent tables (#3963)
 a6ba02d3d15 SW-8081 Rename system_metric tables (#3962)
 7deb6719ac3 SW-8081 Rename standard_metric tables (#3961)

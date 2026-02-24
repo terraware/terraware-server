@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>report_frequencies - terraware.accelerator</title>
+        <title>indicator_classes - terraware.accelerator</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>report_frequencies</h1><p><span id="recordNumber">-1</span> rows</p><br />
+                    <h1>indicator_classes</h1><p><span id="recordNumber">-1</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>(Enum) Frequencies of accelerator project reports. Acts as the report type as well.</p>
+                            <p>(Enum) Classes of accelerator project report indicators.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -131,18 +131,18 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="project_report_configs.report_frequency_id references report_frequencies.id via project_report_configs_report_frequency_id_fkey"><a href='project_report_configs.html'>project_report_configs</a><span class='relatedKey'>.report_frequency_id</span></td>
-                                                <td class="constraint detail">project_report_configs_report_frequency_id_fkey</td>
+                                                <td title="auto_calculated_indicators.class_id references indicator_classes.id via auto_calculated_indicators_class_id_fkey"><a href='auto_calculated_indicators.html'>auto_calculated_indicators</a><span class='relatedKey'>.class_id</span></td>
+                                                <td class="constraint detail">auto_calculated_indicators_class_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="reports.report_frequency_id references report_frequencies.id via reports_report_frequency_id_fkey"><a href='reports.html'>reports</a><span class='relatedKey'>.report_frequency_id</span></td>
-                                                <td class="constraint detail">reports_report_frequency_id_fkey</td>
+                                                <td title="project_indicators.class_id references indicator_classes.id via project_indicators_class_id_fkey"><a href='project_indicators.html'>project_indicators</a><span class='relatedKey'>.class_id</span></td>
+                                                <td class="constraint detail">project_indicators_class_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="published_reports.report_frequency_id references report_frequencies.id via published_reports_report_frequency_id_fkey"><a href='../../funder/tables/published_reports.html'>published_reports</a><span class='relatedKey'>.report_frequency_id</span></td>
-                                                <td class="constraint detail">published_reports_report_frequency_id_fkey</td>
+                                                <td title="standard_indicators.class_id references indicator_classes.id via standard_indicators_class_id_fkey"><a href='standard_indicators.html'>standard_indicators</a><span class='relatedKey'>.class_id</span></td>
+                                                <td class="constraint detail">standard_indicators_class_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -201,13 +201,13 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> report_frequencies_pkey</td>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> indicator_classes_pkey</td>
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>id</td>
                                 </tr>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> report_frequencies_name_key</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> indicator_classes_name_key</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>name</td>
@@ -235,11 +235,11 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         
-                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/report_frequencies.1degree.svg" class="diagram" border="0" align="left"></object></a>
+                                        <a name='diagram'><object type="image/svg+xml" id="oneDegreeImg" data="../diagrams/tables/indicator_classes.1degree.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         
-                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/report_frequencies.2degrees.svg" class="diagram" border="0" align="left"></object></a>
+                                        <a name='diagram'><object type="image/svg+xml" id="twodegreesDegreeImg" data="../diagrams/tables/indicator_classes.2degrees.svg" class="diagram" border="0" align="left"></object></a>
                                     </div>
                                 </div>
                             </div>

@@ -1,8 +1,9 @@
 report_indicator_statuses
 accelerator_phases
 indicator_categories
+indicator_classes
+indicator_frequencies
 indicator_levels
-report_frequencies
 activity_media_types
 activity_types
 application_statuses

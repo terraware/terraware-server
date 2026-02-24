@@ -1048,7 +1048,7 @@
 <text text-anchor="start" x="809" y="-832.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="625,-802 625,-824 848,-824 848,-802 625,-802"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="630" y="-819"/>
-<text text-anchor="start" x="693" y="-810.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<text text-anchor="start" x="684" y="-810.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
 <polygon fill="none" stroke="black" points="625,-784 625,-802 848,-802 848,-784 625,-784"/>
 <text text-anchor="start" x="628" y="-790.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="625,-766 625,-784 721,-784 721,-766 625,-766"/>

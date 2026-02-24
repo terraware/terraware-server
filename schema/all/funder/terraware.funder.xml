@@ -348,21 +348,18 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="published_reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="report_frequency_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="published_reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_frequencies"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="report_quarter_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="report_quarter_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="published_reports_report_quarter_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_quarters"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="start_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="end_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="highlights" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="published_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="start_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="end_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="highlights" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="published_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="published_reports_published_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="8" name="published_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="financial_summaries" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="additional_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="published_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="financial_summaries" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="additional_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="report_id" sequenceNumberInPK="1"/>
          <index name="published_reports_pkey" unique="true">
             <column ascending="true" name="report_id"/>

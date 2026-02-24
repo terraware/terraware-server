@@ -10,6 +10,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "applications":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "applications":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "auto_calculated_indicators":"category_id":w -> "indicator_categories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "auto_calculated_indicators":"class_id":w -> "indicator_classes":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "auto_calculated_indicators":"frequency_id":w -> "indicator_frequencies":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "auto_calculated_indicators":"level_id":w -> "indicator_levels":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "default_voters":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "deliverables":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -27,7 +29,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "project_overall_scores":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_overall_scores":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "project_report_configs":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "project_report_configs":"elipses":w -> "report_frequencies":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_scores":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_scores":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_scores":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -55,8 +56,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "reports":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"project_id":w -> "project_report_configs":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"project_id":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "reports":"report_frequency_id":w -> "project_report_configs":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "reports":"report_frequency_id":w -> "report_frequencies":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"report_quarter_id":w -> "report_quarters":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"status_id":w -> "report_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"submitted_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -74,7 +73,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funder.published_report_auto_calculated_indicators":"elipses":w -> "report_indicator_statuses":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_report_project_indicators":"elipses":w -> "report_indicator_statuses":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_report_standard_indicators":"elipses":w -> "report_indicator_statuses":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "funder.published_reports":"elipses":w -> "report_frequencies":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"elipses":w -> "reports":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"elipses":w -> "report_quarters":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "activities" [
@@ -117,8 +115,10 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="level_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16">level_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="category_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16">category_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="class_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16">class_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="frequency_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16">frequency_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/auto_calculated_indicators.html"
     target="_top"
@@ -167,6 +167,28 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/indicator_categories.html"
     target="_top"
     tooltip="indicator_categories"
+  ];
+  "indicator_classes" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="101" HEIGHT="16"><B>indicator_classes</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/indicator_classes.html"
+    target="_top"
+    tooltip="indicator_classes"
+  ];
+  "indicator_frequencies" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="129" HEIGHT="16"><B>indicator_frequencies</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/indicator_frequencies.html"
+    target="_top"
+    tooltip="indicator_frequencies"
   ];
   "indicator_levels" [
    label=<
@@ -217,7 +239,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="133" HEIGHT="16"><B>project_report_configs</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/project_report_configs.html"
     target="_top"
@@ -298,17 +320,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="report_challenges"
   ];
-  "report_frequencies" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="113" HEIGHT="16"><B>report_frequencies</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">3 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/report_frequencies.html"
-    target="_top"
-    tooltip="report_frequencies"
-  ];
   "report_indicator_statuses" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -381,7 +392,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="44" HEIGHT="16"><B>reports</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 10</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">7 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">7 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/reports.html"
     target="_top"
@@ -469,7 +480,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="152" HEIGHT="16"><B>funder.published_reports</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../../funder/tables/published_reports.html"
     target="_top"

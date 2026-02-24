@@ -258,8 +258,18 @@
             <parent column="id" foreignKey="auto_calculated_indicators_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_categories"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="reference" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="ref_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="is_publishable" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="unit" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="primary_data_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="true" digits="0" id="10" name="active" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="class_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="auto_calculated_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_classes"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="frequency_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="auto_calculated_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="auto_calculated_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -513,6 +523,36 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="indicator_classes" remarks="(Enum) Classes of accelerator project report indicators." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="class_id" foreignKey="auto_calculated_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="auto_calculated_indicators"/>
+            <child column="class_id" foreignKey="project_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_indicators"/>
+            <child column="class_id" foreignKey="standard_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="indicator_classes_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="indicator_classes_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="indicator_frequencies" remarks="(Enum) Reporting frequencies of accelerator project report indicators." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="frequency_id" foreignKey="auto_calculated_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="auto_calculated_indicators"/>
+            <child column="frequency_id" foreignKey="project_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_indicators"/>
+            <child column="frequency_id" foreignKey="standard_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="indicator_frequencies_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="indicator_frequencies_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
       <table name="indicator_levels" remarks="(Enum) Levels of indicators for reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="level_id" foreignKey="auto_calculated_indicators_level_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="auto_calculated_indicators"/>
@@ -681,9 +721,18 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="reference" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="ref_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="is_publishable" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="unit" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="primary_data_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="true" digits="0" id="11" name="active" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="class_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_classes"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="frequency_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="project_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="project_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -735,18 +784,14 @@
       </table>
       <table name="project_report_configs" remarks="Configurations for accelerator project reports, including reporting dates and reporting frequencies." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="config_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
+            <child column="config_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
             <parent column="id" foreignKey="project_report_configs_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="report_frequency_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
-            <parent column="id" foreignKey="project_report_configs_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_frequencies"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="reporting_start_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="reporting_end_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="reporting_start_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="reporting_end_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="project_report_configs_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -755,16 +800,8 @@
             <column ascending="true" name="id"/>
             <column ascending="true" name="project_id"/>
          </index>
-         <index name="project_report_configs_id_report_frequency_id_key" unique="true">
-            <column ascending="true" name="id"/>
-            <column ascending="true" name="report_frequency_id"/>
-         </index>
          <index name="project_report_configs_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
-         </index>
-         <index name="unique_project_frequency" unique="true">
-            <column ascending="true" name="project_id"/>
-            <column ascending="true" name="report_frequency_id"/>
          </index>
          <checkConstraint constraint="(reporting_end_date &gt; reporting_start_date)" name="project_report_configs_check"/>
       </table>
@@ -935,21 +972,6 @@
             <column ascending="true" name="position"/>
          </index>
          <checkConstraint constraint="(&quot;position&quot; &gt;= 0)" name="report_challenges_position_check"/>
-      </table>
-      <table name="report_frequencies" remarks="(Enum) Frequencies of accelerator project reports. Acts as the report type as well." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <child column="report_frequency_id" foreignKey="project_report_configs_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
-            <child column="report_frequency_id" foreignKey="reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
-            <child column="report_frequency_id" foreignKey="published_reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_reports"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="report_frequencies_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="report_frequencies_name_key" unique="true">
-            <column ascending="true" name="name"/>
-         </index>
       </table>
       <table name="report_indicator_statuses" remarks="(Enum) Statuses of accelerator project report indicators." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -1136,11 +1158,11 @@
             <child column="report_id" foreignKey="published_reports_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="config_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
+            <parent column="id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
             <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+            <parent column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_statuses"/>
@@ -1162,16 +1184,12 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="6" id="13" name="submitted_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="highlights" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="report_frequency_id" nullable="false" remarks="Frequency of the report, that can determine report data. Must match with frequency of the configuration." size="10" type="int4" typeCode="4">
-            <parent column="report_frequency_id" foreignKey="reports_config_id_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
-            <parent column="id" foreignKey="reports_report_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_frequencies"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="report_quarter_id" nullable="true" remarks="Quarter of the report. Must be non-null for quarterly reports and null otherwise." size="10" type="int4" typeCode="4">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="report_quarter_id" nullable="true" remarks="Quarter of the report. Must be non-null for quarterly reports and null otherwise." size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_report_quarter_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_quarters"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="17" name="upcoming_notification_sent_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="financial_summaries" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="additional_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="16" name="upcoming_notification_sent_time" nullable="true" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="17" name="financial_summaries" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="18" name="additional_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="reports_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -1182,7 +1200,6 @@
          <index name="reports_project_id_idx" unique="false">
             <column ascending="true" name="project_id"/>
          </index>
-         <checkConstraint constraint="(((report_frequency_id = 1) AND (report_quarter_id IS NOT NULL) AND ((report_quarter_id)::numeric = EXTRACT(quarter FROM start_date)) AND ((report_quarter_id)::numeric = EXTRACT(quarter FROM end_date))) OR ((report_frequency_id &lt;&gt; 1) AND (report_quarter_id IS NULL)))" name="quarterly_report_has_quarter"/>
          <checkConstraint constraint="(end_date &gt; start_date)" name="reports_check"/>
          <checkConstraint constraint="(((status_id = 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id = 2) OR (status_id = 3) OR (status_id = 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id = 5))" name="submitted_status"/>
       </table>
@@ -1214,9 +1231,18 @@
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="reference" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="ref_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="is_publishable" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="unit" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="primary_data_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="true" digits="0" id="10" name="active" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="class_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="standard_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_classes"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="frequency_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="standard_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="standard_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
