@@ -535,7 +535,7 @@ VALUES (1, 'Carbon'),
        (12, 'Values Alignment')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO accelerator.system_metrics (id, name, description, type_id, component_id, reference, is_publishable)
+INSERT INTO accelerator.auto_calculated_indicators (id, name, description, type_id, component_id, reference, is_publishable)
 VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 2, 2, '1.1', false),
        (2, 'Seedlings', 'Plants in the nursery, including those provided by partners, where available. Not applicable for mangrove projects (input 0).', 2, 2, '1.2', true),
        (3, 'Trees Planted', 'Total trees (and plants) planted in the field.', 2, 2, '1.3', true),

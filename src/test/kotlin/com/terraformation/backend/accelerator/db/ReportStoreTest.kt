@@ -28,6 +28,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ReportNotFoundException
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ReportFrequency
@@ -35,14 +36,13 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
-import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportAchievementsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ReportAutoCalculatedIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportChallengesRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportProjectIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportStandardIndicatorsRecord
-import com.terraformation.backend.db.accelerator.tables.records.ReportSystemMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
@@ -51,16 +51,16 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.funder.tables.records.PublishedAutoCalculatedIndicatorTargetsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedProjectIndicatorTargetsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportAchievementsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportAutoCalculatedIndicatorsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportChallengesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportPhotosRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportProjectIndicatorsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportStandardIndicatorsRecord
-import com.terraformation.backend.db.funder.tables.records.PublishedReportSystemMetricsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedStandardIndicatorTargetsRecord
-import com.terraformation.backend.db.funder.tables.records.PublishedSystemMetricTargetsRecord
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -427,28 +427,40 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      insertSystemMetricTarget(metric = SystemMetric.Seedlings, year = 1970, target = 1000)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.Seedlings,
+          year = 1970,
+          target = 1000,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.Seedlings,
+          metric = AutoCalculatedIndicator.Seedlings,
           modifiedTime = Instant.ofEpochSecond(2500),
           modifiedBy = user.userId,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 2000)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          year = 1970,
+          target = 2000,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           systemValue = 1800,
           systemTime = Instant.ofEpochSecond(8000),
           modifiedTime = Instant.ofEpochSecond(500),
           modifiedBy = user.userId,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.TreesPlanted, year = 1970, target = 600)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.TreesPlanted,
+          year = 1970,
+          target = 600,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           systemValue = 300,
           systemTime = Instant.ofEpochSecond(7000),
           overrideValue = 800,
@@ -461,7 +473,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val systemMetrics =
           listOf(
               ReportSystemMetricModel(
-                  metric = SystemMetric.SeedsCollected,
+                  metric = AutoCalculatedIndicator.SeedsCollected,
                   entry =
                       ReportSystemMetricEntryModel(
                           target = 2000,
@@ -472,14 +484,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.HectaresPlanted,
+                  metric = AutoCalculatedIndicator.HectaresPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.Seedlings,
+                  metric = AutoCalculatedIndicator.Seedlings,
                   entry =
                       ReportSystemMetricEntryModel(
                           target = 1000,
@@ -489,7 +501,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.TreesPlanted,
+                  metric = AutoCalculatedIndicator.TreesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           target = 600,
@@ -502,14 +514,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.SpeciesPlanted,
+                  metric = AutoCalculatedIndicator.SpeciesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.SurvivalRate,
+                  metric = AutoCalculatedIndicator.SurvivalRate,
                   entry = ReportSystemMetricEntryModel(systemValue = null),
               ),
           )
@@ -558,42 +570,42 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           listOf(
               ReportSystemMetricModel(
-                  metric = SystemMetric.SeedsCollected,
+                  metric = AutoCalculatedIndicator.SeedsCollected,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 98,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.HectaresPlanted,
+                  metric = AutoCalculatedIndicator.HectaresPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 60,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.Seedlings,
+                  metric = AutoCalculatedIndicator.Seedlings,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 83,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.TreesPlanted,
+                  metric = AutoCalculatedIndicator.TreesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 27,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.SpeciesPlanted,
+                  metric = AutoCalculatedIndicator.SpeciesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 1,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.SurvivalRate,
+                  metric = AutoCalculatedIndicator.SurvivalRate,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue =
@@ -616,7 +628,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           ReportSystemMetricModel(
-              metric = SystemMetric.SurvivalRate,
+              metric = AutoCalculatedIndicator.SurvivalRate,
               entry =
                   ReportSystemMetricEntryModel(
                       systemValue =
@@ -624,7 +636,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               .roundToInt(),
                   ),
           ),
-          systemMetrics.find { it.metric == SystemMetric.SurvivalRate },
+          systemMetrics.find { it.metric == AutoCalculatedIndicator.SurvivalRate },
           "Should include temp plots in survival rate metric",
       )
     }
@@ -649,13 +661,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           ReportSystemMetricModel(
-              metric = SystemMetric.SurvivalRate,
+              metric = AutoCalculatedIndicator.SurvivalRate,
               entry =
                   ReportSystemMetricEntryModel(
                       systemValue = ((5 + 6 + 7 + 8) * 100.0 / (10 + 11 + 12 + 13)).roundToInt(),
                   ),
           ),
-          systemMetrics.find { it.metric == SystemMetric.SurvivalRate },
+          systemMetrics.find { it.metric == AutoCalculatedIndicator.SurvivalRate },
           "Project survival rate correctly excludes sites without a survival rate",
       )
 
@@ -668,7 +680,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           ReportSystemMetricModel(
-              metric = SystemMetric.SurvivalRate,
+              metric = AutoCalculatedIndicator.SurvivalRate,
               entry =
                   ReportSystemMetricEntryModel(
                       systemValue =
@@ -676,7 +688,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               .roundToInt(),
                   ),
           ),
-          systemMetricsWithTemp.find { it.metric == SystemMetric.SurvivalRate },
+          systemMetricsWithTemp.find { it.metric == AutoCalculatedIndicator.SurvivalRate },
           "Project survival rate w/temp correctly excludes sites without a survival rate",
       )
     }
@@ -1147,28 +1159,40 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      insertSystemMetricTarget(metric = SystemMetric.Seedlings, year = 1970, target = 1000)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.Seedlings,
+          year = 1970,
+          target = 1000,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.Seedlings,
+          metric = AutoCalculatedIndicator.Seedlings,
           modifiedTime = Instant.ofEpochSecond(2500),
           modifiedBy = user.userId,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 2000)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          year = 1970,
+          target = 2000,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           systemValue = 1800,
           systemTime = Instant.ofEpochSecond(8000),
           modifiedTime = Instant.ofEpochSecond(500),
           modifiedBy = user.userId,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.TreesPlanted, year = 1970, target = 600)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.TreesPlanted,
+          year = 1970,
+          target = 600,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           systemValue = 300,
           systemTime = Instant.ofEpochSecond(7000),
           overrideValue = 800,
@@ -1179,7 +1203,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SurvivalRate,
+          metric = AutoCalculatedIndicator.SurvivalRate,
           systemValue = null,
           systemTime = Instant.ofEpochSecond(9000),
           modifiedTime = Instant.ofEpochSecond(700),
@@ -1190,7 +1214,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val systemMetrics =
           listOf(
               ReportSystemMetricModel(
-                  metric = SystemMetric.SeedsCollected,
+                  metric = AutoCalculatedIndicator.SeedsCollected,
                   entry =
                       ReportSystemMetricEntryModel(
                           target = 2000,
@@ -1201,14 +1225,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.HectaresPlanted,
+                  metric = AutoCalculatedIndicator.HectaresPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.Seedlings,
+                  metric = AutoCalculatedIndicator.Seedlings,
                   entry =
                       ReportSystemMetricEntryModel(
                           target = 1000,
@@ -1218,7 +1242,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.TreesPlanted,
+                  metric = AutoCalculatedIndicator.TreesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           target = 600,
@@ -1231,14 +1255,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.SpeciesPlanted,
+                  metric = AutoCalculatedIndicator.SpeciesPlanted,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = 0,
                       ),
               ),
               ReportSystemMetricModel(
-                  metric = SystemMetric.SurvivalRate,
+                  metric = AutoCalculatedIndicator.SurvivalRate,
                   entry =
                       ReportSystemMetricEntryModel(
                           systemValue = null,
@@ -1633,10 +1657,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 1000)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          year = 1970,
+          target = 1000,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
           projectsComments = "Existing seeds collected metric notes",
@@ -1645,10 +1673,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SpeciesPlanted, year = 1970, target = 10)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SpeciesPlanted,
+          year = 1970,
+          target = 10,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SpeciesPlanted,
+          metric = AutoCalculatedIndicator.SpeciesPlanted,
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
@@ -1687,14 +1719,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           systemMetricEntries =
               mapOf(
-                  SystemMetric.SpeciesPlanted to
+                  AutoCalculatedIndicator.SpeciesPlanted to
                       ReportMetricEntryModel(
                           value = 4,
                           status = null,
                           projectsComments = "New species planted metric notes",
                           progressNotes = "New species planted metric internal comment",
                       ),
-                  SystemMetric.TreesPlanted to
+                  AutoCalculatedIndicator.TreesPlanted to
                       ReportMetricEntryModel(
                           value = 45,
                           status = ReportMetricStatus.Unlikely,
@@ -1750,9 +1782,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SeedsCollected,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
                   projectsComments = "Existing seeds collected metric notes",
@@ -1760,9 +1792,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
                   systemValue = 12,
                   systemTime = Instant.ofEpochSecond(5000),
                   overrideValue = 4,
@@ -1772,9 +1804,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.TreesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   overrideValue = 45,
                   statusId = ReportMetricStatus.Unlikely,
                   projectsComments = "New trees planted metric notes",
@@ -2098,10 +2130,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 1970, target = 1000)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          year = 1970,
+          target = 1000,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
           projectsComments = "Existing seeds collected metric notes",
@@ -2110,10 +2146,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SpeciesPlanted, year = 1970, target = 10)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SpeciesPlanted,
+          year = 1970,
+          target = 10,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SpeciesPlanted,
+          metric = AutoCalculatedIndicator.SpeciesPlanted,
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
@@ -2157,7 +2197,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           systemMetricEntries =
               mapOf(
-                  SystemMetric.SpeciesPlanted to
+                  AutoCalculatedIndicator.SpeciesPlanted to
                       ReportMetricEntryModel(
                           projectsComments = "New species planted metric notes",
                           status = null,
@@ -2168,7 +2208,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.EPOCH,
                           modifiedBy = UserId(99),
                       ),
-                  SystemMetric.TreesPlanted to
+                  AutoCalculatedIndicator.TreesPlanted to
                       ReportMetricEntryModel(
                           projectsComments = "New trees planted metric notes",
                           status = ReportMetricStatus.Unlikely,
@@ -2225,9 +2265,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SeedsCollected,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
                   projectsComments = "Existing seeds collected metric notes",
@@ -2235,9 +2275,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
                   systemValue = 12,
                   systemTime = Instant.ofEpochSecond(5000),
                   statusId = null,
@@ -2247,9 +2287,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.TreesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   statusId = ReportMetricStatus.Unlikely,
                   projectsComments = "New trees planted metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -2333,7 +2373,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       insertReportSystemMetric(
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           systemValue = 1000,
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = 74,
@@ -2341,7 +2381,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = Instant.ofEpochSecond(3000),
       )
       insertReportSystemMetric(
-          metric = SystemMetric.Seedlings,
+          metric = AutoCalculatedIndicator.Seedlings,
           systemValue = 2000,
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = 98,
@@ -2349,7 +2389,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = Instant.ofEpochSecond(3000),
       )
       insertReportSystemMetric(
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           systemValue = 3000,
           systemTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
@@ -2360,35 +2400,39 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = Instant.ofEpochSecond(9000)
       store.refreshSystemMetricValues(
           reportId,
-          setOf(SystemMetric.Seedlings, SystemMetric.TreesPlanted, SystemMetric.SpeciesPlanted),
+          setOf(
+              AutoCalculatedIndicator.Seedlings,
+              AutoCalculatedIndicator.TreesPlanted,
+              AutoCalculatedIndicator.SpeciesPlanted,
+          ),
       )
 
       assertTableEquals(
           listOf(
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SeedsCollected,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
                   systemValue = 1000,
                   systemTime = Instant.ofEpochSecond(3000),
                   overrideValue = 74,
                   modifiedBy = otherUserId,
                   modifiedTime = Instant.ofEpochSecond(3000),
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.Seedlings,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.TreesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
@@ -2421,7 +2465,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       insertReportSystemMetric(
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           systemValue = 1000,
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = 74,
@@ -2429,7 +2473,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = Instant.ofEpochSecond(3000),
       )
       insertReportSystemMetric(
-          metric = SystemMetric.Seedlings,
+          metric = AutoCalculatedIndicator.Seedlings,
           systemValue = 2000,
           systemTime = Instant.ofEpochSecond(3000),
           overrideValue = 98,
@@ -2437,7 +2481,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = Instant.ofEpochSecond(3000),
       )
       insertReportSystemMetric(
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           systemValue = 3000,
           systemTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
@@ -2448,39 +2492,43 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = Instant.ofEpochSecond(9000)
       store.refreshSystemMetricValues(
           reportId,
-          setOf(SystemMetric.Seedlings, SystemMetric.TreesPlanted, SystemMetric.SpeciesPlanted),
+          setOf(
+              AutoCalculatedIndicator.Seedlings,
+              AutoCalculatedIndicator.TreesPlanted,
+              AutoCalculatedIndicator.SpeciesPlanted,
+          ),
       )
 
       assertTableEquals(
           listOf(
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SeedsCollected,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
                   systemValue = 1000,
                   systemTime = Instant.ofEpochSecond(3000),
                   overrideValue = 74,
                   modifiedBy = otherUserId,
                   modifiedTime = Instant.ofEpochSecond(3000),
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.Seedlings,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
                   systemValue = 83,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.TreesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   systemValue = 27,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
                   systemValue = 1,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
@@ -2566,49 +2614,49 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SeedsCollected,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
                   systemValue = 98,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.HectaresPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.HectaresPlanted,
                   systemValue = 60,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.Seedlings,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
                   systemValue = 83,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.TreesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   systemValue = 27,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
                   systemValue = 1,
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
               ),
-              ReportSystemMetricsRecord(
+              ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SurvivalRate,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
                   systemValue =
                       (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt(),
                   systemTime = clock.instant,
@@ -3568,18 +3616,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       // Seeds Collected is not publishable
-      insertSystemMetricTarget(metric = SystemMetric.SeedsCollected, year = 2030, target = 999)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          year = 2030,
+          target = 999,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           status = ReportMetricStatus.Achieved,
           systemValue = 999,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.Seedlings, year = 2030, target = 50)
+      insertSystemMetricTarget(metric = AutoCalculatedIndicator.Seedlings, year = 2030, target = 50)
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.Seedlings,
+          metric = AutoCalculatedIndicator.Seedlings,
           status = ReportMetricStatus.OnTrack,
           overrideValue = 49,
           systemValue = 39,
@@ -3587,27 +3639,39 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Seedlings progress notes",
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SpeciesPlanted, year = 2030, target = 10)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SpeciesPlanted,
+          year = 2030,
+          target = 10,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SpeciesPlanted,
+          metric = AutoCalculatedIndicator.SpeciesPlanted,
           status = ReportMetricStatus.Achieved,
           systemValue = 10,
       )
 
       // Metrics can be published even with no target set
-      insertSystemMetricTarget(metric = SystemMetric.TreesPlanted, year = 2030, target = null)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.TreesPlanted,
+          year = 2030,
+          target = null,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           status = ReportMetricStatus.Achieved,
           systemValue = 100,
       )
 
-      insertSystemMetricTarget(metric = SystemMetric.SurvivalRate, year = 2030, target = 0)
+      insertSystemMetricTarget(
+          metric = AutoCalculatedIndicator.SurvivalRate,
+          year = 2030,
+          target = 0,
+      )
       insertReportSystemMetric(
           reportId = reportId,
-          metric = SystemMetric.SurvivalRate,
+          metric = AutoCalculatedIndicator.SurvivalRate,
           status = ReportMetricStatus.Unlikely,
           systemValue = 51,
       )
@@ -3725,19 +3789,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       insertPublishedReportSystemMetric(
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           value = 100,
       )
 
       insertPublishedReportSystemMetric(
-          metric = SystemMetric.Seedlings,
+          metric = AutoCalculatedIndicator.Seedlings,
           value = 100,
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportSystemMetric(
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           value = 100,
           projectsComments = "Existing underperformance justification",
       )
@@ -3858,35 +3922,35 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PublishedReportSystemMetricsRecord(
+              PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.Seedlings,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
                   statusId = ReportMetricStatus.OnTrack,
                   value = 49,
                   projectsComments = "Seedlings underperformance justification",
                   progressNotes = "Seedlings progress notes",
               ),
-              PublishedReportSystemMetricsRecord(
+              PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
                   statusId = ReportMetricStatus.Achieved,
                   value = 10,
               ),
-              PublishedReportSystemMetricsRecord(
+              PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.TreesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   statusId = ReportMetricStatus.Achieved,
                   value = 100,
               ),
-              PublishedReportSystemMetricsRecord(
+              PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.SurvivalRate,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
                   statusId = ReportMetricStatus.Unlikely,
                   value = 51,
               ),
-              PublishedReportSystemMetricsRecord(
+              PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
-                  systemMetricId = SystemMetric.HectaresPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.HectaresPlanted,
                   statusId = null,
                   value = 0,
               ),
@@ -3961,33 +4025,33 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PublishedSystemMetricTargetsRecord(
+              PublishedAutoCalculatedIndicatorTargetsRecord(
                   projectId = projectId,
-                  systemMetricId = SystemMetric.Seedlings,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
                   year = 2030,
                   target = 50,
               ),
-              PublishedSystemMetricTargetsRecord(
+              PublishedAutoCalculatedIndicatorTargetsRecord(
                   projectId = projectId,
-                  systemMetricId = SystemMetric.SpeciesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
                   year = 2030,
                   target = 10,
               ),
-              PublishedSystemMetricTargetsRecord(
+              PublishedAutoCalculatedIndicatorTargetsRecord(
                   projectId = projectId,
-                  systemMetricId = SystemMetric.HectaresPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.HectaresPlanted,
                   year = 2030,
                   target = null,
               ),
-              PublishedSystemMetricTargetsRecord(
+              PublishedAutoCalculatedIndicatorTargetsRecord(
                   projectId = projectId,
-                  systemMetricId = SystemMetric.TreesPlanted,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   year = 2030,
                   target = null,
               ),
-              PublishedSystemMetricTargetsRecord(
+              PublishedAutoCalculatedIndicatorTargetsRecord(
                   projectId = projectId,
-                  systemMetricId = SystemMetric.SurvivalRate,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
                   year = 2030,
                   target = 0,
               ),
@@ -5155,7 +5219,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private fun insertSystemMetricTargetsForReport(reportId: ReportId) {
-    SystemMetric.entries.forEach { metric ->
+    AutoCalculatedIndicator.entries.forEach { metric ->
       insertReportSystemMetric(
           reportId = reportId,
           metric = metric,
@@ -5384,14 +5448,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.updateSystemMetricTarget(
           projectId = projectId,
           year = 2024,
-          metricId = SystemMetric.TreesPlanted,
+          metricId = AutoCalculatedIndicator.TreesPlanted,
           target = 500,
       )
 
-      val targets = reportSystemMetricTargetsDao.findAll()
+      val targets = reportAutoCalculatedIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertEquals(projectId, targets[0].projectId)
-      assertEquals(SystemMetric.TreesPlanted, targets[0].systemMetricId)
+      assertEquals(AutoCalculatedIndicator.TreesPlanted, targets[0].autoCalculatedIndicatorId)
       assertEquals(2024, targets[0].year)
       assertEquals(500, targets[0].target)
     }
@@ -5400,7 +5464,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `updates existing target`() {
       insertSystemMetricTarget(
           projectId = projectId,
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           year = 2024,
           target = 500,
       )
@@ -5408,11 +5472,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.updateSystemMetricTarget(
           projectId = projectId,
           year = 2024,
-          metricId = SystemMetric.TreesPlanted,
+          metricId = AutoCalculatedIndicator.TreesPlanted,
           target = 600,
       )
 
-      val targets = reportSystemMetricTargetsDao.findAll()
+      val targets = reportAutoCalculatedIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertEquals(600, targets[0].target)
     }
@@ -5422,11 +5486,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.updateSystemMetricTarget(
           projectId = projectId,
           year = 2024,
-          metricId = SystemMetric.TreesPlanted,
+          metricId = AutoCalculatedIndicator.TreesPlanted,
           target = null,
       )
 
-      val targets = reportSystemMetricTargetsDao.findAll()
+      val targets = reportAutoCalculatedIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertNull(targets[0].target)
     }
@@ -5441,7 +5505,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.updateSystemMetricTarget(
             projectId = projectId,
             year = 2024,
-            metricId = SystemMetric.TreesPlanted,
+            metricId = AutoCalculatedIndicator.TreesPlanted,
             target = 500,
         )
       }
@@ -5587,19 +5651,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns all system metric targets for a project`() {
       insertSystemMetricTarget(
           projectId = projectId,
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           year = 2024,
           target = 500,
       )
       insertSystemMetricTarget(
           projectId = projectId,
-          metric = SystemMetric.SeedsCollected,
+          metric = AutoCalculatedIndicator.SeedsCollected,
           year = 2024,
           target = 1000,
       )
       insertSystemMetricTarget(
           projectId = projectId,
-          metric = SystemMetric.TreesPlanted,
+          metric = AutoCalculatedIndicator.TreesPlanted,
           year = 2025,
           target = 600,
       )
@@ -5608,9 +5672,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(
-              ReportSystemMetricTargetModel(SystemMetric.SeedsCollected, 1000, 2024),
-              ReportSystemMetricTargetModel(SystemMetric.TreesPlanted, 500, 2024),
-              ReportSystemMetricTargetModel(SystemMetric.TreesPlanted, 600, 2025),
+              ReportSystemMetricTargetModel(AutoCalculatedIndicator.SeedsCollected, 1000, 2024),
+              ReportSystemMetricTargetModel(AutoCalculatedIndicator.TreesPlanted, 500, 2024),
+              ReportSystemMetricTargetModel(AutoCalculatedIndicator.TreesPlanted, 600, 2025),
           ),
           targets,
       )

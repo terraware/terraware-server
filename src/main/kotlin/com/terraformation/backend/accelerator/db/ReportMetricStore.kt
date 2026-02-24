@@ -9,12 +9,12 @@ import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
-import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import jakarta.inject.Named
@@ -154,11 +154,13 @@ class ReportMetricStore(
         .fetch { ProjectMetricModel.of(it) }
   }
 
-  fun fetchSystemMetrics(): List<SystemMetric> {
+  fun fetchSystemMetrics(): List<AutoCalculatedIndicator> {
     requirePermissions { readProjectReportConfigs() }
 
-    return with(SYSTEM_METRICS) {
-      dslContext.select(ID).from(SYSTEM_METRICS).orderBy(REFERENCE).fetch { it[ID.asNonNullable()] }
+    return with(AUTO_CALCULATED_INDICATORS) {
+      dslContext.select(ID).from(AUTO_CALCULATED_INDICATORS).orderBy(REFERENCE).fetch {
+        it[ID.asNonNullable()]
+      }
     }
   }
 }

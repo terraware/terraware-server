@@ -611,6 +611,8 @@ COMMENT ON TABLE accelerator.application_statuses IS '(Enum) Possible statuses f
 
 COMMENT ON TABLE accelerator.applications IS 'Information about projects that are applying for the accelerator program.';
 
+COMMENT ON TABLE accelerator.auto_calculated_indicators IS '(Enum) Accelerator report auto-calculated indicators, for which data are collected from Terraware.';
+
 COMMENT ON TABLE accelerator.deal_stages IS '(Enum) Stages in the deal workflow that a project progresses through.';
 
 COMMENT ON TABLE accelerator.default_voters IS 'Users to automatically be assigned as voters on accelerator projects.';
@@ -684,6 +686,13 @@ COMMENT ON TABLE accelerator.project_vote_decisions IS 'Calculated vote decision
 
 COMMENT ON TABLE accelerator.report_achievements IS 'List of achievements for accelerator project reports.';
 
+COMMENT ON TABLE accelerator.report_auto_calculated_indicator_targets IS 'Project targets for auto-calculated indicators by year';
+
+COMMENT ON TABLE accelerator.report_auto_calculated_indicators IS 'Report entries of targets and values for auto-calculated indicators.';
+COMMENT ON COLUMN accelerator.report_auto_calculated_indicators.override_value IS 'Value inputted by accelerator admin to override system value. Null for no overrides.';
+COMMENT ON COLUMN accelerator.report_auto_calculated_indicators.system_time IS 'System value recorded time. If null, the value is not recorded yet and a live query of Terraware data should be used instead.';
+COMMENT ON COLUMN accelerator.report_auto_calculated_indicators.system_value IS 'Value collected via Terraware data. Null before value is submitted.';
+
 COMMENT ON TABLE accelerator.report_challenges IS 'List of challenges and mitigation plans for accelerator project reports.';
 
 COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports. Acts as the report type as well.';
@@ -705,13 +714,6 @@ COMMENT ON TABLE accelerator.report_standard_indicators IS 'Report entries of ta
 
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
 
-COMMENT ON TABLE accelerator.report_system_metric_targets IS 'Project targets for system metrics by year';
-
-COMMENT ON TABLE accelerator.report_system_metrics IS 'Report entries of targets and values for system metrics.';
-COMMENT ON COLUMN accelerator.report_system_metrics.override_value IS 'Value inputted by accelerator admin to override system value. Null for no overrides.';
-COMMENT ON COLUMN accelerator.report_system_metrics.system_time IS 'System value recorded time. If null, the value is not recorded yet and a live query of Terraware data should be used instead.';
-COMMENT ON COLUMN accelerator.report_system_metrics.system_value IS 'Value collected via Terraware data. Null before value is submitted.';
-
 COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
 COMMENT ON COLUMN accelerator.reports.report_frequency_id IS 'Frequency of the report, that can determine report data. Must match with frequency of the configuration.';
 COMMENT ON COLUMN accelerator.reports.report_quarter_id IS 'Quarter of the report. Must be non-null for quarterly reports and null otherwise.';
@@ -730,8 +732,6 @@ COMMENT ON TABLE accelerator.submission_snapshots IS 'Snapshot files associated 
 COMMENT ON TABLE accelerator.submission_statuses IS '(Enum) Statuses of submissions of deliverables by specific projects.';
 
 COMMENT ON TABLE accelerator.submissions IS 'Information about the current states of the information supplied by specific projects in response to deliverables.';
-
-COMMENT ON TABLE accelerator.system_metrics IS '(Enum) Accelerator report metrics, for which data are collected from Terraware.';
 
 COMMENT ON TABLE accelerator.user_internal_interests IS 'Which internal interest categories are assigned to which internal users. This affects things like which accelerator admins are notified.';
 
@@ -818,6 +818,8 @@ COMMENT ON TABLE funder.published_activities IS 'Published project activities vi
 
 COMMENT ON TABLE funder.published_activity_media_files IS 'Media files for published project activities visible to funders. It is possible for a file to continue to appear here after it has been removed from the activity if the removal has not been published yet.';
 
+COMMENT ON TABLE funder.published_auto_calculated_indicator_targets IS 'Published project targets for auto-calculated indicators by year';
+
 COMMENT ON TABLE funder.published_project_carbon_certs IS 'Carbon Certifications for published projects.';
 
 COMMENT ON TABLE funder.published_project_details IS 'Published Project Data visible to funders.';
@@ -830,6 +832,8 @@ COMMENT ON TABLE funder.published_project_sdg IS 'Sustainable Development Goals 
 
 COMMENT ON TABLE funder.published_report_achievements IS 'Achievements of published reports.';
 
+COMMENT ON TABLE funder.published_report_auto_calculated_indicators IS 'Auto-calculated indicators of published reports.';
+
 COMMENT ON TABLE funder.published_report_challenges IS 'Challenges and mitigation plans of published reports.';
 
 COMMENT ON TABLE funder.published_report_photos IS 'Photos for the published accelerator project report.';
@@ -838,12 +842,8 @@ COMMENT ON TABLE funder.published_report_project_indicators IS 'Project-specific
 
 COMMENT ON TABLE funder.published_report_standard_indicators IS 'Standard indicators of published reports.';
 
-COMMENT ON TABLE funder.published_report_system_metrics IS 'System metrics of published reports.';
-
 COMMENT ON TABLE funder.published_reports IS 'Published reports visible to funders.';
 
 COMMENT ON TABLE funder.published_standard_indicator_targets IS 'Published project targets for standard indicators by year';
-
-COMMENT ON TABLE funder.published_system_metric_targets IS 'Published project targets for system metrics by year';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

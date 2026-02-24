@@ -13,9 +13,9 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
-import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Region
@@ -181,7 +181,7 @@ data class ProjectAcceleratorDetailsPayload(
 }
 
 data class MetricProgressPayload(
-    val metric: SystemMetric,
+    val metric: AutoCalculatedIndicator,
     val progress: Int,
 ) {
   constructor(

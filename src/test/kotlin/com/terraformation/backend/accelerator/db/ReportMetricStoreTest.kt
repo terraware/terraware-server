@@ -9,11 +9,11 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
-import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.StandardIndicatorsRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -395,7 +395,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `returns all system metrics, ordered by reference`() {
         val sortedSystemMetrics =
-            SystemMetric.entries.sortedWith { metric1, metric2 ->
+            AutoCalculatedIndicator.entries.sortedWith { metric1, metric2 ->
               val metric1Parts = metric1.reference.split(".").map { it.toInt() }
               val metric2Parts = metric2.reference.split(".").map { it.toInt() }
 

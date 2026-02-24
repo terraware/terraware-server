@@ -2,12 +2,12 @@ package com.terraformation.backend.funder.model
 
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
-import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
@@ -32,5 +32,5 @@ data class PublishedReportModel(
     val reportId: ReportId,
     val standardMetrics: List<PublishedReportMetricModel<StandardIndicatorId>>,
     val startDate: LocalDate,
-    val systemMetrics: List<PublishedReportMetricModel<SystemMetric>>,
+    val systemMetrics: List<PublishedReportMetricModel<AutoCalculatedIndicator>>,
 )

@@ -22,6 +22,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ReportConfigNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
@@ -31,24 +32,23 @@ import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
-import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
+import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PHOTOS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATOR_TARGETS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectIdConverter
@@ -57,16 +57,16 @@ import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_INDICATORS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_STANDARD_INDICATOR_TARGETS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
@@ -218,16 +218,16 @@ class ReportStore(
   fun fetchReportSystemMetricTargets(projectId: ProjectId): List<ReportSystemMetricTargetModel> {
     requirePermissions { readProjectReports(projectId) }
 
-    return with(REPORT_SYSTEM_METRIC_TARGETS) {
+    return with(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS) {
       dslContext
           .select(
-              SYSTEM_METRIC_ID,
+              AUTO_CALCULATED_INDICATOR_ID,
               TARGET,
               YEAR,
           )
           .from(this)
           .where(PROJECT_ID.eq(projectId))
-          .orderBy(YEAR, SYSTEM_METRIC_ID)
+          .orderBy(YEAR, AUTO_CALCULATED_INDICATOR_ID)
           .fetch { ReportSystemMetricTargetModel.of(it) }
     }
   }
@@ -308,7 +308,7 @@ class ReportStore(
     )
   }
 
-  fun refreshSystemMetricValues(reportId: ReportId, metrics: Collection<SystemMetric>) {
+  fun refreshSystemMetricValues(reportId: ReportId, metrics: Collection<AutoCalculatedIndicator>) {
     requirePermissions { reviewReports() }
 
     fetchOne(reportId)
@@ -378,7 +378,7 @@ class ReportStore(
   fun reviewReportMetrics(
       reportId: ReportId,
       standardMetricEntries: Map<StandardIndicatorId, ReportMetricEntryModel> = emptyMap(),
-      systemMetricEntries: Map<SystemMetric, ReportMetricEntryModel> = emptyMap(),
+      systemMetricEntries: Map<AutoCalculatedIndicator, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectIndicatorId, ReportMetricEntryModel> = emptyMap(),
   ) {
     requirePermissions { reviewReports() }
@@ -427,7 +427,7 @@ class ReportStore(
       }
 
       // Update all system metrics values at submission time
-      updateReportSystemMetricWithTerrawareData(reportId, SystemMetric.entries)
+      updateReportSystemMetricWithTerrawareData(reportId, AutoCalculatedIndicator.entries)
     }
 
     eventPublisher.publishEvent(AcceleratorReportSubmittedEvent(reportId))
@@ -441,7 +441,7 @@ class ReportStore(
       financialSummaries: String? = null,
       additionalComments: String? = null,
       standardMetricEntries: Map<StandardIndicatorId, ReportMetricEntryModel> = emptyMap(),
-      systemMetricEntries: Map<SystemMetric, ReportMetricEntryModel> = emptyMap(),
+      systemMetricEntries: Map<AutoCalculatedIndicator, ReportMetricEntryModel> = emptyMap(),
       projectMetricEntries: Map<ProjectIndicatorId, ReportMetricEntryModel> = emptyMap(),
   ) {
     requirePermissions { updateReport(reportId) }
@@ -552,7 +552,7 @@ class ReportStore(
 
       publishReportMetrics(
           reportId,
-          PUBLISHED_REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID,
+          PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
           publishableSystemMetrics,
       )
       publishReportMetrics(
@@ -585,7 +585,7 @@ class ReportStore(
       publishReportMetricTargets(
           report.projectId,
           reportYear,
-          PUBLISHED_SYSTEM_METRIC_TARGETS.SYSTEM_METRIC_ID,
+          PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
           systemMetricTargets,
       )
       publishReportMetricTargets(
@@ -686,19 +686,19 @@ class ReportStore(
   fun updateSystemMetricTarget(
       projectId: ProjectId,
       year: Int,
-      metricId: SystemMetric,
+      metricId: AutoCalculatedIndicator,
       target: Int?,
   ) {
     requirePermissions { updateProjectReports(projectId) }
 
-    with(REPORT_SYSTEM_METRIC_TARGETS) {
+    with(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS) {
       dslContext
           .insertInto(this)
           .set(PROJECT_ID, projectId)
-          .set(SYSTEM_METRIC_ID, metricId)
+          .set(AUTO_CALCULATED_INDICATOR_ID, metricId)
           .set(YEAR, year)
           .set(TARGET, target)
-          .onConflict(PROJECT_ID, SYSTEM_METRIC_ID, YEAR)
+          .onConflict(PROJECT_ID, AUTO_CALCULATED_INDICATOR_ID, YEAR)
           .doUpdate()
           .set(TARGET, target)
           .execute()
@@ -973,13 +973,13 @@ class ReportStore(
     if (includeMetrics) {
       return reports.map { report ->
         val survivalRateMetric =
-            report.systemMetrics.find { it.metric == SystemMetric.SurvivalRate }
+            report.systemMetrics.find { it.metric == AutoCalculatedIndicator.SurvivalRate }
         // only calculate if systemValue is 0 from the jOOQ
         if (survivalRateMetric != null && survivalRateMetric.entry.systemTime == null) {
           val calculatedSurvivalRate = calculateSurvivalRateForReport(report.id)
           val updatedMetrics =
               report.systemMetrics.map { metric ->
-                if (metric.metric == SystemMetric.SurvivalRate) {
+                if (metric.metric == AutoCalculatedIndicator.SurvivalRate) {
                   metric.copy(entry = metric.entry.copy(systemValue = calculatedSurvivalRate))
                 } else {
                   metric
@@ -1309,14 +1309,14 @@ class ReportStore(
 
   private fun updateReportSystemMetricWithTerrawareData(
       reportId: ReportId,
-      metrics: Collection<SystemMetric>,
+      metrics: Collection<AutoCalculatedIndicator>,
   ): Int {
     if (metrics.isEmpty()) {
       return 0
     }
 
     val survivalRate =
-        if (metrics.contains(SystemMetric.SurvivalRate)) {
+        if (metrics.contains(AutoCalculatedIndicator.SurvivalRate)) {
           calculateSurvivalRateForReport(reportId)
         } else {
           null
@@ -1326,23 +1326,26 @@ class ReportStore(
     val systemValueField =
         DSL.`when`(
                 REPORTS.STATUS_ID.`in`(ReportModel.submittedStatuses),
-                DSL.`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate), survivalRate)
+                DSL.`when`(
+                        AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SurvivalRate),
+                        survivalRate,
+                    )
                     .else_(systemTerrawareValueField),
             )
-            .else_(DSL.value(null, REPORT_SYSTEM_METRICS.SYSTEM_VALUE))
+            .else_(DSL.value(null, REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_VALUE))
     val systemTimeField =
         DSL.`when`(
                 REPORTS.STATUS_ID.`in`(ReportModel.submittedStatuses),
                 DSL.value(clock.instant()),
             )
-            .else_(DSL.value(null, REPORT_SYSTEM_METRICS.SYSTEM_TIME))
+            .else_(DSL.value(null, REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_TIME))
 
-    return with(REPORT_SYSTEM_METRICS) {
+    return with(REPORT_AUTO_CALCULATED_INDICATORS) {
       dslContext
           .insertInto(
               this,
               REPORT_ID,
-              SYSTEM_METRIC_ID,
+              AUTO_CALCULATED_INDICATOR_ID,
               SYSTEM_VALUE,
               SYSTEM_TIME,
               OVERRIDE_VALUE,
@@ -1352,19 +1355,19 @@ class ReportStore(
           .select(
               DSL.select(
                       REPORTS.ID,
-                      SYSTEM_METRICS.ID,
+                      AUTO_CALCULATED_INDICATORS.ID,
                       systemValueField,
                       systemTimeField,
                       DSL.value(null, OVERRIDE_VALUE),
                       DSL.value(currentUser().userId),
                       DSL.value(clock.instant()),
                   )
-                  .from(SYSTEM_METRICS)
+                  .from(AUTO_CALCULATED_INDICATORS)
                   .join(REPORTS)
                   .on(REPORTS.ID.eq(reportId))
-                  .where(SYSTEM_METRICS.ID.`in`(metrics))
+                  .where(AUTO_CALCULATED_INDICATORS.ID.`in`(metrics))
           )
-          .onConflict(REPORT_ID, SYSTEM_METRIC_ID)
+          .onConflict(REPORT_ID, AUTO_CALCULATED_INDICATOR_ID)
           .doUpdate()
           .setAllToExcluded()
           .execute()
@@ -1385,14 +1388,14 @@ class ReportStore(
 
   private fun upsertReportSystemMetrics(
       reportId: ReportId,
-      entries: Map<SystemMetric, ReportMetricEntryModel>,
+      entries: Map<AutoCalculatedIndicator, ReportMetricEntryModel>,
       updateProgressNotes: Boolean,
   ): Int {
     if (entries.isEmpty()) {
       return 0
     }
 
-    var insertQuery = dslContext.insertInto(REPORT_SYSTEM_METRICS).set()
+    var insertQuery = dslContext.insertInto(REPORT_AUTO_CALCULATED_INDICATORS).set()
 
     val iterator = entries.iterator()
 
@@ -1400,19 +1403,19 @@ class ReportStore(
       val (metricId, entry) = iterator.next()
       insertQuery =
           insertQuery
-              .set(REPORT_SYSTEM_METRICS.REPORT_ID, reportId)
-              .set(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID, metricId)
+              .set(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID, reportId)
+              .set(REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID, metricId)
               .set(
-                  REPORT_SYSTEM_METRICS.PROJECTS_COMMENTS,
+                  REPORT_AUTO_CALCULATED_INDICATORS.PROJECTS_COMMENTS,
                   entry.projectsComments,
               )
-              .set(REPORT_SYSTEM_METRICS.STATUS_ID, entry.status)
-              .set(REPORT_SYSTEM_METRICS.MODIFIED_BY, currentUser().userId)
-              .set(REPORT_SYSTEM_METRICS.MODIFIED_TIME, clock.instant())
+              .set(REPORT_AUTO_CALCULATED_INDICATORS.STATUS_ID, entry.status)
+              .set(REPORT_AUTO_CALCULATED_INDICATORS.MODIFIED_BY, currentUser().userId)
+              .set(REPORT_AUTO_CALCULATED_INDICATORS.MODIFIED_TIME, clock.instant())
               .apply {
                 if (updateProgressNotes) {
-                  this.set(REPORT_SYSTEM_METRICS.OVERRIDE_VALUE, entry.value)
-                  this.set(REPORT_SYSTEM_METRICS.PROGRESS_NOTES, entry.progressNotes)
+                  this.set(REPORT_AUTO_CALCULATED_INDICATORS.OVERRIDE_VALUE, entry.value)
+                  this.set(REPORT_AUTO_CALCULATED_INDICATORS.PROGRESS_NOTES, entry.progressNotes)
                 }
               }
               .apply {
@@ -1424,7 +1427,10 @@ class ReportStore(
 
     val rowsUpdated =
         insertQuery
-            .onConflict(REPORT_SYSTEM_METRICS.REPORT_ID, REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID)
+            .onConflict(
+                REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID,
+                REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
+            )
             .doUpdate()
             .setAllToExcluded()
             .execute()
@@ -1830,14 +1836,29 @@ class ReportStore(
   private val systemTerrawareValueField =
       DSL.coalesce(
           DSL.case_()
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.Seedlings), seedlingsField)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SeedsCollected), seedsCollectedField)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.SpeciesPlanted), speciesPlantedField)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.TreesPlanted), treesPlantedField)
-              .`when`(SYSTEM_METRICS.ID.eq(SystemMetric.HectaresPlanted), hectaresPlantedField)
               .`when`(
-                  SYSTEM_METRICS.ID.eq(SystemMetric.SurvivalRate),
-                  DSL.value(null, REPORT_SYSTEM_METRICS.SYSTEM_VALUE),
+                  AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.Seedlings),
+                  seedlingsField,
+              )
+              .`when`(
+                  AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SeedsCollected),
+                  seedsCollectedField,
+              )
+              .`when`(
+                  AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SpeciesPlanted),
+                  speciesPlantedField,
+              )
+              .`when`(
+                  AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.TreesPlanted),
+                  treesPlantedField,
+              )
+              .`when`(
+                  AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.HectaresPlanted),
+                  hectaresPlantedField,
+              )
+              .`when`(
+                  AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SurvivalRate),
+                  DSL.value(null, REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_VALUE),
               )
               .else_(0),
           DSL.value(0),
@@ -1845,26 +1866,34 @@ class ReportStore(
 
   private val systemValueField =
       DSL.case_()
-          .`when`(REPORT_SYSTEM_METRICS.SYSTEM_TIME.isNull(), systemTerrawareValueField)
-          .else_(REPORT_SYSTEM_METRICS.SYSTEM_VALUE)
+          .`when`(REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_TIME.isNull(), systemTerrawareValueField)
+          .else_(REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_VALUE)
 
   private val systemMetricsMultiset: Field<List<ReportSystemMetricModel>> =
       DSL.multiset(
               DSL.select(
-                      SYSTEM_METRICS.ID,
-                      REPORT_SYSTEM_METRICS.asterisk(),
+                      AUTO_CALCULATED_INDICATORS.ID,
+                      REPORT_AUTO_CALCULATED_INDICATORS.asterisk(),
                       systemValueField,
-                      REPORT_SYSTEM_METRIC_TARGETS.TARGET,
+                      REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET,
                   )
-                  .from(SYSTEM_METRICS)
-                  .leftJoin(REPORT_SYSTEM_METRICS)
-                  .on(SYSTEM_METRICS.ID.eq(REPORT_SYSTEM_METRICS.SYSTEM_METRIC_ID))
-                  .and(REPORTS.ID.eq(REPORT_SYSTEM_METRICS.REPORT_ID))
-                  .leftJoin(REPORT_SYSTEM_METRIC_TARGETS)
-                  .on(REPORT_SYSTEM_METRIC_TARGETS.SYSTEM_METRIC_ID.eq(SYSTEM_METRICS.ID))
-                  .and(REPORT_SYSTEM_METRIC_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  .and(REPORT_SYSTEM_METRIC_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
-                  .orderBy(SYSTEM_METRICS.REFERENCE, SYSTEM_METRICS.ID)
+                  .from(AUTO_CALCULATED_INDICATORS)
+                  .leftJoin(REPORT_AUTO_CALCULATED_INDICATORS)
+                  .on(
+                      AUTO_CALCULATED_INDICATORS.ID.eq(
+                          REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID
+                      )
+                  )
+                  .and(REPORTS.ID.eq(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID))
+                  .leftJoin(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS)
+                  .on(
+                      REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID.eq(
+                          AUTO_CALCULATED_INDICATORS.ID
+                      )
+                  )
+                  .and(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                  .and(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
+                  .orderBy(AUTO_CALCULATED_INDICATORS.REFERENCE, AUTO_CALCULATED_INDICATORS.ID)
           )
           .convertFrom { results ->
             results.map { ReportSystemMetricModel.of(it, systemValueField) }
