@@ -52,7 +52,6 @@ val ENUM_TABLES =
                     listOf("[a-z_]+_indicators\\.level_id"),
                 ),
                 EnumTable("pipelines", isLocalizable = false),
-                EnumTable("report_frequencies"),
                 EnumTable(
                     "report_indicator_statuses",
                     listOf(

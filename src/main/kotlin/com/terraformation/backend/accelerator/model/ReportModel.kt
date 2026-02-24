@@ -4,7 +4,6 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
@@ -68,7 +67,6 @@ data class ReportModel(
     val endDate: LocalDate,
     val feedback: String? = null,
     val financialSummaries: String? = null,
-    val frequency: ReportFrequency,
     val highlights: String? = null,
     val id: ReportId,
     val internalComment: String? = null,
@@ -92,12 +90,9 @@ data class ReportModel(
   /** Describes the reporting period of this report. For example "2025 Q1" or "2025 Annual" */
   val prefix: String
     get() {
-      val reportYear = endDate.year
       val reportQuarter = quarter?.name ?: "Quarterly"
 
-      return when (frequency) {
-        ReportFrequency.Quarterly -> "$reportYear $reportQuarter"
-      }
+      return "${endDate.year} $reportQuarter"
     }
 
   fun isEditable(): Boolean {
@@ -171,7 +166,6 @@ data class ReportModel(
             projectId = record[PROJECT_ID]!!,
             projectDealName = record[PROJECT_ACCELERATOR_DETAILS.DEAL_NAME],
             quarter = record[REPORT_QUARTER_ID],
-            frequency = record[REPORT_FREQUENCY_ID]!!,
             status = record[STATUS_ID]!!,
             startDate = record[START_DATE]!!,
             endDate = record[END_DATE]!!,

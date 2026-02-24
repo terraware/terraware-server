@@ -35,7 +35,6 @@ import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
@@ -347,9 +346,7 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: CreateAcceleratorReportConfigRequestPayload,
   ): SimpleSuccessResponsePayload {
-    reportStore.insertProjectReportConfig(
-        payload.config.toModel(projectId, ReportFrequency.Quarterly)
-    )
+    reportStore.insertProjectReportConfig(payload.config.toModel(projectId))
 
     return SimpleSuccessResponsePayload()
   }
@@ -528,7 +525,6 @@ class ProjectReportsController(
 data class ExistingAcceleratorReportConfigPayload(
     val configId: ProjectReportConfigId,
     val projectId: ProjectId,
-    val frequency: ReportFrequency,
     val reportingStartDate: LocalDate,
     val reportingEndDate: LocalDate,
     val logframeUrl: URI?,
@@ -538,7 +534,6 @@ data class ExistingAcceleratorReportConfigPayload(
   ) : this(
       configId = model.id,
       projectId = model.projectId,
-      frequency = model.frequency,
       reportingStartDate = model.reportingStartDate,
       reportingEndDate = model.reportingEndDate,
       logframeUrl = model.logframeUrl,
@@ -556,9 +551,8 @@ data class NewAcceleratorReportConfigPayload(
     val reportingEndDate: LocalDate,
     val reportingStartDate: LocalDate,
 ) {
-  fun toModel(projectId: ProjectId, frequency: ReportFrequency): NewProjectReportConfigModel =
+  fun toModel(projectId: ProjectId): NewProjectReportConfigModel =
       NewProjectReportConfigModel(
-          frequency = frequency,
           id = null,
           logframeUrl = logframeUrl,
           projectId = projectId,
@@ -581,7 +575,6 @@ data class AcceleratorReportPayload(
     val endDate: LocalDate,
     val feedback: String?,
     val financialSummaries: String?,
-    val frequency: ReportFrequency,
     val highlights: String?,
     val id: ReportId,
     val internalComment: String?,
@@ -609,7 +602,6 @@ data class AcceleratorReportPayload(
       endDate = model.endDate,
       feedback = model.feedback,
       financialSummaries = model.financialSummaries,
-      frequency = model.frequency,
       highlights = model.highlights,
       id = model.id,
       internalComment = model.internalComment,

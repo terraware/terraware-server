@@ -38,7 +38,6 @@ import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.Pipeline
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
@@ -2862,14 +2861,12 @@ abstract class DatabaseBackedTest {
   fun insertProjectReportConfig(
       row: ProjectReportConfigsRow = ProjectReportConfigsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      frequency: ReportFrequency = row.reportFrequencyId ?: ReportFrequency.Quarterly,
       reportingStartDate: LocalDate = row.reportingStartDate ?: LocalDate.EPOCH,
       reportingEndDate: LocalDate = row.reportingEndDate ?: reportingStartDate.plusDays(1),
   ): ProjectReportConfigId {
     val rowWithDefaults =
         row.copy(
             projectId = projectId,
-            reportFrequencyId = frequency,
             reportingStartDate = reportingStartDate,
             reportingEndDate = reportingEndDate,
         )
@@ -3514,7 +3511,6 @@ abstract class DatabaseBackedTest {
       row: ReportsRow = ReportsRow(),
       configId: ProjectReportConfigId = row.configId ?: inserted.projectReportConfigId,
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      frequency: ReportFrequency = row.reportFrequencyId ?: ReportFrequency.Quarterly,
       quarter: ReportQuarter? = row.reportQuarterId ?: ReportQuarter.Q1,
       status: ReportStatus = row.statusId ?: ReportStatus.NotSubmitted,
       startDate: LocalDate = row.startDate ?: LocalDate.EPOCH,
@@ -3542,7 +3538,6 @@ abstract class DatabaseBackedTest {
         row.copy(
             configId = configId,
             projectId = projectId,
-            reportFrequencyId = frequency,
             reportQuarterId = quarter,
             statusId = status,
             startDate = startDate,
@@ -3826,7 +3821,6 @@ abstract class DatabaseBackedTest {
       projectId: ProjectId = inserted.projectId,
       startDate: LocalDate = LocalDate.of(2025, 1, 1),
       endDate: LocalDate = LocalDate.of(2025, 3, 31),
-      frequency: ReportFrequency = ReportFrequency.Quarterly,
       quarter: ReportQuarter? = ReportQuarter.Q1,
       publishedBy: UserId = currentUser().userId,
       publishedTime: Instant = Instant.EPOCH,
@@ -3839,7 +3833,6 @@ abstract class DatabaseBackedTest {
           .insertInto(PUBLISHED_REPORTS)
           .set(REPORT_ID, reportId)
           .set(PROJECT_ID, projectId)
-          .set(REPORT_FREQUENCY_ID, frequency)
           .set(REPORT_QUARTER_ID, quarter)
           .set(START_DATE, startDate)
           .set(END_DATE, endDate)

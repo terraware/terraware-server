@@ -25,7 +25,6 @@ import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatusConverter
@@ -241,7 +240,6 @@ class ReportStore(
             dslContext
                 .insertInto(this)
                 .set(PROJECT_ID, newModel.projectId)
-                .set(REPORT_FREQUENCY_ID, newModel.frequency)
                 .set(REPORTING_START_DATE, newModel.reportingStartDate)
                 .set(REPORTING_END_DATE, newModel.reportingEndDate)
                 .returning(ID.asNonNullable())
@@ -504,7 +502,6 @@ class ReportStore(
             .set(PROJECT_ID, report.projectId)
             .set(PUBLISHED_BY, userId)
             .set(PUBLISHED_TIME, now)
-            .set(REPORT_FREQUENCY_ID, report.frequency)
             .set(REPORT_ID, report.id)
             .set(REPORT_QUARTER_ID, report.quarter)
             .set(START_DATE, report.startDate)
@@ -517,7 +514,6 @@ class ReportStore(
             .set(PROJECT_ID, report.projectId)
             .set(PUBLISHED_BY, userId)
             .set(PUBLISHED_TIME, now)
-            .set(REPORT_FREQUENCY_ID, report.frequency)
             .set(REPORT_ID, report.id)
             .set(REPORT_QUARTER_ID, report.quarter)
             .set(START_DATE, report.startDate)
@@ -622,7 +618,6 @@ class ReportStore(
                 .from(this)
                 .where(STATUS_ID.eq(ReportStatus.NotSubmitted))
                 .and(UPCOMING_NOTIFICATION_SENT_TIME.isNull)
-                .and(REPORT_FREQUENCY_ID.eq(ReportFrequency.Quarterly))
                 .and(END_DATE.between(today).and(today.plusDays(15)))
                 .forUpdate()
                 .skipLocked()
@@ -705,12 +700,9 @@ class ReportStore(
     }
   }
 
-  private fun getStartOfReportingPeriod(date: LocalDate, frequency: ReportFrequency): LocalDate {
+  private fun getStartOfReportingPeriod(date: LocalDate): LocalDate {
     val startYear = date.year
-    val startMonth =
-        when (frequency) {
-          ReportFrequency.Quarterly -> date.month.firstMonthOfQuarter()
-        }
+    val startMonth = date.month.firstMonthOfQuarter()
 
     return LocalDate.of(startYear, startMonth, 1)
   }
@@ -720,12 +712,9 @@ class ReportStore(
       throw IllegalArgumentException("Reporting end date must be after reporting start date.")
     }
 
-    val durationMonths =
-        when (config.frequency) {
-          ReportFrequency.Quarterly -> 3L
-        }
+    val durationMonths = 3L
 
-    var startDate = getStartOfReportingPeriod(config.reportingStartDate, config.frequency)
+    var startDate = getStartOfReportingPeriod(config.reportingStartDate)
 
     val now = clock.instant()
 
@@ -736,31 +725,25 @@ class ReportStore(
       val reportEndDate = startDate.minusDays(1)
 
       val quarter =
-          if (config.frequency == ReportFrequency.Quarterly) {
-            when (reportStartDate.month) {
-              Month.JANUARY,
-              Month.FEBRUARY,
-              Month.MARCH -> ReportQuarter.Q1
-              Month.APRIL,
-              Month.MAY,
-              Month.JUNE -> ReportQuarter.Q2
-              Month.JULY,
-              Month.AUGUST,
-              Month.SEPTEMBER -> ReportQuarter.Q3
-              Month.OCTOBER,
-              Month.NOVEMBER,
-              Month.DECEMBER -> ReportQuarter.Q4
-              else -> null
-            }
-          } else {
-            null
+          when (reportStartDate.month) {
+            Month.JANUARY,
+            Month.FEBRUARY,
+            Month.MARCH -> ReportQuarter.Q1
+            Month.APRIL,
+            Month.MAY,
+            Month.JUNE -> ReportQuarter.Q2
+            Month.JULY,
+            Month.AUGUST,
+            Month.SEPTEMBER -> ReportQuarter.Q3
+            Month.OCTOBER,
+            Month.NOVEMBER,
+            Month.DECEMBER -> ReportQuarter.Q4
           }
 
       rows.add(
           ReportsRow(
               configId = config.id,
               projectId = config.projectId,
-              reportFrequencyId = config.frequency,
               reportQuarterId = quarter,
               statusId = ReportStatus.NotSubmitted,
               startDate = reportStartDate,

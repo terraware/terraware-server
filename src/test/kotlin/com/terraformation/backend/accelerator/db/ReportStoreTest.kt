@@ -31,7 +31,6 @@ import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
@@ -188,7 +187,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
-              frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NeedsUpdate,
               startDate = LocalDate.of(2030, Month.JANUARY, 1),
@@ -532,7 +530,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
-              frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
@@ -556,7 +553,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
       insertReport(
           status = ReportStatus.NotSubmitted,
-          frequency = ReportFrequency.Quarterly,
           quarter = ReportQuarter.Q1,
           startDate = LocalDate.of(2025, Month.JANUARY, 1),
           endDate = LocalDate.of(2025, Month.MARCH, 31),
@@ -648,7 +644,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectReportConfig()
       insertReport(
           status = ReportStatus.NotSubmitted,
-          frequency = ReportFrequency.Quarterly,
           quarter = ReportQuarter.Q2,
           startDate = startDate,
           endDate = endDate,
@@ -704,7 +699,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
-              frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotNeeded,
               startDate = LocalDate.EPOCH,
@@ -736,7 +730,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
-              frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotSubmitted,
               startDate = today,
@@ -767,7 +760,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
-              frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
@@ -833,7 +825,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
-              frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q4,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.of(2030, Month.OCTOBER, 1),
@@ -919,7 +910,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
               quarter = ReportQuarter.Q1,
-              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
               endDate = LocalDate.EPOCH.plusDays(1),
@@ -1279,7 +1269,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
-              frequency = ReportFrequency.Quarterly,
               quarter = ReportQuarter.Q1,
               status = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
@@ -1323,7 +1312,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `returns earliest and latest report config years`() {
       insertProjectReportConfig(
-          frequency = ReportFrequency.Quarterly,
           reportingStartDate = LocalDate.of(2024, 1, 1),
           reportingEndDate = LocalDate.of(2028, 12, 1),
       )
@@ -1838,7 +1826,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
-              reportFrequencyId = ReportFrequency.Quarterly,
               reportQuarterId = ReportQuarter.Q1,
               statusId = ReportStatus.Submitted,
               startDate = LocalDate.EPOCH,
@@ -2318,7 +2305,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
-              reportFrequencyId = ReportFrequency.Quarterly,
               reportQuarterId = ReportQuarter.Q1,
               statusId = ReportStatus.NotSubmitted,
               startDate = LocalDate.EPOCH,
@@ -2597,7 +2583,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = reportId,
               configId = configId,
               projectId = projectId,
-              reportFrequencyId = ReportFrequency.Quarterly,
               reportQuarterId = ReportQuarter.Q1,
               statusId = ReportStatus.Submitted,
               startDate = LocalDate.of(2025, Month.JANUARY, 1),
@@ -2695,7 +2680,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectConfigId =
           insertProjectReportConfig(
               projectId = projectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.JANUARY, 7),
               reportingEndDate = LocalDate.of(2031, Month.MAY, 9),
           )
@@ -2703,7 +2687,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val otherProjectConfigId =
           insertProjectReportConfig(
               projectId = otherProjectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2031, Month.JANUARY, 18),
               reportingEndDate = LocalDate.of(2039, Month.MAY, 31),
           )
@@ -2712,7 +2695,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ExistingProjectReportConfigModel(
               id = projectConfigId,
               projectId = projectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.JANUARY, 7),
               reportingEndDate = LocalDate.of(2031, Month.MAY, 9),
               logframeUrl = null,
@@ -2722,7 +2704,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ExistingProjectReportConfigModel(
               id = otherProjectConfigId,
               projectId = otherProjectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2031, Month.JANUARY, 18),
               reportingEndDate = LocalDate.of(2039, Month.MAY, 31),
               logframeUrl = URI("https://terraware.io/logframe"),
@@ -2755,7 +2736,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           NewProjectReportConfigModel(
               id = null,
               projectId = projectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2028, Month.MARCH, 2),
               logframeUrl = null,
@@ -2765,7 +2745,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `inserts config record and creates reports for quarterly frequency`() {
+    fun `inserts config record and creates reports`() {
       clock.instant = Instant.ofEpochSecond(9000)
 
       deleteProjectAcceleratorDetails(projectId)
@@ -2773,7 +2753,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           NewProjectReportConfigModel(
               id = null,
               projectId = projectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
               logframeUrl = URI("https://example.com"),
@@ -2787,7 +2766,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ProjectReportConfigsRecord(
               id = configId,
               projectId = projectId,
-              reportFrequencyId = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
           ),
@@ -2799,7 +2777,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q2,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2025, Month.MAY, 5),
@@ -2812,7 +2789,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q3,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2025, Month.JULY, 1),
@@ -2825,7 +2801,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q4,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2025, Month.OCTOBER, 1),
@@ -2838,7 +2813,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2026, Month.JANUARY, 1),
@@ -2897,7 +2871,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           NewProjectReportConfigModel(
               id = null,
               projectId = projectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
               logframeUrl = null,
@@ -2918,7 +2891,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ProjectReportConfigsRecord(
                   id = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportingStartDate = LocalDate.of(2025, Month.APRIL, 4),
                   reportingEndDate = LocalDate.of(2026, Month.FEBRUARY, 28),
               ),
@@ -2931,7 +2903,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q2,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2025, Month.APRIL, 4),
@@ -2944,7 +2915,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q3,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2025, Month.JULY, 1),
@@ -2957,7 +2927,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q4,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2025, Month.OCTOBER, 1),
@@ -2970,7 +2939,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2026, Month.JANUARY, 1),
@@ -2990,7 +2958,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId =
           insertProjectReportConfig(
               projectId = projectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2021, Month.MARCH, 13),
               reportingEndDate = LocalDate.of(2021, Month.SEPTEMBER, 9),
           )
@@ -3002,7 +2969,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               quarter = ReportQuarter.Q2,
-              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.Submitted,
               startDate = LocalDate.of(2021, Month.APRIL, 1),
               endDate = LocalDate.of(2021, Month.APRIL, 30),
@@ -3015,7 +2981,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               quarter = ReportQuarter.Q1,
-              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotNeeded,
               startDate = LocalDate.of(2020, Month.MARCH, 13),
               endDate = LocalDate.of(2020, Month.MARCH, 31),
@@ -3026,7 +2991,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               quarter = ReportQuarter.Q4,
-              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.NotNeeded,
               startDate = LocalDate.of(2021, Month.OCTOBER, 1),
               endDate = LocalDate.of(2021, Month.OCTOBER, 9),
@@ -3038,7 +3002,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               quarter = ReportQuarter.Q1,
-              frequency = ReportFrequency.Quarterly,
               status = ReportStatus.Approved,
               startDate = LocalDate.of(2021, Month.JANUARY, 1),
               endDate = LocalDate.of(2021, Month.MARCH, 31),
@@ -3063,7 +3026,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ProjectReportConfigsRecord(
               id = configId,
               projectId = projectId,
-              reportFrequencyId = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2021, Month.FEBRUARY, 14),
               reportingEndDate = LocalDate.of(2021, Month.DECEMBER, 27),
           ),
@@ -3076,7 +3038,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   id = unchangedReportId,
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   statusId = ReportStatus.NotNeeded,
                   startDate = LocalDate.of(2020, Month.MARCH, 13),
@@ -3090,7 +3051,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   id = q1ReportId,
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2021, Month.FEBRUARY, 14),
@@ -3104,7 +3064,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   id = q2ReportId,
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q2,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2021, Month.APRIL, 1),
@@ -3118,7 +3077,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   id = reportIdsByQuarter[ReportQuarter.Q3],
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q3,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2021, Month.JULY, 1),
@@ -3132,7 +3090,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   id = q4ReportId,
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q4,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2021, Month.OCTOBER, 1),
@@ -3154,7 +3111,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           NewProjectReportConfigModel(
               id = null,
               projectId = projectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2021, Month.MARCH, 13),
               reportingEndDate = LocalDate.of(2021, Month.APRIL, 9),
               logframeUrl = null,
@@ -3179,7 +3135,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   statusId = ReportStatus.NotNeeded,
                   startDate = LocalDate.of(2021, Month.MARCH, 13),
@@ -3192,7 +3147,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q2,
                   statusId = ReportStatus.NotNeeded,
                   startDate = LocalDate.of(2021, Month.APRIL, 1),
@@ -3205,7 +3159,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2023, Month.MARCH, 13),
@@ -3218,7 +3171,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q2,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2023, Month.APRIL, 1),
@@ -3231,7 +3183,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportsRecord(
                   configId = configId,
                   projectId = projectId,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q3,
                   statusId = ReportStatus.NotSubmitted,
                   startDate = LocalDate.of(2023, Month.JULY, 1),
@@ -3265,7 +3216,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId =
           insertProjectReportConfig(
               projectId = projectId,
-              frequency = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2025, Month.MAY, 5),
               reportingEndDate = LocalDate.of(2026, Month.MARCH, 29),
           )
@@ -3281,7 +3231,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ProjectReportConfigsRecord(
               id = configId,
               projectId = projectId,
-              reportFrequencyId = ReportFrequency.Quarterly,
               reportingStartDate = LocalDate.of(2044, Month.MARCH, 13),
               reportingEndDate = LocalDate.of(2048, Month.JULY, 9),
           ),
@@ -3382,7 +3331,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   configId = configId,
                   statusId = ReportStatus.NotSubmitted,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   startDate = LocalDate.of(2025, Month.JANUARY, 1),
                   endDate = LocalDate.of(2025, Month.MARCH, 31),
@@ -3397,7 +3345,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   configId = configId,
                   statusId = ReportStatus.NotSubmitted,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q4,
                   startDate = LocalDate.of(2024, Month.OCTOBER, 1),
                   endDate = LocalDate.of(2024, Month.DECEMBER, 31),
@@ -3411,7 +3358,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   configId = configId,
                   statusId = ReportStatus.NotSubmitted,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   startDate = LocalDate.of(2025, Month.JANUARY, 1),
                   endDate = LocalDate.of(2025, Month.MARCH, 31),
@@ -3426,7 +3372,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   configId = configId,
                   statusId = ReportStatus.Submitted,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   startDate = LocalDate.of(2025, Month.JANUARY, 1),
                   endDate = LocalDate.of(2025, Month.MARCH, 31),
@@ -3442,7 +3387,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   configId = configId,
                   statusId = ReportStatus.NotNeeded,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q1,
                   startDate = LocalDate.of(2025, Month.JANUARY, 1),
                   endDate = LocalDate.of(2025, Month.MARCH, 31),
@@ -3456,7 +3400,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   configId = configId,
                   statusId = ReportStatus.NotSubmitted,
-                  reportFrequencyId = ReportFrequency.Quarterly,
                   reportQuarterId = ReportQuarter.Q2,
                   startDate = LocalDate.of(2025, Month.APRIL, 1),
                   endDate = LocalDate.of(2025, Month.JUNE, 30),
@@ -3826,7 +3769,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PublishedReportsRecord(
               reportId = reportId,
               projectId = projectId,
-              reportFrequencyId = ReportFrequency.Quarterly,
               reportQuarterId = ReportQuarter.Q1,
               startDate = LocalDate.of(2030, Month.JANUARY, 1),
               endDate = LocalDate.of(2030, Month.MARCH, 31),

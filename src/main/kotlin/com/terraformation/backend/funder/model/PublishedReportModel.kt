@@ -4,7 +4,6 @@ import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
-import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
@@ -20,7 +19,6 @@ data class PublishedReportModel(
     val challenges: List<ReportChallengeModel>,
     val endDate: LocalDate,
     val financialSummaries: String?,
-    val frequency: ReportFrequency,
     val highlights: String?,
     val photos: List<ReportPhotoModel>,
     val projectId: ProjectId,
