@@ -45,11 +45,11 @@ val ENUM_TABLES =
                 EnumTable("internal_interests"),
                 EnumTable(
                     "metric_components",
-                    listOf("[a-z_]+_metrics\\.component_id", "[a-z_]+_indicators\\.component_id"),
+                    listOf("[a-z_]+_indicators\\.component_id"),
                 ),
                 EnumTable(
                     "metric_types",
-                    listOf("[a-z_]+_metrics\\.type_id", "[a-z_]+_indicators\\.type_id"),
+                    listOf("[a-z_]+_indicators\\.type_id"),
                 ),
                 EnumTable("pipelines", isLocalizable = false),
                 EnumTable("report_frequencies"),
@@ -58,10 +58,10 @@ val ENUM_TABLES =
                     listOf(
                         "report_project_indicators\\.status_id",
                         "report_standard_indicators\\.status_id",
-                        "report_system_metrics\\.status_id",
+                        "report_auto_calculated_indicators\\.status_id",
                         "funder\\.published_report_project_indicators\\.status_id",
                         "funder\\.published_report_standard_indicators\\.status_id",
-                        "funder\\.published_report_system_metrics\\.status_id",
+                        "funder\\.published_report_auto_calculated_indicators\\.status_id",
                     ),
                 ),
                 EnumTable("report_quarters"),
@@ -69,8 +69,8 @@ val ENUM_TABLES =
                 EnumTable("score_categories", isLocalizable = false),
                 EnumTable("submission_statuses"),
                 EnumTable(
-                    "system_metrics",
-                    listOf("system_metrics\\.id", ".*\\.system_metric_id"),
+                    "auto_calculated_indicators",
+                    listOf("auto_calculated_indicators\\.id", ".*\\.auto_calculated_indicator_id"),
                     additionalColumns =
                         listOf(
                             EnumTableColumnInfo(

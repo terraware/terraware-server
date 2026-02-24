@@ -11,9 +11,9 @@ import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableVa
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.DealStage
 import com.terraformation.backend.db.accelerator.Pipeline
-import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
 import com.terraformation.backend.db.default_schema.LandUseModelType
 import com.terraformation.backend.db.default_schema.Region
@@ -59,17 +59,29 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       insertProjectReportConfig()
       insertReport()
       insertPublishedReport()
-      insertPublishedReportSystemMetric(metric = SystemMetric.HectaresPlanted, value = 100)
-      insertPublishedReportSystemMetric(metric = SystemMetric.TreesPlanted, value = 10)
-      insertPublishedReportSystemMetric(metric = SystemMetric.SeedsCollected, value = 1000)
-      insertPublishedReportSystemMetric(metric = SystemMetric.SpeciesPlanted, value = 1)
+      insertPublishedReportSystemMetric(
+          metric = AutoCalculatedIndicator.HectaresPlanted,
+          value = 100,
+      )
+      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.TreesPlanted, value = 10)
+      insertPublishedReportSystemMetric(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          value = 1000,
+      )
+      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.SpeciesPlanted, value = 1)
 
       insertReport()
       insertPublishedReport()
-      insertPublishedReportSystemMetric(metric = SystemMetric.HectaresPlanted, value = 200)
-      insertPublishedReportSystemMetric(metric = SystemMetric.TreesPlanted, value = 20)
-      insertPublishedReportSystemMetric(metric = SystemMetric.SeedsCollected, value = 2000)
-      insertPublishedReportSystemMetric(metric = SystemMetric.SpeciesPlanted, value = 2)
+      insertPublishedReportSystemMetric(
+          metric = AutoCalculatedIndicator.HectaresPlanted,
+          value = 200,
+      )
+      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.TreesPlanted, value = 20)
+      insertPublishedReportSystemMetric(
+          metric = AutoCalculatedIndicator.SeedsCollected,
+          value = 2000,
+      )
+      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.SpeciesPlanted, value = 2)
 
       // To ensure that the fetchOne works as expected when there are multiple rows
       insertProject()
@@ -145,10 +157,10 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               maxCarbonAccumulation = detailsRow.maxCarbonAccumulation,
               metricProgress =
                   listOf(
-                      MetricProgressModel(metric = SystemMetric.TreesPlanted, 30),
+                      MetricProgressModel(metric = AutoCalculatedIndicator.TreesPlanted, 30),
                       // Species Planted utilitze max instead of sum
-                      MetricProgressModel(metric = SystemMetric.SpeciesPlanted, 2),
-                      MetricProgressModel(metric = SystemMetric.HectaresPlanted, 300),
+                      MetricProgressModel(metric = AutoCalculatedIndicator.SpeciesPlanted, 2),
+                      MetricProgressModel(metric = AutoCalculatedIndicator.HectaresPlanted, 300),
                       // Seeds Collected and other metric progress is not tracked
                   ),
               minCarbonAccumulation = detailsRow.minCarbonAccumulation,

@@ -1,15 +1,15 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
-import com.terraformation.backend.db.accelerator.SystemMetric
+import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATOR_TARGETS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRIC_TARGETS
-import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
@@ -106,9 +106,9 @@ data class ReportSystemMetricEntryModel(
 ) {
   companion object {
     fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricEntryModel {
-      return with(REPORT_SYSTEM_METRICS) {
+      return with(REPORT_AUTO_CALCULATED_INDICATORS) {
         ReportSystemMetricEntryModel(
-            target = record[REPORT_SYSTEM_METRIC_TARGETS.TARGET],
+            target = record[REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET],
             systemValue = record[systemValueField],
             systemTime = record[SYSTEM_TIME],
             overrideValue = record[OVERRIDE_VALUE],
@@ -129,13 +129,13 @@ data class ReportSystemMetricEntryModel(
 }
 
 data class ReportSystemMetricModel(
-    val metric: SystemMetric,
+    val metric: AutoCalculatedIndicator,
     val entry: ReportSystemMetricEntryModel,
 ) {
   companion object {
     fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricModel {
       return ReportSystemMetricModel(
-          metric = record[SYSTEM_METRICS.ID.asNonNullable()],
+          metric = record[AUTO_CALCULATED_INDICATORS.ID.asNonNullable()],
           entry = ReportSystemMetricEntryModel.of(record, systemValueField),
       )
     }

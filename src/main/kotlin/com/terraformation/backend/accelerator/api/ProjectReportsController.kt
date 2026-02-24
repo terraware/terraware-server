@@ -30,6 +30,7 @@ import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.model.SimpleUserModel
+import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
@@ -40,7 +41,6 @@ import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
-import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -168,7 +168,7 @@ class ProjectReportsController(
   fun refreshAcceleratorReportSystemMetrics(
       @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
-      @RequestParam metrics: List<SystemMetric>,
+      @RequestParam metrics: List<AutoCalculatedIndicator>,
   ): SimpleSuccessResponsePayload {
     reportStore.refreshSystemMetricValues(reportId, metrics)
 
@@ -703,7 +703,7 @@ data class ReportSystemMetricPayload(
     val component: MetricComponent,
     val description: String?,
     val isPublishable: Boolean,
-    val metric: SystemMetric,
+    val metric: AutoCalculatedIndicator,
     val overrideValue: Int?,
     val progressNotes: String?,
     val projectsComments: String?,
@@ -734,7 +734,7 @@ data class ReportSystemMetricPayload(
 }
 
 data class ReportSystemMetricEntriesPayload(
-    val metric: SystemMetric,
+    val metric: AutoCalculatedIndicator,
     val overrideValue: Int?,
     val progressNotes: String?,
     val projectsComments: String?,
@@ -860,7 +860,7 @@ data class UpdateStandardMetricTargetRequestPayload(
 
 data class UpdateSystemMetricTargetRequestPayload(
     val year: Int,
-    val metric: SystemMetric,
+    val metric: AutoCalculatedIndicator,
     val target: Int?,
 )
 
@@ -917,7 +917,7 @@ data class ReportStandardMetricTargetPayload(
 }
 
 data class ReportSystemMetricTargetPayload(
-    val metric: SystemMetric,
+    val metric: AutoCalculatedIndicator,
     val target: Number?,
     val year: Number,
 ) {
