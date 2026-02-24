@@ -8,16 +8,16 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funding_entity_users":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "published_activities":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_activities":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "published_auto_calculated_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_project_carbon_certs":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_project_details":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "published_project_details":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "published_project_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_project_land_use":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "published_project_metric_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_project_sdg":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_reports":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_reports":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "published_standard_metric_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "published_system_metric_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "published_standard_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funding_entities" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -67,6 +67,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="published_activities"
   ];
+  "published_auto_calculated_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="265" HEIGHT="16"><B>published_auto_calculated_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/published_auto_calculated_indic_3b9a1510.html"
+    target="_top"
+    tooltip="published_auto_calculated_indicator_targets"
+  ];
   "published_project_carbon_certs" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -89,6 +100,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="published_project_details"
   ];
+  "published_project_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="213" HEIGHT="16"><B>published_project_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/published_project_indicator_targets.html"
+    target="_top"
+    tooltip="published_project_indicator_targets"
+  ];
   "published_project_land_use" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -99,17 +121,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/published_project_land_use.html"
     target="_top"
     tooltip="published_project_land_use"
-  ];
-  "published_project_metric_targets" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="198" HEIGHT="16"><B>published_project_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/published_project_metric_targets.html"
-    target="_top"
-    tooltip="published_project_metric_targets"
   ];
   "published_project_sdg" [
    label=<
@@ -133,27 +144,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="published_reports"
   ];
-  "published_standard_metric_targets" [
+  "published_standard_indicator_targets" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16"><B>published_standard_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="225" HEIGHT="16"><B>published_standard_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/published_standard_metric_targets.html"
+    URL="../../tables/published_standard_indicator_targets.html"
     target="_top"
-    tooltip="published_standard_metric_targets"
-  ];
-  "published_system_metric_targets" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="198" HEIGHT="16"><B>published_system_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/published_system_metric_targets.html"
-    target="_top"
-    tooltip="published_system_metric_targets"
+    tooltip="published_standard_indicator_targets"
   ];
   "public.projects" [
    label=<

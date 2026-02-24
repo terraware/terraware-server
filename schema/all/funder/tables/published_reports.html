@@ -136,6 +136,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="published_report_auto_calculated_indicators.report_id references published_reports.report_id via published_report_auto_calculated_indicators_report_id_fkey"><a href='published_report_auto_calculate_964cdeaf.html'>published_report_auto_calculated_indicators</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">published_report_auto_calculated_indicators_report_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="published_report_challenges.report_id references published_reports.report_id via published_report_challenges_report_id_fkey"><a href='published_report_challenges.html'>published_report_challenges</a><span class='relatedKey'>.report_id</span></td>
                                                 <td class="constraint detail">published_report_challenges_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -146,18 +151,13 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="published_report_project_metrics.report_id references published_reports.report_id via published_report_project_metrics_report_id_fkey"><a href='published_report_project_metrics.html'>published_report_project_metrics</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">published_report_project_metrics_report_id_fkey</td>
+                                                <td title="published_report_project_indicators.report_id references published_reports.report_id via published_report_project_indicators_report_id_fkey"><a href='published_report_project_indicators.html'>published_report_project_indicators</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">published_report_project_indicators_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="published_report_standard_metrics.report_id references published_reports.report_id via published_report_standard_metrics_report_id_fkey"><a href='published_report_standard_metrics.html'>published_report_standard_metrics</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">published_report_standard_metrics_report_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="published_report_system_metrics.report_id references published_reports.report_id via published_report_system_metrics_report_id_fkey"><a href='published_report_system_metrics.html'>published_report_system_metrics</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">published_report_system_metrics_report_id_fkey</td>
+                                                <td title="published_report_standard_indicators.report_id references published_reports.report_id via published_report_standard_indicators_report_id_fkey"><a href='published_report_standard_indicators.html'>published_report_standard_indicators</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">published_report_standard_indicators_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>

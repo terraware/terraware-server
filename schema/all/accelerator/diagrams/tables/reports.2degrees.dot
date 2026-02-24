@@ -27,7 +27,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "participant_project_species":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "participant_project_species":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_accelerator_details":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "project_metrics":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "project_indicators":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_modules":"elipses":w -> "modules":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_modules":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_overall_scores":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -47,27 +47,27 @@ digraph "twoDegreesRelationshipsDiagram" {
   "project_votes":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_votes":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_achievements":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_auto_calculated_indicator_targets":"elipses":w -> "auto_calculated_indicators":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_auto_calculated_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_auto_calculated_indicators":"auto_calculated_indicator_id":w -> "auto_calculated_indicators":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_auto_calculated_indicators":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_auto_calculated_indicators":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_auto_calculated_indicators":"status_id":w -> "report_indicator_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_challenges":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "report_photos":"file_id":w -> "public.files":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "report_photos":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_project_metric_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_project_metric_targets":"elipses":w -> "project_metrics":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_project_metrics":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_project_metrics":"project_metric_id":w -> "project_metrics":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_project_metrics":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_project_metrics":"status_id":w -> "report_metric_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_standard_metric_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_standard_metric_targets":"elipses":w -> "standard_metrics":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_standard_metrics":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_standard_metrics":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_standard_metrics":"standard_metric_id":w -> "standard_metrics":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_standard_metrics":"status_id":w -> "report_metric_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_system_metric_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_system_metric_targets":"elipses":w -> "system_metrics":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_system_metrics":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_system_metrics":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_system_metrics":"status_id":w -> "report_metric_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "report_system_metrics":"system_metric_id":w -> "system_metrics":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_project_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_project_indicator_targets":"elipses":w -> "project_indicators":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_project_indicators":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_project_indicators":"project_indicator_id":w -> "project_indicators":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_project_indicators":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_project_indicators":"status_id":w -> "report_indicator_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_indicator_targets":"elipses":w -> "standard_indicators":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_indicators":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_indicators":"report_id":w -> "reports":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_indicators":"standard_indicator_id":w -> "standard_indicators":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "report_standard_indicators":"status_id":w -> "report_indicator_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"config_id":w -> "project_report_configs":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -136,6 +136,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/applications.html"
     target="_top"
     tooltip="applications"
+  ];
+  "auto_calculated_indicators" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16"><B>auto_calculated_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/auto_calculated_indicators.html"
+    target="_top"
+    tooltip="auto_calculated_indicators"
   ];
   "default_voters" [
    label=<
@@ -225,16 +236,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="project_accelerator_details"
   ];
-  "project_metrics" [
+  "project_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16"><B>project_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="107" HEIGHT="16"><B>project_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
-    URL="../../tables/project_metrics.html"
+    URL="../../tables/project_indicators.html"
     target="_top"
-    tooltip="project_metrics"
+    tooltip="project_indicators"
   ];
   "project_modules" [
    label=<
@@ -315,6 +326,28 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="report_achievements"
   ];
+  "report_auto_calculated_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="244" HEIGHT="16"><B>report_auto_calculated_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/report_auto_calculated_indicator_targets.html"
+    target="_top"
+    tooltip="report_auto_calculated_indicator_targets"
+  ];
+  "report_auto_calculated_indicators" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="203" HEIGHT="16"><B>report_auto_calculated_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/report_auto_calculated_indicators.html"
+    target="_top"
+    tooltip="report_auto_calculated_indicators"
+  ];
   "report_challenges" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -339,16 +372,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="report_frequencies"
   ];
-  "report_metric_statuses" [
+  "report_indicator_statuses" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="137" HEIGHT="16"><B>report_metric_statuses</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="152" HEIGHT="16"><B>report_indicator_statuses</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">6 &gt;</TD></TR>
     </TABLE>>
-    URL="../../tables/report_metric_statuses.html"
+    URL="../../tables/report_indicator_statuses.html"
     target="_top"
-    tooltip="report_metric_statuses"
+    tooltip="report_indicator_statuses"
   ];
   "report_photos" [
    label=<
@@ -363,27 +396,27 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="report_photos"
   ];
-  "report_project_metric_targets" [
+  "report_project_indicator_targets" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="177" HEIGHT="16"><B>report_project_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="192" HEIGHT="16"><B>report_project_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/report_project_metric_targets.html"
+    URL="../../tables/report_project_indicator_targets.html"
     target="_top"
-    tooltip="report_project_metric_targets"
+    tooltip="report_project_indicator_targets"
   ];
-  "report_project_metrics" [
+  "report_project_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="136" HEIGHT="16"><B>report_project_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="150" HEIGHT="16"><B>report_project_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/report_project_metrics.html"
+    URL="../../tables/report_project_indicators.html"
     target="_top"
-    tooltip="report_project_metrics"
+    tooltip="report_project_indicators"
   ];
   "report_quarters" [
    label=<
@@ -396,27 +429,27 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="report_quarters"
   ];
-  "report_standard_metric_targets" [
+  "report_standard_indicator_targets" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="189" HEIGHT="16"><B>report_standard_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="204" HEIGHT="16"><B>report_standard_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/report_standard_metric_targets.html"
+    URL="../../tables/report_standard_indicator_targets.html"
     target="_top"
-    tooltip="report_standard_metric_targets"
+    tooltip="report_standard_indicator_targets"
   ];
-  "report_standard_metrics" [
+  "report_standard_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="147" HEIGHT="16"><B>report_standard_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="162" HEIGHT="16"><B>report_standard_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../tables/report_standard_metrics.html"
+    URL="../../tables/report_standard_indicators.html"
     target="_top"
-    tooltip="report_standard_metrics"
+    tooltip="report_standard_indicators"
   ];
   "report_statuses" [
    label=<
@@ -429,28 +462,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/report_statuses.html"
     target="_top"
     tooltip="report_statuses"
-  ];
-  "report_system_metric_targets" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="178" HEIGHT="16"><B>report_system_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/report_system_metric_targets.html"
-    target="_top"
-    tooltip="report_system_metric_targets"
-  ];
-  "report_system_metrics" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="136" HEIGHT="16"><B>report_system_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/report_system_metrics.html"
-    target="_top"
-    tooltip="report_system_metrics"
   ];
   "reports" [
    label=<
@@ -482,16 +493,16 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="reports"
   ];
-  "standard_metrics" [
+  "standard_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="104" HEIGHT="16"><B>standard_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="119" HEIGHT="16"><B>standard_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
     </TABLE>>
-    URL="../../tables/standard_metrics.html"
+    URL="../../tables/standard_indicators.html"
     target="_top"
-    tooltip="standard_metrics"
+    tooltip="standard_indicators"
   ];
   "submission_documents" [
    label=<
@@ -514,17 +525,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/submissions.html"
     target="_top"
     tooltip="submissions"
-  ];
-  "system_metrics" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="93" HEIGHT="16"><B>system_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/system_metrics.html"
-    target="_top"
-    tooltip="system_metrics"
   ];
   "user_internal_interests" [
    label=<

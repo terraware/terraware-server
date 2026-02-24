@@ -1,3 +1,7 @@
+07a3a44dd6b SW-8081 Rename metric tangent tables (#3963)
+a6ba02d3d15 SW-8081 Rename system_metric tables (#3962)
+7deb6719ac3 SW-8081 Rename standard_metric tables (#3961)
+95f838fb0cc SW-8081 Rename project_metric tables (#3960)
 a09b1520dd5 SW-7926 Remove remaining references to cohorts (#3947)
 94ccd12c519 SW-8059 Rename CohortPhase to AcceleratorPhase (#3946)
 438c01ba2ca SW-7926 Drop cohorts table (#3945)

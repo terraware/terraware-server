@@ -161,8 +161,8 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="project_metrics.project_id references projects.id via project_metrics_project_id_fkey"><a href='../../accelerator/tables/project_metrics.html'>project_metrics</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">project_metrics_project_id_fkey</td>
+                                                <td title="project_indicators.project_id references projects.id via project_indicators_project_id_fkey"><a href='../../accelerator/tables/project_indicators.html'>project_indicators</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">project_indicators_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -196,18 +196,18 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="report_project_metric_targets.project_id references projects.id via report_project_metric_targets_project_id_fkey"><a href='../../accelerator/tables/report_project_metric_targets.html'>report_project_metric_targets</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">report_project_metric_targets_project_id_fkey</td>
+                                                <td title="report_auto_calculated_indicator_targets.project_id references projects.id via report_auto_calculated_indicator_targets_project_id_fkey"><a href='../../accelerator/tables/report_auto_calculated_indicator_targets.html'>report_auto_calculated_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">report_auto_calculated_indicator_targets_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="report_standard_metric_targets.project_id references projects.id via report_standard_metric_targets_project_id_fkey"><a href='../../accelerator/tables/report_standard_metric_targets.html'>report_standard_metric_targets</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">report_standard_metric_targets_project_id_fkey</td>
+                                                <td title="report_project_indicator_targets.project_id references projects.id via report_project_indicator_targets_project_id_fkey"><a href='../../accelerator/tables/report_project_indicator_targets.html'>report_project_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">report_project_indicator_targets_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="report_system_metric_targets.project_id references projects.id via report_system_metric_targets_project_id_fkey"><a href='../../accelerator/tables/report_system_metric_targets.html'>report_system_metric_targets</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">report_system_metric_targets_project_id_fkey</td>
+                                                <td title="report_standard_indicator_targets.project_id references projects.id via report_standard_indicator_targets_project_id_fkey"><a href='../../accelerator/tables/report_standard_indicator_targets.html'>report_standard_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">report_standard_indicator_targets_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -256,6 +256,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="published_auto_calculated_indicator_targets.project_id references projects.id via published_auto_calculated_indicator_targets_project_id_fkey"><a href='../../funder/tables/published_auto_calculated_indic_3b9a1510.html'>published_auto_calculated_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">published_auto_calculated_indicator_targets_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="published_project_carbon_certs.project_id references projects.id via published_project_carbon_certs_project_id_fkey"><a href='../../funder/tables/published_project_carbon_certs.html'>published_project_carbon_certs</a><span class='relatedKey'>.project_id</span></td>
                                                 <td class="constraint detail">published_project_carbon_certs_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -266,13 +271,13 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="published_project_land_use.project_id references projects.id via published_project_land_use_project_id_fkey"><a href='../../funder/tables/published_project_land_use.html'>published_project_land_use</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">published_project_land_use_project_id_fkey</td>
+                                                <td title="published_project_indicator_targets.project_id references projects.id via published_project_indicator_targets_project_id_fkey"><a href='../../funder/tables/published_project_indicator_targets.html'>published_project_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">published_project_indicator_targets_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="published_project_metric_targets.project_id references projects.id via published_project_metric_targets_project_id_fkey"><a href='../../funder/tables/published_project_metric_targets.html'>published_project_metric_targets</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">published_project_metric_targets_project_id_fkey</td>
+                                                <td title="published_project_land_use.project_id references projects.id via published_project_land_use_project_id_fkey"><a href='../../funder/tables/published_project_land_use.html'>published_project_land_use</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">published_project_land_use_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -286,13 +291,8 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="published_standard_metric_targets.project_id references projects.id via published_standard_metric_targets_project_id_fkey"><a href='../../funder/tables/published_standard_metric_targets.html'>published_standard_metric_targets</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">published_standard_metric_targets_project_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="published_system_metric_targets.project_id references projects.id via published_system_metric_targets_project_id_fkey"><a href='../../funder/tables/published_system_metric_targets.html'>published_system_metric_targets</a><span class='relatedKey'>.project_id</span></td>
-                                                <td class="constraint detail">published_system_metric_targets_project_id_fkey</td>
+                                                <td title="published_standard_indicator_targets.project_id references projects.id via published_standard_indicator_targets_project_id_fkey"><a href='../../funder/tables/published_standard_indicator_targets.html'>published_standard_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">published_standard_indicator_targets_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>

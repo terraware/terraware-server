@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware.accelerator</h4>
-                                <p>Generated on Mon Feb 23 18:39 GMT 2026</p>
+                                <p>Generated on Tue Feb 24 17:42 GMT 2026</p>
                             </div>
                         </div>
                     </div>
@@ -224,13 +224,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Which variables are associated with which deliverables. Note that this includes variables that have been replaced by newer versions, and the newer versions might be associated with different deliverables.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_project_metrics.html">report_project_metrics</a></td>
+                                        <td class="detail"><a href="tables/indicator_levels.html">indicator_levels</a></td>
+                                        <td class="detail" align="right">3</td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for project metrics.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Levels of indicators for reports.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/modules.html">modules</a></td>
@@ -240,6 +240,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Possible steps in the workflow of an accelerator phase.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/report_auto_calculated_indicators.html">report_auto_calculated_indicators</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for auto-calculated indicators.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_scores.html">project_scores</a></td>
@@ -278,6 +287,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of accelerator project reports.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/standard_indicators.html">standard_indicators</a></td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Standard non-system indicators for every project to measure in accelerator reports.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/event_types.html">event_types</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -314,13 +332,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Project score categories.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_project_metric_targets.html">report_project_metric_targets</a></td>
+                                        <td class="detail"><a href="tables/report_standard_indicator_targets.html">report_standard_indicator_targets</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Project targets for project-specific metrics by year</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Project targets for standard indicators by year</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/accelerator_phases.html">accelerator_phases</a></td>
@@ -330,15 +348,6 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Phases that accelerator projects go through.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_system_metrics.html">report_system_metrics</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">10</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for system metrics.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/deliverable_documents.html">deliverable_documents</a></td>
@@ -357,6 +366,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Possible statuses for an application to the accelerator program.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/indicator_categories.html">indicator_categories</a></td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Categories of indicators for reports.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_overall_scores.html">project_overall_scores</a></td>
@@ -422,15 +440,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Users to automatically be assigned as voters on accelerator projects.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_system_metric_targets.html">report_system_metric_targets</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Project targets for system metrics by year</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/submission_documents.html">submission_documents</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">4</td>
@@ -449,6 +458,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Photos for the accelerator project report.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/project_indicators.html">project_indicators</a></td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">9</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Indicators specific to one project to report on.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/activity_types.html">activity_types</a></td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
@@ -456,6 +474,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of entries in the activity log.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/auto_calculated_indicators.html">auto_calculated_indicators</a></td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">7</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Accelerator report auto-calculated indicators, for which data are collected from Terraware.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/activity_media_files.html">activity_media_files</a></td>
@@ -467,13 +494,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Information about activity-related media such as photos and videos.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_standard_metrics.html">report_standard_metrics</a></td>
+                                        <td class="detail"><a href="tables/report_auto_calculated_indicator_targets.html">report_auto_calculated_indicator_targets</a></td>
                                         <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">8</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for standard metrics.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Project targets for auto-calculated indicators by year</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/submission_statuses.html">submission_statuses</a></td>
@@ -512,15 +539,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Deliverable due dates overrides for projects.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_standard_metric_targets.html">report_standard_metric_targets</a></td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Project targets for standard metrics by year</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/internal_interests.html">internal_interests</a></td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">0</td>
@@ -530,13 +548,13 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of notification categories for internal users.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/report_metric_statuses.html">report_metric_statuses</a></td>
-                                        <td class="detail" align="right">6</td>
+                                        <td class="detail"><a href="tables/report_project_indicator_targets.html">report_project_indicator_targets</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">4</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of accelerator project report metrics.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Project targets for project-specific indicators by year</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/activity_media_types.html">activity_media_types</a></td>
@@ -546,6 +564,15 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of media that can be associated with entries in the activity log.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/report_project_indicators.html">report_project_indicators</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for project indicators.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_report_configs.html">project_report_configs</a></td>
@@ -566,15 +593,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Frequencies of accelerator project reports. Acts as the report type as well.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/project_metrics.html">project_metrics</a></td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">9</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Metrics specific to one project to report on.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/applications.html">applications</a></td>
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">5</td>
@@ -582,6 +600,24 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about projects that are applying for the accelerator program.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/report_indicator_statuses.html">report_indicator_statuses</a></td>
+                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of accelerator project report indicators.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/report_standard_indicators.html">report_standard_indicators</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">4</td>
+                                        <td class="detail" align="right">8</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Report entries of targets and values for standard indicators.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/application_histories.html">application_histories</a></td>
@@ -609,15 +645,6 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Statuses of events for an accelerator module</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/system_metrics.html">system_metrics</a></td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">7</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Accelerator report metrics, for which data are collected from Terraware.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/submissions.html">submissions</a></td>
@@ -683,24 +710,6 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Deal pipelines for accelerator projects.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/metric_components.html">metric_components</a></td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Components of metrics for reports.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/standard_metrics.html">standard_metrics</a></td>
-                                        <td class="detail" align="right">4</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">8</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>Standard non-system metrics for every project to measure in accelerator reports.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/project_votes.html">project_votes</a></td>
                                         <td class="detail" align="right">0</td>
                                         <td class="detail" align="right">6</td>
@@ -735,15 +744,6 @@
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Locations where uploaded documents are stored.</p></td>
-                                    </tr>
-                                    <tr class="tbl even" valign="top">
-                                        <td class="detail"><a href="tables/metric_types.html">metric_types</a></td>
-                                        <td class="detail" align="right">3</td>
-                                        <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">-1</td>
-                                        <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Types of metrics for reports.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/application_modules.html">application_modules</a></td>

@@ -136,6 +136,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="report_auto_calculated_indicators.report_id references reports.id via report_auto_calculated_indicators_report_id_fkey"><a href='report_auto_calculated_indicators.html'>report_auto_calculated_indicators</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">report_auto_calculated_indicators_report_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="report_challenges.report_id references reports.id via report_challenges_report_id_fkey"><a href='report_challenges.html'>report_challenges</a><span class='relatedKey'>.report_id</span></td>
                                                 <td class="constraint detail">report_challenges_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -146,18 +151,13 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="report_project_metrics.report_id references reports.id via report_project_metrics_report_id_fkey"><a href='report_project_metrics.html'>report_project_metrics</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">report_project_metrics_report_id_fkey</td>
+                                                <td title="report_project_indicators.report_id references reports.id via report_project_indicators_report_id_fkey"><a href='report_project_indicators.html'>report_project_indicators</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">report_project_indicators_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="report_standard_metrics.report_id references reports.id via report_standard_metrics_report_id_fkey"><a href='report_standard_metrics.html'>report_standard_metrics</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">report_standard_metrics_report_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="report_system_metrics.report_id references reports.id via report_system_metrics_report_id_fkey"><a href='report_system_metrics.html'>report_system_metrics</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">report_system_metrics_report_id_fkey</td>
+                                                <td title="report_standard_indicators.report_id references reports.id via report_standard_indicators_report_id_fkey"><a href='report_standard_indicators.html'>report_standard_indicators</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">report_standard_indicators_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -460,13 +460,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="reports.report_frequency_id references report_frequencies.id via reports_report_frequency_id_fkey"><a href='report_frequencies.html'>report_frequencies</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">reports_report_frequency_id_fkey</td>
+                                                <td title="reports.[config_id, report_frequency_id] references project_report_configs.[id, report_frequency_id] via reports_config_id_report_frequency_id_fkey"><a href='project_report_configs.html'>project_report_configs</a><span class='relatedKey'>.report_frequency_id</span></td>
+                                                <td class="constraint detail">reports_config_id_report_frequency_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="reports.[config_id, report_frequency_id] references project_report_configs.[id, report_frequency_id] via reports_config_id_report_frequency_id_fkey"><a href='project_report_configs.html'>project_report_configs</a><span class='relatedKey'>.report_frequency_id</span></td>
-                                                <td class="constraint detail">reports_config_id_report_frequency_id_fkey</td>
+                                                <td title="reports.report_frequency_id references report_frequencies.id via reports_report_frequency_id_fkey"><a href='report_frequencies.html'>report_frequencies</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">reports_report_frequency_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -623,12 +623,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>quarterly_report_has_quarter</td>
-                                    <td>(((report_frequency_id &#61; 1) AND (report_quarter_id IS NOT NULL) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM start_date)) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM end_date))) OR ((report_frequency_id &lt;&gt; 1) AND (report_quarter_id IS NULL)))</td>
-                                </tr>
-                                <tr>
                                     <td>reports_check</td>
                                     <td>(end_date &gt; start_date)</td>
+                                </tr>
+                                <tr>
+                                    <td>quarterly_report_has_quarter</td>
+                                    <td>(((report_frequency_id &#61; 1) AND (report_quarter_id IS NOT NULL) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM start_date)) AND ((report_quarter_id)::numeric &#61; EXTRACT(quarter FROM end_date))) OR ((report_frequency_id &lt;&gt; 1) AND (report_quarter_id IS NULL)))</td>
                                 </tr>
                                 <tr>
                                     <td>submitted_status</td>

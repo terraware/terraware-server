@@ -22,7 +22,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "accelerator.participant_project_species":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.participant_project_species":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_accelerator_details":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.project_metrics":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.project_indicators":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_modules":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_overall_scores":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_overall_scores":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -36,12 +36,12 @@ digraph "twoDegreesRelationshipsDiagram" {
   "accelerator.project_votes":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_votes":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_votes":"user_id":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.report_project_metric_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.report_project_metrics":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.report_standard_metric_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.report_standard_metrics":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.report_system_metric_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.report_system_metrics":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_auto_calculated_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_auto_calculated_indicators":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_project_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_project_indicators":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_standard_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_standard_indicators":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.reports":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.reports":"modified_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.reports":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -71,18 +71,18 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funder.funding_entity_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_activities":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_activities":"published_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_auto_calculated_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_carbon_certs":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_details":"country_code":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_details":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_details":"published_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_project_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_land_use":"land_use_model_type_id":w -> "land_use_model_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_land_use":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "funder.published_project_metric_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_sdg":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_reports":"published_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "funder.published_standard_metric_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
-  "funder.published_system_metric_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_standard_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batch_details_history":"created_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batch_details_history":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.batch_photos":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -323,17 +323,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="accelerator.project_accelerator_details"
   ];
-  "accelerator.project_metrics" [
+  "accelerator.project_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="164" HEIGHT="16"><B>accelerator.project_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="92" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="179" HEIGHT="16"><B>accelerator.project_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="107" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../../accelerator/tables/project_metrics.html"
+    URL="../../../accelerator/tables/project_indicators.html"
     target="_top"
-    tooltip="accelerator.project_metrics"
+    tooltip="accelerator.project_indicators"
   ];
   "accelerator.project_modules" [
    label=<
@@ -404,74 +404,74 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="accelerator.project_votes"
   ];
-  "accelerator.report_project_metric_targets" [
+  "accelerator.report_auto_calculated_indicator_targets" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="249" HEIGHT="16"><B>accelerator.report_project_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="177" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="316" HEIGHT="16"><B>accelerator.report_auto_calculated_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="244" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../../accelerator/tables/report_project_metric_targets.html"
+    URL="../../../accelerator/tables/report_auto_calculated_indicator_targets.html"
     target="_top"
-    tooltip="accelerator.report_project_metric_targets"
+    tooltip="accelerator.report_auto_calculated_indicator_targets"
   ];
-  "accelerator.report_project_metrics" [
+  "accelerator.report_auto_calculated_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16"><B>accelerator.report_project_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="274" HEIGHT="16"><B>accelerator.report_auto_calculated_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../../accelerator/tables/report_project_metrics.html"
+    URL="../../../accelerator/tables/report_auto_calculated_indicators.html"
     target="_top"
-    tooltip="accelerator.report_project_metrics"
+    tooltip="accelerator.report_auto_calculated_indicators"
   ];
-  "accelerator.report_standard_metric_targets" [
+  "accelerator.report_project_indicator_targets" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="261" HEIGHT="16"><B>accelerator.report_standard_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="189" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="264" HEIGHT="16"><B>accelerator.report_project_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="192" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../../accelerator/tables/report_standard_metric_targets.html"
+    URL="../../../accelerator/tables/report_project_indicator_targets.html"
     target="_top"
-    tooltip="accelerator.report_standard_metric_targets"
+    tooltip="accelerator.report_project_indicator_targets"
   ];
-  "accelerator.report_standard_metrics" [
+  "accelerator.report_project_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="219" HEIGHT="16"><B>accelerator.report_standard_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="222" HEIGHT="16"><B>accelerator.report_project_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../../accelerator/tables/report_standard_metrics.html"
+    URL="../../../accelerator/tables/report_project_indicators.html"
     target="_top"
-    tooltip="accelerator.report_standard_metrics"
+    tooltip="accelerator.report_project_indicators"
   ];
-  "accelerator.report_system_metric_targets" [
+  "accelerator.report_standard_indicator_targets" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="249" HEIGHT="16"><B>accelerator.report_system_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="178" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="276" HEIGHT="16"><B>accelerator.report_standard_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="204" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../../accelerator/tables/report_system_metric_targets.html"
+    URL="../../../accelerator/tables/report_standard_indicator_targets.html"
     target="_top"
-    tooltip="accelerator.report_system_metric_targets"
+    tooltip="accelerator.report_standard_indicator_targets"
   ];
-  "accelerator.report_system_metrics" [
+  "accelerator.report_standard_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="207" HEIGHT="16"><B>accelerator.report_system_metrics</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="234" HEIGHT="16"><B>accelerator.report_standard_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../../accelerator/tables/report_system_metrics.html"
+    URL="../../../accelerator/tables/report_standard_indicators.html"
     target="_top"
-    tooltip="accelerator.report_system_metrics"
+    tooltip="accelerator.report_standard_indicators"
   ];
   "accelerator.reports" [
    label=<
@@ -628,6 +628,18 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="funder.published_activities"
   ];
+  "funder.published_auto_calculated_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="309" HEIGHT="16"><B>funder.published_auto_calculated_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="265" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_auto_calculated_indic_3b9a1510.html"
+    target="_top"
+    tooltip="funder.published_auto_calculated_indicator_targets"
+  ];
   "funder.published_project_carbon_certs" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -651,6 +663,18 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="funder.published_project_details"
   ];
+  "funder.published_project_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="257" HEIGHT="16"><B>funder.published_project_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="213" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_project_indicator_targets.html"
+    target="_top"
+    tooltip="funder.published_project_indicator_targets"
+  ];
   "funder.published_project_land_use" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -663,18 +687,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../funder/tables/published_project_land_use.html"
     target="_top"
     tooltip="funder.published_project_land_use"
-  ];
-  "funder.published_project_metric_targets" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="242" HEIGHT="16"><B>funder.published_project_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="198" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../../funder/tables/published_project_metric_targets.html"
-    target="_top"
-    tooltip="funder.published_project_metric_targets"
   ];
   "funder.published_project_sdg" [
    label=<
@@ -699,29 +711,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="funder.published_reports"
   ];
-  "funder.published_standard_metric_targets" [
+  "funder.published_standard_indicator_targets" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="254" HEIGHT="16"><B>funder.published_standard_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="210" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="269" HEIGHT="16"><B>funder.published_standard_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="225" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
-    URL="../../../funder/tables/published_standard_metric_targets.html"
+    URL="../../../funder/tables/published_standard_indicator_targets.html"
     target="_top"
-    tooltip="funder.published_standard_metric_targets"
-  ];
-  "funder.published_system_metric_targets" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="242" HEIGHT="16"><B>funder.published_system_metric_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="198" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../../funder/tables/published_system_metric_targets.html"
-    target="_top"
-    tooltip="funder.published_system_metric_targets"
+    tooltip="funder.published_standard_indicator_targets"
   ];
   "nursery.batch_details_history" [
    label=<
