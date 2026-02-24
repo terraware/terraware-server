@@ -261,6 +261,38 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="common_indicators" remarks="Standard non-system indicators for every project to measure in accelerator reports." schema="accelerator" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="common_indicator_id" foreignKey="report_common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_common_indicator_targets"/>
+            <child column="common_indicator_id" foreignKey="report_common_indicators_common_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_common_indicators"/>
+            <child column="common_indicator_id" foreignKey="published_common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_targets"/>
+            <child column="common_indicator_id" foreignKey="published_report_common_indicators_common_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_common_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="level_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="common_indicators_level_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_levels"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="category_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="common_indicators_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_categories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="ref_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="is_publishable" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="unit" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="primary_data_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="true" digits="0" id="10" name="active" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="class_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="standard_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_classes"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="frequency_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="standard_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
+         </column>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="common_indicators_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="deal_stages" remarks="(Enum) Stages in the deal workflow that a project progresses through." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="deal_stage_id" foreignKey="project_accelerator_details_deal_stage_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
@@ -305,8 +337,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
             <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -485,8 +517,8 @@
       <table name="indicator_categories" remarks="(Enum) Categories of indicators for reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="category_id" foreignKey="auto_calculated_indicators_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="auto_calculated_indicators"/>
+            <child column="category_id" foreignKey="common_indicators_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="common_indicators"/>
             <child column="category_id" foreignKey="project_indicators_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_indicators"/>
-            <child column="category_id" foreignKey="standard_indicators_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_indicators"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -500,8 +532,8 @@
       <table name="indicator_classes" remarks="(Enum) Classes of accelerator project report indicators." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="class_id" foreignKey="auto_calculated_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="auto_calculated_indicators"/>
+            <child column="class_id" foreignKey="standard_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="common_indicators"/>
             <child column="class_id" foreignKey="project_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_indicators"/>
-            <child column="class_id" foreignKey="standard_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_indicators"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -515,8 +547,8 @@
       <table name="indicator_frequencies" remarks="(Enum) Reporting frequencies of accelerator project report indicators." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="frequency_id" foreignKey="auto_calculated_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="auto_calculated_indicators"/>
+            <child column="frequency_id" foreignKey="standard_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="common_indicators"/>
             <child column="frequency_id" foreignKey="project_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_indicators"/>
-            <child column="frequency_id" foreignKey="standard_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_indicators"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -530,8 +562,8 @@
       <table name="indicator_levels" remarks="(Enum) Levels of indicators for reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="level_id" foreignKey="auto_calculated_indicators_level_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="auto_calculated_indicators"/>
+            <child column="level_id" foreignKey="common_indicators_level_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="common_indicators"/>
             <child column="level_id" foreignKey="project_indicators_level_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_indicators"/>
-            <child column="level_id" foreignKey="standard_indicators_level_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_indicators"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -919,14 +951,65 @@
          </index>
          <checkConstraint constraint="(&quot;position&quot; &gt;= 0)" name="report_challenges_position_check"/>
       </table>
+      <table name="report_common_indicator_targets" remarks="Project targets for standard indicators by year" schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="common_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="common_indicator_id" sequenceNumberInPK="2"/>
+         <primaryKey column="year" sequenceNumberInPK="3"/>
+         <index name="report_common_indicator_targets_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="common_indicator_id"/>
+            <column ascending="true" name="year"/>
+         </index>
+         <index name="report_common_indicator_targets_project_id_year_idx" unique="false">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="year"/>
+         </index>
+      </table>
+      <table name="report_common_indicators" remarks="Report entries of targets and values for standard indicators." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_common_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="common_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="report_common_indicators_common_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="common_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="report_common_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_indicator_statuses"/>
+         </column>
+         <primaryKey column="report_id" sequenceNumberInPK="1"/>
+         <primaryKey column="common_indicator_id" sequenceNumberInPK="2"/>
+         <index name="report_common_indicators_pkey" unique="true">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="common_indicator_id"/>
+         </index>
+         <index name="report_standard_metrics_report_id_standard_metric_id_idx" unique="false">
+            <column ascending="true" name="report_id"/>
+            <column ascending="true" name="common_indicator_id"/>
+         </index>
+         <index name="report_standard_metrics_standard_metric_id_idx" unique="false">
+            <column ascending="true" name="common_indicator_id"/>
+         </index>
+      </table>
       <table name="report_indicator_statuses" remarks="(Enum) Statuses of accelerator project report indicators." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="status_id" foreignKey="report_auto_calculated_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_auto_calculated_indicators"/>
+            <child column="status_id" foreignKey="report_common_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_common_indicators"/>
             <child column="status_id" foreignKey="report_project_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_indicators"/>
-            <child column="status_id" foreignKey="report_standard_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_standard_indicators"/>
             <child column="status_id" foreignKey="published_report_auto_calculated_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_auto_calculated_indicators"/>
+            <child column="status_id" foreignKey="published_report_common_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_common_indicators"/>
             <child column="status_id" foreignKey="published_report_project_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_project_indicators"/>
-            <child column="status_id" foreignKey="published_report_standard_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_standard_indicators"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
@@ -1025,57 +1108,6 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
-      <table name="report_standard_indicator_targets" remarks="Project targets for standard indicators by year" schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="report_standard_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="standard_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="report_standard_indicator_targets_standard_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="standard_indicators"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <primaryKey column="project_id" sequenceNumberInPK="1"/>
-         <primaryKey column="standard_indicator_id" sequenceNumberInPK="2"/>
-         <primaryKey column="year" sequenceNumberInPK="3"/>
-         <index name="report_standard_indicator_targets_pkey" unique="true">
-            <column ascending="true" name="project_id"/>
-            <column ascending="true" name="standard_indicator_id"/>
-            <column ascending="true" name="year"/>
-         </index>
-         <index name="report_standard_indicator_targets_project_id_year_idx" unique="false">
-            <column ascending="true" name="project_id"/>
-            <column ascending="true" name="year"/>
-         </index>
-      </table>
-      <table name="report_standard_indicators" remarks="Report entries of targets and values for standard indicators." schema="accelerator" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="report_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="report_standard_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="reports"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="standard_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="report_standard_indicators_standard_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="standard_indicators"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="modified_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="report_standard_indicators_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_indicator_statuses"/>
-         </column>
-         <primaryKey column="report_id" sequenceNumberInPK="1"/>
-         <primaryKey column="standard_indicator_id" sequenceNumberInPK="2"/>
-         <index name="report_standard_indicators_pkey" unique="true">
-            <column ascending="true" name="report_id"/>
-            <column ascending="true" name="standard_indicator_id"/>
-         </index>
-         <index name="report_standard_metrics_report_id_standard_metric_id_idx" unique="false">
-            <column ascending="true" name="report_id"/>
-            <column ascending="true" name="standard_indicator_id"/>
-         </index>
-         <index name="report_standard_metrics_standard_metric_id_idx" unique="false">
-            <column ascending="true" name="standard_indicator_id"/>
-         </index>
-      </table>
       <table name="report_statuses" remarks="(Enum) Statuses of accelerator project reports." schema="accelerator" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="status_id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="reports"/>
@@ -1094,9 +1126,9 @@
             <child column="report_id" foreignKey="report_achievements_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_achievements"/>
             <child column="report_id" foreignKey="report_auto_calculated_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_auto_calculated_indicators"/>
             <child column="report_id" foreignKey="report_challenges_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_challenges"/>
+            <child column="report_id" foreignKey="report_common_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_common_indicators"/>
             <child column="report_id" foreignKey="report_photos_report_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_photos"/>
             <child column="report_id" foreignKey="report_project_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_indicators"/>
-            <child column="report_id" foreignKey="report_standard_indicators_report_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_standard_indicators"/>
             <child column="report_id" foreignKey="published_reports_report_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_reports"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="config_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -1150,38 +1182,6 @@
          </index>
          <index name="score_categories_name_key" unique="true">
             <column ascending="true" name="name"/>
-         </index>
-      </table>
-      <table name="standard_indicators" remarks="Standard non-system indicators for every project to measure in accelerator reports." schema="accelerator" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="standard_indicator_id" foreignKey="report_standard_indicator_targets_standard_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_standard_indicator_targets"/>
-            <child column="standard_indicator_id" foreignKey="report_standard_indicators_standard_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_standard_indicators"/>
-            <child column="standard_indicator_id" foreignKey="published_report_standard_indicators_standard_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_standard_indicators"/>
-            <child column="standard_indicator_id" foreignKey="published_standard_indicator_targets_standard_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_standard_indicator_targets"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="level_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="standard_indicators_level_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_levels"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="category_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="standard_indicators_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_categories"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="description" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="ref_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="is_publishable" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="unit" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="primary_data_source" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="true" digits="0" id="10" name="active" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="class_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="standard_indicators_class_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_classes"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="frequency_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="standard_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
-         </column>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
-         <index name="standard_indicators_pkey" unique="true">
-            <column ascending="true" name="id"/>
          </index>
       </table>
       <table name="submission_documents" remarks="Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents." schema="accelerator" type="TABLE">

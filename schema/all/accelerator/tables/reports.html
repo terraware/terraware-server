@@ -146,6 +146,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="report_common_indicators.report_id references reports.id via report_common_indicators_report_id_fkey"><a href='report_common_indicators.html'>report_common_indicators</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">report_common_indicators_report_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="report_photos.report_id references reports.id via report_photos_report_id_fkey"><a href='report_photos.html'>report_photos</a><span class='relatedKey'>.report_id</span></td>
                                                 <td class="constraint detail">report_photos_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -153,11 +158,6 @@
                                             <tr>
                                                 <td title="report_project_indicators.report_id references reports.id via report_project_indicators_report_id_fkey"><a href='report_project_indicators.html'>report_project_indicators</a><span class='relatedKey'>.report_id</span></td>
                                                 <td class="constraint detail">report_project_indicators_report_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="report_standard_indicators.report_id references reports.id via report_standard_indicators_report_id_fkey"><a href='report_standard_indicators.html'>report_standard_indicators</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">report_standard_indicators_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -209,14 +209,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="reports.project_id references public.projects.id via reports_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">reports_project_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="reports.[config_id, project_id] references project_report_configs.[id, project_id] via reports_config_id_project_id_fkey"><a href='project_report_configs.html'>project_report_configs</a><span class='relatedKey'>.project_id</span></td>
                                                 <td class="constraint detail">reports_config_id_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="reports.project_id references public.projects.id via reports_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">reports_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -596,12 +596,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>reports_check</td>
-                                    <td>(end_date &gt; start_date)</td>
-                                </tr>
-                                <tr>
                                     <td>submitted_status</td>
                                     <td>(((status_id &#61; 1) AND (submitted_by IS NULL) AND (submitted_time IS NULL)) OR (((status_id &#61; 2) OR (status_id &#61; 3) OR (status_id &#61; 4)) AND (submitted_by IS NOT NULL) AND (submitted_time IS NOT NULL)) OR (status_id &#61; 5))</td>
+                                </tr>
+                                <tr>
+                                    <td>reports_check</td>
+                                    <td>(end_date &gt; start_date)</td>
                                 </tr>
                                 </tbody>
                             </table>

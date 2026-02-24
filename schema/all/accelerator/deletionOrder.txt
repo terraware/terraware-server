@@ -3,8 +3,8 @@ project_votes
 participant_project_species
 project_scores
 submission_documents
-report_standard_indicators
 report_project_indicators
+report_common_indicators
 report_auto_calculated_indicators
 deliverable_documents
 user_internal_interests
@@ -15,8 +15,8 @@ application_modules
 application_histories
 activity_media_files
 submission_snapshots
-report_standard_indicator_targets
 report_project_indicator_targets
+report_common_indicator_targets
 report_auto_calculated_indicator_targets
 project_modules
 event_projects
@@ -37,7 +37,7 @@ activities
 report_photos
 project_indicators
 deliverable_categories
-standard_indicators
+common_indicators
 auto_calculated_indicators
 score_categories
 report_statuses

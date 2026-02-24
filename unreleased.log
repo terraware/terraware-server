@@ -1,3 +1,5 @@
+be893ec27f6 SW-8083 Rename Project Metric internal variables to Project Indicator (#3977)
+a497c50a289 SW-8082 Rename Standard Indicators to Common Indicators (#3976)
 f7acdc352ee SW-8082 Add new indicator columns (#3973)
 fdb2ddb5377 SW-8082 Remove report_frequencies table (#3972)
 07a3a44dd6b SW-8081 Rename metric tangent tables (#3963)

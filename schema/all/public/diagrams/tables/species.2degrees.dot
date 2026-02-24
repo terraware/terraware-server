@@ -32,8 +32,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "accelerator.project_votes":"elipses":w -> "projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_votes":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.report_auto_calculated_indicators":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.report_common_indicators":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.report_project_indicators":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "accelerator.report_standard_indicators":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.reports":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.reports":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.reports":"elipses":w -> "projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -370,6 +370,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="accelerator.report_auto_calculated_indicators"
   ];
+  "accelerator.report_common_indicators" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="232" HEIGHT="16"><B>accelerator.report_common_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/report_common_indicators.html"
+    target="_top"
+    tooltip="accelerator.report_common_indicators"
+  ];
   "accelerator.report_project_indicators" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -380,17 +391,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../accelerator/tables/report_project_indicators.html"
     target="_top"
     tooltip="accelerator.report_project_indicators"
-  ];
-  "accelerator.report_standard_indicators" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="234" HEIGHT="16"><B>accelerator.report_standard_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../../accelerator/tables/report_standard_indicators.html"
-    target="_top"
-    tooltip="accelerator.report_standard_indicators"
   ];
   "accelerator.reports" [
    label=<

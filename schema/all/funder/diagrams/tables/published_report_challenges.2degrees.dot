@@ -3,9 +3,9 @@ digraph "twoDegreesRelationshipsDiagram" {
   "published_report_achievements":"elipses":w -> "published_reports":"report_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_report_auto_calculated_indicators":"elipses":w -> "published_reports":"report_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_report_challenges":"report_id":w -> "published_reports":"report_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "published_report_common_indicators":"elipses":w -> "published_reports":"report_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_report_photos":"elipses":w -> "published_reports":"report_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_report_project_indicators":"elipses":w -> "published_reports":"report_id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "published_report_standard_indicators":"elipses":w -> "published_reports":"report_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_reports":"project_id":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_reports":"published_by":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_reports":"report_id":w -> "accelerator.reports":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
@@ -68,6 +68,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="published_report_challenges"
   ];
+  "published_report_common_indicators" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="224" HEIGHT="16"><B>published_report_common_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/published_report_common_indicators.html"
+    target="_top"
+    tooltip="published_report_common_indicators"
+  ];
   "published_report_photos" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -89,17 +100,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/published_report_project_indicators.html"
     target="_top"
     tooltip="published_report_project_indicators"
-  ];
-  "published_report_standard_indicators" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="226" HEIGHT="16"><B>published_report_standard_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/published_report_standard_indicators.html"
-    target="_top"
-    tooltip="published_report_standard_indicators"
   ];
   "published_reports" [
    label=<

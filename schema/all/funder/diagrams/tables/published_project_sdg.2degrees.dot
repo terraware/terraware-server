@@ -3,13 +3,13 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funding_entity_projects":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_activities":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_auto_calculated_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "published_common_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_project_carbon_certs":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_project_details":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "published_project_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_project_land_use":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_project_sdg":"project_id":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "published_reports":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "published_standard_indicator_targets":"elipses":w -> "public.projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funding_entity_projects" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -42,6 +42,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/published_auto_calculated_indic_3b9a1510.html"
     target="_top"
     tooltip="published_auto_calculated_indicator_targets"
+  ];
+  "published_common_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="223" HEIGHT="16"><B>published_common_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/published_common_indicator_targets.html"
+    target="_top"
+    tooltip="published_common_indicator_targets"
   ];
   "published_project_carbon_certs" [
    label=<
@@ -109,17 +120,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/published_reports.html"
     target="_top"
     tooltip="published_reports"
-  ];
-  "published_standard_indicator_targets" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="225" HEIGHT="16"><B>published_standard_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/published_standard_indicator_targets.html"
-    target="_top"
-    tooltip="published_standard_indicator_targets"
   ];
   "public.projects" [
    label=<

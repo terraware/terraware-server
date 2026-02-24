@@ -2,8 +2,8 @@ hubspot_token
 default_voters
 deliverable_documents
 submission_documents
-report_standard_indicators
 report_project_indicators
+report_common_indicators
 report_auto_calculated_indicators
 project_votes
 project_vote_decisions
@@ -12,8 +12,8 @@ project_accelerator_details
 application_modules
 activity_media_files
 submission_snapshots
-report_standard_indicator_targets
 report_project_indicator_targets
+report_common_indicator_targets
 report_auto_calculated_indicator_targets
 project_modules
 participant_project_species
@@ -36,7 +36,7 @@ reports
 project_report_configs
 project_indicators
 deliverable_categories
-standard_indicators
+common_indicators
 auto_calculated_indicators
 modules
 score_categories

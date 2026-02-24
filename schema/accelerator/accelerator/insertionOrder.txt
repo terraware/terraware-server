@@ -22,7 +22,7 @@ report_statuses
 score_categories
 modules
 auto_calculated_indicators
-standard_indicators
+common_indicators
 deliverable_categories
 project_indicators
 project_report_configs
@@ -45,8 +45,8 @@ event_projects
 participant_project_species
 project_modules
 report_auto_calculated_indicator_targets
+report_common_indicator_targets
 report_project_indicator_targets
-report_standard_indicator_targets
 submission_snapshots
 activity_media_files
 application_modules
@@ -55,8 +55,8 @@ project_scores
 project_vote_decisions
 project_votes
 report_auto_calculated_indicators
+report_common_indicators
 report_project_indicators
-report_standard_indicators
 submission_documents
 deliverable_documents
 default_voters

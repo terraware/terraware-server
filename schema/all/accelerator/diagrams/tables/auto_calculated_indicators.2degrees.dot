@@ -4,6 +4,10 @@ digraph "twoDegreesRelationshipsDiagram" {
   "auto_calculated_indicators":"class_id":w -> "indicator_classes":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "auto_calculated_indicators":"frequency_id":w -> "indicator_frequencies":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "auto_calculated_indicators":"level_id":w -> "indicator_levels":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "common_indicators":"elipses":w -> "indicator_categories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "common_indicators":"elipses":w -> "indicator_classes":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "common_indicators":"elipses":w -> "indicator_frequencies":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "common_indicators":"elipses":w -> "indicator_levels":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_indicators":"elipses":w -> "indicator_categories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_indicators":"elipses":w -> "indicator_classes":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "project_indicators":"elipses":w -> "indicator_frequencies":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -19,10 +23,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "reports":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"elipses":w -> "public.projects":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "reports":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "standard_indicators":"elipses":w -> "indicator_categories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "standard_indicators":"elipses":w -> "indicator_classes":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "standard_indicators":"elipses":w -> "indicator_frequencies":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "standard_indicators":"elipses":w -> "indicator_levels":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_auto_calculated_indicator_targets":"auto_calculated_indicator_id":w -> "auto_calculated_indicators":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_report_auto_calculated_indicators":"auto_calculated_indicator_id":w -> "auto_calculated_indicators":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_report_auto_calculated_indicators":"status_id":w -> "report_indicator_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -48,6 +48,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/auto_calculated_indicators.html"
     target="_top"
     tooltip="auto_calculated_indicators"
+  ];
+  "common_indicators" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="117" HEIGHT="16"><B>common_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/common_indicators.html"
+    target="_top"
+    tooltip="common_indicators"
   ];
   "indicator_categories" [
    label=<
@@ -158,17 +169,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/reports.html"
     target="_top"
     tooltip="reports"
-  ];
-  "standard_indicators" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="119" HEIGHT="16"><B>standard_indicators</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">4 &gt;</TD></TR>
-    </TABLE>>
-    URL="../../tables/standard_indicators.html"
-    target="_top"
-    tooltip="standard_indicators"
   ];
   "funder.published_auto_calculated_indicator_targets" [
    label=<

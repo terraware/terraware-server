@@ -246,13 +246,13 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="report_project_indicators.modified_by references users.id via report_project_indicators_modified_by_fkey"><a href='../../accelerator/tables/report_project_indicators.html'>report_project_indicators</a><span class='relatedKey'>.modified_by</span></td>
-                                                <td class="constraint detail">report_project_indicators_modified_by_fkey</td>
+                                                <td title="report_common_indicators.modified_by references users.id via report_common_indicators_modified_by_fkey"><a href='../../accelerator/tables/report_common_indicators.html'>report_common_indicators</a><span class='relatedKey'>.modified_by</span></td>
+                                                <td class="constraint detail">report_common_indicators_modified_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="report_standard_indicators.modified_by references users.id via report_standard_indicators_modified_by_fkey"><a href='../../accelerator/tables/report_standard_indicators.html'>report_standard_indicators</a><span class='relatedKey'>.modified_by</span></td>
-                                                <td class="constraint detail">report_standard_indicators_modified_by_fkey</td>
+                                                <td title="report_project_indicators.modified_by references users.id via report_project_indicators_modified_by_fkey"><a href='../../accelerator/tables/report_project_indicators.html'>report_project_indicators</a><span class='relatedKey'>.modified_by</span></td>
+                                                <td class="constraint detail">report_project_indicators_modified_by_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
@@ -1050,16 +1050,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>users_auth_id_check</td>
-                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>users_first_name_check</td>
                                     <td>(first_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>users_last_name_check</td>
                                     <td>(last_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>users_auth_id_check</td>
+                                    <td>(auth_id !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

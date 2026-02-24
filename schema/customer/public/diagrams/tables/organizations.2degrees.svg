@@ -984,125 +984,125 @@
 <polygon fill="black" stroke="black" points="511.35,-4093.67 517.95,-4099.44 515.17,-4094.83 519,-4096 519,-4096 519,-4096 515.17,-4094.83 520.05,-4092.56 511.35,-4093.67 511.35,-4093.67"/>
 <ellipse fill="none" stroke="black" cx="508.29" cy="-4092.74" rx="3.2" ry="3.2"/>
 </g>
-<!-- accelerator.report_project_indicator_targets -->
+<!-- accelerator.report_common_indicator_targets -->
 <g id="node24" class="node">
+<title>accelerator.report_common_indicator_targets</title>
+<g id="a_node24"><a xlink:href="../../../accelerator/tables/report_common_indicator_targets.html" xlink:title="accelerator.report_common_indicator_targets" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1228,-4427 1228,-4485 1546,-4485 1546,-4427 1228,-4427"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1228,-4463 1228,-4485 1546,-4485 1546,-4463 1228,-4463"/>
+<polygon fill="none" stroke="black" points="1228,-4463 1228,-4485 1546,-4485 1546,-4463 1228,-4463"/>
+<text text-anchor="start" x="1233" y="-4472.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_common_indicator_targets</text>
+<text text-anchor="start" x="1507" y="-4471.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1228,-4445 1228,-4463 1546,-4463 1546,-4445 1228,-4445"/>
+<text text-anchor="start" x="1231" y="-4451.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1228,-4427 1228,-4445 1371,-4445 1371,-4427 1228,-4427"/>
+<polygon fill="none" stroke="black" points="1228,-4427 1228,-4445 1371,-4445 1371,-4427 1228,-4427"/>
+<text text-anchor="start" x="1231" y="-4433.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="1371,-4427 1371,-4445 1472,-4445 1472,-4427 1371,-4427"/>
+<polygon fill="none" stroke="black" points="1371,-4427 1371,-4445 1472,-4445 1472,-4427 1371,-4427"/>
+<text text-anchor="start" x="1435" y="-4433.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1472,-4427 1472,-4445 1546,-4445 1546,-4427 1472,-4427"/>
+<polygon fill="none" stroke="black" points="1472,-4427 1472,-4445 1546,-4445 1546,-4427 1472,-4427"/>
+<text text-anchor="start" x="1536" y="-4433.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- accelerator.report_common_indicator_targets&#45;&gt;projects -->
+<g id="edge39" class="edge">
+<title>accelerator.report_common_indicator_targets:w&#45;&gt;projects:e</title>
+<path fill="none" stroke="black" d="M1213.19,-4449.48C1205.89,-4442.97 1204.45,-4430.26 1199,-4417 1156.58,-4313.74 1200.16,-4274.28 1166,-4168 1137.14,-4078.21 1078.69,-3983.07 1046.34,-3934.22"/>
+<polygon fill="black" stroke="black" points="1219.4,-4451.51 1225.88,-4457.42 1223.2,-4452.76 1227,-4454 1227,-4454 1227,-4454 1223.2,-4452.76 1228.12,-4450.58 1219.4,-4451.51 1219.4,-4451.51"/>
+<ellipse fill="none" stroke="black" cx="1216.36" cy="-4450.52" rx="3.2" ry="3.2"/>
+</g>
+<!-- accelerator.report_common_indicators -->
+<g id="node25" class="node">
+<title>accelerator.report_common_indicators</title>
+<g id="a_node25"><a xlink:href="../../../accelerator/tables/report_common_indicators.html" xlink:title="accelerator.report_common_indicators" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="541,-3990 541,-4048 817,-4048 817,-3990 541,-3990"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="541,-4026 541,-4048 817,-4048 817,-4026 541,-4026"/>
+<polygon fill="none" stroke="black" points="541,-4026 541,-4048 817,-4048 817,-4026 541,-4026"/>
+<text text-anchor="start" x="546" y="-4035.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_common_indicators</text>
+<text text-anchor="start" x="778" y="-4034.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="541,-4008 541,-4026 817,-4026 817,-4008 541,-4008"/>
+<text text-anchor="start" x="544" y="-4014.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="541,-3990 541,-4008 663,-4008 663,-3990 541,-3990"/>
+<polygon fill="none" stroke="black" points="541,-3990 541,-4008 663,-4008 663,-3990 541,-3990"/>
+<text text-anchor="start" x="544" y="-3996.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="663,-3990 663,-4008 753,-4008 753,-3990 663,-3990"/>
+<polygon fill="none" stroke="black" points="663,-3990 663,-4008 753,-4008 753,-3990 663,-3990"/>
+<text text-anchor="start" x="716" y="-3996.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="753,-3990 753,-4008 817,-4008 817,-3990 753,-3990"/>
+<polygon fill="none" stroke="black" points="753,-3990 753,-4008 817,-4008 817,-3990 753,-3990"/>
+<text text-anchor="start" x="807" y="-3996.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- accelerator.report_common_indicators&#45;&gt;users -->
+<g id="edge40" class="edge">
+<title>accelerator.report_common_indicators:w&#45;&gt;users:e</title>
+<path fill="none" stroke="black" d="M526.24,-4012.65C416.87,-3942.11 392.07,-3035.56 388.13,-2850.03"/>
+<polygon fill="black" stroke="black" points="532.37,-4014.59 538.91,-4020.43 536.19,-4015.79 540,-4017 540,-4017 540,-4017 536.19,-4015.79 541.09,-4013.57 532.37,-4014.59 532.37,-4014.59"/>
+<ellipse fill="none" stroke="black" cx="529.32" cy="-4013.62" rx="3.2" ry="3.2"/>
+</g>
+<!-- accelerator.report_project_indicator_targets -->
+<g id="node26" class="node">
 <title>accelerator.report_project_indicator_targets</title>
-<g id="a_node24"><a xlink:href="../../../accelerator/tables/report_project_indicator_targets.html" xlink:title="accelerator.report_project_indicator_targets" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1233,-4427 1233,-4485 1541,-4485 1541,-4427 1233,-4427"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1233,-4463 1233,-4485 1541,-4485 1541,-4463 1233,-4463"/>
-<polygon fill="none" stroke="black" points="1233,-4463 1233,-4485 1541,-4485 1541,-4463 1233,-4463"/>
-<text text-anchor="start" x="1238" y="-4472.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_project_indicator_targets</text>
-<text text-anchor="start" x="1502" y="-4471.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1233,-4445 1233,-4463 1541,-4463 1541,-4445 1233,-4445"/>
-<text text-anchor="start" x="1236" y="-4451.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1233,-4427 1233,-4445 1371,-4445 1371,-4427 1233,-4427"/>
-<polygon fill="none" stroke="black" points="1233,-4427 1233,-4445 1371,-4445 1371,-4427 1233,-4427"/>
-<text text-anchor="start" x="1236" y="-4433.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="1371,-4427 1371,-4445 1469,-4445 1469,-4427 1371,-4427"/>
-<polygon fill="none" stroke="black" points="1371,-4427 1371,-4445 1469,-4445 1469,-4427 1371,-4427"/>
-<text text-anchor="start" x="1432" y="-4433.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1469,-4427 1469,-4445 1541,-4445 1541,-4427 1469,-4427"/>
-<polygon fill="none" stroke="black" points="1469,-4427 1469,-4445 1541,-4445 1541,-4427 1469,-4427"/>
-<text text-anchor="start" x="1531" y="-4433.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<g id="a_node26"><a xlink:href="../../../accelerator/tables/report_project_indicator_targets.html" xlink:title="accelerator.report_project_indicator_targets" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1233,-4348 1233,-4406 1541,-4406 1541,-4348 1233,-4348"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1233,-4384 1233,-4406 1541,-4406 1541,-4384 1233,-4384"/>
+<polygon fill="none" stroke="black" points="1233,-4384 1233,-4406 1541,-4406 1541,-4384 1233,-4384"/>
+<text text-anchor="start" x="1238" y="-4393.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_project_indicator_targets</text>
+<text text-anchor="start" x="1502" y="-4392.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1233,-4366 1233,-4384 1541,-4384 1541,-4366 1233,-4366"/>
+<text text-anchor="start" x="1236" y="-4372.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1233,-4348 1233,-4366 1371,-4366 1371,-4348 1233,-4348"/>
+<polygon fill="none" stroke="black" points="1233,-4348 1233,-4366 1371,-4366 1371,-4348 1233,-4348"/>
+<text text-anchor="start" x="1236" y="-4354.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="1371,-4348 1371,-4366 1469,-4366 1469,-4348 1371,-4348"/>
+<polygon fill="none" stroke="black" points="1371,-4348 1371,-4366 1469,-4366 1469,-4348 1371,-4348"/>
+<text text-anchor="start" x="1432" y="-4354.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1469,-4348 1469,-4366 1541,-4366 1541,-4348 1469,-4348"/>
+<polygon fill="none" stroke="black" points="1469,-4348 1469,-4366 1541,-4366 1541,-4348 1469,-4348"/>
+<text text-anchor="start" x="1531" y="-4354.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- accelerator.report_project_indicator_targets&#45;&gt;projects -->
-<g id="edge39" class="edge">
+<g id="edge41" class="edge">
 <title>accelerator.report_project_indicator_targets:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1217.9,-4450.48C1208.44,-4444.49 1205.67,-4431.55 1199,-4417 1152.46,-4315.53 1200.16,-4274.28 1166,-4168 1137.14,-4078.21 1078.69,-3983.07 1046.34,-3934.22"/>
-<polygon fill="black" stroke="black" points="1224.24,-4452.06 1231.13,-4457.49 1228.12,-4453.03 1232,-4454 1232,-4454 1232,-4454 1228.12,-4453.03 1232.87,-4450.51 1224.24,-4452.06 1224.24,-4452.06"/>
-<ellipse fill="none" stroke="black" cx="1221.13" cy="-4451.29" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1217.6,-4373.44C1170.18,-4361.54 1206.69,-4282.67 1166,-4168 1134.37,-4078.87 1076.77,-3983.08 1045.36,-3934.06"/>
+<polygon fill="black" stroke="black" points="1224.05,-4374.14 1231.61,-4378.58 1228.02,-4374.57 1232,-4375 1232,-4375 1232,-4375 1228.02,-4374.57 1232.39,-4371.42 1224.05,-4374.14 1224.05,-4374.14"/>
+<ellipse fill="none" stroke="black" cx="1220.87" cy="-4373.79" rx="3.2" ry="3.2"/>
 </g>
 <!-- accelerator.report_project_indicators -->
-<g id="node25" class="node">
+<g id="node27" class="node">
 <title>accelerator.report_project_indicators</title>
-<g id="a_node25"><a xlink:href="../../../accelerator/tables/report_project_indicators.html" xlink:title="accelerator.report_project_indicators" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="546,-3990 546,-4048 812,-4048 812,-3990 546,-3990"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="546,-4026 546,-4048 812,-4048 812,-4026 546,-4026"/>
-<polygon fill="none" stroke="black" points="546,-4026 546,-4048 812,-4048 812,-4026 546,-4026"/>
-<text text-anchor="start" x="551" y="-4035.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_project_indicators</text>
-<text text-anchor="start" x="773" y="-4034.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="546,-4008 546,-4026 812,-4026 812,-4008 546,-4008"/>
-<text text-anchor="start" x="549" y="-4014.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="546,-3990 546,-4008 663,-4008 663,-3990 546,-3990"/>
-<polygon fill="none" stroke="black" points="546,-3990 546,-4008 663,-4008 663,-3990 546,-3990"/>
-<text text-anchor="start" x="549" y="-3996.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="663,-3990 663,-4008 751,-4008 751,-3990 663,-3990"/>
-<polygon fill="none" stroke="black" points="663,-3990 663,-4008 751,-4008 751,-3990 663,-3990"/>
-<text text-anchor="start" x="714" y="-3996.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="751,-3990 751,-4008 812,-4008 812,-3990 751,-3990"/>
-<polygon fill="none" stroke="black" points="751,-3990 751,-4008 812,-4008 812,-3990 751,-3990"/>
-<text text-anchor="start" x="802" y="-3996.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<g id="a_node27"><a xlink:href="../../../accelerator/tables/report_project_indicators.html" xlink:title="accelerator.report_project_indicators" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="546,-3911 546,-3969 812,-3969 812,-3911 546,-3911"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="546,-3947 546,-3969 812,-3969 812,-3947 546,-3947"/>
+<polygon fill="none" stroke="black" points="546,-3947 546,-3969 812,-3969 812,-3947 546,-3947"/>
+<text text-anchor="start" x="551" y="-3956.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_project_indicators</text>
+<text text-anchor="start" x="773" y="-3955.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="546,-3929 546,-3947 812,-3947 812,-3929 546,-3929"/>
+<text text-anchor="start" x="549" y="-3935.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="546,-3911 546,-3929 663,-3929 663,-3911 546,-3911"/>
+<polygon fill="none" stroke="black" points="546,-3911 546,-3929 663,-3929 663,-3911 546,-3911"/>
+<text text-anchor="start" x="549" y="-3917.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="663,-3911 663,-3929 751,-3929 751,-3911 663,-3911"/>
+<polygon fill="none" stroke="black" points="663,-3911 663,-3929 751,-3929 751,-3911 663,-3911"/>
+<text text-anchor="start" x="714" y="-3917.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="751,-3911 751,-3929 812,-3929 812,-3911 751,-3911"/>
+<polygon fill="none" stroke="black" points="751,-3911 751,-3929 812,-3929 812,-3911 751,-3911"/>
+<text text-anchor="start" x="802" y="-3917.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- accelerator.report_project_indicators&#45;&gt;users -->
-<g id="edge40" class="edge">
-<title>accelerator.report_project_indicators:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M531.21,-4012.65C421.49,-3942.11 392.97,-3035.56 388.26,-2850.03"/>
-<polygon fill="black" stroke="black" points="537.37,-4014.59 543.92,-4020.43 541.19,-4015.8 545,-4017 545,-4017 545,-4017 541.19,-4015.8 546.08,-4013.57 537.37,-4014.59 537.37,-4014.59"/>
-<ellipse fill="none" stroke="black" cx="534.32" cy="-4013.63" rx="3.2" ry="3.2"/>
-</g>
-<!-- accelerator.report_standard_indicator_targets -->
-<g id="node26" class="node">
-<title>accelerator.report_standard_indicator_targets</title>
-<g id="a_node26"><a xlink:href="../../../accelerator/tables/report_standard_indicator_targets.html" xlink:title="accelerator.report_standard_indicator_targets" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1227,-4348 1227,-4406 1547,-4406 1547,-4348 1227,-4348"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1227,-4384 1227,-4406 1547,-4406 1547,-4384 1227,-4384"/>
-<polygon fill="none" stroke="black" points="1227,-4384 1227,-4406 1547,-4406 1547,-4384 1227,-4384"/>
-<text text-anchor="start" x="1232" y="-4393.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_standard_indicator_targets</text>
-<text text-anchor="start" x="1508" y="-4392.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1227,-4366 1227,-4384 1547,-4384 1547,-4366 1227,-4366"/>
-<text text-anchor="start" x="1230" y="-4372.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1227,-4348 1227,-4366 1371,-4366 1371,-4348 1227,-4348"/>
-<polygon fill="none" stroke="black" points="1227,-4348 1227,-4366 1371,-4366 1371,-4348 1227,-4348"/>
-<text text-anchor="start" x="1230" y="-4354.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="1371,-4348 1371,-4366 1472,-4366 1472,-4348 1371,-4348"/>
-<polygon fill="none" stroke="black" points="1371,-4348 1371,-4366 1472,-4366 1472,-4348 1371,-4348"/>
-<text text-anchor="start" x="1435" y="-4354.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1472,-4348 1472,-4366 1547,-4366 1547,-4348 1472,-4348"/>
-<polygon fill="none" stroke="black" points="1472,-4348 1472,-4366 1547,-4366 1547,-4348 1472,-4348"/>
-<text text-anchor="start" x="1537" y="-4354.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- accelerator.report_standard_indicator_targets&#45;&gt;projects -->
-<g id="edge41" class="edge">
-<title>accelerator.report_standard_indicator_targets:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1212.36,-4370.18C1205.64,-4363.51 1204.59,-4350.83 1199,-4338 1168.25,-4267.45 1191.74,-4240.53 1166,-4168 1134.37,-4078.87 1076.77,-3983.08 1045.36,-3934.06"/>
-<polygon fill="black" stroke="black" points="1218.46,-4372.33 1224.8,-4378.39 1222.23,-4373.67 1226,-4375 1226,-4375 1226,-4375 1222.23,-4373.67 1227.2,-4371.61 1218.46,-4372.33 1218.46,-4372.33"/>
-<ellipse fill="none" stroke="black" cx="1215.44" cy="-4371.27" rx="3.2" ry="3.2"/>
-</g>
-<!-- accelerator.report_standard_indicators -->
-<g id="node27" class="node">
-<title>accelerator.report_standard_indicators</title>
-<g id="a_node27"><a xlink:href="../../../accelerator/tables/report_standard_indicators.html" xlink:title="accelerator.report_standard_indicators" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="540,-3911 540,-3969 818,-3969 818,-3911 540,-3911"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="540,-3947 540,-3969 818,-3969 818,-3947 540,-3947"/>
-<polygon fill="none" stroke="black" points="540,-3947 540,-3969 818,-3969 818,-3947 540,-3947"/>
-<text text-anchor="start" x="545" y="-3956.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">accelerator.report_standard_indicators</text>
-<text text-anchor="start" x="779" y="-3955.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="540,-3929 540,-3947 818,-3947 818,-3929 540,-3929"/>
-<text text-anchor="start" x="543" y="-3935.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="540,-3911 540,-3929 663,-3929 663,-3911 540,-3911"/>
-<polygon fill="none" stroke="black" points="540,-3911 540,-3929 663,-3929 663,-3911 540,-3911"/>
-<text text-anchor="start" x="543" y="-3917.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="663,-3911 663,-3929 754,-3929 754,-3911 663,-3911"/>
-<polygon fill="none" stroke="black" points="663,-3911 663,-3929 754,-3929 754,-3911 663,-3911"/>
-<text text-anchor="start" x="717" y="-3917.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="754,-3911 754,-3929 818,-3929 818,-3911 754,-3911"/>
-<polygon fill="none" stroke="black" points="754,-3911 754,-3929 818,-3929 818,-3911 754,-3911"/>
-<text text-anchor="start" x="808" y="-3917.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- accelerator.report_standard_indicators&#45;&gt;users -->
 <g id="edge42" class="edge">
-<title>accelerator.report_standard_indicators:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M525.22,-3933.35C423.59,-3863.52 393.65,-3028.28 388.4,-2850.25"/>
-<polygon fill="black" stroke="black" points="531.42,-3935.44 537.85,-3941.41 535.21,-3936.72 539,-3938 539,-3938 539,-3938 535.21,-3936.72 540.15,-3934.59 531.42,-3935.44 531.42,-3935.44"/>
-<ellipse fill="none" stroke="black" cx="528.39" cy="-3934.42" rx="3.2" ry="3.2"/>
+<title>accelerator.report_project_indicators:w&#45;&gt;users:e</title>
+<path fill="none" stroke="black" d="M531.18,-3933.35C429.11,-3863.52 394.76,-3028.28 388.58,-2850.25"/>
+<polygon fill="black" stroke="black" points="537.42,-3935.45 543.85,-3941.41 541.21,-3936.72 545,-3938 545,-3938 545,-3938 541.21,-3936.72 546.15,-3934.59 537.42,-3935.45 537.42,-3935.45"/>
+<ellipse fill="none" stroke="black" cx="534.39" cy="-3934.43" rx="3.2" ry="3.2"/>
 </g>
 <!-- accelerator.reports -->
 <g id="node28" class="node">
@@ -1659,40 +1659,70 @@
 <polygon fill="black" stroke="black" points="1204.03,-4211.68 1207.6,-4219.69 1207.01,-4214.34 1210,-4217 1210,-4217 1210,-4217 1207.01,-4214.34 1212.4,-4214.31 1204.03,-4211.68 1204.03,-4211.68"/>
 <ellipse fill="none" stroke="black" cx="1201.64" cy="-4209.55" rx="3.2" ry="3.2"/>
 </g>
-<!-- funder.published_project_carbon_certs -->
+<!-- funder.published_common_indicator_targets -->
 <g id="node43" class="node">
+<title>funder.published_common_indicator_targets</title>
+<g id="a_node43"><a xlink:href="../../../funder/tables/published_common_indicator_targets.html" xlink:title="funder.published_common_indicator_targets" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1231.5,-4111 1231.5,-4169 1542.5,-4169 1542.5,-4111 1231.5,-4111"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1232,-4147 1232,-4169 1543,-4169 1543,-4147 1232,-4147"/>
+<polygon fill="none" stroke="black" points="1232,-4147 1232,-4169 1543,-4169 1543,-4147 1232,-4147"/>
+<text text-anchor="start" x="1237" y="-4156.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_common_indicator_targets</text>
+<text text-anchor="start" x="1504" y="-4155.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1232,-4129 1232,-4147 1543,-4147 1543,-4129 1232,-4129"/>
+<text text-anchor="start" x="1235" y="-4135.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1232,-4111 1232,-4129 1372,-4129 1372,-4111 1232,-4111"/>
+<polygon fill="none" stroke="black" points="1232,-4111 1232,-4129 1372,-4129 1372,-4111 1232,-4111"/>
+<text text-anchor="start" x="1235" y="-4117.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="1372,-4111 1372,-4129 1471,-4129 1471,-4111 1372,-4111"/>
+<polygon fill="none" stroke="black" points="1372,-4111 1372,-4129 1471,-4129 1471,-4111 1372,-4111"/>
+<text text-anchor="start" x="1434" y="-4117.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1471,-4111 1471,-4129 1543,-4129 1543,-4111 1471,-4111"/>
+<polygon fill="none" stroke="black" points="1471,-4111 1471,-4129 1543,-4129 1543,-4111 1471,-4111"/>
+<text text-anchor="start" x="1533" y="-4117.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- funder.published_common_indicator_targets&#45;&gt;projects -->
+<g id="edge73" class="edge">
+<title>funder.published_common_indicator_targets:w&#45;&gt;projects:e</title>
+<path fill="none" stroke="black" d="M1216.53,-4137.14C1118.1,-4125.43 1058.16,-3996.44 1034.78,-3934.2"/>
+<polygon fill="black" stroke="black" points="1223.01,-4137.53 1230.79,-4141.59 1227.01,-4137.76 1231,-4138 1231,-4138 1231,-4138 1227.01,-4137.76 1231.21,-4134.41 1223.01,-4137.53 1223.01,-4137.53"/>
+<ellipse fill="none" stroke="black" cx="1219.82" cy="-4137.34" rx="3.2" ry="3.2"/>
+</g>
+<!-- funder.published_project_carbon_certs -->
+<g id="node44" class="node">
 <title>funder.published_project_carbon_certs</title>
-<g id="a_node43"><a xlink:href="../../../funder/tables/published_project_carbon_certs.html" xlink:title="funder.published_project_carbon_certs" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1249.5,-4111 1249.5,-4169 1524.5,-4169 1524.5,-4111 1249.5,-4111"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1250,-4147 1250,-4169 1525,-4169 1525,-4147 1250,-4147"/>
-<polygon fill="none" stroke="black" points="1250,-4147 1250,-4169 1525,-4169 1525,-4147 1250,-4147"/>
-<text text-anchor="start" x="1255" y="-4156.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_project_carbon_certs</text>
-<text text-anchor="start" x="1486" y="-4155.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1250,-4129 1250,-4147 1525,-4147 1525,-4129 1250,-4129"/>
-<text text-anchor="start" x="1253" y="-4135.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1250,-4111 1250,-4129 1372,-4129 1372,-4111 1250,-4111"/>
-<polygon fill="none" stroke="black" points="1250,-4111 1250,-4129 1372,-4129 1372,-4111 1250,-4111"/>
-<text text-anchor="start" x="1253" y="-4117.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="1372,-4111 1372,-4129 1462,-4129 1462,-4111 1372,-4111"/>
-<polygon fill="none" stroke="black" points="1372,-4111 1372,-4129 1462,-4129 1462,-4111 1372,-4111"/>
-<text text-anchor="start" x="1425" y="-4117.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1462,-4111 1462,-4129 1525,-4129 1525,-4111 1462,-4111"/>
-<polygon fill="none" stroke="black" points="1462,-4111 1462,-4129 1525,-4129 1525,-4111 1462,-4111"/>
-<text text-anchor="start" x="1515" y="-4117.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<g id="a_node44"><a xlink:href="../../../funder/tables/published_project_carbon_certs.html" xlink:title="funder.published_project_carbon_certs" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1249.5,-4032 1249.5,-4090 1524.5,-4090 1524.5,-4032 1249.5,-4032"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1250,-4068 1250,-4090 1525,-4090 1525,-4068 1250,-4068"/>
+<polygon fill="none" stroke="black" points="1250,-4068 1250,-4090 1525,-4090 1525,-4068 1250,-4068"/>
+<text text-anchor="start" x="1255" y="-4077.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_project_carbon_certs</text>
+<text text-anchor="start" x="1486" y="-4076.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1250,-4050 1250,-4068 1525,-4068 1525,-4050 1250,-4050"/>
+<text text-anchor="start" x="1253" y="-4056.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1250,-4032 1250,-4050 1372,-4050 1372,-4032 1250,-4032"/>
+<polygon fill="none" stroke="black" points="1250,-4032 1250,-4050 1372,-4050 1372,-4032 1250,-4032"/>
+<text text-anchor="start" x="1253" y="-4038.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="1372,-4032 1372,-4050 1462,-4050 1462,-4032 1372,-4032"/>
+<polygon fill="none" stroke="black" points="1372,-4032 1372,-4050 1462,-4050 1462,-4032 1372,-4032"/>
+<text text-anchor="start" x="1425" y="-4038.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1462,-4032 1462,-4050 1525,-4050 1525,-4032 1462,-4032"/>
+<polygon fill="none" stroke="black" points="1462,-4032 1462,-4050 1525,-4050 1525,-4032 1462,-4032"/>
+<text text-anchor="start" x="1515" y="-4038.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- funder.published_project_carbon_certs&#45;&gt;projects -->
-<g id="edge73" class="edge">
+<g id="edge74" class="edge">
 <title>funder.published_project_carbon_certs:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1234.56,-4137.22C1131.49,-4125.96 1063.58,-3996.56 1036.62,-3934.2"/>
-<polygon fill="black" stroke="black" points="1241.01,-4137.57 1248.8,-4141.59 1245.01,-4137.78 1249,-4138 1249,-4138 1249,-4138 1245.01,-4137.78 1249.2,-4134.41 1241.01,-4137.57 1241.01,-4137.57"/>
-<ellipse fill="none" stroke="black" cx="1237.82" cy="-4137.39" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1234.44,-4058.26C1154.15,-4050.21 1083.86,-3977.83 1048.26,-3934.12"/>
+<polygon fill="black" stroke="black" points="1241.01,-4058.6 1248.82,-4062.6 1245.01,-4058.8 1249,-4059 1249,-4059 1249,-4059 1245.01,-4058.8 1249.18,-4055.4 1241.01,-4058.6 1241.01,-4058.6"/>
+<ellipse fill="none" stroke="black" cx="1237.81" cy="-4058.43" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_project_details -->
-<g id="node44" class="node">
+<g id="node45" class="node">
 <title>funder.published_project_details</title>
-<g id="a_node44"><a xlink:href="../../../funder/tables/published_project_details.html" xlink:title="funder.published_project_details" target="_top">
+<g id="a_node45"><a xlink:href="../../../funder/tables/published_project_details.html" xlink:title="funder.published_project_details" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1267.5,-2768 1267.5,-2826 1506.5,-2826 1506.5,-2768 1267.5,-2768"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1268,-2804 1268,-2826 1507,-2826 1507,-2804 1268,-2804"/>
 <polygon fill="none" stroke="black" points="1268,-2804 1268,-2826 1507,-2826 1507,-2804 1268,-2804"/>
@@ -1713,120 +1743,120 @@
 </g>
 </g>
 <!-- funder.published_project_details&#45;&gt;users -->
-<g id="edge76" class="edge">
+<g id="edge77" class="edge">
 <title>funder.published_project_details:w&#45;&gt;users:e</title>
 <path fill="none" stroke="black" d="M1252.57,-2796.15C1228.83,-2800.35 1220.33,-2815.75 1199,-2837 1179.34,-2856.59 1188.55,-2873.83 1166,-2890 1047.29,-2975.12 991.11,-2948.22 846,-2965 772.27,-2973.52 579.29,-2996.33 512,-2965 461.47,-2941.48 424.12,-2886.23 404.11,-2850.29"/>
 <polygon fill="black" stroke="black" points="1259.03,-2795.63 1267.29,-2798.59 1263.01,-2795.32 1267,-2795 1267,-2795 1267,-2795 1263.01,-2795.32 1266.71,-2791.41 1259.03,-2795.63 1259.03,-2795.63"/>
 <ellipse fill="none" stroke="black" cx="1255.84" cy="-2795.89" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_project_details&#45;&gt;projects -->
-<g id="edge75" class="edge">
+<g id="edge76" class="edge">
 <title>funder.published_project_details:w&#45;&gt;projects:e</title>
 <path fill="none" stroke="black" d="M1252.55,-2795.81C1227.35,-2798.95 1215.16,-2811.43 1199,-2837 1163.17,-2893.7 1175.82,-3070.65 1166,-3137 1123.91,-3421.29 1053.21,-3761.4 1030.65,-3867.64"/>
 <polygon fill="black" stroke="black" points="1259.01,-2795.45 1267.2,-2798.59 1263.01,-2795.22 1267,-2795 1267,-2795 1267,-2795 1263.01,-2795.22 1266.8,-2791.41 1259.01,-2795.45 1259.01,-2795.45"/>
 <ellipse fill="none" stroke="black" cx="1255.82" cy="-2795.63" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_project_details&#45;&gt;countries -->
-<g id="edge74" class="edge">
+<g id="edge75" class="edge">
 <title>funder.published_project_details:w&#45;&gt;countries:e</title>
 <path fill="none" stroke="black" d="M1252.39,-2795.99C1228.04,-2799.64 1217.73,-2813.42 1199,-2837 1170.42,-2872.99 1197.22,-2901.27 1166,-2935 1162.72,-2938.54 850.73,-3070.04 846,-3071 700.54,-3100.63 649.41,-3127.17 512,-3071 386.33,-3019.62 368.39,-2970.58 294,-2857 281.85,-2838.45 234.13,-2706.74 211.73,-2644.03"/>
 <polygon fill="black" stroke="black" points="1259.02,-2795.54 1267.24,-2798.59 1263.01,-2795.27 1267,-2795 1267,-2795 1267,-2795 1263.01,-2795.27 1266.76,-2791.41 1259.02,-2795.54 1259.02,-2795.54"/>
 <ellipse fill="none" stroke="black" cx="1255.83" cy="-2795.75" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_project_indicator_targets -->
-<g id="node45" class="node">
+<g id="node46" class="node">
 <title>funder.published_project_indicator_targets</title>
-<g id="a_node45"><a xlink:href="../../../funder/tables/published_project_indicator_targets.html" xlink:title="funder.published_project_indicator_targets" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1236.5,-4032 1236.5,-4090 1537.5,-4090 1537.5,-4032 1236.5,-4032"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1237,-4068 1237,-4090 1538,-4090 1538,-4068 1237,-4068"/>
-<polygon fill="none" stroke="black" points="1237,-4068 1237,-4090 1538,-4090 1538,-4068 1237,-4068"/>
-<text text-anchor="start" x="1242" y="-4077.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_project_indicator_targets</text>
-<text text-anchor="start" x="1499" y="-4076.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1237,-4050 1237,-4068 1538,-4068 1538,-4050 1237,-4050"/>
-<text text-anchor="start" x="1240" y="-4056.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1237,-4032 1237,-4050 1372,-4050 1372,-4032 1237,-4032"/>
-<polygon fill="none" stroke="black" points="1237,-4032 1237,-4050 1372,-4050 1372,-4032 1237,-4032"/>
-<text text-anchor="start" x="1240" y="-4038.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="1372,-4032 1372,-4050 1468,-4050 1468,-4032 1372,-4032"/>
-<polygon fill="none" stroke="black" points="1372,-4032 1372,-4050 1468,-4050 1468,-4032 1372,-4032"/>
-<text text-anchor="start" x="1431" y="-4038.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1468,-4032 1468,-4050 1538,-4050 1538,-4032 1468,-4032"/>
-<polygon fill="none" stroke="black" points="1468,-4032 1468,-4050 1538,-4050 1538,-4032 1468,-4032"/>
-<text text-anchor="start" x="1528" y="-4038.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<g id="a_node46"><a xlink:href="../../../funder/tables/published_project_indicator_targets.html" xlink:title="funder.published_project_indicator_targets" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1236.5,-3953 1236.5,-4011 1537.5,-4011 1537.5,-3953 1236.5,-3953"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1237,-3989 1237,-4011 1538,-4011 1538,-3989 1237,-3989"/>
+<polygon fill="none" stroke="black" points="1237,-3989 1237,-4011 1538,-4011 1538,-3989 1237,-3989"/>
+<text text-anchor="start" x="1242" y="-3998.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_project_indicator_targets</text>
+<text text-anchor="start" x="1499" y="-3997.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1237,-3971 1237,-3989 1538,-3989 1538,-3971 1237,-3971"/>
+<text text-anchor="start" x="1240" y="-3977.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1237,-3953 1237,-3971 1372,-3971 1372,-3953 1237,-3953"/>
+<polygon fill="none" stroke="black" points="1237,-3953 1237,-3971 1372,-3971 1372,-3953 1237,-3953"/>
+<text text-anchor="start" x="1240" y="-3959.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="1372,-3953 1372,-3971 1468,-3971 1468,-3953 1372,-3953"/>
+<polygon fill="none" stroke="black" points="1372,-3953 1372,-3971 1468,-3971 1468,-3953 1372,-3953"/>
+<text text-anchor="start" x="1431" y="-3959.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1468,-3953 1468,-3971 1538,-3971 1538,-3953 1468,-3953"/>
+<polygon fill="none" stroke="black" points="1468,-3953 1468,-3971 1538,-3971 1538,-3953 1468,-3953"/>
+<text text-anchor="start" x="1528" y="-3959.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- funder.published_project_indicator_targets&#45;&gt;projects -->
-<g id="edge77" class="edge">
+<g id="edge78" class="edge">
 <title>funder.published_project_indicator_targets:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1221.54,-4058.21C1144.75,-4049.91 1079.36,-3977.74 1046.39,-3934.12"/>
-<polygon fill="black" stroke="black" points="1228.01,-4058.57 1235.8,-4062.59 1232.01,-4058.78 1236,-4059 1236,-4059 1236,-4059 1232.01,-4058.78 1236.2,-4055.41 1228.01,-4058.57 1228.01,-4058.57"/>
-<ellipse fill="none" stroke="black" cx="1224.82" cy="-4058.39" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1221.56,-3979.48C1168.88,-3975.77 1114.82,-3952.81 1076.52,-3932.68"/>
+<polygon fill="black" stroke="black" points="1228.01,-3979.71 1235.87,-3983.6 1232,-3979.86 1236,-3980 1236,-3980 1236,-3980 1232,-3979.86 1236.13,-3976.4 1228.01,-3979.71 1228.01,-3979.71"/>
+<ellipse fill="none" stroke="black" cx="1224.81" cy="-3979.6" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_project_land_use -->
-<g id="node46" class="node">
+<g id="node47" class="node">
 <title>funder.published_project_land_use</title>
-<g id="a_node46"><a xlink:href="../../../funder/tables/published_project_land_use.html" xlink:title="funder.published_project_land_use" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1261.5,-3953 1261.5,-4011 1512.5,-4011 1512.5,-3953 1261.5,-3953"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1262,-3989 1262,-4011 1513,-4011 1513,-3989 1262,-3989"/>
-<polygon fill="none" stroke="black" points="1262,-3989 1262,-4011 1513,-4011 1513,-3989 1262,-3989"/>
-<text text-anchor="start" x="1267" y="-3998.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_project_land_use</text>
-<text text-anchor="start" x="1474" y="-3997.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1262,-3971 1262,-3989 1513,-3989 1513,-3971 1262,-3971"/>
-<text text-anchor="start" x="1265" y="-3977.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1262,-3953 1262,-3971 1372,-3971 1372,-3953 1262,-3953"/>
-<polygon fill="none" stroke="black" points="1262,-3953 1262,-3971 1372,-3971 1372,-3953 1262,-3953"/>
-<text text-anchor="start" x="1265" y="-3959.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="1372,-3953 1372,-3971 1456,-3971 1456,-3953 1372,-3953"/>
-<polygon fill="none" stroke="black" points="1372,-3953 1372,-3971 1456,-3971 1456,-3953 1372,-3953"/>
-<text text-anchor="start" x="1419" y="-3959.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1456,-3953 1456,-3971 1513,-3971 1513,-3953 1456,-3953"/>
-<polygon fill="none" stroke="black" points="1456,-3953 1456,-3971 1513,-3971 1513,-3953 1456,-3953"/>
-<text text-anchor="start" x="1503" y="-3959.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<g id="a_node47"><a xlink:href="../../../funder/tables/published_project_land_use.html" xlink:title="funder.published_project_land_use" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1261.5,-3874 1261.5,-3932 1512.5,-3932 1512.5,-3874 1261.5,-3874"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1262,-3910 1262,-3932 1513,-3932 1513,-3910 1262,-3910"/>
+<polygon fill="none" stroke="black" points="1262,-3910 1262,-3932 1513,-3932 1513,-3910 1262,-3910"/>
+<text text-anchor="start" x="1267" y="-3919.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_project_land_use</text>
+<text text-anchor="start" x="1474" y="-3918.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1262,-3892 1262,-3910 1513,-3910 1513,-3892 1262,-3892"/>
+<text text-anchor="start" x="1265" y="-3898.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1262,-3874 1262,-3892 1372,-3892 1372,-3874 1262,-3874"/>
+<polygon fill="none" stroke="black" points="1262,-3874 1262,-3892 1372,-3892 1372,-3874 1262,-3874"/>
+<text text-anchor="start" x="1265" y="-3880.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="1372,-3874 1372,-3892 1456,-3892 1456,-3874 1372,-3874"/>
+<polygon fill="none" stroke="black" points="1372,-3874 1372,-3892 1456,-3892 1456,-3874 1372,-3874"/>
+<text text-anchor="start" x="1419" y="-3880.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1456,-3874 1456,-3892 1513,-3892 1513,-3874 1456,-3874"/>
+<polygon fill="none" stroke="black" points="1456,-3874 1456,-3892 1513,-3892 1513,-3874 1456,-3874"/>
+<text text-anchor="start" x="1503" y="-3880.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- funder.published_project_land_use&#45;&gt;projects -->
-<g id="edge78" class="edge">
+<g id="edge79" class="edge">
 <title>funder.published_project_land_use:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1246.22,-3979.55C1184.49,-3975.89 1120.11,-3950.47 1076.54,-3929.52"/>
-<polygon fill="black" stroke="black" points="1253,-3979.76 1260.89,-3983.6 1257,-3979.88 1261,-3980 1261,-3980 1261,-3980 1257,-3979.88 1261.11,-3976.4 1253,-3979.76 1253,-3979.76"/>
-<ellipse fill="none" stroke="black" cx="1249.81" cy="-3979.66" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1246.39,-3901C1186.76,-3901 1121.26,-3901 1076.79,-3901"/>
+<polygon fill="black" stroke="black" points="1253,-3901 1261,-3904.6 1257,-3901 1261,-3901 1261,-3901 1261,-3901 1257,-3901 1261,-3897.4 1253,-3901 1253,-3901"/>
+<ellipse fill="none" stroke="black" cx="1249.8" cy="-3901" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_project_sdg -->
-<g id="node47" class="node">
+<g id="node48" class="node">
 <title>funder.published_project_sdg</title>
-<g id="a_node47"><a xlink:href="../../../funder/tables/published_project_sdg.html" xlink:title="funder.published_project_sdg" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1277.5,-3874 1277.5,-3932 1496.5,-3932 1496.5,-3874 1277.5,-3874"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1278,-3910 1278,-3932 1497,-3932 1497,-3910 1278,-3910"/>
-<polygon fill="none" stroke="black" points="1278,-3910 1278,-3932 1497,-3932 1497,-3910 1278,-3910"/>
-<text text-anchor="start" x="1283" y="-3919.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_project_sdg</text>
-<text text-anchor="start" x="1458" y="-3918.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1278,-3892 1278,-3910 1497,-3910 1497,-3892 1278,-3892"/>
-<text text-anchor="start" x="1281" y="-3898.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1278,-3874 1278,-3892 1372,-3892 1372,-3874 1278,-3874"/>
-<polygon fill="none" stroke="black" points="1278,-3874 1278,-3892 1372,-3892 1372,-3874 1278,-3874"/>
-<text text-anchor="start" x="1281" y="-3880.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="1372,-3874 1372,-3892 1448,-3892 1448,-3874 1372,-3874"/>
-<polygon fill="none" stroke="black" points="1372,-3874 1372,-3892 1448,-3892 1448,-3874 1372,-3874"/>
-<text text-anchor="start" x="1411" y="-3880.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1448,-3874 1448,-3892 1497,-3892 1497,-3874 1448,-3874"/>
-<polygon fill="none" stroke="black" points="1448,-3874 1448,-3892 1497,-3892 1497,-3874 1448,-3874"/>
-<text text-anchor="start" x="1487" y="-3880.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<g id="a_node48"><a xlink:href="../../../funder/tables/published_project_sdg.html" xlink:title="funder.published_project_sdg" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1277.5,-3795 1277.5,-3853 1496.5,-3853 1496.5,-3795 1277.5,-3795"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1278,-3831 1278,-3853 1497,-3853 1497,-3831 1278,-3831"/>
+<polygon fill="none" stroke="black" points="1278,-3831 1278,-3853 1497,-3853 1497,-3831 1278,-3831"/>
+<text text-anchor="start" x="1283" y="-3840.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_project_sdg</text>
+<text text-anchor="start" x="1458" y="-3839.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1278,-3813 1278,-3831 1497,-3831 1497,-3813 1278,-3813"/>
+<text text-anchor="start" x="1281" y="-3819.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1278,-3795 1278,-3813 1372,-3813 1372,-3795 1278,-3795"/>
+<polygon fill="none" stroke="black" points="1278,-3795 1278,-3813 1372,-3813 1372,-3795 1278,-3795"/>
+<text text-anchor="start" x="1281" y="-3801.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="1372,-3795 1372,-3813 1448,-3813 1448,-3795 1372,-3795"/>
+<polygon fill="none" stroke="black" points="1372,-3795 1372,-3813 1448,-3813 1448,-3795 1372,-3795"/>
+<text text-anchor="start" x="1411" y="-3801.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="1448,-3795 1448,-3813 1497,-3813 1497,-3795 1448,-3795"/>
+<polygon fill="none" stroke="black" points="1448,-3795 1448,-3813 1497,-3813 1497,-3795 1448,-3795"/>
+<text text-anchor="start" x="1487" y="-3801.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- funder.published_project_sdg&#45;&gt;projects -->
-<g id="edge79" class="edge">
+<g id="edge80" class="edge">
 <title>funder.published_project_sdg:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1262.28,-3901C1196.84,-3901 1124.61,-3901 1076.91,-3901"/>
-<polygon fill="black" stroke="black" points="1269,-3901 1277,-3904.6 1273,-3901 1277,-3901 1277,-3901 1277,-3901 1273,-3901 1277,-3897.4 1269,-3901 1269,-3901"/>
-<ellipse fill="none" stroke="black" cx="1265.8" cy="-3901" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1262.42,-3822.61C1222.77,-3826.11 1210.47,-3844.08 1166,-3858 1136.53,-3867.22 1103.52,-3877.21 1076.7,-3885.23"/>
+<polygon fill="black" stroke="black" points="1269.01,-3822.33 1277.15,-3825.6 1273,-3822.17 1277,-3822 1277,-3822 1277,-3822 1273,-3822.17 1276.85,-3818.4 1269.01,-3822.33 1269.01,-3822.33"/>
+<ellipse fill="none" stroke="black" cx="1265.81" cy="-3822.47" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_reports -->
-<g id="node48" class="node">
+<g id="node49" class="node">
 <title>funder.published_reports</title>
-<g id="a_node48"><a xlink:href="../../../funder/tables/published_reports.html" xlink:title="funder.published_reports" target="_top">
+<g id="a_node49"><a xlink:href="../../../funder/tables/published_reports.html" xlink:title="funder.published_reports" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1289,-2926 1289,-2984 1485,-2984 1485,-2926 1289,-2926"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1289,-2962 1289,-2984 1485,-2984 1485,-2962 1289,-2962"/>
 <polygon fill="none" stroke="black" points="1289,-2962 1289,-2984 1485,-2984 1485,-2962 1289,-2962"/>
@@ -1847,48 +1877,18 @@
 </g>
 </g>
 <!-- funder.published_reports&#45;&gt;users -->
-<g id="edge81" class="edge">
+<g id="edge82" class="edge">
 <title>funder.published_reports:w&#45;&gt;users:e</title>
 <path fill="none" stroke="black" d="M1273.17,-2953.37C1239.72,-2955.24 1222.75,-2964.77 1199,-2995 1153.87,-3052.43 1222.6,-3109.83 1166,-3156 1127.76,-3187.2 544.49,-3169.1 512,-3146 413.95,-3076.28 393.08,-2919.04 388.67,-2850.26"/>
 <polygon fill="black" stroke="black" points="1280,-2953.2 1288.09,-2956.6 1284,-2953.1 1288,-2953 1288,-2953 1288,-2953 1284,-2953.1 1287.91,-2949.4 1280,-2953.2 1280,-2953.2"/>
 <ellipse fill="none" stroke="black" cx="1276.8" cy="-2953.28" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_reports&#45;&gt;projects -->
-<g id="edge80" class="edge">
+<g id="edge81" class="edge">
 <title>funder.published_reports:w&#45;&gt;projects:e</title>
 <path fill="none" stroke="black" d="M1273.6,-2953.33C1239.75,-2955.06 1222.37,-2964.26 1199,-2995 1146.6,-3063.93 1181.81,-3101.87 1166,-3187 1117.13,-3450.16 1051.61,-3766.48 1030.42,-3867.96"/>
 <polygon fill="black" stroke="black" points="1280,-2953.18 1288.08,-2956.6 1284,-2953.09 1288,-2953 1288,-2953 1288,-2953 1284,-2953.09 1287.92,-2949.4 1280,-2953.18 1280,-2953.18"/>
 <ellipse fill="none" stroke="black" cx="1276.8" cy="-2953.26" rx="3.2" ry="3.2"/>
-</g>
-<!-- funder.published_standard_indicator_targets -->
-<g id="node49" class="node">
-<title>funder.published_standard_indicator_targets</title>
-<g id="a_node49"><a xlink:href="../../../funder/tables/published_standard_indicator_targets.html" xlink:title="funder.published_standard_indicator_targets" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1230.5,-3795 1230.5,-3853 1543.5,-3853 1543.5,-3795 1230.5,-3795"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1231,-3831 1231,-3853 1544,-3853 1544,-3831 1231,-3831"/>
-<polygon fill="none" stroke="black" points="1231,-3831 1231,-3853 1544,-3853 1544,-3831 1231,-3831"/>
-<text text-anchor="start" x="1236" y="-3840.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funder.published_standard_indicator_targets</text>
-<text text-anchor="start" x="1505" y="-3839.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1231,-3813 1231,-3831 1544,-3831 1544,-3813 1231,-3813"/>
-<text text-anchor="start" x="1234" y="-3819.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1231,-3795 1231,-3813 1372,-3813 1372,-3795 1231,-3795"/>
-<polygon fill="none" stroke="black" points="1231,-3795 1231,-3813 1372,-3813 1372,-3795 1231,-3795"/>
-<text text-anchor="start" x="1234" y="-3801.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="1372,-3795 1372,-3813 1471,-3813 1471,-3795 1372,-3795"/>
-<polygon fill="none" stroke="black" points="1372,-3795 1372,-3813 1471,-3813 1471,-3795 1372,-3795"/>
-<text text-anchor="start" x="1434" y="-3801.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="1471,-3795 1471,-3813 1544,-3813 1544,-3795 1471,-3795"/>
-<polygon fill="none" stroke="black" points="1471,-3795 1471,-3813 1544,-3813 1544,-3795 1471,-3795"/>
-<text text-anchor="start" x="1534" y="-3801.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- funder.published_standard_indicator_targets&#45;&gt;projects -->
-<g id="edge82" class="edge">
-<title>funder.published_standard_indicator_targets:w&#45;&gt;projects:e</title>
-<path fill="none" stroke="black" d="M1215.64,-3823.89C1196.06,-3829.67 1190.86,-3847.41 1166,-3858 1137.23,-3870.25 1103.83,-3880.53 1076.59,-3887.96"/>
-<polygon fill="black" stroke="black" points="1222.07,-3823.04 1230.47,-3825.57 1226.03,-3822.52 1230,-3822 1230,-3822 1230,-3822 1226.03,-3822.52 1229.53,-3818.43 1222.07,-3823.04 1222.07,-3823.04"/>
-<ellipse fill="none" stroke="black" cx="1218.9" cy="-3823.46" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.batch_details_history -->
 <g id="node50" class="node">
