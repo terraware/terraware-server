@@ -11,10 +11,10 @@ import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
-import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
-import com.terraformation.backend.db.accelerator.tables.records.ProjectMetricsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.StandardMetricsRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -240,7 +240,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `throws not found exception if no metric found`() {
         assertThrows<ProjectMetricNotFoundException> {
-          store.fetchOneProjectMetric(ProjectMetricId(-1))
+          store.fetchOneProjectMetric(ProjectIndicatorId(-1))
         }
       }
 
@@ -534,7 +534,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertTableEquals(
             listOf(
-                ProjectMetricsRecord(
+                ProjectIndicatorsRecord(
                     id = existingMetricId,
                     componentId = MetricComponent.Climate,
                     description = "Climate standard metric description",
@@ -545,7 +545,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     typeId = MetricType.Activity,
                     unit = "meters",
                 ),
-                ProjectMetricsRecord(
+                ProjectIndicatorsRecord(
                     id = newMetricId,
                     componentId = MetricComponent.ProjectObjectives,
                     description = "Project objectives metric description",
@@ -651,7 +651,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class ProjectMetrics {
+  inner class ProjectIndicators {
     @Test
     fun `updates existing record`() {
       insertOrganization()
@@ -670,7 +670,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val updated =
           ExistingProjectMetricModel(
-              id = ProjectMetricId(99), // this field is ignored
+              id = ProjectIndicatorId(99), // this field is ignored
               component = MetricComponent.ProjectObjectives,
               description = "Project objectives metric description",
               isPublishable = true,
@@ -685,7 +685,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ProjectMetricsRecord(
+              ProjectIndicatorsRecord(
                   id = existingMetricId,
                   componentId = MetricComponent.ProjectObjectives,
                   description = "Project objectives metric description",

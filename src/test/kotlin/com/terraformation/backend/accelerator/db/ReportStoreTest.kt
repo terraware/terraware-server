@@ -40,7 +40,7 @@ import com.terraformation.backend.db.accelerator.tables.records.ProjectAccelerat
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportAchievementsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportChallengesRecord
-import com.terraformation.backend.db.accelerator.tables.records.ReportProjectMetricsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ReportProjectIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportStandardMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportSystemMetricsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
@@ -51,11 +51,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
-import com.terraformation.backend.db.funder.tables.records.PublishedProjectMetricTargetsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedProjectIndicatorTargetsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportAchievementsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportChallengesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportPhotosRecord
-import com.terraformation.backend.db.funder.tables.records.PublishedReportProjectMetricsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedReportProjectIndicatorsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportStandardMetricsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportSystemMetricsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportsRecord
@@ -1788,9 +1788,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ReportProjectMetricsRecord(
+              ReportProjectIndicatorsRecord(
                   reportId = reportId,
-                  projectMetricId = projectMetricId,
+                  projectIndicatorId = projectMetricId,
                   value = 50,
                   projectsComments = "Project metric notes",
                   progressNotes = "Project metric internal comment",
@@ -2261,9 +2261,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              ReportProjectMetricsRecord(
+              ReportProjectIndicatorsRecord(
                   reportId = reportId,
-                  projectMetricId = projectMetricId,
+                  projectIndicatorId = projectMetricId,
                   value = 50,
                   projectsComments = "Project metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -3837,17 +3837,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PublishedReportProjectMetricsRecord(
+              PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
-                  projectMetricId = projectMetricId1,
+                  projectIndicatorId = projectMetricId1,
                   statusId = ReportMetricStatus.Achieved,
                   value = 30,
                   projectsComments = null,
                   progressNotes = "Project Metric 1 Progress notes",
               ),
-              PublishedReportProjectMetricsRecord(
+              PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
-                  projectMetricId = projectMetricId2,
+                  projectIndicatorId = projectMetricId2,
                   statusId = ReportMetricStatus.Unlikely,
                   value = 39,
                   projectsComments = "Project Metric 2 Underperformance",
@@ -3912,21 +3912,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(
           listOf(
-              PublishedProjectMetricTargetsRecord(
+              PublishedProjectIndicatorTargetsRecord(
                   projectId = projectId,
-                  projectMetricId = projectMetricId1,
+                  projectIndicatorId = projectMetricId1,
                   year = 2030,
                   target = 30,
               ),
-              PublishedProjectMetricTargetsRecord(
+              PublishedProjectIndicatorTargetsRecord(
                   projectId = projectId,
-                  projectMetricId = projectMetricId2,
+                  projectIndicatorId = projectMetricId2,
                   year = 2030,
                   target = 40,
               ),
-              PublishedProjectMetricTargetsRecord(
+              PublishedProjectIndicatorTargetsRecord(
                   projectId = projectId,
-                  projectMetricId = projectMetricNullValueId,
+                  projectIndicatorId = projectMetricNullValueId,
                   year = 2030,
                   target = 999,
               ),
@@ -5183,10 +5183,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 100,
       )
 
-      val targets = reportProjectMetricTargetsDao.findAll()
+      val targets = reportProjectIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertEquals(projectId, targets[0].projectId)
-      assertEquals(projectMetricId, targets[0].projectMetricId)
+      assertEquals(projectMetricId, targets[0].projectIndicatorId)
       assertEquals(2024, targets[0].year)
       assertEquals(100, targets[0].target)
     }
@@ -5216,7 +5216,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = 150,
       )
 
-      val targets = reportProjectMetricTargetsDao.findAll()
+      val targets = reportProjectIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertEquals(150, targets[0].target)
     }
@@ -5239,7 +5239,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           target = null,
       )
 
-      val targets = reportProjectMetricTargetsDao.findAll()
+      val targets = reportProjectIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertNull(targets[0].target)
     }

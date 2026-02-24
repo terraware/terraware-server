@@ -43,17 +43,23 @@ val ENUM_TABLES =
                 EnumTable("event_statuses"),
                 EnumTable("event_types"),
                 EnumTable("internal_interests"),
-                EnumTable("metric_components", listOf("[a-z_]+_metrics\\.component_id")),
-                EnumTable("metric_types", listOf("[a-z_]+_metrics\\.type_id")),
+                EnumTable(
+                    "metric_components",
+                    listOf("[a-z_]+_metrics\\.component_id", "[a-z_]+_indicators\\.component_id"),
+                ),
+                EnumTable(
+                    "metric_types",
+                    listOf("[a-z_]+_metrics\\.type_id", "[a-z_]+_indicators\\.type_id"),
+                ),
                 EnumTable("pipelines", isLocalizable = false),
                 EnumTable("report_frequencies"),
                 EnumTable(
                     "report_metric_statuses",
                     listOf(
-                        "report_project_metrics\\.status_id",
+                        "report_project_indicators\\.status_id",
                         "report_standard_metrics\\.status_id",
                         "report_system_metrics\\.status_id",
-                        "funder\\.published_report_project_metrics\\.status_id",
+                        "funder\\.published_report_project_indicators\\.status_id",
                         "funder\\.published_report_standard_metrics\\.status_id",
                         "funder\\.published_report_system_metrics\\.status_id",
                     ),
@@ -284,8 +290,8 @@ val ID_WRAPPERS =
                     listOf("participant_project_species\\.id"),
                 ),
                 IdWrapper(
-                    "ProjectMetricId",
-                    listOf("project_metrics\\.id", ".*\\.project_metric_id"),
+                    "ProjectIndicatorId",
+                    listOf("project_indicators\\.id", ".*\\.project_indicator_id"),
                 ),
                 IdWrapper(
                     "ProjectReportConfigId",

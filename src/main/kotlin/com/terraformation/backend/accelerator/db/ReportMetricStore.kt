@@ -9,10 +9,10 @@ import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
-import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
@@ -89,23 +89,23 @@ class ReportMetricStore(
         .fetch { StandardMetricModel.of(it) }
   }
 
-  fun fetchOneProjectMetric(metricId: ProjectMetricId): ExistingProjectMetricModel {
+  fun fetchOneProjectMetric(metricId: ProjectIndicatorId): ExistingProjectMetricModel {
     requirePermissions { readProjectReportConfigs() }
 
-    return fetchProjectMetrics(PROJECT_METRICS.ID.eq(metricId)).firstOrNull()
+    return fetchProjectMetrics(PROJECT_INDICATORS.ID.eq(metricId)).firstOrNull()
         ?: throw ProjectMetricNotFoundException(metricId)
   }
 
   fun fetchProjectMetricsForProject(projectId: ProjectId): List<ExistingProjectMetricModel> {
     requirePermissions { readProjectReportConfigs() }
 
-    return fetchProjectMetrics(PROJECT_METRICS.PROJECT_ID.eq(projectId))
+    return fetchProjectMetrics(PROJECT_INDICATORS.PROJECT_ID.eq(projectId))
   }
 
-  fun createProjectMetric(model: NewProjectMetricModel): ProjectMetricId {
+  fun createProjectMetric(model: NewProjectMetricModel): ProjectIndicatorId {
     requirePermissions { manageProjectReportConfigs() }
 
-    return with(PROJECT_METRICS) {
+    return with(PROJECT_INDICATORS) {
       dslContext
           .insertInto(this)
           .set(PROJECT_ID, model.projectId)
@@ -122,7 +122,7 @@ class ReportMetricStore(
   }
 
   fun updateProjectMetric(
-      metricId: ProjectMetricId,
+      metricId: ProjectIndicatorId,
       updateFunc: (ExistingProjectMetricModel) -> ExistingProjectMetricModel,
   ) {
     requirePermissions { manageProjectReportConfigs() }
@@ -131,7 +131,7 @@ class ReportMetricStore(
     val new = updateFunc(existing)
 
     // Cannot update projectId of a metric
-    with(PROJECT_METRICS) {
+    with(PROJECT_INDICATORS) {
       dslContext
           .update(this)
           .set(NAME, new.name)
@@ -148,9 +148,9 @@ class ReportMetricStore(
 
   private fun fetchProjectMetrics(condition: Condition): List<ExistingProjectMetricModel> {
     return dslContext
-        .selectFrom(PROJECT_METRICS)
+        .selectFrom(PROJECT_INDICATORS)
         .where(condition)
-        .orderBy(PROJECT_METRICS.REFERENCE, PROJECT_METRICS.ID)
+        .orderBy(PROJECT_INDICATORS.REFERENCE, PROJECT_INDICATORS.ID)
         .fetch { ProjectMetricModel.of(it) }
   }
 

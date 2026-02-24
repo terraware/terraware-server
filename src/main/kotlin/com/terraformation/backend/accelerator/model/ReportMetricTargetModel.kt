@@ -1,21 +1,21 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardMetricId
 import com.terraformation.backend.db.accelerator.SystemMetric
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRIC_TARGETS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
 import org.jooq.Record
 
 data class ReportProjectMetricTargetModel(
-    val metricId: ProjectMetricId,
+    val metricId: ProjectIndicatorId,
     val target: Number?,
     val year: Number,
 ) {
   companion object {
     fun of(record: Record): ReportProjectMetricTargetModel {
-      return with(REPORT_PROJECT_METRIC_TARGETS) {
+      return with(REPORT_PROJECT_INDICATOR_TARGETS) {
         ReportProjectMetricTargetModel(
-            metricId = record[PROJECT_METRIC_ID]!!,
+            metricId = record[PROJECT_INDICATOR_ID]!!,
             target = record[TARGET],
             year = record[YEAR]!!,
         )

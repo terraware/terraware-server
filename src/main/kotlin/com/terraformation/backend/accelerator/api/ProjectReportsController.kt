@@ -32,7 +32,7 @@ import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
-import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
@@ -429,7 +429,7 @@ class ProjectReportsController(
   @PostMapping("/metrics/{metricId}")
   @Operation(summary = "Update one project metric by ID.")
   fun updateProjectMetric(
-      @PathVariable metricId: ProjectMetricId,
+      @PathVariable metricId: ProjectIndicatorId,
       @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: UpdateProjectMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
@@ -764,7 +764,7 @@ data class ReportPhotoPayload(
 data class ReportProjectMetricPayload(
     val component: MetricComponent,
     val description: String?,
-    val id: ProjectMetricId,
+    val id: ProjectIndicatorId,
     val isPublishable: Boolean,
     val name: String,
     val progressNotes: String?,
@@ -796,7 +796,7 @@ data class ReportProjectMetricPayload(
 }
 
 data class ReportProjectMetricEntriesPayload(
-    val id: ProjectMetricId,
+    val id: ProjectIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportMetricStatus?,
@@ -848,7 +848,7 @@ data class UpdateAcceleratorReportValuesRequestPayload(
 
 data class UpdateProjectMetricTargetRequestPayload(
     val year: Int,
-    val metricId: ProjectMetricId,
+    val metricId: ProjectIndicatorId,
     val target: Int?,
 )
 
@@ -889,7 +889,7 @@ data class UpdateAcceleratorReportPhotoRequestPayload(val caption: String?)
 data class UploadAcceleratorReportPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
 
 data class ReportProjectMetricTargetPayload(
-    val metricId: ProjectMetricId,
+    val metricId: ProjectIndicatorId,
     val target: Number?,
     val year: Number,
 ) {
