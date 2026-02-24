@@ -613,6 +613,8 @@ COMMENT ON TABLE accelerator.applications IS 'Information about projects that ar
 
 COMMENT ON TABLE accelerator.auto_calculated_indicators IS '(Enum) Accelerator report auto-calculated indicators, for which data are collected from Terraware.';
 
+COMMENT ON TABLE accelerator.common_indicators IS 'Standard non-system indicators for every project to measure in accelerator reports.';
+
 COMMENT ON TABLE accelerator.deal_stages IS '(Enum) Stages in the deal workflow that a project progresses through.';
 
 COMMENT ON TABLE accelerator.default_voters IS 'Users to automatically be assigned as voters on accelerator projects.';
@@ -699,6 +701,10 @@ COMMENT ON COLUMN accelerator.report_auto_calculated_indicators.system_value IS 
 
 COMMENT ON TABLE accelerator.report_challenges IS 'List of challenges and mitigation plans for accelerator project reports.';
 
+COMMENT ON TABLE accelerator.report_common_indicator_targets IS 'Project targets for standard indicators by year';
+
+COMMENT ON TABLE accelerator.report_common_indicators IS 'Report entries of targets and values for standard indicators.';
+
 COMMENT ON TABLE accelerator.report_indicator_statuses IS '(Enum) Statuses of accelerator project report indicators.';
 
 COMMENT ON TABLE accelerator.report_photos IS 'Photos for the accelerator project report.';
@@ -710,18 +716,12 @@ COMMENT ON TABLE accelerator.report_project_indicators IS 'Report entries of tar
 
 COMMENT ON TABLE accelerator.report_quarters IS '(Enum) Quarters of accelerator project reports.';
 
-COMMENT ON TABLE accelerator.report_standard_indicator_targets IS 'Project targets for standard indicators by year';
-
-COMMENT ON TABLE accelerator.report_standard_indicators IS 'Report entries of targets and values for standard indicators.';
-
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
 
 COMMENT ON TABLE accelerator.reports IS 'Accelerator project reports.';
 COMMENT ON COLUMN accelerator.reports.report_quarter_id IS 'Quarter of the report. Must be non-null for quarterly reports and null otherwise.';
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
-
-COMMENT ON TABLE accelerator.standard_indicators IS 'Standard non-system indicators for every project to measure in accelerator reports.';
 
 COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
 COMMENT ON COLUMN accelerator.submission_documents.name IS 'System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.';
@@ -821,6 +821,8 @@ COMMENT ON TABLE funder.published_activity_media_files IS 'Media files for publi
 
 COMMENT ON TABLE funder.published_auto_calculated_indicator_targets IS 'Published project targets for auto-calculated indicators by year';
 
+COMMENT ON TABLE funder.published_common_indicator_targets IS 'Published project targets for standard indicators by year';
+
 COMMENT ON TABLE funder.published_project_carbon_certs IS 'Carbon Certifications for published projects.';
 
 COMMENT ON TABLE funder.published_project_details IS 'Published Project Data visible to funders.';
@@ -837,14 +839,12 @@ COMMENT ON TABLE funder.published_report_auto_calculated_indicators IS 'Auto-cal
 
 COMMENT ON TABLE funder.published_report_challenges IS 'Challenges and mitigation plans of published reports.';
 
+COMMENT ON TABLE funder.published_report_common_indicators IS 'Standard indicators of published reports.';
+
 COMMENT ON TABLE funder.published_report_photos IS 'Photos for the published accelerator project report.';
 
 COMMENT ON TABLE funder.published_report_project_indicators IS 'Project-specific indicators of published reports.';
 
-COMMENT ON TABLE funder.published_report_standard_indicators IS 'Standard indicators of published reports.';
-
 COMMENT ON TABLE funder.published_reports IS 'Published reports visible to funders.';
-
-COMMENT ON TABLE funder.published_standard_indicator_targets IS 'Published project targets for standard indicators by year';
 
 -- When adding new tables, put them in alphabetical (ASCII) order.

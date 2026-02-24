@@ -10,12 +10,12 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
+import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
-import com.terraformation.backend.db.accelerator.StandardIndicatorId
+import com.terraformation.backend.db.accelerator.tables.records.CommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
-import com.terraformation.backend.db.accelerator.tables.records.StandardIndicatorsRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
@@ -72,7 +72,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       @Test
       fun `throws not found exception if no metric found`() {
         assertThrows<StandardMetricNotFoundException> {
-          store.fetchOneStandardMetric(StandardIndicatorId(-1))
+          store.fetchOneStandardMetric(CommonIndicatorId(-1))
         }
       }
 
@@ -456,7 +456,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertTableEquals(
             listOf(
-                StandardIndicatorsRecord(
+                CommonIndicatorsRecord(
                     id = existingMetricId,
                     categoryId = IndicatorCategory.Climate,
                     description = "Climate standard metric description",
@@ -467,7 +467,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     unit = "%",
                     active = true,
                 ),
-                StandardIndicatorsRecord(
+                CommonIndicatorsRecord(
                     id = newMetricId,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",
@@ -605,7 +605,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         val updated =
             ExistingStandardMetricModel(
-                id = StandardIndicatorId(99), // this field is ignored
+                id = CommonIndicatorId(99), // this field is ignored
                 component = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives metric description",
                 isPublishable = false,
@@ -619,7 +619,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
         assertTableEquals(
             listOf(
-                StandardIndicatorsRecord(
+                CommonIndicatorsRecord(
                     id = existingMetricId,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives metric description",

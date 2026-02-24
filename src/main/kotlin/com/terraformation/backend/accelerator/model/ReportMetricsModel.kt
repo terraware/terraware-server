@@ -6,10 +6,10 @@ import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATOR_TARGETS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_COMMON_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_COMMON_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATOR_TARGETS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.UserId
 import java.time.Instant
@@ -39,9 +39,9 @@ data class ReportStandardMetricModel(
     }
 
     private fun entry(record: Record): ReportMetricEntryModel {
-      return with(REPORT_STANDARD_INDICATORS) {
+      return with(REPORT_COMMON_INDICATORS) {
         ReportMetricEntryModel(
-            target = record[REPORT_STANDARD_INDICATOR_TARGETS.TARGET],
+            target = record[REPORT_COMMON_INDICATOR_TARGETS.TARGET],
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],

@@ -6,9 +6,9 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
+import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
-import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
@@ -45,7 +45,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   @PostMapping("/standardMetrics/{metricId}")
   @Operation(summary = "Update one standard metric by ID.")
   fun updateStandardMetric(
-      @PathVariable metricId: StandardIndicatorId,
+      @PathVariable metricId: CommonIndicatorId,
       @RequestBody payload: UpdateStandardMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
     metricStore.updateStandardMetric(metricId) { payload.metric.toModel() }
