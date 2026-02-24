@@ -716,7 +716,7 @@ data class ReportSystemMetricPayload(
       overrideValue = model.entry.overrideValue,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
-      reference = model.metric.reference,
+      reference = model.metric.refId,
       status = model.entry.status,
       systemTime = model.entry.systemTime,
       systemValue = model.entry.systemValue,

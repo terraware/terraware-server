@@ -25,7 +25,7 @@ data class StandardMetricModel<ID : StandardIndicatorId?>(
             description = record[DESCRIPTION],
             component = record[CATEGORY_ID]!!,
             type = record[LEVEL_ID]!!,
-            reference = record[REFERENCE]!!,
+            reference = record[REF_ID]!!,
             isPublishable = record[IS_PUBLISHABLE]!!,
             unit = record[UNIT],
         )

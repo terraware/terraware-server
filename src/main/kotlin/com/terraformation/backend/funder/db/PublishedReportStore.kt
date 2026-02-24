@@ -144,7 +144,7 @@ class PublishedReportStore(
         )!!
     val metricDescriptionField = metricTable.field("description", String::class.java)!!
     val metricNameField = metricTable.field("name", String::class.java)!!
-    val metricReferenceField = metricTable.field("reference", String::class.java)!!
+    val metricReferenceField = metricTable.field("ref_id", String::class.java)!!
     val metricTypeField =
         metricTable.field(
             "level_id",

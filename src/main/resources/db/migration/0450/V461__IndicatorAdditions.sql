@@ -31,3 +31,12 @@ ALTER TABLE accelerator.auto_calculated_indicators
     ADD COLUMN active BOOLEAN NOT NULL DEFAULT TRUE,
     ADD COLUMN class_id INTEGER REFERENCES accelerator.indicator_classes,
     ADD COLUMN frequency_id INTEGER REFERENCES accelerator.indicator_frequencies;
+
+ALTER TABLE accelerator.project_indicators
+    RENAME COLUMN reference TO ref_id;
+
+ALTER TABLE accelerator.standard_indicators
+    RENAME COLUMN reference TO ref_id;
+
+ALTER TABLE accelerator.auto_calculated_indicators
+    RENAME COLUMN reference TO ref_id;

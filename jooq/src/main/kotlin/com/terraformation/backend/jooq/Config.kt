@@ -95,7 +95,7 @@ val ENUM_TABLES =
                                 "String",
                             ),
                             EnumTableColumnInfo(
-                                "reference",
+                                "ref_id",
                                 "String",
                             ),
                             EnumTableColumnInfo(

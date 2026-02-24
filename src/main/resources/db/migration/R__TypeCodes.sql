@@ -542,7 +542,7 @@ VALUES (1, 'Carbon'),
        (12, 'Values Alignment')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO accelerator.auto_calculated_indicators (id, name, description, level_id, category_id, reference, is_publishable, unit)
+INSERT INTO accelerator.auto_calculated_indicators (id, name, description, level_id, category_id, ref_id, is_publishable, unit)
 VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 2, 2, '1.1', false, 'Seeds'),
        (2, 'Seedlings', 'Plants in the nursery, including those provided by partners, where available. Not applicable for mangrove projects (input 0).', 2, 2, '1.2', true, 'Seedlings'),
        (3, 'Trees Planted', 'Total trees (and plants) planted in the field.', 2, 2, '1.3', true, 'Trees'),
@@ -554,7 +554,7 @@ SET name = excluded.name,
     description = excluded.description,
     level_id = excluded.level_id,
     category_id = excluded.category_id,
-    reference = excluded.reference,
+    ref_id = excluded.ref_id,
     is_publishable = excluded.is_publishable,
     unit = excluded.unit;
 

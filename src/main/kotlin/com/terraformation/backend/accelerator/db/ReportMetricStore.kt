@@ -49,7 +49,7 @@ class ReportMetricStore(
           .set(DESCRIPTION, model.description)
           .set(CATEGORY_ID, model.component)
           .set(LEVEL_ID, model.type)
-          .set(REFERENCE, model.reference)
+          .set(REF_ID, model.reference)
           .set(IS_PUBLISHABLE, model.isPublishable)
           .set(UNIT, model.unit)
           .returning(ID)
@@ -73,7 +73,7 @@ class ReportMetricStore(
           .set(DESCRIPTION, new.description)
           .set(CATEGORY_ID, new.component)
           .set(LEVEL_ID, new.type)
-          .set(REFERENCE, new.reference)
+          .set(REF_ID, new.reference)
           .set(IS_PUBLISHABLE, new.isPublishable)
           .set(UNIT, new.unit)
           .where(ID.eq(metricId))
@@ -85,7 +85,7 @@ class ReportMetricStore(
     return dslContext
         .selectFrom(STANDARD_INDICATORS)
         .where(condition)
-        .orderBy(STANDARD_INDICATORS.REFERENCE, STANDARD_INDICATORS.ID)
+        .orderBy(STANDARD_INDICATORS.REF_ID, STANDARD_INDICATORS.ID)
         .fetch { StandardMetricModel.of(it) }
   }
 
@@ -113,7 +113,7 @@ class ReportMetricStore(
           .set(DESCRIPTION, model.description)
           .set(CATEGORY_ID, model.component)
           .set(LEVEL_ID, model.type)
-          .set(REFERENCE, model.reference)
+          .set(REF_ID, model.reference)
           .set(IS_PUBLISHABLE, model.isPublishable)
           .set(UNIT, model.unit)
           .returning(ID)
@@ -138,7 +138,7 @@ class ReportMetricStore(
           .set(DESCRIPTION, new.description)
           .set(CATEGORY_ID, new.component)
           .set(LEVEL_ID, new.type)
-          .set(REFERENCE, new.reference)
+          .set(REF_ID, new.reference)
           .set(IS_PUBLISHABLE, new.isPublishable)
           .set(UNIT, new.unit)
           .where(ID.eq(metricId))
@@ -150,7 +150,7 @@ class ReportMetricStore(
     return dslContext
         .selectFrom(PROJECT_INDICATORS)
         .where(condition)
-        .orderBy(PROJECT_INDICATORS.REFERENCE, PROJECT_INDICATORS.ID)
+        .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
         .fetch { ProjectMetricModel.of(it) }
   }
 
@@ -158,7 +158,7 @@ class ReportMetricStore(
     requirePermissions { readProjectReportConfigs() }
 
     return with(AUTO_CALCULATED_INDICATORS) {
-      dslContext.select(ID).from(AUTO_CALCULATED_INDICATORS).orderBy(REFERENCE).fetch {
+      dslContext.select(ID).from(AUTO_CALCULATED_INDICATORS).orderBy(REF_ID).fetch {
         it[ID.asNonNullable()]
       }
     }
