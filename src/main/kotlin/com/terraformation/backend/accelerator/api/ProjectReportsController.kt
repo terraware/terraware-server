@@ -31,13 +31,13 @@ import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
-import com.terraformation.backend.db.accelerator.MetricComponent
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
-import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
@@ -652,7 +652,7 @@ data class ReportReviewPayload(
 )
 
 data class ReportStandardMetricPayload(
-    val component: MetricComponent,
+    val component: IndicatorCategory,
     val description: String?,
     val id: StandardIndicatorId,
     val isPublishable: Boolean,
@@ -660,9 +660,9 @@ data class ReportStandardMetricPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val reference: String,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val target: Int?,
-    val type: MetricType,
+    val type: IndicatorLevel,
     val value: Int?,
 ) {
   constructor(
@@ -687,7 +687,7 @@ data class ReportStandardMetricEntriesPayload(
     val id: StandardIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val value: Int?,
 ) {
   fun toModel() =
@@ -700,7 +700,7 @@ data class ReportStandardMetricEntriesPayload(
 }
 
 data class ReportSystemMetricPayload(
-    val component: MetricComponent,
+    val component: IndicatorCategory,
     val description: String?,
     val isPublishable: Boolean,
     val metric: AutoCalculatedIndicator,
@@ -708,16 +708,16 @@ data class ReportSystemMetricPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val reference: String,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val systemTime: Instant?,
     val systemValue: Int?,
     val target: Int?,
-    val type: MetricType,
+    val type: IndicatorLevel,
 ) {
   constructor(
       model: ReportSystemMetricModel
   ) : this(
-      component = model.metric.componentId,
+      component = model.metric.categoryId,
       description = model.metric.description,
       isPublishable = model.metric.isPublishable,
       metric = model.metric,
@@ -729,7 +729,7 @@ data class ReportSystemMetricPayload(
       systemTime = model.entry.systemTime,
       systemValue = model.entry.systemValue,
       target = model.entry.target,
-      type = model.metric.typeId,
+      type = model.metric.levelId,
   )
 }
 
@@ -738,7 +738,7 @@ data class ReportSystemMetricEntriesPayload(
     val overrideValue: Int?,
     val progressNotes: String?,
     val projectsComments: String?,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
@@ -762,7 +762,7 @@ data class ReportPhotoPayload(
 }
 
 data class ReportProjectMetricPayload(
-    val component: MetricComponent,
+    val component: IndicatorCategory,
     val description: String?,
     val id: ProjectIndicatorId,
     val isPublishable: Boolean,
@@ -770,9 +770,9 @@ data class ReportProjectMetricPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val reference: String,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val target: Int?,
-    val type: MetricType,
+    val type: IndicatorLevel,
     val unit: String?,
     val value: Int?,
 ) {
@@ -799,7 +799,7 @@ data class ReportProjectMetricEntriesPayload(
     val id: ProjectIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val value: Int?,
 ) {
   fun toModel() =

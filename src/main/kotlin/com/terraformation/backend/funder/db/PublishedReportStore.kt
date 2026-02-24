@@ -3,10 +3,10 @@ package com.terraformation.backend.funder.db
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.MetricComponentConverter
-import com.terraformation.backend.db.accelerator.MetricTypeConverter
+import com.terraformation.backend.db.accelerator.IndicatorCategoryConverter
+import com.terraformation.backend.db.accelerator.IndicatorLevelConverter
 import com.terraformation.backend.db.accelerator.ReportIdConverter
-import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
@@ -129,7 +129,7 @@ class PublishedReportStore(
     val statusField =
         publishedMetricTable.field(
             "status_id",
-            SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()),
+            SQLDataType.INTEGER.asConvertedDataType(ReportIndicatorStatusConverter()),
         )!!
     val targetField = targetTable.field("target", Int::class.java)!!
     val targetYearField = targetTable.field("year", Int::class.java)!!
@@ -140,16 +140,16 @@ class PublishedReportStore(
     val metricTable = metricTableIdField.table!!
     val metricComponentField =
         metricTable.field(
-            "component_id",
-            SQLDataType.INTEGER.asConvertedDataType(MetricComponentConverter()),
+            "category_id",
+            SQLDataType.INTEGER.asConvertedDataType(IndicatorCategoryConverter()),
         )!!
     val metricDescriptionField = metricTable.field("description", String::class.java)!!
     val metricNameField = metricTable.field("name", String::class.java)!!
     val metricReferenceField = metricTable.field("reference", String::class.java)!!
     val metricTypeField =
         metricTable.field(
-            "type_id",
-            SQLDataType.INTEGER.asConvertedDataType(MetricTypeConverter()),
+            "level_id",
+            SQLDataType.INTEGER.asConvertedDataType(IndicatorLevelConverter()),
         )!!
     val unitField = metricTable.field("unit", String::class.java) ?: DSL.value(null as String?)
 
