@@ -699,9 +699,9 @@ COMMENT ON TABLE accelerator.report_project_indicators IS 'Report entries of tar
 
 COMMENT ON TABLE accelerator.report_quarters IS '(Enum) Quarters of accelerator project reports.';
 
-COMMENT ON TABLE accelerator.report_standard_metric_targets IS 'Project targets for standard metrics by year';
+COMMENT ON TABLE accelerator.report_standard_indicator_targets IS 'Project targets for standard indicators by year';
 
-COMMENT ON TABLE accelerator.report_standard_metrics IS 'Report entries of targets and values for standard metrics.';
+COMMENT ON TABLE accelerator.report_standard_indicators IS 'Report entries of targets and values for standard indicators.';
 
 COMMENT ON TABLE accelerator.report_statuses IS '(Enum) Statuses of accelerator project reports.';
 
@@ -718,7 +718,7 @@ COMMENT ON COLUMN accelerator.reports.report_quarter_id IS 'Quarter of the repor
 
 COMMENT ON TABLE accelerator.score_categories IS '(Enum) Project score categories.';
 
-COMMENT ON TABLE accelerator.standard_metrics IS 'Standard non-system metrics for every project to measure in accelerator reports.';
+COMMENT ON TABLE accelerator.standard_indicators IS 'Standard non-system indicators for every project to measure in accelerator reports.';
 
 COMMENT ON TABLE accelerator.submission_documents IS 'Information about documents uploaded by users to satisfy deliverables. A deliverable can have multiple documents.';
 COMMENT ON COLUMN accelerator.submission_documents.name IS 'System-generated filename. The file is stored using this name in the document store. This includes several elements such as the date and description.';
@@ -836,13 +836,13 @@ COMMENT ON TABLE funder.published_report_photos IS 'Photos for the published acc
 
 COMMENT ON TABLE funder.published_report_project_indicators IS 'Project-specific indicators of published reports.';
 
-COMMENT ON TABLE funder.published_report_standard_metrics IS 'Standard metrics of published reports.';
+COMMENT ON TABLE funder.published_report_standard_indicators IS 'Standard indicators of published reports.';
 
 COMMENT ON TABLE funder.published_report_system_metrics IS 'System metrics of published reports.';
 
 COMMENT ON TABLE funder.published_reports IS 'Published reports visible to funders.';
 
-COMMENT ON TABLE funder.published_standard_metric_targets IS 'Published project targets for standard metrics by year';
+COMMENT ON TABLE funder.published_standard_indicator_targets IS 'Published project targets for standard indicators by year';
 
 COMMENT ON TABLE funder.published_system_metric_targets IS 'Published project targets for system metrics by year';
 

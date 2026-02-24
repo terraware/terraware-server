@@ -10,10 +10,10 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
-import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.STANDARD_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -26,10 +26,10 @@ import org.jooq.impl.DSL
 class ReportMetricStore(
     private val dslContext: DSLContext,
 ) {
-  fun fetchOneStandardMetric(metricId: StandardMetricId): ExistingStandardMetricModel {
+  fun fetchOneStandardMetric(metricId: StandardIndicatorId): ExistingStandardMetricModel {
     requirePermissions { readProjectReportConfigs() }
 
-    return fetchStandardMetrics(STANDARD_METRICS.ID.eq(metricId)).firstOrNull()
+    return fetchStandardMetrics(STANDARD_INDICATORS.ID.eq(metricId)).firstOrNull()
         ?: throw StandardMetricNotFoundException(metricId)
   }
 
@@ -39,10 +39,10 @@ class ReportMetricStore(
     return fetchStandardMetrics(DSL.trueCondition())
   }
 
-  fun createStandardMetric(model: NewStandardMetricModel): StandardMetricId {
+  fun createStandardMetric(model: NewStandardMetricModel): StandardIndicatorId {
     requirePermissions { manageProjectReportConfigs() }
 
-    return with(STANDARD_METRICS) {
+    return with(STANDARD_INDICATORS) {
       dslContext
           .insertInto(this)
           .set(NAME, model.name)
@@ -58,7 +58,7 @@ class ReportMetricStore(
   }
 
   fun updateStandardMetric(
-      metricId: StandardMetricId,
+      metricId: StandardIndicatorId,
       updateFunc: (ExistingStandardMetricModel) -> ExistingStandardMetricModel,
   ) {
     requirePermissions { manageProjectReportConfigs() }
@@ -66,7 +66,7 @@ class ReportMetricStore(
     val existing = fetchOneStandardMetric(metricId)
     val new = updateFunc(existing)
 
-    with(STANDARD_METRICS) {
+    with(STANDARD_INDICATORS) {
       dslContext
           .update(this)
           .set(NAME, new.name)
@@ -83,9 +83,9 @@ class ReportMetricStore(
 
   private fun fetchStandardMetrics(condition: Condition): List<ExistingStandardMetricModel> {
     return dslContext
-        .selectFrom(STANDARD_METRICS)
+        .selectFrom(STANDARD_INDICATORS)
         .where(condition)
-        .orderBy(STANDARD_METRICS.REFERENCE, STANDARD_METRICS.ID)
+        .orderBy(STANDARD_INDICATORS.REFERENCE, STANDARD_INDICATORS.ID)
         .fetch { StandardMetricModel.of(it) }
   }
 
