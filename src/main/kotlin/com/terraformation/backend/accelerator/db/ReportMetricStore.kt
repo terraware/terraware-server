@@ -1,14 +1,14 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.model.CommonIndicatorModel
+import com.terraformation.backend.accelerator.model.ExistingCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingProjectIndicatorModel
-import com.terraformation.backend.accelerator.model.ExistingStandardMetricModel
+import com.terraformation.backend.accelerator.model.NewCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.NewProjectIndicatorModel
-import com.terraformation.backend.accelerator.model.NewStandardMetricModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorModel
-import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.CommonIndicatorNotFoundException
 import com.terraformation.backend.db.ProjectIndicatorNotFoundException
-import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
@@ -26,20 +26,20 @@ import org.jooq.impl.DSL
 class ReportMetricStore(
     private val dslContext: DSLContext,
 ) {
-  fun fetchOneStandardMetric(metricId: CommonIndicatorId): ExistingStandardMetricModel {
+  fun fetchOneCommonIndicator(indicatorId: CommonIndicatorId): ExistingCommonIndicatorModel {
     requirePermissions { readProjectReportConfigs() }
 
-    return fetchStandardMetrics(COMMON_INDICATORS.ID.eq(metricId)).firstOrNull()
-        ?: throw StandardMetricNotFoundException(metricId)
+    return fetchCommonIndicators(COMMON_INDICATORS.ID.eq(indicatorId)).firstOrNull()
+        ?: throw CommonIndicatorNotFoundException(indicatorId)
   }
 
-  fun fetchAllStandardMetrics(): List<ExistingStandardMetricModel> {
+  fun fetchAllCommonIndicators(): List<ExistingCommonIndicatorModel> {
     requirePermissions { readProjectReportConfigs() }
 
-    return fetchStandardMetrics(DSL.trueCondition())
+    return fetchCommonIndicators(DSL.trueCondition())
   }
 
-  fun createStandardMetric(model: NewStandardMetricModel): CommonIndicatorId {
+  fun createCommonIndicator(model: NewCommonIndicatorModel): CommonIndicatorId {
     requirePermissions { manageProjectReportConfigs() }
 
     return with(COMMON_INDICATORS) {
@@ -57,13 +57,13 @@ class ReportMetricStore(
     }
   }
 
-  fun updateStandardMetric(
-      metricId: CommonIndicatorId,
-      updateFunc: (ExistingStandardMetricModel) -> ExistingStandardMetricModel,
+  fun updateCommonIndicator(
+      indicatorId: CommonIndicatorId,
+      updateFunc: (ExistingCommonIndicatorModel) -> ExistingCommonIndicatorModel,
   ) {
     requirePermissions { manageProjectReportConfigs() }
 
-    val existing = fetchOneStandardMetric(metricId)
+    val existing = fetchOneCommonIndicator(indicatorId)
     val new = updateFunc(existing)
 
     with(COMMON_INDICATORS) {
@@ -76,17 +76,17 @@ class ReportMetricStore(
           .set(REF_ID, new.reference)
           .set(IS_PUBLISHABLE, new.isPublishable)
           .set(UNIT, new.unit)
-          .where(ID.eq(metricId))
+          .where(ID.eq(indicatorId))
           .execute()
     }
   }
 
-  private fun fetchStandardMetrics(condition: Condition): List<ExistingStandardMetricModel> {
+  private fun fetchCommonIndicators(condition: Condition): List<ExistingCommonIndicatorModel> {
     return dslContext
         .selectFrom(COMMON_INDICATORS)
         .where(condition)
         .orderBy(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
-        .fetch { StandardMetricModel.of(it) }
+        .fetch { CommonIndicatorModel.of(it) }
   }
 
   fun fetchOneProjectIndicator(indicatorId: ProjectIndicatorId): ExistingProjectIndicatorModel {
@@ -130,7 +130,7 @@ class ReportMetricStore(
     val existing = fetchOneProjectIndicator(indicatorId)
     val new = updateFunc(existing)
 
-    // Cannot update projectId of a metric
+    // Cannot update projectId of an indicator
     with(PROJECT_INDICATORS) {
       dslContext
           .update(this)

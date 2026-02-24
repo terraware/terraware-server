@@ -148,7 +148,7 @@ data class PublishedReportPayload(
       publishedTime = model.publishedTime,
       quarter = model.quarter,
       reportId = model.reportId,
-      standardMetrics = model.standardMetrics.map { PublishedReportMetricPayload(it) },
+      standardMetrics = model.commonIndicators.map { PublishedReportMetricPayload(it) },
       startDate = model.startDate,
       systemMetrics = model.systemMetrics.map { PublishedReportMetricPayload(it) },
   )

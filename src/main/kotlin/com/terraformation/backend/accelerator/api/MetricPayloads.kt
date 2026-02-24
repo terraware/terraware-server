@@ -1,9 +1,9 @@
 package com.terraformation.backend.accelerator.api
 
+import com.terraformation.backend.accelerator.model.ExistingCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingProjectIndicatorModel
-import com.terraformation.backend.accelerator.model.ExistingStandardMetricModel
+import com.terraformation.backend.accelerator.model.NewCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.NewProjectIndicatorModel
-import com.terraformation.backend.accelerator.model.NewStandardMetricModel
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
@@ -62,7 +62,7 @@ data class ExistingStandardMetricPayload(
     @field:Size(max = 25) val unit: String? = null,
 ) {
   constructor(
-      model: ExistingStandardMetricModel
+      model: ExistingCommonIndicatorModel
   ) : this(
       id = model.id,
       name = model.name,
@@ -74,8 +74,8 @@ data class ExistingStandardMetricPayload(
       unit = model.unit,
   )
 
-  fun toModel(): ExistingStandardMetricModel {
-    return ExistingStandardMetricModel(
+  fun toModel(): ExistingCommonIndicatorModel {
+    return ExistingCommonIndicatorModel(
         id = id,
         name = name,
         description = description,
@@ -111,8 +111,8 @@ data class NewMetricPayload(
     )
   }
 
-  fun toStandardMetricModel(): NewStandardMetricModel {
-    return NewStandardMetricModel(
+  fun toCommonIndicatorModel(): NewCommonIndicatorModel {
+    return NewCommonIndicatorModel(
         id = null,
         name = name,
         description = description,

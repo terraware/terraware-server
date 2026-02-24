@@ -78,7 +78,7 @@ data class ReportModel(
     val projectId: ProjectId,
     val projectIndicators: List<ReportProjectIndicatorModel> = emptyList(),
     val quarter: ReportQuarter?,
-    val standardMetrics: List<ReportStandardMetricModel> = emptyList(),
+    val commonIndicators: List<ReportCommonIndicatorModel> = emptyList(),
     val startDate: LocalDate,
     val status: ReportStatus,
     val submittedBy: UserId? = null,
@@ -108,7 +108,7 @@ data class ReportModel(
   }
 
   fun validateMetricEntries(
-      standardMetricEntries: Map<CommonIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
+      commonIndicatorEntries: Map<CommonIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
       projectIndicatorEntries: Map<ProjectIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
   ) {
     val invalidProjectIndicatorIds =
@@ -123,15 +123,15 @@ data class ReportModel(
       )
     }
 
-    val invalidStandardMetricIds =
-        standardMetricEntries.keys.filter { metricId ->
-          standardMetrics.all { it.metric.id != metricId }
+    val invalidCommonIndicatorIds =
+        commonIndicatorEntries.keys.filter { indicatorId ->
+          commonIndicators.all { it.indicator.id != indicatorId }
         }
 
-    if (invalidStandardMetricIds.isNotEmpty()) {
+    if (invalidCommonIndicatorIds.isNotEmpty()) {
       throw IllegalArgumentException(
-          "Report $id does not contain these standard metrics: " +
-              invalidStandardMetricIds.joinToString(", "),
+          "Report $id does not contain these common indicators: " +
+              invalidCommonIndicatorIds.joinToString(", "),
       )
     }
   }
@@ -148,7 +148,7 @@ data class ReportModel(
         record: Record,
         photosField: Field<List<ReportPhotoModel>>?,
         projectIndicatorsField: Field<List<ReportProjectIndicatorModel>>?,
-        standardMetricsField: Field<List<ReportStandardMetricModel>>?,
+        commonIndicatorsField: Field<List<ReportCommonIndicatorModel>>?,
         systemMetricsField: Field<List<ReportSystemMetricModel>>?,
         achievementsField: Field<List<String>>?,
         challengesField: Field<List<ReportChallengeModel>>?,
@@ -192,7 +192,7 @@ data class ReportModel(
             submittedTime = record[SUBMITTED_TIME],
             photos = photosField?.let { record[it] } ?: emptyList(),
             projectIndicators = projectIndicatorsField?.let { record[it] } ?: emptyList(),
-            standardMetrics = standardMetricsField?.let { record[it] } ?: emptyList(),
+            commonIndicators = commonIndicatorsField?.let { record[it] } ?: emptyList(),
             systemMetrics = systemMetricsField?.let { record[it] } ?: emptyList(),
         )
       }

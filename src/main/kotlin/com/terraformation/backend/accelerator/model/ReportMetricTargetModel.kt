@@ -26,16 +26,16 @@ data class ReportProjectIndicatorTargetModel(
   }
 }
 
-data class ReportStandardMetricTargetModel(
-    val metricId: CommonIndicatorId,
+data class ReportCommonIndicatorTargetModel(
+    val indicatorId: CommonIndicatorId,
     val target: Number?,
     val year: Number,
 ) {
   companion object {
-    fun of(record: Record): ReportStandardMetricTargetModel {
+    fun of(record: Record): ReportCommonIndicatorTargetModel {
       return with(REPORT_COMMON_INDICATOR_TARGETS) {
-        ReportStandardMetricTargetModel(
-            metricId = record[COMMON_INDICATOR_ID]!!,
+        ReportCommonIndicatorTargetModel(
+            indicatorId = record[COMMON_INDICATOR_ID]!!,
             target = record[TARGET],
             year = record[YEAR]!!,
         )

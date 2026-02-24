@@ -89,6 +89,9 @@ class AutomationNotFoundException(val automationId: AutomationId) :
 class CannotRemoveLastOwnerException(val organizationId: OrganizationId) :
     RuntimeException("Cannot remove last owner of organization $organizationId")
 
+class CommonIndicatorNotFoundException(val indicatorId: CommonIndicatorId) :
+    EntityNotFoundException("Common Indicator $indicatorId not found")
+
 class CountryNotFoundException(val countryCode: String) :
     EntityNotFoundException("Country $countryCode not found")
 
@@ -201,9 +204,6 @@ class SpeciesProblemNotFoundException(val speciesProblemId: SpeciesProblemId) :
 
 class SpeciesProblemHasNoSuggestionException(val speciesProblemId: SpeciesProblemId) :
     MismatchedStateException("Species problem $speciesProblemId has no suggested value")
-
-class StandardMetricNotFoundException(val metricId: CommonIndicatorId) :
-    EntityNotFoundException("Standard Metric $metricId not found")
 
 class SubLocationNameExistsException(val name: String) :
     DuplicateEntityException("Sub-location $name already exists at facility")

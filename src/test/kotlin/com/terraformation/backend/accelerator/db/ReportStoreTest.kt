@@ -6,21 +6,21 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
+import com.terraformation.backend.accelerator.model.CommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
+import com.terraformation.backend.accelerator.model.ReportCommonIndicatorModel
+import com.terraformation.backend.accelerator.model.ReportCommonIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportIndicatorEntryModel
 import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
-import com.terraformation.backend.accelerator.model.ReportStandardMetricModel
-import com.terraformation.backend.accelerator.model.ReportStandardMetricTargetModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricEntryModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
 import com.terraformation.backend.accelerator.model.ReportSystemMetricTargetModel
-import com.terraformation.backend.accelerator.model.StandardMetricModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
@@ -322,17 +322,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      val standardMetricId1 =
-          insertStandardMetric(
+      val commonIndicatorId1 =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Climate standard metric description",
-              name = "Climate Standard Metric",
+              description = "Climate common indicator description",
+              name = "Climate Common Indicator",
               reference = "2.1",
               type = IndicatorLevel.Activity,
           )
 
-      val standardMetricId2 =
-          insertStandardMetric(
+      val commonIndicatorId2 =
+          insertCommonIndicator(
               component = IndicatorCategory.Community,
               description = "Community metric description",
               name = "Community Metric",
@@ -340,8 +340,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Outcome,
           )
 
-      val standardMetricId3 =
-          insertStandardMetric(
+      val commonIndicatorId3 =
+          insertCommonIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
@@ -350,10 +350,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       // Insert targets into new target tables
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 1970, target = 55)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId1,
+          indicatorId = commonIndicatorId1,
           value = 45,
           projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
@@ -361,22 +361,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 1970, target = 25)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 25)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId2,
+          indicatorId = commonIndicatorId2,
           status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
 
-      val standardMetrics =
+      val commonIndicators =
           listOf(
               // ordered by reference
-              ReportStandardMetricModel(
-                  metric =
-                      StandardMetricModel(
-                          id = standardMetricId3,
+              ReportCommonIndicatorModel(
+                  indicator =
+                      CommonIndicatorModel(
+                          id = commonIndicatorId3,
                           component = IndicatorCategory.ProjectObjectives,
                           description = "Project objectives metric description",
                           isPublishable = true,
@@ -387,14 +387,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   // all fields are null because no target/value have been set yet
                   entry = ReportIndicatorEntryModel(),
               ),
-              ReportStandardMetricModel(
-                  metric =
-                      StandardMetricModel(
-                          id = standardMetricId1,
+              ReportCommonIndicatorModel(
+                  indicator =
+                      CommonIndicatorModel(
+                          id = commonIndicatorId1,
                           component = IndicatorCategory.Climate,
-                          description = "Climate standard metric description",
+                          description = "Climate common indicator description",
                           isPublishable = true,
-                          name = "Climate Standard Metric",
+                          name = "Climate Common Indicator",
                           reference = "2.1",
                           type = IndicatorLevel.Activity,
                       ),
@@ -408,10 +408,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = user.userId,
                       ),
               ),
-              ReportStandardMetricModel(
-                  metric =
-                      StandardMetricModel(
-                          id = standardMetricId2,
+              ReportCommonIndicatorModel(
+                  indicator =
+                      CommonIndicatorModel(
+                          id = commonIndicatorId2,
                           component = IndicatorCategory.Community,
                           description = "Community metric description",
                           isPublishable = true,
@@ -545,7 +545,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
               projectIndicators = projectIndicators,
-              standardMetrics = standardMetrics,
+              commonIndicators = commonIndicators,
               systemMetrics = systemMetrics,
           )
 
@@ -1050,17 +1050,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      val standardMetricId1 =
-          insertStandardMetric(
+      val commonIndicatorId1 =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Climate standard metric description",
-              name = "Climate Standard Metric",
+              description = "Climate common indicator description",
+              name = "Climate Common Indicator",
               reference = "2.1",
               type = IndicatorLevel.Activity,
           )
 
-      val standardMetricId2 =
-          insertStandardMetric(
+      val commonIndicatorId2 =
+          insertCommonIndicator(
               component = IndicatorCategory.Community,
               description = "Community metric description",
               isPublishable = false,
@@ -1069,8 +1069,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Outcome,
           )
 
-      val standardMetricId3 =
-          insertStandardMetric(
+      val commonIndicatorId3 =
+          insertCommonIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
@@ -1078,10 +1078,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Impact,
           )
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 1970, target = 55)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId1,
+          indicatorId = commonIndicatorId1,
           value = 45,
           projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
@@ -1089,22 +1089,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 1970, target = 25)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 25)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId2,
+          indicatorId = commonIndicatorId2,
           status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
 
-      val standardMetrics =
+      val commonIndicators =
           listOf(
               // ordered by reference
-              ReportStandardMetricModel(
-                  metric =
-                      StandardMetricModel(
-                          id = standardMetricId3,
+              ReportCommonIndicatorModel(
+                  indicator =
+                      CommonIndicatorModel(
+                          id = commonIndicatorId3,
                           component = IndicatorCategory.ProjectObjectives,
                           description = "Project objectives metric description",
                           isPublishable = true,
@@ -1115,14 +1115,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   // all fields are null because no target/value have been set yet
                   entry = ReportIndicatorEntryModel(),
               ),
-              ReportStandardMetricModel(
-                  metric =
-                      StandardMetricModel(
-                          id = standardMetricId1,
+              ReportCommonIndicatorModel(
+                  indicator =
+                      CommonIndicatorModel(
+                          id = commonIndicatorId1,
                           component = IndicatorCategory.Climate,
-                          description = "Climate standard metric description",
+                          description = "Climate common indicator description",
                           isPublishable = true,
-                          name = "Climate Standard Metric",
+                          name = "Climate Common Indicator",
                           reference = "2.1",
                           type = IndicatorLevel.Activity,
                       ),
@@ -1136,10 +1136,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = user.userId,
                       ),
               ),
-              ReportStandardMetricModel(
-                  metric =
-                      StandardMetricModel(
-                          id = standardMetricId2,
+              ReportCommonIndicatorModel(
+                  indicator =
+                      CommonIndicatorModel(
+                          id = commonIndicatorId2,
                           component = IndicatorCategory.Community,
                           description = "Community metric description",
                           isPublishable = false,
@@ -1288,7 +1288,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedByUser = SimpleUserModel(user.userId, "First Last"),
               modifiedTime = Instant.EPOCH,
               projectIndicators = projectIndicators,
-              standardMetrics = standardMetrics,
+              commonIndicators = commonIndicators,
               systemMetrics = systemMetrics,
           )
 
@@ -1301,7 +1301,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           reportModel.copy(
               projectIndicators = emptyList(),
-              standardMetrics = emptyList(),
+              commonIndicators = emptyList(),
               systemMetrics = emptyList(),
           ),
           store.fetchOne(reportId, includeMetrics = false),
@@ -1576,17 +1576,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `upserts values and internalComment for existing and non-existing report metric rows`() {
       val otherUserId = insertUser()
 
-      val standardMetricId1 =
-          insertStandardMetric(
+      val commonIndicatorId1 =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Climate standard metric description",
-              name = "Climate Standard Metric",
+              description = "Climate common indicator description",
+              name = "Climate Common Indicator",
               reference = "2.1",
               type = IndicatorLevel.Activity,
           )
 
-      val standardMetricId2 =
-          insertStandardMetric(
+      val commonIndicatorId2 =
+          insertCommonIndicator(
               component = IndicatorCategory.Community,
               description = "Community metric description",
               name = "Community Metric",
@@ -1594,8 +1594,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Outcome,
           )
 
-      val standardMetricId3 =
-          insertStandardMetric(
+      val commonIndicatorId3 =
+          insertCommonIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
@@ -1604,7 +1604,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       // This has no entry and will not have any updates
-      insertStandardMetric(
+      insertCommonIndicator(
           component = IndicatorCategory.Biodiversity,
           description = "Biodiversity metric description",
           name = "Biodiversity Metric",
@@ -1631,10 +1631,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedTime = Instant.ofEpochSecond(3000),
           )
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 1970, target = 55)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId1,
+          indicatorId = commonIndicatorId1,
           value = 45,
           projectsComments = "Existing metric 1 notes",
           status = ReportIndicatorStatus.OnTrack,
@@ -1642,10 +1642,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 1970, target = 30)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 30)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId2,
+          indicatorId = commonIndicatorId2,
           value = null,
           projectsComments = "Existing metric 2 notes",
           progressNotes = "Existing metric 2 internal comment",
@@ -1693,9 +1693,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // We add new entries for metric 2 and 3. Metric 1 and 4 are not modified
       store.reviewReportMetrics(
           reportId = reportId,
-          standardMetricEntries =
+          commonIndicatorEntries =
               mapOf(
-                  standardMetricId2 to
+                  commonIndicatorId2 to
                       ReportIndicatorEntryModel(
                           value = 88,
                           projectsComments = "New metric 2 notes",
@@ -1706,7 +1706,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.EPOCH,
                           modifiedBy = UserId(99),
                       ),
-                  standardMetricId3 to
+                  commonIndicatorId3 to
                       ReportIndicatorEntryModel(
                           value = 45,
                           projectsComments = "New metric 3 notes",
@@ -1745,7 +1745,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  commonIndicatorId = standardMetricId1,
+                  commonIndicatorId = commonIndicatorId1,
                   value = 45,
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing metric 1 notes",
@@ -1754,7 +1754,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  commonIndicatorId = standardMetricId2,
+                  commonIndicatorId = commonIndicatorId2,
                   value = 88,
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New metric 2 notes",
@@ -1764,16 +1764,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  commonIndicatorId = standardMetricId3,
+                  commonIndicatorId = commonIndicatorId3,
                   value = 45,
                   projectsComments = "New metric 3 notes",
                   progressNotes = "New metric 3 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
-              // Standard metric 4 is not inserted since there was no updates
+              // Common indicator 4 is not inserted since there was no updates
           ),
-          "Reports standard metrics table",
+          "Reports common indicators table",
       )
 
       assertTableEquals(
@@ -2055,17 +2055,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `upserts values and targets for existing and non-existing report metric rows`() {
       val otherUserId = insertUser()
-      val standardMetricId1 =
-          insertStandardMetric(
+      val commonIndicatorId1 =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Climate standard metric description",
-              name = "Climate Standard Metric",
+              description = "Climate common indicator description",
+              name = "Climate Common Indicator",
               reference = "2.1",
               type = IndicatorLevel.Activity,
           )
 
-      val standardMetricId2 =
-          insertStandardMetric(
+      val commonIndicatorId2 =
+          insertCommonIndicator(
               component = IndicatorCategory.Community,
               description = "Community metric description",
               name = "Community Metric",
@@ -2073,8 +2073,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Outcome,
           )
 
-      val standardMetricId3 =
-          insertStandardMetric(
+      val commonIndicatorId3 =
+          insertCommonIndicator(
               component = IndicatorCategory.ProjectObjectives,
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
@@ -2083,7 +2083,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       // This has no entry and will not have any updates
-      insertStandardMetric(
+      insertCommonIndicator(
           component = IndicatorCategory.Biodiversity,
           description = "Biodiversity metric description",
           name = "Biodiversity Metric",
@@ -2103,10 +2103,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted, createdBy = otherUserId)
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 1970, target = 55)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId1,
+          indicatorId = commonIndicatorId1,
           value = 45,
           projectsComments = "Existing metric 1 notes",
           status = ReportIndicatorStatus.OnTrack,
@@ -2114,10 +2114,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 1970, target = 30)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 30)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId2,
+          indicatorId = commonIndicatorId2,
           value = null,
           projectsComments = "Existing metric 2 notes",
           progressNotes = "Existing metric 2 internal comment",
@@ -2159,21 +2159,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      // At this point, the report has entries for standard metric 1 and 2, and no entry for
-      // standard metric 3 and 4
+      // At this point, the report has entries for common indicator 1 and 2, and no entry for
+      // common indicator 3 and 4
 
       clock.instant = Instant.ofEpochSecond(9000)
 
-      // We add new entries for standard metric 2 and 3. Standard metric 1 and 4 are not modified.
+      // We add new entries for common indicator 2 and 3. Common indicator 1 and 4 are not modified.
       // We also add a new entry for project indicator
       store.updateReport(
           reportId = reportId,
           highlights = null,
           achievements = emptyList(),
           challenges = emptyList(),
-          standardMetricEntries =
+          commonIndicatorEntries =
               mapOf(
-                  standardMetricId2 to
+                  commonIndicatorId2 to
                       ReportIndicatorEntryModel(
                           value = 88,
                           projectsComments = "New metric 2 notes",
@@ -2184,7 +2184,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.EPOCH,
                           modifiedBy = UserId(99),
                       ),
-                  standardMetricId3 to
+                  commonIndicatorId3 to
                       ReportIndicatorEntryModel(
                           value = null,
                           projectsComments = "New metric 3 notes",
@@ -2229,7 +2229,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  commonIndicatorId = standardMetricId1,
+                  commonIndicatorId = commonIndicatorId1,
                   value = 45,
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing metric 1 notes",
@@ -2238,7 +2238,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  commonIndicatorId = standardMetricId2,
+                  commonIndicatorId = commonIndicatorId2,
                   value = 88,
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New metric 2 notes",
@@ -2248,14 +2248,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  commonIndicatorId = standardMetricId3,
+                  commonIndicatorId = commonIndicatorId3,
                   projectsComments = "New metric 3 notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
-              // Standard metric 4 is not inserted since there was no updates
+              // Common indicator 4 is not inserted since there was no updates
           ),
-          "Reports standard metrics table",
+          "Reports common indicators table",
       )
 
       assertTableEquals(
@@ -3424,11 +3424,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Nested
   inner class PublishReport {
     private lateinit var reportId: ReportId
-    private val standardMetricId1 by lazy { insertStandardMetric() }
-    private val standardMetricId2 by lazy { insertStandardMetric() }
-    private val standardMetricNullValueId by lazy { insertStandardMetric() }
-    private val standardMetricNotPublishableId by lazy {
-      insertStandardMetric(isPublishable = false)
+    private val commonIndicatorId1 by lazy { insertCommonIndicator() }
+    private val commonIndicatorId2 by lazy { insertCommonIndicator() }
+    private val commonIndicatorNullValueId by lazy { insertCommonIndicator() }
+    private val commonIndicatorNotPublishableId by lazy {
+      insertCommonIndicator(isPublishable = false)
     }
 
     private val projectIndicatorId1 by lazy { insertProjectIndicator() }
@@ -3486,44 +3486,44 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           deleted = true,
       )
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId1, year = 2030, target = 10)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 2030, target = 10)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId1,
+          indicatorId = commonIndicatorId1,
           status = ReportIndicatorStatus.Achieved,
           value = 10,
           projectsComments = null,
-          progressNotes = "Standard Metric 1 Progress notes",
+          progressNotes = "Common Indicator 1 Progress notes",
       )
 
-      insertStandardMetricTarget(commonIndicatorId = standardMetricId2, year = 2030, target = 20)
-      insertReportStandardMetric(
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 2030, target = 20)
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricId2,
+          indicatorId = commonIndicatorId2,
           status = ReportIndicatorStatus.OnTrack,
           value = 19,
-          projectsComments = "Standard Metric 2 Underperformance",
+          projectsComments = "Common Indicator 2 Underperformance",
       )
 
-      insertStandardMetricTarget(
-          commonIndicatorId = standardMetricNullValueId,
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorNullValueId,
           year = 2030,
           target = 999,
       )
-      insertReportStandardMetric(
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricNullValueId,
+          indicatorId = commonIndicatorNullValueId,
           value = null,
       )
 
-      insertStandardMetricTarget(
-          commonIndicatorId = standardMetricNotPublishableId,
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorNotPublishableId,
           year = 2030,
           target = 999,
       )
-      insertReportStandardMetric(
+      insertReportCommonIndicator(
           reportId = reportId,
-          metricId = standardMetricNotPublishableId,
+          indicatorId = commonIndicatorNotPublishableId,
           value = 999,
       )
 
@@ -3714,20 +3714,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           mitigationPlan = "Existing Plan D",
       )
 
-      insertPublishedReportStandardMetric(
-          metricId = standardMetricId1,
+      insertPublishedReportCommonIndicator(
+          indicatorId = commonIndicatorId1,
           value = 100,
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
 
-      insertPublishedReportStandardMetric(
-          metricId = standardMetricNullValueId,
+      insertPublishedReportCommonIndicator(
+          indicatorId = commonIndicatorNullValueId,
           value = 100,
       )
 
-      insertPublishedReportStandardMetric(
-          metricId = standardMetricNotPublishableId,
+      insertPublishedReportCommonIndicator(
+          indicatorId = commonIndicatorNotPublishableId,
           value = 100,
       )
 
@@ -3842,21 +3842,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               PublishedReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  commonIndicatorId = standardMetricId1,
+                  commonIndicatorId = commonIndicatorId1,
                   statusId = ReportIndicatorStatus.Achieved,
                   value = 10,
                   projectsComments = null,
-                  progressNotes = "Standard Metric 1 Progress notes",
+                  progressNotes = "Common Indicator 1 Progress notes",
               ),
               PublishedReportCommonIndicatorsRecord(
                   reportId = reportId,
-                  commonIndicatorId = standardMetricId2,
+                  commonIndicatorId = commonIndicatorId2,
                   statusId = ReportIndicatorStatus.OnTrack,
                   value = 19,
-                  projectsComments = "Standard Metric 2 Underperformance",
+                  projectsComments = "Common Indicator 2 Underperformance",
               ),
           ),
-          "Published report standard metrics table",
+          "Published report common indicators table",
       )
 
       assertTableEquals(
@@ -3963,24 +3963,24 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               PublishedCommonIndicatorTargetsRecord(
                   projectId = projectId,
-                  commonIndicatorId = standardMetricId1,
+                  commonIndicatorId = commonIndicatorId1,
                   year = 2030,
                   target = 10,
               ),
               PublishedCommonIndicatorTargetsRecord(
                   projectId = projectId,
-                  commonIndicatorId = standardMetricId2,
+                  commonIndicatorId = commonIndicatorId2,
                   year = 2030,
                   target = 20,
               ),
               PublishedCommonIndicatorTargetsRecord(
                   projectId = projectId,
-                  commonIndicatorId = standardMetricNullValueId,
+                  commonIndicatorId = commonIndicatorNullValueId,
                   year = 2030,
                   target = 999,
               ),
           ),
-          "Published standard metric targets table",
+          "Published common indicator targets table",
       )
 
       assertTableEquals(
@@ -5295,11 +5295,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class UpdateStandardMetricTarget {
+  inner class UpdateCommonIndicatorTarget {
     @Test
     fun `inserts new target`() {
-      val standardMetricId =
-          insertStandardMetric(
+      val commonIndicatorId =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
               description = "Test metric",
               name = "Test Metric",
@@ -5307,25 +5307,25 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Activity,
           )
 
-      store.updateStandardMetricTarget(
+      store.updateCommonIndicatorTarget(
           projectId = projectId,
           year = 2024,
-          metricId = standardMetricId,
+          indicatorId = commonIndicatorId,
           target = 200,
       )
 
       val targets = reportCommonIndicatorTargetsDao.findAll()
       assertEquals(1, targets.size)
       assertEquals(projectId, targets[0].projectId)
-      assertEquals(standardMetricId, targets[0].commonIndicatorId)
+      assertEquals(commonIndicatorId, targets[0].commonIndicatorId)
       assertEquals(2024, targets[0].year)
       assertEquals(200, targets[0].target)
     }
 
     @Test
     fun `updates existing target`() {
-      val standardMetricId =
-          insertStandardMetric(
+      val commonIndicatorId =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
               description = "Test metric",
               name = "Test Metric",
@@ -5333,17 +5333,17 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Activity,
           )
 
-      insertStandardMetricTarget(
+      insertCommonIndicatorTarget(
           projectId = projectId,
-          commonIndicatorId = standardMetricId,
+          commonIndicatorId = commonIndicatorId,
           year = 2024,
           target = 200,
       )
 
-      store.updateStandardMetricTarget(
+      store.updateCommonIndicatorTarget(
           projectId = projectId,
           year = 2024,
-          metricId = standardMetricId,
+          indicatorId = commonIndicatorId,
           target = 250,
       )
 
@@ -5354,8 +5354,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `allows null target`() {
-      val standardMetricId =
-          insertStandardMetric(
+      val commonIndicatorId =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
               description = "Test metric",
               name = "Test Metric",
@@ -5363,10 +5363,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Activity,
           )
 
-      store.updateStandardMetricTarget(
+      store.updateCommonIndicatorTarget(
           projectId = projectId,
           year = 2024,
-          metricId = standardMetricId,
+          indicatorId = commonIndicatorId,
           target = null,
       )
 
@@ -5381,8 +5381,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
-      val standardMetricId =
-          insertStandardMetric(
+      val commonIndicatorId =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
               description = "Test metric",
               name = "Test Metric",
@@ -5391,10 +5391,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       assertThrows<AccessDeniedException> {
-        store.updateStandardMetricTarget(
+        store.updateCommonIndicatorTarget(
             projectId = projectId,
             year = 2024,
-            metricId = standardMetricId,
+            indicatorId = commonIndicatorId,
             target = 200,
         )
       }
@@ -5535,28 +5535,28 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class FetchReportStandardMetricTargets {
+  inner class FetchReportCommonIndicatorTargets {
     @Test
     fun `requires permission to read project reports`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
-      assertThrows<AccessDeniedException> { store.fetchReportStandardMetricTargets(projectId) }
+      assertThrows<AccessDeniedException> { store.fetchReportCommonIndicatorTargets(projectId) }
     }
 
     @Test
-    fun `returns all standard metric targets for a project`() {
-      val standardMetricId1 =
-          insertStandardMetric(
+    fun `returns all common indicator targets for a project`() {
+      val commonIndicatorId1 =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
               description = "Test metric 1",
               name = "Test Metric 1",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
-      val standardMetricId2 =
-          insertStandardMetric(
+      val commonIndicatorId2 =
+          insertCommonIndicator(
               component = IndicatorCategory.Climate,
               description = "Test metric 2",
               name = "Test Metric 2",
@@ -5564,32 +5564,32 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               type = IndicatorLevel.Activity,
           )
 
-      insertStandardMetricTarget(
+      insertCommonIndicatorTarget(
           projectId = projectId,
-          commonIndicatorId = standardMetricId1,
+          commonIndicatorId = commonIndicatorId1,
           year = 2024,
           target = 300,
       )
-      insertStandardMetricTarget(
+      insertCommonIndicatorTarget(
           projectId = projectId,
-          commonIndicatorId = standardMetricId2,
+          commonIndicatorId = commonIndicatorId2,
           year = 2024,
           target = 400,
       )
-      insertStandardMetricTarget(
+      insertCommonIndicatorTarget(
           projectId = projectId,
-          commonIndicatorId = standardMetricId1,
+          commonIndicatorId = commonIndicatorId1,
           year = 2025,
           target = 350,
       )
 
-      val targets = store.fetchReportStandardMetricTargets(projectId)
+      val targets = store.fetchReportCommonIndicatorTargets(projectId)
 
       assertEquals(
           listOf(
-              ReportStandardMetricTargetModel(standardMetricId1, 300, 2024),
-              ReportStandardMetricTargetModel(standardMetricId2, 400, 2024),
-              ReportStandardMetricTargetModel(standardMetricId1, 350, 2025),
+              ReportCommonIndicatorTargetModel(commonIndicatorId1, 300, 2024),
+              ReportCommonIndicatorTargetModel(commonIndicatorId2, 400, 2024),
+              ReportCommonIndicatorTargetModel(commonIndicatorId1, 350, 2025),
           ),
           targets,
       )

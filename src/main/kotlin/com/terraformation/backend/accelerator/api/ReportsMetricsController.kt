@@ -27,7 +27,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   @GetMapping("/standardMetrics")
   @Operation(summary = "List all standard metrics.")
   fun listStandardMetric(): ListStandardMetricsResponsePayload {
-    val models = metricStore.fetchAllStandardMetrics()
+    val models = metricStore.fetchAllCommonIndicators()
     return ListStandardMetricsResponsePayload(models.map { ExistingStandardMetricPayload(it) })
   }
 
@@ -37,7 +37,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   fun createStandardMetric(
       @RequestBody @Valid payload: CreateStandardMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.createStandardMetric(payload.metric.toStandardMetricModel())
+    metricStore.createCommonIndicator(payload.metric.toCommonIndicatorModel())
     return SimpleSuccessResponsePayload()
   }
 
@@ -48,7 +48,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
       @PathVariable metricId: CommonIndicatorId,
       @RequestBody payload: UpdateStandardMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.updateStandardMetric(metricId) { payload.metric.toModel() }
+    metricStore.updateCommonIndicator(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
 
