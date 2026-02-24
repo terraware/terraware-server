@@ -2,11 +2,11 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
-import com.terraformation.backend.db.accelerator.StandardMetricId
-import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.StandardIndicatorId
+import com.terraformation.backend.db.accelerator.tables.references.STANDARD_INDICATORS
 import org.jooq.Record
 
-data class StandardMetricModel<ID : StandardMetricId?>(
+data class StandardMetricModel<ID : StandardIndicatorId?>(
     val id: ID,
     val name: String,
     val description: String?,
@@ -18,7 +18,7 @@ data class StandardMetricModel<ID : StandardMetricId?>(
 ) {
   companion object {
     fun of(record: Record): ExistingStandardMetricModel {
-      return with(STANDARD_METRICS) {
+      return with(STANDARD_INDICATORS) {
         ExistingStandardMetricModel(
             id = record[ID]!!,
             name = record[NAME]!!,
@@ -34,6 +34,6 @@ data class StandardMetricModel<ID : StandardMetricId?>(
   }
 }
 
-typealias ExistingStandardMetricModel = StandardMetricModel<StandardMetricId>
+typealias ExistingStandardMetricModel = StandardMetricModel<StandardIndicatorId>
 
 typealias NewStandardMetricModel = StandardMetricModel<Nothing?>

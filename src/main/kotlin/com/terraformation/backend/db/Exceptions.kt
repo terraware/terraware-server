@@ -4,7 +4,7 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportId
-import com.terraformation.backend.db.accelerator.StandardMetricId
+import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
@@ -202,7 +202,7 @@ class SpeciesProblemNotFoundException(val speciesProblemId: SpeciesProblemId) :
 class SpeciesProblemHasNoSuggestionException(val speciesProblemId: SpeciesProblemId) :
     MismatchedStateException("Species problem $speciesProblemId has no suggested value")
 
-class StandardMetricNotFoundException(val metricId: StandardMetricId) :
+class StandardMetricNotFoundException(val metricId: StandardIndicatorId) :
     EntityNotFoundException("Standard Metric $metricId not found")
 
 class SubLocationNameExistsException(val name: String) :

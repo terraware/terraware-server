@@ -9,7 +9,7 @@ import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.STANDARD_METRICS
+import com.terraformation.backend.db.accelerator.tables.references.STANDARD_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -21,9 +21,9 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_A
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_CHALLENGES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_STANDARD_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_SYSTEM_METRICS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_STANDARD_METRIC_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_STANDARD_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.funder.model.PublishedReportMetricModel
 import com.terraformation.backend.funder.model.PublishedReportModel
@@ -226,9 +226,9 @@ class PublishedReportStore(
 
   private val standardMetricsMultiset =
       publishedMetricsMultiset(
-          STANDARD_METRICS.ID,
-          PUBLISHED_REPORT_STANDARD_METRICS.STANDARD_METRIC_ID,
-          PUBLISHED_STANDARD_METRIC_TARGETS.STANDARD_METRIC_ID,
+          STANDARD_INDICATORS.ID,
+          PUBLISHED_REPORT_STANDARD_INDICATORS.STANDARD_INDICATOR_ID,
+          PUBLISHED_STANDARD_INDICATOR_TARGETS.STANDARD_INDICATOR_ID,
       )
 
   private val systemMetricsMultiset =

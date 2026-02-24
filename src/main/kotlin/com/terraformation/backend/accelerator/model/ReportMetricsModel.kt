@@ -5,8 +5,8 @@ import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.SystemMetric
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRICS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_METRIC_TARGETS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_STANDARD_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRICS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_SYSTEM_METRIC_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.SYSTEM_METRICS
@@ -39,9 +39,9 @@ data class ReportStandardMetricModel(
     }
 
     private fun entry(record: Record): ReportMetricEntryModel {
-      return with(REPORT_STANDARD_METRICS) {
+      return with(REPORT_STANDARD_INDICATORS) {
         ReportMetricEntryModel(
-            target = record[REPORT_STANDARD_METRIC_TARGETS.TARGET],
+            target = record[REPORT_STANDARD_INDICATOR_TARGETS.TARGET],
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
