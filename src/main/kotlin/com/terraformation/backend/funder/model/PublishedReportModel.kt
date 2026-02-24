@@ -2,7 +2,7 @@ package com.terraformation.backend.funder.model
 
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
-import com.terraformation.backend.db.accelerator.ProjectMetricId
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportQuarter
@@ -24,7 +24,7 @@ data class PublishedReportModel(
     val highlights: String?,
     val photos: List<ReportPhotoModel>,
     val projectId: ProjectId,
-    val projectMetrics: List<PublishedReportMetricModel<ProjectMetricId>>,
+    val projectMetrics: List<PublishedReportMetricModel<ProjectIndicatorId>>,
     val projectName: String,
     val publishedBy: UserId,
     val publishedTime: Instant,

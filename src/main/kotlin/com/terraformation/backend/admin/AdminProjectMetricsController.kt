@@ -4,14 +4,14 @@ import com.terraformation.backend.accelerator.db.ReportMetricStore
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.accelerator.ProjectMetricId
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_METRICS
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
-import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_METRICS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
 import org.jooq.DSLContext
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
@@ -38,9 +38,9 @@ class AdminProjectMetricsController(
     val projectsWithMetrics =
         dslContext
             .selectDistinct(PROJECTS.ID, PROJECTS.NAME)
-            .from(PROJECT_METRICS)
+            .from(PROJECT_INDICATORS)
             .join(PROJECTS)
-            .on(PROJECTS.ID.eq(PROJECT_METRICS.PROJECT_ID))
+            .on(PROJECTS.ID.eq(PROJECT_INDICATORS.PROJECT_ID))
             .fetchMap(PROJECTS.ID.asNonNullable(), PROJECTS.NAME.asNonNullable())
 
     model.addAttribute("projectsWithMetrics", projectsWithMetrics)
@@ -63,7 +63,7 @@ class AdminProjectMetricsController(
 
   @PostMapping("/deleteProjectMetrics")
   fun deleteProjectMetrics(
-      @RequestParam metricId: ProjectMetricId,
+      @RequestParam metricId: ProjectIndicatorId,
       redirectAttributes: RedirectAttributes,
   ): String {
     requirePermissions { manageProjectReportConfigs() }
@@ -71,16 +71,19 @@ class AdminProjectMetricsController(
     try {
       dslContext.transaction { _ ->
         dslContext
-            .deleteFrom(PUBLISHED_REPORT_PROJECT_METRICS)
-            .where(PUBLISHED_REPORT_PROJECT_METRICS.PROJECT_METRIC_ID.eq(metricId))
+            .deleteFrom(PUBLISHED_REPORT_PROJECT_INDICATORS)
+            .where(PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(metricId))
             .execute()
 
         dslContext
-            .deleteFrom(REPORT_PROJECT_METRICS)
-            .where(REPORT_PROJECT_METRICS.PROJECT_METRIC_ID.eq(metricId))
+            .deleteFrom(REPORT_PROJECT_INDICATORS)
+            .where(REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(metricId))
             .execute()
 
-        dslContext.deleteFrom(PROJECT_METRICS).where(PROJECT_METRICS.ID.eq(metricId)).execute()
+        dslContext
+            .deleteFrom(PROJECT_INDICATORS)
+            .where(PROJECT_INDICATORS.ID.eq(metricId))
+            .execute()
       }
       redirectAttributes.successMessage = "Successfully deleted project metrics"
     } catch (e: Exception) {

@@ -2,12 +2,12 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.MetricComponent
 import com.terraformation.backend.db.accelerator.MetricType
-import com.terraformation.backend.db.accelerator.ProjectMetricId
-import com.terraformation.backend.db.accelerator.tables.references.PROJECT_METRICS
+import com.terraformation.backend.db.accelerator.ProjectIndicatorId
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.default_schema.ProjectId
 import org.jooq.Record
 
-data class ProjectMetricModel<ID : ProjectMetricId?>(
+data class ProjectMetricModel<ID : ProjectIndicatorId?>(
     val id: ID,
     val projectId: ProjectId,
     val name: String,
@@ -20,7 +20,7 @@ data class ProjectMetricModel<ID : ProjectMetricId?>(
 ) {
   companion object {
     fun of(record: Record): ExistingProjectMetricModel {
-      return with(PROJECT_METRICS) {
+      return with(PROJECT_INDICATORS) {
         ExistingProjectMetricModel(
             id = record[ID]!!,
             projectId = record[PROJECT_ID]!!,
@@ -37,6 +37,6 @@ data class ProjectMetricModel<ID : ProjectMetricId?>(
   }
 }
 
-typealias ExistingProjectMetricModel = ProjectMetricModel<ProjectMetricId>
+typealias ExistingProjectMetricModel = ProjectMetricModel<ProjectIndicatorId>
 
 typealias NewProjectMetricModel = ProjectMetricModel<Nothing?>
