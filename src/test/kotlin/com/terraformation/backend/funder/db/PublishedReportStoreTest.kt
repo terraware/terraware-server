@@ -10,7 +10,7 @@ import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportFrequency
-import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
@@ -135,7 +135,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           value = 120,
           projectsComments = null,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
       )
 
       insertPublishedStandardMetricTarget(
@@ -149,7 +149,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = 180,
           progressNotes = "progress notes 2",
           projectsComments = "Underperformance justification 2",
-          status = ReportMetricStatus.Unlikely,
+          status = ReportIndicatorStatus.Unlikely,
       )
 
       insertPublishedProjectMetricTarget(
@@ -163,7 +163,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = 40,
           progressNotes = "progress notes 1",
           projectsComments = null,
-          status = ReportMetricStatus.OnTrack,
+          status = ReportIndicatorStatus.OnTrack,
       )
 
       insertPublishedProjectMetricTarget(
@@ -189,7 +189,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metric = AutoCalculatedIndicator.SurvivalRate,
           value = 6,
           projectsComments = null,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
       )
 
       val reportId2 =
@@ -253,7 +253,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               metricId = projectMetricId1,
                               name = "Project Metric 1",
                               reference = "1.2.1",
-                              status = ReportMetricStatus.OnTrack,
+                              status = ReportIndicatorStatus.OnTrack,
                               target = null,
                               type = IndicatorLevel.Output,
                               progressNotes = "progress notes 1",
@@ -294,7 +294,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               value = 180,
                               progressNotes = "progress notes 2",
                               projectsComments = "Underperformance justification 2",
-                              status = ReportMetricStatus.Unlikely,
+                              status = ReportIndicatorStatus.Unlikely,
                               unit = null,
                           ),
                           PublishedReportMetricModel(
@@ -302,7 +302,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               description = "Standard Metric Description 1",
                               metricId = standardMetricId1,
                               name = "Standard Metric 1",
-                              status = ReportMetricStatus.Achieved,
+                              status = ReportIndicatorStatus.Achieved,
                               reference = "1.1.2",
                               target = 100,
                               type = IndicatorLevel.Output,
@@ -321,7 +321,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               metricId = AutoCalculatedIndicator.SurvivalRate,
                               name = AutoCalculatedIndicator.SurvivalRate.jsonValue,
                               reference = AutoCalculatedIndicator.SurvivalRate.reference,
-                              status = ReportMetricStatus.Achieved,
+                              status = ReportIndicatorStatus.Achieved,
                               target = 6,
                               type = AutoCalculatedIndicator.SurvivalRate.levelId,
                               progressNotes = null,

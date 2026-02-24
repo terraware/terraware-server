@@ -177,7 +177,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "report_auto_calculated_indicators" to setOf(ALL, ACCELERATOR),
                   "report_challenges" to setOf(ALL, ACCELERATOR),
                   "report_frequencies" to setOf(ALL, ACCELERATOR),
-                  "report_metric_statuses" to setOf(ALL, ACCELERATOR),
+                  "report_indicator_statuses" to setOf(ALL, ACCELERATOR),
                   "report_photos" to setOf(ALL, ACCELERATOR),
                   "report_project_indicator_targets" to setOf(ALL, ACCELERATOR),
                   "report_project_indicators" to setOf(ALL, ACCELERATOR),

@@ -37,7 +37,7 @@ import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
-import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
@@ -660,7 +660,7 @@ data class ReportStandardMetricPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val reference: String,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val target: Int?,
     val type: IndicatorLevel,
     val value: Int?,
@@ -687,7 +687,7 @@ data class ReportStandardMetricEntriesPayload(
     val id: StandardIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val value: Int?,
 ) {
   fun toModel() =
@@ -708,7 +708,7 @@ data class ReportSystemMetricPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val reference: String,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val systemTime: Instant?,
     val systemValue: Int?,
     val target: Int?,
@@ -738,7 +738,7 @@ data class ReportSystemMetricEntriesPayload(
     val overrideValue: Int?,
     val progressNotes: String?,
     val projectsComments: String?,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
 ) {
   fun toModel() =
       ReportMetricEntryModel(
@@ -770,7 +770,7 @@ data class ReportProjectMetricPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val reference: String,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val target: Int?,
     val type: IndicatorLevel,
     val unit: String?,
@@ -799,7 +799,7 @@ data class ReportProjectMetricEntriesPayload(
     val id: ProjectIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val value: Int?,
 ) {
   fun toModel() =

@@ -33,7 +33,7 @@ import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
-import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
@@ -291,7 +291,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId,
-          status = ReportMetricStatus.OnTrack,
+          status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -313,7 +313,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportMetricEntryModel(
                           target = 100,
-                          status = ReportMetricStatus.OnTrack,
+                          status = ReportIndicatorStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
@@ -363,7 +363,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
-          status = ReportMetricStatus.Unlikely,
+          status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -420,7 +420,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportMetricEntryModel(
                           target = 25,
-                          status = ReportMetricStatus.Unlikely,
+                          status = ReportIndicatorStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
@@ -464,7 +464,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = 300,
           systemTime = Instant.ofEpochSecond(7000),
           overrideValue = 800,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
           modifiedTime = Instant.ofEpochSecond(700),
           modifiedBy = user.userId,
       )
@@ -508,7 +508,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 300,
                           systemTime = Instant.ofEpochSecond(7000),
                           overrideValue = 800,
-                          status = ReportMetricStatus.Achieved,
+                          status = ReportIndicatorStatus.Achieved,
                           modifiedTime = Instant.ofEpochSecond(700),
                           modifiedBy = user.userId,
                       ),
@@ -1023,7 +1023,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId,
-          status = ReportMetricStatus.OnTrack,
+          status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -1045,7 +1045,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportMetricEntryModel(
                           target = 100,
-                          status = ReportMetricStatus.OnTrack,
+                          status = ReportIndicatorStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
@@ -1095,7 +1095,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
-          status = ReportMetricStatus.Unlikely,
+          status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -1152,7 +1152,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportMetricEntryModel(
                           target = 25,
-                          status = ReportMetricStatus.Unlikely,
+                          status = ReportIndicatorStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
@@ -1196,7 +1196,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = 300,
           systemTime = Instant.ofEpochSecond(7000),
           overrideValue = 800,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
           modifiedTime = Instant.ofEpochSecond(700),
           modifiedBy = user.userId,
       )
@@ -1249,7 +1249,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 300,
                           systemTime = Instant.ofEpochSecond(7000),
                           overrideValue = 800,
-                          status = ReportMetricStatus.Achieved,
+                          status = ReportIndicatorStatus.Achieved,
                           modifiedTime = Instant.ofEpochSecond(700),
                           modifiedBy = user.userId,
                       ),
@@ -1641,7 +1641,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           value = 45,
           projectsComments = "Existing metric 1 notes",
-          status = ReportMetricStatus.OnTrack,
+          status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
       )
@@ -1686,7 +1686,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(5000),
           projectsComments = "Existing species planted metric notes",
           progressNotes = "Existing species planted metric internal comment",
-          status = ReportMetricStatus.Unlikely,
+          status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
       )
@@ -1704,7 +1704,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           value = 88,
                           projectsComments = "New metric 2 notes",
                           progressNotes = "New metric 2 internal comment",
-                          status = ReportMetricStatus.OnTrack,
+                          status = ReportIndicatorStatus.OnTrack,
 
                           // These fields are ignored
                           modifiedTime = Instant.EPOCH,
@@ -1729,7 +1729,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   AutoCalculatedIndicator.TreesPlanted to
                       ReportMetricEntryModel(
                           value = 45,
-                          status = ReportMetricStatus.Unlikely,
+                          status = ReportIndicatorStatus.Unlikely,
                           projectsComments = "New trees planted metric notes",
                           progressNotes = "New trees planted metric internal comment",
                       ),
@@ -1751,7 +1751,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   standardIndicatorId = standardMetricId1,
                   value = 45,
-                  statusId = ReportMetricStatus.OnTrack,
+                  statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing metric 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
@@ -1760,7 +1760,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   standardIndicatorId = standardMetricId2,
                   value = 88,
-                  statusId = ReportMetricStatus.OnTrack,
+                  statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New metric 2 notes",
                   progressNotes = "New metric 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -1808,7 +1808,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   overrideValue = 45,
-                  statusId = ReportMetricStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.Unlikely,
                   projectsComments = "New trees planted metric notes",
                   progressNotes = "New trees planted metric internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -2114,7 +2114,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           metricId = standardMetricId1,
           value = 45,
           projectsComments = "Existing metric 1 notes",
-          status = ReportMetricStatus.OnTrack,
+          status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
       )
@@ -2159,7 +2159,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemTime = Instant.ofEpochSecond(5000),
           projectsComments = "Existing species planted metric notes",
           progressNotes = "Existing species planted metric internal comment",
-          status = ReportMetricStatus.Unlikely,
+          status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
       )
@@ -2182,7 +2182,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportMetricEntryModel(
                           value = 88,
                           projectsComments = "New metric 2 notes",
-                          status = ReportMetricStatus.OnTrack,
+                          status = ReportIndicatorStatus.OnTrack,
 
                           // These fields are ignored
                           progressNotes = "Not permitted to write internal comment",
@@ -2211,7 +2211,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   AutoCalculatedIndicator.TreesPlanted to
                       ReportMetricEntryModel(
                           projectsComments = "New trees planted metric notes",
-                          status = ReportMetricStatus.Unlikely,
+                          status = ReportIndicatorStatus.Unlikely,
 
                           // These fields are ignored
                           value = 45,
@@ -2236,7 +2236,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   standardIndicatorId = standardMetricId1,
                   value = 45,
-                  statusId = ReportMetricStatus.OnTrack,
+                  statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing metric 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
@@ -2245,7 +2245,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   standardIndicatorId = standardMetricId2,
                   value = 88,
-                  statusId = ReportMetricStatus.OnTrack,
+                  statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New metric 2 notes",
                   progressNotes = "Existing metric 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -2290,7 +2290,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
-                  statusId = ReportMetricStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.Unlikely,
                   projectsComments = "New trees planted metric notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -3537,7 +3537,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId1,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
           value = 10,
           projectsComments = null,
           progressNotes = "Standard Metric 1 Progress notes",
@@ -3547,7 +3547,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportStandardMetric(
           reportId = reportId,
           metricId = standardMetricId2,
-          status = ReportMetricStatus.OnTrack,
+          status = ReportIndicatorStatus.OnTrack,
           value = 19,
           projectsComments = "Standard Metric 2 Underperformance",
       )
@@ -3578,7 +3578,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId1,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
           value = 30,
           projectsComments = null,
           progressNotes = "Project Metric 1 Progress notes",
@@ -3588,7 +3588,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportProjectMetric(
           reportId = reportId,
           metricId = projectMetricId2,
-          status = ReportMetricStatus.Unlikely,
+          status = ReportIndicatorStatus.Unlikely,
           value = 39,
           projectsComments = "Project Metric 2 Underperformance",
       )
@@ -3624,7 +3624,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportSystemMetric(
           reportId = reportId,
           metric = AutoCalculatedIndicator.SeedsCollected,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
           systemValue = 999,
       )
 
@@ -3632,7 +3632,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportSystemMetric(
           reportId = reportId,
           metric = AutoCalculatedIndicator.Seedlings,
-          status = ReportMetricStatus.OnTrack,
+          status = ReportIndicatorStatus.OnTrack,
           overrideValue = 49,
           systemValue = 39,
           projectsComments = "Seedlings underperformance justification",
@@ -3647,7 +3647,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportSystemMetric(
           reportId = reportId,
           metric = AutoCalculatedIndicator.SpeciesPlanted,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
           systemValue = 10,
       )
 
@@ -3660,7 +3660,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportSystemMetric(
           reportId = reportId,
           metric = AutoCalculatedIndicator.TreesPlanted,
-          status = ReportMetricStatus.Achieved,
+          status = ReportIndicatorStatus.Achieved,
           systemValue = 100,
       )
 
@@ -3672,7 +3672,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportSystemMetric(
           reportId = reportId,
           metric = AutoCalculatedIndicator.SurvivalRate,
-          status = ReportMetricStatus.Unlikely,
+          status = ReportIndicatorStatus.Unlikely,
           systemValue = 51,
       )
     }
@@ -3883,7 +3883,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportStandardIndicatorsRecord(
                   reportId = reportId,
                   standardIndicatorId = standardMetricId1,
-                  statusId = ReportMetricStatus.Achieved,
+                  statusId = ReportIndicatorStatus.Achieved,
                   value = 10,
                   projectsComments = null,
                   progressNotes = "Standard Metric 1 Progress notes",
@@ -3891,7 +3891,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportStandardIndicatorsRecord(
                   reportId = reportId,
                   standardIndicatorId = standardMetricId2,
-                  statusId = ReportMetricStatus.OnTrack,
+                  statusId = ReportIndicatorStatus.OnTrack,
                   value = 19,
                   projectsComments = "Standard Metric 2 Underperformance",
               ),
@@ -3904,7 +3904,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
                   projectIndicatorId = projectMetricId1,
-                  statusId = ReportMetricStatus.Achieved,
+                  statusId = ReportIndicatorStatus.Achieved,
                   value = 30,
                   projectsComments = null,
                   progressNotes = "Project Metric 1 Progress notes",
@@ -3912,7 +3912,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportProjectIndicatorsRecord(
                   reportId = reportId,
                   projectIndicatorId = projectMetricId2,
-                  statusId = ReportMetricStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.Unlikely,
                   value = 39,
                   projectsComments = "Project Metric 2 Underperformance",
               ),
@@ -3925,7 +3925,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
-                  statusId = ReportMetricStatus.OnTrack,
+                  statusId = ReportIndicatorStatus.OnTrack,
                   value = 49,
                   projectsComments = "Seedlings underperformance justification",
                   progressNotes = "Seedlings progress notes",
@@ -3933,19 +3933,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
-                  statusId = ReportMetricStatus.Achieved,
+                  statusId = ReportIndicatorStatus.Achieved,
                   value = 10,
               ),
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
-                  statusId = ReportMetricStatus.Achieved,
+                  statusId = ReportIndicatorStatus.Achieved,
                   value = 100,
               ),
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
-                  statusId = ReportMetricStatus.Unlikely,
+                  statusId = ReportIndicatorStatus.Unlikely,
                   value = 51,
               ),
               PublishedReportAutoCalculatedIndicatorsRecord(

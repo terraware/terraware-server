@@ -697,7 +697,7 @@ COMMENT ON TABLE accelerator.report_challenges IS 'List of challenges and mitiga
 
 COMMENT ON TABLE accelerator.report_frequencies IS '(Enum) Frequencies of accelerator project reports. Acts as the report type as well.';
 
-COMMENT ON TABLE accelerator.report_metric_statuses IS '(Enum) Statuses of accelerator project report metrics.';
+COMMENT ON TABLE accelerator.report_indicator_statuses IS '(Enum) Statuses of accelerator project report indicators.';
 
 COMMENT ON TABLE accelerator.report_photos IS 'Photos for the accelerator project report.';
 COMMENT ON COLUMN accelerator.report_photos.deleted IS 'Flag for photos to be deleted in the next publishing.';

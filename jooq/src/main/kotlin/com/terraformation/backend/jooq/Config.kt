@@ -54,7 +54,7 @@ val ENUM_TABLES =
                 EnumTable("pipelines", isLocalizable = false),
                 EnumTable("report_frequencies"),
                 EnumTable(
-                    "report_metric_statuses",
+                    "report_indicator_statuses",
                     listOf(
                         "report_project_indicators\\.status_id",
                         "report_standard_indicators\\.status_id",

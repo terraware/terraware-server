@@ -6,7 +6,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.IndicatorCategoryConverter
 import com.terraformation.backend.db.accelerator.IndicatorLevelConverter
 import com.terraformation.backend.db.accelerator.ReportIdConverter
-import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
@@ -129,7 +129,7 @@ class PublishedReportStore(
     val statusField =
         publishedMetricTable.field(
             "status_id",
-            SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()),
+            SQLDataType.INTEGER.asConvertedDataType(ReportIndicatorStatusConverter()),
         )!!
     val targetField = targetTable.field("target", Int::class.java)!!
     val targetYearField = targetTable.field("year", Int::class.java)!!

@@ -40,7 +40,7 @@ import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
-import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.ScoreCategory
@@ -3633,7 +3633,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -3659,7 +3659,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -3688,7 +3688,7 @@ abstract class DatabaseBackedTest {
       overrideValue: Int? = row.overrideValue,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -3907,7 +3907,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3929,7 +3929,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3953,7 +3953,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
   ) {
     val rowWithDefaults =
         row.copy(

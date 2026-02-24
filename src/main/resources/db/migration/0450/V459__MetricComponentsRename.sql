@@ -11,6 +11,7 @@ ALTER TABLE accelerator.auto_calculated_indicators RENAME COLUMN type_id TO leve
 -- tables
 ALTER TABLE accelerator.metric_components RENAME TO indicator_categories;
 ALTER TABLE accelerator.metric_types RENAME TO indicator_levels;
+ALTER TABLE accelerator.report_metric_statuses RENAME TO report_indicator_statuses;
 
 -- constraints
 ALTER TABLE accelerator.indicator_categories RENAME CONSTRAINT metric_components_pkey TO indicator_categories_pkey;
@@ -21,7 +22,12 @@ ALTER TABLE accelerator.indicator_levels RENAME CONSTRAINT metric_types_name_key
 
 ALTER TABLE accelerator.project_indicators RENAME CONSTRAINT project_indicators_component_id_fkey TO project_indicators_category_id_fkey;
 ALTER TABLE accelerator.project_indicators RENAME CONSTRAINT project_indicators_type_id_fkey TO project_indicators_level_id_fkey;
+
 ALTER TABLE accelerator.standard_indicators RENAME CONSTRAINT standard_indicators_component_id_fkey TO standard_indicators_category_id_fkey;
 ALTER TABLE accelerator.standard_indicators RENAME CONSTRAINT standard_indicators_type_id_fkey TO standard_indicators_level_id_fkey;
+
 ALTER TABLE accelerator.auto_calculated_indicators RENAME CONSTRAINT auto_calculated_indicators_component_id_fkey TO auto_calculated_indicators_category_id_fkey;
 ALTER TABLE accelerator.auto_calculated_indicators RENAME CONSTRAINT auto_calculated_indicators_type_id_fkey TO auto_calculated_indicators_level_id_fkey;
+
+ALTER TABLE accelerator.report_indicator_statuses RENAME CONSTRAINT report_metric_statuses_pkey TO report_indicator_statuses_pkey;
+ALTER TABLE accelerator.report_indicator_statuses RENAME CONSTRAINT report_metric_statuses_name_key TO report_indicator_statuses_name_key;

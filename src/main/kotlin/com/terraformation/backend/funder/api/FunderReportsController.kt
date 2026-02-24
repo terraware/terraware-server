@@ -14,7 +14,7 @@ import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
-import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -90,7 +90,7 @@ data class PublishedReportMetricPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val reference: String,
-    val status: ReportMetricStatus?,
+    val status: ReportIndicatorStatus?,
     val target: Int?,
     val type: IndicatorLevel,
     val value: Int?,
