@@ -48,6 +48,14 @@ val ENUM_TABLES =
                     listOf("[a-z_]+_indicators\\.category_id"),
                 ),
                 EnumTable(
+                    "indicator_classes",
+                    listOf("[a-z_]+_indicators\\.class_id"),
+                ),
+                EnumTable(
+                    "indicator_frequencies",
+                    listOf("[a-z_]+_indicators\\.frequency_id"),
+                ),
+                EnumTable(
                     "indicator_levels",
                     listOf("[a-z_]+_indicators\\.level_id"),
                 ),
@@ -93,6 +101,10 @@ val ENUM_TABLES =
                             EnumTableColumnInfo(
                                 "is_publishable",
                                 "Boolean",
+                            ),
+                            EnumTableColumnInfo(
+                                "unit",
+                                "String",
                             ),
                         ),
                     isLocalizable = false,

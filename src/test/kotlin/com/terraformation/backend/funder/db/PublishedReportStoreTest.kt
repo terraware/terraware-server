@@ -324,7 +324,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               progressNotes = null,
                               projectsComments = null,
                               value = 6,
-                              unit = null,
+                              unit = "%",
                           ),
                       ),
               ),

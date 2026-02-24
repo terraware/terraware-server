@@ -465,6 +465,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     reference = "3.0",
                     levelId = IndicatorLevel.Activity,
                     unit = "%",
+                    active = true,
                 ),
                 StandardIndicatorsRecord(
                     id = newMetricId,
@@ -475,6 +476,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     reference = "1.0",
                     levelId = IndicatorLevel.Impact,
                     unit = "meters",
+                    active = true,
                 ),
             )
         )
@@ -544,6 +546,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     reference = "3.0",
                     levelId = IndicatorLevel.Activity,
                     unit = "meters",
+                    active = true,
                 ),
                 ProjectIndicatorsRecord(
                     id = newMetricId,
@@ -555,6 +558,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     reference = "1.0",
                     levelId = IndicatorLevel.Impact,
                     unit = "%",
+                    active = true,
                 ),
             )
         )
@@ -624,6 +628,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     reference = "1.0",
                     levelId = IndicatorLevel.Impact,
                     unit = "meters",
+                    active = true,
                 )
             )
         )
@@ -695,6 +700,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reference = "1.0",
                   levelId = IndicatorLevel.Impact,
                   unit = "inches",
+                  active = true,
               )
           )
       )

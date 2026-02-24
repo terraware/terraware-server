@@ -646,6 +646,10 @@ COMMENT ON TABLE accelerator.hubspot_token IS 'If the server has been authorized
 
 COMMENT ON TABLE accelerator.indicator_categories IS '(Enum) Categories of indicators for reports.';
 
+COMMENT ON TABLE accelerator.indicator_classes IS '(Enum) Classes of accelerator project report indicators.';
+
+COMMENT ON TABLE accelerator.indicator_frequencies IS '(Enum) Reporting frequencies of accelerator project report indicators.';
+
 COMMENT ON TABLE accelerator.indicator_levels IS '(Enum) Levels of indicators for reports.';
 
 COMMENT ON TABLE accelerator.internal_interests IS '(Enum) Types of notification categories for internal users.';
