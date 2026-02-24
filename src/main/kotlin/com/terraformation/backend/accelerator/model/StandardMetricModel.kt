@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator.model
 
-import com.terraformation.backend.db.accelerator.MetricComponent
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.accelerator.tables.references.STANDARD_INDICATORS
 import org.jooq.Record
@@ -10,8 +10,8 @@ data class StandardMetricModel<ID : StandardIndicatorId?>(
     val id: ID,
     val name: String,
     val description: String?,
-    val component: MetricComponent,
-    val type: MetricType,
+    val component: IndicatorCategory,
+    val type: IndicatorLevel,
     val reference: String,
     val isPublishable: Boolean,
     val unit: String? = null,
@@ -23,8 +23,8 @@ data class StandardMetricModel<ID : StandardIndicatorId?>(
             id = record[ID]!!,
             name = record[NAME]!!,
             description = record[DESCRIPTION],
-            component = record[COMPONENT_ID]!!,
-            type = record[TYPE_ID]!!,
+            component = record[CATEGORY_ID]!!,
+            type = record[LEVEL_ID]!!,
             reference = record[REFERENCE]!!,
             isPublishable = record[IS_PUBLISHABLE]!!,
             unit = record[UNIT],

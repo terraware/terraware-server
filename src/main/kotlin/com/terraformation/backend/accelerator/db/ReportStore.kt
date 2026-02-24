@@ -28,7 +28,7 @@ import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIdConverter
-import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatusConverter
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
@@ -1132,7 +1132,7 @@ class ReportStore(
     val statusField =
         table.field(
             "status_id",
-            SQLDataType.INTEGER.asConvertedDataType(ReportMetricStatusConverter()),
+            SQLDataType.INTEGER.asConvertedDataType(ReportIndicatorStatusConverter()),
         )!!
     val modifiedByField =
         table.field("modified_by", SQLDataType.BIGINT.asConvertedDataType(UserIdConverter()))

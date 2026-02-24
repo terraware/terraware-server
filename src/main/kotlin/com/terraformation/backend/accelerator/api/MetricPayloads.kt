@@ -4,8 +4,8 @@ import com.terraformation.backend.accelerator.model.ExistingProjectMetricModel
 import com.terraformation.backend.accelerator.model.ExistingStandardMetricModel
 import com.terraformation.backend.accelerator.model.NewProjectMetricModel
 import com.terraformation.backend.accelerator.model.NewStandardMetricModel
-import com.terraformation.backend.db.accelerator.MetricComponent
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -16,8 +16,8 @@ data class ExistingProjectMetricPayload(
     val projectId: ProjectId,
     val name: String,
     val description: String?,
-    val component: MetricComponent,
-    val type: MetricType,
+    val component: IndicatorCategory,
+    val type: IndicatorLevel,
     val reference: String,
     val isPublishable: Boolean,
     @field:Size(max = 25) val unit: String?,
@@ -55,8 +55,8 @@ data class ExistingStandardMetricPayload(
     val id: StandardIndicatorId,
     val name: String,
     val description: String?,
-    val component: MetricComponent,
-    val type: MetricType,
+    val component: IndicatorCategory,
+    val type: IndicatorLevel,
     val reference: String,
     val isPublishable: Boolean,
     @field:Size(max = 25) val unit: String? = null,
@@ -91,8 +91,8 @@ data class ExistingStandardMetricPayload(
 data class NewMetricPayload(
     val name: String,
     val description: String?,
-    val component: MetricComponent,
-    val type: MetricType,
+    val component: IndicatorCategory,
+    val type: IndicatorLevel,
     val reference: String,
     val isPublishable: Boolean,
     @field:Size(max = 25) val unit: String? = null,

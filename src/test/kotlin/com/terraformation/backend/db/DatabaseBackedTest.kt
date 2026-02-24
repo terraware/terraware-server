@@ -30,9 +30,9 @@ import com.terraformation.backend.db.accelerator.DocumentStore
 import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
+import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.InternalInterest
-import com.terraformation.backend.db.accelerator.MetricComponent
-import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.Pipeline
@@ -40,7 +40,7 @@ import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
-import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.ScoreCategory
@@ -1113,24 +1113,24 @@ abstract class DatabaseBackedTest {
 
   protected fun insertProjectMetric(
       row: ProjectIndicatorsRow = ProjectIndicatorsRow(),
-      component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
+      component: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
       description: String? = row.description,
       isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       reference: String = row.reference ?: "1.1",
-      type: MetricType = row.typeId ?: MetricType.Impact,
+      type: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       unit: String? = row.unit,
   ): ProjectIndicatorId {
     val rowWithDefaults =
         row.copy(
-            componentId = component,
+            categoryId = component,
             description = description,
             isPublishable = isPublishable,
             name = name,
             reference = reference,
             projectId = projectId,
-            typeId = type,
+            levelId = type,
             unit = unit,
         )
 
@@ -2822,22 +2822,22 @@ abstract class DatabaseBackedTest {
 
   fun insertStandardMetric(
       row: StandardIndicatorsRow = StandardIndicatorsRow(),
-      component: MetricComponent = row.componentId ?: MetricComponent.ProjectObjectives,
+      component: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
       description: String? = row.description,
       isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
       reference: String = row.reference ?: "1.1",
-      type: MetricType = row.typeId ?: MetricType.Impact,
+      type: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       unit: String? = row.unit,
   ): StandardIndicatorId {
     val rowWithDefaults =
         row.copy(
-            componentId = component,
+            categoryId = component,
             description = description,
             isPublishable = isPublishable,
             name = name,
             reference = reference,
-            typeId = type,
+            levelId = type,
             unit = unit,
         )
 
@@ -3633,7 +3633,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -3659,7 +3659,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -3688,7 +3688,7 @@ abstract class DatabaseBackedTest {
       overrideValue: Int? = row.overrideValue,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
       modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
@@ -3907,7 +3907,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3929,7 +3929,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3953,7 +3953,7 @@ abstract class DatabaseBackedTest {
       value: Int? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
-      status: ReportMetricStatus? = row.statusId,
+      status: ReportIndicatorStatus? = row.statusId,
   ) {
     val rowWithDefaults =
         row.copy(

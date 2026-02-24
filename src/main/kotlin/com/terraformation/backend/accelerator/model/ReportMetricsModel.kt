@@ -2,7 +2,7 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
-import com.terraformation.backend.db.accelerator.ReportMetricStatus
+import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATOR_TARGETS
@@ -23,7 +23,7 @@ data class ReportMetricEntryModel(
     val modifiedTime: Instant? = null,
     val projectsComments: String? = null,
     val progressNotes: String? = null,
-    val status: ReportMetricStatus? = null,
+    val status: ReportIndicatorStatus? = null,
 )
 
 data class ReportStandardMetricModel(
@@ -102,7 +102,7 @@ data class ReportSystemMetricEntryModel(
     val modifiedTime: Instant? = null,
     val progressNotes: String? = null,
     val projectsComments: String? = null,
-    val status: ReportMetricStatus? = null,
+    val status: ReportIndicatorStatus? = null,
 ) {
   companion object {
     fun of(record: Record, systemValueField: Field<Int?>): ReportSystemMetricEntryModel {
