@@ -30,7 +30,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
@@ -283,7 +283,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project Metric description",
               name = "Project Metric Name",
               reference = "2.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       // Insert target into new target table (report end date is 1970-01-02, so year is 1970)
@@ -308,7 +308,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isPublishable = true,
                           name = "Project Metric Name",
                           reference = "2.0",
-                          type = MetricType.Activity,
+                          type = IndicatorLevel.Activity,
                       ),
                   entry =
                       ReportMetricEntryModel(
@@ -326,7 +326,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
               reference = "2.1",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       val standardMetricId2 =
@@ -335,7 +335,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Community metric description",
               name = "Community Metric",
               reference = "10.0",
-              type = MetricType.Outcome,
+              type = IndicatorLevel.Outcome,
           )
 
       val standardMetricId3 =
@@ -344,7 +344,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
               reference = "2.0",
-              type = MetricType.Impact,
+              type = IndicatorLevel.Impact,
           )
 
       // Insert targets into new target tables
@@ -380,7 +380,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isPublishable = true,
                           name = "Project Objectives Metric",
                           reference = "2.0",
-                          type = MetricType.Impact,
+                          type = IndicatorLevel.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
                   entry = ReportMetricEntryModel(),
@@ -394,7 +394,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isPublishable = true,
                           name = "Climate Standard Metric",
                           reference = "2.1",
-                          type = MetricType.Activity,
+                          type = IndicatorLevel.Activity,
                       ),
                   entry =
                       ReportMetricEntryModel(
@@ -415,7 +415,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isPublishable = true,
                           name = "Community Metric",
                           reference = "10.0",
-                          type = MetricType.Outcome,
+                          type = IndicatorLevel.Outcome,
                       ),
                   entry =
                       ReportMetricEntryModel(
@@ -1016,7 +1016,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project Metric description",
               name = "Project Metric Name",
               reference = "2.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       insertProjectMetricTarget(projectMetricId = projectMetricId, year = 1970, target = 100)
@@ -1040,7 +1040,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isPublishable = true,
                           name = "Project Metric Name",
                           reference = "2.0",
-                          type = MetricType.Activity,
+                          type = IndicatorLevel.Activity,
                       ),
                   entry =
                       ReportMetricEntryModel(
@@ -1058,7 +1058,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
               reference = "2.1",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       val standardMetricId2 =
@@ -1068,7 +1068,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               isPublishable = false,
               name = "Community Metric",
               reference = "10.0",
-              type = MetricType.Outcome,
+              type = IndicatorLevel.Outcome,
           )
 
       val standardMetricId3 =
@@ -1077,7 +1077,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
               reference = "2.0",
-              type = MetricType.Impact,
+              type = IndicatorLevel.Impact,
           )
 
       insertStandardMetricTarget(standardIndicatorId = standardMetricId1, year = 1970, target = 55)
@@ -1112,7 +1112,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isPublishable = true,
                           name = "Project Objectives Metric",
                           reference = "2.0",
-                          type = MetricType.Impact,
+                          type = IndicatorLevel.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
                   entry = ReportMetricEntryModel(),
@@ -1126,7 +1126,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isPublishable = true,
                           name = "Climate Standard Metric",
                           reference = "2.1",
-                          type = MetricType.Activity,
+                          type = IndicatorLevel.Activity,
                       ),
                   entry =
                       ReportMetricEntryModel(
@@ -1147,7 +1147,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isPublishable = false,
                           name = "Community Metric",
                           reference = "10.0",
-                          type = MetricType.Outcome,
+                          type = IndicatorLevel.Outcome,
                       ),
                   entry =
                       ReportMetricEntryModel(
@@ -1586,7 +1586,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
               reference = "2.1",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       val standardMetricId2 =
@@ -1595,7 +1595,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Community metric description",
               name = "Community Metric",
               reference = "10.0",
-              type = MetricType.Outcome,
+              type = IndicatorLevel.Outcome,
           )
 
       val standardMetricId3 =
@@ -1604,7 +1604,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
               reference = "2.0",
-              type = MetricType.Impact,
+              type = IndicatorLevel.Impact,
           )
 
       // This has no entry and will not have any updates
@@ -1613,7 +1613,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           description = "Biodiversity metric description",
           name = "Biodiversity Metric",
           reference = "7.0",
-          type = MetricType.Impact,
+          type = IndicatorLevel.Impact,
       )
 
       val projectMetricId =
@@ -1622,7 +1622,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project Metric description",
               name = "Project Metric Name",
               reference = "2.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       val configId = insertProjectReportConfig()
@@ -2066,7 +2066,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Climate standard metric description",
               name = "Climate Standard Metric",
               reference = "2.1",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       val standardMetricId2 =
@@ -2075,7 +2075,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Community metric description",
               name = "Community Metric",
               reference = "10.0",
-              type = MetricType.Outcome,
+              type = IndicatorLevel.Outcome,
           )
 
       val standardMetricId3 =
@@ -2084,7 +2084,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project objectives metric description",
               name = "Project Objectives Metric",
               reference = "2.0",
-              type = MetricType.Impact,
+              type = IndicatorLevel.Impact,
           )
 
       // This has no entry and will not have any updates
@@ -2093,7 +2093,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           description = "Biodiversity metric description",
           name = "Biodiversity Metric",
           reference = "7.0",
-          type = MetricType.Impact,
+          type = IndicatorLevel.Impact,
       )
 
       val projectMetricId =
@@ -2102,7 +2102,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project Metric description",
               name = "Project Metric Name",
               reference = "2.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       val configId = insertProjectReportConfig()
@@ -5237,7 +5237,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric",
               name = "Test Metric",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       store.updateProjectMetricTarget(
@@ -5263,7 +5263,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric",
               name = "Test Metric",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       insertProjectMetricTarget(
@@ -5293,7 +5293,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric",
               name = "Test Metric",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       store.updateProjectMetricTarget(
@@ -5320,7 +5320,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric",
               name = "Test Metric",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       assertThrows<AccessDeniedException> {
@@ -5344,7 +5344,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric",
               name = "Test Metric",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       store.updateStandardMetricTarget(
@@ -5370,7 +5370,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric",
               name = "Test Metric",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       insertStandardMetricTarget(
@@ -5400,7 +5400,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric",
               name = "Test Metric",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       store.updateStandardMetricTarget(
@@ -5427,7 +5427,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric",
               name = "Test Metric",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       assertThrows<AccessDeniedException> {
@@ -5531,7 +5531,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric 1",
               name = "Test Metric 1",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
       val projectMetricId2 =
           insertProjectMetric(
@@ -5539,7 +5539,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric 2",
               name = "Test Metric 2",
               reference = "2.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       insertProjectMetricTarget(
@@ -5593,7 +5593,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric 1",
               name = "Test Metric 1",
               reference = "1.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
       val standardMetricId2 =
           insertStandardMetric(
@@ -5601,7 +5601,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test metric 2",
               name = "Test Metric 2",
               reference = "2.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       insertStandardMetricTarget(

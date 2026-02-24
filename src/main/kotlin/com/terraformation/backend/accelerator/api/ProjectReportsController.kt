@@ -32,7 +32,7 @@ import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportFrequency
@@ -662,7 +662,7 @@ data class ReportStandardMetricPayload(
     val reference: String,
     val status: ReportMetricStatus?,
     val target: Int?,
-    val type: MetricType,
+    val type: IndicatorLevel,
     val value: Int?,
 ) {
   constructor(
@@ -712,7 +712,7 @@ data class ReportSystemMetricPayload(
     val systemTime: Instant?,
     val systemValue: Int?,
     val target: Int?,
-    val type: MetricType,
+    val type: IndicatorLevel,
 ) {
   constructor(
       model: ReportSystemMetricModel
@@ -729,7 +729,7 @@ data class ReportSystemMetricPayload(
       systemTime = model.entry.systemTime,
       systemValue = model.entry.systemValue,
       target = model.entry.target,
-      type = model.metric.typeId,
+      type = model.metric.levelId,
   )
 }
 
@@ -772,7 +772,7 @@ data class ReportProjectMetricPayload(
     val reference: String,
     val status: ReportMetricStatus?,
     val target: Int?,
-    val type: MetricType,
+    val type: IndicatorLevel,
     val unit: String?,
     val value: Int?,
 ) {

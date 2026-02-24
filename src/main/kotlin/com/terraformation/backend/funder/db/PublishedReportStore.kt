@@ -4,7 +4,7 @@ import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.IndicatorCategoryConverter
-import com.terraformation.backend.db.accelerator.MetricTypeConverter
+import com.terraformation.backend.db.accelerator.IndicatorLevelConverter
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportMetricStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
@@ -148,8 +148,8 @@ class PublishedReportStore(
     val metricReferenceField = metricTable.field("reference", String::class.java)!!
     val metricTypeField =
         metricTable.field(
-            "type_id",
-            SQLDataType.INTEGER.asConvertedDataType(MetricTypeConverter()),
+            "level_id",
+            SQLDataType.INTEGER.asConvertedDataType(IndicatorLevelConverter()),
         )!!
     val unitField = metricTable.field("unit", String::class.java) ?: DSL.value(null as String?)
 

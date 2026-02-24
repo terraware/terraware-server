@@ -8,7 +8,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
@@ -54,7 +54,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Standard Metric Description 1",
               name = "Standard Metric 1",
               reference = "1.1.2",
-              type = MetricType.Output,
+              type = IndicatorLevel.Output,
           )
 
       val standardMetricId2 =
@@ -63,7 +63,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Standard Metric Description 2",
               name = "Standard Metric 2",
               reference = "1.1.1",
-              type = MetricType.Outcome,
+              type = IndicatorLevel.Outcome,
           )
 
       val projectMetricId1 =
@@ -72,7 +72,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project Metric Description 1",
               name = "Project Metric 1",
               reference = "1.2.1",
-              type = MetricType.Output,
+              type = IndicatorLevel.Output,
               unit = "%",
           )
 
@@ -82,7 +82,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project Metric Description 2",
               name = "Project Metric 2",
               reference = "1.2.11",
-              type = MetricType.Outcome,
+              type = IndicatorLevel.Outcome,
               unit = "USD",
           )
 
@@ -255,7 +255,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               reference = "1.2.1",
                               status = ReportMetricStatus.OnTrack,
                               target = null,
-                              type = MetricType.Output,
+                              type = IndicatorLevel.Output,
                               progressNotes = "progress notes 1",
                               projectsComments = null,
                               value = 40,
@@ -269,7 +269,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               reference = "1.2.11",
                               status = null,
                               target = null,
-                              type = MetricType.Outcome,
+                              type = IndicatorLevel.Outcome,
                               progressNotes = null,
                               projectsComments = null,
                               value = null,
@@ -289,7 +289,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               metricId = standardMetricId2,
                               name = "Standard Metric 2",
                               reference = "1.1.1",
-                              type = MetricType.Outcome,
+                              type = IndicatorLevel.Outcome,
                               target = 200,
                               value = 180,
                               progressNotes = "progress notes 2",
@@ -305,7 +305,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               status = ReportMetricStatus.Achieved,
                               reference = "1.1.2",
                               target = 100,
-                              type = MetricType.Output,
+                              type = IndicatorLevel.Output,
                               progressNotes = null,
                               projectsComments = null,
                               value = 120,
@@ -323,7 +323,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               reference = AutoCalculatedIndicator.SurvivalRate.reference,
                               status = ReportMetricStatus.Achieved,
                               target = 6,
-                              type = AutoCalculatedIndicator.SurvivalRate.typeId,
+                              type = AutoCalculatedIndicator.SurvivalRate.levelId,
                               progressNotes = null,
                               projectsComments = null,
                               value = 6,

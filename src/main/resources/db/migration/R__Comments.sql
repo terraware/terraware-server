@@ -646,9 +646,9 @@ COMMENT ON TABLE accelerator.hubspot_token IS 'If the server has been authorized
 
 COMMENT ON TABLE accelerator.indicator_categories IS '(Enum) Categories of indicators for reports.';
 
-COMMENT ON TABLE accelerator.internal_interests IS '(Enum) Types of notification categories for internal users.';
+COMMENT ON TABLE accelerator.indicator_levels IS '(Enum) Levels of indicators for reports.';
 
-COMMENT ON TABLE accelerator.metric_types IS '(Enum) Types of metrics for reports.';
+COMMENT ON TABLE accelerator.internal_interests IS '(Enum) Types of notification categories for internal users.';
 
 COMMENT ON TABLE accelerator.modules IS 'Possible steps in the workflow of an accelerator phase.';
 COMMENT ON COLUMN accelerator.modules.position IS 'This model''s ordinal position in the modules spreadsheet. This can be used to present modules in the same order they appear in the spreadsheet.';

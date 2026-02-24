@@ -7,7 +7,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -66,7 +66,7 @@ data class SystemMetricPayload(
     val name: String = metric.jsonValue,
     val description: String = metric.description,
     val component: IndicatorCategory = metric.categoryId,
-    val type: MetricType = metric.typeId,
+    val type: IndicatorLevel = metric.levelId,
     val reference: String = metric.reference,
 )
 

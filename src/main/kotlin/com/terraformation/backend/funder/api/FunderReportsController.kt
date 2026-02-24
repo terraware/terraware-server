@@ -11,7 +11,7 @@ import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.accelerator.IndicatorCategory
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportFrequency
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
@@ -92,7 +92,7 @@ data class PublishedReportMetricPayload(
     val reference: String,
     val status: ReportMetricStatus?,
     val target: Int?,
-    val type: MetricType,
+    val type: IndicatorLevel,
     val value: Int?,
     val unit: String?,
 ) {

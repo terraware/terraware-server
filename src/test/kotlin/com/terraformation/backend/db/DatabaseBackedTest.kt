@@ -31,8 +31,8 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.InternalInterest
-import com.terraformation.backend.db.accelerator.MetricType
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ParticipantProjectSpeciesId
 import com.terraformation.backend.db.accelerator.Pipeline
@@ -1119,7 +1119,7 @@ abstract class DatabaseBackedTest {
       name: String = row.name ?: "Metric name",
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       reference: String = row.reference ?: "1.1",
-      type: MetricType = row.typeId ?: MetricType.Impact,
+      type: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       unit: String? = row.unit,
   ): ProjectIndicatorId {
     val rowWithDefaults =
@@ -1130,7 +1130,7 @@ abstract class DatabaseBackedTest {
             name = name,
             reference = reference,
             projectId = projectId,
-            typeId = type,
+            levelId = type,
             unit = unit,
         )
 
@@ -2827,7 +2827,7 @@ abstract class DatabaseBackedTest {
       isPublishable: Boolean = row.isPublishable ?: true,
       name: String = row.name ?: "Metric name",
       reference: String = row.reference ?: "1.1",
-      type: MetricType = row.typeId ?: MetricType.Impact,
+      type: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       unit: String? = row.unit,
   ): StandardIndicatorId {
     val rowWithDefaults =
@@ -2837,7 +2837,7 @@ abstract class DatabaseBackedTest {
             isPublishable = isPublishable,
             name = name,
             reference = reference,
-            typeId = type,
+            levelId = type,
             unit = unit,
         )
 

@@ -11,7 +11,7 @@ import com.terraformation.backend.db.ProjectMetricNotFoundException
 import com.terraformation.backend.db.StandardMetricNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.StandardIndicatorId
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
@@ -50,7 +50,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = true,
                 name = "Climate Standard Metric",
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "degrees",
             )
 
@@ -62,7 +62,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = true,
                 name = "Climate Standard Metric",
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "degrees",
             ),
             store.fetchOneStandardMetric(metricId),
@@ -84,7 +84,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -106,7 +106,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -116,7 +116,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Community metric description",
                 name = "Community Metric",
                 reference = "5.0",
-                type = MetricType.Outcome,
+                type = IndicatorLevel.Outcome,
                 unit = "meters",
             )
 
@@ -127,7 +127,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = false,
                 name = "Project Objectives Metric",
                 reference = "3.0",
-                type = MetricType.Impact,
+                type = IndicatorLevel.Impact,
                 unit = "cm",
             )
 
@@ -141,7 +141,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = true,
                     name = "Climate Standard Metric",
                     reference = "3.0",
-                    type = MetricType.Activity,
+                    type = IndicatorLevel.Activity,
                     unit = "%",
                 ),
                 ExistingStandardMetricModel(
@@ -151,7 +151,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = false,
                     name = "Project Objectives Metric",
                     reference = "3.0",
-                    type = MetricType.Impact,
+                    type = IndicatorLevel.Impact,
                     unit = "cm",
                 ),
                 ExistingStandardMetricModel(
@@ -161,7 +161,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = true,
                     name = "Community Metric",
                     reference = "5.0",
-                    type = MetricType.Outcome,
+                    type = IndicatorLevel.Outcome,
                     unit = "meters",
                 ),
             ),
@@ -217,7 +217,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = false,
                 projectId = projectId,
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "degrees",
             )
 
@@ -230,7 +230,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = false,
                 name = "Climate Project Metric",
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "degrees",
             ),
             store.fetchOneProjectMetric(metricId),
@@ -282,7 +282,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 projectId = projectId,
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
@@ -306,7 +306,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 projectId = projectId,
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -318,7 +318,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Community Metric",
                 projectId = projectId,
                 reference = "5.0",
-                type = MetricType.Outcome,
+                type = IndicatorLevel.Outcome,
                 unit = "meters",
             )
 
@@ -329,7 +329,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Project Objectives Metric",
                 projectId = projectId,
                 reference = "3.0",
-                type = MetricType.Impact,
+                type = IndicatorLevel.Impact,
                 unit = "cm",
             )
 
@@ -348,7 +348,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = true,
                     name = "Climate Standard Metric",
                     reference = "3.0",
-                    type = MetricType.Activity,
+                    type = IndicatorLevel.Activity,
                     unit = "%",
                 ),
                 ExistingProjectMetricModel(
@@ -359,7 +359,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = true,
                     name = "Project Objectives Metric",
                     reference = "3.0",
-                    type = MetricType.Impact,
+                    type = IndicatorLevel.Impact,
                     unit = "cm",
                 ),
                 ExistingProjectMetricModel(
@@ -370,7 +370,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = false,
                     name = "Community Metric",
                     reference = "5.0",
-                    type = MetricType.Outcome,
+                    type = IndicatorLevel.Outcome,
                     unit = "meters",
                 ),
             ),
@@ -436,7 +436,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -448,7 +448,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = false,
                 name = "Project Objectives Metric",
                 reference = "1.0",
-                type = MetricType.Impact,
+                type = IndicatorLevel.Impact,
                 unit = "meters",
             )
 
@@ -463,7 +463,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = true,
                     name = "Climate Standard Metric",
                     reference = "3.0",
-                    typeId = MetricType.Activity,
+                    levelId = IndicatorLevel.Activity,
                     unit = "%",
                 ),
                 StandardIndicatorsRecord(
@@ -473,7 +473,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = false,
                     name = "Project Objectives Metric",
                     reference = "1.0",
-                    typeId = MetricType.Impact,
+                    levelId = IndicatorLevel.Impact,
                     unit = "meters",
                 ),
             )
@@ -490,7 +490,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = true,
                 name = "Project Objectives Metric",
                 reference = "1.0",
-                type = MetricType.Impact,
+                type = IndicatorLevel.Impact,
                 unit = "%",
             )
 
@@ -513,7 +513,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Climate Standard Metric",
                 projectId = projectId,
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "meters",
             )
 
@@ -526,7 +526,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = false,
                 name = "Project Objectives Metric",
                 reference = "1.0",
-                type = MetricType.Impact,
+                type = IndicatorLevel.Impact,
                 unit = "%",
             )
 
@@ -542,7 +542,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Climate Standard Metric",
                     projectId = projectId,
                     reference = "3.0",
-                    typeId = MetricType.Activity,
+                    levelId = IndicatorLevel.Activity,
                     unit = "meters",
                 ),
                 ProjectIndicatorsRecord(
@@ -553,7 +553,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     name = "Project Objectives Metric",
                     projectId = projectId,
                     reference = "1.0",
-                    typeId = MetricType.Impact,
+                    levelId = IndicatorLevel.Impact,
                     unit = "%",
                 ),
             )
@@ -573,7 +573,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 name = "Project Objectives Metric",
                 projectId = projectId,
                 reference = "1.0",
-                type = MetricType.Impact,
+                type = IndicatorLevel.Impact,
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
@@ -595,7 +595,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -607,7 +607,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = false,
                 name = "Project Objectives Metric",
                 reference = "1.0",
-                type = MetricType.Impact,
+                type = IndicatorLevel.Impact,
                 unit = "meters",
             )
 
@@ -622,7 +622,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     isPublishable = false,
                     name = "Project Objectives Metric",
                     reference = "1.0",
-                    typeId = MetricType.Impact,
+                    levelId = IndicatorLevel.Impact,
                     unit = "meters",
                 )
             )
@@ -637,7 +637,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate standard metric description",
                 name = "Climate Standard Metric",
                 reference = "3.0",
-                type = MetricType.Activity,
+                type = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -664,7 +664,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Climate Standard Metric",
               projectId = projectId,
               reference = "3.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
               unit = "feet",
           )
 
@@ -677,7 +677,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Project Objectives Metric",
               projectId = ProjectId(99), // this field is ignored
               reference = "1.0",
-              type = MetricType.Impact,
+              type = IndicatorLevel.Impact,
               unit = "inches",
           )
 
@@ -693,7 +693,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   name = "Project Objectives Metric",
                   projectId = projectId,
                   reference = "1.0",
-                  typeId = MetricType.Impact,
+                  levelId = IndicatorLevel.Impact,
                   unit = "inches",
               )
           )
@@ -711,7 +711,7 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Climate Standard Metric",
               projectId = projectId,
               reference = "3.0",
-              type = MetricType.Activity,
+              type = IndicatorLevel.Activity,
           )
 
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)

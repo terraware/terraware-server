@@ -1,7 +1,7 @@
 package com.terraformation.backend.funder.model
 
 import com.terraformation.backend.db.accelerator.IndicatorCategory
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportMetricStatus
 
 data class PublishedReportMetricModel<ID : Any>(
@@ -14,7 +14,7 @@ data class PublishedReportMetricModel<ID : Any>(
     val reference: String,
     val status: ReportMetricStatus?,
     val target: Int?,
-    val type: MetricType,
+    val type: IndicatorLevel,
     val value: Int?,
     val unit: String?,
 )

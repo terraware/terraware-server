@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.IndicatorCategory
-import com.terraformation.backend.db.accelerator.MetricType
+import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -13,7 +13,7 @@ data class ProjectMetricModel<ID : ProjectIndicatorId?>(
     val name: String,
     val description: String?,
     val component: IndicatorCategory,
-    val type: MetricType,
+    val type: IndicatorLevel,
     val reference: String,
     val isPublishable: Boolean,
     val unit: String? = null,
@@ -27,7 +27,7 @@ data class ProjectMetricModel<ID : ProjectIndicatorId?>(
             name = record[NAME]!!,
             description = record[DESCRIPTION],
             component = record[CATEGORY_ID]!!,
-            type = record[TYPE_ID]!!,
+            type = record[LEVEL_ID]!!,
             reference = record[REFERENCE]!!,
             isPublishable = record[IS_PUBLISHABLE]!!,
             unit = record[UNIT],
