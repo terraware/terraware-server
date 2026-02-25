@@ -63,6 +63,7 @@ internal class LiveBalenaClientExternalTest {
 
   private lateinit var deviceId: BalenaDeviceId
   private var fleetId: Long = System.getenv("TEST_BALENA_FLEET_ID")?.toLongOrNull() ?: -1
+  private var organizationId: Long = -1
   private var raspberryPiDeviceTypeId: Long = -1
 
   private var createdDevice: Boolean = false
@@ -85,6 +86,8 @@ internal class LiveBalenaClientExternalTest {
     client = LiveBalenaClient(config, clientConfig.httpClient(engine, objectMapper))
 
     raspberryPiDeviceTypeId = getDeviceTypeId()
+
+    organizationId = getOrganizationId()
 
     val fleetIdVar = System.getenv("TEST_BALENA_FLEET_ID")?.toLong()
     if (fleetIdVar != null) {
@@ -264,11 +267,21 @@ internal class LiveBalenaClientExternalTest {
     )
   }
 
+  private fun getOrganizationId(): Long {
+    val response = client.sendRequest<GetOrganizationsResponse>(LiveBalenaClient.ORGANIZATION_PATH)
+    return response.d.first().id
+  }
+
   private fun createFleet(fleetName: String): Long {
     val response =
         client.sendRequest<Map<String, Any?>>(
             LiveBalenaClient.FLEET_PATH,
-            body = mapOf("app_name" to fleetName, "device_type" to RASPBERRY_PI_DEVICE_TYPE_SLUG),
+            body =
+                mapOf(
+                    "app_name" to fleetName,
+                    "device_type" to RASPBERRY_PI_DEVICE_TYPE_SLUG,
+                    "organization" to "$organizationId",
+                ),
         )
     val fleetId = response["id"].toString().toLong()
 
@@ -323,6 +336,11 @@ internal class LiveBalenaClientExternalTest {
   data class GetDeviceTypesResponse(val d: List<DeviceType>) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class DeviceType(val id: Long, val slug: String)
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  data class GetOrganizationsResponse(val d: List<Organization>) {
+    @JsonIgnoreProperties(ignoreUnknown = true) data class Organization(val id: Long)
   }
 
   companion object {

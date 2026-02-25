@@ -285,6 +285,7 @@ class LiveBalenaClient(
     const val DEVICE_TAG_PATH = "/v6/device_tag"
     const val DEVICE_TYPE_PATH = "/v6/device_type"
     const val FLEET_PATH = "/v6/application"
+    const val ORGANIZATION_PATH = "/v7/organization"
 
     const val SENSOR_KIT_ID_TAG_KEY = "sensor_kit_id"
 
