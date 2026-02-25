@@ -9,6 +9,7 @@ import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.default_schema.ProjectId
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.constraints.Size
 
 data class ExistingProjectMetricPayload(
@@ -29,8 +30,8 @@ data class ExistingProjectMetricPayload(
       projectId = model.projectId,
       name = model.name,
       description = model.description,
-      component = model.component,
-      type = model.type,
+      component = model.category,
+      type = model.level,
       reference = model.reference,
       isPublishable = model.isPublishable,
       unit = model.unit,
@@ -42,8 +43,8 @@ data class ExistingProjectMetricPayload(
         projectId = projectId,
         name = name,
         description = description,
-        component = component,
-        type = type,
+        category = component,
+        level = type,
         reference = reference,
         isPublishable = isPublishable,
         unit = unit,
@@ -51,6 +52,7 @@ data class ExistingProjectMetricPayload(
   }
 }
 
+@Schema(description = "Use ExistingCommonIndicatorPayload instead", deprecated = true)
 data class ExistingStandardMetricPayload(
     val id: CommonIndicatorId,
     val name: String,
@@ -67,8 +69,8 @@ data class ExistingStandardMetricPayload(
       id = model.id,
       name = model.name,
       description = model.description,
-      component = model.component,
-      type = model.type,
+      component = model.category,
+      type = model.level,
       reference = model.reference,
       isPublishable = model.isPublishable,
       unit = model.unit,
@@ -79,8 +81,8 @@ data class ExistingStandardMetricPayload(
         id = id,
         name = name,
         description = description,
-        component = component,
-        type = type,
+        category = component,
+        level = type,
         reference = reference,
         isPublishable = isPublishable,
         unit = unit,
@@ -88,6 +90,44 @@ data class ExistingStandardMetricPayload(
   }
 }
 
+data class ExistingCommonIndicatorPayload(
+    val id: CommonIndicatorId,
+    val name: String,
+    val description: String?,
+    val category: IndicatorCategory,
+    val level: IndicatorLevel,
+    val reference: String,
+    val isPublishable: Boolean,
+    @field:Size(max = 25) val unit: String? = null,
+) {
+  constructor(
+      model: ExistingCommonIndicatorModel
+  ) : this(
+      id = model.id,
+      name = model.name,
+      description = model.description,
+      category = model.category,
+      level = model.level,
+      reference = model.reference,
+      isPublishable = model.isPublishable,
+      unit = model.unit,
+  )
+
+  fun toModel(): ExistingCommonIndicatorModel {
+    return ExistingCommonIndicatorModel(
+        id = id,
+        name = name,
+        description = description,
+        category = category,
+        level = level,
+        reference = reference,
+        isPublishable = isPublishable,
+        unit = unit,
+    )
+  }
+}
+
+@Schema(description = "Use NewIndicatorPayload instead", deprecated = true)
 data class NewMetricPayload(
     val name: String,
     val description: String?,
@@ -103,8 +143,8 @@ data class NewMetricPayload(
         projectId = projectId,
         name = name,
         description = description,
-        component = component,
-        type = type,
+        category = component,
+        level = type,
         reference = reference,
         isPublishable = isPublishable,
         unit = unit,
@@ -116,8 +156,31 @@ data class NewMetricPayload(
         id = null,
         name = name,
         description = description,
-        component = component,
-        type = type,
+        category = component,
+        level = type,
+        reference = reference,
+        isPublishable = isPublishable,
+        unit = unit,
+    )
+  }
+}
+
+data class NewIndicatorPayload(
+    val name: String,
+    val description: String?,
+    val category: IndicatorCategory,
+    val level: IndicatorLevel,
+    val reference: String,
+    val isPublishable: Boolean,
+    @field:Size(max = 25) val unit: String? = null,
+) {
+  fun toCommonIndicatorModel(): NewCommonIndicatorModel {
+    return NewCommonIndicatorModel(
+        id = null,
+        name = name,
+        description = description,
+        category = category,
+        level = level,
         reference = reference,
         isPublishable = isPublishable,
         unit = unit,

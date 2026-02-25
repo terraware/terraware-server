@@ -57,12 +57,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         assertEquals(
             ExistingCommonIndicatorModel(
                 id = indicatorId,
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 isPublishable = true,
                 name = "Climate Common Indicator",
                 reference = "3.0",
-                type = IndicatorLevel.Activity,
+                level = IndicatorLevel.Activity,
                 unit = "degrees",
             ),
             store.fetchOneCommonIndicator(indicatorId),
@@ -136,32 +136,32 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 // Ordered by reference then ID
                 ExistingCommonIndicatorModel(
                     id = commonIndicatorId1,
-                    component = IndicatorCategory.Climate,
+                    category = IndicatorCategory.Climate,
                     description = "Climate common indicator description",
                     isPublishable = true,
                     name = "Climate Common Indicator",
                     reference = "3.0",
-                    type = IndicatorLevel.Activity,
+                    level = IndicatorLevel.Activity,
                     unit = "%",
                 ),
                 ExistingCommonIndicatorModel(
                     id = commonIndicatorId3,
-                    component = IndicatorCategory.ProjectObjectives,
+                    category = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives indicator description",
                     isPublishable = false,
                     name = "Project Objectives Indicator",
                     reference = "3.0",
-                    type = IndicatorLevel.Impact,
+                    level = IndicatorLevel.Impact,
                     unit = "cm",
                 ),
                 ExistingCommonIndicatorModel(
                     id = commonIndicatorId2,
-                    component = IndicatorCategory.Community,
+                    category = IndicatorCategory.Community,
                     description = "Community indicator description",
                     isPublishable = true,
                     name = "Community Indicator",
                     reference = "5.0",
-                    type = IndicatorLevel.Outcome,
+                    level = IndicatorLevel.Outcome,
                     unit = "meters",
                 ),
             ),
@@ -225,12 +225,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             ExistingProjectIndicatorModel(
                 id = indicatorId,
                 projectId = projectId,
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate project indicator description",
                 isPublishable = false,
                 name = "Climate Project Indicator",
                 reference = "3.0",
-                type = IndicatorLevel.Activity,
+                level = IndicatorLevel.Activity,
                 unit = "degrees",
             ),
             store.fetchOneProjectIndicator(indicatorId),
@@ -343,34 +343,34 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ExistingProjectIndicatorModel(
                     id = indicatorId1,
                     projectId = projectId,
-                    component = IndicatorCategory.Climate,
+                    category = IndicatorCategory.Climate,
                     description = "Climate common indicator description",
                     isPublishable = true,
                     name = "Climate Common Indicator",
                     reference = "3.0",
-                    type = IndicatorLevel.Activity,
+                    level = IndicatorLevel.Activity,
                     unit = "%",
                 ),
                 ExistingProjectIndicatorModel(
                     id = indicatorId3,
                     projectId = projectId,
-                    component = IndicatorCategory.ProjectObjectives,
+                    category = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives indicator description",
                     isPublishable = true,
                     name = "Project Objectives Indicator",
                     reference = "3.0",
-                    type = IndicatorLevel.Impact,
+                    level = IndicatorLevel.Impact,
                     unit = "cm",
                 ),
                 ExistingProjectIndicatorModel(
                     id = indicatorId2,
                     projectId = projectId,
-                    component = IndicatorCategory.Community,
+                    category = IndicatorCategory.Community,
                     description = "Community indicator description",
                     isPublishable = false,
                     name = "Community Indicator",
                     reference = "5.0",
-                    type = IndicatorLevel.Outcome,
+                    level = IndicatorLevel.Outcome,
                     unit = "meters",
                 ),
             ),
@@ -443,12 +443,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val model =
             NewCommonIndicatorModel(
                 id = null,
-                component = IndicatorCategory.ProjectObjectives,
+                category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = false,
                 name = "Project Objectives Indicator",
                 reference = "1.0",
-                type = IndicatorLevel.Impact,
+                level = IndicatorLevel.Impact,
                 unit = "meters",
             )
 
@@ -487,12 +487,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val model =
             NewCommonIndicatorModel(
                 id = null,
-                component = IndicatorCategory.ProjectObjectives,
+                category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = true,
                 name = "Project Objectives Indicator",
                 reference = "1.0",
-                type = IndicatorLevel.Impact,
+                level = IndicatorLevel.Impact,
                 unit = "%",
             )
 
@@ -523,12 +523,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             NewProjectIndicatorModel(
                 id = null,
                 projectId = projectId,
-                component = IndicatorCategory.ProjectObjectives,
+                category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = false,
                 name = "Project Objectives Indicator",
                 reference = "1.0",
-                type = IndicatorLevel.Impact,
+                level = IndicatorLevel.Impact,
                 unit = "%",
             )
 
@@ -571,13 +571,13 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val model =
             NewProjectIndicatorModel(
                 id = null,
-                component = IndicatorCategory.ProjectObjectives,
+                category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = true,
                 name = "Project Objectives Indicator",
                 projectId = projectId,
                 reference = "1.0",
-                type = IndicatorLevel.Impact,
+                level = IndicatorLevel.Impact,
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
@@ -606,12 +606,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val updated =
             ExistingCommonIndicatorModel(
                 id = CommonIndicatorId(99), // this field is ignored
-                component = IndicatorCategory.ProjectObjectives,
+                category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = false,
                 name = "Project Objectives Indicator",
                 reference = "1.0",
-                type = IndicatorLevel.Impact,
+                level = IndicatorLevel.Impact,
                 unit = "meters",
             )
 
@@ -676,13 +676,13 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val updated =
           ExistingProjectIndicatorModel(
               id = ProjectIndicatorId(99), // this field is ignored
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
               isPublishable = true,
               name = "Project Objectives Indicator",
               projectId = ProjectId(99), // this field is ignored
               reference = "1.0",
-              type = IndicatorLevel.Impact,
+              level = IndicatorLevel.Impact,
               unit = "inches",
           )
 

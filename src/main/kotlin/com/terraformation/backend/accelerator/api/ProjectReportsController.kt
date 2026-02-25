@@ -662,7 +662,7 @@ data class ReportStandardMetricPayload(
   constructor(
       model: ReportCommonIndicatorModel
   ) : this(
-      component = model.indicator.component,
+      component = model.indicator.category,
       description = model.indicator.description,
       id = model.indicator.id,
       isPublishable = model.indicator.isPublishable,
@@ -672,7 +672,7 @@ data class ReportStandardMetricPayload(
       reference = model.indicator.reference,
       status = model.entry.status,
       target = model.entry.target,
-      type = model.indicator.type,
+      type = model.indicator.level,
       value = model.entry.value,
   )
 }
@@ -773,7 +773,7 @@ data class ReportProjectMetricPayload(
   constructor(
       model: ReportProjectIndicatorModel
   ) : this(
-      component = model.indicator.component,
+      component = model.indicator.category,
       description = model.indicator.description,
       id = model.indicator.id,
       isPublishable = model.indicator.isPublishable,
@@ -783,7 +783,7 @@ data class ReportProjectMetricPayload(
       reference = model.indicator.reference,
       status = model.entry.status,
       target = model.entry.target,
-      type = model.indicator.type,
+      type = model.indicator.level,
       unit = model.indicator.unit,
       value = model.entry.value,
   )
