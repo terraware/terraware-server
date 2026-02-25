@@ -98,10 +98,12 @@ data class ProjectAcceleratorDetailsPayload(
     val googleFolderUrl: URI?,
     val hubSpotUrl: URI?,
     val investmentThesis: String?,
+    val indicatorProgress: List<IndicatorProgressPayload>,
     val landUseModelTypes: Set<LandUseModelType>,
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>?,
     val maxCarbonAccumulation: BigDecimal?,
     val methodologyNumber: String?,
+    @Schema(description = "Use indicatorProgress instead", deprecated = true)
     val metricProgress: List<MetricProgressPayload>,
     val minCarbonAccumulation: BigDecimal?,
     val minProjectArea: BigDecimal?,
@@ -149,6 +151,7 @@ data class ProjectAcceleratorDetailsPayload(
       googleFolderUrl = model.googleFolderUrl,
       hubSpotUrl = model.hubSpotUrl,
       investmentThesis = model.investmentThesis,
+      indicatorProgress = model.indicatorProgress.map { IndicatorProgressPayload(it) },
       landUseModelTypes = model.landUseModelTypes,
       landUseModelHectares = model.landUseModelHectares,
       maxCarbonAccumulation = model.maxCarbonAccumulation,
@@ -180,6 +183,7 @@ data class ProjectAcceleratorDetailsPayload(
   )
 }
 
+@Schema(description = "Use IndicatorProgressPayload instead", deprecated = true)
 data class MetricProgressPayload(
     val metric: AutoCalculatedIndicator,
     val progress: Int,
@@ -188,6 +192,18 @@ data class MetricProgressPayload(
       model: IndicatorProgressModel
   ) : this(
       metric = model.indicator,
+      progress = model.progress,
+  )
+}
+
+data class IndicatorProgressPayload(
+    val indicator: AutoCalculatedIndicator,
+    val progress: Int,
+) {
+  constructor(
+      model: IndicatorProgressModel
+  ) : this(
+      indicator = model.indicator,
       progress = model.progress,
   )
 }

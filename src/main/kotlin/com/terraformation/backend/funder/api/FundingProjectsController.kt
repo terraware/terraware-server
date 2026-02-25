@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.api
 
+import com.terraformation.backend.accelerator.api.IndicatorProgressPayload
 import com.terraformation.backend.accelerator.api.MetricProgressPayload
 import com.terraformation.backend.accelerator.model.CarbonCertification
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
@@ -16,6 +17,7 @@ import com.terraformation.backend.funder.FunderProjectService
 import com.terraformation.backend.funder.model.FunderProjectDetailsModel
 import com.terraformation.backend.funder.model.PublishedProjectNameModel
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.net.URI
 import org.springframework.web.bind.annotation.GetMapping
@@ -105,9 +107,11 @@ data class FunderProjectDetailsPayload(
     val countryCode: String?,
     val dealDescription: String?,
     val dealName: String?,
+    val indicatorProgress: List<IndicatorProgressPayload>,
     val landUseModelTypes: Set<LandUseModelType>,
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>,
     val methodologyNumber: String?,
+    @Schema(description = "Use indicatorProgress instead", deprecated = true)
     val metricProgress: List<MetricProgressPayload>,
     val minProjectArea: BigDecimal?,
     val numNativeSpecies: Int?,
@@ -133,6 +137,7 @@ data class FunderProjectDetailsPayload(
       countryCode = model.countryCode,
       dealDescription = model.dealDescription,
       dealName = model.dealName,
+      indicatorProgress = model.indicatorProgress.map { IndicatorProgressPayload(it) },
       landUseModelTypes = model.landUseModelTypes,
       landUseModelHectares = model.landUseModelHectares,
       methodologyNumber = model.methodologyNumber,
