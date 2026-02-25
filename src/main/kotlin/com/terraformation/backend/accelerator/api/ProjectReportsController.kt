@@ -1,7 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.ReportService
-import com.terraformation.backend.accelerator.db.ReportMetricStore
+import com.terraformation.backend.accelerator.db.ReportIndicatorStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
@@ -72,7 +72,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/v1/accelerator/projects/{projectId}/reports")
 @RestController
 class ProjectReportsController(
-    private val metricStore: ReportMetricStore,
+    private val indicatorStore: ReportIndicatorStore,
     private val reportService: ReportService,
     private val reportStore: ReportStore,
 ) {
@@ -408,7 +408,7 @@ class ProjectReportsController(
   @GetMapping("/metrics")
   @Operation(summary = "List all project metrics for one project.")
   fun listProjectMetrics(@PathVariable projectId: ProjectId): ListProjectMetricsResponsePayload {
-    val models = metricStore.fetchProjectIndicatorsForProject(projectId)
+    val models = indicatorStore.fetchProjectIndicatorsForProject(projectId)
     return ListProjectMetricsResponsePayload(models.map { ExistingProjectMetricPayload(it) })
   }
 
@@ -419,7 +419,7 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: CreateProjectMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.createProjectIndicator(payload.metric.toProjectIndicatorModel(projectId))
+    indicatorStore.createProjectIndicator(payload.metric.toProjectIndicatorModel(projectId))
     return SimpleSuccessResponsePayload()
   }
 
@@ -432,7 +432,7 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: UpdateProjectMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.updateProjectIndicator(metricId) { payload.metric.toModel() }
+    indicatorStore.updateProjectIndicator(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
 

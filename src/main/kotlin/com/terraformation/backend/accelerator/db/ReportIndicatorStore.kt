@@ -23,7 +23,7 @@ import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
 @Named
-class ReportMetricStore(
+class ReportIndicatorStore(
     private val dslContext: DSLContext,
 ) {
   fun fetchOneCommonIndicator(indicatorId: CommonIndicatorId): ExistingCommonIndicatorModel {
