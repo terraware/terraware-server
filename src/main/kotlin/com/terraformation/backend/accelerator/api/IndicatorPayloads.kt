@@ -32,7 +32,7 @@ data class ExistingProjectMetricPayload(
       description = model.description,
       component = model.category,
       type = model.level,
-      reference = model.reference,
+      reference = model.refId,
       isPublishable = model.isPublishable,
       unit = model.unit,
   )
@@ -45,7 +45,7 @@ data class ExistingProjectMetricPayload(
         description = description,
         category = component,
         level = type,
-        reference = reference,
+        refId = reference,
         isPublishable = isPublishable,
         unit = unit,
     )
@@ -53,40 +53,40 @@ data class ExistingProjectMetricPayload(
 }
 
 data class ExistingProjectIndicatorPayload(
-    val id: ProjectIndicatorId,
-    val projectId: ProjectId,
-    val name: String,
-    val description: String?,
     val category: IndicatorCategory,
-    val level: IndicatorLevel,
-    val reference: String,
+    val description: String?,
+    val id: ProjectIndicatorId,
     val isPublishable: Boolean,
+    val level: IndicatorLevel,
+    val name: String,
+    val projectId: ProjectId,
+    val refId: String,
     @field:Size(max = 25) val unit: String?,
 ) {
   constructor(
       model: ExistingProjectIndicatorModel
   ) : this(
-      id = model.id,
-      projectId = model.projectId,
-      name = model.name,
-      description = model.description,
       category = model.category,
-      level = model.level,
-      reference = model.reference,
+      description = model.description,
+      id = model.id,
       isPublishable = model.isPublishable,
+      level = model.level,
+      name = model.name,
+      projectId = model.projectId,
+      refId = model.refId,
       unit = model.unit,
   )
 
   fun toModel(): ExistingProjectIndicatorModel {
     return ExistingProjectIndicatorModel(
-        id = id,
-        projectId = projectId,
-        name = name,
-        description = description,
         category = category,
-        level = level,
-        reference = reference,
+        description = description,
+        id = id,
         isPublishable = isPublishable,
+        level = level,
+        name = name,
+        projectId = projectId,
+        refId = refId,
         unit = unit,
     )
   }
@@ -111,7 +111,7 @@ data class ExistingStandardMetricPayload(
       description = model.description,
       component = model.category,
       type = model.level,
-      reference = model.reference,
+      reference = model.refId,
       isPublishable = model.isPublishable,
       unit = model.unit,
   )
@@ -123,7 +123,7 @@ data class ExistingStandardMetricPayload(
         description = description,
         category = component,
         level = type,
-        reference = reference,
+        refId = reference,
         isPublishable = isPublishable,
         unit = unit,
     )
@@ -131,37 +131,37 @@ data class ExistingStandardMetricPayload(
 }
 
 data class ExistingCommonIndicatorPayload(
-    val id: CommonIndicatorId,
-    val name: String,
-    val description: String?,
     val category: IndicatorCategory,
-    val level: IndicatorLevel,
-    val reference: String,
+    val description: String?,
+    val id: CommonIndicatorId,
     val isPublishable: Boolean,
+    val level: IndicatorLevel,
+    val name: String,
+    val refId: String,
     @field:Size(max = 25) val unit: String? = null,
 ) {
   constructor(
       model: ExistingCommonIndicatorModel
   ) : this(
-      id = model.id,
-      name = model.name,
-      description = model.description,
       category = model.category,
-      level = model.level,
-      reference = model.reference,
+      description = model.description,
+      id = model.id,
       isPublishable = model.isPublishable,
+      level = model.level,
+      name = model.name,
+      refId = model.refId,
       unit = model.unit,
   )
 
   fun toModel(): ExistingCommonIndicatorModel {
     return ExistingCommonIndicatorModel(
-        id = id,
-        name = name,
-        description = description,
         category = category,
-        level = level,
-        reference = reference,
+        description = description,
         isPublishable = isPublishable,
+        id = id,
+        level = level,
+        name = name,
+        refId = refId,
         unit = unit,
     )
   }
@@ -185,7 +185,7 @@ data class NewMetricPayload(
         description = description,
         category = component,
         level = type,
-        reference = reference,
+        refId = reference,
         isPublishable = isPublishable,
         unit = unit,
     )
@@ -198,7 +198,7 @@ data class NewMetricPayload(
         description = description,
         category = component,
         level = type,
-        reference = reference,
+        refId = reference,
         isPublishable = isPublishable,
         unit = unit,
     )
@@ -206,37 +206,37 @@ data class NewMetricPayload(
 }
 
 data class NewIndicatorPayload(
-    val name: String,
-    val description: String?,
     val category: IndicatorCategory,
-    val level: IndicatorLevel,
-    val reference: String,
+    val description: String?,
     val isPublishable: Boolean,
+    val level: IndicatorLevel,
+    val name: String,
+    val refId: String,
     @field:Size(max = 25) val unit: String? = null,
 ) {
   fun toProjectIndicatorModel(projectId: ProjectId): NewProjectIndicatorModel {
     return NewProjectIndicatorModel(
-        id = null,
-        projectId = projectId,
-        name = name,
-        description = description,
         category = category,
-        level = level,
-        reference = reference,
+        description = description,
+        id = null,
         isPublishable = isPublishable,
+        level = level,
+        name = name,
+        projectId = projectId,
+        refId = refId,
         unit = unit,
     )
   }
 
   fun toCommonIndicatorModel(): NewCommonIndicatorModel {
     return NewCommonIndicatorModel(
-        id = null,
-        name = name,
-        description = description,
         category = category,
-        level = level,
-        reference = reference,
+        description = description,
+        id = null,
         isPublishable = isPublishable,
+        level = level,
+        name = name,
+        refId = refId,
         unit = unit,
     )
   }

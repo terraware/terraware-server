@@ -194,7 +194,7 @@ class PublishedReportStore(
                 name = it[indicatorNameField],
                 progressNotes = it[progressNotesField],
                 projectsComments = it[projectsCommentsField],
-                reference = it[indicatorReferenceField],
+                refId = it[indicatorReferenceField],
                 status = it[statusField],
                 target = it[targetField],
                 unit = it[unitField],

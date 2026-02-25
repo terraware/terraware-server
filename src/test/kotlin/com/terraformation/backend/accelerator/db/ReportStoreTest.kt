@@ -277,11 +277,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val projectIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project Indicator description",
               name = "Project Indicator Name",
-              reference = "2.0",
-              type = IndicatorLevel.Activity,
+              refId = "2.0",
+              level = IndicatorLevel.Activity,
           )
 
       // Insert target into new target table (report end date is 1970-01-02, so year is 1970)
@@ -309,7 +309,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Project Indicator description",
                           isPublishable = true,
                           name = "Project Indicator Name",
-                          reference = "2.0",
+                          refId = "2.0",
                           level = IndicatorLevel.Activity,
                       ),
                   entry =
@@ -324,29 +324,29 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val commonIndicatorId1 =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
               name = "Climate Common Indicator",
-              reference = "2.1",
-              type = IndicatorLevel.Activity,
+              refId = "2.1",
+              level = IndicatorLevel.Activity,
           )
 
       val commonIndicatorId2 =
           insertCommonIndicator(
-              component = IndicatorCategory.Community,
+              category = IndicatorCategory.Community,
               description = "Community indicator description",
               name = "Community Indicator",
-              reference = "10.0",
-              type = IndicatorLevel.Outcome,
+              refId = "10.0",
+              level = IndicatorLevel.Outcome,
           )
 
       val commonIndicatorId3 =
           insertCommonIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
               name = "Project Objectives Indicator",
-              reference = "2.0",
-              type = IndicatorLevel.Impact,
+              refId = "2.0",
+              level = IndicatorLevel.Impact,
           )
 
       // Insert targets into new target tables
@@ -381,7 +381,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Project objectives indicator description",
                           isPublishable = true,
                           name = "Project Objectives Indicator",
-                          reference = "2.0",
+                          refId = "2.0",
                           level = IndicatorLevel.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
@@ -395,7 +395,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Climate common indicator description",
                           isPublishable = true,
                           name = "Climate Common Indicator",
-                          reference = "2.1",
+                          refId = "2.1",
                           level = IndicatorLevel.Activity,
                       ),
                   entry =
@@ -416,7 +416,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Community indicator description",
                           isPublishable = true,
                           name = "Community Indicator",
-                          reference = "10.0",
+                          refId = "10.0",
                           level = IndicatorLevel.Outcome,
                       ),
                   entry =
@@ -1020,11 +1020,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val projectIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project Indicator description",
               name = "Project Indicator Name",
-              reference = "2.0",
-              type = IndicatorLevel.Activity,
+              refId = "2.0",
+              level = IndicatorLevel.Activity,
           )
 
       insertProjectIndicatorTarget(
@@ -1051,7 +1051,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Project Indicator description",
                           isPublishable = true,
                           name = "Project Indicator Name",
-                          reference = "2.0",
+                          refId = "2.0",
                           level = IndicatorLevel.Activity,
                       ),
                   entry =
@@ -1066,30 +1066,30 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val commonIndicatorId1 =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
               name = "Climate Common Indicator",
-              reference = "2.1",
-              type = IndicatorLevel.Activity,
+              refId = "2.1",
+              level = IndicatorLevel.Activity,
           )
 
       val commonIndicatorId2 =
           insertCommonIndicator(
-              component = IndicatorCategory.Community,
+              category = IndicatorCategory.Community,
               description = "Community indicator description",
               isPublishable = false,
               name = "Community Indicator",
-              reference = "10.0",
-              type = IndicatorLevel.Outcome,
+              refId = "10.0",
+              level = IndicatorLevel.Outcome,
           )
 
       val commonIndicatorId3 =
           insertCommonIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
               name = "Project Objectives Indicator",
-              reference = "2.0",
-              type = IndicatorLevel.Impact,
+              refId = "2.0",
+              level = IndicatorLevel.Impact,
           )
 
       insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
@@ -1123,7 +1123,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Project objectives indicator description",
                           isPublishable = true,
                           name = "Project Objectives Indicator",
-                          reference = "2.0",
+                          refId = "2.0",
                           level = IndicatorLevel.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
@@ -1137,7 +1137,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Climate common indicator description",
                           isPublishable = true,
                           name = "Climate Common Indicator",
-                          reference = "2.1",
+                          refId = "2.1",
                           level = IndicatorLevel.Activity,
                       ),
                   entry =
@@ -1158,7 +1158,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Community indicator description",
                           isPublishable = false,
                           name = "Community Indicator",
-                          reference = "10.0",
+                          refId = "10.0",
                           level = IndicatorLevel.Outcome,
                       ),
                   entry =
@@ -1592,47 +1592,47 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val commonIndicatorId1 =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
               name = "Climate Common Indicator",
-              reference = "2.1",
-              type = IndicatorLevel.Activity,
+              refId = "2.1",
+              level = IndicatorLevel.Activity,
           )
 
       val commonIndicatorId2 =
           insertCommonIndicator(
-              component = IndicatorCategory.Community,
+              category = IndicatorCategory.Community,
               description = "Community indicator description",
               name = "Community Indicator",
-              reference = "10.0",
-              type = IndicatorLevel.Outcome,
+              refId = "10.0",
+              level = IndicatorLevel.Outcome,
           )
 
       val commonIndicatorId3 =
           insertCommonIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
               name = "Project Objectives Indicator",
-              reference = "2.0",
-              type = IndicatorLevel.Impact,
+              refId = "2.0",
+              level = IndicatorLevel.Impact,
           )
 
       // This has no entry and will not have any updates
       insertCommonIndicator(
-          component = IndicatorCategory.Biodiversity,
+          category = IndicatorCategory.Biodiversity,
           description = "Biodiversity indicator description",
           name = "Biodiversity Indicator",
-          reference = "7.0",
-          type = IndicatorLevel.Impact,
+          refId = "7.0",
+          level = IndicatorLevel.Impact,
       )
 
       val projectIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project Indicator description",
               name = "Project Indicator Name",
-              reference = "2.0",
-              type = IndicatorLevel.Activity,
+              refId = "2.0",
+              level = IndicatorLevel.Activity,
           )
 
       val configId = insertProjectReportConfig()
@@ -2071,47 +2071,47 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val otherUserId = insertUser()
       val commonIndicatorId1 =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
               name = "Climate Common Indicator",
-              reference = "2.1",
-              type = IndicatorLevel.Activity,
+              refId = "2.1",
+              level = IndicatorLevel.Activity,
           )
 
       val commonIndicatorId2 =
           insertCommonIndicator(
-              component = IndicatorCategory.Community,
+              category = IndicatorCategory.Community,
               description = "Community indicator description",
               name = "Community Indicator",
-              reference = "10.0",
-              type = IndicatorLevel.Outcome,
+              refId = "10.0",
+              level = IndicatorLevel.Outcome,
           )
 
       val commonIndicatorId3 =
           insertCommonIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
               name = "Project Objectives Indicator",
-              reference = "2.0",
-              type = IndicatorLevel.Impact,
+              refId = "2.0",
+              level = IndicatorLevel.Impact,
           )
 
       // This has no entry and will not have any updates
       insertCommonIndicator(
-          component = IndicatorCategory.Biodiversity,
+          category = IndicatorCategory.Biodiversity,
           description = "Biodiversity indicator description",
           name = "Biodiversity Indicator",
-          reference = "7.0",
-          type = IndicatorLevel.Impact,
+          refId = "7.0",
+          level = IndicatorLevel.Impact,
       )
 
       val projectIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project Indicator description",
               name = "Project Indicator Name",
-              reference = "2.0",
-              type = IndicatorLevel.Activity,
+              refId = "2.0",
+              level = IndicatorLevel.Activity,
           )
 
       val configId = insertProjectReportConfig()
@@ -5214,11 +5214,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts new target`() {
       val projectIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Test indicator",
               name = "Test Indicator",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
 
       store.updateProjectIndicatorTarget(
@@ -5240,11 +5240,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `updates existing target`() {
       val projectIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Test indicator",
               name = "Test Indicator",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
 
       insertProjectIndicatorTarget(
@@ -5270,11 +5270,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `allows null target`() {
       val projectIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Test indicator",
               name = "Test Indicator",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
 
       store.updateProjectIndicatorTarget(
@@ -5297,11 +5297,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val projectIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Test indicator",
               name = "Test Indicator",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
 
       assertThrows<AccessDeniedException> {
@@ -5321,11 +5321,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `inserts new target`() {
       val commonIndicatorId =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Test indicator",
               name = "Test Indicator",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
 
       store.updateCommonIndicatorTarget(
@@ -5347,11 +5347,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `updates existing target`() {
       val commonIndicatorId =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Test indicator",
               name = "Test Indicator",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
 
       insertCommonIndicatorTarget(
@@ -5377,11 +5377,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `allows null target`() {
       val commonIndicatorId =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Test indicator",
               name = "Test Indicator",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
 
       store.updateCommonIndicatorTarget(
@@ -5404,11 +5404,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val commonIndicatorId =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Test indicator",
               name = "Test Indicator",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
 
       assertThrows<AccessDeniedException> {
@@ -5508,19 +5508,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns all project indicator targets for a project`() {
       val projectIndicatorId1 =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Test indicator 1",
               name = "Test Indicator 1",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
       val projectIndicatorId2 =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Test indicator 2",
               name = "Test Indicator 2",
-              reference = "2.0",
-              type = IndicatorLevel.Activity,
+              refId = "2.0",
+              level = IndicatorLevel.Activity,
           )
 
       insertProjectIndicatorTarget(
@@ -5570,19 +5570,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns all common indicator targets for a project`() {
       val commonIndicatorId1 =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Test indicator 1",
               name = "Test Indicator 1",
-              reference = "1.0",
-              type = IndicatorLevel.Activity,
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
           )
       val commonIndicatorId2 =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Test indicator 2",
               name = "Test Indicator 2",
-              reference = "2.0",
-              type = IndicatorLevel.Activity,
+              refId = "2.0",
+              level = IndicatorLevel.Activity,
           )
 
       insertCommonIndicatorTarget(

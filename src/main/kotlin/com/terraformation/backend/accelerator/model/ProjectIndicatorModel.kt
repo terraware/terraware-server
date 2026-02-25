@@ -9,13 +9,13 @@ import org.jooq.Record
 
 data class ProjectIndicatorModel<ID : ProjectIndicatorId?>(
     val id: ID,
-    val projectId: ProjectId,
-    val name: String,
-    val description: String?,
     val category: IndicatorCategory,
-    val level: IndicatorLevel,
-    val reference: String,
+    val description: String?,
     val isPublishable: Boolean,
+    val level: IndicatorLevel,
+    val name: String,
+    val projectId: ProjectId,
+    val refId: String,
     val unit: String? = null,
 ) {
   companion object {
@@ -23,13 +23,13 @@ data class ProjectIndicatorModel<ID : ProjectIndicatorId?>(
       return with(PROJECT_INDICATORS) {
         ExistingProjectIndicatorModel(
             id = record[ID]!!,
-            projectId = record[PROJECT_ID]!!,
-            name = record[NAME]!!,
-            description = record[DESCRIPTION],
             category = record[CATEGORY_ID]!!,
-            level = record[LEVEL_ID]!!,
-            reference = record[REF_ID]!!,
+            description = record[DESCRIPTION],
             isPublishable = record[IS_PUBLISHABLE]!!,
+            level = record[LEVEL_ID]!!,
+            name = record[NAME]!!,
+            refId = record[REF_ID]!!,
+            projectId = record[PROJECT_ID]!!,
             unit = record[UNIT],
         )
       }
