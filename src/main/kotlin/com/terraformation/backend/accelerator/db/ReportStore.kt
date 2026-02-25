@@ -394,7 +394,7 @@ class ReportStore(
 
     val report = fetchOne(reportId, true)
 
-    report.validateMetricEntries(
+    report.validateIndicatorEntries(
         commonIndicatorEntries = commonIndicatorEntries,
         projectIndicatorEntries = projectIndicatorEntries,
     )
@@ -467,7 +467,7 @@ class ReportStore(
       )
     }
 
-    report.validateMetricEntries(
+    report.validateIndicatorEntries(
         commonIndicatorEntries = commonIndicatorEntries,
         projectIndicatorEntries = projectIndicatorEntries,
     )
