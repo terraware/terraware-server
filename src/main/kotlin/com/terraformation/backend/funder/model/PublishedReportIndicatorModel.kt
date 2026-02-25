@@ -4,10 +4,10 @@ import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 
-data class PublishedReportMetricModel<ID : Any>(
+data class PublishedReportIndicatorModel<ID : Any>(
     val component: IndicatorCategory,
     val description: String?,
-    val metricId: ID,
+    val indicatorId: ID,
     val name: String,
     val progressNotes: String?,
     val projectsComments: String?,

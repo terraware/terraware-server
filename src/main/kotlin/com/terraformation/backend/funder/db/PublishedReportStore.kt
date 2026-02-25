@@ -25,7 +25,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_C
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_COMMON_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
-import com.terraformation.backend.funder.model.PublishedReportMetricModel
+import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
 import org.jooq.DSLContext
@@ -112,66 +112,66 @@ class PublishedReportStore(
             }
           }
 
-  private fun <ID : Any> publishedMetricsMultiset(
-      metricTableIdField: TableField<*, ID?>,
-      publishedMetricIdField: TableField<*, ID?>,
-      targetTableMetricIdField: TableField<*, ID?>,
-  ): Field<List<PublishedReportMetricModel<ID>>> {
-    val publishedMetricTable = publishedMetricIdField.table!!
-    val targetTable = targetTableMetricIdField.table!!
+  private fun <ID : Any> publishedIndicatorsMultiset(
+      indicatorTableIdField: TableField<*, ID?>,
+      publishedIndicatorIdField: TableField<*, ID?>,
+      targetTableIndicatorIdField: TableField<*, ID?>,
+  ): Field<List<PublishedReportIndicatorModel<ID>>> {
+    val publishedIndicatorTable = publishedIndicatorIdField.table!!
+    val targetTable = targetTableIndicatorIdField.table!!
     val reportIdField =
-        publishedMetricTable.field(
+        publishedIndicatorTable.field(
             "report_id",
             SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
         )!!
-    val progressNotesField = publishedMetricTable.field("progress_notes", String::class.java)
+    val progressNotesField = publishedIndicatorTable.field("progress_notes", String::class.java)
     val statusField =
-        publishedMetricTable.field(
+        publishedIndicatorTable.field(
             "status_id",
             SQLDataType.INTEGER.asConvertedDataType(ReportIndicatorStatusConverter()),
         )!!
     val targetField = targetTable.field("target", Int::class.java)!!
     val targetYearField = targetTable.field("year", Int::class.java)!!
     val projectsCommentsField =
-        publishedMetricTable.field("projects_comments", String::class.java)!!
-    val valueField = publishedMetricTable.field("value", Int::class.java)!!
+        publishedIndicatorTable.field("projects_comments", String::class.java)!!
+    val valueField = publishedIndicatorTable.field("value", Int::class.java)!!
 
-    val metricTable = metricTableIdField.table!!
-    val metricComponentField =
-        metricTable.field(
+    val indicatorTable = indicatorTableIdField.table!!
+    val indicatorComponentField =
+        indicatorTable.field(
             "category_id",
             SQLDataType.INTEGER.asConvertedDataType(IndicatorCategoryConverter()),
         )!!
-    val metricDescriptionField = metricTable.field("description", String::class.java)!!
-    val metricNameField = metricTable.field("name", String::class.java)!!
-    val metricReferenceField = metricTable.field("ref_id", String::class.java)!!
-    val metricTypeField =
-        metricTable.field(
+    val indicatorDescriptionField = indicatorTable.field("description", String::class.java)!!
+    val indicatorNameField = indicatorTable.field("name", String::class.java)!!
+    val indicatorReferenceField = indicatorTable.field("ref_id", String::class.java)!!
+    val indicatorTypeField =
+        indicatorTable.field(
             "level_id",
             SQLDataType.INTEGER.asConvertedDataType(IndicatorLevelConverter()),
         )!!
-    val unitField = metricTable.field("unit", String::class.java) ?: DSL.value(null as String?)
+    val unitField = indicatorTable.field("unit", String::class.java) ?: DSL.value(null as String?)
 
     return DSL.multiset(
             DSL.select(
                     progressNotesField,
                     projectsCommentsField,
-                    publishedMetricIdField,
-                    metricComponentField,
-                    metricDescriptionField,
-                    metricNameField,
-                    metricReferenceField,
-                    metricTypeField,
+                    publishedIndicatorIdField,
+                    indicatorComponentField,
+                    indicatorDescriptionField,
+                    indicatorNameField,
+                    indicatorReferenceField,
+                    indicatorTypeField,
                     statusField,
                     targetField,
                     valueField,
                     unitField,
                 )
-                .from(publishedMetricTable)
-                .join(metricTable)
-                .on(metricTableIdField.eq(publishedMetricIdField))
+                .from(publishedIndicatorTable)
+                .join(indicatorTable)
+                .on(indicatorTableIdField.eq(publishedIndicatorIdField))
                 .leftJoin(targetTable)
-                .on(targetTableMetricIdField.eq(metricTableIdField))
+                .on(targetTableIndicatorIdField.eq(indicatorTableIdField))
                 .and(
                     targetTable
                         .field(
@@ -182,21 +182,21 @@ class PublishedReportStore(
                 )
                 .and(targetYearField.eq(DSL.year(PUBLISHED_REPORTS.END_DATE)))
                 .where(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
-                .orderBy(metricReferenceField)
+                .orderBy(indicatorReferenceField)
         )
         .convertFrom { result ->
           result.map {
-            PublishedReportMetricModel(
-                component = it[metricComponentField],
-                description = it[metricDescriptionField],
-                metricId = it[publishedMetricIdField.asNonNullable()],
-                name = it[metricNameField],
+            PublishedReportIndicatorModel(
+                component = it[indicatorComponentField],
+                description = it[indicatorDescriptionField],
+                indicatorId = it[publishedIndicatorIdField.asNonNullable()],
+                name = it[indicatorNameField],
                 progressNotes = it[progressNotesField],
                 projectsComments = it[projectsCommentsField],
-                reference = it[metricReferenceField],
+                reference = it[indicatorReferenceField],
                 status = it[statusField],
                 target = it[targetField],
-                type = it[metricTypeField],
+                type = it[indicatorTypeField],
                 value = it[valueField],
                 unit = it[unitField],
             )
@@ -217,21 +217,21 @@ class PublishedReportStore(
           .convertFrom { results -> results.map { ReportPhotoModel.ofPublished(it) } }
 
   private val projectIndicatorsMultiset =
-      publishedMetricsMultiset(
+      publishedIndicatorsMultiset(
           PROJECT_INDICATORS.ID,
           PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
           PUBLISHED_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
       )
 
   private val commonIndicatorsMultiset =
-      publishedMetricsMultiset(
+      publishedIndicatorsMultiset(
           COMMON_INDICATORS.ID,
           PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           PUBLISHED_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
       )
 
   private val autoCalculatedIndicatorsMultiset =
-      publishedMetricsMultiset(
+      publishedIndicatorsMultiset(
           AUTO_CALCULATED_INDICATORS.ID,
           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,

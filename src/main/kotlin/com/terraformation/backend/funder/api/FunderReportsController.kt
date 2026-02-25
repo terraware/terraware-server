@@ -20,7 +20,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.funder.PublishedReportService
 import com.terraformation.backend.funder.db.PublishedReportStore
-import com.terraformation.backend.funder.model.PublishedReportMetricModel
+import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -96,7 +96,7 @@ data class PublishedReportMetricPayload(
     val unit: String?,
 ) {
   constructor(
-      model: PublishedReportMetricModel<*>
+      model: PublishedReportIndicatorModel<*>
   ) : this(
       component = model.component,
       description = model.description,

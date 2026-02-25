@@ -13,7 +13,7 @@ import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
-import com.terraformation.backend.funder.model.PublishedReportMetricModel
+import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import java.time.Instant
 import java.time.LocalDate
@@ -244,10 +244,10 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectId = projectId,
                   projectIndicators =
                       listOf(
-                          PublishedReportMetricModel(
+                          PublishedReportIndicatorModel(
                               component = IndicatorCategory.Biodiversity,
                               description = "Project Indicator Description 1",
-                              metricId = projectIndicatorId1,
+                              indicatorId = projectIndicatorId1,
                               name = "Project Indicator 1",
                               reference = "1.2.1",
                               status = ReportIndicatorStatus.OnTrack,
@@ -258,10 +258,10 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               value = 40,
                               unit = "%",
                           ),
-                          PublishedReportMetricModel(
+                          PublishedReportIndicatorModel(
                               component = IndicatorCategory.ProjectObjectives,
                               description = "Project Indicator Description 2",
-                              metricId = projectIndicatorId2,
+                              indicatorId = projectIndicatorId2,
                               name = "Project Indicator 2",
                               reference = "1.2.11",
                               status = null,
@@ -280,10 +280,10 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId1,
                   commonIndicators =
                       listOf(
-                          PublishedReportMetricModel(
+                          PublishedReportIndicatorModel(
                               component = IndicatorCategory.Community,
                               description = "Common Indicator Description 2",
-                              metricId = commonIndicatorId2,
+                              indicatorId = commonIndicatorId2,
                               name = "Common Indicator 2",
                               reference = "1.1.1",
                               type = IndicatorLevel.Outcome,
@@ -294,10 +294,10 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               status = ReportIndicatorStatus.Unlikely,
                               unit = null,
                           ),
-                          PublishedReportMetricModel(
+                          PublishedReportIndicatorModel(
                               component = IndicatorCategory.Climate,
                               description = "Common Indicator Description 1",
-                              metricId = commonIndicatorId1,
+                              indicatorId = commonIndicatorId1,
                               name = "Common Indicator 1",
                               status = ReportIndicatorStatus.Achieved,
                               reference = "1.1.2",
@@ -312,10 +312,10 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, 1, 1),
                   autoCalculatedIndicators =
                       listOf(
-                          PublishedReportMetricModel(
+                          PublishedReportIndicatorModel(
                               component = AutoCalculatedIndicator.SurvivalRate.categoryId,
                               description = AutoCalculatedIndicator.SurvivalRate.description,
-                              metricId = AutoCalculatedIndicator.SurvivalRate,
+                              indicatorId = AutoCalculatedIndicator.SurvivalRate,
                               name = AutoCalculatedIndicator.SurvivalRate.jsonValue,
                               reference = AutoCalculatedIndicator.SurvivalRate.refId,
                               status = ReportIndicatorStatus.Achieved,
