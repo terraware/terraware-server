@@ -37,12 +37,12 @@ data class ProjectAcceleratorDetailsModel(
     val fileNaming: String? = null,
     val googleFolderUrl: URI? = null,
     val hubSpotUrl: URI? = null,
+    val indicatorProgress: List<IndicatorProgressModel> = emptyList(),
     val investmentThesis: String? = null,
     val landUseModelTypes: Set<LandUseModelType> = emptySet(),
     val landUseModelHectares: Map<LandUseModelType, BigDecimal> = emptyMap(),
     val maxCarbonAccumulation: BigDecimal? = null,
     val methodologyNumber: String? = null,
-    val metricProgress: List<MetricProgressModel> = emptyList(),
     val minCarbonAccumulation: BigDecimal? = null,
     val minProjectArea: BigDecimal? = null,
     val numCommunities: Int? = null,
@@ -71,7 +71,7 @@ data class ProjectAcceleratorDetailsModel(
     /** Combining variables and table values. Unused columns will be deprecated going forward. */
     fun of(
         record: Record,
-        metricProgressField: Field<List<MetricProgressModel>>,
+        indicatorProgressField: Field<List<IndicatorProgressModel>>,
         variableValues: ProjectAcceleratorVariableValuesModel,
     ): ProjectAcceleratorDetailsModel {
       return with(PROJECT_ACCELERATOR_DETAILS) {
@@ -94,12 +94,12 @@ data class ProjectAcceleratorDetailsModel(
             gisReportsLink = variableValues.gisReportsLink,
             googleFolderUrl = record[GOOGLE_FOLDER_URL],
             hubSpotUrl = record[HUBSPOT_URL],
+            indicatorProgress = record[indicatorProgressField],
             investmentThesis = variableValues.investmentThesis,
             landUseModelTypes = variableValues.landUseModelTypes,
             landUseModelHectares = variableValues.landUseModelHectares,
             maxCarbonAccumulation = variableValues.maxCarbonAccumulation,
             methodologyNumber = variableValues.methodologyNumber,
-            metricProgress = record[metricProgressField],
             minCarbonAccumulation = variableValues.minCarbonAccumulation,
             minProjectArea = variableValues.minProjectArea,
             numCommunities = record[NUM_COMMUNITIES],

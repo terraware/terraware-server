@@ -2,7 +2,7 @@ package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.model.CarbonCertification
-import com.terraformation.backend.accelerator.model.MetricProgressModel
+import com.terraformation.backend.accelerator.model.IndicatorProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.AcceleratorEndpoint
@@ -153,7 +153,7 @@ data class ProjectAcceleratorDetailsPayload(
       landUseModelHectares = model.landUseModelHectares,
       maxCarbonAccumulation = model.maxCarbonAccumulation,
       methodologyNumber = model.methodologyNumber,
-      metricProgress = model.metricProgress.map { MetricProgressPayload(it) },
+      metricProgress = model.indicatorProgress.map { MetricProgressPayload(it) },
       minCarbonAccumulation = model.minCarbonAccumulation,
       minProjectArea = model.minProjectArea,
       numCommunities = model.numCommunities,
@@ -185,9 +185,9 @@ data class MetricProgressPayload(
     val progress: Int,
 ) {
   constructor(
-      model: MetricProgressModel
+      model: IndicatorProgressModel
   ) : this(
-      metric = model.metric,
+      metric = model.indicator,
       progress = model.progress,
   )
 }

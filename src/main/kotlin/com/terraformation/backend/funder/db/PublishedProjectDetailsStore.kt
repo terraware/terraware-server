@@ -1,9 +1,9 @@
 package com.terraformation.backend.funder.db
 
 import com.terraformation.backend.accelerator.model.CarbonCertification
-import com.terraformation.backend.accelerator.model.MetricProgressModel
+import com.terraformation.backend.accelerator.model.IndicatorProgressModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
-import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_METRICS
+import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_INDICATORS
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.asNonNullable
@@ -75,7 +75,7 @@ class PublishedProjectDetailsStore(
               )
         }
 
-    val metricProgress =
+    val indicatorProgress =
         with(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS) {
           val progressField =
               DSL.if_(
@@ -97,14 +97,14 @@ class PublishedProjectDetailsStore(
               .where(PUBLISHED_REPORTS.PROJECT_ID.eq(projectId))
               .and(
                   PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.`in`(
-                      TRACKED_ACCUMULATED_METRICS
+                      TRACKED_ACCUMULATED_INDICATORS
                   )
               )
               .groupBy(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID)
               .orderBy(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID)
               .fetch { record ->
-                MetricProgressModel(
-                    metric =
+                IndicatorProgressModel(
+                    indicator =
                         record[
                             PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS
                                 .AUTO_CALCULATED_INDICATOR_ID]!!,
@@ -115,7 +115,7 @@ class PublishedProjectDetailsStore(
 
     return with(PUBLISHED_PROJECT_DETAILS) {
       dslContext.selectFrom(this).where(PROJECT_ID.eq(projectId)).fetchOne()?.let {
-        FunderProjectDetailsModel.of(it, carbonCerts, sdgList, landUseModelMap, metricProgress)
+        FunderProjectDetailsModel.of(it, carbonCerts, sdgList, landUseModelMap, indicatorProgress)
       }
     }
   }

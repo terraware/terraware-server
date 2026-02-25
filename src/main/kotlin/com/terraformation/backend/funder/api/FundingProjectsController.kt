@@ -136,7 +136,7 @@ data class FunderProjectDetailsPayload(
       landUseModelTypes = model.landUseModelTypes,
       landUseModelHectares = model.landUseModelHectares,
       methodologyNumber = model.methodologyNumber,
-      metricProgress = model.metricProgress.map { MetricProgressPayload(it) },
+      metricProgress = model.indicatorProgress.map { MetricProgressPayload(it) },
       minProjectArea = model.minProjectArea,
       numNativeSpecies = model.numNativeSpecies,
       perHectareBudget = model.perHectareBudget,
