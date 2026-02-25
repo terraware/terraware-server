@@ -1,3 +1,7 @@
+dce417d6d8d SW-8084 ProjectReportsController - Add indicator properties to AcceleratorReportPayload (#4005)
+8c3942f3573 SW-8084 ProjectReportsController - Add indicator target endpoints (#4004)
+781de1687af SW-8084 ProjectReportsController - Add project /indicators endpoints (#4003)
+1999e9c6f1a SW-8084 ProjectReportsController - Add review and refresh endpoints for indicators (#4002)
 8a7812af921 SW-8084 Update values and top level get endpoints to reference indicators (#3997)
 10ce99c2258 SW-8084 Add indicator payloads to FunderReport endpoints (#3996)
 43bbb4fd17f SW-8084 Add indicatorProgress to project-details payloads (#3995)
