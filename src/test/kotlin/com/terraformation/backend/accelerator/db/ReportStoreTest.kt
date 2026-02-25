@@ -305,12 +305,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ProjectIndicatorModel(
                           id = projectIndicatorId,
                           projectId = projectId,
-                          component = IndicatorCategory.ProjectObjectives,
+                          category = IndicatorCategory.ProjectObjectives,
                           description = "Project Indicator description",
                           isPublishable = true,
                           name = "Project Indicator Name",
                           reference = "2.0",
-                          type = IndicatorLevel.Activity,
+                          level = IndicatorLevel.Activity,
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -377,12 +377,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           id = commonIndicatorId3,
-                          component = IndicatorCategory.ProjectObjectives,
+                          category = IndicatorCategory.ProjectObjectives,
                           description = "Project objectives indicator description",
                           isPublishable = true,
                           name = "Project Objectives Indicator",
                           reference = "2.0",
-                          type = IndicatorLevel.Impact,
+                          level = IndicatorLevel.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
                   entry = ReportIndicatorEntryModel(),
@@ -391,12 +391,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           id = commonIndicatorId1,
-                          component = IndicatorCategory.Climate,
+                          category = IndicatorCategory.Climate,
                           description = "Climate common indicator description",
                           isPublishable = true,
                           name = "Climate Common Indicator",
                           reference = "2.1",
-                          type = IndicatorLevel.Activity,
+                          level = IndicatorLevel.Activity,
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -412,12 +412,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           id = commonIndicatorId2,
-                          component = IndicatorCategory.Community,
+                          category = IndicatorCategory.Community,
                           description = "Community indicator description",
                           isPublishable = true,
                           name = "Community Indicator",
                           reference = "10.0",
-                          type = IndicatorLevel.Outcome,
+                          level = IndicatorLevel.Outcome,
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -1047,12 +1047,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ProjectIndicatorModel(
                           id = projectIndicatorId,
                           projectId = projectId,
-                          component = IndicatorCategory.ProjectObjectives,
+                          category = IndicatorCategory.ProjectObjectives,
                           description = "Project Indicator description",
                           isPublishable = true,
                           name = "Project Indicator Name",
                           reference = "2.0",
-                          type = IndicatorLevel.Activity,
+                          level = IndicatorLevel.Activity,
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -1119,12 +1119,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           id = commonIndicatorId3,
-                          component = IndicatorCategory.ProjectObjectives,
+                          category = IndicatorCategory.ProjectObjectives,
                           description = "Project objectives indicator description",
                           isPublishable = true,
                           name = "Project Objectives Indicator",
                           reference = "2.0",
-                          type = IndicatorLevel.Impact,
+                          level = IndicatorLevel.Impact,
                       ),
                   // all fields are null because no target/value have been set yet
                   entry = ReportIndicatorEntryModel(),
@@ -1133,12 +1133,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           id = commonIndicatorId1,
-                          component = IndicatorCategory.Climate,
+                          category = IndicatorCategory.Climate,
                           description = "Climate common indicator description",
                           isPublishable = true,
                           name = "Climate Common Indicator",
                           reference = "2.1",
-                          type = IndicatorLevel.Activity,
+                          level = IndicatorLevel.Activity,
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -1154,12 +1154,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           id = commonIndicatorId2,
-                          component = IndicatorCategory.Community,
+                          category = IndicatorCategory.Community,
                           description = "Community indicator description",
                           isPublishable = false,
                           name = "Community Indicator",
                           reference = "10.0",
-                          type = IndicatorLevel.Outcome,
+                          level = IndicatorLevel.Outcome,
                       ),
                   entry =
                       ReportIndicatorEntryModel(
