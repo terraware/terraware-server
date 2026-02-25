@@ -97,7 +97,7 @@ class ProjectReportsController(
             year = year,
             includeArchived = includeArchived ?: false,
             includeFuture = includeFuture ?: false,
-            includeMetrics = includeMetrics ?: false,
+            includeIndicators = includeMetrics ?: false,
         )
     return ListAcceleratorReportsResponsePayload(reports.map { AcceleratorReportPayload(it) })
   }
@@ -113,7 +113,7 @@ class ProjectReportsController(
     val model =
         reportStore.fetchOne(
             reportId = reportId,
-            includeMetrics = includeMetrics ?: false,
+            includeIndicators = includeMetrics ?: false,
         )
     return GetAcceleratorReportResponsePayload(AcceleratorReportPayload(model))
   }
@@ -215,7 +215,7 @@ class ProjectReportsController(
         payload.systemMetrics.associate { it.metric to it.toModel() }
     val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
-    reportStore.reviewReportMetrics(
+    reportStore.reviewReportIndicators(
         reportId = reportId,
         commonIndicatorEntries = commonIndicatorUpdates,
         autoCalculatedIndicatorEntries = autoCalculatedIndicatorUpdates,
