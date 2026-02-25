@@ -107,7 +107,7 @@ data class ReportModel(
     }
   }
 
-  fun validateMetricEntries(
+  fun validateIndicatorEntries(
       commonIndicatorEntries: Map<CommonIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
       projectIndicatorEntries: Map<ProjectIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
   ) {

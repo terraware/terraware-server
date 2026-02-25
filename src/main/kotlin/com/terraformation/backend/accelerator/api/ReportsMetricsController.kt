@@ -1,6 +1,6 @@
 package com.terraformation.backend.accelerator.api
 
-import com.terraformation.backend.accelerator.db.ReportMetricStore
+import com.terraformation.backend.accelerator.db.ReportIndicatorStore
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RestController
 @AcceleratorEndpoint
 @RequestMapping("/api/v1/accelerator/reports")
 @RestController
-class ReportsController(private val metricStore: ReportMetricStore) {
+class ReportsController(private val indicatorStore: ReportIndicatorStore) {
   @ApiResponse200
   @GetMapping("/standardMetrics")
   @Operation(summary = "List all standard metrics.")
   fun listStandardMetric(): ListStandardMetricsResponsePayload {
-    val models = metricStore.fetchAllCommonIndicators()
+    val models = indicatorStore.fetchAllCommonIndicators()
     return ListStandardMetricsResponsePayload(models.map { ExistingStandardMetricPayload(it) })
   }
 
@@ -37,7 +37,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   fun createStandardMetric(
       @RequestBody @Valid payload: CreateStandardMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.createCommonIndicator(payload.metric.toCommonIndicatorModel())
+    indicatorStore.createCommonIndicator(payload.metric.toCommonIndicatorModel())
     return SimpleSuccessResponsePayload()
   }
 
@@ -48,7 +48,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
       @PathVariable metricId: CommonIndicatorId,
       @RequestBody payload: UpdateStandardMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
-    metricStore.updateCommonIndicator(metricId) { payload.metric.toModel() }
+    indicatorStore.updateCommonIndicator(metricId) { payload.metric.toModel() }
     return SimpleSuccessResponsePayload()
   }
 
@@ -56,7 +56,7 @@ class ReportsController(private val metricStore: ReportMetricStore) {
   @GetMapping("/systemMetrics")
   @Operation(summary = "List all system metrics.")
   fun listSystemMetrics(): ListSystemMetricsResponsePayload {
-    val indicators = metricStore.fetchAutoCalculatedIndicators()
+    val indicators = indicatorStore.fetchAutoCalculatedIndicators()
     return ListSystemMetricsResponsePayload(indicators.map { SystemMetricPayload(it) })
   }
 }

@@ -1,6 +1,6 @@
 package com.terraformation.backend.admin
 
-import com.terraformation.backend.accelerator.db.ReportMetricStore
+import com.terraformation.backend.accelerator.db.ReportIndicatorStore
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.requirePermissions
@@ -29,7 +29,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminProjectIndicatorsController(
     val dslContext: DSLContext,
-    val reportMetricStore: ReportMetricStore,
+    val reportIndicatorStore: ReportIndicatorStore,
     val projectStore: ProjectStore,
 ) {
   @GetMapping("/projectIndicators")
@@ -53,7 +53,7 @@ class AdminProjectIndicatorsController(
     requirePermissions { manageProjectReportConfigs() }
 
     val project = projectStore.fetchOneById(projectId)
-    val projectIndicators = reportMetricStore.fetchProjectIndicatorsForProject(projectId)
+    val projectIndicators = reportIndicatorStore.fetchProjectIndicatorsForProject(projectId)
 
     model.addAttribute("projectIndicators", projectIndicators)
     model.addAttribute("project", project)
