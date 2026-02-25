@@ -187,18 +187,18 @@ class PublishedReportStore(
         .convertFrom { result ->
           result.map {
             PublishedReportIndicatorModel(
-                component = it[indicatorComponentField],
+                category = it[indicatorComponentField],
                 description = it[indicatorDescriptionField],
                 indicatorId = it[publishedIndicatorIdField.asNonNullable()],
+                level = it[indicatorTypeField],
                 name = it[indicatorNameField],
                 progressNotes = it[progressNotesField],
                 projectsComments = it[projectsCommentsField],
                 reference = it[indicatorReferenceField],
                 status = it[statusField],
                 target = it[targetField],
-                type = it[indicatorTypeField],
-                value = it[valueField],
                 unit = it[unitField],
+                value = it[valueField],
             )
           }
         }

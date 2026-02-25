@@ -24,6 +24,7 @@ import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import java.time.Instant
 import java.time.LocalDate
 import org.springframework.core.io.InputStreamResource
@@ -82,6 +83,7 @@ data class ReportChallengePayload(
     val mitigationPlan: String,
 )
 
+@Schema(description = "Use PublishedReportIndicatorPayload instead", deprecated = true)
 data class PublishedReportMetricPayload(
     val component: IndicatorCategory,
     val description: String?,
@@ -92,13 +94,13 @@ data class PublishedReportMetricPayload(
     val status: ReportIndicatorStatus?,
     val target: Int?,
     val type: IndicatorLevel,
-    val value: Int?,
     val unit: String?,
+    val value: Int?,
 ) {
   constructor(
       model: PublishedReportIndicatorModel<*>
   ) : this(
-      component = model.component,
+      component = model.category,
       description = model.description,
       name = model.name,
       progressNotes = model.progressNotes,
@@ -106,29 +108,65 @@ data class PublishedReportMetricPayload(
       reference = model.reference,
       status = model.status,
       target = model.target,
-      type = model.type,
-      value = model.value,
+      type = model.level,
       unit = model.unit,
+      value = model.value,
+  )
+}
+
+data class PublishedReportIndicatorPayload(
+    val category: IndicatorCategory,
+    val description: String?,
+    val level: IndicatorLevel,
+    val name: String,
+    val progressNotes: String?,
+    val projectsComments: String?,
+    val reference: String,
+    val status: ReportIndicatorStatus?,
+    val target: Int?,
+    val unit: String?,
+    val value: Int?,
+) {
+  constructor(
+      model: PublishedReportIndicatorModel<*>
+  ) : this(
+      category = model.category,
+      description = model.description,
+      level = model.level,
+      name = model.name,
+      progressNotes = model.progressNotes,
+      projectsComments = model.projectsComments,
+      reference = model.reference,
+      status = model.status,
+      target = model.target,
+      unit = model.unit,
+      value = model.value,
   )
 }
 
 data class PublishedReportPayload(
     val achievements: List<String>,
     val additionalComments: String?,
+    val autoCalculatedIndicators: List<PublishedReportIndicatorPayload>,
     val challenges: List<ReportChallengePayload>,
+    val commonIndicators: List<PublishedReportIndicatorPayload>,
     val endDate: LocalDate,
     val financialSummaries: String?,
     val highlights: String?,
     val photos: List<ReportPhotoPayload>,
     val projectId: ProjectId,
+    val projectIndicators: List<PublishedReportIndicatorPayload>,
+    @Schema(description = "Use projectIndicators instead", deprecated = true)
     val projectMetrics: List<PublishedReportMetricPayload>,
     val projectName: String,
     val publishedBy: UserId,
     val publishedTime: Instant,
     val quarter: ReportQuarter?,
     val reportId: ReportId,
+    @Schema(description = "Use commonIndicators instead", deprecated = true)
     val standardMetrics: List<PublishedReportMetricPayload>,
     val startDate: LocalDate,
+    @Schema(description = "Use autoCalculatedIndicators instead", deprecated = true)
     val systemMetrics: List<PublishedReportMetricPayload>,
 ) {
   constructor(
@@ -136,12 +174,16 @@ data class PublishedReportPayload(
   ) : this(
       achievements = model.achievements,
       additionalComments = model.additionalComments,
+      autoCalculatedIndicators =
+          model.autoCalculatedIndicators.map { PublishedReportIndicatorPayload(it) },
       challenges = model.challenges.map { ReportChallengePayload(it.challenge, it.mitigationPlan) },
+      commonIndicators = model.commonIndicators.map { PublishedReportIndicatorPayload(it) },
       endDate = model.endDate,
       financialSummaries = model.financialSummaries,
       highlights = model.highlights,
       photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,
+      projectIndicators = model.projectIndicators.map { PublishedReportIndicatorPayload(it) },
       projectMetrics = model.projectIndicators.map { PublishedReportMetricPayload(it) },
       projectName = model.projectName,
       publishedBy = model.publishedBy,

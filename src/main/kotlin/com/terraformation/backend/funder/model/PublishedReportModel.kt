@@ -16,7 +16,9 @@ import java.time.LocalDate
 data class PublishedReportModel(
     val achievements: List<String>,
     val additionalComments: String?,
+    val autoCalculatedIndicators: List<PublishedReportIndicatorModel<AutoCalculatedIndicator>>,
     val challenges: List<ReportChallengeModel>,
+    val commonIndicators: List<PublishedReportIndicatorModel<CommonIndicatorId>>,
     val endDate: LocalDate,
     val financialSummaries: String?,
     val highlights: String?,
@@ -28,7 +30,5 @@ data class PublishedReportModel(
     val publishedTime: Instant,
     val quarter: ReportQuarter?,
     val reportId: ReportId,
-    val commonIndicators: List<PublishedReportIndicatorModel<CommonIndicatorId>>,
     val startDate: LocalDate,
-    val autoCalculatedIndicators: List<PublishedReportIndicatorModel<AutoCalculatedIndicator>>,
 )
