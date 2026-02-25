@@ -202,13 +202,28 @@ class ProjectReportsController(
   @ApiResponse400
   @ApiResponse404
   @PostMapping("/{reportId}/metrics/refresh")
-  @Operation(summary = "Refresh system metric entries value for a report")
+  @Operation(summary = "Use /{reportId}/indicators/refresh instead", deprecated = true)
   fun refreshAcceleratorReportSystemMetrics(
       @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @RequestParam metrics: List<AutoCalculatedIndicator>,
   ): SimpleSuccessResponsePayload {
     reportStore.refreshAutoCalculatedIndicatorValues(reportId, metrics)
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
+  @PostMapping("/{reportId}/indicators/refresh")
+  @Operation(summary = "Refresh auto calculated indicator entries value for a report")
+  fun refreshAcceleratorReportAutoCalculatedIndicators(
+      @PathVariable projectId: ProjectId,
+      @PathVariable reportId: ReportId,
+      @RequestParam indicators: List<AutoCalculatedIndicator>,
+  ): SimpleSuccessResponsePayload {
+    reportStore.refreshAutoCalculatedIndicatorValues(reportId, indicators)
 
     return SimpleSuccessResponsePayload()
   }
@@ -242,7 +257,7 @@ class ProjectReportsController(
   @ApiResponse400
   @ApiResponse404
   @PostMapping("/{reportId}/metrics/review")
-  @Operation(summary = "Review metric entries for a report")
+  @Operation(summary = "Use /{reportId}/indicators/review instead", deprecated = true)
   fun reviewAcceleratorReportMetrics(
       @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
@@ -252,6 +267,31 @@ class ProjectReportsController(
     val autoCalculatedIndicatorUpdates =
         payload.systemMetrics.associate { it.metric to it.toModel() }
     val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
+
+    reportStore.reviewReportIndicators(
+        reportId = reportId,
+        commonIndicatorEntries = commonIndicatorUpdates,
+        autoCalculatedIndicatorEntries = autoCalculatedIndicatorUpdates,
+        projectIndicatorEntries = projectIndicatorUpdates,
+    )
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @ApiResponse404
+  @PostMapping("/{reportId}/indicators/review")
+  @Operation(summary = "Review indicator entries for a report")
+  fun reviewAcceleratorReportIndicators(
+      @PathVariable projectId: ProjectId,
+      @PathVariable reportId: ReportId,
+      @RequestBody payload: ReviewAcceleratorReportIndicatorsRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    val commonIndicatorUpdates = payload.commonIndicators.associate { it.id to it.toModel() }
+    val autoCalculatedIndicatorUpdates =
+        payload.autoCalculatedIndicators.associate { it.indicator to it.toModel() }
+    val projectIndicatorUpdates = payload.projectIndicators.associate { it.id to it.toModel() }
 
     reportStore.reviewReportIndicators(
         reportId = reportId,
@@ -916,6 +956,12 @@ data class ReviewAcceleratorReportMetricsRequestPayload(
     val projectMetrics: List<ReportProjectMetricEntriesPayload>,
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
     val systemMetrics: List<ReportSystemMetricEntriesPayload>,
+)
+
+data class ReviewAcceleratorReportIndicatorsRequestPayload(
+    val autoCalculatedIndicators: List<ReportAutoCalculatedIndicatorEntriesPayload>,
+    val commonIndicators: List<ReportCommonIndicatorEntriesPayload>,
+    val projectIndicators: List<ReportProjectIndicatorEntriesPayload>,
 )
 
 data class UpdateAcceleratorReportValuesRequestPayload(
