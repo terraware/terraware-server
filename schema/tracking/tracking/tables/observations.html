@@ -489,12 +489,12 @@
                                     <td>(((state_id &#61; 1) AND (planting_site_history_id IS NULL)) OR ((state_id &lt;&gt; 1) AND (planting_site_history_id IS NOT NULL)))</td>
                                 </tr>
                                 <tr>
-                                    <td>completed_time_and_state</td>
-                                    <td>(((completed_time IS NULL) AND (state_id &lt;&gt; ALL (ARRAY[3, 5]))) OR ((completed_time IS NOT NULL) AND (state_id &#61; ANY (ARRAY[3, 5]))))</td>
-                                </tr>
-                                <tr>
                                     <td>end_after_start</td>
                                     <td>(start_date &lt;&#61; end_date)</td>
+                                </tr>
+                                <tr>
+                                    <td>completed_time_and_state</td>
+                                    <td>(((completed_time IS NULL) AND (state_id &lt;&gt; ALL (ARRAY[3, 5]))) OR ((completed_time IS NOT NULL) AND (state_id &#61; ANY (ARRAY[3, 5]))))</td>
                                 </tr>
                                 </tbody>
                             </table>

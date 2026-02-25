@@ -14,7 +14,7 @@
 <g id="node1" class="node">
 <title>auto_calculated_indicators</title>
 <g id="a_node1"><a xlink:href="../../tables/auto_calculated_indicators.html" xlink:title="auto_calculated_indicators" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="230,-122 230,-452 508,-452 508,-122 230,-122"/>
+<polygon fill="#ffffff" stroke="transparent" points="230,-100 230,-452 508,-452 508,-100 230,-100"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="232,-428 232,-450 506,-450 506,-428 232,-428"/>
 <polygon fill="none" stroke="black" points="232,-428 232,-450 506,-450 506,-428 232,-428"/>
 <text text-anchor="start" x="237" y="-437.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">auto_calculated_indicators</text>
@@ -76,16 +76,20 @@
 <text text-anchor="start" x="252" y="-150.2" font-family="Helvetica,sans-Serif" font-size="11.00">frequency_id</text>
 <polygon fill="none" stroke="black" points="412,-142 412,-164 506,-164 506,-142 412,-142"/>
 <text text-anchor="start" x="415" y="-150.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="#ffffff" stroke="transparent" points="232,-124 232,-142 326,-142 326,-124 232,-124"/>
-<polygon fill="none" stroke="black" points="232,-124 232,-142 326,-142 326,-124 232,-124"/>
-<text text-anchor="start" x="235" y="-130.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="326,-124 326,-142 412,-142 412,-124 326,-124"/>
-<polygon fill="none" stroke="black" points="326,-124 326,-142 412,-142 412,-124 326,-124"/>
-<text text-anchor="start" x="402" y="-130.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="412,-124 412,-142 506,-142 506,-124 412,-124"/>
-<polygon fill="none" stroke="black" points="412,-124 412,-142 506,-142 506,-124 412,-124"/>
-<text text-anchor="start" x="487" y="-130.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="231,-123 231,-451 507,-451 507,-123 231,-123"/>
+<polygon fill="none" stroke="black" points="232,-120 232,-142 412,-142 412,-120 232,-120"/>
+<text text-anchor="start" x="252" y="-128.2" font-family="Helvetica,sans-Serif" font-size="11.00">tf_owner</text>
+<polygon fill="none" stroke="black" points="412,-120 412,-142 506,-142 506,-120 412,-120"/>
+<text text-anchor="start" x="415" y="-128.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<polygon fill="#ffffff" stroke="transparent" points="232,-102 232,-120 326,-120 326,-102 232,-102"/>
+<polygon fill="none" stroke="black" points="232,-102 232,-120 326,-120 326,-102 232,-102"/>
+<text text-anchor="start" x="235" y="-108.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="326,-102 326,-120 412,-120 412,-102 326,-102"/>
+<polygon fill="none" stroke="black" points="326,-102 326,-120 412,-120 412,-102 326,-102"/>
+<text text-anchor="start" x="402" y="-108.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="412,-102 412,-120 506,-120 506,-102 412,-102"/>
+<polygon fill="none" stroke="black" points="412,-102 412,-120 506,-120 506,-102 412,-102"/>
+<text text-anchor="start" x="487" y="-108.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="231,-101 231,-451 507,-451 507,-101 231,-101"/>
 </a>
 </g>
 </g>

@@ -256,6 +256,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="frequency_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="auto_calculated_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="tf_owner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="auto_calculated_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -288,6 +289,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="frequency_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="standard_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="tf_owner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="common_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -727,6 +729,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="frequency_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="project_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="tf_owner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="project_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
