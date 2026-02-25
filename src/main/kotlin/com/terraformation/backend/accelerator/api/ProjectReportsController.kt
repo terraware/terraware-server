@@ -774,7 +774,9 @@ data class SimpleUserPayload(
 data class AcceleratorReportPayload(
     val achievements: List<String>,
     val additionalComments: String?,
+    val autoCalculatedIndicators: List<ReportAutoCalculatedIndicatorPayload>,
     val challenges: List<ReportChallengePayload>,
+    val commonIndicators: List<ReportCommonIndicatorPayload>,
     val endDate: LocalDate,
     val feedback: String?,
     val financialSummaries: String?,
@@ -786,14 +788,18 @@ data class AcceleratorReportPayload(
     val modifiedTime: Instant,
     val photos: List<ReportPhotoPayload>,
     val projectId: ProjectId,
+    val projectIndicators: List<ReportProjectIndicatorPayload>,
+    @Schema(description = "Use projectIndicators instead", deprecated = true)
     val projectMetrics: List<ReportProjectMetricPayload>,
     val quarter: ReportQuarter?,
+    @Schema(description = "Use commonIndicators instead", deprecated = true)
     val standardMetrics: List<ReportStandardMetricPayload>,
     val startDate: LocalDate,
     val status: ReportStatus,
     val submittedBy: UserId?,
     val submittedByUser: SimpleUserPayload?,
     val submittedTime: Instant?,
+    @Schema(description = "Use autoCalculatedIndicators instead", deprecated = true)
     val systemMetrics: List<ReportSystemMetricPayload>,
 ) {
   constructor(
@@ -801,7 +807,10 @@ data class AcceleratorReportPayload(
   ) : this(
       achievements = model.achievements,
       additionalComments = model.additionalComments,
+      autoCalculatedIndicators =
+          model.autoCalculatedIndicators.map { ReportAutoCalculatedIndicatorPayload(it) },
       challenges = model.challenges.map { ReportChallengePayload(it) },
+      commonIndicators = model.commonIndicators.map { ReportCommonIndicatorPayload(it) },
       endDate = model.endDate,
       feedback = model.feedback,
       financialSummaries = model.financialSummaries,
@@ -813,6 +822,7 @@ data class AcceleratorReportPayload(
       modifiedTime = model.modifiedTime,
       photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,
+      projectIndicators = model.projectIndicators.map { ReportProjectIndicatorPayload(it) },
       projectMetrics = model.projectIndicators.map { ReportProjectMetricPayload(it) },
       quarter = model.quarter,
       standardMetrics = model.commonIndicators.map { ReportStandardMetricPayload(it) },
@@ -846,6 +856,7 @@ data class ReportReviewPayload(
     val internalComment: String?,
 )
 
+@Schema(description = "Use ReportCommonIndicatorPayload instead", deprecated = true)
 data class ReportStandardMetricPayload(
     val component: IndicatorCategory,
     val description: String?,
@@ -874,6 +885,38 @@ data class ReportStandardMetricPayload(
       status = model.entry.status,
       target = model.entry.target,
       type = model.indicator.level,
+      value = model.entry.value,
+  )
+}
+
+data class ReportCommonIndicatorPayload(
+    val category: IndicatorCategory,
+    val description: String?,
+    val id: CommonIndicatorId,
+    val isPublishable: Boolean,
+    val level: IndicatorLevel,
+    val name: String,
+    val progressNotes: String?,
+    val projectsComments: String?,
+    val reference: String,
+    val status: ReportIndicatorStatus?,
+    val target: Int?,
+    val value: Int?,
+) {
+  constructor(
+      model: ReportCommonIndicatorModel
+  ) : this(
+      category = model.indicator.category,
+      description = model.indicator.description,
+      id = model.indicator.id,
+      isPublishable = model.indicator.isPublishable,
+      level = model.indicator.level,
+      name = model.indicator.name,
+      progressNotes = model.entry.progressNotes,
+      projectsComments = model.entry.projectsComments,
+      reference = model.indicator.reference,
+      status = model.entry.status,
+      target = model.entry.target,
       value = model.entry.value,
   )
 }
@@ -911,6 +954,7 @@ data class ReportCommonIndicatorEntriesPayload(
       )
 }
 
+@Schema(description = "Use ReportAutoCalculatedIndicatorPayload instead", deprecated = true)
 data class ReportSystemMetricPayload(
     val component: IndicatorCategory,
     val description: String?,
@@ -942,6 +986,40 @@ data class ReportSystemMetricPayload(
       systemValue = model.entry.systemValue,
       target = model.entry.target,
       type = model.indicator.levelId,
+  )
+}
+
+data class ReportAutoCalculatedIndicatorPayload(
+    val category: IndicatorCategory,
+    val description: String?,
+    val isPublishable: Boolean,
+    val level: IndicatorLevel,
+    val indicator: AutoCalculatedIndicator,
+    val overrideValue: Int?,
+    val progressNotes: String?,
+    val projectsComments: String?,
+    val reference: String,
+    val status: ReportIndicatorStatus?,
+    val systemTime: Instant?,
+    val systemValue: Int?,
+    val target: Int?,
+) {
+  constructor(
+      model: ReportAutoCalculatedIndicatorModel
+  ) : this(
+      category = model.indicator.categoryId,
+      description = model.indicator.description,
+      isPublishable = model.indicator.isPublishable,
+      level = model.indicator.levelId,
+      indicator = model.indicator,
+      overrideValue = model.entry.overrideValue,
+      progressNotes = model.entry.progressNotes,
+      projectsComments = model.entry.projectsComments,
+      reference = model.indicator.refId,
+      status = model.entry.status,
+      systemTime = model.entry.systemTime,
+      systemValue = model.entry.systemValue,
+      target = model.entry.target,
   )
 }
 
@@ -990,6 +1068,7 @@ data class ReportPhotoPayload(
   )
 }
 
+@Schema(description = "Use ReportProjectIndicatorPayload instead", deprecated = true)
 data class ReportProjectMetricPayload(
     val component: IndicatorCategory,
     val description: String?,
@@ -1019,6 +1098,40 @@ data class ReportProjectMetricPayload(
       status = model.entry.status,
       target = model.entry.target,
       type = model.indicator.level,
+      unit = model.indicator.unit,
+      value = model.entry.value,
+  )
+}
+
+data class ReportProjectIndicatorPayload(
+    val category: IndicatorCategory,
+    val description: String?,
+    val id: ProjectIndicatorId,
+    val isPublishable: Boolean,
+    val level: IndicatorLevel,
+    val name: String,
+    val progressNotes: String?,
+    val projectsComments: String?,
+    val reference: String,
+    val status: ReportIndicatorStatus?,
+    val target: Int?,
+    val unit: String?,
+    val value: Int?,
+) {
+  constructor(
+      model: ReportProjectIndicatorModel
+  ) : this(
+      category = model.indicator.category,
+      description = model.indicator.description,
+      id = model.indicator.id,
+      isPublishable = model.indicator.isPublishable,
+      level = model.indicator.level,
+      name = model.indicator.name,
+      progressNotes = model.entry.progressNotes,
+      projectsComments = model.entry.projectsComments,
+      reference = model.indicator.reference,
+      status = model.entry.status,
+      target = model.entry.target,
       unit = model.indicator.unit,
       value = model.entry.value,
   )
