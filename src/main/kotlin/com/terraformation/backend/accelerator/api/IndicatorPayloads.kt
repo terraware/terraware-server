@@ -52,6 +52,46 @@ data class ExistingProjectMetricPayload(
   }
 }
 
+data class ExistingProjectIndicatorPayload(
+    val id: ProjectIndicatorId,
+    val projectId: ProjectId,
+    val name: String,
+    val description: String?,
+    val category: IndicatorCategory,
+    val level: IndicatorLevel,
+    val reference: String,
+    val isPublishable: Boolean,
+    @field:Size(max = 25) val unit: String?,
+) {
+  constructor(
+      model: ExistingProjectIndicatorModel
+  ) : this(
+      id = model.id,
+      projectId = model.projectId,
+      name = model.name,
+      description = model.description,
+      category = model.category,
+      level = model.level,
+      reference = model.reference,
+      isPublishable = model.isPublishable,
+      unit = model.unit,
+  )
+
+  fun toModel(): ExistingProjectIndicatorModel {
+    return ExistingProjectIndicatorModel(
+        id = id,
+        projectId = projectId,
+        name = name,
+        description = description,
+        category = category,
+        level = level,
+        reference = reference,
+        isPublishable = isPublishable,
+        unit = unit,
+    )
+  }
+}
+
 @Schema(description = "Use ExistingCommonIndicatorPayload instead", deprecated = true)
 data class ExistingStandardMetricPayload(
     val id: CommonIndicatorId,
@@ -174,6 +214,20 @@ data class NewIndicatorPayload(
     val isPublishable: Boolean,
     @field:Size(max = 25) val unit: String? = null,
 ) {
+  fun toProjectIndicatorModel(projectId: ProjectId): NewProjectIndicatorModel {
+    return NewProjectIndicatorModel(
+        id = null,
+        projectId = projectId,
+        name = name,
+        description = description,
+        category = category,
+        level = level,
+        reference = reference,
+        isPublishable = isPublishable,
+        unit = unit,
+    )
+  }
+
   fun toCommonIndicatorModel(): NewCommonIndicatorModel {
     return NewCommonIndicatorModel(
         id = null,

@@ -484,7 +484,7 @@ class ProjectReportsController(
 
   @ApiResponse200
   @GetMapping("/metrics")
-  @Operation(summary = "List all project metrics for one project.")
+  @Operation(summary = "Use /indicators instead", deprecated = true)
   fun listProjectMetrics(@PathVariable projectId: ProjectId): ListProjectMetricsResponsePayload {
     val models = indicatorStore.fetchProjectIndicatorsForProject(projectId)
     return ListProjectMetricsResponsePayload(models.map { ExistingProjectMetricPayload(it) })
@@ -492,7 +492,7 @@ class ProjectReportsController(
 
   @ApiResponse200
   @PutMapping("/metrics")
-  @Operation(summary = "Insert project metric, that the project will report on all future reports.")
+  @Operation(summary = "Use /indicators instead", deprecated = true)
   fun createProjectMetric(
       @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: CreateProjectMetricRequestPayload,
@@ -504,13 +504,49 @@ class ProjectReportsController(
   @ApiResponse200
   @ApiResponse400
   @PostMapping("/metrics/{metricId}")
-  @Operation(summary = "Update one project metric by ID.")
+  @Operation(summary = "Use /indicators/{indicatorId} instead", deprecated = true)
   fun updateProjectMetric(
       @PathVariable metricId: ProjectIndicatorId,
       @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: UpdateProjectMetricRequestPayload,
   ): SimpleSuccessResponsePayload {
     indicatorStore.updateProjectIndicator(metricId) { payload.metric.toModel() }
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @GetMapping("/indicators")
+  @Operation(summary = "List all project indicators for one project.")
+  fun listProjectIndicators(
+      @PathVariable projectId: ProjectId
+  ): ListProjectIndicatorsResponsePayload {
+    val models = indicatorStore.fetchProjectIndicatorsForProject(projectId)
+    return ListProjectIndicatorsResponsePayload(models.map { ExistingProjectIndicatorPayload(it) })
+  }
+
+  @ApiResponse200
+  @PutMapping("/indicators")
+  @Operation(
+      summary = "Insert project indicator, that the project will report on all future reports."
+  )
+  fun createProjectIndicator(
+      @PathVariable projectId: ProjectId,
+      @RequestBody @Valid payload: CreateProjectIndicatorRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    indicatorStore.createProjectIndicator(payload.indicator.toProjectIndicatorModel(projectId))
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @PostMapping("/indicators/{indicatorId}")
+  @Operation(summary = "Update one project indicator by ID.")
+  fun updateProjectIndicator(
+      @PathVariable indicatorId: ProjectIndicatorId,
+      @PathVariable projectId: ProjectId,
+      @RequestBody @Valid payload: UpdateProjectIndicatorRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    indicatorStore.updateProjectIndicator(indicatorId) { payload.indicator.toModel() }
     return SimpleSuccessResponsePayload()
   }
 
@@ -1016,12 +1052,25 @@ data class ListAcceleratorReportConfigResponsePayload(
     val configs: List<ExistingAcceleratorReportConfigPayload>
 ) : SuccessResponsePayload
 
+@Schema(description = "Use ListProjectIndicatorsResponsePayload instead", deprecated = true)
 data class ListProjectMetricsResponsePayload(val metrics: List<ExistingProjectMetricPayload>) :
     SuccessResponsePayload
 
+@Schema(description = "Use CreateProjectIndicatorRequestPayload instead", deprecated = true)
 data class CreateProjectMetricRequestPayload(@field:Valid val metric: NewMetricPayload)
 
+@Schema(description = "Use UpdateProjectIndicatorRequestPayload instead", deprecated = true)
 data class UpdateProjectMetricRequestPayload(@field:Valid val metric: ExistingProjectMetricPayload)
+
+data class ListProjectIndicatorsResponsePayload(
+    val indicators: List<ExistingProjectIndicatorPayload>
+) : SuccessResponsePayload
+
+data class CreateProjectIndicatorRequestPayload(@field:Valid val indicator: NewIndicatorPayload)
+
+data class UpdateProjectIndicatorRequestPayload(
+    @field:Valid val indicator: ExistingProjectIndicatorPayload
+)
 
 data class UpdateAcceleratorReportPhotoRequestPayload(val caption: String?)
 
