@@ -82,14 +82,17 @@ class ProjectReportsController(
       summary = "List project accelerator reports.",
       description =
           "By default, reports more than 30 days in the future, or marked as Not Needed will be " +
-              "omitted. Optionally query by year, or include metrics.",
+              "omitted. Optionally query by year, or include indicators.",
   )
   fun listAcceleratorReports(
       @PathVariable projectId: ProjectId,
       @RequestParam year: Int? = null,
       @RequestParam includeArchived: Boolean? = null,
       @RequestParam includeFuture: Boolean? = null,
-      @RequestParam includeMetrics: Boolean? = null,
+      @Schema(description = "Use includeIndicators instead", deprecated = true)
+      @RequestParam
+      includeMetrics: Boolean? = null,
+      @RequestParam includeIndicators: Boolean? = null,
   ): ListAcceleratorReportsResponsePayload {
     val reports =
         reportStore.fetch(
@@ -97,7 +100,7 @@ class ProjectReportsController(
             year = year,
             includeArchived = includeArchived ?: false,
             includeFuture = includeFuture ?: false,
-            includeIndicators = includeMetrics ?: false,
+            includeIndicators = includeIndicators ?: includeMetrics ?: false,
         )
     return ListAcceleratorReportsResponsePayload(reports.map { AcceleratorReportPayload(it) })
   }
@@ -108,12 +111,15 @@ class ProjectReportsController(
   fun getAcceleratorReport(
       @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
-      @RequestParam includeMetrics: Boolean? = null,
+      @Schema(description = "Use includeIndicators instead", deprecated = true)
+      @RequestParam
+      includeMetrics: Boolean? = null,
+      @RequestParam includeIndicators: Boolean? = null,
   ): GetAcceleratorReportResponsePayload {
     val model =
         reportStore.fetchOne(
             reportId = reportId,
-            includeIndicators = includeMetrics ?: false,
+            includeIndicators = includeIndicators ?: includeMetrics ?: false,
         )
     return GetAcceleratorReportResponsePayload(AcceleratorReportPayload(model))
   }
@@ -134,16 +140,48 @@ class ProjectReportsController(
   @ApiResponse400
   @ApiResponse404
   @PostMapping("/{reportId}")
-  @Operation(summary = "Update metric data and qualitative data for a report")
+  @Operation(summary = "Update indicator data and qualitative data for a report")
   fun updateAcceleratorReportValues(
       @PathVariable projectId: ProjectId,
       @PathVariable reportId: ReportId,
       @RequestBody payload: UpdateAcceleratorReportValuesRequestPayload,
   ): SimpleSuccessResponsePayload {
-    val commonIndicatorUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
+    val commonIndicatorUpdates =
+        when {
+          (payload.commonIndicators != null) ->
+              payload.commonIndicators.associate { it.id to it.toModel() }
+          (payload.standardMetrics != null) ->
+              payload.standardMetrics.associate { it.id to it.toModel() }
+          else -> {
+            throw IllegalArgumentException(
+                "Requires either commonIndicators or standardMetrics to be specified"
+            )
+          }
+        }
     val autoCalculatedIndicatorUpdates =
-        payload.systemMetrics.associate { it.metric to it.toModel() }
-    val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
+        when {
+          (payload.autoCalculatedIndicators != null) ->
+              payload.autoCalculatedIndicators.associate { it.indicator to it.toModel() }
+          (payload.systemMetrics != null) ->
+              payload.systemMetrics.associate { it.metric to it.toModel() }
+          else -> {
+            throw IllegalArgumentException(
+                "Requires either autoCalculatedIndicators or systemMetrics to be specified"
+            )
+          }
+        }
+    val projectIndicatorUpdates =
+        when {
+          (payload.projectIndicators != null) ->
+              payload.projectIndicators.associate { it.id to it.toModel() }
+          (payload.projectMetrics != null) ->
+              payload.projectMetrics.associate { it.id to it.toModel() }
+          else -> {
+            throw IllegalArgumentException(
+                "Requires either projectIndicators or projectMetrics to be specified"
+            )
+          }
+        }
 
     reportStore.updateReport(
         reportId = reportId,
@@ -677,7 +715,24 @@ data class ReportStandardMetricPayload(
   )
 }
 
+@Schema(description = "Use ReportCommonIndicatorEntriesPayload instead", deprecated = true)
 data class ReportStandardMetricEntriesPayload(
+    val id: CommonIndicatorId,
+    val progressNotes: String?,
+    val projectsComments: String?,
+    val status: ReportIndicatorStatus?,
+    val value: Int?,
+) {
+  fun toModel() =
+      ReportIndicatorEntryModel(
+          progressNotes = progressNotes,
+          projectsComments = projectsComments,
+          status = status,
+          value = value,
+      )
+}
+
+data class ReportCommonIndicatorEntriesPayload(
     val id: CommonIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
@@ -727,8 +782,25 @@ data class ReportSystemMetricPayload(
   )
 }
 
+@Schema(description = "Use ReportAutoCalculatedIndicatorEntriesPayload instead", deprecated = true)
 data class ReportSystemMetricEntriesPayload(
     val metric: AutoCalculatedIndicator,
+    val overrideValue: Int?,
+    val progressNotes: String?,
+    val projectsComments: String?,
+    val status: ReportIndicatorStatus?,
+) {
+  fun toModel() =
+      ReportIndicatorEntryModel(
+          progressNotes = progressNotes,
+          projectsComments = projectsComments,
+          status = status,
+          value = overrideValue,
+      )
+}
+
+data class ReportAutoCalculatedIndicatorEntriesPayload(
+    val indicator: AutoCalculatedIndicator,
     val overrideValue: Int?,
     val progressNotes: String?,
     val projectsComments: String?,
@@ -789,7 +861,24 @@ data class ReportProjectMetricPayload(
   )
 }
 
+@Schema(description = "Use ReportProjectIndicatorEntriesPayload instead", deprecated = true)
 data class ReportProjectMetricEntriesPayload(
+    val id: ProjectIndicatorId,
+    val progressNotes: String?,
+    val projectsComments: String?,
+    val status: ReportIndicatorStatus?,
+    val value: Int?,
+) {
+  fun toModel() =
+      ReportIndicatorEntryModel(
+          progressNotes = progressNotes,
+          projectsComments = projectsComments,
+          status = status,
+          value = value,
+      )
+}
+
+data class ReportProjectIndicatorEntriesPayload(
     val id: ProjectIndicatorId,
     val progressNotes: String?,
     val projectsComments: String?,
@@ -832,12 +921,18 @@ data class ReviewAcceleratorReportMetricsRequestPayload(
 data class UpdateAcceleratorReportValuesRequestPayload(
     val achievements: List<String>,
     val additionalComments: String?,
+    val autoCalculatedIndicators: List<ReportAutoCalculatedIndicatorEntriesPayload>?,
     val challenges: List<ReportChallengePayload>,
+    val commonIndicators: List<ReportCommonIndicatorEntriesPayload>?,
     val financialSummaries: String?,
     val highlights: String?,
-    val projectMetrics: List<ReportProjectMetricEntriesPayload>,
-    val standardMetrics: List<ReportStandardMetricEntriesPayload>,
-    val systemMetrics: List<ReportSystemMetricEntriesPayload>,
+    val projectIndicators: List<ReportProjectIndicatorEntriesPayload>?,
+    @Schema(description = "Use projectIndicators instead", deprecated = true)
+    val projectMetrics: List<ReportProjectMetricEntriesPayload>?,
+    @Schema(description = "Use commonIndicators instead", deprecated = true)
+    val standardMetrics: List<ReportStandardMetricEntriesPayload>?,
+    @Schema(description = "Use autoCalculatedIndicators instead", deprecated = true)
+    val systemMetrics: List<ReportSystemMetricEntriesPayload>?,
 )
 
 data class UpdateProjectMetricTargetRequestPayload(
