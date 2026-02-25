@@ -391,18 +391,18 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Nested
-    inner class FetchSystemMetrics {
+    inner class FetchAutoCalculatedIndicators {
       @Test
-      fun `returns all system metrics, ordered by reference`() {
-        val sortedSystemMetrics =
-            AutoCalculatedIndicator.entries.sortedWith { metric1, metric2 ->
-              val metric1Parts = metric1.refId.split(".").map { it.toInt() }
-              val metric2Parts = metric2.refId.split(".").map { it.toInt() }
+      fun `returns all auto calculated indicators, ordered by reference`() {
+        val sortedAutoCalculatedIndicators =
+            AutoCalculatedIndicator.entries.sortedWith { indicator1, indicator2 ->
+              val indicator1Parts = indicator1.refId.split(".").map { it.toInt() }
+              val indicator2Parts = indicator2.refId.split(".").map { it.toInt() }
 
-              val size = maxOf(metric1Parts.size, metric2Parts.size)
+              val size = maxOf(indicator1Parts.size, indicator2Parts.size)
               for (i in 0 until size) {
-                val part1 = metric1Parts.getOrElse(i) { 0 }
-                val part2 = metric2Parts.getOrElse(i) { 0 }
+                val part1 = indicator1Parts.getOrElse(i) { 0 }
+                val part2 = indicator2Parts.getOrElse(i) { 0 }
                 if (part1 != part2) {
                   return@sortedWith part1.compareTo(part2)
                 }
@@ -410,16 +410,16 @@ class ReportMetricStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               return@sortedWith 0
             }
 
-        assertEquals(sortedSystemMetrics, store.fetchSystemMetrics())
+        assertEquals(sortedAutoCalculatedIndicators, store.fetchAutoCalculatedIndicators())
       }
 
       @Test
       fun `throws access denied exception for non-global role users`() {
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        assertThrows<AccessDeniedException> { store.fetchSystemMetrics() }
+        assertThrows<AccessDeniedException> { store.fetchAutoCalculatedIndicators() }
 
         insertUserGlobalRole(role = GlobalRole.ReadOnly)
-        assertDoesNotThrow { store.fetchSystemMetrics() }
+        assertDoesNotThrow { store.fetchAutoCalculatedIndicators() }
       }
     }
   }

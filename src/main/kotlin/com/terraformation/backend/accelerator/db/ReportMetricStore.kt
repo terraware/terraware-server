@@ -154,7 +154,7 @@ class ReportMetricStore(
         .fetch { ProjectIndicatorModel.of(it) }
   }
 
-  fun fetchSystemMetrics(): List<AutoCalculatedIndicator> {
+  fun fetchAutoCalculatedIndicators(): List<AutoCalculatedIndicator> {
     requirePermissions { readProjectReportConfigs() }
 
     return with(AUTO_CALCULATED_INDICATORS) {

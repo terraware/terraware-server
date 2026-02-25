@@ -30,5 +30,5 @@ data class PublishedReportModel(
     val reportId: ReportId,
     val commonIndicators: List<PublishedReportMetricModel<CommonIndicatorId>>,
     val startDate: LocalDate,
-    val systemMetrics: List<PublishedReportMetricModel<AutoCalculatedIndicator>>,
+    val autoCalculatedIndicators: List<PublishedReportMetricModel<AutoCalculatedIndicator>>,
 )

@@ -59,29 +59,41 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       insertProjectReportConfig()
       insertReport()
       insertPublishedReport()
-      insertPublishedReportSystemMetric(
-          metric = AutoCalculatedIndicator.HectaresPlanted,
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
           value = 100,
       )
-      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.TreesPlanted, value = 10)
-      insertPublishedReportSystemMetric(
-          metric = AutoCalculatedIndicator.SeedsCollected,
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          value = 10,
+      )
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
           value = 1000,
       )
-      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.SpeciesPlanted, value = 1)
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SpeciesPlanted,
+          value = 1,
+      )
 
       insertReport()
       insertPublishedReport()
-      insertPublishedReportSystemMetric(
-          metric = AutoCalculatedIndicator.HectaresPlanted,
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
           value = 200,
       )
-      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.TreesPlanted, value = 20)
-      insertPublishedReportSystemMetric(
-          metric = AutoCalculatedIndicator.SeedsCollected,
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          value = 20,
+      )
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
           value = 2000,
       )
-      insertPublishedReportSystemMetric(metric = AutoCalculatedIndicator.SpeciesPlanted, value = 2)
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SpeciesPlanted,
+          value = 2,
+      )
 
       // To ensure that the fetchOne works as expected when there are multiple rows
       insertProject()

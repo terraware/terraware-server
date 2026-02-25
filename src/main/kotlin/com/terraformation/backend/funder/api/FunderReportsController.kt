@@ -150,7 +150,7 @@ data class PublishedReportPayload(
       reportId = model.reportId,
       standardMetrics = model.commonIndicators.map { PublishedReportMetricPayload(it) },
       startDate = model.startDate,
-      systemMetrics = model.systemMetrics.map { PublishedReportMetricPayload(it) },
+      systemMetrics = model.autoCalculatedIndicators.map { PublishedReportMetricPayload(it) },
   )
 }
 

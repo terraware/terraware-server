@@ -5,6 +5,8 @@ import com.terraformation.backend.accelerator.db.ReportMetricStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorModel
+import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportCommonIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportCommonIndicatorTargetModel
@@ -13,8 +15,6 @@ import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
-import com.terraformation.backend.accelerator.model.ReportSystemMetricModel
-import com.terraformation.backend.accelerator.model.ReportSystemMetricTargetModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
@@ -141,7 +141,8 @@ class ProjectReportsController(
       @RequestBody payload: UpdateAcceleratorReportValuesRequestPayload,
   ): SimpleSuccessResponsePayload {
     val commonIndicatorUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
-    val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
+    val autoCalculatedIndicatorUpdates =
+        payload.systemMetrics.associate { it.metric to it.toModel() }
     val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.updateReport(
@@ -152,7 +153,7 @@ class ProjectReportsController(
         financialSummaries = payload.financialSummaries,
         additionalComments = payload.additionalComments,
         commonIndicatorEntries = commonIndicatorUpdates,
-        systemMetricEntries = systemMetricUpdates,
+        autoCalculatedIndicatorEntries = autoCalculatedIndicatorUpdates,
         projectIndicatorEntries = projectIndicatorUpdates,
     )
 
@@ -169,7 +170,7 @@ class ProjectReportsController(
       @PathVariable reportId: ReportId,
       @RequestParam metrics: List<AutoCalculatedIndicator>,
   ): SimpleSuccessResponsePayload {
-    reportStore.refreshSystemMetricValues(reportId, metrics)
+    reportStore.refreshAutoCalculatedIndicatorValues(reportId, metrics)
 
     return SimpleSuccessResponsePayload()
   }
@@ -210,13 +211,14 @@ class ProjectReportsController(
       @RequestBody payload: ReviewAcceleratorReportMetricsRequestPayload,
   ): SimpleSuccessResponsePayload {
     val commonIndicatorUpdates = payload.standardMetrics.associate { it.id to it.toModel() }
-    val systemMetricUpdates = payload.systemMetrics.associate { it.metric to it.toModel() }
+    val autoCalculatedIndicatorUpdates =
+        payload.systemMetrics.associate { it.metric to it.toModel() }
     val projectIndicatorUpdates = payload.projectMetrics.associate { it.id to it.toModel() }
 
     reportStore.reviewReportMetrics(
         reportId = reportId,
         commonIndicatorEntries = commonIndicatorUpdates,
-        systemMetricEntries = systemMetricUpdates,
+        autoCalculatedIndicatorEntries = autoCalculatedIndicatorUpdates,
         projectIndicatorEntries = projectIndicatorUpdates,
     )
 
@@ -476,10 +478,10 @@ class ProjectReportsController(
       @PathVariable projectId: ProjectId,
       @RequestBody payload: UpdateSystemMetricTargetRequestPayload,
   ): SimpleSuccessResponsePayload {
-    reportStore.updateSystemMetricTarget(
+    reportStore.updateAutoCalculatedIndicatorTarget(
         projectId = projectId,
         year = payload.year,
-        metricId = payload.metric,
+        indicatorId = payload.metric,
         target = payload.target,
     )
     return SimpleSuccessResponsePayload()
@@ -515,7 +517,7 @@ class ProjectReportsController(
   fun getSystemMetricTargets(
       @PathVariable projectId: ProjectId
   ): GetSystemMetricTargetsResponsePayload {
-    val targets = reportStore.fetchReportSystemMetricTargets(projectId)
+    val targets = reportStore.fetchReportAutoCalculatedIndicatorTargets(projectId)
     return GetSystemMetricTargetsResponsePayload(
         targets.map { ReportSystemMetricTargetPayload(it) }
     )
@@ -618,7 +620,7 @@ data class AcceleratorReportPayload(
       submittedBy = model.submittedBy,
       submittedByUser = model.submittedByUser?.let { SimpleUserPayload(it) },
       submittedTime = model.submittedTime,
-      systemMetrics = model.systemMetrics.map { ReportSystemMetricPayload(it) },
+      systemMetrics = model.autoCalculatedIndicators.map { ReportSystemMetricPayload(it) },
   )
 }
 
@@ -707,21 +709,21 @@ data class ReportSystemMetricPayload(
     val type: IndicatorLevel,
 ) {
   constructor(
-      model: ReportSystemMetricModel
+      model: ReportAutoCalculatedIndicatorModel
   ) : this(
-      component = model.metric.categoryId,
-      description = model.metric.description,
-      isPublishable = model.metric.isPublishable,
-      metric = model.metric,
+      component = model.indicator.categoryId,
+      description = model.indicator.description,
+      isPublishable = model.indicator.isPublishable,
+      metric = model.indicator,
       overrideValue = model.entry.overrideValue,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
-      reference = model.metric.refId,
+      reference = model.indicator.refId,
       status = model.entry.status,
       systemTime = model.entry.systemTime,
       systemValue = model.entry.systemValue,
       target = model.entry.target,
-      type = model.metric.levelId,
+      type = model.indicator.levelId,
   )
 }
 
@@ -914,9 +916,9 @@ data class ReportSystemMetricTargetPayload(
     val year: Number,
 ) {
   constructor(
-      model: ReportSystemMetricTargetModel
+      model: ReportAutoCalculatedIndicatorTargetModel
   ) : this(
-      metric = model.metric,
+      metric = model.indicator,
       target = model.target,
       year = model.year,
   )

@@ -84,7 +84,7 @@ data class ReportModel(
     val submittedBy: UserId? = null,
     val submittedByUser: SimpleUserModel? = null,
     val submittedTime: Instant? = null,
-    val systemMetrics: List<ReportSystemMetricModel> = emptyList(),
+    val autoCalculatedIndicators: List<ReportAutoCalculatedIndicatorModel> = emptyList(),
 ) {
 
   /** Describes the reporting period of this report. For example "2025 Q1" or "2025 Annual" */
@@ -149,7 +149,7 @@ data class ReportModel(
         photosField: Field<List<ReportPhotoModel>>?,
         projectIndicatorsField: Field<List<ReportProjectIndicatorModel>>?,
         commonIndicatorsField: Field<List<ReportCommonIndicatorModel>>?,
-        systemMetricsField: Field<List<ReportSystemMetricModel>>?,
+        autoCalculatedIndicatorsField: Field<List<ReportAutoCalculatedIndicatorModel>>?,
         achievementsField: Field<List<String>>?,
         challengesField: Field<List<ReportChallengeModel>>?,
         usersField: Field<Map<UserId, SimpleUserModel>>,
@@ -193,7 +193,8 @@ data class ReportModel(
             photos = photosField?.let { record[it] } ?: emptyList(),
             projectIndicators = projectIndicatorsField?.let { record[it] } ?: emptyList(),
             commonIndicators = commonIndicatorsField?.let { record[it] } ?: emptyList(),
-            systemMetrics = systemMetricsField?.let { record[it] } ?: emptyList(),
+            autoCalculatedIndicators =
+                autoCalculatedIndicatorsField?.let { record[it] } ?: emptyList(),
         )
       }
     }
