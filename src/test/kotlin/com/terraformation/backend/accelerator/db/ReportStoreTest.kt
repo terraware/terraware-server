@@ -271,7 +271,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `includes metrics`() {
+    fun `includes indicators`() {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
 
@@ -334,8 +334,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId2 =
           insertCommonIndicator(
               component = IndicatorCategory.Community,
-              description = "Community metric description",
-              name = "Community Metric",
+              description = "Community indicator description",
+              name = "Community Indicator",
               reference = "10.0",
               type = IndicatorLevel.Outcome,
           )
@@ -343,8 +343,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId3 =
           insertCommonIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project objectives metric description",
-              name = "Project Objectives Metric",
+              description = "Project objectives indicator description",
+              name = "Project Objectives Indicator",
               reference = "2.0",
               type = IndicatorLevel.Impact,
           )
@@ -378,9 +378,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       CommonIndicatorModel(
                           id = commonIndicatorId3,
                           component = IndicatorCategory.ProjectObjectives,
-                          description = "Project objectives metric description",
+                          description = "Project objectives indicator description",
                           isPublishable = true,
-                          name = "Project Objectives Metric",
+                          name = "Project Objectives Indicator",
                           reference = "2.0",
                           type = IndicatorLevel.Impact,
                       ),
@@ -413,9 +413,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       CommonIndicatorModel(
                           id = commonIndicatorId2,
                           component = IndicatorCategory.Community,
-                          description = "Community metric description",
+                          description = "Community indicator description",
                           isPublishable = true,
-                          name = "Community Metric",
+                          name = "Community Indicator",
                           reference = "10.0",
                           type = IndicatorLevel.Outcome,
                       ),
@@ -549,7 +549,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               autoCalculatedIndicators = autoCalculatedIndicators,
           )
 
-      assertEquals(listOf(reportModel), store.fetch(includeMetrics = true))
+      assertEquals(listOf(reportModel), store.fetch(includeIndicators = true))
     }
 
     @Test
@@ -614,7 +614,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
               ),
           ),
-          store.fetch(includeFuture = true, includeMetrics = true).first().autoCalculatedIndicators,
+          store
+              .fetch(includeFuture = true, includeIndicators = true)
+              .first()
+              .autoCalculatedIndicators,
           "All indicators",
       )
 
@@ -624,7 +627,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       val autoCalculatedIndicators =
-          store.fetch(includeFuture = true, includeMetrics = true).first().autoCalculatedIndicators
+          store
+              .fetch(includeFuture = true, includeIndicators = true)
+              .first()
+              .autoCalculatedIndicators
 
       assertEquals(
           ReportAutoCalculatedIndicatorModel(
@@ -637,7 +643,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   ),
           ),
           autoCalculatedIndicators.find { it.indicator == AutoCalculatedIndicator.SurvivalRate },
-          "Should include temp plots in survival rate metric",
+          "Should include temp plots in survival rate indicator",
       )
     }
 
@@ -656,7 +662,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertDataForSurvivalRates(startDate, endDate)
 
       val autoCalculatedIndicators =
-          store.fetch(includeFuture = true, includeMetrics = true).first().autoCalculatedIndicators
+          store
+              .fetch(includeFuture = true, includeIndicators = true)
+              .first()
+              .autoCalculatedIndicators
 
       assertEquals(
           ReportAutoCalculatedIndicatorModel(
@@ -675,7 +684,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext.update(this).set(SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, true).execute()
       }
       val autoCalculatedIndicatorsWithTemp =
-          store.fetch(includeFuture = true, includeMetrics = true).first().autoCalculatedIndicators
+          store
+              .fetch(includeFuture = true, includeIndicators = true)
+              .first()
+              .autoCalculatedIndicators
 
       assertEquals(
           ReportAutoCalculatedIndicatorModel(
@@ -1002,7 +1014,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `returns report, with metrics optionally`() {
+    fun `returns report, with indicators optionally`() {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted)
 
@@ -1064,9 +1076,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId2 =
           insertCommonIndicator(
               component = IndicatorCategory.Community,
-              description = "Community metric description",
+              description = "Community indicator description",
               isPublishable = false,
-              name = "Community Metric",
+              name = "Community Indicator",
               reference = "10.0",
               type = IndicatorLevel.Outcome,
           )
@@ -1074,8 +1086,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId3 =
           insertCommonIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project objectives metric description",
-              name = "Project Objectives Metric",
+              description = "Project objectives indicator description",
+              name = "Project Objectives Indicator",
               reference = "2.0",
               type = IndicatorLevel.Impact,
           )
@@ -1108,9 +1120,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       CommonIndicatorModel(
                           id = commonIndicatorId3,
                           component = IndicatorCategory.ProjectObjectives,
-                          description = "Project objectives metric description",
+                          description = "Project objectives indicator description",
                           isPublishable = true,
-                          name = "Project Objectives Metric",
+                          name = "Project Objectives Indicator",
                           reference = "2.0",
                           type = IndicatorLevel.Impact,
                       ),
@@ -1143,9 +1155,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       CommonIndicatorModel(
                           id = commonIndicatorId2,
                           component = IndicatorCategory.Community,
-                          description = "Community metric description",
+                          description = "Community indicator description",
                           isPublishable = false,
-                          name = "Community Metric",
+                          name = "Community Indicator",
                           reference = "10.0",
                           type = IndicatorLevel.Outcome,
                       ),
@@ -1296,8 +1308,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           reportModel,
-          store.fetchOne(reportId, includeMetrics = true),
-          "Fetch one with metrics",
+          store.fetchOne(reportId, includeIndicators = true),
+          "Fetch one with indicators",
       )
 
       assertEquals(
@@ -1306,8 +1318,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               commonIndicators = emptyList(),
               autoCalculatedIndicators = emptyList(),
           ),
-          store.fetchOne(reportId, includeMetrics = false),
-          "Fetch one without metrics",
+          store.fetchOne(reportId, includeIndicators = false),
+          "Fetch one without indicators",
       )
     }
   }
@@ -1553,7 +1565,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class ReviewReportMetrics {
+  inner class ReviewReportIndicators {
     @Test
     fun `throws exception for non-TFExpert users`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
@@ -1563,19 +1575,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val reportId = insertReport(status = ReportStatus.Submitted)
 
       assertThrows<AccessDeniedException>(message = "Read-only Global Role") {
-        store.reviewReportMetrics(reportId = reportId)
+        store.reviewReportIndicators(reportId = reportId)
       }
 
       deleteUserGlobalRole(role = GlobalRole.ReadOnly)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
 
       assertDoesNotThrow(message = "TF-Expert Global Role") {
-        store.reviewReportMetrics(reportId = reportId)
+        store.reviewReportIndicators(reportId = reportId)
       }
     }
 
     @Test
-    fun `upserts values and internalComment for existing and non-existing report metric rows`() {
+    fun `upserts values and internalComment for existing and non-existing report indicator rows`() {
       val otherUserId = insertUser()
 
       val commonIndicatorId1 =
@@ -1590,8 +1602,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId2 =
           insertCommonIndicator(
               component = IndicatorCategory.Community,
-              description = "Community metric description",
-              name = "Community Metric",
+              description = "Community indicator description",
+              name = "Community Indicator",
               reference = "10.0",
               type = IndicatorLevel.Outcome,
           )
@@ -1599,8 +1611,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId3 =
           insertCommonIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project objectives metric description",
-              name = "Project Objectives Metric",
+              description = "Project objectives indicator description",
+              name = "Project Objectives Indicator",
               reference = "2.0",
               type = IndicatorLevel.Impact,
           )
@@ -1608,8 +1620,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // This has no entry and will not have any updates
       insertCommonIndicator(
           component = IndicatorCategory.Biodiversity,
-          description = "Biodiversity metric description",
-          name = "Biodiversity Metric",
+          description = "Biodiversity indicator description",
+          name = "Biodiversity Indicator",
           reference = "7.0",
           type = IndicatorLevel.Impact,
       )
@@ -1638,7 +1650,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           indicatorId = commonIndicatorId1,
           value = 45,
-          projectsComments = "Existing metric 1 notes",
+          projectsComments = "Existing indicator 1 notes",
           status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
@@ -1649,8 +1661,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           indicatorId = commonIndicatorId2,
           value = null,
-          projectsComments = "Existing metric 2 notes",
-          progressNotes = "Existing metric 2 internal comment",
+          projectsComments = "Existing indicator 2 notes",
+          progressNotes = "Existing indicator 2 internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -1665,8 +1677,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicator = AutoCalculatedIndicator.SeedsCollected,
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
-          projectsComments = "Existing seeds collected metric notes",
-          progressNotes = "Existing seeds collected metric internal comment",
+          projectsComments = "Existing seeds collected indicator notes",
+          progressNotes = "Existing seeds collected indicator internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -1682,26 +1694,26 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
-          projectsComments = "Existing species planted metric notes",
-          progressNotes = "Existing species planted metric internal comment",
+          projectsComments = "Existing species planted indicator notes",
+          progressNotes = "Existing species planted indicator internal comment",
           status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
       )
 
-      // At this point, the report has entries for metric 1 and 2, no entry for metric 3 and 4
+      // At this point, the report has entries for indicator 1 and 2, no entry for indicator 3 and 4
       clock.instant = Instant.ofEpochSecond(9000)
 
-      // We add new entries for metric 2 and 3. Metric 1 and 4 are not modified
-      store.reviewReportMetrics(
+      // We add new entries for indicator 2 and 3. Indicator 1 and 4 are not modified
+      store.reviewReportIndicators(
           reportId = reportId,
           commonIndicatorEntries =
               mapOf(
                   commonIndicatorId2 to
                       ReportIndicatorEntryModel(
                           value = 88,
-                          projectsComments = "New metric 2 notes",
-                          progressNotes = "New metric 2 internal comment",
+                          projectsComments = "New indicator 2 notes",
+                          progressNotes = "New indicator 2 internal comment",
                           status = ReportIndicatorStatus.OnTrack,
 
                           // These fields are ignored
@@ -1711,8 +1723,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   commonIndicatorId3 to
                       ReportIndicatorEntryModel(
                           value = 45,
-                          projectsComments = "New metric 3 notes",
-                          progressNotes = "New metric 3 internal comment",
+                          projectsComments = "New indicator 3 notes",
+                          progressNotes = "New indicator 3 internal comment",
                       ),
               ),
           autoCalculatedIndicatorEntries =
@@ -1721,15 +1733,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportIndicatorEntryModel(
                           value = 4,
                           status = null,
-                          projectsComments = "New species planted metric notes",
-                          progressNotes = "New species planted metric internal comment",
+                          projectsComments = "New species planted indicator notes",
+                          progressNotes = "New species planted indicator internal comment",
                       ),
                   AutoCalculatedIndicator.TreesPlanted to
                       ReportIndicatorEntryModel(
                           value = 45,
                           status = ReportIndicatorStatus.Unlikely,
-                          projectsComments = "New trees planted metric notes",
-                          progressNotes = "New trees planted metric internal comment",
+                          projectsComments = "New trees planted indicator notes",
+                          progressNotes = "New trees planted indicator internal comment",
                       ),
               ),
           projectIndicatorEntries =
@@ -1750,7 +1762,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   commonIndicatorId = commonIndicatorId1,
                   value = 45,
                   statusId = ReportIndicatorStatus.OnTrack,
-                  projectsComments = "Existing metric 1 notes",
+                  projectsComments = "Existing indicator 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
               ),
@@ -1759,8 +1771,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   commonIndicatorId = commonIndicatorId2,
                   value = 88,
                   statusId = ReportIndicatorStatus.OnTrack,
-                  projectsComments = "New metric 2 notes",
-                  progressNotes = "New metric 2 internal comment",
+                  projectsComments = "New indicator 2 notes",
+                  progressNotes = "New indicator 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -1768,8 +1780,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId3,
                   value = 45,
-                  projectsComments = "New metric 3 notes",
-                  progressNotes = "New metric 3 internal comment",
+                  projectsComments = "New indicator 3 notes",
+                  progressNotes = "New indicator 3 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -1785,8 +1797,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
-                  projectsComments = "Existing seeds collected metric notes",
-                  progressNotes = "Existing seeds collected metric internal comment",
+                  projectsComments = "Existing seeds collected indicator notes",
+                  progressNotes = "Existing seeds collected indicator internal comment",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
               ),
@@ -1797,8 +1809,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemTime = Instant.ofEpochSecond(5000),
                   overrideValue = 4,
                   statusId = null,
-                  projectsComments = "New species planted metric notes",
-                  progressNotes = "New species planted metric internal comment",
+                  projectsComments = "New species planted indicator notes",
+                  progressNotes = "New species planted indicator internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -1807,8 +1819,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   overrideValue = 45,
                   statusId = ReportIndicatorStatus.Unlikely,
-                  projectsComments = "New trees planted metric notes",
-                  progressNotes = "New trees planted metric internal comment",
+                  projectsComments = "New trees planted indicator notes",
+                  progressNotes = "New trees planted indicator internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2055,7 +2067,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `upserts values and targets for existing and non-existing report metric rows`() {
+    fun `upserts values and targets for existing and non-existing report indicator rows`() {
       val otherUserId = insertUser()
       val commonIndicatorId1 =
           insertCommonIndicator(
@@ -2069,8 +2081,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId2 =
           insertCommonIndicator(
               component = IndicatorCategory.Community,
-              description = "Community metric description",
-              name = "Community Metric",
+              description = "Community indicator description",
+              name = "Community Indicator",
               reference = "10.0",
               type = IndicatorLevel.Outcome,
           )
@@ -2078,8 +2090,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId3 =
           insertCommonIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Project objectives metric description",
-              name = "Project Objectives Metric",
+              description = "Project objectives indicator description",
+              name = "Project Objectives Indicator",
               reference = "2.0",
               type = IndicatorLevel.Impact,
           )
@@ -2087,8 +2099,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // This has no entry and will not have any updates
       insertCommonIndicator(
           component = IndicatorCategory.Biodiversity,
-          description = "Biodiversity metric description",
-          name = "Biodiversity Metric",
+          description = "Biodiversity indicator description",
+          name = "Biodiversity Indicator",
           reference = "7.0",
           type = IndicatorLevel.Impact,
       )
@@ -2110,7 +2122,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           indicatorId = commonIndicatorId1,
           value = 45,
-          projectsComments = "Existing metric 1 notes",
+          projectsComments = "Existing indicator 1 notes",
           status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
@@ -2121,8 +2133,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           indicatorId = commonIndicatorId2,
           value = null,
-          projectsComments = "Existing metric 2 notes",
-          progressNotes = "Existing metric 2 internal comment",
+          projectsComments = "Existing indicator 2 notes",
+          progressNotes = "Existing indicator 2 internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -2137,8 +2149,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicator = AutoCalculatedIndicator.SeedsCollected,
           systemValue = 1200,
           systemTime = Instant.ofEpochSecond(4000),
-          projectsComments = "Existing seeds collected metric notes",
-          progressNotes = "Existing seeds collected metric internal comment",
+          projectsComments = "Existing seeds collected indicator notes",
+          progressNotes = "Existing seeds collected indicator internal comment",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
@@ -2154,8 +2166,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overrideValue = 15,
           systemValue = 12,
           systemTime = Instant.ofEpochSecond(5000),
-          projectsComments = "Existing species planted metric notes",
-          progressNotes = "Existing species planted metric internal comment",
+          projectsComments = "Existing species planted indicator notes",
+          progressNotes = "Existing species planted indicator internal comment",
           status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(5000),
           modifiedBy = user.userId,
@@ -2178,7 +2190,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   commonIndicatorId2 to
                       ReportIndicatorEntryModel(
                           value = 88,
-                          projectsComments = "New metric 2 notes",
+                          projectsComments = "New indicator 2 notes",
                           status = ReportIndicatorStatus.OnTrack,
 
                           // These fields are ignored
@@ -2189,30 +2201,30 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   commonIndicatorId3 to
                       ReportIndicatorEntryModel(
                           value = null,
-                          projectsComments = "New metric 3 notes",
+                          projectsComments = "New indicator 3 notes",
                       ),
               ),
           autoCalculatedIndicatorEntries =
               mapOf(
                   AutoCalculatedIndicator.SpeciesPlanted to
                       ReportIndicatorEntryModel(
-                          projectsComments = "New species planted metric notes",
+                          projectsComments = "New species planted indicator notes",
                           status = null,
 
                           // These fields are ignored
                           value = 4,
-                          progressNotes = "New species planted metric internal comment",
+                          progressNotes = "New species planted indicator internal comment",
                           modifiedTime = Instant.EPOCH,
                           modifiedBy = UserId(99),
                       ),
                   AutoCalculatedIndicator.TreesPlanted to
                       ReportIndicatorEntryModel(
-                          projectsComments = "New trees planted metric notes",
+                          projectsComments = "New trees planted indicator notes",
                           status = ReportIndicatorStatus.Unlikely,
 
                           // These fields are ignored
                           value = 45,
-                          progressNotes = "New trees planted metric internal comment",
+                          progressNotes = "New trees planted indicator internal comment",
                           modifiedTime = Instant.EPOCH,
                           modifiedBy = UserId(99),
                       ),
@@ -2234,7 +2246,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   commonIndicatorId = commonIndicatorId1,
                   value = 45,
                   statusId = ReportIndicatorStatus.OnTrack,
-                  projectsComments = "Existing metric 1 notes",
+                  projectsComments = "Existing indicator 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = otherUserId,
               ),
@@ -2243,15 +2255,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   commonIndicatorId = commonIndicatorId2,
                   value = 88,
                   statusId = ReportIndicatorStatus.OnTrack,
-                  projectsComments = "New metric 2 notes",
-                  progressNotes = "Existing metric 2 internal comment",
+                  projectsComments = "New indicator 2 notes",
+                  progressNotes = "Existing indicator 2 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId3,
-                  projectsComments = "New metric 3 notes",
+                  projectsComments = "New indicator 3 notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2267,8 +2279,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
                   systemValue = 1200,
                   systemTime = Instant.ofEpochSecond(4000),
-                  projectsComments = "Existing seeds collected metric notes",
-                  progressNotes = "Existing seeds collected metric internal comment",
+                  projectsComments = "Existing seeds collected indicator notes",
+                  progressNotes = "Existing seeds collected indicator internal comment",
                   modifiedTime = Instant.ofEpochSecond(3000),
                   modifiedBy = user.userId,
               ),
@@ -2279,8 +2291,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   systemTime = Instant.ofEpochSecond(5000),
                   statusId = null,
                   overrideValue = 15,
-                  projectsComments = "New species planted metric notes",
-                  progressNotes = "Existing species planted metric internal comment",
+                  projectsComments = "New species planted indicator notes",
+                  progressNotes = "Existing species planted indicator internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -2288,7 +2300,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   statusId = ReportIndicatorStatus.Unlikely,
-                  projectsComments = "New trees planted metric notes",
+                  projectsComments = "New trees planted indicator notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
               ),
@@ -3964,7 +3976,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           "Published project indicator targets table",
       )
 
-      // Assert published metric targets for the report year (2030)
+      // Assert published indicator targets for the report year (2030)
       assertTableEquals(
           listOf(
               PublishedCommonIndicatorTargetsRecord(
@@ -4205,7 +4217,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         readyQuantityWithdrawn = 6,
     )
 
-    // This will count towards the seedlings metric, but not the trees planted metric.
+    // This will count towards the seedlings indicator, but not the trees planted indicator.
     // This includes two species, but does not count towards species planted.
     val futureWithdrawalId =
         insertNurseryWithdrawal(
@@ -5203,8 +5215,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId =
           insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Test metric",
-              name = "Test Metric",
+              description = "Test indicator",
+              name = "Test Indicator",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
@@ -5229,8 +5241,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId =
           insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Test metric",
-              name = "Test Metric",
+              description = "Test indicator",
+              name = "Test Indicator",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
@@ -5259,8 +5271,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId =
           insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Test metric",
-              name = "Test Metric",
+              description = "Test indicator",
+              name = "Test Indicator",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
@@ -5286,8 +5298,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId =
           insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Test metric",
-              name = "Test Metric",
+              description = "Test indicator",
+              name = "Test Indicator",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
@@ -5310,8 +5322,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId =
           insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Test metric",
-              name = "Test Metric",
+              description = "Test indicator",
+              name = "Test Indicator",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
@@ -5336,8 +5348,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId =
           insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Test metric",
-              name = "Test Metric",
+              description = "Test indicator",
+              name = "Test Indicator",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
@@ -5366,8 +5378,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId =
           insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Test metric",
-              name = "Test Metric",
+              description = "Test indicator",
+              name = "Test Indicator",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
@@ -5393,8 +5405,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId =
           insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Test metric",
-              name = "Test Metric",
+              description = "Test indicator",
+              name = "Test Indicator",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
@@ -5497,16 +5509,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId1 =
           insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Test metric 1",
-              name = "Test Metric 1",
+              description = "Test indicator 1",
+              name = "Test Indicator 1",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
       val projectIndicatorId2 =
           insertProjectIndicator(
               component = IndicatorCategory.ProjectObjectives,
-              description = "Test metric 2",
-              name = "Test Metric 2",
+              description = "Test indicator 2",
+              name = "Test Indicator 2",
               reference = "2.0",
               type = IndicatorLevel.Activity,
           )
@@ -5559,16 +5571,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId1 =
           insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Test metric 1",
-              name = "Test Metric 1",
+              description = "Test indicator 1",
+              name = "Test Indicator 1",
               reference = "1.0",
               type = IndicatorLevel.Activity,
           )
       val commonIndicatorId2 =
           insertCommonIndicator(
               component = IndicatorCategory.Climate,
-              description = "Test metric 2",
-              name = "Test Metric 2",
+              description = "Test indicator 2",
+              name = "Test Indicator 2",
               reference = "2.0",
               type = IndicatorLevel.Activity,
           )

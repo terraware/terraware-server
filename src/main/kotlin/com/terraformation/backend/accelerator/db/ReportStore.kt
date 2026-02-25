@@ -97,7 +97,7 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
 
-/** Store class intended for accelerator-admin to configure reports and metrics. */
+/** Store class intended for accelerator-admin to configure reports and indicators. */
 @Named
 class ReportStore(
     private val clock: InstantSource,
@@ -114,7 +114,7 @@ class ReportStore(
       year: Int? = null,
       includeArchived: Boolean = false,
       includeFuture: Boolean = false,
-      includeMetrics: Boolean = false,
+      includeIndicators: Boolean = false,
   ): List<ReportModel> {
     val today = LocalDate.ofInstant(clock.instant(), ZoneId.systemDefault())
 
@@ -143,17 +143,20 @@ class ReportStore(
                     archivedCondition,
                 )
             ),
-        includeMetrics = includeMetrics,
+        includeIndicators = includeIndicators,
     )
   }
 
   fun fetchOne(
       reportId: ReportId,
-      includeMetrics: Boolean = false,
+      includeIndicators: Boolean = false,
   ): ReportModel {
     requirePermissions { readReport(reportId) }
 
-    return fetchByCondition(condition = REPORTS.ID.eq(reportId), includeMetrics = includeMetrics)
+    return fetchByCondition(
+            condition = REPORTS.ID.eq(reportId),
+            includeIndicators = includeIndicators,
+        )
         .firstOrNull() ?: throw ReportNotFoundException(reportId)
   }
 
@@ -380,7 +383,7 @@ class ReportStore(
     }
   }
 
-  fun reviewReportMetrics(
+  fun reviewReportIndicators(
       reportId: ReportId,
       commonIndicatorEntries: Map<CommonIndicatorId, ReportIndicatorEntryModel> = emptyMap(),
       autoCalculatedIndicatorEntries: Map<AutoCalculatedIndicator, ReportIndicatorEntryModel> =
@@ -411,7 +414,7 @@ class ReportStore(
     requirePermissions { updateReport(reportId) }
 
     val report =
-        fetchByCondition(REPORTS.ID.eq(reportId), includeMetrics = true).firstOrNull()
+        fetchByCondition(REPORTS.ID.eq(reportId), includeIndicators = true).firstOrNull()
             ?: throw ReportNotFoundException(reportId)
 
     report.validateForSubmission()
@@ -558,23 +561,23 @@ class ReportStore(
               .filter { it.indicator.isPublishable && it.entry.value != null }
               .associate { it.indicator.id to it.entry }
 
-      publishReportMetrics(
+      publishReportIndicators(
           reportId,
           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
           publishableAutoCalculatedIndicators,
       )
-      publishReportMetrics(
+      publishReportIndicators(
           reportId,
           PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           publishableCommonIndicator,
       )
-      publishReportMetrics(
+      publishReportIndicators(
           reportId,
           PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
           publishableProjectIndicators,
       )
 
-      // Publish metric targets for the report year
+      // Publish indicator targets for the report year
       val reportYear = report.endDate.year
 
       val autoCalculatedIndicatorTargets =
@@ -590,19 +593,19 @@ class ReportStore(
               .filter { (indicator) -> indicator.isPublishable }
               .associate { (indicator, entry) -> indicator.id to entry.target }
 
-      publishReportMetricTargets(
+      publishReportIndicatorTargets(
           report.projectId,
           reportYear,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
           autoCalculatedIndicatorTargets,
       )
-      publishReportMetricTargets(
+      publishReportIndicatorTargets(
           report.projectId,
           reportYear,
           PUBLISHED_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
           commonIndicatorTargets,
       )
-      publishReportMetricTargets(
+      publishReportIndicatorTargets(
           report.projectId,
           reportYear,
           PUBLISHED_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
@@ -907,24 +910,24 @@ class ReportStore(
 
   private fun fetchByCondition(
       condition: Condition,
-      includeMetrics: Boolean = false,
+      includeIndicators: Boolean = false,
   ): List<ReportModel> {
     val projectIndicatorsField =
-        if (includeMetrics) {
+        if (includeIndicators) {
           projectIndicatorsMultiset
         } else {
           null
         }
 
     val commonIndicatorsField =
-        if (includeMetrics) {
+        if (includeIndicators) {
           commonIndicatorsMultiset
         } else {
           null
         }
 
     val autoCalculatedIndicatorsField =
-        if (includeMetrics) {
+        if (includeIndicators) {
           autoCalculatedIndicatorsMultiset
         } else {
           null
@@ -965,7 +968,7 @@ class ReportStore(
             .filter { currentUser().canReadReport(it.id) }
 
     // Post-process survival rate indicators
-    if (includeMetrics) {
+    if (includeIndicators) {
       return reports.map { report ->
         val survivalRateIndicator =
             report.autoCalculatedIndicators.find {
@@ -1110,9 +1113,9 @@ class ReportStore(
     }
   }
 
-  private fun <ID : Any> upsertReportMetrics(
+  private fun <ID : Any> upsertReportIndicators(
       reportId: ReportId,
-      metricIdField: TableField<*, ID?>,
+      indicatorIdField: TableField<*, ID?>,
       entries: Map<ID, ReportIndicatorEntryModel>,
       updateProgressNotes: Boolean,
   ): Int {
@@ -1120,7 +1123,7 @@ class ReportStore(
       return 0
     }
 
-    val table = metricIdField.table!!
+    val table = indicatorIdField.table!!
     val reportIdField =
         table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
     val valueField = table.field("value", Int::class.java)!!
@@ -1140,11 +1143,11 @@ class ReportStore(
     val iterator = entries.iterator()
 
     while (iterator.hasNext()) {
-      val (metricId, entry) = iterator.next()
+      val (indicatorId, entry) = iterator.next()
       insertQuery =
           insertQuery
               .set(reportIdField, reportId)
-              .set(metricIdField, metricId)
+              .set(indicatorIdField, indicatorId)
               .set(valueField, entry.value)
               .set(projectsCommentsField, entry.projectsComments)
               .set(statusField, entry.status)
@@ -1171,87 +1174,48 @@ class ReportStore(
     }
 
     val rowsUpdated =
-        insertQuery.onConflict(reportIdField, metricIdField).doUpdate().setAllToExcluded().execute()
+        insertQuery
+            .onConflict(reportIdField, indicatorIdField)
+            .doUpdate()
+            .setAllToExcluded()
+            .execute()
 
     return rowsUpdated
   }
 
-  private fun <ID : Any> upsertReportMetricTargets(
-      metricIdField: TableField<*, ID?>,
-      metricId: ID,
-      targets: Map<ReportId, Int?>,
-  ): Int {
-    if (targets.isEmpty()) {
-      return 0
-    }
-
-    val table = metricIdField.table!!
-    val reportIdField =
-        table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
-    val targetField = table.field("target", Int::class.java)!!
-    val modifiedByField =
-        table.field("modified_by", SQLDataType.BIGINT.asConvertedDataType(UserIdConverter()))
-    val modifiedTimeField = table.field("modified_time", Instant::class.java)
-
-    var insertQuery = dslContext.insertInto(table).set()
-
-    val iterator = targets.iterator()
-
-    while (iterator.hasNext()) {
-      val (reportId, target) = iterator.next()
-      insertQuery =
-          insertQuery
-              .set(reportIdField, reportId)
-              .set(metricIdField, metricId)
-              .set(targetField, target)
-              .set(modifiedByField, currentUser().userId)
-              .set(modifiedTimeField, clock.instant())
-              .apply {
-                if (iterator.hasNext()) {
-                  this.newRecord()
-                }
-              }
-    }
-
-    val rowsUpdated =
-        insertQuery.onConflict(reportIdField, metricIdField).doUpdate().setAllToExcluded().execute()
-
-    return rowsUpdated
-  }
-
-  private fun <ID : Any> publishReportMetrics(
+  private fun <ID : Any> publishReportIndicators(
       reportId: ReportId,
-      metricIdField: TableField<*, ID?>,
+      indicatorIdField: TableField<*, ID?>,
       entries: Map<ID, ReportIndicatorEntryModel>,
   ) {
-    val table = metricIdField.table!!
+    val table = indicatorIdField.table!!
     val reportIdField =
         table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
 
     dslContext.transaction { _ ->
       // Insert all entries
-      upsertReportMetrics(reportId, metricIdField, entries, true)
+      upsertReportIndicators(reportId, indicatorIdField, entries, true)
 
       // Delete any entries that are not publishable
       dslContext
           .deleteFrom(table)
           .where(reportIdField.eq(reportId))
-          .and(metricIdField.notIn(entries.keys))
+          .and(indicatorIdField.notIn(entries.keys))
           .execute()
     }
   }
 
-  private fun <ID : Any> publishReportMetricTargets(
+  private fun <ID : Any> publishReportIndicatorTargets(
       projectId: ProjectId,
       year: Int,
-      metricIdField: TableField<*, ID?>,
+      indicatorIdField: TableField<*, ID?>,
       targets: Map<ID, Int?>,
   ) {
     if (targets.isEmpty()) {
       return
     }
 
-    val table = metricIdField.table!!
+    val table = indicatorIdField.table!!
     val projectIdField =
         table.field("project_id", SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()))!!
     val yearField = table.field("year", Int::class.java)!!
@@ -1262,11 +1226,11 @@ class ReportStore(
     val iterator = targets.iterator()
 
     while (iterator.hasNext()) {
-      val (metricId, target) = iterator.next()
+      val (indicatorId, target) = iterator.next()
       insertQuery =
           insertQuery
               .set(projectIdField, projectId)
-              .set(metricIdField, metricId)
+              .set(indicatorIdField, indicatorId)
               .set(yearField, year)
               .set(targetField, target)
               .apply {
@@ -1277,7 +1241,7 @@ class ReportStore(
     }
 
     insertQuery
-        .onConflict(projectIdField, metricIdField, yearField)
+        .onConflict(projectIdField, indicatorIdField, yearField)
         .doUpdate()
         .setAllToExcluded()
         .execute()
@@ -1376,9 +1340,9 @@ class ReportStore(
       entries: Map<CommonIndicatorId, ReportIndicatorEntryModel>,
       updateProgressNotes: Boolean,
   ) =
-      upsertReportMetrics(
+      upsertReportIndicators(
           reportId = reportId,
-          metricIdField = REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
+          indicatorIdField = REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           entries = entries,
           updateProgressNotes = updateProgressNotes,
       )
@@ -1397,11 +1361,11 @@ class ReportStore(
     val iterator = entries.iterator()
 
     while (iterator.hasNext()) {
-      val (metricId, entry) = iterator.next()
+      val (indicatorId, entry) = iterator.next()
       insertQuery =
           insertQuery
               .set(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID, reportId)
-              .set(REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID, metricId)
+              .set(REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID, indicatorId)
               .set(
                   REPORT_AUTO_CALCULATED_INDICATORS.PROJECTS_COMMENTS,
                   entry.projectsComments,
@@ -1440,9 +1404,9 @@ class ReportStore(
       entries: Map<ProjectIndicatorId, ReportIndicatorEntryModel>,
       updateProgressNotes: Boolean,
   ) =
-      upsertReportMetrics(
+      upsertReportIndicators(
           reportId = reportId,
-          metricIdField = REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
+          indicatorIdField = REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
           entries = entries,
           updateProgressNotes = updateProgressNotes,
       )
@@ -1592,38 +1556,6 @@ class ReportStore(
         timestampField,
         timezoneField,
     )
-  }
-
-  private fun validateReportsInProject(reportIds: Set<ReportId>, projectId: ProjectId) {
-    val invalidReportIds =
-        dslContext
-            .select(REPORTS.ID)
-            .from(REPORTS)
-            .where(REPORTS.ID.`in`(reportIds))
-            .and(REPORTS.PROJECT_ID.notEqual(projectId))
-            .fetch { it[REPORTS.ID]!! }
-            .toSet()
-
-    if (!invalidReportIds.isEmpty()) {
-      throw IllegalStateException(
-          "Reports ${invalidReportIds.joinToString()} are not in project $projectId."
-      )
-    }
-  }
-
-  private fun validateReportsUpdatable(reportIds: Set<ReportId>) {
-    val invalidReportIds =
-        dslContext
-            .select(REPORTS.ID)
-            .from(REPORTS)
-            .where(REPORTS.ID.`in`(reportIds))
-            .and(REPORTS.STATUS_ID.notIn(ReportStatus.NotSubmitted, ReportStatus.NeedsUpdate))
-            .fetch { it[REPORTS.ID]!! }
-            .toSet()
-
-    if (!invalidReportIds.isEmpty()) {
-      throw IllegalStateException("Reports ${invalidReportIds.joinToString()} are not updatable")
-    }
   }
 
   // Timezone for a planting site. Defaults to planting site, then organization, then UTC
