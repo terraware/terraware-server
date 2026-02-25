@@ -2,10 +2,10 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.accelerator.event.ProjectPhaseUpdatedEvent
-import com.terraformation.backend.accelerator.model.MetricProgressModel
+import com.terraformation.backend.accelerator.model.IndicatorProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
-import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_METRICS
+import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_INDICATORS
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -205,7 +205,7 @@ class ProjectAcceleratorDetailsStore(
     return fetch(PROJECTS.ID.eq(projectId)) { variableValues }.firstOrNull()
   }
 
-  private val projectProgressMultiset: Field<List<MetricProgressModel>>
+  private val projectProgressMultiset: Field<List<IndicatorProgressModel>>
     get() {
       val progressField =
           DSL.if_(
@@ -230,7 +230,7 @@ class ProjectAcceleratorDetailsStore(
                   .where(PUBLISHED_REPORTS.PROJECT_ID.eq(PROJECTS.ID))
                   .and(
                       PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.`in`(
-                          TRACKED_ACCUMULATED_METRICS
+                          TRACKED_ACCUMULATED_INDICATORS
                       )
                   )
                   .groupBy(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID)
@@ -238,8 +238,8 @@ class ProjectAcceleratorDetailsStore(
           )
           .convertFrom { results ->
             results.map { record ->
-              MetricProgressModel(
-                  metric =
+              IndicatorProgressModel(
+                  indicator =
                       record[
                           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS
                               .AUTO_CALCULATED_INDICATOR_ID]!!,

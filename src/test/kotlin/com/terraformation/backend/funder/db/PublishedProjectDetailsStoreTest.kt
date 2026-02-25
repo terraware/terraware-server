@@ -4,7 +4,7 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.model.CarbonCertification
-import com.terraformation.backend.accelerator.model.MetricProgressModel
+import com.terraformation.backend.accelerator.model.IndicatorProgressModel
 import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -207,13 +207,16 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               dealDescription = "description",
               dealName = "name",
               methodologyNumber = "methodology",
-              metricProgress =
+              indicatorProgress =
                   listOf(
-                      MetricProgressModel(metric = AutoCalculatedIndicator.TreesPlanted, 30),
-                      // Species Planted utilitze max instead of sum
-                      MetricProgressModel(metric = AutoCalculatedIndicator.SpeciesPlanted, 2),
-                      MetricProgressModel(metric = AutoCalculatedIndicator.HectaresPlanted, 300),
-                      // Seeds Collected and other metric progress is not tracked
+                      IndicatorProgressModel(indicator = AutoCalculatedIndicator.TreesPlanted, 30),
+                      // Species Planted utilize max instead of sum
+                      IndicatorProgressModel(indicator = AutoCalculatedIndicator.SpeciesPlanted, 2),
+                      IndicatorProgressModel(
+                          indicator = AutoCalculatedIndicator.HectaresPlanted,
+                          300,
+                      ),
+                      // Seeds Collected and other indicator progress is not tracked
                   ),
               minProjectArea = BigDecimal(3),
               numNativeSpecies = 4,

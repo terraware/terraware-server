@@ -5,7 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ParticipantProjectFileNamingUpdatedEvent
 import com.terraformation.backend.accelerator.event.ProjectPhaseUpdatedEvent
-import com.terraformation.backend.accelerator.model.MetricProgressModel
+import com.terraformation.backend.accelerator.model.IndicatorProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.assertSetEquals
@@ -167,13 +167,16 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               investmentThesis = detailsRow.investmentThesis,
               landUseModelTypes = setOf(LandUseModelType.Agroforestry, LandUseModelType.Mangroves),
               maxCarbonAccumulation = detailsRow.maxCarbonAccumulation,
-              metricProgress =
+              indicatorProgress =
                   listOf(
-                      MetricProgressModel(metric = AutoCalculatedIndicator.TreesPlanted, 30),
-                      // Species Planted utilitze max instead of sum
-                      MetricProgressModel(metric = AutoCalculatedIndicator.SpeciesPlanted, 2),
-                      MetricProgressModel(metric = AutoCalculatedIndicator.HectaresPlanted, 300),
-                      // Seeds Collected and other metric progress is not tracked
+                      IndicatorProgressModel(indicator = AutoCalculatedIndicator.TreesPlanted, 30),
+                      // Species Planted utilize max instead of sum
+                      IndicatorProgressModel(indicator = AutoCalculatedIndicator.SpeciesPlanted, 2),
+                      IndicatorProgressModel(
+                          indicator = AutoCalculatedIndicator.HectaresPlanted,
+                          300,
+                      ),
+                      // Seeds Collected and other indicator progress is not tracked
                   ),
               minCarbonAccumulation = detailsRow.minCarbonAccumulation,
               numCommunities = detailsRow.numCommunities,
