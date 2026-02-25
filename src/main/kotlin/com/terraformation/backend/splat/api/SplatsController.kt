@@ -27,8 +27,9 @@ import com.terraformation.backend.splat.SplatNotReadyException
 import com.terraformation.backend.splat.SplatService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import jakarta.ws.rs.ServiceUnavailableException
 import java.math.BigDecimal
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -38,13 +39,17 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-@ConditionalOnProperty("terraware.splatter.enabled")
 @RequestMapping
 @RestController
 @TrackingEndpoint
 class SplatsController(
-    private val splatService: SplatService,
+    @Autowired(required = false) private val splatServiceDependency: SplatService?,
 ) {
+  private val splatService: SplatService
+    get() =
+        splatServiceDependency
+            ?: throw ServiceUnavailableException("Splatter service is not enabled")
+
   @ApiResponse200
   @ApiResponse404("The observation does not exist.")
   @GetMapping("/api/v1/tracking/observations/{observationId}/splats")
