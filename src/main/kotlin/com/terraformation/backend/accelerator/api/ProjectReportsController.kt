@@ -952,6 +952,10 @@ data class ReviewAcceleratorReportRequestPayload(
     val review: ReportReviewPayload,
 )
 
+@Schema(
+    description = "Use ReviewAcceleratorReportIndicatorsRequestPayload instead",
+    deprecated = true,
+)
 data class ReviewAcceleratorReportMetricsRequestPayload(
     val projectMetrics: List<ReportProjectMetricEntriesPayload>,
     val standardMetrics: List<ReportStandardMetricEntriesPayload>,
