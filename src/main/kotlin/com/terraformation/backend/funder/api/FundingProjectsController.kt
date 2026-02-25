@@ -98,6 +98,8 @@ data class PublishedProjectPayload(
   )
 }
 
+// This should be split into 2 payloads - one for request and one for response, because some of the
+// properties on it are not used in the request (e.g. indicatorProgress)
 data class FunderProjectDetailsPayload(
     val accumulationRate: BigDecimal?,
     val annualCarbon: BigDecimal?,
@@ -107,12 +109,12 @@ data class FunderProjectDetailsPayload(
     val countryCode: String?,
     val dealDescription: String?,
     val dealName: String?,
-    val indicatorProgress: List<IndicatorProgressPayload>,
+    val indicatorProgress: List<IndicatorProgressPayload>?,
     val landUseModelTypes: Set<LandUseModelType>,
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>,
     val methodologyNumber: String?,
     @Schema(description = "Use indicatorProgress instead", deprecated = true)
-    val metricProgress: List<MetricProgressPayload>,
+    val metricProgress: List<MetricProgressPayload>?,
     val minProjectArea: BigDecimal?,
     val numNativeSpecies: Int?,
     val perHectareBudget: BigDecimal?,
