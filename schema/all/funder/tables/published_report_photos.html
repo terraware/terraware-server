@@ -162,13 +162,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="published_report_photos.report_id references published_reports.report_id via published_report_photos_report_id_fkey"><a href='published_reports.html'>published_reports</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">published_report_photos_report_id_fkey</td>
+                                                <td title="published_report_photos.[report_id, file_id] references accelerator.report_photos.[report_id, file_id] via published_report_photos_report_id_file_id_fkey"><a href='../../accelerator/tables/report_photos.html'>report_photos</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">published_report_photos_report_id_file_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="published_report_photos.[report_id, file_id] references accelerator.report_photos.[report_id, file_id] via published_report_photos_report_id_file_id_fkey"><a href='../../accelerator/tables/report_photos.html'>report_photos</a><span class='relatedKey'>.report_id</span></td>
-                                                <td class="constraint detail">published_report_photos_report_id_file_id_fkey</td>
+                                                <td title="published_report_photos.report_id references published_reports.report_id via published_report_photos_report_id_fkey"><a href='published_reports.html'>published_reports</a><span class='relatedKey'>.report_id</span></td>
+                                                <td class="constraint detail">published_report_photos_report_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
