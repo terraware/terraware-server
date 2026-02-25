@@ -1,3 +1,4 @@
+4e32c4d4ace SW-8083 Rename System Metric internal variables to Auto Calculated Indicator (#3982)
 d10981a53f4 SW-8083 Rename Standard Metric internal variables to Common Indicator (#3980)
 be893ec27f6 SW-8083 Rename Project Metric internal variables to Project Indicator (#3977)
 a497c50a289 SW-8082 Rename Standard Indicators to Common Indicators (#3976)
