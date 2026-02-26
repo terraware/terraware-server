@@ -48,9 +48,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 isPublishable = true,
+                level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
                 unit = "degrees",
             )
 
@@ -60,9 +60,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 isPublishable = true,
+                level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
+                tfOwner = "Carbon",
                 unit = "degrees",
             ),
             store.fetchOneCommonIndicator(indicatorId),
@@ -104,9 +105,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertCommonIndicator(
                 category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
+                level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -114,9 +115,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertCommonIndicator(
                 category = IndicatorCategory.Community,
                 description = "Community indicator description",
+                level = IndicatorLevel.Outcome,
                 name = "Community Indicator",
                 refId = "5.0",
-                level = IndicatorLevel.Outcome,
                 unit = "meters",
             )
 
@@ -125,9 +126,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = false,
+                level = IndicatorLevel.Impact,
                 name = "Project Objectives Indicator",
                 refId = "3.0",
-                level = IndicatorLevel.Impact,
                 unit = "cm",
             )
 
@@ -139,9 +140,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     category = IndicatorCategory.Climate,
                     description = "Climate common indicator description",
                     isPublishable = true,
+                    level = IndicatorLevel.Activity,
                     name = "Climate Common Indicator",
                     refId = "3.0",
-                    level = IndicatorLevel.Activity,
+                    tfOwner = "Carbon",
                     unit = "%",
                 ),
                 ExistingCommonIndicatorModel(
@@ -149,9 +151,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     category = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives indicator description",
                     isPublishable = false,
+                    level = IndicatorLevel.Impact,
                     name = "Project Objectives Indicator",
                     refId = "3.0",
-                    level = IndicatorLevel.Impact,
+                    tfOwner = "Carbon",
                     unit = "cm",
                 ),
                 ExistingCommonIndicatorModel(
@@ -159,9 +162,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     category = IndicatorCategory.Community,
                     description = "Community indicator description",
                     isPublishable = true,
+                    level = IndicatorLevel.Outcome,
                     name = "Community Indicator",
                     refId = "5.0",
-                    level = IndicatorLevel.Outcome,
+                    tfOwner = "Carbon",
                     unit = "meters",
                 ),
             ),
@@ -213,11 +217,11 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertProjectIndicator(
                 category = IndicatorCategory.Climate,
                 description = "Climate project indicator description",
-                name = "Climate Project Indicator",
                 isPublishable = false,
+                level = IndicatorLevel.Activity,
+                name = "Climate Project Indicator",
                 projectId = projectId,
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
                 unit = "degrees",
             )
 
@@ -228,9 +232,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 category = IndicatorCategory.Climate,
                 description = "Climate project indicator description",
                 isPublishable = false,
+                level = IndicatorLevel.Activity,
                 name = "Climate Project Indicator",
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
+                tfOwner = "Carbon",
                 unit = "degrees",
             ),
             store.fetchOneProjectIndicator(indicatorId),
@@ -303,10 +308,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertProjectIndicator(
                 category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
+                level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
                 projectId = projectId,
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -315,10 +320,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 category = IndicatorCategory.Community,
                 description = "Community indicator description",
                 isPublishable = false,
+                level = IndicatorLevel.Outcome,
                 name = "Community Indicator",
                 projectId = projectId,
                 refId = "5.0",
-                level = IndicatorLevel.Outcome,
                 unit = "meters",
             )
 
@@ -326,10 +331,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertProjectIndicator(
                 category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
+                level = IndicatorLevel.Impact,
                 name = "Project Objectives Indicator",
                 projectId = projectId,
                 refId = "3.0",
-                level = IndicatorLevel.Impact,
                 unit = "cm",
             )
 
@@ -346,9 +351,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     category = IndicatorCategory.Climate,
                     description = "Climate common indicator description",
                     isPublishable = true,
+                    level = IndicatorLevel.Activity,
                     name = "Climate Common Indicator",
                     refId = "3.0",
-                    level = IndicatorLevel.Activity,
+                    tfOwner = "Carbon",
                     unit = "%",
                 ),
                 ExistingProjectIndicatorModel(
@@ -357,9 +363,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     category = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives indicator description",
                     isPublishable = true,
+                    level = IndicatorLevel.Impact,
                     name = "Project Objectives Indicator",
                     refId = "3.0",
-                    level = IndicatorLevel.Impact,
+                    tfOwner = "Carbon",
                     unit = "cm",
                 ),
                 ExistingProjectIndicatorModel(
@@ -368,9 +375,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     category = IndicatorCategory.Community,
                     description = "Community indicator description",
                     isPublishable = false,
+                    level = IndicatorLevel.Outcome,
                     name = "Community Indicator",
                     refId = "5.0",
-                    level = IndicatorLevel.Outcome,
+                    tfOwner = "Carbon",
                     unit = "meters",
                 ),
             ),
@@ -434,9 +442,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertCommonIndicator(
                 category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
+                level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -446,9 +454,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = false,
+                level = IndicatorLevel.Impact,
                 name = "Project Objectives Indicator",
                 refId = "1.0",
-                level = IndicatorLevel.Impact,
                 unit = "meters",
             )
 
@@ -458,25 +466,26 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(
                 CommonIndicatorsRecord(
                     id = existingIndicatorId,
+                    active = true,
                     categoryId = IndicatorCategory.Climate,
                     description = "Climate common indicator description",
                     isPublishable = true,
+                    levelId = IndicatorLevel.Activity,
                     name = "Climate Common Indicator",
                     refId = "3.0",
-                    levelId = IndicatorLevel.Activity,
+                    tfOwner = "Carbon",
                     unit = "%",
-                    active = true,
                 ),
                 CommonIndicatorsRecord(
                     id = newIndicatorId,
+                    active = true,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives indicator description",
                     isPublishable = false,
+                    levelId = IndicatorLevel.Impact,
                     name = "Project Objectives Indicator",
                     refId = "1.0",
-                    levelId = IndicatorLevel.Impact,
                     unit = "meters",
-                    active = true,
                 ),
             )
         )
@@ -512,10 +521,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertProjectIndicator(
                 category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
+                level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
                 projectId = projectId,
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
                 unit = "meters",
             )
 
@@ -526,9 +535,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = false,
+                level = IndicatorLevel.Impact,
                 name = "Project Objectives Indicator",
                 refId = "1.0",
-                level = IndicatorLevel.Impact,
                 unit = "%",
             )
 
@@ -538,25 +547,26 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(
                 ProjectIndicatorsRecord(
                     id = existingIndicatorId,
+                    active = true,
                     categoryId = IndicatorCategory.Climate,
                     description = "Climate common indicator description",
                     isPublishable = true,
+                    levelId = IndicatorLevel.Activity,
                     name = "Climate Common Indicator",
                     projectId = projectId,
                     refId = "3.0",
-                    levelId = IndicatorLevel.Activity,
+                    tfOwner = "Carbon",
                     unit = "meters",
-                    active = true,
                 ),
                 ProjectIndicatorsRecord(
                     id = newIndicatorId,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives indicator description",
                     isPublishable = false,
+                    levelId = IndicatorLevel.Impact,
                     name = "Project Objectives Indicator",
                     projectId = projectId,
                     refId = "1.0",
-                    levelId = IndicatorLevel.Impact,
                     unit = "%",
                     active = true,
                 ),
@@ -597,9 +607,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertCommonIndicator(
                 category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
+                level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
                 refId = "3.0",
-                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -609,9 +619,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = false,
+                level = IndicatorLevel.Impact,
                 name = "Project Objectives Indicator",
                 refId = "1.0",
-                level = IndicatorLevel.Impact,
                 unit = "meters",
             )
 
@@ -621,14 +631,15 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             listOf(
                 CommonIndicatorsRecord(
                     id = existingIndicatorId,
+                    active = true,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives indicator description",
                     isPublishable = false,
+                    levelId = IndicatorLevel.Impact,
                     name = "Project Objectives Indicator",
                     refId = "1.0",
-                    levelId = IndicatorLevel.Impact,
+                    tfOwner = "Carbon",
                     unit = "meters",
-                    active = true,
                 )
             )
         )
@@ -666,10 +677,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
               isPublishable = false,
+              level = IndicatorLevel.Activity,
               name = "Climate Common Indicator",
               projectId = projectId,
               refId = "3.0",
-              level = IndicatorLevel.Activity,
               unit = "feet",
           )
 
@@ -679,10 +690,10 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
               isPublishable = true,
+              level = IndicatorLevel.Impact,
               name = "Project Objectives Indicator",
               projectId = ProjectId(99), // this field is ignored
               refId = "1.0",
-              level = IndicatorLevel.Impact,
               unit = "inches",
           )
 
@@ -691,16 +702,17 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEquals(
           listOf(
               ProjectIndicatorsRecord(
-                  id = existingIndicatorId,
+                  active = true,
                   categoryId = IndicatorCategory.ProjectObjectives,
                   description = "Project objectives indicator description",
+                  id = existingIndicatorId,
                   isPublishable = true,
+                  levelId = IndicatorLevel.Impact,
                   name = "Project Objectives Indicator",
                   projectId = projectId,
                   refId = "1.0",
-                  levelId = IndicatorLevel.Impact,
+                  tfOwner = "Carbon",
                   unit = "inches",
-                  active = true,
               )
           )
       )

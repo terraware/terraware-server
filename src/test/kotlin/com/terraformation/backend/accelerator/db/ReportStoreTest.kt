@@ -303,14 +303,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportProjectIndicatorModel(
                   indicator =
                       ProjectIndicatorModel(
-                          id = projectIndicatorId,
-                          projectId = projectId,
                           category = IndicatorCategory.ProjectObjectives,
                           description = "Project Indicator description",
+                          id = projectIndicatorId,
                           isPublishable = true,
                           name = "Project Indicator Name",
-                          refId = "2.0",
                           level = IndicatorLevel.Activity,
+                          projectId = projectId,
+                          refId = "2.0",
+                          tfOwner = "Carbon",
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -326,27 +327,27 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
+              level = IndicatorLevel.Activity,
               name = "Climate Common Indicator",
               refId = "2.1",
-              level = IndicatorLevel.Activity,
           )
 
       val commonIndicatorId2 =
           insertCommonIndicator(
               category = IndicatorCategory.Community,
               description = "Community indicator description",
+              level = IndicatorLevel.Outcome,
               name = "Community Indicator",
               refId = "10.0",
-              level = IndicatorLevel.Outcome,
           )
 
       val commonIndicatorId3 =
           insertCommonIndicator(
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
+              level = IndicatorLevel.Impact,
               name = "Project Objectives Indicator",
               refId = "2.0",
-              level = IndicatorLevel.Impact,
           )
 
       // Insert targets into new target tables
@@ -376,13 +377,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorModel(
                   indicator =
                       CommonIndicatorModel(
-                          id = commonIndicatorId3,
                           category = IndicatorCategory.ProjectObjectives,
                           description = "Project objectives indicator description",
+                          id = commonIndicatorId3,
                           isPublishable = true,
+                          level = IndicatorLevel.Impact,
                           name = "Project Objectives Indicator",
                           refId = "2.0",
-                          level = IndicatorLevel.Impact,
+                          tfOwner = "Carbon",
                       ),
                   // all fields are null because no target/value have been set yet
                   entry = ReportIndicatorEntryModel(),
@@ -390,13 +392,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorModel(
                   indicator =
                       CommonIndicatorModel(
-                          id = commonIndicatorId1,
                           category = IndicatorCategory.Climate,
                           description = "Climate common indicator description",
+                          id = commonIndicatorId1,
                           isPublishable = true,
+                          level = IndicatorLevel.Activity,
                           name = "Climate Common Indicator",
                           refId = "2.1",
-                          level = IndicatorLevel.Activity,
+                          tfOwner = "Carbon",
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -411,13 +414,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorModel(
                   indicator =
                       CommonIndicatorModel(
-                          id = commonIndicatorId2,
                           category = IndicatorCategory.Community,
                           description = "Community indicator description",
+                          id = commonIndicatorId2,
                           isPublishable = true,
+                          level = IndicatorLevel.Outcome,
                           name = "Community Indicator",
                           refId = "10.0",
-                          level = IndicatorLevel.Outcome,
+                          tfOwner = "Carbon",
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -1045,14 +1049,15 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportProjectIndicatorModel(
                   indicator =
                       ProjectIndicatorModel(
-                          id = projectIndicatorId,
-                          projectId = projectId,
                           category = IndicatorCategory.ProjectObjectives,
                           description = "Project Indicator description",
+                          id = projectIndicatorId,
                           isPublishable = true,
-                          name = "Project Indicator Name",
-                          refId = "2.0",
                           level = IndicatorLevel.Activity,
+                          name = "Project Indicator Name",
+                          projectId = projectId,
+                          refId = "2.0",
+                          tfOwner = "Carbon",
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -1068,9 +1073,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
+              level = IndicatorLevel.Activity,
               name = "Climate Common Indicator",
               refId = "2.1",
-              level = IndicatorLevel.Activity,
           )
 
       val commonIndicatorId2 =
@@ -1078,18 +1083,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               category = IndicatorCategory.Community,
               description = "Community indicator description",
               isPublishable = false,
+              level = IndicatorLevel.Outcome,
               name = "Community Indicator",
               refId = "10.0",
-              level = IndicatorLevel.Outcome,
           )
 
       val commonIndicatorId3 =
           insertCommonIndicator(
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
+              level = IndicatorLevel.Impact,
               name = "Project Objectives Indicator",
               refId = "2.0",
-              level = IndicatorLevel.Impact,
           )
 
       insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
@@ -1118,13 +1123,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorModel(
                   indicator =
                       CommonIndicatorModel(
-                          id = commonIndicatorId3,
                           category = IndicatorCategory.ProjectObjectives,
                           description = "Project objectives indicator description",
+                          id = commonIndicatorId3,
                           isPublishable = true,
+                          level = IndicatorLevel.Impact,
                           name = "Project Objectives Indicator",
                           refId = "2.0",
-                          level = IndicatorLevel.Impact,
+                          tfOwner = "Carbon",
                       ),
                   // all fields are null because no target/value have been set yet
                   entry = ReportIndicatorEntryModel(),
@@ -1132,13 +1138,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorModel(
                   indicator =
                       CommonIndicatorModel(
-                          id = commonIndicatorId1,
                           category = IndicatorCategory.Climate,
                           description = "Climate common indicator description",
+                          id = commonIndicatorId1,
                           isPublishable = true,
+                          level = IndicatorLevel.Activity,
                           name = "Climate Common Indicator",
                           refId = "2.1",
-                          level = IndicatorLevel.Activity,
+                          tfOwner = "Carbon",
                       ),
                   entry =
                       ReportIndicatorEntryModel(
@@ -1153,13 +1160,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorModel(
                   indicator =
                       CommonIndicatorModel(
-                          id = commonIndicatorId2,
                           category = IndicatorCategory.Community,
                           description = "Community indicator description",
+                          id = commonIndicatorId2,
                           isPublishable = false,
+                          level = IndicatorLevel.Outcome,
                           name = "Community Indicator",
                           refId = "10.0",
-                          level = IndicatorLevel.Outcome,
+                          tfOwner = "Carbon",
                       ),
                   entry =
                       ReportIndicatorEntryModel(

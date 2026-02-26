@@ -81,9 +81,8 @@ val ENUM_TABLES =
                     additionalColumns =
                         listOf(
                             EnumTableColumnInfo(
-                                "level_id",
-                                "IndicatorLevel",
-                                true,
+                                "active",
+                                "Boolean",
                             ),
                             EnumTableColumnInfo(
                                 "category_id",
@@ -91,16 +90,43 @@ val ENUM_TABLES =
                                 true,
                             ),
                             EnumTableColumnInfo(
+                                "class_id",
+                                "IndicatorClass?",
+                                true,
+                            ),
+                            EnumTableColumnInfo(
                                 "description",
                                 "String",
+                            ),
+                            EnumTableColumnInfo(
+                                "frequency_id",
+                                "IndicatorFrequency?",
+                                true,
+                            ),
+                            EnumTableColumnInfo(
+                                "is_publishable",
+                                "Boolean",
+                            ),
+                            EnumTableColumnInfo(
+                                "level_id",
+                                "IndicatorLevel",
+                                true,
+                            ),
+                            EnumTableColumnInfo(
+                                "notes",
+                                "String?",
+                            ),
+                            EnumTableColumnInfo(
+                                "primary_data_source",
+                                "String?",
                             ),
                             EnumTableColumnInfo(
                                 "ref_id",
                                 "String",
                             ),
                             EnumTableColumnInfo(
-                                "is_publishable",
-                                "Boolean",
+                                "tf_owner",
+                                "String?",
                             ),
                             EnumTableColumnInfo(
                                 "unit",
