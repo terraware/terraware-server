@@ -1,8 +1,8 @@
 package com.terraformation.backend.api
 
-import com.fasterxml.jackson.databind.module.SimpleModule
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import tools.jackson.databind.module.SimpleModule
 
 @Configuration
 class SerializerConfiguration {

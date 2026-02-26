@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.context.event.ApplicationStartedEvent
+import org.springframework.context.support.StaticApplicationContext
 import org.springframework.security.access.AccessDeniedException
 
 internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
@@ -37,7 +38,12 @@ internal class DatabaseBackedClockTest : DatabaseTest(), RunsAsUser {
   private val clock: DatabaseBackedClock by lazy { newDatabaseBackedClock() }
 
   private val applicationStartedEvent =
-      ApplicationStartedEvent(SpringApplication(Application::class.java), null, null, Duration.ZERO)
+      ApplicationStartedEvent(
+          SpringApplication(Application::class.java),
+          emptyArray(),
+          StaticApplicationContext(),
+          Duration.ZERO,
+      )
 
   @BeforeEach
   fun setup() {

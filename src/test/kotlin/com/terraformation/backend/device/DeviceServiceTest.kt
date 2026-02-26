@@ -1,6 +1,5 @@
 package com.terraformation.backend.device
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
@@ -35,6 +34,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.security.access.AccessDeniedException
+import tools.jackson.module.kotlin.jacksonObjectMapper
 
 internal class DeviceServiceTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
