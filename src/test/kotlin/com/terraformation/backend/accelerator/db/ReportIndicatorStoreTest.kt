@@ -470,11 +470,16 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             NewCommonIndicatorModel(
                 id = null,
                 category = IndicatorCategory.ProjectObjectives,
+                classId = IndicatorClass.Level,
                 description = "Project objectives indicator description",
+                frequency = IndicatorFrequency.MRVCycle,
                 isPublishable = false,
                 level = IndicatorLevel.Impact,
                 name = "Project Objectives Indicator",
+                notes = "Creation notes",
+                primaryDataSource = "Creation source",
                 refId = "1.0",
+                tfOwner = "Biodiversity",
                 unit = "meters",
             )
 
@@ -498,11 +503,16 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     id = newIndicatorId,
                     active = true,
                     categoryId = IndicatorCategory.ProjectObjectives,
+                    classId = IndicatorClass.Level,
                     description = "Project objectives indicator description",
+                    frequencyId = IndicatorFrequency.MRVCycle,
                     isPublishable = false,
                     levelId = IndicatorLevel.Impact,
                     name = "Project Objectives Indicator",
+                    notes = "Creation notes",
+                    primaryDataSource = "Creation source",
                     refId = "1.0",
+                    tfOwner = "Biodiversity",
                     unit = "meters",
                 ),
             )
@@ -551,11 +561,16 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 id = null,
                 projectId = projectId,
                 category = IndicatorCategory.ProjectObjectives,
+                classId = IndicatorClass.Cumulative,
                 description = "Project objectives indicator description",
+                frequency = IndicatorFrequency.Annual,
                 isPublishable = false,
                 level = IndicatorLevel.Impact,
                 name = "Project Objectives Indicator",
+                notes = "Project creation notes",
+                primaryDataSource = "Project creation source",
                 refId = "1.0",
+                tfOwner = "Biodiversity",
                 unit = "%",
             )
 
@@ -580,12 +595,17 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     id = newIndicatorId,
                     active = true,
                     categoryId = IndicatorCategory.ProjectObjectives,
+                    classId = IndicatorClass.Cumulative,
                     description = "Project objectives indicator description",
+                    frequencyId = IndicatorFrequency.Annual,
                     isPublishable = false,
                     levelId = IndicatorLevel.Impact,
                     name = "Project Objectives Indicator",
+                    notes = "Project creation notes",
+                    primaryDataSource = "Project creation source",
                     projectId = projectId,
                     refId = "1.0",
+                    tfOwner = "Biodiversity",
                     unit = "%",
                 ),
             )
@@ -635,11 +655,16 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             ExistingCommonIndicatorModel(
                 id = CommonIndicatorId(99), // this field is ignored
                 category = IndicatorCategory.ProjectObjectives,
+                classId = IndicatorClass.Cumulative,
                 description = "Project objectives indicator description",
+                frequency = IndicatorFrequency.BiAnnual,
                 isPublishable = false,
                 level = IndicatorLevel.Impact,
                 name = "Project Objectives Indicator",
+                notes = "Updated notes",
+                primaryDataSource = "Updated source",
                 refId = "1.0",
+                tfOwner = "Biodiversity",
                 unit = "meters",
             )
 
@@ -651,12 +676,16 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     id = existingIndicatorId,
                     active = true,
                     categoryId = IndicatorCategory.ProjectObjectives,
+                    classId = IndicatorClass.Cumulative,
                     description = "Project objectives indicator description",
+                    frequencyId = IndicatorFrequency.BiAnnual,
                     isPublishable = false,
                     levelId = IndicatorLevel.Impact,
                     name = "Project Objectives Indicator",
+                    notes = "Updated notes",
+                    primaryDataSource = "Updated source",
                     refId = "1.0",
-                    tfOwner = "Carbon",
+                    tfOwner = "Biodiversity",
                     unit = "meters",
                 )
             )
@@ -706,12 +735,17 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ExistingProjectIndicatorModel(
               id = ProjectIndicatorId(99), // this field is ignored
               category = IndicatorCategory.ProjectObjectives,
+              classId = IndicatorClass.Level,
               description = "Project objectives indicator description",
+              frequency = IndicatorFrequency.MRVCycle,
               isPublishable = true,
               level = IndicatorLevel.Impact,
               name = "Project Objectives Indicator",
+              notes = "Project updated notes",
+              primaryDataSource = "Project updated source",
               projectId = ProjectId(99), // this field is ignored
               refId = "1.0",
+              tfOwner = "Biodiversity",
               unit = "inches",
           )
 
@@ -722,14 +756,18 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ProjectIndicatorsRecord(
                   active = true,
                   categoryId = IndicatorCategory.ProjectObjectives,
+                  classId = IndicatorClass.Level,
                   description = "Project objectives indicator description",
+                  frequencyId = IndicatorFrequency.MRVCycle,
                   id = existingIndicatorId,
                   isPublishable = true,
                   levelId = IndicatorLevel.Impact,
                   name = "Project Objectives Indicator",
+                  notes = "Project updated notes",
+                  primaryDataSource = "Project updated source",
                   projectId = projectId,
                   refId = "1.0",
-                  tfOwner = "Carbon",
+                  tfOwner = "Biodiversity",
                   unit = "inches",
               )
           )

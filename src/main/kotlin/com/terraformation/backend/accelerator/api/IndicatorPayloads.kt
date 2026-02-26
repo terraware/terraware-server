@@ -245,23 +245,33 @@ data class NewMetricPayload(
 
 data class NewIndicatorPayload(
     val category: IndicatorCategory,
+    val classId: IndicatorClass?,
     val description: String?,
+    val frequency: IndicatorFrequency?,
     val isPublishable: Boolean,
     val level: IndicatorLevel,
     val name: String,
+    val notes: String?,
+    val primaryDataSource: String?,
     val refId: String,
+    val tfOwner: String?,
     @field:Size(max = 25) val unit: String? = null,
 ) {
   fun toProjectIndicatorModel(projectId: ProjectId): NewProjectIndicatorModel {
     return NewProjectIndicatorModel(
         category = category,
+        classId = classId,
         description = description,
+        frequency = frequency,
         id = null,
         isPublishable = isPublishable,
         level = level,
         name = name,
+        notes = notes,
+        primaryDataSource = primaryDataSource,
         projectId = projectId,
         refId = refId,
+        tfOwner = tfOwner,
         unit = unit,
     )
   }
@@ -269,12 +279,17 @@ data class NewIndicatorPayload(
   fun toCommonIndicatorModel(): NewCommonIndicatorModel {
     return NewCommonIndicatorModel(
         category = category,
+        classId = classId,
         description = description,
+        frequency = frequency,
         id = null,
         isPublishable = isPublishable,
         level = level,
         name = name,
+        notes = notes,
+        primaryDataSource = primaryDataSource,
         refId = refId,
+        tfOwner = tfOwner,
         unit = unit,
     )
   }
