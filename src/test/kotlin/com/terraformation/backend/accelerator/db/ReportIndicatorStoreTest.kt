@@ -12,6 +12,8 @@ import com.terraformation.backend.db.ProjectIndicatorNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorClass
+import com.terraformation.backend.db.accelerator.IndicatorFrequency
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.tables.records.CommonIndicatorsRecord
@@ -46,10 +48,14 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val indicatorId =
             insertCommonIndicator(
                 category = IndicatorCategory.Climate,
+                classId = IndicatorClass.Cumulative,
                 description = "Climate common indicator description",
+                frequency = IndicatorFrequency.Annual,
                 isPublishable = true,
                 level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
+                notes = "Some notes",
+                primaryDataSource = "Primary source",
                 refId = "3.0",
                 unit = "degrees",
             )
@@ -58,10 +64,14 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             ExistingCommonIndicatorModel(
                 id = indicatorId,
                 category = IndicatorCategory.Climate,
+                classId = IndicatorClass.Cumulative,
                 description = "Climate common indicator description",
+                frequency = IndicatorFrequency.Annual,
                 isPublishable = true,
                 level = IndicatorLevel.Activity,
                 name = "Climate Common Indicator",
+                notes = "Some notes",
+                primaryDataSource = "Primary source",
                 refId = "3.0",
                 tfOwner = "Carbon",
                 unit = "degrees",
@@ -216,10 +226,14 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val indicatorId =
             insertProjectIndicator(
                 category = IndicatorCategory.Climate,
+                classId = IndicatorClass.Level,
                 description = "Climate project indicator description",
+                frequency = IndicatorFrequency.BiAnnual,
                 isPublishable = false,
                 level = IndicatorLevel.Activity,
                 name = "Climate Project Indicator",
+                notes = "Project notes",
+                primaryDataSource = "Project source",
                 projectId = projectId,
                 refId = "3.0",
                 unit = "degrees",
@@ -230,10 +244,14 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 id = indicatorId,
                 projectId = projectId,
                 category = IndicatorCategory.Climate,
+                classId = IndicatorClass.Level,
                 description = "Climate project indicator description",
+                frequency = IndicatorFrequency.BiAnnual,
                 isPublishable = false,
                 level = IndicatorLevel.Activity,
                 name = "Climate Project Indicator",
+                notes = "Project notes",
+                primaryDataSource = "Project source",
                 refId = "3.0",
                 tfOwner = "Carbon",
                 unit = "degrees",
@@ -560,6 +578,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 ),
                 ProjectIndicatorsRecord(
                     id = newIndicatorId,
+                    active = true,
                     categoryId = IndicatorCategory.ProjectObjectives,
                     description = "Project objectives indicator description",
                     isPublishable = false,
@@ -568,7 +587,6 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     projectId = projectId,
                     refId = "1.0",
                     unit = "%",
-                    active = true,
                 ),
             )
         )
