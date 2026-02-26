@@ -1230,9 +1230,10 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
+    val dealName = projectAcceleratorDetails.dealName!!
     val message = sentMessageWithSubject("added to")
-    assertSubjectContains(project.name, message = message)
-    assertBodyContains(project.name, message = message)
+    assertSubjectContains(dealName, message = message)
+    assertBodyContains(dealName, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("submitted for use", message = message)
 
@@ -1253,9 +1254,10 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
+    val dealName = projectAcceleratorDetails.dealName!!
     val message = sentMessageWithSubject("added to")
-    assertSubjectContains(project.name, message = message)
-    assertBodyContains(project.name, message = message)
+    assertSubjectContains(dealName, message = message)
+    assertBodyContains(dealName, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("submitted for use", message = message)
 
@@ -1273,9 +1275,10 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
+    val dealName = projectAcceleratorDetails.dealName!!
     val message = sentMessageWithSubject("has been edited")
-    assertSubjectContains(project.name, message = message)
-    assertBodyContains(project.name, message = message)
+    assertSubjectContains(dealName, message = message)
+    assertBodyContains(dealName, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("has been edited", message = message)
 
@@ -1296,9 +1299,10 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
+    val dealName = projectAcceleratorDetails.dealName!!
     val message = sentMessageWithSubject("has been edited")
-    assertSubjectContains(project.name, message = message)
-    assertBodyContains(project.name, message = message)
+    assertSubjectContains(dealName, message = message)
+    assertBodyContains(dealName, message = message)
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("has been edited", message = message)
 
@@ -1611,9 +1615,10 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
+    val dealName = projectAcceleratorDetails.dealName!!
     val message = sentMessageWithSubject("is ready for review")
-    assertSubjectContains(project.name, message = message)
-    assertBodyContains(project.name, message = message)
+    assertSubjectContains(dealName, message = message)
+    assertBodyContains(dealName, message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
   }
@@ -1629,9 +1634,10 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
+    val dealName = projectAcceleratorDetails.dealName!!
     val message = sentMessageWithSubject("is ready for review")
-    assertSubjectContains(project.name, message = message)
-    assertBodyContains(project.name, message = message)
+    assertSubjectContains(dealName, message = message)
+    assertBodyContains(dealName, message = message)
 
     assertRecipientsEqual(setOf(tfContactEmail1, tfContactEmail2, acceleratorUser.email))
 
@@ -1646,9 +1652,10 @@ internal class EmailNotificationServiceTest {
 
     service.on(event)
 
+    val dealName = projectAcceleratorDetails.dealName!!
     val message = sentMessageWithSubject("is ready for review")
-    assertSubjectContains(project.name, message = message)
-    assertBodyContains(project.name, message = message)
+    assertSubjectContains(dealName, message = message)
+    assertBodyContains(dealName, message = message)
 
     assertRecipientsEqual(setOf(acceleratorUser.email))
   }
@@ -1704,6 +1711,7 @@ internal class EmailNotificationServiceTest {
 
     assertSubjectContains("Variable edited")
     assertBodyContains("A variable has been")
+    assertBodyContains(projectAcceleratorDetails.dealName!!)
 
     assertRecipientsEqual(setOf(sectionOwnerEmail))
 
