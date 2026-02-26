@@ -649,7 +649,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertOrganizationUser(owner, role = Role.Owner)
 
     val projectId = insertProject()
-    insertProjectAcceleratorDetails(dealName = "DEAL_name")
+    insertDealNameVariable()
     insertProjectReportConfig()
     val reportId =
         insertReport(
@@ -702,8 +702,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `should store activity created notification`() {
     insertProject()
-    val dealNameVariableId = insertTextVariable(stableId = StableIds.dealName.value)
-    insertValue(dealNameVariableId, textValue = "DEAL_name")
+    insertDealNameVariable()
 
     val projectLead = insertUser()
     insertProjectInternalUser(role = ProjectInternalRole.ProjectLead)
@@ -799,6 +798,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
     insertModule()
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    insertDealNameVariable()
     insertProjectModule()
 
     insertUserInternalInterest(InternalInterest.GIS, user.userId)
@@ -808,7 +808,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         DeliverableReadyForReviewEvent(deliverableId, projectId),
         type = NotificationType.DeliverableReadyForReview,
         title = "Review a submitted deliverable",
-        body = "A deliverable from Project 1 is ready for review for approval.",
+        body = "A deliverable from DEAL_name is ready for review for approval.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         organizationId = null,
     )
@@ -951,6 +951,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store species added to project notification for global users with interest`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    insertDealNameVariable()
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
     insertModule()
@@ -965,8 +966,8 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             speciesId,
         ),
         type = NotificationType.ParticipantProjectSpeciesAddedToProject,
-        title = "A species has been added to project Project 1.",
-        body = "Species 1 has been submitted for use for Project 1.",
+        title = "A species has been added to project DEAL_name.",
+        body = "Species 1 has been submitted for use for DEAL_name.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,
         organizationId = null,
@@ -977,6 +978,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   fun `should store species approved species edited notification`() {
     insertUserGlobalRole(user.userId, GlobalRole.TFExpert)
     val projectId = insertProject(phase = AcceleratorPhase.Phase0DueDiligence)
+    insertDealNameVariable()
     val speciesId = insertSpecies()
     insertParticipantProjectSpecies(projectId = projectId, speciesId = speciesId)
     insertModule()
@@ -991,7 +993,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             speciesId,
         ),
         type = NotificationType.ParticipantProjectSpeciesApprovedSpeciesEdited,
-        title = "An approved species has been edited for Project 1.",
+        title = "An approved species has been edited for DEAL_name.",
         body = "Species 1 has been edited and is ready for approval.",
         localUrl = webAppUrls.acceleratorConsoleDeliverable(deliverableId, projectId),
         userId = user.userId,
@@ -1106,6 +1108,11 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
         organizationId = null,
         userId = gibberishUserId,
     )
+  }
+
+  private fun insertDealNameVariable() {
+    val dealNameVariableId = insertTextVariable(stableId = StableIds.dealName.value)
+    insertValue(dealNameVariableId, textValue = "DEAL_name")
   }
 
   /**

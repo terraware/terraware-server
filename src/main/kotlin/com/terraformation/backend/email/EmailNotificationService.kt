@@ -600,44 +600,50 @@ class EmailNotificationService(
 
   @EventListener
   fun on(event: ParticipantProjectSpeciesAddedToProjectNotificationDueEvent) {
-    val project = projectStore.fetchOneById(event.projectId)
-    val species = speciesStore.fetchSpeciesById(event.speciesId)
-    val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
+    systemUser.run {
+      val project = projectStore.fetchOneById(event.projectId)
+      val acceleratorDetails = projectAcceleratorDetailsService.fetchOneById(event.projectId)
+      val species = speciesStore.fetchSpeciesById(event.speciesId)
+      val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
 
-    sendToAccelerator(
-        project.organizationId,
-        ParticipantProjectSpeciesAdded(
-            config = config,
-            deliverableUrl =
-                webAppUrls
-                    .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-                    .toString(),
-            projectName = project.name,
-            speciesName = species.scientificName,
-        ),
-        deliverableCategory.internalInterestId,
-    )
+      sendToAccelerator(
+          project.organizationId,
+          ParticipantProjectSpeciesAdded(
+              config = config,
+              deliverableUrl =
+                  webAppUrls
+                      .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                      .toString(),
+              projectName = acceleratorDetails.dealName ?: project.name,
+              speciesName = species.scientificName,
+          ),
+          deliverableCategory.internalInterestId,
+      )
+    }
   }
 
   @EventListener
   fun on(event: ParticipantProjectSpeciesApprovedSpeciesEditedNotificationDueEvent) {
-    val project = projectStore.fetchOneById(event.projectId)
-    val species = speciesStore.fetchSpeciesById(event.speciesId)
-    val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
+    systemUser.run {
+      val project = projectStore.fetchOneById(event.projectId)
+      val acceleratorDetails = projectAcceleratorDetailsService.fetchOneById(event.projectId)
+      val species = speciesStore.fetchSpeciesById(event.speciesId)
+      val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
 
-    sendToAccelerator(
-        project.organizationId,
-        ParticipantProjectSpeciesEdited(
-            config = config,
-            deliverableUrl =
-                webAppUrls
-                    .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
-                    .toString(),
-            projectName = project.name,
-            speciesName = species.scientificName,
-        ),
-        deliverableCategory.internalInterestId,
-    )
+      sendToAccelerator(
+          project.organizationId,
+          ParticipantProjectSpeciesEdited(
+              config = config,
+              deliverableUrl =
+                  webAppUrls
+                      .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
+                      .toString(),
+              projectName = acceleratorDetails.dealName ?: project.name,
+              speciesName = species.scientificName,
+          ),
+          deliverableCategory.internalInterestId,
+      )
+    }
   }
 
   @EventListener
@@ -687,6 +693,8 @@ class EmailNotificationService(
 
       val deliverableCategory = deliverableStore.fetchDeliverableCategory(event.deliverableId)
 
+      val acceleratorDetails = projectAcceleratorDetailsService.fetchOneById(event.projectId)
+
       sendToAccelerator(
           project.organizationId,
           DeliverableReadyForReview(
@@ -696,7 +704,7 @@ class EmailNotificationService(
                       .fullAcceleratorConsoleDeliverable(event.deliverableId, event.projectId)
                       .toString(),
               deliverable = deliverableSubmission,
-              projectName = project.name,
+              projectName = acceleratorDetails.dealName ?: project.name,
           ),
           deliverableCategory.internalInterestId,
       )
@@ -748,6 +756,7 @@ class EmailNotificationService(
       if (sectionOwnerUserId != null) {
         val document = documentStore.fetchOneById(event.documentId)
         val project = projectStore.fetchOneById(event.projectId)
+        val acceleratorDetails = projectAcceleratorDetailsService.fetchOneById(event.projectId)
         val sectionVariable =
             variableStore.fetchOneVariable(event.sectionVariableId, document.variableManifestId)
 
@@ -763,7 +772,7 @@ class EmailNotificationService(
                     webAppUrls
                         .fullDocument(event.documentId, event.referencingSectionVariableId)
                         .toString(),
-                projectName = project.name,
+                projectName = acceleratorDetails.dealName ?: project.name,
                 sectionName = sectionVariable.name,
             ),
             false,
