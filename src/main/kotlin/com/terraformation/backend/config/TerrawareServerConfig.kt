@@ -7,7 +7,6 @@ import java.time.Duration
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZoneOffset
-import org.springframework.boot.autoconfigure.mail.MailProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.bind.DefaultValue
 import org.springframework.format.annotation.DateTimeFormat
@@ -79,8 +78,8 @@ class TerrawareServerConfig(
 
     /**
      * Configures the server's email-sending behavior. This is just the application-level
-     * configuration. To configure the mail server, use the Spring [MailProperties] config options
-     * under `spring.mail`.
+     * configuration. To configure the mail server, use the Spring config options under
+     * `spring.mail`.
      */
     @NotNull val email: EmailConfig = EmailConfig(),
 

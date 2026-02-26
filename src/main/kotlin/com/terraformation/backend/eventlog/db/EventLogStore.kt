@@ -1,6 +1,5 @@
 package com.terraformation.backend.eventlog.db
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.LongIdWrapper
 import com.terraformation.backend.db.default_schema.EventLogId
@@ -25,6 +24,7 @@ import org.jooq.JSONB
 import org.jooq.Record
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
+import tools.jackson.databind.ObjectMapper
 
 @Named
 class EventLogStore(

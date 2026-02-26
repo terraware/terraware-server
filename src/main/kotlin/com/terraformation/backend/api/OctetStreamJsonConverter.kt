@@ -1,14 +1,14 @@
 package com.terraformation.backend.api
 
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import jakarta.inject.Named
 import org.springframework.http.HttpInputMessage
 import org.springframework.http.HttpOutputMessage
 import org.springframework.http.MediaType
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.HttpMessageNotReadableException
+import tools.jackson.core.JacksonException
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.annotation.JsonDeserialize
 
 /**
  * Workaround for a bug in swagger-ui that causes it to leave off the content type of JSON parts of
@@ -37,7 +37,7 @@ class OctetStreamJsonConverter(private val objectMapper: ObjectMapper) : HttpMes
   override fun read(clazz: Class<out Any>, inputMessage: HttpInputMessage): Any {
     try {
       return objectMapper.readValue(inputMessage.body, clazz)
-    } catch (e: JsonProcessingException) {
+    } catch (e: JacksonException) {
       throw HttpMessageNotReadableException("Unable to deserialize as JSON", e, inputMessage)
     }
   }
