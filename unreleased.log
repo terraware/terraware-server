@@ -1,3 +1,5 @@
+8068011994a SW-8085 Add new indicator fields to request payloads (#4015)
+5cf49f7c22f SW-8085 Add new indicator fields to response payloads (#4014)
 87e3c91d18c Revert "Upgrade to Spring Boot 4, attempt 2 (#4012)"
 748f9ccd065 Upgrade to Spring Boot 4, attempt 2 (#4012)
 80286892343 SW-8084 Rename reference to refId in payloads and models (#4011)
