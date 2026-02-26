@@ -1702,13 +1702,17 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     if (!allIdsMatch) {
       val expectedString =
-          expected.entries.joinToString("\n") { (id, speciesMap) ->
-            "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> if (value is Double) value.roundToInt() else value }}" }}}"
-          }
+          expected.entries
+              .sortedBy { "${it.key}" }
+              .joinToString("\n") { (id, speciesMap) ->
+                "$level $id: {${speciesMap.entries.sortedBy { "${it.key}" }.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value?.let { value -> if (value is Double) value.roundToInt() else value }}" }}}"
+              }
       val actualString =
-          actual.entries.joinToString("\n") { (id, speciesMap) ->
-            "$level $id: {${speciesMap.entries.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
-          }
+          actual.entries
+              .sortedBy { "${it.key}" }
+              .joinToString("\n") { (id, speciesMap) ->
+                "$level $id: {${speciesMap.entries.sortedBy { "${it.key}" }.joinToString(", ") { "SpeciesId: ${it.key} -> SurvivalRate: ${it.value}" }}}"
+              }
       assertEquals(expectedString, actualString, "$message - $level")
     }
   }
