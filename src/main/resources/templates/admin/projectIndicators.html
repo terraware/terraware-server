@@ -26,7 +26,7 @@
     <tr th:each="indicator : ${projectIndicators}" class="striped">
         <td th:text="${indicator.id}">ID</td>
         <td th:text="${indicator.name}">Indicator Name</td>
-        <td th:text="${indicator.reference}">Indicator Reference</td>
+        <td th:text="${indicator.refId}">Indicator Ref ID</td>
         <td>
             <form method="POST"
                   th:id="|delete-${indicator.id}|"

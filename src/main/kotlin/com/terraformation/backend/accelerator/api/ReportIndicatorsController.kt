@@ -129,11 +129,11 @@ data class UpdateStandardMetricRequestPayload(
 
 data class AutoCalculatedIndicatorPayload(
     val indicator: AutoCalculatedIndicator,
-    val name: String = indicator.jsonValue,
-    val description: String = indicator.description,
     val category: IndicatorCategory = indicator.categoryId,
+    val description: String = indicator.description,
     val level: IndicatorLevel = indicator.levelId,
-    val reference: String = indicator.refId,
+    val name: String = indicator.jsonValue,
+    val refId: String = indicator.refId,
 )
 
 data class CreateCommonIndicatorRequestPayload(@field:Valid val indicator: NewIndicatorPayload)

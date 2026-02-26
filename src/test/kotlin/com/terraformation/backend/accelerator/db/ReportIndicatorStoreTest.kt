@@ -45,12 +45,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `returns one common indicator`() {
         val indicatorId =
             insertCommonIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 isPublishable = true,
                 name = "Climate Common Indicator",
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "degrees",
             )
 
@@ -61,7 +61,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate common indicator description",
                 isPublishable = true,
                 name = "Climate Common Indicator",
-                reference = "3.0",
+                refId = "3.0",
                 level = IndicatorLevel.Activity,
                 unit = "degrees",
             ),
@@ -80,11 +80,11 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `throws access denied exception for non-global role users`() {
         val indicatorId =
             insertCommonIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 name = "Climate Common Indicator",
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -102,32 +102,32 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `returns all common indicators`() {
         val commonIndicatorId1 =
             insertCommonIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 name = "Climate Common Indicator",
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
         val commonIndicatorId2 =
             insertCommonIndicator(
-                component = IndicatorCategory.Community,
+                category = IndicatorCategory.Community,
                 description = "Community indicator description",
                 name = "Community Indicator",
-                reference = "5.0",
-                type = IndicatorLevel.Outcome,
+                refId = "5.0",
+                level = IndicatorLevel.Outcome,
                 unit = "meters",
             )
 
         val commonIndicatorId3 =
             insertCommonIndicator(
-                component = IndicatorCategory.ProjectObjectives,
+                category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 isPublishable = false,
                 name = "Project Objectives Indicator",
-                reference = "3.0",
-                type = IndicatorLevel.Impact,
+                refId = "3.0",
+                level = IndicatorLevel.Impact,
                 unit = "cm",
             )
 
@@ -140,7 +140,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Climate common indicator description",
                     isPublishable = true,
                     name = "Climate Common Indicator",
-                    reference = "3.0",
+                    refId = "3.0",
                     level = IndicatorLevel.Activity,
                     unit = "%",
                 ),
@@ -150,7 +150,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Project objectives indicator description",
                     isPublishable = false,
                     name = "Project Objectives Indicator",
-                    reference = "3.0",
+                    refId = "3.0",
                     level = IndicatorLevel.Impact,
                     unit = "cm",
                 ),
@@ -160,7 +160,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Community indicator description",
                     isPublishable = true,
                     name = "Community Indicator",
-                    reference = "5.0",
+                    refId = "5.0",
                     level = IndicatorLevel.Outcome,
                     unit = "meters",
                 ),
@@ -171,13 +171,13 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       @Test
       fun `sorted by reference correctly`() {
-        val indicatorId1 = insertCommonIndicator(reference = "2.0.2")
-        val indicatorId2 = insertCommonIndicator(reference = "10.0")
-        val indicatorId3 = insertCommonIndicator(reference = "1.0")
-        val indicatorId4 = insertCommonIndicator(reference = "2.0")
-        val indicatorId5 = insertCommonIndicator(reference = "1.1")
-        val indicatorId6 = insertCommonIndicator(reference = "1.1.1")
-        val indicatorId7 = insertCommonIndicator(reference = "1.2")
+        val indicatorId1 = insertCommonIndicator(refId = "2.0.2")
+        val indicatorId2 = insertCommonIndicator(refId = "10.0")
+        val indicatorId3 = insertCommonIndicator(refId = "1.0")
+        val indicatorId4 = insertCommonIndicator(refId = "2.0")
+        val indicatorId5 = insertCommonIndicator(refId = "1.1")
+        val indicatorId6 = insertCommonIndicator(refId = "1.1.1")
+        val indicatorId7 = insertCommonIndicator(refId = "1.2")
 
         assertEquals(
             listOf(
@@ -211,13 +211,13 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val projectId = insertProject()
         val indicatorId =
             insertProjectIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate project indicator description",
                 name = "Climate Project Indicator",
                 isPublishable = false,
                 projectId = projectId,
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "degrees",
             )
 
@@ -229,7 +229,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Climate project indicator description",
                 isPublishable = false,
                 name = "Climate Project Indicator",
-                reference = "3.0",
+                refId = "3.0",
                 level = IndicatorLevel.Activity,
                 unit = "degrees",
             ),
@@ -249,13 +249,13 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertOrganization()
         val projectId = insertProject()
 
-        val indicatorId1 = insertProjectIndicator(reference = "2.0.2")
-        val indicatorId2 = insertProjectIndicator(reference = "10.0")
-        val indicatorId3 = insertProjectIndicator(reference = "1.0")
-        val indicatorId4 = insertProjectIndicator(reference = "2.0")
-        val indicatorId5 = insertProjectIndicator(reference = "1.1")
-        val indicatorId6 = insertProjectIndicator(reference = "1.1.1")
-        val indicatorId7 = insertProjectIndicator(reference = "1.2")
+        val indicatorId1 = insertProjectIndicator(refId = "2.0.2")
+        val indicatorId2 = insertProjectIndicator(refId = "10.0")
+        val indicatorId3 = insertProjectIndicator(refId = "1.0")
+        val indicatorId4 = insertProjectIndicator(refId = "2.0")
+        val indicatorId5 = insertProjectIndicator(refId = "1.1")
+        val indicatorId6 = insertProjectIndicator(refId = "1.1.1")
+        val indicatorId7 = insertProjectIndicator(refId = "1.2")
 
         assertEquals(
             listOf(
@@ -277,12 +277,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val projectId = insertProject()
         val indicatorId =
             insertProjectIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 name = "Climate Common Indicator",
                 projectId = projectId,
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
@@ -301,35 +301,35 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val projectId = insertProject()
         val indicatorId1 =
             insertProjectIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 name = "Climate Common Indicator",
                 projectId = projectId,
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
         val indicatorId2 =
             insertProjectIndicator(
-                component = IndicatorCategory.Community,
+                category = IndicatorCategory.Community,
                 description = "Community indicator description",
                 isPublishable = false,
                 name = "Community Indicator",
                 projectId = projectId,
-                reference = "5.0",
-                type = IndicatorLevel.Outcome,
+                refId = "5.0",
+                level = IndicatorLevel.Outcome,
                 unit = "meters",
             )
 
         val indicatorId3 =
             insertProjectIndicator(
-                component = IndicatorCategory.ProjectObjectives,
+                category = IndicatorCategory.ProjectObjectives,
                 description = "Project objectives indicator description",
                 name = "Project Objectives Indicator",
                 projectId = projectId,
-                reference = "3.0",
-                type = IndicatorLevel.Impact,
+                refId = "3.0",
+                level = IndicatorLevel.Impact,
                 unit = "cm",
             )
 
@@ -347,7 +347,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Climate common indicator description",
                     isPublishable = true,
                     name = "Climate Common Indicator",
-                    reference = "3.0",
+                    refId = "3.0",
                     level = IndicatorLevel.Activity,
                     unit = "%",
                 ),
@@ -358,7 +358,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Project objectives indicator description",
                     isPublishable = true,
                     name = "Project Objectives Indicator",
-                    reference = "3.0",
+                    refId = "3.0",
                     level = IndicatorLevel.Impact,
                     unit = "cm",
                 ),
@@ -369,7 +369,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     description = "Community indicator description",
                     isPublishable = false,
                     name = "Community Indicator",
-                    reference = "5.0",
+                    refId = "5.0",
                     level = IndicatorLevel.Outcome,
                     unit = "meters",
                 ),
@@ -432,11 +432,11 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `inserts new record`() {
         val existingIndicatorId =
             insertCommonIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 name = "Climate Common Indicator",
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -447,7 +447,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Project objectives indicator description",
                 isPublishable = false,
                 name = "Project Objectives Indicator",
-                reference = "1.0",
+                refId = "1.0",
                 level = IndicatorLevel.Impact,
                 unit = "meters",
             )
@@ -491,7 +491,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Project objectives indicator description",
                 isPublishable = true,
                 name = "Project Objectives Indicator",
-                reference = "1.0",
+                refId = "1.0",
                 level = IndicatorLevel.Impact,
                 unit = "%",
             )
@@ -510,12 +510,12 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         val projectId = insertProject()
         val existingIndicatorId =
             insertProjectIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 name = "Climate Common Indicator",
                 projectId = projectId,
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "meters",
             )
 
@@ -527,7 +527,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Project objectives indicator description",
                 isPublishable = false,
                 name = "Project Objectives Indicator",
-                reference = "1.0",
+                refId = "1.0",
                 level = IndicatorLevel.Impact,
                 unit = "%",
             )
@@ -576,7 +576,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 isPublishable = true,
                 name = "Project Objectives Indicator",
                 projectId = projectId,
-                reference = "1.0",
+                refId = "1.0",
                 level = IndicatorLevel.Impact,
             )
 
@@ -595,11 +595,11 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `updates existing record`() {
         val existingIndicatorId =
             insertCommonIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 name = "Climate Common Indicator",
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
@@ -610,7 +610,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                 description = "Project objectives indicator description",
                 isPublishable = false,
                 name = "Project Objectives Indicator",
-                reference = "1.0",
+                refId = "1.0",
                 level = IndicatorLevel.Impact,
                 unit = "meters",
             )
@@ -638,18 +638,18 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       fun `throws access denied exception for non-accelerator admin`() {
         val existingIndicatorId =
             insertCommonIndicator(
-                component = IndicatorCategory.Climate,
+                category = IndicatorCategory.Climate,
                 description = "Climate common indicator description",
                 name = "Climate Common Indicator",
-                reference = "3.0",
-                type = IndicatorLevel.Activity,
+                refId = "3.0",
+                level = IndicatorLevel.Activity,
                 unit = "%",
             )
 
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         insertUserGlobalRole(role = GlobalRole.TFExpert)
         assertThrows<AccessDeniedException> {
-          store.updateCommonIndicator(existingIndicatorId) { it.copy(reference = "1.0") }
+          store.updateCommonIndicator(existingIndicatorId) { it.copy(refId = "1.0") }
         }
       }
     }
@@ -663,13 +663,13 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectId = insertProject()
       val existingIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
               isPublishable = false,
               name = "Climate Common Indicator",
               projectId = projectId,
-              reference = "3.0",
-              type = IndicatorLevel.Activity,
+              refId = "3.0",
+              level = IndicatorLevel.Activity,
               unit = "feet",
           )
 
@@ -681,7 +681,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               isPublishable = true,
               name = "Project Objectives Indicator",
               projectId = ProjectId(99), // this field is ignored
-              reference = "1.0",
+              refId = "1.0",
               level = IndicatorLevel.Impact,
               unit = "inches",
           )
@@ -712,18 +712,18 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectId = insertProject()
       val existingIndicatorId =
           insertProjectIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Climate common indicator description",
               name = "Climate Common Indicator",
               projectId = projectId,
-              reference = "3.0",
-              type = IndicatorLevel.Activity,
+              refId = "3.0",
+              level = IndicatorLevel.Activity,
           )
 
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       insertUserGlobalRole(role = GlobalRole.TFExpert)
       assertThrows<AccessDeniedException> {
-        store.updateProjectIndicator(existingIndicatorId) { it.copy(reference = "1.0") }
+        store.updateProjectIndicator(existingIndicatorId) { it.copy(refId = "1.0") }
       }
     }
   }

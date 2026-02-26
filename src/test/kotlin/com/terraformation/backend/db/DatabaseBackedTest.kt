@@ -1110,24 +1110,24 @@ abstract class DatabaseBackedTest {
 
   protected fun insertProjectIndicator(
       row: ProjectIndicatorsRow = ProjectIndicatorsRow(),
-      component: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
+      category: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
       description: String? = row.description,
       isPublishable: Boolean = row.isPublishable ?: true,
+      level: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       name: String = row.name ?: "Indicator name",
       projectId: ProjectId = row.projectId ?: inserted.projectId,
-      reference: String = row.refId ?: "1.1",
-      type: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
+      refId: String = row.refId ?: "1.1",
       unit: String? = row.unit,
   ): ProjectIndicatorId {
     val rowWithDefaults =
         row.copy(
-            categoryId = component,
+            categoryId = category,
             description = description,
             isPublishable = isPublishable,
+            levelId = level,
             name = name,
-            refId = reference,
             projectId = projectId,
-            levelId = type,
+            refId = refId,
             unit = unit,
         )
 
@@ -2819,22 +2819,22 @@ abstract class DatabaseBackedTest {
 
   fun insertCommonIndicator(
       row: CommonIndicatorsRow = CommonIndicatorsRow(),
-      component: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
+      category: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
       description: String? = row.description,
       isPublishable: Boolean = row.isPublishable ?: true,
+      level: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       name: String = row.name ?: "Indicator name",
-      reference: String = row.refId ?: "1.1",
-      type: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
+      refId: String = row.refId ?: "1.1",
       unit: String? = row.unit,
   ): CommonIndicatorId {
     val rowWithDefaults =
         row.copy(
-            categoryId = component,
+            categoryId = category,
             description = description,
             isPublishable = isPublishable,
+            levelId = level,
             name = name,
-            refId = reference,
-            levelId = type,
+            refId = refId,
             unit = unit,
         )
 

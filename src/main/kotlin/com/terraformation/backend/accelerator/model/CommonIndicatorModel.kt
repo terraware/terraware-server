@@ -8,12 +8,12 @@ import org.jooq.Record
 
 data class CommonIndicatorModel<ID : CommonIndicatorId?>(
     val id: ID,
-    val name: String,
-    val description: String?,
     val category: IndicatorCategory,
-    val level: IndicatorLevel,
-    val reference: String,
+    val description: String?,
     val isPublishable: Boolean,
+    val level: IndicatorLevel,
+    val name: String,
+    val refId: String,
     val unit: String? = null,
 ) {
   companion object {
@@ -21,12 +21,12 @@ data class CommonIndicatorModel<ID : CommonIndicatorId?>(
       return with(COMMON_INDICATORS) {
         ExistingCommonIndicatorModel(
             id = record[ID]!!,
-            name = record[NAME]!!,
-            description = record[DESCRIPTION],
             category = record[CATEGORY_ID]!!,
-            level = record[LEVEL_ID]!!,
-            reference = record[REF_ID]!!,
+            description = record[DESCRIPTION],
             isPublishable = record[IS_PUBLISHABLE]!!,
+            level = record[LEVEL_ID]!!,
+            name = record[NAME]!!,
+            refId = record[REF_ID]!!,
             unit = record[UNIT],
         )
       }

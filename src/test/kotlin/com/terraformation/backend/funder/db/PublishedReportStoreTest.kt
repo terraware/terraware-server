@@ -49,39 +49,39 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val commonIndicatorId1 =
           insertCommonIndicator(
-              component = IndicatorCategory.Climate,
+              category = IndicatorCategory.Climate,
               description = "Common Indicator Description 1",
               name = "Common Indicator 1",
-              reference = "1.1.2",
-              type = IndicatorLevel.Output,
+              refId = "1.1.2",
+              level = IndicatorLevel.Output,
           )
 
       val commonIndicatorId2 =
           insertCommonIndicator(
-              component = IndicatorCategory.Community,
+              category = IndicatorCategory.Community,
               description = "Common Indicator Description 2",
               name = "Common Indicator 2",
-              reference = "1.1.1",
-              type = IndicatorLevel.Outcome,
+              refId = "1.1.1",
+              level = IndicatorLevel.Outcome,
           )
 
       val projectIndicatorId1 =
           insertProjectIndicator(
-              component = IndicatorCategory.Biodiversity,
+              category = IndicatorCategory.Biodiversity,
               description = "Project Indicator Description 1",
               name = "Project Indicator 1",
-              reference = "1.2.1",
-              type = IndicatorLevel.Output,
+              refId = "1.2.1",
+              level = IndicatorLevel.Output,
               unit = "%",
           )
 
       val projectIndicatorId2 =
           insertProjectIndicator(
-              component = IndicatorCategory.ProjectObjectives,
+              category = IndicatorCategory.ProjectObjectives,
               description = "Project Indicator Description 2",
               name = "Project Indicator 2",
-              reference = "1.2.11",
-              type = IndicatorLevel.Outcome,
+              refId = "1.2.11",
+              level = IndicatorLevel.Outcome,
               unit = "USD",
           )
 
@@ -250,7 +250,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               indicatorId = projectIndicatorId1,
                               level = IndicatorLevel.Output,
                               name = "Project Indicator 1",
-                              reference = "1.2.1",
+                              refId = "1.2.1",
                               status = ReportIndicatorStatus.OnTrack,
                               target = null,
                               progressNotes = "progress notes 1",
@@ -264,7 +264,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               indicatorId = projectIndicatorId2,
                               level = IndicatorLevel.Outcome,
                               name = "Project Indicator 2",
-                              reference = "1.2.11",
+                              refId = "1.2.11",
                               status = null,
                               target = null,
                               progressNotes = null,
@@ -286,7 +286,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               indicatorId = commonIndicatorId2,
                               level = IndicatorLevel.Outcome,
                               name = "Common Indicator 2",
-                              reference = "1.1.1",
+                              refId = "1.1.1",
                               target = 200,
                               value = 180,
                               progressNotes = "progress notes 2",
@@ -301,7 +301,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               level = IndicatorLevel.Output,
                               name = "Common Indicator 1",
                               status = ReportIndicatorStatus.Achieved,
-                              reference = "1.1.2",
+                              refId = "1.1.2",
                               target = 100,
                               progressNotes = null,
                               projectsComments = null,
@@ -318,7 +318,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               indicatorId = AutoCalculatedIndicator.SurvivalRate,
                               level = AutoCalculatedIndicator.SurvivalRate.levelId,
                               name = AutoCalculatedIndicator.SurvivalRate.jsonValue,
-                              reference = AutoCalculatedIndicator.SurvivalRate.refId,
+                              refId = AutoCalculatedIndicator.SurvivalRate.refId,
                               status = ReportIndicatorStatus.Achieved,
                               target = 6,
                               progressNotes = null,

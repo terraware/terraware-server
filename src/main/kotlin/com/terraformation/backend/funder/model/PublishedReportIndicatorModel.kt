@@ -12,7 +12,7 @@ data class PublishedReportIndicatorModel<ID : Any>(
     val name: String,
     val progressNotes: String?,
     val projectsComments: String?,
-    val reference: String,
+    val refId: String,
     val status: ReportIndicatorStatus?,
     val target: Int?,
     val unit: String?,
