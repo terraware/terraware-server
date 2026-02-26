@@ -1,3 +1,4 @@
+9942468a267 Fix reliance on query ordering in survival rates test (#4016)
 8068011994a SW-8085 Add new indicator fields to request payloads (#4015)
 5cf49f7c22f SW-8085 Add new indicator fields to response payloads (#4014)
 87e3c91d18c Revert "Upgrade to Spring Boot 4, attempt 2 (#4012)"
