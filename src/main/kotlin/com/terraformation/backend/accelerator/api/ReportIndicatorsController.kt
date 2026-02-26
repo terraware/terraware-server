@@ -8,6 +8,8 @@ import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorClass
+import com.terraformation.backend.db.accelerator.IndicatorFrequency
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
@@ -129,11 +131,18 @@ data class UpdateStandardMetricRequestPayload(
 
 data class AutoCalculatedIndicatorPayload(
     val indicator: AutoCalculatedIndicator,
+    val active: Boolean = indicator.active,
     val category: IndicatorCategory = indicator.categoryId,
+    val classId: IndicatorClass? = indicator.classId,
     val description: String = indicator.description,
+    val frequency: IndicatorFrequency? = indicator.frequencyId,
     val level: IndicatorLevel = indicator.levelId,
     val name: String = indicator.jsonValue,
+    val notes: String? = indicator.notes,
+    val primaryDataSource: String? = indicator.primaryDataSource,
     val refId: String = indicator.refId,
+    val tfOwner: String? = indicator.tfOwner,
+    val unit: String? = indicator.unit,
 )
 
 data class CreateCommonIndicatorRequestPayload(@field:Valid val indicator: NewIndicatorPayload)

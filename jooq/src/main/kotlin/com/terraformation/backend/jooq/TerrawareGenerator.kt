@@ -85,7 +85,10 @@ class TerrawareGenerator : KotlinGenerator() {
                           val obj = rs.getObject(2 + i + 1)
                           when {
                             obj is String -> "\"$obj\""
-                            columnInfo.isTableEnum -> "${columnInfo.columnDataType}.forId($obj)!!"
+                            columnInfo.isTableEnum ->
+                                if (columnInfo.columnDataType.endsWith("?") && "$obj" == "null")
+                                    "null"
+                                else "${columnInfo.columnDataType}.forId($obj)!!"
                             else -> "$obj"
                           }
                         })
