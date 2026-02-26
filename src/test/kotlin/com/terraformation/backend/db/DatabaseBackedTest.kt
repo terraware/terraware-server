@@ -32,6 +32,8 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.EventStatus
 import com.terraformation.backend.db.accelerator.EventType
 import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorClass
+import com.terraformation.backend.db.accelerator.IndicatorFrequency
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.InternalInterest
 import com.terraformation.backend.db.accelerator.ModuleId
@@ -1110,24 +1112,36 @@ abstract class DatabaseBackedTest {
 
   protected fun insertProjectIndicator(
       row: ProjectIndicatorsRow = ProjectIndicatorsRow(),
+      active: Boolean = row.active ?: true,
       category: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
+      classId: IndicatorClass? = row.classId,
       description: String? = row.description,
+      frequency: IndicatorFrequency? = row.frequencyId,
       isPublishable: Boolean = row.isPublishable ?: true,
       level: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       name: String = row.name ?: "Indicator name",
+      notes: String? = row.notes,
+      primaryDataSource: String? = row.primaryDataSource,
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       refId: String = row.refId ?: "1.1",
+      tfOwner: String? = row.tfOwner ?: "Carbon",
       unit: String? = row.unit,
   ): ProjectIndicatorId {
     val rowWithDefaults =
         row.copy(
+            active = active,
             categoryId = category,
+            classId = classId,
             description = description,
+            frequencyId = frequency,
             isPublishable = isPublishable,
             levelId = level,
             name = name,
+            notes = notes,
+            primaryDataSource = primaryDataSource,
             projectId = projectId,
             refId = refId,
+            tfOwner = tfOwner,
             unit = unit,
         )
 
@@ -2819,22 +2833,34 @@ abstract class DatabaseBackedTest {
 
   fun insertCommonIndicator(
       row: CommonIndicatorsRow = CommonIndicatorsRow(),
+      active: Boolean = row.active ?: true,
       category: IndicatorCategory = row.categoryId ?: IndicatorCategory.ProjectObjectives,
+      classId: IndicatorClass? = row.classId,
       description: String? = row.description,
+      frequency: IndicatorFrequency? = row.frequencyId,
       isPublishable: Boolean = row.isPublishable ?: true,
       level: IndicatorLevel = row.levelId ?: IndicatorLevel.Impact,
       name: String = row.name ?: "Indicator name",
+      notes: String? = row.notes,
+      primaryDataSource: String? = row.primaryDataSource,
       refId: String = row.refId ?: "1.1",
+      tfOwner: String? = row.tfOwner ?: "Carbon",
       unit: String? = row.unit,
   ): CommonIndicatorId {
     val rowWithDefaults =
         row.copy(
+            active = active,
             categoryId = category,
+            classId = classId,
             description = description,
+            frequencyId = frequency,
             isPublishable = isPublishable,
             levelId = level,
             name = name,
+            notes = notes,
+            primaryDataSource = primaryDataSource,
             refId = refId,
+            tfOwner = tfOwner,
             unit = unit,
         )
 
