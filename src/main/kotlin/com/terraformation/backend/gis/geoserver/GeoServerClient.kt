@@ -1,5 +1,10 @@
 package com.terraformation.backend.gis.geoserver
 
+import com.fasterxml.jackson.databind.DeserializationFeature
+import com.fasterxml.jackson.databind.MapperFeature
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.xml.XmlMapper
+import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.requirePermissions
 import io.ktor.client.HttpClient
@@ -17,17 +22,12 @@ import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
-import io.ktor.serialization.jackson3.JacksonConverter
+import io.ktor.serialization.jackson.JacksonConverter
 import jakarta.inject.Named
 import jakarta.ws.rs.core.MediaType
 import kotlinx.coroutines.runBlocking
 import org.geotools.feature.FeatureCollection
 import org.geotools.geojson.feature.FeatureJSON
-import tools.jackson.databind.DeserializationFeature
-import tools.jackson.databind.MapperFeature
-import tools.jackson.databind.ObjectMapper
-import tools.jackson.dataformat.xml.XmlMapper
-import tools.jackson.module.kotlin.KotlinModule
 
 @Named
 class GeoServerClient(
@@ -120,11 +120,11 @@ class GeoServerClient(
             ContentType.Application.Xml,
             JacksonConverter(
                 XmlMapper.builder()
-                    .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                    .enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES)
+                    .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                    .configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true)
                     .defaultUseWrapper(false)
-                    .addModule(KotlinModule.Builder().build())
                     .build()
+                    .registerKotlinModule()
             ),
         )
       }

@@ -1,13 +1,13 @@
 package com.terraformation.backend.api
 
+import com.fasterxml.jackson.core.JsonGenerator
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.databind.DeserializationContext
+import com.fasterxml.jackson.databind.JsonDeserializer
+import com.fasterxml.jackson.databind.JsonSerializer
+import com.fasterxml.jackson.databind.SerializerProvider
+import com.fasterxml.jackson.databind.node.ObjectNode
 import org.jooq.JSONB
-import tools.jackson.core.JsonGenerator
-import tools.jackson.core.JsonParser
-import tools.jackson.databind.DeserializationContext
-import tools.jackson.databind.SerializationContext
-import tools.jackson.databind.ValueDeserializer
-import tools.jackson.databind.ValueSerializer
-import tools.jackson.databind.node.ObjectNode
 
 /**
  * Underlying data type for API fields that accept arbitrary client-supplied JSON objects. Payload
@@ -21,7 +21,7 @@ typealias ArbitraryJsonObject = JSONB
  * because we want to preserve client-supplied JSON exactly as is rather than applying
  * transformations such as mapping empty strings to null.
  */
-class ArbitraryJsonObjectDeserializer : ValueDeserializer<ArbitraryJsonObject?>() {
+class ArbitraryJsonObjectDeserializer : JsonDeserializer<ArbitraryJsonObject?>() {
   override fun deserialize(parser: JsonParser, ctxt: DeserializationContext): ArbitraryJsonObject? {
     val objectNode = parser.readValueAs(ObjectNode::class.java)
     return JSONB.jsonbOrNull(objectNode?.toString())
@@ -32,11 +32,11 @@ class ArbitraryJsonObjectDeserializer : ValueDeserializer<ArbitraryJsonObject?>(
  * "Serializes" jOOQ JSONB wrappers to JSON. In reality, this just unwraps the existing JSON
  * representation contained in the JSONB object.
  */
-class ArbitraryJsonObjectSerializer : ValueSerializer<ArbitraryJsonObject?>() {
+class ArbitraryJsonObjectSerializer : JsonSerializer<ArbitraryJsonObject?>() {
   override fun serialize(
       value: ArbitraryJsonObject?,
       gen: JsonGenerator,
-      serializers: SerializationContext,
+      serializers: SerializerProvider,
   ) {
     if (value == null) {
       gen.writeNull()

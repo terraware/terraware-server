@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.mapbox
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -20,7 +21,6 @@ import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.boot.context.properties.EnableConfigurationProperties
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 @EnableConfigurationProperties(TerrawareServerConfig::class)
 class MapboxServiceExternalTest : RunsAsUser {

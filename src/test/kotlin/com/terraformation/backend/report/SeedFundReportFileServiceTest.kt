@@ -1,5 +1,6 @@
 package com.terraformation.backend.report
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
@@ -41,7 +42,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class SeedFundReportFileServiceTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()

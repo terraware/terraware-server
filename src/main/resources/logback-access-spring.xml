@@ -49,7 +49,7 @@
   <springProfile name="!logstash">
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
       <encoder>
-        <pattern>%h - %u [%t] "%r" %s %b "%i{Referer}" "%i{User-Agent}"</pattern>
+        <pattern>combined</pattern>
       </encoder>
     </appender>
     <appender-ref ref="CONSOLE"/>

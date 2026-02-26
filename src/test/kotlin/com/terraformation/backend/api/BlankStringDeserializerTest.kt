@@ -1,15 +1,14 @@
 package com.terraformation.backend.api
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import tools.jackson.module.kotlin.jacksonMapperBuilder
-import tools.jackson.module.kotlin.readValue
 
 class BlankStringDeserializerTest {
   private val objectMapper =
-      jacksonMapperBuilder()
-          .addModule(SerializerConfiguration().blankStringDeserializerModule())
-          .build()
+      jacksonObjectMapper()
+          .registerModule(SerializerConfiguration().blankStringDeserializerModule())
 
   @Test
   fun `allows blank strings on fields annotated with AllowBlankString`() {

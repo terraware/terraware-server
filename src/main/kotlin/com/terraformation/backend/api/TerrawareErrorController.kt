@@ -4,10 +4,10 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.ws.rs.core.UriBuilder
-import org.springframework.boot.autoconfigure.web.WebProperties
+import org.springframework.boot.autoconfigure.web.ServerProperties
+import org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController
 import org.springframework.boot.web.error.ErrorAttributeOptions
-import org.springframework.boot.webmvc.autoconfigure.error.BasicErrorController
-import org.springframework.boot.webmvc.error.ErrorAttributes
+import org.springframework.boot.web.servlet.error.ErrorAttributes
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
 import org.springframework.web.context.request.ServletWebRequest
@@ -18,8 +18,8 @@ import org.springframework.web.servlet.ModelAndView
 class TerrawareErrorController(
     private val config: TerrawareServerConfig,
     private val errorAttributes: ErrorAttributes,
-    webProperties: WebProperties,
-) : BasicErrorController(errorAttributes, webProperties.error) {
+    serverProperties: ServerProperties,
+) : BasicErrorController(errorAttributes, serverProperties.error) {
   /**
    * Redirects the user to the web app if the SSO login endpoint returns HTTP 400. This can happen
    * if the user bookmarks a URL that includes OAuth2 state that's no longer valid. Redirecting to

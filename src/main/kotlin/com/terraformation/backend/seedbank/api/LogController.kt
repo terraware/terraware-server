@@ -1,5 +1,6 @@
 package com.terraformation.backend.seedbank.api
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.api.SeedBankAppEndpoint
 import com.terraformation.backend.log.log
 import io.swagger.v3.oas.annotations.Operation
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import tools.jackson.databind.ObjectMapper
 
 @RequestMapping("/api/v1/seedbank/log")
 @RestController

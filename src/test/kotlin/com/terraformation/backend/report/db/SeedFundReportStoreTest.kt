@@ -1,5 +1,7 @@
 package com.terraformation.backend.report.db
 
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
@@ -40,7 +42,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
-import tools.jackson.module.kotlin.jacksonObjectMapper
 
 class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -48,7 +49,7 @@ class SeedFundReportStoreTest : DatabaseTest(), RunsAsUser {
   private val defaultTime = ZonedDateTime.of(2023, 7, 3, 2, 1, 0, 0, ZoneOffset.UTC)
 
   private val clock = TestClock(defaultTime.toInstant())
-  private val objectMapper = jacksonObjectMapper()
+  private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
   private val store by lazy {
     SeedFundReportStore(

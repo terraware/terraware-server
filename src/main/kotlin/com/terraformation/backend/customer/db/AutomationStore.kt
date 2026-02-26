@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.db
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.requirePermissions
@@ -16,7 +17,6 @@ import jakarta.inject.Named
 import java.time.Clock
 import org.jooq.DSLContext
 import org.jooq.JSONB
-import tools.jackson.databind.ObjectMapper
 
 @Named
 class AutomationStore(
