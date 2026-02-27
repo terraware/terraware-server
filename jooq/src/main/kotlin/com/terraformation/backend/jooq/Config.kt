@@ -563,9 +563,17 @@ val EMBEDDABLES =
             .withTables("seedbank.accession_collectors")
             .withColumns("accession_id", "position"),
         EmbeddableDefinitionType()
+            .withName("auto_calculated_indicator_target_id")
+            .withTables("accelerator.auto_calculated_indicator_targets")
+            .withColumns("project_id", "auto_calculated_indicator_id"),
+        EmbeddableDefinitionType()
             .withName("batch_sub_location_id")
             .withTables("nursery.batch_sub_locations")
             .withColumns("batch_id", "sub_location_id"),
+        EmbeddableDefinitionType()
+            .withName("common_indicator_target_id")
+            .withTables("accelerator.common_indicator_targets")
+            .withColumns("project_id", "common_indicator_id"),
         EmbeddableDefinitionType()
             .withName("batch_withdrawal_id")
             .withTables("nursery.batch_withdrawals")
@@ -630,6 +638,10 @@ val EMBEDDABLES =
             .withName("project_land_use_model_type_id")
             .withTables("project_land_use_model_types")
             .withColumns("project_id", "land_use_model_type_id"),
+        EmbeddableDefinitionType()
+            .withName("project_indicator_target_id")
+            .withTables("accelerator.project_indicator_targets")
+            .withColumns("project_id", "project_indicator_id"),
         EmbeddableDefinitionType()
             .withName("project_module_id")
             .withTables("accelerator.project_modules")
