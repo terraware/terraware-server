@@ -3,8 +3,12 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
+import com.terraformation.backend.accelerator.model.AutoCalculatedIndicatorTargetsModel
+import com.terraformation.backend.accelerator.model.CommonIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.IndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ProjectIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorTargetModel
@@ -16,6 +20,7 @@ import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
+import com.terraformation.backend.accelerator.model.YearlyIndicatorTargetModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.customer.model.SystemUser
@@ -34,9 +39,12 @@ import com.terraformation.backend.db.accelerator.ReportStatus
 import com.terraformation.backend.db.accelerator.tables.daos.ReportsDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportsRow
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
+import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_REPORT_CONFIGS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
@@ -235,6 +243,101 @@ class ReportStore(
           .where(PROJECT_ID.eq(projectId))
           .orderBy(YEAR, AUTO_CALCULATED_INDICATOR_ID)
           .fetch { ReportAutoCalculatedIndicatorTargetModel.of(it) }
+    }
+  }
+
+  fun fetchProjectIndicatorTargets(projectId: ProjectId): List<ProjectIndicatorTargetsModel> {
+    requirePermissions { readProjectReports(projectId) }
+
+    return fetchIndicatorTargets(
+        projectId,
+        REPORT_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
+        PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
+    )
+  }
+
+  fun fetchCommonIndicatorTargets(projectId: ProjectId): List<CommonIndicatorTargetsModel> {
+    requirePermissions { readProjectReports(projectId) }
+
+    return fetchIndicatorTargets(
+        projectId,
+        REPORT_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
+        COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
+    )
+  }
+
+  fun fetchAutoCalculatedIndicatorTargets(
+      projectId: ProjectId
+  ): List<AutoCalculatedIndicatorTargetsModel> {
+    requirePermissions { readProjectReports(projectId) }
+
+    return fetchIndicatorTargets(
+        projectId,
+        REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
+        AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
+    )
+  }
+
+  private fun <ID : Comparable<ID>> fetchIndicatorTargets(
+      projectId: ProjectId,
+      yearlyIndicatorIdField: TableField<*, ID?>,
+      projectIndicatorIdField: TableField<*, ID?>,
+  ): List<IndicatorTargetsModel<ID>> {
+    val yearlyTable = yearlyIndicatorIdField.table!!
+    val yearlyProjectIdField =
+        yearlyTable.field(
+            "project_id",
+            SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()),
+        )!!
+    val yearField = yearlyTable.field("year", SQLDataType.INTEGER)!!
+    val yearlyTargetField = yearlyTable.field("target", SQLDataType.INTEGER)!!
+
+    val yearlyByIndicator =
+        dslContext
+            .select(yearlyIndicatorIdField, yearlyTargetField, yearField)
+            .from(yearlyTable)
+            .where(yearlyProjectIdField.eq(projectId))
+            .orderBy(yearField)
+            .fetch { record ->
+              record[yearlyIndicatorIdField]!! to
+                  YearlyIndicatorTargetModel(
+                      target = record[yearlyTargetField],
+                      year = record[yearField]!!,
+                  )
+            }
+            .groupBy({ it.first }, { it.second })
+
+    val projectTargetTable = projectIndicatorIdField.table!!
+    val baselineField = projectTargetTable.field("baseline", SQLDataType.NUMERIC)!!
+    val endTargetField = projectTargetTable.field("end_target", SQLDataType.NUMERIC)!!
+    val projectIdField =
+        projectTargetTable.field(
+            "project_id",
+            SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()),
+        )!!
+
+    val baselineByIndicator =
+        dslContext
+            .select(
+                projectIndicatorIdField,
+                baselineField,
+                endTargetField,
+            )
+            .from(projectTargetTable)
+            .where(projectIdField.eq(projectId))
+            .fetch()
+            .associate {
+              it[projectIndicatorIdField]!! to (it[baselineField] to it[endTargetField])
+            }
+
+    return (yearlyByIndicator.keys union baselineByIndicator.keys).sorted().map { id ->
+      val baseline = baselineByIndicator[id]
+      IndicatorTargetsModel(
+          indicatorId = id,
+          baseline = baseline?.first,
+          endOfProjectTarget = baseline?.second,
+          yearlyTargets = yearlyByIndicator[id] ?: emptyList(),
+      )
     }
   }
 
