@@ -47,6 +47,7 @@ data class ExistingProjectMetricPayload(
         description = description,
         category = component,
         level = type,
+        precision = 0,
         refId = reference,
         isPublishable = isPublishable,
         unit = unit,
@@ -65,6 +66,7 @@ data class ExistingProjectIndicatorPayload(
     val level: IndicatorLevel,
     val name: String,
     val notes: String?,
+    val precision: Int,
     val primaryDataSource: String?,
     val projectId: ProjectId,
     val refId: String,
@@ -84,6 +86,7 @@ data class ExistingProjectIndicatorPayload(
       level = model.level,
       name = model.name,
       notes = model.notes,
+      precision = model.precision,
       primaryDataSource = model.primaryDataSource,
       projectId = model.projectId,
       refId = model.refId,
@@ -103,6 +106,7 @@ data class ExistingProjectIndicatorPayload(
         level = level,
         name = name,
         notes = notes,
+        precision = precision,
         primaryDataSource = primaryDataSource,
         projectId = projectId,
         refId = refId,
@@ -146,6 +150,7 @@ data class ExistingStandardMetricPayload(
         refId = reference,
         isPublishable = isPublishable,
         unit = unit,
+        precision = 0,
     )
   }
 }
@@ -161,6 +166,7 @@ data class ExistingCommonIndicatorPayload(
     val level: IndicatorLevel,
     val name: String,
     val notes: String?,
+    val precision: Int,
     val primaryDataSource: String?,
     val refId: String,
     val tfOwner: String?,
@@ -179,6 +185,7 @@ data class ExistingCommonIndicatorPayload(
       level = model.level,
       name = model.name,
       notes = model.notes,
+      precision = model.precision,
       primaryDataSource = model.primaryDataSource,
       refId = model.refId,
       tfOwner = model.tfOwner,
@@ -197,6 +204,7 @@ data class ExistingCommonIndicatorPayload(
         level = level,
         name = name,
         notes = notes,
+        precision = precision,
         primaryDataSource = primaryDataSource,
         refId = refId,
         tfOwner = tfOwner,
@@ -226,6 +234,7 @@ data class NewMetricPayload(
         refId = reference,
         isPublishable = isPublishable,
         unit = unit,
+        precision = 0,
     )
   }
 
@@ -239,6 +248,7 @@ data class NewMetricPayload(
         refId = reference,
         isPublishable = isPublishable,
         unit = unit,
+        precision = 0,
     )
   }
 }
@@ -252,6 +262,7 @@ data class NewIndicatorPayload(
     val level: IndicatorLevel,
     val name: String,
     val notes: String?,
+    val precision: Int,
     val primaryDataSource: String?,
     val refId: String,
     val tfOwner: String?,
@@ -268,6 +279,7 @@ data class NewIndicatorPayload(
         level = level,
         name = name,
         notes = notes,
+        precision = precision,
         primaryDataSource = primaryDataSource,
         projectId = projectId,
         refId = refId,
@@ -287,6 +299,7 @@ data class NewIndicatorPayload(
         level = level,
         name = name,
         notes = notes,
+        precision = precision,
         primaryDataSource = primaryDataSource,
         refId = refId,
         tfOwner = tfOwner,
