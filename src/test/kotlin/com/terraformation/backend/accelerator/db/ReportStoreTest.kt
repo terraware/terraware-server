@@ -41,7 +41,10 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.ReportStatus
+import com.terraformation.backend.db.accelerator.tables.records.AutoCalculatedIndicatorTargetsRecord
+import com.terraformation.backend.db.accelerator.tables.records.CommonIndicatorTargetsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectAcceleratorDetailsRecord
+import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorTargetsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ProjectReportConfigsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportAchievementsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportAutoCalculatedIndicatorsRecord
@@ -5759,6 +5762,357 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           targets,
       )
+    }
+  }
+
+  @Nested
+  inner class UpdateProjectIndicatorBaselineTarget {
+    @Test
+    fun `inserts new baseline target`() {
+      val projectIndicatorId =
+          insertProjectIndicator(
+              category = IndicatorCategory.ProjectObjectives,
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
+          )
+
+      store.updateProjectIndicatorBaselineTarget(
+          projectId = projectId,
+          indicatorId = projectIndicatorId,
+          baseline = BigDecimal("50"),
+          endOfProjectTarget = BigDecimal("500"),
+      )
+
+      assertTableEquals(
+          ProjectIndicatorTargetsRecord(
+              projectId = projectId,
+              projectIndicatorId = projectIndicatorId,
+              baseline = BigDecimal("50"),
+              endTarget = BigDecimal("500"),
+          )
+      )
+    }
+
+    @Test
+    fun `updates existing baseline target`() {
+      val projectIndicatorId =
+          insertProjectIndicator(
+              category = IndicatorCategory.ProjectObjectives,
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
+          )
+      insertProjectIndicatorBaselineTarget(baseline = 50, endTarget = 500)
+
+      val otherProjectIndicatorId =
+          insertProjectIndicator(
+              category = IndicatorCategory.ProjectObjectives,
+              description = "Other indicator",
+              name = "Other Indicator",
+              refId = "2.0",
+              level = IndicatorLevel.Activity,
+          )
+      insertProjectIndicatorBaselineTarget(baseline = 10, endTarget = 100)
+
+      store.updateProjectIndicatorBaselineTarget(
+          projectId = projectId,
+          indicatorId = projectIndicatorId,
+          baseline = BigDecimal("75"),
+          endOfProjectTarget = BigDecimal("750"),
+      )
+
+      assertTableEquals(
+          listOf(
+              ProjectIndicatorTargetsRecord(
+                  projectId = projectId,
+                  projectIndicatorId = projectIndicatorId,
+                  baseline = BigDecimal("75"),
+                  endTarget = BigDecimal("750"),
+              ),
+              ProjectIndicatorTargetsRecord(
+                  projectId = projectId,
+                  projectIndicatorId = otherProjectIndicatorId,
+                  baseline = BigDecimal("10"),
+                  endTarget = BigDecimal("100"),
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `allows null values`() {
+      val projectIndicatorId =
+          insertProjectIndicator(
+              category = IndicatorCategory.ProjectObjectives,
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
+          )
+
+      store.updateProjectIndicatorBaselineTarget(
+          projectId = projectId,
+          indicatorId = projectIndicatorId,
+          baseline = null,
+          endOfProjectTarget = null,
+      )
+
+      assertTableEquals(
+          ProjectIndicatorTargetsRecord(
+              projectId = projectId,
+              projectIndicatorId = projectIndicatorId,
+          )
+      )
+    }
+
+    @Test
+    fun `requires permission to update project report targets`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Manager)
+
+      val projectIndicatorId =
+          insertProjectIndicator(
+              category = IndicatorCategory.ProjectObjectives,
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
+          )
+
+      assertThrows<AccessDeniedException> {
+        store.updateProjectIndicatorBaselineTarget(
+            projectId = projectId,
+            indicatorId = projectIndicatorId,
+            baseline = BigDecimal("50"),
+            endOfProjectTarget = BigDecimal("500"),
+        )
+      }
+    }
+  }
+
+  @Nested
+  inner class UpdateCommonIndicatorBaselineTarget {
+    @Test
+    fun `inserts new baseline target`() {
+      val commonIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
+          )
+
+      store.updateCommonIndicatorBaselineTarget(
+          projectId = projectId,
+          indicatorId = commonIndicatorId,
+          baseline = BigDecimal("75"),
+          endOfProjectTarget = BigDecimal("750"),
+      )
+
+      assertTableEquals(
+          CommonIndicatorTargetsRecord(
+              projectId = projectId,
+              commonIndicatorId = commonIndicatorId,
+              baseline = BigDecimal("75"),
+              endTarget = BigDecimal("750"),
+          )
+      )
+    }
+
+    @Test
+    fun `updates existing baseline target`() {
+      val commonIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
+          )
+      insertCommonIndicatorBaselineTarget(baseline = 75, endTarget = 750)
+
+      val otherCommonIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              description = "Other indicator",
+              name = "Other Indicator",
+              refId = "2.0",
+              level = IndicatorLevel.Activity,
+          )
+      insertCommonIndicatorBaselineTarget(baseline = 20, endTarget = 200)
+
+      store.updateCommonIndicatorBaselineTarget(
+          projectId = projectId,
+          indicatorId = commonIndicatorId,
+          baseline = BigDecimal("100"),
+          endOfProjectTarget = BigDecimal("1000"),
+      )
+
+      assertTableEquals(
+          listOf(
+              CommonIndicatorTargetsRecord(
+                  projectId = projectId,
+                  commonIndicatorId = commonIndicatorId,
+                  baseline = BigDecimal("100"),
+                  endTarget = BigDecimal("1000"),
+              ),
+              CommonIndicatorTargetsRecord(
+                  projectId = projectId,
+                  commonIndicatorId = otherCommonIndicatorId,
+                  baseline = BigDecimal("20"),
+                  endTarget = BigDecimal("200"),
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `allows null values`() {
+      val commonIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
+          )
+
+      store.updateCommonIndicatorBaselineTarget(
+          projectId = projectId,
+          indicatorId = commonIndicatorId,
+          baseline = null,
+          endOfProjectTarget = null,
+      )
+
+      assertTableEquals(
+          CommonIndicatorTargetsRecord(
+              projectId = projectId,
+              commonIndicatorId = commonIndicatorId,
+          )
+      )
+    }
+
+    @Test
+    fun `requires permission to update project report targets`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Manager)
+
+      val commonIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+              level = IndicatorLevel.Activity,
+          )
+
+      assertThrows<AccessDeniedException> {
+        store.updateCommonIndicatorBaselineTarget(
+            projectId = projectId,
+            indicatorId = commonIndicatorId,
+            baseline = BigDecimal("75"),
+            endOfProjectTarget = BigDecimal("750"),
+        )
+      }
+    }
+  }
+
+  @Nested
+  inner class UpdateAutoCalculatedIndicatorBaselineTarget {
+    @Test
+    fun `inserts new baseline target`() {
+      store.updateAutoCalculatedIndicatorBaselineTarget(
+          projectId = projectId,
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          baseline = BigDecimal("200"),
+          endOfProjectTarget = BigDecimal("2000"),
+      )
+
+      assertTableEquals(
+          AutoCalculatedIndicatorTargetsRecord(
+              projectId = projectId,
+              autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
+              baseline = BigDecimal("200"),
+              endTarget = BigDecimal("2000"),
+          )
+      )
+    }
+
+    @Test
+    fun `updates existing baseline target`() {
+      insertAutoCalculatedIndicatorBaselineTarget(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          baseline = 200,
+          endTarget = 2000,
+      )
+      insertAutoCalculatedIndicatorBaselineTarget(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          baseline = 100,
+          endTarget = 1000,
+      )
+
+      store.updateAutoCalculatedIndicatorBaselineTarget(
+          projectId = projectId,
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          baseline = BigDecimal("300"),
+          endOfProjectTarget = BigDecimal("3000"),
+      )
+
+      assertTableEquals(
+          listOf(
+              AutoCalculatedIndicatorTargetsRecord(
+                  projectId = projectId,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
+                  baseline = BigDecimal("100"),
+                  endTarget = BigDecimal("1000"),
+              ),
+              AutoCalculatedIndicatorTargetsRecord(
+                  projectId = projectId,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
+                  baseline = BigDecimal("300"),
+                  endTarget = BigDecimal("3000"),
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `allows null values`() {
+      store.updateAutoCalculatedIndicatorBaselineTarget(
+          projectId = projectId,
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          baseline = null,
+          endOfProjectTarget = null,
+      )
+
+      assertTableEquals(
+          AutoCalculatedIndicatorTargetsRecord(
+              projectId = projectId,
+              autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
+          )
+      )
+    }
+
+    @Test
+    fun `requires permission to update project report targets`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Manager)
+
+      assertThrows<AccessDeniedException> {
+        store.updateAutoCalculatedIndicatorBaselineTarget(
+            projectId = projectId,
+            indicator = AutoCalculatedIndicator.TreesPlanted,
+            baseline = BigDecimal("200"),
+            endOfProjectTarget = BigDecimal("2000"),
+        )
+      }
     }
   }
 

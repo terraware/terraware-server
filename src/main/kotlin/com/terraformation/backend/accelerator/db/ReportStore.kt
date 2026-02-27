@@ -818,6 +818,75 @@ class ReportStore(
     }
   }
 
+  fun updateProjectIndicatorBaselineTarget(
+      projectId: ProjectId,
+      indicatorId: ProjectIndicatorId,
+      baseline: BigDecimal?,
+      endOfProjectTarget: BigDecimal?,
+  ) {
+    requirePermissions { updateProjectReports(projectId) }
+
+    with(PROJECT_INDICATOR_TARGETS) {
+      dslContext
+          .insertInto(this)
+          .set(PROJECT_ID, projectId)
+          .set(PROJECT_INDICATOR_ID, indicatorId)
+          .set(BASELINE, baseline)
+          .set(END_TARGET, endOfProjectTarget)
+          .onConflict(PROJECT_ID, PROJECT_INDICATOR_ID)
+          .doUpdate()
+          .set(BASELINE, baseline)
+          .set(END_TARGET, endOfProjectTarget)
+          .execute()
+    }
+  }
+
+  fun updateCommonIndicatorBaselineTarget(
+      projectId: ProjectId,
+      indicatorId: CommonIndicatorId,
+      baseline: BigDecimal?,
+      endOfProjectTarget: BigDecimal?,
+  ) {
+    requirePermissions { updateProjectReports(projectId) }
+
+    with(COMMON_INDICATOR_TARGETS) {
+      dslContext
+          .insertInto(this)
+          .set(PROJECT_ID, projectId)
+          .set(COMMON_INDICATOR_ID, indicatorId)
+          .set(BASELINE, baseline)
+          .set(END_TARGET, endOfProjectTarget)
+          .onConflict(PROJECT_ID, COMMON_INDICATOR_ID)
+          .doUpdate()
+          .set(BASELINE, baseline)
+          .set(END_TARGET, endOfProjectTarget)
+          .execute()
+    }
+  }
+
+  fun updateAutoCalculatedIndicatorBaselineTarget(
+      projectId: ProjectId,
+      indicator: AutoCalculatedIndicator,
+      baseline: BigDecimal?,
+      endOfProjectTarget: BigDecimal?,
+  ) {
+    requirePermissions { updateProjectReports(projectId) }
+
+    with(AUTO_CALCULATED_INDICATOR_TARGETS) {
+      dslContext
+          .insertInto(this)
+          .set(PROJECT_ID, projectId)
+          .set(AUTO_CALCULATED_INDICATOR_ID, indicator)
+          .set(BASELINE, baseline)
+          .set(END_TARGET, endOfProjectTarget)
+          .onConflict(PROJECT_ID, AUTO_CALCULATED_INDICATOR_ID)
+          .doUpdate()
+          .set(BASELINE, baseline)
+          .set(END_TARGET, endOfProjectTarget)
+          .execute()
+    }
+  }
+
   private fun getStartOfReportingPeriod(date: LocalDate): LocalDate {
     val startYear = date.year
     val startMonth = date.month.firstMonthOfQuarter()
