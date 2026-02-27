@@ -611,7 +611,11 @@ COMMENT ON TABLE accelerator.application_statuses IS '(Enum) Possible statuses f
 
 COMMENT ON TABLE accelerator.applications IS 'Information about projects that are applying for the accelerator program.';
 
+COMMENT ON TABLE accelerator.auto_calculated_indicator_targets IS 'Project-level baseline and end-of-project target values for auto-calculated indicators.';
+
 COMMENT ON TABLE accelerator.auto_calculated_indicators IS '(Enum) Accelerator report auto-calculated indicators, for which data are collected from Terraware.';
+
+COMMENT ON TABLE accelerator.common_indicator_targets IS 'Project-level baseline and end-of-project target values for common indicators.';
 
 COMMENT ON TABLE accelerator.common_indicators IS 'Standard non-system indicators for every project to measure in accelerator reports.';
 
@@ -668,6 +672,8 @@ COMMENT ON COLUMN accelerator.project_accelerator_details.file_naming IS 'Identi
 COMMENT ON COLUMN accelerator.project_accelerator_details.logframe_url IS 'Link to the project logical framework, monitoring and evaluation plan, and operational work plan.';
 
 COMMENT ON VIEW accelerator.project_deliverables IS 'Deliverable information for projects including submission status and due dates.';
+
+COMMENT ON TABLE accelerator.project_indicator_targets IS 'Project-level baseline and end-of-project target values for project-specific indicators.';
 
 COMMENT ON TABLE accelerator.project_indicators IS 'Indicators specific to one project to report on.';
 
