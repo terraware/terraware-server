@@ -290,7 +290,7 @@ java {
 
 node {
   download = true
-  version = "24.13.1"
+  version = file(".nvmrc").readText().trim()
   yarnVersion = "1.22.17"
 }
 
