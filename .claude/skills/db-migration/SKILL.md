@@ -1,6 +1,6 @@
 ---
 name: db-migration
-description: Creates a new database migration file with jOOQ code generation config, schema documentation, type codes, and localization. Use when making changes to the database schema.
+description: Creates a new database migration file. Use this when modifying the data model to add new tables or modify existing ones.
 ---
 
 # Creating a database migration
@@ -12,6 +12,7 @@ marking each `completed` before starting the next. Conditional steps (marked "if
 should still be created as tasks — mark them `completed` immediately if they don't apply.
 
 Steps:
+
 1. Determine the next migration number.
 2. Create the numbered migration file.
 3. Add enum values to R__TypeCodes.sql (if any enum tables).
@@ -20,7 +21,7 @@ Steps:
 6. Add tables to SchemaDocsGenerator.kt.
 7. Add enum display names to Enums_en.properties (if any localizable enums).
 8. Run `yarn translate` to generate translations (if Enums_en.properties was changed).
-9. Build, format, and test (`./gradlew testClasses`, `./gradlew spotlessApply`, `./gradlew test`).
+9. Build, format, and test (`./gradlew generateJooqClasses`, `./gradlew spotlessApply`, `./gradlew test`).
 
 ## Step 1: Determine the Next Migration Number
 
@@ -35,9 +36,9 @@ Migrations are grouped into subdirectories in groups of 50 (e.g., `0400/` contai
 Create `src/main/resources/db/migration/NNNN/VNNN__Description.sql` where `NNNN` is the
 directory (multiple of 50 rounded down) and `NNN` is the migration number.
 
-Make sure and add a new line at the end of the file.
+Make sure and add a newline character at the end of the file.
 
-Run `./gradlew testClasses` immediately after creating the migration to catch SQL errors early.
+Run `./gradlew generateJooqClasses` immediately after creating the migration to catch SQL errors early.
 
 ### Table type patterns
 
@@ -322,7 +323,7 @@ let the translation tool update the other language files.
 ## Step 9: Build, Format, and Test
 
 ```
-./gradlew testClasses   # Regenerates jOOQ code from schema; catches migration errors
-./gradlew spotlessApply # Formats all code
-./gradlew test          # Runs the full test suite
+./gradlew generateJooqClasses # Regenerates jOOQ code from schema; catches migration errors
+./gradlew spotlessApply       # Formats all code
+./gradlew test                # Runs the full test suite
 ```
