@@ -56,6 +56,8 @@ import com.terraformation.backend.db.accelerator.tables.daos.ActivityMediaFilesD
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationHistoriesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ApplicationsDao
+import com.terraformation.backend.db.accelerator.tables.daos.AutoCalculatedIndicatorTargetsDao
+import com.terraformation.backend.db.accelerator.tables.daos.CommonIndicatorTargetsDao
 import com.terraformation.backend.db.accelerator.tables.daos.CommonIndicatorsDao
 import com.terraformation.backend.db.accelerator.tables.daos.DefaultVotersDao
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverableDocumentsDao
@@ -67,6 +69,7 @@ import com.terraformation.backend.db.accelerator.tables.daos.EventsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ParticipantProjectSpeciesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectAcceleratorDetailsDao
+import com.terraformation.backend.db.accelerator.tables.daos.ProjectIndicatorTargetsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectIndicatorsDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectModulesDao
 import com.terraformation.backend.db.accelerator.tables.daos.ProjectOverallScoresDao
@@ -93,6 +96,8 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFiles
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationHistoriesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ApplicationsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.AutoCalculatedIndicatorTargetsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.CommonIndicatorTargetsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.CommonIndicatorsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DefaultVotersRow
 import com.terraformation.backend.db.accelerator.tables.pojos.DeliverableDocumentsRow
@@ -104,6 +109,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.EventsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ParticipantProjectSpeciesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectAcceleratorDetailsRow
+import com.terraformation.backend.db.accelerator.tables.pojos.ProjectIndicatorTargetsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectIndicatorsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectModulesRow
 import com.terraformation.backend.db.accelerator.tables.pojos.ProjectOverallScoresRow
@@ -616,6 +622,7 @@ abstract class DatabaseBackedTest {
   protected val applicationHistoriesDao: ApplicationHistoriesDao by lazyDao()
   protected val applicationModulesDao: ApplicationModulesDao by lazyDao()
   protected val applicationsDao: ApplicationsDao by lazyDao()
+  protected val autoCalculatedIndicatorTargetsDao: AutoCalculatedIndicatorTargetsDao by lazyDao()
   protected val automationsDao: AutomationsDao by lazyDao()
   protected val bagsDao: BagsDao by lazyDao()
   protected val batchDetailsHistoryDao: BatchDetailsHistoryDao by lazyDao()
@@ -627,6 +634,7 @@ abstract class DatabaseBackedTest {
   protected val batchWithdrawalsDao: BatchWithdrawalsDao by lazyDao()
   protected val birdnetResultsDao: BirdnetResultsDao by lazyDao()
   protected val commonIndicatorsDao: CommonIndicatorsDao by lazyDao()
+  protected val commonIndicatorTargetsDao: CommonIndicatorTargetsDao by lazyDao()
   protected val countriesDao: CountriesDao by lazyDao()
   protected val countrySubdivisionsDao: CountrySubdivisionsDao by lazyDao()
   protected val defaultVotersDao: DefaultVotersDao by lazyDao()
@@ -686,6 +694,7 @@ abstract class DatabaseBackedTest {
   protected val plantingSitesDao: PlantingSitesDao by lazyDao()
   protected val projectAcceleratorDetailsDao: ProjectAcceleratorDetailsDao by lazyDao()
   protected val projectIndicatorsDao: ProjectIndicatorsDao by lazyDao()
+  protected val projectIndicatorTargetsDao: ProjectIndicatorTargetsDao by lazyDao()
   protected val projectInternalUsersDao: ProjectInternalUsersDao by lazyDao()
   protected val projectLandUseModelTypesDao: ProjectLandUseModelTypesDao by lazyDao()
   protected val projectModulesDao: ProjectModulesDao by lazyDao()
@@ -3728,7 +3737,7 @@ abstract class DatabaseBackedTest {
     reportAutoCalculatedIndicatorsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertProjectIndicatorTarget(
+  protected fun insertReportProjectIndicatorTarget(
       row: ReportProjectIndicatorTargetsRow = ReportProjectIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       projectIndicatorId: ProjectIndicatorId =
@@ -3747,7 +3756,7 @@ abstract class DatabaseBackedTest {
     reportProjectIndicatorTargetsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertCommonIndicatorTarget(
+  protected fun insertReportCommonIndicatorTarget(
       row: ReportCommonIndicatorTargetsRow = ReportCommonIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
@@ -3765,7 +3774,7 @@ abstract class DatabaseBackedTest {
     reportCommonIndicatorTargetsDao.insert(rowWithDefaults)
   }
 
-  protected fun insertAutoCalculatedIndicatorTarget(
+  protected fun insertReportAutoCalculatedIndicatorTarget(
       row: ReportAutoCalculatedIndicatorTargetsRow = ReportAutoCalculatedIndicatorTargetsRow(),
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       indicator: AutoCalculatedIndicator =
@@ -3839,6 +3848,62 @@ abstract class DatabaseBackedTest {
         )
 
     publishedAutoCalculatedIndicatorTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertProjectIndicatorBaselineTarget(
+      row: ProjectIndicatorTargetsRow = ProjectIndicatorTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      projectIndicatorId: ProjectIndicatorId =
+          row.projectIndicatorId ?: inserted.projectIndicatorId,
+      baseline: Number? = row.baseline,
+      endTarget: Number? = row.endTarget,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            projectIndicatorId = projectIndicatorId,
+            baseline = baseline?.toBigDecimal(),
+            endTarget = endTarget?.toBigDecimal(),
+        )
+
+    projectIndicatorTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertCommonIndicatorBaselineTarget(
+      row: CommonIndicatorTargetsRow = CommonIndicatorTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
+      baseline: Number? = row.baseline,
+      endTarget: Number? = row.endTarget,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            commonIndicatorId = commonIndicatorId,
+            baseline = baseline?.toBigDecimal(),
+            endTarget = endTarget?.toBigDecimal(),
+        )
+
+    commonIndicatorTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertAutoCalculatedIndicatorBaselineTarget(
+      row: AutoCalculatedIndicatorTargetsRow = AutoCalculatedIndicatorTargetsRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      indicator: AutoCalculatedIndicator =
+          row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
+      baseline: Number? = row.baseline,
+      endTarget: Number? = row.endTarget,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            autoCalculatedIndicatorId = indicator,
+            baseline = baseline?.toBigDecimal(),
+            endTarget = endTarget?.toBigDecimal(),
+        )
+
+    autoCalculatedIndicatorTargetsDao.insert(rowWithDefaults)
   }
 
   protected fun insertPublishedReport(

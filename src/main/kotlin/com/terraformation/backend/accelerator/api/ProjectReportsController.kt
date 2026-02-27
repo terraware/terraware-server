@@ -3,8 +3,11 @@ package com.terraformation.backend.accelerator.api
 import com.terraformation.backend.accelerator.ReportService
 import com.terraformation.backend.accelerator.db.ReportIndicatorStore
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.model.AutoCalculatedIndicatorTargetsModel
+import com.terraformation.backend.accelerator.model.CommonIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
+import com.terraformation.backend.accelerator.model.ProjectIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
@@ -15,6 +18,7 @@ import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
+import com.terraformation.backend.accelerator.model.YearlyIndicatorTargetModel
 import com.terraformation.backend.api.AcceleratorEndpoint
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
@@ -49,6 +53,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
+import java.math.BigDecimal
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -643,9 +648,9 @@ class ProjectReportsController(
   fun getProjectIndicatorTargets(
       @PathVariable projectId: ProjectId
   ): GetProjectIndicatorTargetsResponsePayload {
-    val targets = reportStore.fetchReportProjectIndicatorTargets(projectId)
+    val targets = reportStore.fetchProjectIndicatorTargets(projectId)
     return GetProjectIndicatorTargetsResponsePayload(
-        targets.map { ReportProjectIndicatorTargetPayload(it) }
+        targets.map { ProjectIndicatorTargetsPayload(it) }
     )
   }
 
@@ -655,9 +660,9 @@ class ProjectReportsController(
   fun getCommonIndicatorTargets(
       @PathVariable projectId: ProjectId
   ): GetCommonIndicatorTargetsResponsePayload {
-    val targets = reportStore.fetchReportCommonIndicatorTargets(projectId)
+    val targets = reportStore.fetchCommonIndicatorTargets(projectId)
     return GetCommonIndicatorTargetsResponsePayload(
-        targets.map { ReportCommonIndicatorTargetPayload(it) }
+        targets.map { CommonIndicatorTargetsPayload(it) }
     )
   }
 
@@ -667,9 +672,9 @@ class ProjectReportsController(
   fun getAutoCalculatedIndicatorTargets(
       @PathVariable projectId: ProjectId
   ): GetAutoCalculatedIndicatorTargetsResponsePayload {
-    val targets = reportStore.fetchReportAutoCalculatedIndicatorTargets(projectId)
+    val targets = reportStore.fetchAutoCalculatedIndicatorTargets(projectId)
     return GetAutoCalculatedIndicatorTargetsResponsePayload(
-        targets.map { ReportAutoCalculatedIndicatorTargetPayload(it) }
+        targets.map { AutoCalculatedIndicatorTargetsPayload(it) }
     )
   }
 
@@ -1300,7 +1305,7 @@ data class UpdateAcceleratorReportPhotoRequestPayload(val caption: String?)
 
 data class UploadAcceleratorReportPhotoResponsePayload(val fileId: FileId) : SuccessResponsePayload
 
-@Schema(description = "Use ReportProjectIndicatorTargetPayload instead", deprecated = true)
+@Schema(description = "Use ProjectIndicatorTargetsPayload instead", deprecated = true)
 data class ReportProjectMetricTargetPayload(
     val metricId: ProjectIndicatorId,
     val target: Number?,
@@ -1315,7 +1320,7 @@ data class ReportProjectMetricTargetPayload(
   )
 }
 
-@Schema(description = "Use ReportCommonIndicatorTargetPayload instead", deprecated = true)
+@Schema(description = "Use CommonIndicatorTargetsPayload instead", deprecated = true)
 data class ReportStandardMetricTargetPayload(
     val metricId: CommonIndicatorId,
     val target: Number?,
@@ -1330,7 +1335,7 @@ data class ReportStandardMetricTargetPayload(
   )
 }
 
-@Schema(description = "Use ReportAutoCalculatedIndicatorTargetPayload instead", deprecated = true)
+@Schema(description = "Use AutoCalculatedIndicatorTargetsPayload instead", deprecated = true)
 data class ReportSystemMetricTargetPayload(
     val metric: AutoCalculatedIndicator,
     val target: Number?,
@@ -1363,56 +1368,69 @@ data class GetSystemMetricTargetsResponsePayload(
     val targets: List<ReportSystemMetricTargetPayload>
 ) : SuccessResponsePayload
 
-data class ReportProjectIndicatorTargetPayload(
+data class YearlyIndicatorTargetPayload(
+    val target: Number?,
+    val year: Number,
+) {
+  constructor(model: YearlyIndicatorTargetModel) : this(target = model.target, year = model.year)
+}
+
+data class ProjectIndicatorTargetsPayload(
     val indicatorId: ProjectIndicatorId,
-    val target: Number?,
-    val year: Number,
+    val baseline: BigDecimal?,
+    val endOfProjectTarget: BigDecimal?,
+    val yearlyTargets: List<YearlyIndicatorTargetPayload>,
 ) {
   constructor(
-      model: ReportProjectIndicatorTargetModel
+      model: ProjectIndicatorTargetsModel
   ) : this(
       indicatorId = model.indicatorId,
-      target = model.target,
-      year = model.year,
+      baseline = model.baseline,
+      endOfProjectTarget = model.endOfProjectTarget,
+      yearlyTargets = model.yearlyTargets.map { YearlyIndicatorTargetPayload(it) },
   )
 }
 
-data class ReportCommonIndicatorTargetPayload(
+data class CommonIndicatorTargetsPayload(
     val indicatorId: CommonIndicatorId,
-    val target: Number?,
-    val year: Number,
+    val baseline: BigDecimal?,
+    val endOfProjectTarget: BigDecimal?,
+    val yearlyTargets: List<YearlyIndicatorTargetPayload>,
 ) {
   constructor(
-      model: ReportCommonIndicatorTargetModel
+      model: CommonIndicatorTargetsModel
   ) : this(
       indicatorId = model.indicatorId,
-      target = model.target,
-      year = model.year,
+      baseline = model.baseline,
+      endOfProjectTarget = model.endOfProjectTarget,
+      yearlyTargets = model.yearlyTargets.map { YearlyIndicatorTargetPayload(it) },
   )
 }
 
-data class ReportAutoCalculatedIndicatorTargetPayload(
-    val indicator: AutoCalculatedIndicator,
-    val target: Number?,
-    val year: Number,
+data class AutoCalculatedIndicatorTargetsPayload(
+    val indicatorId: AutoCalculatedIndicator,
+    val baseline: BigDecimal?,
+    val endOfProjectTarget: BigDecimal?,
+    val yearlyTargets: List<YearlyIndicatorTargetPayload>,
 ) {
   constructor(
-      model: ReportAutoCalculatedIndicatorTargetModel
+      model: AutoCalculatedIndicatorTargetsModel
   ) : this(
-      indicator = model.indicator,
-      target = model.target,
-      year = model.year,
+      indicatorId = model.indicatorId,
+      baseline = model.baseline,
+      endOfProjectTarget = model.endOfProjectTarget,
+      yearlyTargets = model.yearlyTargets.map { YearlyIndicatorTargetPayload(it) },
   )
 }
 
 data class GetProjectIndicatorTargetsResponsePayload(
-    val targets: List<ReportProjectIndicatorTargetPayload>
+    val targets: List<ProjectIndicatorTargetsPayload>
 ) : SuccessResponsePayload
 
 data class GetCommonIndicatorTargetsResponsePayload(
-    val targets: List<ReportCommonIndicatorTargetPayload>
+    val targets: List<CommonIndicatorTargetsPayload>
 ) : SuccessResponsePayload
 
 data class GetAutoCalculatedIndicatorTargetsResponsePayload(
-    val targets: List<ReportAutoCalculatedIndicatorTargetPayload>
+    val targets: List<AutoCalculatedIndicatorTargetsPayload>
 ) : SuccessResponsePayload

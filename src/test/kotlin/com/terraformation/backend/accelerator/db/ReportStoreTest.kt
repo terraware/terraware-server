@@ -6,10 +6,13 @@ import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportSubmittedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
+import com.terraformation.backend.accelerator.model.AutoCalculatedIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.CommonIndicatorModel
+import com.terraformation.backend.accelerator.model.CommonIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorModel
+import com.terraformation.backend.accelerator.model.ProjectIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorEntryModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorTargetModel
@@ -21,6 +24,7 @@ import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportProjectIndicatorTargetModel
+import com.terraformation.backend.accelerator.model.YearlyIndicatorTargetModel
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
@@ -291,7 +295,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       // Insert target into new target table (report end date is 1970-01-02, so year is 1970)
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId,
           year = 1970,
           target = 100,
@@ -365,7 +369,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       // Insert targets into new target tables
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 1970,
+          target = 55,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -376,7 +384,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 25)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 1970,
+          target = 25,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -451,7 +463,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.Seedlings,
           year = 1970,
           target = 1000,
@@ -463,7 +475,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 1970,
           target = 2000,
@@ -477,7 +489,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 1970,
           target = 600,
@@ -1053,7 +1065,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               level = IndicatorLevel.Activity,
           )
 
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId,
           year = 1970,
           target = 100,
@@ -1127,7 +1139,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               refId = "2.0",
           )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 1970,
+          target = 55,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -1138,7 +1154,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 25)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 1970,
+          target = 25,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -1213,7 +1233,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.Seedlings,
           year = 1970,
           target = 1000,
@@ -1225,7 +1245,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 1970,
           target = 2000,
@@ -1239,7 +1259,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 1970,
           target = 600,
@@ -1687,7 +1707,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedTime = Instant.ofEpochSecond(3000),
           )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 1970,
+          target = 55,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -1698,7 +1722,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 30)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 1970,
+          target = 30,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -1709,7 +1737,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 1970,
           target = 1000,
@@ -1725,7 +1753,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
           year = 1970,
           target = 10,
@@ -2159,7 +2187,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted, createdBy = otherUserId)
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 1970,
+          target = 55,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -2170,7 +2202,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 30)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 1970,
+          target = 30,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -2181,7 +2217,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 1970,
           target = 1000,
@@ -2197,7 +2233,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
           year = 1970,
           target = 10,
@@ -3542,7 +3578,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           deleted = true,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 2030, target = 10)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 2030,
+          target = 10,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -3552,7 +3592,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Common Indicator 1 Progress notes",
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 2030, target = 20)
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 2030,
+          target = 20,
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -3561,7 +3605,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectsComments = "Common Indicator 2 Underperformance",
       )
 
-      insertCommonIndicatorTarget(
+      insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorNullValueId,
           year = 2030,
           target = 999,
@@ -3572,7 +3616,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = null,
       )
 
-      insertCommonIndicatorTarget(
+      insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorNotPublishableId,
           year = 2030,
           target = 999,
@@ -3583,7 +3627,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = 999,
       )
 
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId1,
           year = 2030,
           target = 30,
@@ -3597,7 +3641,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Project Indicator 1 Progress notes",
       )
 
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId2,
           year = 2030,
           target = 40,
@@ -3610,7 +3654,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectsComments = "Project Indicator 2 Underperformance",
       )
 
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorNullValueId,
           year = 2030,
           target = 999,
@@ -3621,7 +3665,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           value = null,
       )
 
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorNotPublishableId,
           year = 2030,
           target = 999,
@@ -3633,7 +3677,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       // Seeds Collected is not publishable
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 2030,
           target = 999,
@@ -3645,7 +3689,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = 999,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.Seedlings,
           year = 2030,
           target = 50,
@@ -3660,7 +3704,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Seedlings progress notes",
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
           year = 2030,
           target = 10,
@@ -3673,7 +3717,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       // Indicators can be published even with no target set
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 2030,
           target = null,
@@ -3685,7 +3729,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = 100,
       )
 
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SurvivalRate,
           year = 2030,
           target = 0,
@@ -5289,7 +5333,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               level = IndicatorLevel.Activity,
           )
 
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectId = projectId,
           projectIndicatorId = projectIndicatorId,
           year = 2024,
@@ -5396,7 +5440,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               level = IndicatorLevel.Activity,
           )
 
-      insertCommonIndicatorTarget(
+      insertReportCommonIndicatorTarget(
           projectId = projectId,
           commonIndicatorId = commonIndicatorId,
           year = 2024,
@@ -5485,7 +5529,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `updates existing target`() {
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           projectId = projectId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 2024,
@@ -5565,19 +5609,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               level = IndicatorLevel.Activity,
           )
 
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectId = projectId,
           projectIndicatorId = projectIndicatorId1,
           year = 2024,
           target = 100,
       )
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectId = projectId,
           projectIndicatorId = projectIndicatorId2,
           year = 2024,
           target = 200,
       )
-      insertProjectIndicatorTarget(
+      insertReportProjectIndicatorTarget(
           projectId = projectId,
           projectIndicatorId = projectIndicatorId1,
           year = 2025,
@@ -5627,19 +5671,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               level = IndicatorLevel.Activity,
           )
 
-      insertCommonIndicatorTarget(
+      insertReportCommonIndicatorTarget(
           projectId = projectId,
           commonIndicatorId = commonIndicatorId1,
           year = 2024,
           target = 300,
       )
-      insertCommonIndicatorTarget(
+      insertReportCommonIndicatorTarget(
           projectId = projectId,
           commonIndicatorId = commonIndicatorId2,
           year = 2024,
           target = 400,
       )
-      insertCommonIndicatorTarget(
+      insertReportCommonIndicatorTarget(
           projectId = projectId,
           commonIndicatorId = commonIndicatorId1,
           year = 2025,
@@ -5674,19 +5718,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `returns all auto calculated indicator targets for a project`() {
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           projectId = projectId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 2024,
           target = 500,
       )
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           projectId = projectId,
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 2024,
           target = 1000,
       )
-      insertAutoCalculatedIndicatorTarget(
+      insertReportAutoCalculatedIndicatorTarget(
           projectId = projectId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 2025,
@@ -5714,6 +5758,295 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           ),
           targets,
+      )
+    }
+  }
+
+  @Nested
+  inner class FetchProjectIndicatorTargets {
+    @Test
+    fun `requires permission to read project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.fetchProjectIndicatorTargets(projectId) }
+    }
+
+    @Test
+    fun `returns yearly and baseline targets combined per indicator`() {
+      val projectIndicatorId1 =
+          insertProjectIndicator(
+              description = "Test indicator 1",
+              name = "Test Indicator 1",
+              refId = "1.0",
+          )
+      insertReportProjectIndicatorTarget(year = 2024, target = 100)
+      insertReportProjectIndicatorTarget(year = 2025, target = 150)
+      insertProjectIndicatorBaselineTarget(baseline = 50, endTarget = 500)
+
+      val projectIndicatorId2 =
+          insertProjectIndicator(
+              description = "Test indicator 2",
+              name = "Test Indicator 2",
+              refId = "2.0",
+          )
+      insertReportProjectIndicatorTarget(year = 2024, target = 200)
+
+      assertEquals(
+          listOf(
+              ProjectIndicatorTargetsModel(
+                  indicatorId = projectIndicatorId1,
+                  baseline = BigDecimal("50"),
+                  endOfProjectTarget = BigDecimal("500"),
+                  yearlyTargets =
+                      listOf(
+                          YearlyIndicatorTargetModel(target = 100, year = 2024),
+                          YearlyIndicatorTargetModel(target = 150, year = 2025),
+                      ),
+              ),
+              ProjectIndicatorTargetsModel(
+                  indicatorId = projectIndicatorId2,
+                  baseline = null,
+                  endOfProjectTarget = null,
+                  yearlyTargets = listOf(YearlyIndicatorTargetModel(target = 200, year = 2024)),
+              ),
+          ),
+          store.fetchProjectIndicatorTargets(projectId),
+      )
+    }
+
+    @Test
+    fun `returns indicator with only baseline and no yearly targets`() {
+      val projectIndicatorId =
+          insertProjectIndicator(
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+          )
+      insertProjectIndicatorBaselineTarget(baseline = 10, endTarget = 100)
+
+      assertEquals(
+          listOf(
+              ProjectIndicatorTargetsModel(
+                  indicatorId = projectIndicatorId,
+                  baseline = BigDecimal("10"),
+                  endOfProjectTarget = BigDecimal("100"),
+                  yearlyTargets = emptyList(),
+              ),
+          ),
+          store.fetchProjectIndicatorTargets(projectId),
+      )
+    }
+
+    @Test
+    fun `does not return targets for other projects`() {
+      insertProject()
+      insertProjectIndicator(
+          description = "Test indicator",
+          name = "Test Indicator",
+          refId = "1.0",
+      )
+      insertReportProjectIndicatorTarget(year = 2024, target = 999)
+      insertProjectIndicatorBaselineTarget(baseline = 99, endTarget = 999)
+
+      assertEquals(
+          emptyList<ProjectIndicatorTargetsModel>(),
+          store.fetchProjectIndicatorTargets(projectId),
+      )
+    }
+  }
+
+  @Nested
+  inner class FetchCommonIndicatorTargets {
+    @Test
+    fun `requires permission to read project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.fetchCommonIndicatorTargets(projectId) }
+    }
+
+    @Test
+    fun `returns yearly and baseline targets combined per indicator`() {
+      val commonIndicatorId1 =
+          insertCommonIndicator(
+              description = "Test indicator 1",
+              name = "Test Indicator 1",
+              refId = "1.0",
+          )
+      insertReportCommonIndicatorTarget(year = 2024, target = 300)
+      insertReportCommonIndicatorTarget(year = 2025, target = 350)
+      insertCommonIndicatorBaselineTarget(baseline = 75, endTarget = 750)
+
+      val commonIndicatorId2 =
+          insertCommonIndicator(
+              description = "Test indicator 2",
+              name = "Test Indicator 2",
+              refId = "2.0",
+          )
+      insertReportCommonIndicatorTarget(year = 2024, target = 400)
+
+      assertEquals(
+          listOf(
+              CommonIndicatorTargetsModel(
+                  indicatorId = commonIndicatorId1,
+                  baseline = BigDecimal("75"),
+                  endOfProjectTarget = BigDecimal("750"),
+                  yearlyTargets =
+                      listOf(
+                          YearlyIndicatorTargetModel(target = 300, year = 2024),
+                          YearlyIndicatorTargetModel(target = 350, year = 2025),
+                      ),
+              ),
+              CommonIndicatorTargetsModel(
+                  indicatorId = commonIndicatorId2,
+                  baseline = null,
+                  endOfProjectTarget = null,
+                  yearlyTargets = listOf(YearlyIndicatorTargetModel(target = 400, year = 2024)),
+              ),
+          ),
+          store.fetchCommonIndicatorTargets(projectId),
+      )
+    }
+
+    @Test
+    fun `returns indicator with only baseline and no yearly targets`() {
+      val commonIndicatorId =
+          insertCommonIndicator(
+              description = "Test indicator",
+              name = "Test Indicator",
+              refId = "1.0",
+          )
+      insertCommonIndicatorBaselineTarget(baseline = 20, endTarget = 200)
+
+      assertEquals(
+          listOf(
+              CommonIndicatorTargetsModel(
+                  indicatorId = commonIndicatorId,
+                  baseline = BigDecimal("20"),
+                  endOfProjectTarget = BigDecimal("200"),
+                  yearlyTargets = emptyList(),
+              ),
+          ),
+          store.fetchCommonIndicatorTargets(projectId),
+      )
+    }
+
+    @Test
+    fun `does not return targets for other projects`() {
+      insertProject()
+      insertCommonIndicator(
+          description = "Test indicator",
+          name = "Test Indicator",
+          refId = "1.0",
+      )
+      insertReportCommonIndicatorTarget(year = 2024, target = 999)
+      insertCommonIndicatorBaselineTarget(baseline = 99, endTarget = 999)
+
+      assertEquals(
+          emptyList<CommonIndicatorTargetsModel>(),
+          store.fetchCommonIndicatorTargets(projectId),
+      )
+    }
+  }
+
+  @Nested
+  inner class FetchAutoCalculatedIndicatorTargets {
+    @Test
+    fun `requires permission to read project reports`() {
+      deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.fetchAutoCalculatedIndicatorTargets(projectId) }
+    }
+
+    @Test
+    fun `returns yearly and baseline targets combined per indicator`() {
+      insertReportAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          year = 2024,
+          target = 500,
+      )
+      insertReportAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          year = 2025,
+          target = 600,
+      )
+      insertReportAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          year = 2024,
+          target = 1000,
+      )
+      insertAutoCalculatedIndicatorBaselineTarget(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          baseline = 200,
+          endTarget = 2000,
+      )
+
+      assertEquals(
+          listOf(
+              AutoCalculatedIndicatorTargetsModel(
+                  indicatorId = AutoCalculatedIndicator.SeedsCollected,
+                  baseline = null,
+                  endOfProjectTarget = null,
+                  yearlyTargets = listOf(YearlyIndicatorTargetModel(target = 1000, year = 2024)),
+              ),
+              AutoCalculatedIndicatorTargetsModel(
+                  indicatorId = AutoCalculatedIndicator.TreesPlanted,
+                  baseline = BigDecimal("200"),
+                  endOfProjectTarget = BigDecimal("2000"),
+                  yearlyTargets =
+                      listOf(
+                          YearlyIndicatorTargetModel(target = 500, year = 2024),
+                          YearlyIndicatorTargetModel(target = 600, year = 2025),
+                      ),
+              ),
+          ),
+          store.fetchAutoCalculatedIndicatorTargets(projectId),
+      )
+    }
+
+    @Test
+    fun `returns indicator with only baseline and no yearly targets`() {
+      insertAutoCalculatedIndicatorBaselineTarget(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          baseline = 100,
+          endTarget = 1000,
+      )
+
+      assertEquals(
+          listOf(
+              AutoCalculatedIndicatorTargetsModel(
+                  indicatorId = AutoCalculatedIndicator.SeedsCollected,
+                  baseline = BigDecimal("100"),
+                  endOfProjectTarget = BigDecimal("1000"),
+                  yearlyTargets = emptyList(),
+              ),
+          ),
+          store.fetchAutoCalculatedIndicatorTargets(projectId),
+      )
+    }
+
+    @Test
+    fun `does not return targets for other projects`() {
+      insertProject()
+      insertReportAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          year = 2024,
+          target = 999,
+      )
+      insertAutoCalculatedIndicatorBaselineTarget(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          baseline = 99,
+          endTarget = 999,
+      )
+
+      assertEquals(
+          emptyList<AutoCalculatedIndicatorTargetsModel>(),
+          store.fetchAutoCalculatedIndicatorTargets(projectId),
       )
     }
   }
