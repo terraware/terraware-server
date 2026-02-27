@@ -1179,7 +1179,6 @@ internal class PermissionTest : DatabaseTest() {
         readProjectDeliverables = true,
         readProjectModules = true,
         readProjectReports = true,
-        updateProjectReports = true,
     )
 
     permissions.expect(
