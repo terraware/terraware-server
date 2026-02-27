@@ -19,9 +19,12 @@ report_project_indicator_targets
 report_common_indicator_targets
 report_auto_calculated_indicator_targets
 project_modules
+project_indicator_targets
 event_projects
 deliverable_variables
 deliverable_project_due_dates
+common_indicator_targets
+auto_calculated_indicator_targets
 report_challenges
 report_achievements
 default_voters

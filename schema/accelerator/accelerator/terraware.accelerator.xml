@@ -229,8 +229,28 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
+      <table name="auto_calculated_indicator_targets" remarks="Project-level baseline and end-of-project target values for auto-calculated indicators." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auto_calculated_indicator_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="auto_calculated_indicator_tar_auto_calculated_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="auto_calculated_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="baseline" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="end_target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="auto_calculated_indicator_id" sequenceNumberInPK="2"/>
+         <index name="auto_calculated_indicator_targets_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="auto_calculated_indicator_id"/>
+         </index>
+         <index name="auto_calculated_indicator_targ_auto_calculated_indicator_id_idx" unique="false">
+            <column ascending="true" name="auto_calculated_indicator_id"/>
+         </index>
+      </table>
       <table name="auto_calculated_indicators" remarks="(Enum) Accelerator report auto-calculated indicators, for which data are collected from Terraware." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="auto_calculated_indicator_id" foreignKey="auto_calculated_indicator_tar_auto_calculated_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="auto_calculated_indicator_targets"/>
             <child column="auto_calculated_indicator_id" foreignKey="report_auto_calculated_indicator_targets_auto_calculated_indica" implied="false" onDeleteCascade="true" schema="accelerator" table="report_auto_calculated_indicator_targets"/>
             <child column="auto_calculated_indicator_id" foreignKey="report_auto_calculated_indicators_auto_calculated_indicator_id_" implied="false" onDeleteCascade="false" schema="accelerator" table="report_auto_calculated_indicators"/>
             <child column="auto_calculated_indicator_id" foreignKey="published_auto_calculated_indicator_targets_auto_calculated_ind" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_targets"/>
@@ -262,8 +282,28 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
+      <table name="common_indicator_targets" remarks="Project-level baseline and end-of-project target values for common indicators." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="common_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="baseline" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="end_target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="common_indicator_id" sequenceNumberInPK="2"/>
+         <index name="common_indicator_targets_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="common_indicator_id"/>
+         </index>
+         <index name="common_indicator_targets_common_indicator_id_idx" unique="false">
+            <column ascending="true" name="common_indicator_id"/>
+         </index>
+      </table>
       <table name="common_indicators" remarks="Standard non-system indicators for every project to measure in accelerator reports." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="common_indicator_id" foreignKey="common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicator_targets"/>
             <child column="common_indicator_id" foreignKey="report_common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_common_indicator_targets"/>
             <child column="common_indicator_id" foreignKey="report_common_indicators_common_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_common_indicators"/>
             <child column="common_indicator_id" foreignKey="published_common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_targets"/>
@@ -339,8 +379,8 @@
             <parent column="id" foreignKey="deliverable_documents_deliverable_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="deliverable_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
             <parent column="deliverable_type_id" foreignKey="deliverable_documents_deliverable_id_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverables"/>
+            <parent column="id" foreignKey="deliverable_documents_deliverable_type_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="deliverable_types"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="template_url" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="deliverable_id" sequenceNumberInPK="1"/>
@@ -699,8 +739,28 @@
             <column ascending="true" name="project_id"/>
          </index>
       </table>
+      <table name="project_indicator_targets" remarks="Project-level baseline and end-of-project target values for project-specific indicators." schema="accelerator" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="project_indicator_targets_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicators"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="baseline" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="end_target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
+         <primaryKey column="project_id" sequenceNumberInPK="1"/>
+         <primaryKey column="project_indicator_id" sequenceNumberInPK="2"/>
+         <index name="project_indicator_targets_pkey" unique="true">
+            <column ascending="true" name="project_id"/>
+            <column ascending="true" name="project_indicator_id"/>
+         </index>
+         <index name="project_indicator_targets_project_indicator_id_idx" unique="false">
+            <column ascending="true" name="project_indicator_id"/>
+         </index>
+      </table>
       <table name="project_indicators" remarks="Indicators specific to one project to report on." schema="accelerator" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="project_indicator_id" foreignKey="project_indicator_targets_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicator_targets"/>
             <child column="project_indicator_id" foreignKey="report_project_indicator_targets_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_indicator_targets"/>
             <child column="project_indicator_id" foreignKey="report_project_indicators_project_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_indicators"/>
             <child column="project_indicator_id" foreignKey="published_project_indicator_targets_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_targets"/>
@@ -1138,8 +1198,8 @@
             <parent column="id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
             <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
+            <parent column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_statuses"/>

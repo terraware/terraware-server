@@ -141,6 +141,16 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="auto_calculated_indicator_targets.project_id references projects.id via auto_calculated_indicator_targets_project_id_fkey"><a href='../../accelerator/tables/auto_calculated_indicator_targets.html'>auto_calculated_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">auto_calculated_indicator_targets_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="common_indicator_targets.project_id references projects.id via common_indicator_targets_project_id_fkey"><a href='../../accelerator/tables/common_indicator_targets.html'>common_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">common_indicator_targets_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="deliverable_project_due_dates.project_id references projects.id via deliverable_project_due_dates_project_id_fkey"><a href='../../accelerator/tables/deliverable_project_due_dates.html'>deliverable_project_due_dates</a><span class='relatedKey'>.project_id</span></td>
                                                 <td class="constraint detail">deliverable_project_due_dates_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -159,6 +169,11 @@
                                                 <td title="project_accelerator_details.project_id references projects.id via project_accelerator_details_project_id_fkey"><a href='../../accelerator/tables/project_accelerator_details.html'>project_accelerator_details</a><span class='relatedKey'>.project_id</span></td>
                                                 <td class="constraint detail">project_accelerator_details_project_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="project_indicator_targets.project_id references projects.id via project_indicator_targets_project_id_fkey"><a href='../../accelerator/tables/project_indicator_targets.html'>project_indicator_targets</a><span class='relatedKey'>.project_id</span></td>
+                                                <td class="constraint detail">project_indicator_targets_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="project_indicators.project_id references projects.id via project_indicators_project_id_fkey"><a href='../../accelerator/tables/project_indicators.html'>project_indicators</a><span class='relatedKey'>.project_id</span></td>

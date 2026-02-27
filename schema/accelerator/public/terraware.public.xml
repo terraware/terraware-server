@@ -108,10 +108,13 @@
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="project_id" foreignKey="activities_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="activities"/>
             <child column="project_id" foreignKey="applications_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="applications"/>
+            <child column="project_id" foreignKey="auto_calculated_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="auto_calculated_indicator_targets"/>
+            <child column="project_id" foreignKey="common_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicator_targets"/>
             <child column="project_id" foreignKey="deliverable_project_due_dates_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="deliverable_project_due_dates"/>
             <child column="project_id" foreignKey="event_projects_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="event_projects"/>
             <child column="project_id" foreignKey="participant_project_species_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="participant_project_species"/>
             <child column="project_id" foreignKey="project_accelerator_details_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_accelerator_details"/>
+            <child column="project_id" foreignKey="project_indicator_targets_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicator_targets"/>
             <child column="project_id" foreignKey="project_indicators_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicators"/>
             <child column="project_id" foreignKey="project_modules_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_modules"/>
             <child column="project_id" foreignKey="project_overall_scores_project_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_overall_scores"/>

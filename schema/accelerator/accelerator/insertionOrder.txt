@@ -20,9 +20,9 @@ event_statuses
 event_types
 report_statuses
 score_categories
-modules
 auto_calculated_indicators
 common_indicators
+modules
 deliverable_categories
 project_indicators
 project_report_configs
@@ -40,9 +40,12 @@ report_achievements
 report_challenges
 user_internal_interests
 application_histories
+auto_calculated_indicator_targets
+common_indicator_targets
 deliverable_project_due_dates
 event_projects
 participant_project_species
+project_indicator_targets
 project_modules
 report_auto_calculated_indicator_targets
 report_common_indicator_targets

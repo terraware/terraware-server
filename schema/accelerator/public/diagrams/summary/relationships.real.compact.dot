@@ -35,7 +35,7 @@ digraph "compactRelationshipsDiagram" {
       <TR><TD PORT="name" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">name</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="phase_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">phase_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">40 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">43 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/projects.html"
     target="_top"
@@ -103,6 +103,18 @@ digraph "compactRelationshipsDiagram" {
     URL="../../../accelerator/tables/project_vote_decisions.html"
     target="_top"
     tooltip="accelerator.project_vote_decisions"
+  ];
+  "accelerator.project_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="221" HEIGHT="16"><B>accelerator.project_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="149" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/project_indicator_targets.html"
+    target="_top"
+    tooltip="accelerator.project_indicator_targets"
   ];
   "docprod.variable_workflow_history" [
    label=<
@@ -429,6 +441,18 @@ digraph "compactRelationshipsDiagram" {
     target="_top"
     tooltip="funder.published_project_land_use"
   ];
+  "accelerator.auto_calculated_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="273" HEIGHT="16"><B>accelerator.auto_calculated_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="201" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/auto_calculated_indicator_targets.html"
+    target="_top"
+    tooltip="accelerator.auto_calculated_indicator_targets"
+  ];
   "nursery.batch_details_history" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -512,6 +536,18 @@ digraph "compactRelationshipsDiagram" {
     URL="../../../docprod/tables/variable_values.html"
     target="_top"
     tooltip="docprod.variable_values"
+  ];
+  "accelerator.common_indicator_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="231" HEIGHT="16"><B>accelerator.common_indicator_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../accelerator/tables/common_indicator_targets.html"
+    target="_top"
+    tooltip="accelerator.common_indicator_targets"
   ];
   "accelerator.submission_snapshots" [
    label=<
@@ -684,10 +720,13 @@ digraph "compactRelationshipsDiagram" {
   "accelerator.activities":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.activity_media_files":"file_id":w -> "files":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.applications":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.auto_calculated_indicator_targets":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.common_indicator_targets":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.deliverable_project_due_dates":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.event_projects":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.participant_project_species":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_accelerator_details":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "accelerator.project_indicator_targets":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_indicators":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_modules":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "accelerator.project_overall_scores":"project_id":w -> "projects":"id":e [arrowhead=none dir=back arrowtail=crowodot];
