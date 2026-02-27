@@ -288,7 +288,11 @@ java {
   targetCompatibility = JavaVersion.VERSION_25
 }
 
-node { yarnVersion = "1.22.17" }
+node {
+  download = true
+  version = file(".nvmrc").readText().trim()
+  yarnVersion = "1.22.17"
+}
 
 tasks.withType<KotlinCompile> {
   compilerOptions {
