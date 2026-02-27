@@ -5838,7 +5838,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   baseline = BigDecimal("10"),
                   endTarget = BigDecimal("100"),
               ),
-          ))
+          )
+      )
     }
 
     @Test
@@ -5966,7 +5967,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   baseline = BigDecimal("20"),
                   endTarget = BigDecimal("200"),
               ),
-          ))
+          )
+      )
     }
 
     @Test
@@ -6076,7 +6078,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   baseline = BigDecimal("300"),
                   endTarget = BigDecimal("3000"),
               ),
-          ))
+          )
+      )
     }
 
     @Test
