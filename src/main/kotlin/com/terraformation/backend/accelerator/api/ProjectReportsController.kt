@@ -728,6 +728,57 @@ class ProjectReportsController(
     )
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @ApiResponse400
+  @PostMapping("/projectIndicatorTarget/baseline")
+  @Operation(summary = "Update project indicator baseline and end of project target.")
+  fun updateProjectIndicatorBaselineTarget(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateProjectIndicatorBaselineTargetRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateProjectIndicatorBaselineTarget(
+        projectId = projectId,
+        indicatorId = payload.indicatorId,
+        baseline = payload.baseline,
+        endOfProjectTarget = payload.endOfProjectTarget,
+    )
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @PostMapping("/commonIndicatorTarget/baseline")
+  @Operation(summary = "Update common indicator baseline and end of project target.")
+  fun updateCommonIndicatorBaselineTarget(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateCommonIndicatorBaselineTargetRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateCommonIndicatorBaselineTarget(
+        projectId = projectId,
+        indicatorId = payload.indicatorId,
+        baseline = payload.baseline,
+        endOfProjectTarget = payload.endOfProjectTarget,
+    )
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse400
+  @PostMapping("/autoCalculatedIndicatorTarget/baseline")
+  @Operation(summary = "Update auto calculated indicator baseline and end of project target.")
+  fun updateAutoCalculatedIndicatorBaselineTarget(
+      @PathVariable projectId: ProjectId,
+      @RequestBody payload: UpdateAutoCalculatedIndicatorBaselineTargetRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    reportStore.updateAutoCalculatedIndicatorBaselineTarget(
+        projectId = projectId,
+        indicator = payload.indicator,
+        baseline = payload.baseline,
+        endOfProjectTarget = payload.endOfProjectTarget,
+    )
+    return SimpleSuccessResponsePayload()
+  }
 }
 
 data class ExistingAcceleratorReportConfigPayload(
@@ -1266,6 +1317,24 @@ data class UpdateAutoCalculatedIndicatorTargetRequestPayload(
     val year: Int,
     val indicator: AutoCalculatedIndicator,
     val target: Int?,
+)
+
+data class UpdateProjectIndicatorBaselineTargetRequestPayload(
+    val indicatorId: ProjectIndicatorId,
+    val baseline: BigDecimal?,
+    val endOfProjectTarget: BigDecimal?,
+)
+
+data class UpdateCommonIndicatorBaselineTargetRequestPayload(
+    val indicatorId: CommonIndicatorId,
+    val baseline: BigDecimal?,
+    val endOfProjectTarget: BigDecimal?,
+)
+
+data class UpdateAutoCalculatedIndicatorBaselineTargetRequestPayload(
+    val indicator: AutoCalculatedIndicator,
+    val baseline: BigDecimal?,
+    val endOfProjectTarget: BigDecimal?,
 )
 
 data class ListAcceleratorReportsResponsePayload(val reports: List<AcceleratorReportPayload>) :
