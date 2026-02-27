@@ -498,6 +498,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     refId = "3.0",
                     tfOwner = "Carbon",
                     unit = "%",
+                    precision = 0,
                 ),
                 CommonIndicatorsRecord(
                     id = newIndicatorId,
@@ -514,6 +515,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     refId = "1.0",
                     tfOwner = "Biodiversity",
                     unit = "meters",
+                    precision
                 ),
             )
         )
@@ -590,6 +592,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     refId = "3.0",
                     tfOwner = "Carbon",
                     unit = "meters",
+                    precision = 0,
                 ),
                 ProjectIndicatorsRecord(
                     id = newIndicatorId,
@@ -607,6 +610,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     refId = "1.0",
                     tfOwner = "Biodiversity",
                     unit = "%",
+                    precision = 0,
                 ),
             )
         )
@@ -687,6 +691,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                     refId = "1.0",
                     tfOwner = "Biodiversity",
                     unit = "meters",
+                    precision = 0,
                 )
             )
         )
@@ -769,6 +774,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   refId = "1.0",
                   tfOwner = "Biodiversity",
                   unit = "inches",
+                  precision = 0,
               )
           )
       )

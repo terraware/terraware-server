@@ -2846,6 +2846,7 @@ abstract class DatabaseBackedTest {
       refId: String = row.refId ?: "1.1",
       tfOwner: String? = row.tfOwner ?: "Carbon",
       unit: String? = row.unit,
+      precision: Int = row.precision ?: 0,
   ): CommonIndicatorId {
     val rowWithDefaults =
         row.copy(
@@ -2862,6 +2863,7 @@ abstract class DatabaseBackedTest {
             refId = refId,
             tfOwner = tfOwner,
             unit = unit,
+            precision = precision,
         )
 
     commonIndicatorsDao.insert(rowWithDefaults)
