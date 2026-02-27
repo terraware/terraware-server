@@ -5379,7 +5379,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `requires permission to update project reports`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       deleteOrganizationUser()
-      insertOrganizationUser(role = Role.Contributor)
+      insertOrganizationUser(role = Role.Manager)
 
       val projectIndicatorId =
           insertProjectIndicator(
@@ -5486,7 +5486,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `requires permission to update project reports`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       deleteOrganizationUser()
-      insertOrganizationUser(role = Role.Contributor)
+      insertOrganizationUser(role = Role.Manager)
 
       val commonIndicatorId =
           insertCommonIndicator(
@@ -5566,7 +5566,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `requires permission to update project reports`() {
       deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       deleteOrganizationUser()
-      insertOrganizationUser(role = Role.Contributor)
+      insertOrganizationUser(role = Role.Manager)
 
       assertThrows<AccessDeniedException> {
         store.updateAutoCalculatedIndicatorTarget(
