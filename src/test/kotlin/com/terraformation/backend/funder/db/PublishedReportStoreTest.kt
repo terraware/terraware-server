@@ -188,7 +188,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicator = AutoCalculatedIndicator.SurvivalRate,
           value = 6,
           projectsComments = null,
-          status = ReportIndicatorStatus.Achieved,
+          status = ReportIndicatorStatus.OffTrack,
       )
 
       val reportId2 =
@@ -319,7 +319,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               level = AutoCalculatedIndicator.SurvivalRate.levelId,
                               name = AutoCalculatedIndicator.SurvivalRate.jsonValue,
                               refId = AutoCalculatedIndicator.SurvivalRate.refId,
-                              status = ReportIndicatorStatus.Achieved,
+                              status = ReportIndicatorStatus.OffTrack,
                               target = 6,
                               progressNotes = null,
                               projectsComments = null,

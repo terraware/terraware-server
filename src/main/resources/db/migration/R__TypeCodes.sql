@@ -500,7 +500,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO accelerator.report_indicator_statuses (id, name)
 VALUES (1, 'Achieved'),
        (2, 'On-Track'),
-       (3, 'Unlikely')
+       (3, 'Unlikely'),
+       (4, 'Off-Track')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 -- The id must match the quarter number for constraint checking
