@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -127,12 +128,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId1,
           year = 2025,
-          target = 100,
+          target = BigDecimal(100),
       )
       insertPublishedReportCommonIndicator(
           reportId = reportId1,
           indicatorId = commonIndicatorId1,
-          value = 120,
+          value = BigDecimal(120),
           projectsComments = null,
           status = ReportIndicatorStatus.Achieved,
       )
@@ -140,12 +141,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId2,
           year = 2025,
-          target = 200,
+          target = BigDecimal(200),
       )
       insertPublishedReportCommonIndicator(
           reportId = reportId1,
           indicatorId = commonIndicatorId2,
-          value = 180,
+          value = BigDecimal(180),
           progressNotes = "progress notes 2",
           projectsComments = "Underperformance justification 2",
           status = ReportIndicatorStatus.Unlikely,
@@ -159,7 +160,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportProjectIndicator(
           reportId = reportId1,
           indicatorId = projectIndicatorId1,
-          value = 40,
+          value = BigDecimal(40),
           progressNotes = "progress notes 1",
           projectsComments = null,
           status = ReportIndicatorStatus.OnTrack,
@@ -181,12 +182,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SurvivalRate,
           year = 2025,
-          target = 6,
+          target = BigDecimal(6),
       )
       insertPublishedReportAutoCalculatedIndicator(
           reportId = reportId1,
           indicator = AutoCalculatedIndicator.SurvivalRate,
-          value = 6,
+          value = BigDecimal(6),
           projectsComments = null,
           status = ReportIndicatorStatus.Achieved,
       )

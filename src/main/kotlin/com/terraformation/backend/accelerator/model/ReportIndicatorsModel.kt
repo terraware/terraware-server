@@ -41,7 +41,7 @@ data class ReportCommonIndicatorModel(
     private fun entry(record: Record): ReportIndicatorEntryModel {
       return with(REPORT_COMMON_INDICATORS) {
         ReportIndicatorEntryModel(
-            target = record[REPORT_COMMON_INDICATOR_TARGETS.TARGET],
+            target = record[REPORT_COMMON_INDICATOR_TARGETS.TARGET]?.let { it.toInt() },
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
@@ -74,7 +74,7 @@ data class ReportProjectIndicatorModel(
     private fun entry(record: Record): ReportIndicatorEntryModel {
       return with(REPORT_PROJECT_INDICATORS) {
         ReportIndicatorEntryModel(
-            target = record[REPORT_PROJECT_INDICATOR_TARGETS.TARGET],
+            target = record[REPORT_PROJECT_INDICATOR_TARGETS.TARGET]?.let { it.toInt() },
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
@@ -108,7 +108,7 @@ data class ReportAutoCalculatedIndicatorEntryModel(
     fun of(record: Record, systemValueField: Field<Int?>): ReportAutoCalculatedIndicatorEntryModel {
       return with(REPORT_AUTO_CALCULATED_INDICATORS) {
         ReportAutoCalculatedIndicatorEntryModel(
-            target = record[REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET],
+            target = record[REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET]?.let { it.toInt() },
             systemValue = record[systemValueField],
             systemTime = record[SYSTEM_TIME],
             overrideValue = record[OVERRIDE_VALUE],

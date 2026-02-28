@@ -28,6 +28,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_P
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
+import java.math.BigDecimal
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.TableField
@@ -130,7 +131,7 @@ class PublishedReportStore(
             "status_id",
             SQLDataType.INTEGER.asConvertedDataType(ReportIndicatorStatusConverter()),
         )!!
-    val targetField = targetTable.field("target", Int::class.java)!!
+    val targetField = targetTable.field("target", BigDecimal::class.java)!!
     val targetYearField = targetTable.field("year", Int::class.java)!!
     val projectsCommentsField =
         publishedIndicatorTable.field("projects_comments", String::class.java)!!
@@ -196,7 +197,7 @@ class PublishedReportStore(
                 projectsComments = it[projectsCommentsField],
                 refId = it[indicatorReferenceField],
                 status = it[statusField],
-                target = it[targetField],
+                target = it[targetField]?.let { it.toInt() },
                 unit = it[unitField],
                 value = it[valueField],
             )

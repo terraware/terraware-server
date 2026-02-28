@@ -1,6 +1,6 @@
 -- Report indicators
 ALTER TABLE accelerator.report_auto_calculated_indicators ALTER COLUMN system_value TYPE NUMERIC;
-ALTER TABLE accelerator.report_auto_calculated_indicators ALTER COLUMN value TYPE NUMERIC;
+ALTER TABLE accelerator.report_auto_calculated_indicators ALTER COLUMN override_value TYPE NUMERIC;
 
 ALTER TABLE accelerator.report_common_indicators ALTER COLUMN value TYPE NUMERIC;
 

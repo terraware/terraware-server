@@ -294,7 +294,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId,
           year = 1970,
-          target = 100,
+          target = BigDecimal(100),
       )
       insertReportProjectIndicator(
           reportId = reportId,
@@ -365,18 +365,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       // Insert targets into new target tables
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = BigDecimal(55))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
-          value = 45,
+          value = BigDecimal(45),
           projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 25)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = BigDecimal(25))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -454,7 +454,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.Seedlings,
           year = 1970,
-          target = 1000,
+          target = BigDecimal(1000),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
@@ -466,12 +466,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 1970,
-          target = 2000,
+          target = BigDecimal(2000),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 1800,
+          systemValue = BigDecimal(1800),
           systemTime = Instant.ofEpochSecond(8000),
           modifiedTime = Instant.ofEpochSecond(500),
           modifiedBy = user.userId,
@@ -480,14 +480,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 1970,
-          target = 600,
+          target = BigDecimal(600),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          systemValue = 300,
+          systemValue = BigDecimal(300),
           systemTime = Instant.ofEpochSecond(7000),
-          overrideValue = 800,
+          overrideValue = BigDecimal(800),
           status = ReportIndicatorStatus.Achieved,
           modifiedTime = Instant.ofEpochSecond(700),
           modifiedBy = user.userId,
@@ -1056,7 +1056,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId,
           year = 1970,
-          target = 100,
+          target = BigDecimal(100),
       )
       insertReportProjectIndicator(
           reportId = reportId,
@@ -1127,18 +1127,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               refId = "2.0",
           )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = BigDecimal(55))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
-          value = 45,
+          value = BigDecimal(45),
           projectsComments = "Almost at target",
           progressNotes = "Not quite there yet",
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 25)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = BigDecimal(25))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -1216,7 +1216,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.Seedlings,
           year = 1970,
-          target = 1000,
+          target = BigDecimal(1000),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
@@ -1228,12 +1228,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 1970,
-          target = 2000,
+          target = BigDecimal(2000),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 1800,
+          systemValue = BigDecimal(1800),
           systemTime = Instant.ofEpochSecond(8000),
           modifiedTime = Instant.ofEpochSecond(500),
           modifiedBy = user.userId,
@@ -1242,14 +1242,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 1970,
-          target = 600,
+          target = BigDecimal(600),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          systemValue = 300,
+          systemValue = BigDecimal(300),
           systemTime = Instant.ofEpochSecond(7000),
-          overrideValue = 800,
+          overrideValue = BigDecimal(800),
           status = ReportIndicatorStatus.Achieved,
           modifiedTime = Instant.ofEpochSecond(700),
           modifiedBy = user.userId,
@@ -1687,18 +1687,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedTime = Instant.ofEpochSecond(3000),
           )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = BigDecimal(55))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
-          value = 45,
+          value = BigDecimal(45),
           projectsComments = "Existing indicator 1 notes",
           status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 30)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = BigDecimal(30))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -1712,12 +1712,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 1970,
-          target = 1000,
+          target = BigDecimal(1000),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 1200,
+          systemValue = BigDecimal(1200),
           systemTime = Instant.ofEpochSecond(4000),
           projectsComments = "Existing seeds collected indicator notes",
           progressNotes = "Existing seeds collected indicator internal comment",
@@ -1728,13 +1728,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
           year = 1970,
-          target = 10,
+          target = BigDecimal(10),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
-          overrideValue = 15,
-          systemValue = 12,
+          overrideValue = BigDecimal(15),
+          systemValue = BigDecimal(12),
           systemTime = Instant.ofEpochSecond(5000),
           projectsComments = "Existing species planted indicator notes",
           progressNotes = "Existing species planted indicator internal comment",
@@ -1802,7 +1802,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId1,
-                  value = 45,
+                  value = BigDecimal(45),
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing indicator 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
@@ -1811,7 +1811,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId2,
-                  value = 88,
+                  value = BigDecimal(88),
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New indicator 2 notes",
                   progressNotes = "New indicator 2 internal comment",
@@ -1821,7 +1821,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId3,
-                  value = 45,
+                  value = BigDecimal(45),
                   projectsComments = "New indicator 3 notes",
                   progressNotes = "New indicator 3 internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -1837,7 +1837,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
-                  systemValue = 1200,
+                  systemValue = BigDecimal(1200),
                   systemTime = Instant.ofEpochSecond(4000),
                   projectsComments = "Existing seeds collected indicator notes",
                   progressNotes = "Existing seeds collected indicator internal comment",
@@ -1847,9 +1847,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
-                  systemValue = 12,
+                  systemValue = BigDecimal(12),
                   systemTime = Instant.ofEpochSecond(5000),
-                  overrideValue = 4,
+                  overrideValue = BigDecimal(4),
                   statusId = null,
                   projectsComments = "New species planted indicator notes",
                   progressNotes = "New species planted indicator internal comment",
@@ -1859,7 +1859,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
-                  overrideValue = 45,
+                  overrideValue = BigDecimal(45),
                   statusId = ReportIndicatorStatus.Unlikely,
                   projectsComments = "New trees planted indicator notes",
                   progressNotes = "New trees planted indicator internal comment",
@@ -1875,7 +1875,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportProjectIndicatorsRecord(
                   reportId = reportId,
                   projectIndicatorId = projectIndicatorId,
-                  value = 50,
+                  value = BigDecimal(50),
                   projectsComments = "Project indicator notes",
                   progressNotes = "Project indicator internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -2159,18 +2159,18 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted, createdBy = otherUserId)
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = 55)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = BigDecimal(55))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
-          value = 45,
+          value = BigDecimal(45),
           projectsComments = "Existing indicator 1 notes",
           status = ReportIndicatorStatus.OnTrack,
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = 30)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = BigDecimal(30))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -2184,12 +2184,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 1970,
-          target = 1000,
+          target = BigDecimal(1000),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 1200,
+          systemValue = BigDecimal(1200),
           systemTime = Instant.ofEpochSecond(4000),
           projectsComments = "Existing seeds collected indicator notes",
           progressNotes = "Existing seeds collected indicator internal comment",
@@ -2200,13 +2200,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
           year = 1970,
-          target = 10,
+          target = BigDecimal(10),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
-          overrideValue = 15,
-          systemValue = 12,
+          overrideValue = BigDecimal(15),
+          systemValue = BigDecimal(12),
           systemTime = Instant.ofEpochSecond(5000),
           projectsComments = "Existing species planted indicator notes",
           progressNotes = "Existing species planted indicator internal comment",
@@ -2286,7 +2286,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId1,
-                  value = 45,
+                  value = BigDecimal(45),
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "Existing indicator 1 notes",
                   modifiedTime = Instant.ofEpochSecond(3000),
@@ -2295,7 +2295,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportCommonIndicatorsRecord(
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId2,
-                  value = 88,
+                  value = BigDecimal(88),
                   statusId = ReportIndicatorStatus.OnTrack,
                   projectsComments = "New indicator 2 notes",
                   progressNotes = "Existing indicator 2 internal comment",
@@ -2319,7 +2319,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
-                  systemValue = 1200,
+                  systemValue = BigDecimal(1200),
                   systemTime = Instant.ofEpochSecond(4000),
                   projectsComments = "Existing seeds collected indicator notes",
                   progressNotes = "Existing seeds collected indicator internal comment",
@@ -2329,10 +2329,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
-                  systemValue = 12,
+                  systemValue = BigDecimal(12),
                   systemTime = Instant.ofEpochSecond(5000),
                   statusId = null,
-                  overrideValue = 15,
+                  overrideValue = BigDecimal(15),
                   projectsComments = "New species planted indicator notes",
                   progressNotes = "Existing species planted indicator internal comment",
                   modifiedTime = Instant.ofEpochSecond(9000),
@@ -2355,7 +2355,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportProjectIndicatorsRecord(
                   reportId = reportId,
                   projectIndicatorId = projectIndicatorId,
-                  value = 50,
+                  value = BigDecimal(50),
                   projectsComments = "Project indicator notes",
                   modifiedTime = Instant.ofEpochSecond(9000),
                   modifiedBy = user.userId,
@@ -2424,23 +2424,23 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 1000,
+          systemValue = BigDecimal(1000),
           systemTime = Instant.ofEpochSecond(3000),
-          overrideValue = 74,
+          overrideValue = BigDecimal(74),
           modifiedBy = otherUserId,
           modifiedTime = Instant.ofEpochSecond(3000),
       )
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.Seedlings,
-          systemValue = 2000,
+          systemValue = BigDecimal(2000),
           systemTime = Instant.ofEpochSecond(3000),
-          overrideValue = 98,
+          overrideValue = BigDecimal(98),
           modifiedBy = otherUserId,
           modifiedTime = Instant.ofEpochSecond(3000),
       )
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          systemValue = 3000,
+          systemValue = BigDecimal(3000),
           systemTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
           modifiedTime = Instant.ofEpochSecond(3000),
@@ -2462,9 +2462,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
-                  systemValue = 1000,
+                  systemValue = BigDecimal(1000),
                   systemTime = Instant.ofEpochSecond(3000),
-                  overrideValue = 74,
+                  overrideValue = BigDecimal(74),
                   modifiedBy = otherUserId,
                   modifiedTime = Instant.ofEpochSecond(3000),
               ),
@@ -2516,23 +2516,23 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 1000,
+          systemValue = BigDecimal(1000),
           systemTime = Instant.ofEpochSecond(3000),
-          overrideValue = 74,
+          overrideValue = BigDecimal(74),
           modifiedBy = otherUserId,
           modifiedTime = Instant.ofEpochSecond(3000),
       )
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.Seedlings,
-          systemValue = 2000,
+          systemValue = BigDecimal(2000),
           systemTime = Instant.ofEpochSecond(3000),
-          overrideValue = 98,
+          overrideValue = BigDecimal(98),
           modifiedBy = otherUserId,
           modifiedTime = Instant.ofEpochSecond(3000),
       )
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          systemValue = 3000,
+          systemValue = BigDecimal(3000),
           systemTime = Instant.ofEpochSecond(3000),
           modifiedBy = otherUserId,
           modifiedTime = Instant.ofEpochSecond(3000),
@@ -2554,16 +2554,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
-                  systemValue = 1000,
+                  systemValue = BigDecimal(1000),
                   systemTime = Instant.ofEpochSecond(3000),
-                  overrideValue = 74,
+                  overrideValue = BigDecimal(74),
                   modifiedBy = otherUserId,
                   modifiedTime = Instant.ofEpochSecond(3000),
               ),
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
-                  systemValue = 83,
+                  systemValue = BigDecimal(83),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -2571,7 +2571,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
-                  systemValue = 27,
+                  systemValue = BigDecimal(27),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -2579,7 +2579,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
-                  systemValue = 1,
+                  systemValue = BigDecimal(1),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -2666,7 +2666,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SeedsCollected,
-                  systemValue = 98,
+                  systemValue = BigDecimal(98),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -2674,7 +2674,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.HectaresPlanted,
-                  systemValue = 60,
+                  systemValue = BigDecimal(60),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -2682,7 +2682,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
-                  systemValue = 83,
+                  systemValue = BigDecimal(83),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -2690,7 +2690,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
-                  systemValue = 27,
+                  systemValue = BigDecimal(27),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -2698,7 +2698,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
-                  systemValue = 1,
+                  systemValue = BigDecimal(1),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -2707,7 +2707,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
                   systemValue =
-                      (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt(),
+                      BigDecimal((sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt()),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -3542,29 +3542,29 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           deleted = true,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 2030, target = 10)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 2030, target = BigDecimal(10))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
           status = ReportIndicatorStatus.Achieved,
-          value = 10,
+          value = BigDecimal(10),
           projectsComments = null,
           progressNotes = "Common Indicator 1 Progress notes",
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 2030, target = 20)
+      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 2030, target = BigDecimal(20))
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
           status = ReportIndicatorStatus.OnTrack,
-          value = 19,
+          value = BigDecimal(19),
           projectsComments = "Common Indicator 2 Underperformance",
       )
 
       insertCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorNullValueId,
           year = 2030,
-          target = 999,
+          target = BigDecimal(999),
       )
       insertReportCommonIndicator(
           reportId = reportId,
@@ -3575,24 +3575,24 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorNotPublishableId,
           year = 2030,
-          target = 999,
+          target = BigDecimal(999),
       )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorNotPublishableId,
-          value = 999,
+          value = BigDecimal(999),
       )
 
       insertProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId1,
           year = 2030,
-          target = 30,
+          target = BigDecimal(30),
       )
       insertReportProjectIndicator(
           reportId = reportId,
           indicatorId = projectIndicatorId1,
           status = ReportIndicatorStatus.Achieved,
-          value = 30,
+          value = BigDecimal(30),
           projectsComments = null,
           progressNotes = "Project Indicator 1 Progress notes",
       )
@@ -3600,20 +3600,20 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId2,
           year = 2030,
-          target = 40,
+          target = BigDecimal(40),
       )
       insertReportProjectIndicator(
           reportId = reportId,
           indicatorId = projectIndicatorId2,
           status = ReportIndicatorStatus.Unlikely,
-          value = 39,
+          value = BigDecimal(39),
           projectsComments = "Project Indicator 2 Underperformance",
       )
 
       insertProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorNullValueId,
           year = 2030,
-          target = 999,
+          target = BigDecimal(999),
       )
       insertReportProjectIndicator(
           reportId = reportId,
@@ -3624,38 +3624,38 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorNotPublishableId,
           year = 2030,
-          target = 999,
+          target = BigDecimal(999),
       )
       insertReportProjectIndicator(
           reportId = reportId,
           indicatorId = projectIndicatorNotPublishableId,
-          value = 999,
+          value = BigDecimal(999),
       )
 
       // Seeds Collected is not publishable
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 2030,
-          target = 999,
+          target = BigDecimal(999),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SeedsCollected,
           status = ReportIndicatorStatus.Achieved,
-          systemValue = 999,
+          systemValue = BigDecimal(999),
       )
 
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.Seedlings,
           year = 2030,
-          target = 50,
+          target = BigDecimal(50),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.Seedlings,
           status = ReportIndicatorStatus.OnTrack,
-          overrideValue = 49,
-          systemValue = 39,
+          overrideValue = BigDecimal(49),
+          systemValue = BigDecimal(39),
           projectsComments = "Seedlings underperformance justification",
           progressNotes = "Seedlings progress notes",
       )
@@ -3663,13 +3663,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
           year = 2030,
-          target = 10,
+          target = BigDecimal(10),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
           status = ReportIndicatorStatus.Achieved,
-          systemValue = 10,
+          systemValue = BigDecimal(10),
       )
 
       // Indicators can be published even with no target set
@@ -3682,19 +3682,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = reportId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
           status = ReportIndicatorStatus.Achieved,
-          systemValue = 100,
+          systemValue = BigDecimal(100),
       )
 
       insertAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SurvivalRate,
           year = 2030,
-          target = 0,
+          target = BigDecimal(0),
       )
       insertReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SurvivalRate,
           status = ReportIndicatorStatus.Unlikely,
-          systemValue = 51,
+          systemValue = BigDecimal(51),
       )
     }
 
@@ -3776,54 +3776,54 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       insertPublishedReportCommonIndicator(
           indicatorId = commonIndicatorId1,
-          value = 100,
+          value = BigDecimal(100),
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportCommonIndicator(
           indicatorId = commonIndicatorNullValueId,
-          value = 100,
+          value = BigDecimal(100),
       )
 
       insertPublishedReportCommonIndicator(
           indicatorId = commonIndicatorNotPublishableId,
-          value = 100,
+          value = BigDecimal(100),
       )
 
       insertPublishedReportProjectIndicator(
           indicatorId = projectIndicatorId1,
-          value = 100,
+          value = BigDecimal(100),
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportProjectIndicator(
           indicatorId = projectIndicatorId2,
-          value = 100,
+          value = BigDecimal(100),
           projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportProjectIndicator(
           indicatorId = projectIndicatorNotPublishableId,
-          value = 100,
+          value = BigDecimal(100),
       )
 
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          value = 100,
+          value = BigDecimal(100),
       )
 
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.Seedlings,
-          value = 100,
+          value = BigDecimal(100),
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
 
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          value = 100,
+          value = BigDecimal(100),
           projectsComments = "Existing underperformance justification",
       )
 
@@ -3904,7 +3904,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId1,
                   statusId = ReportIndicatorStatus.Achieved,
-                  value = 10,
+                  value = BigDecimal(10),
                   projectsComments = null,
                   progressNotes = "Common Indicator 1 Progress notes",
               ),
@@ -3912,7 +3912,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   commonIndicatorId = commonIndicatorId2,
                   statusId = ReportIndicatorStatus.OnTrack,
-                  value = 19,
+                  value = BigDecimal(19),
                   projectsComments = "Common Indicator 2 Underperformance",
               ),
           ),
@@ -3925,7 +3925,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   projectIndicatorId = projectIndicatorId1,
                   statusId = ReportIndicatorStatus.Achieved,
-                  value = 30,
+                  value = BigDecimal(30),
                   projectsComments = null,
                   progressNotes = "Project Indicator 1 Progress notes",
               ),
@@ -3933,7 +3933,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   projectIndicatorId = projectIndicatorId2,
                   statusId = ReportIndicatorStatus.Unlikely,
-                  value = 39,
+                  value = BigDecimal(39),
                   projectsComments = "Project Indicator 2 Underperformance",
               ),
           ),
@@ -3946,7 +3946,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
                   statusId = ReportIndicatorStatus.OnTrack,
-                  value = 49,
+                  value = BigDecimal(49),
                   projectsComments = "Seedlings underperformance justification",
                   progressNotes = "Seedlings progress notes",
               ),
@@ -3954,25 +3954,25 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SpeciesPlanted,
                   statusId = ReportIndicatorStatus.Achieved,
-                  value = 10,
+                  value = BigDecimal(10),
               ),
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.TreesPlanted,
                   statusId = ReportIndicatorStatus.Achieved,
-                  value = 100,
+                  value = BigDecimal(100),
               ),
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
                   statusId = ReportIndicatorStatus.Unlikely,
-                  value = 51,
+                  value = BigDecimal(51),
               ),
               PublishedReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.HectaresPlanted,
                   statusId = null,
-                  value = 0,
+                  value = BigDecimal(0),
               ),
           ),
           "Published report auto calculated indicators table",
@@ -5293,7 +5293,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = projectId,
           projectIndicatorId = projectIndicatorId,
           year = 2024,
-          target = 100,
+          target = BigDecimal(100),
       )
 
       store.updateProjectIndicatorTarget(
@@ -5400,7 +5400,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = projectId,
           commonIndicatorId = commonIndicatorId,
           year = 2024,
-          target = 200,
+          target = BigDecimal(200),
       )
 
       store.updateCommonIndicatorTarget(
@@ -5489,7 +5489,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = projectId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 2024,
-          target = 500,
+          target = BigDecimal(500),
       )
 
       store.updateAutoCalculatedIndicatorTarget(
@@ -5569,19 +5569,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = projectId,
           projectIndicatorId = projectIndicatorId1,
           year = 2024,
-          target = 100,
+          target = BigDecimal(100),
       )
       insertProjectIndicatorTarget(
           projectId = projectId,
           projectIndicatorId = projectIndicatorId2,
           year = 2024,
-          target = 200,
+          target = BigDecimal(200),
       )
       insertProjectIndicatorTarget(
           projectId = projectId,
           projectIndicatorId = projectIndicatorId1,
           year = 2025,
-          target = 150,
+          target = BigDecimal(150),
       )
 
       val targets = store.fetchReportProjectIndicatorTargets(projectId)
@@ -5631,19 +5631,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = projectId,
           commonIndicatorId = commonIndicatorId1,
           year = 2024,
-          target = 300,
+          target = BigDecimal(300),
       )
       insertCommonIndicatorTarget(
           projectId = projectId,
           commonIndicatorId = commonIndicatorId2,
           year = 2024,
-          target = 400,
+          target = BigDecimal(400),
       )
       insertCommonIndicatorTarget(
           projectId = projectId,
           commonIndicatorId = commonIndicatorId1,
           year = 2025,
-          target = 350,
+          target = BigDecimal(350),
       )
 
       val targets = store.fetchReportCommonIndicatorTargets(projectId)
@@ -5678,19 +5678,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = projectId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 2024,
-          target = 500,
+          target = BigDecimal(500),
       )
       insertAutoCalculatedIndicatorTarget(
           projectId = projectId,
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 2024,
-          target = 1000,
+          target = BigDecimal(1000),
       )
       insertAutoCalculatedIndicatorTarget(
           projectId = projectId,
           indicator = AutoCalculatedIndicator.TreesPlanted,
           year = 2025,
-          target = 600,
+          target = BigDecimal(600),
       )
 
       val targets = store.fetchReportAutoCalculatedIndicatorTargets(projectId)

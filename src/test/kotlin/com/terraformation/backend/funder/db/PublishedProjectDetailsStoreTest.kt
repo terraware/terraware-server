@@ -164,38 +164,38 @@ class PublishedProjectDetailsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReport()
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.HectaresPlanted,
-          value = 100,
+          value = BigDecimal(100),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          value = 10,
+          value = BigDecimal(10),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          value = 1000,
+          value = BigDecimal(1000),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
-          value = 1,
+          value = BigDecimal(1),
       )
 
       insertReport()
       insertPublishedReport()
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.HectaresPlanted,
-          value = 200,
+          value = BigDecimal(200),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          value = 20,
+          value = BigDecimal(20),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          value = 2000,
+          value = BigDecimal(2000),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
-          value = 2,
+          value = BigDecimal(2),
       )
 
       val expected =

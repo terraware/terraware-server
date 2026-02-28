@@ -3653,7 +3653,7 @@ abstract class DatabaseBackedTest {
       row: ReportProjectIndicatorsRow = ReportProjectIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       indicatorId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectIndicatorId,
-      value: Int? = row.value,
+      value: BigDecimal? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
@@ -3679,7 +3679,7 @@ abstract class DatabaseBackedTest {
       row: ReportCommonIndicatorsRow = ReportCommonIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       indicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
-      value: Int? = row.value,
+      value: BigDecimal? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
@@ -3706,9 +3706,9 @@ abstract class DatabaseBackedTest {
       reportId: ReportId = row.reportId ?: inserted.reportId,
       indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
-      systemValue: Int? = row.systemValue,
+      systemValue: BigDecimal? = row.systemValue,
       systemTime: Instant? = row.systemTime ?: systemValue?.let { Instant.EPOCH },
-      overrideValue: Int? = row.overrideValue,
+      overrideValue: BigDecimal? = row.overrideValue,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
@@ -3738,7 +3738,7 @@ abstract class DatabaseBackedTest {
       projectIndicatorId: ProjectIndicatorId =
           row.projectIndicatorId ?: inserted.projectIndicatorId,
       year: Int = row.year ?: 1970,
-      target: Int? = row.target,
+      target: BigDecimal? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3756,7 +3756,7 @@ abstract class DatabaseBackedTest {
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
       year: Int = row.year ?: 1970,
-      target: Int? = row.target,
+      target: BigDecimal? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3775,7 +3775,7 @@ abstract class DatabaseBackedTest {
       indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
       year: Int = row.year ?: 1970,
-      target: Int? = row.target,
+      target: BigDecimal? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3794,7 +3794,7 @@ abstract class DatabaseBackedTest {
       projectIndicatorId: ProjectIndicatorId =
           row.projectIndicatorId ?: inserted.projectIndicatorId,
       year: Int = row.year ?: 2025,
-      target: Int? = row.target,
+      target: BigDecimal? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3812,7 +3812,7 @@ abstract class DatabaseBackedTest {
       projectId: ProjectId = row.projectId ?: inserted.projectId,
       commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
       year: Int = row.year ?: 2025,
-      target: Int? = row.target,
+      target: BigDecimal? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3832,7 +3832,7 @@ abstract class DatabaseBackedTest {
       indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
       year: Int = row.year ?: 2025,
-      target: Int? = row.target,
+      target: BigDecimal? = row.target,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3926,7 +3926,7 @@ abstract class DatabaseBackedTest {
       row: PublishedReportProjectIndicatorsRow = PublishedReportProjectIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       indicatorId: ProjectIndicatorId = row.projectIndicatorId ?: inserted.projectIndicatorId,
-      value: Int? = row.value,
+      value: BigDecimal? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
@@ -3948,7 +3948,7 @@ abstract class DatabaseBackedTest {
       row: PublishedReportCommonIndicatorsRow = PublishedReportCommonIndicatorsRow(),
       reportId: ReportId = row.reportId ?: inserted.reportId,
       indicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
-      value: Int? = row.value,
+      value: BigDecimal? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
@@ -3972,7 +3972,7 @@ abstract class DatabaseBackedTest {
       reportId: ReportId = row.reportId ?: inserted.reportId,
       indicator: AutoCalculatedIndicator =
           row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.Seedlings,
-      value: Int? = row.value,
+      value: BigDecimal? = row.value,
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
