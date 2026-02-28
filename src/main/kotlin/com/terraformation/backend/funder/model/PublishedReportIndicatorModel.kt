@@ -14,7 +14,7 @@ data class PublishedReportIndicatorModel<ID : Any>(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
-    val target: Int?,
+    val target: BigDecimal?,
     val unit: String?,
-    val value: Int?,
+    val value: BigDecimal?,
 )

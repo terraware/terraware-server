@@ -325,7 +325,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   entry =
                       ReportIndicatorEntryModel(
-                          target = 100,
+                          target = BigDecimal(100),
                           status = ReportIndicatorStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
@@ -429,8 +429,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   entry =
                       ReportIndicatorEntryModel(
-                          target = 55,
-                          value = 45,
+                          target = BigDecimal(55),
+                          value = BigDecimal(45),
                           projectsComments = "Almost at target",
                           progressNotes = "Not quite there yet",
                           modifiedTime = Instant.ofEpochSecond(3000),
@@ -451,7 +451,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   entry =
                       ReportIndicatorEntryModel(
-                          target = 25,
+                          target = BigDecimal(25),
                           status = ReportIndicatorStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
@@ -1095,7 +1095,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   entry =
                       ReportIndicatorEntryModel(
-                          target = 100,
+                          target = BigDecimal(100),
                           status = ReportIndicatorStatus.OnTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
@@ -1199,8 +1199,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   entry =
                       ReportIndicatorEntryModel(
-                          target = 55,
-                          value = 45,
+                          target = Bigdecimal(55),
+                          value = BigDecimal(45),
                           projectsComments = "Almost at target",
                           progressNotes = "Not quite there yet",
                           modifiedTime = Instant.ofEpochSecond(3000),
@@ -1221,7 +1221,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   entry =
                       ReportIndicatorEntryModel(
-                          target = 25,
+                          target = BigDecimal(25),
                           status = ReportIndicatorStatus.Unlikely,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
@@ -1777,7 +1777,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   commonIndicatorId2 to
                       ReportIndicatorEntryModel(
-                          value = 88,
+                          value = BigDecimal(88),
                           projectsComments = "New indicator 2 notes",
                           progressNotes = "New indicator 2 internal comment",
                           status = ReportIndicatorStatus.OnTrack,
@@ -1788,7 +1788,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   commonIndicatorId3 to
                       ReportIndicatorEntryModel(
-                          value = 45,
+                          value = BigDecimal(45),
                           projectsComments = "New indicator 3 notes",
                           progressNotes = "New indicator 3 internal comment",
                       ),
@@ -1797,14 +1797,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   AutoCalculatedIndicator.SpeciesPlanted to
                       ReportIndicatorEntryModel(
-                          value = 4,
+                          value = BigDecimal(4),
                           status = null,
                           projectsComments = "New species planted indicator notes",
                           progressNotes = "New species planted indicator internal comment",
                       ),
                   AutoCalculatedIndicator.TreesPlanted to
                       ReportIndicatorEntryModel(
-                          value = 45,
+                          value = BigDecimal(45),
                           status = ReportIndicatorStatus.Unlikely,
                           projectsComments = "New trees planted indicator notes",
                           progressNotes = "New trees planted indicator internal comment",
@@ -1814,7 +1814,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   projectIndicatorId to
                       ReportIndicatorEntryModel(
-                          value = 50,
+                          value = BigDecimal(50),
                           projectsComments = "Project indicator notes",
                           progressNotes = "Project indicator internal comment",
                       ),
@@ -2263,7 +2263,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   commonIndicatorId2 to
                       ReportIndicatorEntryModel(
-                          value = 88,
+                          value = BigDecimal(88),
                           projectsComments = "New indicator 2 notes",
                           status = ReportIndicatorStatus.OnTrack,
 
@@ -2286,7 +2286,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = null,
 
                           // These fields are ignored
-                          value = 4,
+                          value = BigDecimal(4),
                           progressNotes = "New species planted indicator internal comment",
                           modifiedTime = Instant.EPOCH,
                           modifiedBy = UserId(99),
@@ -2297,7 +2297,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           status = ReportIndicatorStatus.Unlikely,
 
                           // These fields are ignored
-                          value = 45,
+                          value = BigDecimal(45),
                           progressNotes = "New trees planted indicator internal comment",
                           modifiedTime = Instant.EPOCH,
                           modifiedBy = UserId(99),
@@ -2307,7 +2307,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               mapOf(
                   projectIndicatorId to
                       ReportIndicatorEntryModel(
-                          value = 50,
+                          value = BigDecimal(50),
                           projectsComments = "Project indicator notes",
                       ),
               ),

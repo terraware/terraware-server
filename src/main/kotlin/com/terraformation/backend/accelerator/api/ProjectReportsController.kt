@@ -934,7 +934,7 @@ data class ReportStandardMetricEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = value,
+          value = BigDecimal(value),
       )
 }
 
@@ -950,7 +950,7 @@ data class ReportCommonIndicatorEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = value,
+          value = BigDecimal(value),
       )
 }
 
@@ -1036,7 +1036,7 @@ data class ReportSystemMetricEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = overrideValue,
+          value = BigDecimal(overrideValue),
       )
 }
 
@@ -1052,7 +1052,7 @@ data class ReportAutoCalculatedIndicatorEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = overrideValue,
+          value = BigDecimal(overrideValue),
       )
 }
 
@@ -1150,7 +1150,7 @@ data class ReportProjectMetricEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = value,
+          value = BigDecimal(value),
       )
 }
 
@@ -1166,7 +1166,7 @@ data class ReportProjectIndicatorEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = value,
+          value = BigDecimal(value),
       )
 }
 

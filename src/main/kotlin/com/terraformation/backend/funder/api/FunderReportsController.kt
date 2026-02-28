@@ -25,6 +25,7 @@ import com.terraformation.backend.funder.model.PublishedReportModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.springframework.core.io.InputStreamResource
@@ -107,10 +108,10 @@ data class PublishedReportMetricPayload(
       projectsComments = model.projectsComments,
       reference = model.refId,
       status = model.status,
-      target = model.target,
+      target = BigDecimal(model.target),
       type = model.level,
       unit = model.unit,
-      value = model.value,
+      value = BigDecimal(model.value),
   )
 }
 
@@ -138,9 +139,9 @@ data class PublishedReportIndicatorPayload(
       projectsComments = model.projectsComments,
       refId = model.refId,
       status = model.status,
-      target = model.target,
+      target = model.target?.toInt(),
       unit = model.unit,
-      value = model.value,
+      value = model.value.toInt(),
   )
 }
 

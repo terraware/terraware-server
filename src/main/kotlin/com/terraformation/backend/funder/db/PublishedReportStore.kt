@@ -135,7 +135,7 @@ class PublishedReportStore(
     val targetYearField = targetTable.field("year", Int::class.java)!!
     val projectsCommentsField =
         publishedIndicatorTable.field("projects_comments", String::class.java)!!
-    val valueField = publishedIndicatorTable.field("value", Int::class.java)!!
+    val valueField = publishedIndicatorTable.field("value", BigDecimal::class.java)!!
 
     val indicatorTable = indicatorTableIdField.table!!
     val indicatorComponentField =
@@ -197,7 +197,7 @@ class PublishedReportStore(
                 projectsComments = it[projectsCommentsField],
                 refId = it[indicatorReferenceField],
                 status = it[statusField],
-                target = it[targetField]?.let { it.toInt() },
+                target = it[targetField],
                 unit = it[unitField],
                 value = it[valueField],
             )

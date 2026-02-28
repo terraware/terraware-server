@@ -12,13 +12,14 @@ import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJEC
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.UserId
+import java.math.BigDecimal
 import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
 
 data class ReportIndicatorEntryModel(
-    val target: Int? = null,
-    val value: Int? = null,
+    val target: BigDecimal? = null,
+    val value: BigDecimal? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
     val projectsComments: String? = null,
@@ -41,7 +42,7 @@ data class ReportCommonIndicatorModel(
     private fun entry(record: Record): ReportIndicatorEntryModel {
       return with(REPORT_COMMON_INDICATORS) {
         ReportIndicatorEntryModel(
-            target = record[REPORT_COMMON_INDICATOR_TARGETS.TARGET]?.let { it.toInt() },
+            target = record[REPORT_COMMON_INDICATOR_TARGETS.TARGET],
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
@@ -74,7 +75,7 @@ data class ReportProjectIndicatorModel(
     private fun entry(record: Record): ReportIndicatorEntryModel {
       return with(REPORT_PROJECT_INDICATORS) {
         ReportIndicatorEntryModel(
-            target = record[REPORT_PROJECT_INDICATOR_TARGETS.TARGET]?.let { it.toInt() },
+            target = record[REPORT_PROJECT_INDICATOR_TARGETS.TARGET],
             value = record[VALUE],
             modifiedBy = record[MODIFIED_BY],
             modifiedTime = record[MODIFIED_TIME],
@@ -94,10 +95,10 @@ data class ReportProjectIndicatorModel(
 
 data class ReportAutoCalculatedIndicatorEntryModel(
     val target: Int? = null,
-    val systemValue: Int?,
+    val systemValue: BigDecimal?,
     /** Time when system value is recorded. If null, the system value is current. */
     val systemTime: Instant? = null,
-    val overrideValue: Int? = null,
+    val overrideValue: BigDecimal? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
     val progressNotes: String? = null,
@@ -108,7 +109,7 @@ data class ReportAutoCalculatedIndicatorEntryModel(
     fun of(record: Record, systemValueField: Field<Int?>): ReportAutoCalculatedIndicatorEntryModel {
       return with(REPORT_AUTO_CALCULATED_INDICATORS) {
         ReportAutoCalculatedIndicatorEntryModel(
-            target = record[REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET]?.let { it.toInt() },
+            target = record[REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET],
             systemValue = record[systemValueField],
             systemTime = record[SYSTEM_TIME],
             overrideValue = record[OVERRIDE_VALUE],
