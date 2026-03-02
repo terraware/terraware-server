@@ -1,3 +1,8 @@
+48102820d4c SW-8127 Add Off-Track status to report indicator statuses (#4045)
+c4e2d39688f Update Node.js to v24.14.0 (#4049)
+ce17a41f343 Update dependency html-minifier-next to v5.1.5 (#4047)
+93e200687c9 Update dependency com.google.apis:google-api-services-drive to v3-rev20260220-2.0.0 (#4046)
+e21339c409b Update dependency com.google.api-client:google-api-client to v2.9.0 (#4048)
 9fcf4f88e62 Make MJML rendering use a specific Node version (#4022)
 a16aeeded18 Create initial claude SKILL.md for creating db migrations (#4042)
 acced76de6b SW-8126 Update baseline and end-of-project targets (#4025)
