@@ -57,7 +57,7 @@ class ReportIndicatorStore(
           .set(REF_ID, model.refId)
           .set(TF_OWNER, model.tfOwner)
           .set(UNIT, model.unit)
-          .set(PRECISION, new.precision)
+          .set(PRECISION, model.precision)
           .returning(ID)
           .fetchOne(ID)!!
     }
