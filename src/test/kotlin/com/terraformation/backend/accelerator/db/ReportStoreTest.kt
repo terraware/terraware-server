@@ -1165,7 +1165,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
-          status = ReportIndicatorStatus.Unlikely,
+          status = ReportIndicatorStatus.OffTrack,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
@@ -1229,7 +1229,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   entry =
                       ReportIndicatorEntryModel(
                           target = 25,
-                          status = ReportIndicatorStatus.Unlikely,
+                          status = ReportIndicatorStatus.OffTrack,
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
