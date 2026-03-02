@@ -63,20 +63,20 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 1,
+                                        abundanceCount = 1,
                                         speciesId = speciesId1,
                                     ),
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 2,
+                                        abundanceCount = 2,
                                         speciesId = speciesId2,
                                     ),
                                     // This will be merged with the speciesId1 entry
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 4,
+                                        abundanceCount = 4,
                                         speciesName = "Other 1",
                                     ),
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 8,
+                                        abundanceCount = 8,
                                         speciesName = "Other 2",
                                     ),
                                 ),
@@ -86,12 +86,12 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 16,
+                                        abundanceCount = 16,
                                         speciesId = speciesId1,
                                     ),
                                     // This will be merged with the speciesId1 entry
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 32,
+                                        abundanceCount = 17,
                                         speciesName = "Other 1",
                                     ),
                                 ),
@@ -101,11 +101,11 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 51,
+                                        abundanceCount = 18,
                                         speciesId = speciesId1,
                                     ),
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 52,
+                                        abundanceCount = 19,
                                         speciesName = "Other 2",
                                     ),
                                 ),
@@ -116,7 +116,7 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
                                 setOf(
                                     // This should turn into a speciesId1 entry
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 53,
+                                        abundanceCount = 20,
                                         speciesName = "Other 1",
                                     ),
                                 ),
@@ -225,19 +225,18 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
 
     assertTableEquals(
         setOf(
-            // Abundance percent is 5 because we are combining the original speciesId1 entry's 1
-            // with the "Other 1" entry's 4.
+            // Abundance count is 5 because we are combining the original speciesId1 entry's 1 with
+            // the "Other 1" entry's 4.
             quadratSpeciesRecord(ObservationPlotPosition.NortheastCorner, biomassSpeciesId1, 5),
             quadratSpeciesRecord(ObservationPlotPosition.NortheastCorner, biomassSpeciesId2, 2),
             quadratSpeciesRecord(ObservationPlotPosition.NortheastCorner, biomassOtherId2, 8),
-            // And this one combines entries with abundances of 16 and 32 (to test that we aren't
-            // combining the values from the wrong quadrats).
-            quadratSpeciesRecord(ObservationPlotPosition.NorthwestCorner, biomassSpeciesId1, 48),
-            // There's no "Other 1" in the southeast corner, so the abundance percent stays the same
-            quadratSpeciesRecord(ObservationPlotPosition.SoutheastCorner, biomassSpeciesId1, 51),
-            quadratSpeciesRecord(ObservationPlotPosition.SoutheastCorner, biomassOtherId2, 52),
+            // And this one combines entries with abundances of 16 and 17. It hits the cap of 25.
+            quadratSpeciesRecord(ObservationPlotPosition.NorthwestCorner, biomassSpeciesId1, 25),
+            // There's no "Other 1" in the southeast corner, so the abundance count stays the same
+            quadratSpeciesRecord(ObservationPlotPosition.SoutheastCorner, biomassSpeciesId1, 18),
+            quadratSpeciesRecord(ObservationPlotPosition.SoutheastCorner, biomassOtherId2, 19),
             // This started out as an "Other 1" entry.
-            quadratSpeciesRecord(ObservationPlotPosition.SouthwestCorner, biomassSpeciesId1, 53),
+            quadratSpeciesRecord(ObservationPlotPosition.SouthwestCorner, biomassSpeciesId1, 20),
         )
     )
 
@@ -288,7 +287,7 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 1,
+                                        abundanceCount = 1,
                                         speciesName = "Other",
                                     )
                                 )
@@ -347,14 +346,14 @@ class BiomassStoreMergeOtherSpeciesTest : BaseBiomassStoreTest() {
   private fun quadratSpeciesRecord(
       position: ObservationPlotPosition,
       biomassSpeciesId: BiomassSpeciesId,
-      abundancePercent: Int,
+      abundanceCount: Int,
   ) =
       ObservationBiomassQuadratSpeciesRecord(
           observationId,
           monitoringPlotId,
           position,
           biomassSpeciesId,
-          abundancePercent,
+          abundanceCount,
       )
 
   private fun observationSpeciesRecord(

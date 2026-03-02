@@ -32,7 +32,7 @@ data class BiomassSpeciesModel(
 )
 
 data class BiomassQuadratSpeciesModel(
-    val abundancePercent: Int,
+    val abundanceCount: Int,
     val speciesId: SpeciesId? = null,
     val speciesName: String? = null,
 )

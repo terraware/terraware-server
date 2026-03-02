@@ -3051,7 +3051,7 @@ abstract class DatabaseBackedTest {
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
       position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
       biomassSpeciesId: BiomassSpeciesId? = row.biomassSpeciesId ?: inserted.biomassSpeciesId,
-      abundancePercent: Int = row.abundancePercent ?: 0,
+      abundanceCount: Int = row.abundanceCount ?: 0,
   ) {
     with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
       dslContext
@@ -3060,7 +3060,7 @@ abstract class DatabaseBackedTest {
           .set(MONITORING_PLOT_ID, monitoringPlotId)
           .set(POSITION_ID, position)
           .set(BIOMASS_SPECIES_ID, biomassSpeciesId)
-          .set(ABUNDANCE_PERCENT, abundancePercent)
+          .set(ABUNDANCE_COUNT, abundanceCount)
           .execute()
     }
   }

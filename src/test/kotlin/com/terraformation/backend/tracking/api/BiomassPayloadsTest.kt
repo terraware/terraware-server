@@ -26,7 +26,7 @@ class BiomassPayloadsTest {
     @Test
     fun `converts to NewRecordedTreeModels and assign tree and trunk numbers correctly`() {
       val treeList =
-          listOf<NewTreePayload>(
+          listOf(
               NewShrubPayload(
                   description = "Live shrub description",
                   gpsCoordinates = point(1),
@@ -174,7 +174,7 @@ class BiomassPayloadsTest {
                               species =
                                   setOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = 40,
+                                          abundanceCount = 10,
                                           speciesId = SpeciesId(1),
                                       )
                                   ),
@@ -185,11 +185,11 @@ class BiomassPayloadsTest {
                               species =
                                   setOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = 60,
+                                          abundanceCount = 15,
                                           speciesId = SpeciesId(2),
                                       ),
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = 5,
+                                          abundanceCount = 1,
                                           speciesName = "Herbaceous species",
                                       ),
                                   ),
@@ -200,7 +200,7 @@ class BiomassPayloadsTest {
                               species =
                                   setOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = 90,
+                                          abundanceCount = 23,
                                           speciesId = SpeciesId(1),
                                       )
                                   ),
@@ -347,7 +347,7 @@ class BiomassPayloadsTest {
                           species =
                               listOf(
                                   ExistingBiomassQuadratSpeciesPayload(
-                                      abundancePercent = 90,
+                                      abundancePercent = 23,
                                       isInvasive = true,
                                       isThreatened = false,
                                       speciesId = SpeciesId(1),
@@ -361,7 +361,7 @@ class BiomassPayloadsTest {
                           species =
                               listOf(
                                   ExistingBiomassQuadratSpeciesPayload(
-                                      abundancePercent = 40,
+                                      abundancePercent = 10,
                                       isInvasive = true,
                                       isThreatened = false,
                                       speciesId = SpeciesId(1),
@@ -375,14 +375,14 @@ class BiomassPayloadsTest {
                           species =
                               listOf(
                                   ExistingBiomassQuadratSpeciesPayload(
-                                      abundancePercent = 60,
+                                      abundancePercent = 15,
                                       isInvasive = false,
                                       isThreatened = false,
                                       speciesId = SpeciesId(2),
                                       speciesName = null,
                                   ),
                                   ExistingBiomassQuadratSpeciesPayload(
-                                      abundancePercent = 5,
+                                      abundancePercent = 1,
                                       isInvasive = false,
                                       isThreatened = true,
                                       speciesId = null,
