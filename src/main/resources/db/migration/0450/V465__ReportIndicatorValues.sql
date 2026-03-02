@@ -26,4 +26,3 @@ ALTER TABLE funders.published_auto_calculated_indicator_targets ALTER COLUMN tar
 ALTER TABLE funders.published_common_indicator_targets ALTER COLUMN target TYPE NUMERIC;
 
 ALTER TABLE funders.published_project_indicator_targets ALTER COLUMN target TYPE NUMERIC;
-

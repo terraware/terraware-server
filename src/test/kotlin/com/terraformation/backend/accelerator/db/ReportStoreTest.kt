@@ -365,7 +365,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       // Insert targets into new target tables
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = BigDecimal(55))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 1970,
+          target = BigDecimal(55),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -376,7 +380,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = BigDecimal(25))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 1970,
+          target = BigDecimal(25),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -1127,7 +1135,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               refId = "2.0",
           )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = BigDecimal(55))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 1970,
+          target = BigDecimal(55),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -1138,7 +1150,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = user.userId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = BigDecimal(25))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 1970,
+          target = BigDecimal(25),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -1687,7 +1703,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               submittedTime = Instant.ofEpochSecond(3000),
           )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = BigDecimal(55))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 1970,
+          target = BigDecimal(55),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -1698,7 +1718,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = BigDecimal(30))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 1970,
+          target = BigDecimal(30),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -2159,7 +2183,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val configId = insertProjectReportConfig()
       val reportId = insertReport(status = ReportStatus.NotSubmitted, createdBy = otherUserId)
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 1970, target = BigDecimal(55))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 1970,
+          target = BigDecimal(55),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -2170,7 +2198,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedBy = otherUserId,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 1970, target = BigDecimal(30))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 1970,
+          target = BigDecimal(30),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
@@ -2707,7 +2739,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
                   systemValue =
-                      BigDecimal((sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt()),
+                      BigDecimal(
+                          (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt()
+                      ),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -3542,7 +3576,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           deleted = true,
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId1, year = 2030, target = BigDecimal(10))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId1,
+          year = 2030,
+          target = BigDecimal(10),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId1,
@@ -3552,7 +3590,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Common Indicator 1 Progress notes",
       )
 
-      insertCommonIndicatorTarget(commonIndicatorId = commonIndicatorId2, year = 2030, target = BigDecimal(20))
+      insertCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId2,
+          year = 2030,
+          target = BigDecimal(20),
+      )
       insertReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId2,
