@@ -25,7 +25,7 @@ class BiomassStoreUpdateBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
     insertObservationBiomassSpecies(speciesId = inserted.speciesId)
     insertObservationBiomassQuadratDetails(position = ObservationPlotPosition.SouthwestCorner)
     insertObservationBiomassQuadratSpecies(
-        abundancePercent = 1,
+        abundanceCount = 1,
         position = ObservationPlotPosition.SouthwestCorner,
     )
   }
@@ -44,7 +44,7 @@ class BiomassStoreUpdateBiomassQuadratSpeciesTest : BaseBiomassStoreTest() {
       it.copy(abundance = 2)
     }
 
-    val expected = before.copy().apply { abundancePercent = 2 }
+    val expected = before.copy().apply { abundanceCount = 2 }
 
     assertTableEquals(expected)
 

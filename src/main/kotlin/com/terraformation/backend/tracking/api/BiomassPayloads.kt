@@ -77,7 +77,7 @@ data class ExistingBiomassQuadratSpeciesPayload(
       model: BiomassQuadratSpeciesModel,
       species: Map<BiomassSpeciesKey, BiomassSpeciesModel>,
   ) : this(
-      abundancePercent = model.abundancePercent,
+      abundancePercent = model.abundanceCount,
       isInvasive = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isInvasive,
       isThreatened = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isThreatened,
       speciesId = model.speciesId,
@@ -106,7 +106,7 @@ data class NewBiomassQuadratSpeciesPayload(
 ) {
   fun toModel(): BiomassQuadratSpeciesModel {
     return BiomassQuadratSpeciesModel(
-        abundancePercent = abundancePercent,
+        abundanceCount = abundancePercent,
         speciesId = speciesId,
         speciesName = speciesName,
     )

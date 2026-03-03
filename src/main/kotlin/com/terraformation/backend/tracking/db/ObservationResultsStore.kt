@@ -274,7 +274,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         DSL.multiset(
                 DSL.select(
                         POSITION_ID,
-                        ABUNDANCE_PERCENT,
+                        ABUNDANCE_COUNT,
                         OBSERVATION_BIOMASS_SPECIES.SPECIES_ID,
                         OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME,
                     )
@@ -291,7 +291,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     records
                         .map {
                           BiomassQuadratSpeciesModel(
-                              abundancePercent = it[ABUNDANCE_PERCENT]!!,
+                              abundanceCount = it[ABUNDANCE_COUNT]!!,
                               speciesId = it[OBSERVATION_BIOMASS_SPECIES.SPECIES_ID],
                               speciesName = it[OBSERVATION_BIOMASS_SPECIES.SCIENTIFIC_NAME],
                           )

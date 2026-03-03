@@ -114,7 +114,7 @@ data class EditableBiomassQuadratSpeciesModel(
     fun of(record: Record): EditableBiomassQuadratSpeciesModel {
       return with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
         EditableBiomassQuadratSpeciesModel(
-            abundance = record[ABUNDANCE_PERCENT]!!,
+            abundance = record[ABUNDANCE_COUNT]!!,
         )
       }
     }

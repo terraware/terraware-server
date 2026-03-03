@@ -528,7 +528,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
               observationId = observationId,
               monitoringPlotId = plotId,
               positionId = ObservationPlotPosition.NortheastCorner,
-              abundancePercent = 40,
+              abundanceCount = 10,
               biomassSpeciesId = biomassHerbaceousSpeciesId1,
           )
       )
@@ -538,7 +538,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
               observationId = observationId,
               monitoringPlotId = plotId,
               positionId = ObservationPlotPosition.NorthwestCorner,
-              abundancePercent = 5,
+              abundanceCount = 1,
               biomassSpeciesId = biomassHerbaceousSpeciesId3,
           )
       )
@@ -548,7 +548,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
               observationId = observationId,
               monitoringPlotId = plotId,
               positionId = ObservationPlotPosition.NorthwestCorner,
-              abundancePercent = 60,
+              abundanceCount = 15,
               biomassSpeciesId = biomassHerbaceousSpeciesId2,
           )
       )
@@ -558,7 +558,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
               observationId = observationId,
               monitoringPlotId = plotId,
               positionId = ObservationPlotPosition.SoutheastCorner,
-              abundancePercent = 90,
+              abundanceCount = 23,
               biomassSpeciesId = biomassHerbaceousSpeciesId1,
           )
       )
@@ -642,7 +642,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
                               species =
                                   setOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = 40,
+                                          abundanceCount = 10,
                                           speciesId = herbaceousSpeciesId1,
                                       )
                                   ),
@@ -653,11 +653,11 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
                               species =
                                   setOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = 60,
+                                          abundanceCount = 15,
                                           speciesId = herbaceousSpeciesId2,
                                       ),
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = 5,
+                                          abundanceCount = 1,
                                           speciesName = "Herbaceous species",
                                       ),
                                   ),
@@ -668,7 +668,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
                               species =
                                   setOf(
                                       BiomassQuadratSpeciesModel(
-                                          abundancePercent = 90,
+                                          abundanceCount = 23,
                                           speciesId = herbaceousSpeciesId1,
                                       )
                                   ),

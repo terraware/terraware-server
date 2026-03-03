@@ -243,7 +243,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         position = ObservationPlotPosition.NorthwestCorner,
     )
     insertObservationBiomassQuadratSpecies(
-        abundancePercent = 33,
+        abundanceCount = 8,
         biomassSpeciesId = inserted.biomassSpeciesId,
         position = ObservationPlotPosition.NorthwestCorner,
     )
@@ -431,8 +431,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                                 "quadratSpecies" to
                                                                     listOf(
                                                                         mapOf(
+                                                                            "abundanceCount" to "8",
                                                                             "abundancePercent" to
-                                                                                "33",
+                                                                                "32",
                                                                             "position" to
                                                                                 "Northwest",
                                                                         ),
@@ -768,6 +769,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "observations.observationPlots.biomassDetails.species.isInvasive",
                 "observations.observationPlots.biomassDetails.species.isThreatened",
                 "observations.observationPlots.biomassDetails.species.name",
+                "observations.observationPlots.biomassDetails.species.quadratSpecies.abundanceCount",
                 "observations.observationPlots.biomassDetails.species.quadratSpecies.abundancePercent",
                 "observations.observationPlots.biomassDetails.species.quadratSpecies.position",
                 "observations.observationPlots.biomassDetails.tide",

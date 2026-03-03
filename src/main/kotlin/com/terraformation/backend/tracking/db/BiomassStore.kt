@@ -252,7 +252,7 @@ class BiomassStore(
                           ?: throw IllegalArgumentException(
                               "Biomass species ${it.speciesName ?: "#${it.speciesId}"} not found."
                           ),
-                  abundancePercent = it.abundancePercent,
+                  abundanceCount = it.abundanceCount,
               )
             }
           }
@@ -384,9 +384,9 @@ class BiomassStore(
           .execute()
     }
 
-    // For quadrat species, we need to add the abundance percentages of the numbered species and the
-    // "Other" one if both exist in the quadrat. If only the "Other" one exists, then we can just
-    // switch its biomass species ID in place.
+    // For quadrat species, we need to add the abundance square counts of the numbered species and
+    // the "Other" one if both exist in the quadrat. If only the "Other" one exists, then we can
+    // just switch its biomass species ID in place. The total is capped at 25.
     with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
       val quadratSpeciesTable2 = OBSERVATION_BIOMASS_QUADRAT_SPECIES.`as`("quadrat2")
 
@@ -405,14 +405,19 @@ class BiomassStore(
       dslContext
           .update(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
           .set(
-              ABUNDANCE_PERCENT,
-              ABUNDANCE_PERCENT.plus(
-                  DSL.field(
-                      DSL.select(quadratSpeciesTable2.ABUNDANCE_PERCENT)
-                          .from(quadratSpeciesTable2)
-                          .where(quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId))
-                          .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
-                  )
+              ABUNDANCE_COUNT,
+              DSL.least(
+                  ABUNDANCE_COUNT.plus(
+                      DSL.field(
+                          DSL.select(quadratSpeciesTable2.ABUNDANCE_COUNT)
+                              .from(quadratSpeciesTable2)
+                              .where(
+                                  quadratSpeciesTable2.BIOMASS_SPECIES_ID.eq(otherBiomassSpeciesId)
+                              )
+                              .and(quadratSpeciesTable2.POSITION_ID.eq(POSITION_ID))
+                      )
+                  ),
+                  DSL.value(25),
               ),
           )
           .where(BIOMASS_SPECIES_ID.eq(targetBiomassSpeciesId))
@@ -688,7 +693,7 @@ class BiomassStore(
       val existing =
           with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
             dslContext
-                .select(ABUNDANCE_PERCENT)
+                .select(ABUNDANCE_COUNT)
                 .from(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
                 .where(OBSERVATION_ID.eq(observationId))
                 .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
@@ -707,7 +712,7 @@ class BiomassStore(
         with(OBSERVATION_BIOMASS_QUADRAT_SPECIES) {
           dslContext
               .update(OBSERVATION_BIOMASS_QUADRAT_SPECIES)
-              .set(ABUNDANCE_PERCENT, updated.abundance)
+              .set(ABUNDANCE_COUNT, updated.abundance)
               .where(OBSERVATION_ID.eq(observationId))
               .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
               .and(POSITION_ID.eq(position))

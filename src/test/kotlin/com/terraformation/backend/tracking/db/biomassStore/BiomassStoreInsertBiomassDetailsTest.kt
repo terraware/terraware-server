@@ -71,7 +71,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 40,
+                                        abundanceCount = 10,
                                         speciesId = herbaceousSpeciesId1,
                                     )
                                 ),
@@ -82,11 +82,11 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 60,
+                                        abundanceCount = 15,
                                         speciesId = herbaceousSpeciesId2,
                                     ),
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 5,
+                                        abundanceCount = 1,
                                         speciesName = "Other herbaceous species",
                                     ),
                                 ),
@@ -97,7 +97,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                             species =
                                 setOf(
                                     BiomassQuadratSpeciesModel(
-                                        abundancePercent = 90,
+                                        abundanceCount = 23,
                                         speciesId = herbaceousSpeciesId1,
                                     )
                                 ),
@@ -391,28 +391,28 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 positionId = ObservationPlotPosition.NortheastCorner,
-                abundancePercent = 40,
+                abundanceCount = 10,
                 biomassSpeciesId = biomassHerbaceousSpeciesId1,
             ),
             ObservationBiomassQuadratSpeciesRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 positionId = ObservationPlotPosition.NorthwestCorner,
-                abundancePercent = 60,
+                abundanceCount = 15,
                 biomassSpeciesId = biomassHerbaceousSpeciesId2,
             ),
             ObservationBiomassQuadratSpeciesRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 positionId = ObservationPlotPosition.NorthwestCorner,
-                abundancePercent = 5,
+                abundanceCount = 1,
                 biomassSpeciesId = biomassHerbaceousSpeciesId3,
             ),
             ObservationBiomassQuadratSpeciesRecord(
                 observationId = observationId,
                 monitoringPlotId = plotId,
                 positionId = ObservationPlotPosition.SoutheastCorner,
-                abundancePercent = 90,
+                abundanceCount = 23,
                 biomassSpeciesId = biomassHerbaceousSpeciesId1,
             ),
         ),
