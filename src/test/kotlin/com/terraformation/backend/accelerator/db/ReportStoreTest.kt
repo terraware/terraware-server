@@ -310,6 +310,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
       )
+      insertProjectIndicatorBaselineTarget(baseline = 1, endTarget = 1000)
 
       val projectIndicators =
           listOf(
@@ -337,6 +338,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
+                  baseline = BigDecimal.ONE,
+                  endOfProjectTarget = BigDecimal("1000"),
               ),
           )
 
@@ -386,6 +389,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = Instant.ofEpochSecond(3000),
           modifiedBy = user.userId,
       )
+      insertCommonIndicatorBaselineTarget(
+          commonIndicatorId = commonIndicatorId1,
+          baseline = BigDecimal.TWO,
+      )
 
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId2,
@@ -398,6 +405,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportIndicatorStatus.Unlikely,
           modifiedTime = Instant.ofEpochSecond(1500),
           modifiedBy = user.userId,
+      )
+      insertCommonIndicatorBaselineTarget(
+          commonIndicatorId = commonIndicatorId2,
+          endTarget = BigDecimal("2000"),
       )
 
       val commonIndicators =
@@ -417,6 +428,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   // all fields are null because no target/value have been set yet
                   entry = ReportIndicatorEntryModel(),
+                  baseline = null,
+                  endOfProjectTarget = null,
               ),
               ReportCommonIndicatorModel(
                   indicator =
@@ -443,6 +456,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(3000),
                           modifiedBy = user.userId,
                       ),
+                  baseline = BigDecimal.TWO,
               ),
               ReportCommonIndicatorModel(
                   indicator =
@@ -463,6 +477,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(1500),
                           modifiedBy = user.userId,
                       ),
+                  endOfProjectTarget = BigDecimal("2000"),
               ),
           )
 
@@ -491,6 +506,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = Instant.ofEpochSecond(500),
           modifiedBy = user.userId,
       )
+      insertAutoCalculatedIndicatorBaselineTarget(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          baseline = BigDecimal.TEN,
+      )
 
       insertReportAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.TreesPlanted,
@@ -507,6 +526,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           modifiedTime = Instant.ofEpochSecond(700),
           modifiedBy = user.userId,
       )
+      insertAutoCalculatedIndicatorBaselineTarget(
+          indicator = AutoCalculatedIndicator.TreesPlanted,
+          baseline = BigDecimal("20"),
+          endTarget = BigDecimal("1500"),
+      )
 
       // These are ordered by reference.
       val autoCalculatedIndicators =
@@ -521,6 +545,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(500),
                           modifiedBy = user.userId,
                       ),
+                  baseline = BigDecimal.TEN,
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
@@ -551,6 +576,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(700),
                           modifiedBy = user.userId,
                       ),
+                  baseline = BigDecimal("20"),
+                  endOfProjectTarget = BigDecimal("1500"),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,
