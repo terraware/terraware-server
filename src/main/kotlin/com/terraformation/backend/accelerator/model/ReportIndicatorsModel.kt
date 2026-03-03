@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.model
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
+import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATOR_TARGETS
 import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICATOR_TARGETS
@@ -20,6 +21,11 @@ import java.time.Instant
 import org.jooq.Field
 import org.jooq.Record
 
+data class CumulativeIndicatorProgressModel(
+    val quarter: ReportQuarter,
+    val value: Int,
+)
+
 data class ReportIndicatorEntryModel(
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
@@ -35,14 +41,22 @@ data class ReportCommonIndicatorModel(
     val entry: ReportIndicatorEntryModel,
     val baseline: BigDecimal? = null,
     val endOfProjectTarget: BigDecimal? = null,
+    /**
+     * If the indicator is cumulative, the list of actual values for all quarters in the report's
+     * year
+     */
+    val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
+    /** If the indicator is cumulative, the cumulative total and the end of the previous year */
+    val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
-    fun of(record: Record): ReportCommonIndicatorModel {
+    fun of(record: Record, previousYearTotalField: Field<BigDecimal?>): ReportCommonIndicatorModel {
       return ReportCommonIndicatorModel(
           baseline = record[COMMON_INDICATOR_TARGETS.BASELINE],
           endOfProjectTarget = record[COMMON_INDICATOR_TARGETS.END_TARGET],
           entry = entry(record),
           indicator = ExistingCommonIndicatorModel.of(record),
+          previousYearCumulativeTotal = record[previousYearTotalField],
       )
     }
 
@@ -72,6 +86,13 @@ data class ReportProjectIndicatorModel(
     val entry: ReportIndicatorEntryModel,
     val baseline: BigDecimal? = null,
     val endOfProjectTarget: BigDecimal? = null,
+    /**
+     * If the indicator is cumulative, the list of actual values for all quarters in the report's
+     * year
+     */
+    val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
+    /** If the indicator is cumulative, the cumulative total and the end of the previous year */
+    val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
     fun of(record: Record): ReportProjectIndicatorModel {
@@ -145,6 +166,13 @@ data class ReportAutoCalculatedIndicatorModel(
     val entry: ReportAutoCalculatedIndicatorEntryModel,
     val baseline: BigDecimal? = null,
     val endOfProjectTarget: BigDecimal? = null,
+    /**
+     * If the indicator is cumulative, the list of actual values for all quarters in the report's
+     * year
+     */
+    val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
+    /** If the indicator is cumulative, the cumulative total and the end of the previous year */
+    val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
     fun of(record: Record, systemValueField: Field<Int?>): ReportAutoCalculatedIndicatorModel {

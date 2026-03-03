@@ -29,6 +29,7 @@ import com.terraformation.backend.db.ReportConfigNotFoundException
 import com.terraformation.backend.db.ReportNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
+import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
 import com.terraformation.backend.db.accelerator.ReportId
@@ -1093,7 +1094,7 @@ class ReportStore(
 
     val commonIndicatorsField =
         if (includeIndicators) {
-          commonIndicatorsMultiset
+          commonIndicatorsMultiset()
         } else {
           null
         }
@@ -1612,30 +1613,45 @@ class ReportStore(
           )
           .convertFrom { results -> results.map { ReportChallengeModel.of(it) } }
 
-  private val commonIndicatorsMultiset: Field<List<ReportCommonIndicatorModel>> =
-      DSL.multiset(
-              DSL.select(
-                      COMMON_INDICATORS.asterisk(),
-                      REPORT_COMMON_INDICATORS.asterisk(),
-                      REPORT_COMMON_INDICATOR_TARGETS.TARGET,
-                      COMMON_INDICATOR_TARGETS.asterisk(),
-                  )
-                  .from(COMMON_INDICATORS)
-                  .leftJoin(REPORT_COMMON_INDICATORS)
-                  .on(COMMON_INDICATORS.ID.eq(REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID))
-                  .and(REPORTS.ID.eq(REPORT_COMMON_INDICATORS.REPORT_ID))
-                  .leftJoin(REPORT_COMMON_INDICATOR_TARGETS)
-                  .on(REPORT_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID))
-                  .leftJoin(COMMON_INDICATOR_TARGETS)
-                  .on(
-                      COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID)
-                          .and(COMMON_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  )
-                  .and(REPORT_COMMON_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  .and(REPORT_COMMON_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
-                  .orderBy(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
-          )
-          .convertFrom { results -> results.map { ReportCommonIndicatorModel.of(it) } }
+  private fun commonIndicatorsMultiset(): Field<List<ReportCommonIndicatorModel>> {
+    val reportsForSum = REPORTS.`as`("reportsForSum")
+    val previousYearsSum =
+        DSL.`when`(
+            COMMON_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            DSL.select(DSL.sum(REPORT_COMMON_INDICATORS.VALUE))
+                .from(REPORT_COMMON_INDICATORS)
+                .join(reportsForSum)
+                .on(reportsForSum.ID.eq(REPORT_COMMON_INDICATORS.REPORT_ID))
+                .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(REPORTS.END_DATE))),
+        )
+
+    return DSL.multiset(
+            DSL.select(
+                    COMMON_INDICATORS.asterisk(),
+                    REPORT_COMMON_INDICATORS.asterisk(),
+                    REPORT_COMMON_INDICATOR_TARGETS.TARGET,
+                    COMMON_INDICATOR_TARGETS.asterisk(),
+                    previousYearsSum,
+                )
+                .from(COMMON_INDICATORS)
+                .leftJoin(REPORT_COMMON_INDICATORS)
+                .on(COMMON_INDICATORS.ID.eq(REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID))
+                .and(REPORTS.ID.eq(REPORT_COMMON_INDICATORS.REPORT_ID))
+                .leftJoin(REPORT_COMMON_INDICATOR_TARGETS)
+                .on(REPORT_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID))
+                .leftJoin(COMMON_INDICATOR_TARGETS)
+                .on(
+                    COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID)
+                        .and(COMMON_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                )
+                .and(REPORT_COMMON_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .and(REPORT_COMMON_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
+                .orderBy(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
+        )
+        .convertFrom { results ->
+          results.map { ReportCommonIndicatorModel.of(it, previousYearsSum) }
+        }
+  }
 
   private val photosMultiset: Field<List<ReportPhotoModel>> =
       DSL.multiset(
