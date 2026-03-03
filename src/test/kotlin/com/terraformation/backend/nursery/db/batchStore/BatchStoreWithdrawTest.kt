@@ -934,6 +934,60 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
   }
 
   @Test
+  fun `nursery transfer retains original project associations`() {
+    insertFacility()
+    val projectId1 = insertProject()
+    val projectId2 = insertProject()
+
+    batchesDao.update(batchesDao.fetchOneById(species1Batch1Id)!!.copy(projectId = projectId1))
+    batchesDao.update(batchesDao.fetchOneById(species1Batch2Id)!!.copy(projectId = projectId2))
+
+    val destinationFacilityId = insertFacility(type = FacilityType.Nursery, facilityNumber = 2)
+
+    val withdrawnDate = LocalDate.of(2022, 10, 1)
+    clock.instant = withdrawnDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant()
+
+    store.withdraw(
+        NewWithdrawalModel(
+            destinationFacilityId = destinationFacilityId,
+            facilityId = facilityId,
+            id = null,
+            notes = "Notes",
+            purpose = WithdrawalPurpose.NurseryTransfer,
+            withdrawnDate = withdrawnDate,
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        batchId = species1Batch1Id,
+                        germinatingQuantityWithdrawn = 0,
+                        activeGrowthQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 1,
+                        hardeningOffQuantityWithdrawn = 0,
+                    ),
+                    BatchWithdrawalModel(
+                        batchId = species1Batch2Id,
+                        germinatingQuantityWithdrawn = 0,
+                        activeGrowthQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 2,
+                        hardeningOffQuantityWithdrawn = 0,
+                    ),
+                ),
+        )
+    )
+
+    val newBatches =
+        batchesDao.fetchByFacilityId(destinationFacilityId).associate {
+          it.projectId to it.readyQuantity
+        }
+
+    assertEquals(
+        mapOf(projectId1 to 1, projectId2 to 2),
+        newBatches,
+        "Project IDs of new batches",
+    )
+  }
+
+  @Test
   fun `nursery transfer adds to existing batch if batch number already exists`() {
     val species1Batch1 = batchesDao.fetchOneById(species1Batch1Id)!!
 
