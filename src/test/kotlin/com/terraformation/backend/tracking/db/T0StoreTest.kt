@@ -560,6 +560,20 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           totalLive = 1,
       )
 
+      // additional observations of the same plot should not cause the species to appear twice
+      insertObservation(
+          startDate = observationStartDate.plusDays(1),
+          completedTime = observationTime.plusSeconds(86400),
+      )
+      insertObservationPlot(
+          claimedTime = observationTime,
+          claimedBy = user.userId,
+          completedTime = observationTime,
+          completedBy = user.userId,
+          isPermanent = true,
+      )
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 2)
+
       val expected =
           setOf(
               PlotSpeciesModel(

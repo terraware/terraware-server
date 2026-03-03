@@ -190,7 +190,7 @@ class T0Store(
             .and(densityField.ge(BigDecimal.valueOf(0.05)))
 
     val observedNotWithdrawnSpecies =
-        DSL.select(
+        DSL.selectDistinct(
                 MONITORING_PLOTS.ID,
                 OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.`as`("species_id"),
                 DSL.castNull(SQLDataType.NUMERIC).`as`("density"),
