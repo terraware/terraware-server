@@ -947,6 +947,7 @@ class BatchStore(
                     addedDate = withdrawal.withdrawnDate,
                     batchNumber = destinationBatchNumbersBySourceBatchId[batchWithdrawal.batchId],
                     facilityId = withdrawal.destinationFacilityId,
+                    projectId = sourceBatch.projectId,
                     germinatingQuantity = batchWithdrawal.germinatingQuantityWithdrawn,
                     hardeningOffQuantity = batchWithdrawal.hardeningOffQuantityWithdrawn,
                     initialBatchId = sourceBatch.id,
