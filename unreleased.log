@@ -1,3 +1,4 @@
+e0fd09d7f3b SW-7949 Rename quadrat abundance percent to count (#4053)
 48102820d4c SW-8127 Add Off-Track status to report indicator statuses (#4045)
 c4e2d39688f Update Node.js to v24.14.0 (#4049)
 ce17a41f343 Update dependency html-minifier-next to v5.1.5 (#4047)

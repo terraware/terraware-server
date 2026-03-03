@@ -521,7 +521,7 @@
 <polygon fill="none" stroke="black" points="1949.5,-850 1949.5,-872 1995.5,-872 1995.5,-850 1949.5,-850"/>
 <text text-anchor="start" x="1952.5" y="-858.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
 <polygon fill="none" stroke="black" points="1700.5,-828 1700.5,-850 1949.5,-850 1949.5,-828 1700.5,-828"/>
-<text text-anchor="start" x="1720.5" y="-836.2" font-family="Helvetica,sans-Serif" font-size="11.00">abundance_percent</text>
+<text text-anchor="start" x="1720.5" y="-836.2" font-family="Helvetica,sans-Serif" font-size="11.00">abundance_count</text>
 <polygon fill="none" stroke="black" points="1949.5,-828 1949.5,-850 1995.5,-850 1995.5,-828 1949.5,-828"/>
 <text text-anchor="start" x="1952.5" y="-836.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
 <polygon fill="#ffffff" stroke="transparent" points="1700.5,-810 1700.5,-828 1829.5,-828 1829.5,-810 1700.5,-810"/>

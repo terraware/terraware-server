@@ -296,7 +296,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="biomass_species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observation_biomass_quadrat_species_biomass_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="abundance_percent" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="abundance_count" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="observation_id" sequenceNumberInPK="1"/>
          <primaryKey column="monitoring_plot_id" sequenceNumberInPK="2"/>
          <primaryKey column="position_id" sequenceNumberInPK="3"/>
@@ -310,7 +310,7 @@
          <index name="observation_biomass_quadrat_species_monitoring_plot_id_idx" unique="false">
             <column ascending="true" name="monitoring_plot_id"/>
          </index>
-         <checkConstraint constraint="((abundance_percent &gt;= 0) AND (abundance_percent &lt;= 100))" name="observation_biomass_quadrat_species_abundance_percent_check"/>
+         <checkConstraint constraint="((abundance_count &gt;= 0) AND (abundance_count &lt;= 25))" name="abundance_count_check"/>
       </table>
       <table name="observation_biomass_species" remarks="Herbaceous and tree species data for a biomass observation." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
