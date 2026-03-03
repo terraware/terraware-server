@@ -19,6 +19,7 @@ import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesRow
 import com.terraformation.backend.db.default_schema.tables.records.UploadProblemsRecord
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
@@ -38,7 +39,9 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.util.Locale
 import java.util.UUID
 import org.jobrunr.jobs.JobId
@@ -94,6 +97,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
   private val importer: BatchImporter by lazy {
     BatchImporter(
         batchStore,
+        clock,
         dslContext,
         fileStore,
         messages,
@@ -323,6 +327,40 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
             typeId = UploadProblemType.MalformedValue,
             uploadId = uploadId,
             value = "ShortName",
+        )
+    )
+
+    assertStatus(UploadStatus.Invalid)
+  }
+
+  @Test
+  fun `uses nursery time zone to determine if added date is in the future`() {
+    // It's 2023-01-01 on the server but 2023-01-02 at the nursery.
+    dslContext.update(FACILITIES).set(FACILITIES.TIME_ZONE, ZoneId.of("Asia/Tokyo")).execute()
+
+    clock.instant = ZonedDateTime.of(2023, 1, 1, 19, 0, 0, 0, ZoneOffset.UTC).toInstant()
+
+    val uploadId =
+        insertBatchUpload(
+            headerAnd(
+                "Species name,,1,1,1,2023-01-01,\n" +
+                    "Species name,,1,1,1,2023-01-02,\n" +
+                    "Species name,,1,1,1,2023-01-03,\n"
+            ),
+            UploadStatus.AwaitingValidation,
+        )
+
+    importer.validateCsv(uploadId)
+
+    assertTableEquals(
+        UploadProblemsRecord(
+            isError = true,
+            field = "Date Added",
+            message = messages.csvDateAddedInFuture(),
+            position = 4,
+            typeId = UploadProblemType.MalformedValue,
+            uploadId = uploadId,
+            value = "2023-01-03",
         )
     )
 

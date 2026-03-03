@@ -28,6 +28,7 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.NewSpeciesModel
 import jakarta.inject.Named
 import java.io.InputStream
+import java.time.InstantSource
 import java.time.LocalDate
 import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.Lazy
 @Named
 class BatchImporter(
     private val batchStore: BatchStore,
+    private val clock: InstantSource,
     dslContext: DSLContext,
     fileStore: FileStore,
     private val messages: Messages,
@@ -81,9 +83,15 @@ class BatchImporter(
 
   override fun getValidator(uploadsRow: UploadsRow): CsvValidator {
     val facilityId = uploadsRow.facilityId!!
+    val facilityTimeZone = parentStore.getEffectiveTimeZone(facilityId)
     val subLocationNames = subLocationsDao.fetchByFacilityId(facilityId).map { it.name!! }.toSet()
 
-    return BatchCsvValidator(uploadsRow.id!!, messages, subLocationNames)
+    return BatchCsvValidator(
+        uploadsRow.id!!,
+        messages,
+        subLocationNames,
+        LocalDate.ofInstant(clock.instant(), facilityTimeZone),
+    )
   }
 
   override fun doImportCsv(
