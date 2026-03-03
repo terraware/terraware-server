@@ -578,11 +578,11 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           setOf(
               PlotSpeciesModel(
                   monitoringPlotId = monitoringPlotId,
-                  species = createSpeciesDensitySet(speciesId1 to null, speciesId2 to null),
+                  species = createSpeciesDensityList(speciesId1 to null, speciesId2 to null),
               ),
               PlotSpeciesModel(
                   monitoringPlotId = tempPlotId,
-                  species = createSpeciesDensitySet(speciesId1 to null),
+                  species = createSpeciesDensityList(speciesId1 to null),
               ),
           )
 
@@ -637,7 +637,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotSpeciesModel(
                   monitoringPlotId = plot1,
                   species =
-                      createSpeciesDensitySet(
+                      createSpeciesDensityList(
                           speciesId1 to BigDecimal.valueOf(100.0),
                           speciesId2 to BigDecimal.valueOf(200.0),
                           speciesId4 to null,
@@ -646,7 +646,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotSpeciesModel(
                   monitoringPlotId = plot2,
                   species =
-                      createSpeciesDensitySet(
+                      createSpeciesDensityList(
                           speciesId1 to BigDecimal.valueOf(100.0),
                           speciesId2 to BigDecimal.valueOf(200.0),
                           speciesId4 to null,
@@ -655,7 +655,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotSpeciesModel(
                   monitoringPlotId = plot3,
                   species =
-                      createSpeciesDensitySet(
+                      createSpeciesDensityList(
                           speciesId1 to BigDecimal.valueOf(30.0),
                           speciesId2 to BigDecimal.valueOf(39.5), // this confirms correct rounding
                           speciesId3 to BigDecimal.valueOf(50.0),
@@ -664,7 +664,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotSpeciesModel(
                   monitoringPlotId = plot4,
                   species =
-                      createSpeciesDensitySet(
+                      createSpeciesDensityList(
                           speciesId1 to BigDecimal.valueOf(30.0),
                           speciesId2 to BigDecimal.valueOf(39.5),
                           speciesId3 to BigDecimal.valueOf(50.0),
@@ -672,11 +672,11 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               PlotSpeciesModel(
                   monitoringPlotId = plot5,
-                  species = createSpeciesDensitySet(speciesId3 to BigDecimal.valueOf(120.0)),
+                  species = createSpeciesDensityList(speciesId3 to BigDecimal.valueOf(120.0)),
               ),
               PlotSpeciesModel(
                   monitoringPlotId = plot6,
-                  species = createSpeciesDensitySet(speciesId1 to BigDecimal.valueOf(0.2)),
+                  species = createSpeciesDensityList(speciesId1 to BigDecimal.valueOf(0.2)),
               ),
           )
 
@@ -1648,11 +1648,9 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private fun plotDensityToHectare(density: Int): BigDecimal =
       density.toBigDecimal().toPlantsPerHectare()
 
-  private fun createSpeciesDensitySet(
+  private fun createSpeciesDensityList(
       vararg densities: Pair<SpeciesId, BigDecimal?>
-  ): Set<OptionalSpeciesDensityModel> {
-    return densities
-        .map { OptionalSpeciesDensityModel(speciesId = it.first, density = it.second) }
-        .toSet()
+  ): List<OptionalSpeciesDensityModel> {
+    return densities.map { OptionalSpeciesDensityModel(speciesId = it.first, density = it.second) }
   }
 }

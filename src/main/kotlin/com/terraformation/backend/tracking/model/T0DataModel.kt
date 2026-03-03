@@ -40,7 +40,7 @@ data class SiteT0DataModel(
 
 data class PlotSpeciesModel(
     val monitoringPlotId: MonitoringPlotId,
-    val species: Set<OptionalSpeciesDensityModel> = emptySet(),
+    val species: List<OptionalSpeciesDensityModel> = emptyList(),
 )
 
 data class PlotT0DataModel(

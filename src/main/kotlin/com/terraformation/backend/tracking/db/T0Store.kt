@@ -190,7 +190,7 @@ class T0Store(
             .and(densityField.ge(BigDecimal.valueOf(0.05)))
 
     val observedNotWithdrawnSpecies =
-        DSL.select(
+        DSL.selectDistinct(
                 MONITORING_PLOTS.ID,
                 OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.`as`("species_id"),
                 DSL.castNull(SQLDataType.NUMERIC).`as`("density"),
@@ -243,14 +243,12 @@ class T0Store(
       PlotSpeciesModel(
           monitoringPlotId = plotId as MonitoringPlotId,
           species =
-              records
-                  .map { record ->
-                    OptionalSpeciesDensityModel(
-                        speciesId = record[speciesIdField] as SpeciesId,
-                        density = record[densityResultField] as BigDecimal?,
-                    )
-                  }
-                  .toSet(),
+              records.map { record ->
+                OptionalSpeciesDensityModel(
+                    speciesId = record[speciesIdField] as SpeciesId,
+                    density = record[densityResultField] as BigDecimal?,
+                )
+              },
       )
     }
   }
