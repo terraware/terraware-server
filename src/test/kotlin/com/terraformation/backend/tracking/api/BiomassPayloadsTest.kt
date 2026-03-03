@@ -347,7 +347,7 @@ class BiomassPayloadsTest {
                           species =
                               listOf(
                                   ExistingBiomassQuadratSpeciesPayload(
-                                      abundancePercent = 23,
+                                      abundanceCount = 23,
                                       isInvasive = true,
                                       isThreatened = false,
                                       speciesId = SpeciesId(1),
@@ -361,7 +361,7 @@ class BiomassPayloadsTest {
                           species =
                               listOf(
                                   ExistingBiomassQuadratSpeciesPayload(
-                                      abundancePercent = 10,
+                                      abundanceCount = 10,
                                       isInvasive = true,
                                       isThreatened = false,
                                       speciesId = SpeciesId(1),
@@ -375,14 +375,14 @@ class BiomassPayloadsTest {
                           species =
                               listOf(
                                   ExistingBiomassQuadratSpeciesPayload(
-                                      abundancePercent = 15,
+                                      abundanceCount = 15,
                                       isInvasive = false,
                                       isThreatened = false,
                                       speciesId = SpeciesId(2),
                                       speciesName = null,
                                   ),
                                   ExistingBiomassQuadratSpeciesPayload(
-                                      abundancePercent = 1,
+                                      abundanceCount = 1,
                                       isInvasive = false,
                                       isThreatened = true,
                                       speciesId = null,
