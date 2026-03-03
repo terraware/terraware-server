@@ -6,11 +6,15 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.i18n.toBigDecimal
 import com.terraformation.backend.importer.CsvValidator
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
 
 class BatchCsvValidator(
     uploadId: UploadId,
     messages: Messages,
     private val subLocationNames: Set<String>,
+    /** Today's date in the nursery's time zone. */
+    private val today: LocalDate,
 ) : CsvValidator(uploadId, messages) {
   override val validators: List<((String?, String) -> Unit)?> =
       listOf(
@@ -19,12 +23,32 @@ class BatchCsvValidator(
           this::validateQuantity,
           this::validateQuantity,
           this::validateQuantity,
-          this::validateDate,
+          this::validateDateAdded,
           this::validateSubLocation,
       )
 
   override fun getColumnName(position: Int): String {
     return messages.batchCsvColumnName(position)
+  }
+
+  private fun validateDateAdded(value: String?, field: String) {
+    if (value == null) {
+      addError(
+          UploadProblemType.MissingRequiredValue,
+          field,
+          null,
+          messages.csvRequiredFieldMissing(),
+      )
+    } else {
+      try {
+        val date = LocalDate.parse(value)
+        if (date > today) {
+          addError(UploadProblemType.MalformedValue, field, value, messages.csvDateAddedInFuture())
+        }
+      } catch (_: DateTimeParseException) {
+        addError(UploadProblemType.MalformedValue, field, value, messages.csvDateMalformed())
+      }
+    }
   }
 
   private fun validateQuantity(value: String?, field: String) {

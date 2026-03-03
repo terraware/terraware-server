@@ -8,7 +8,8 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.i18n.use
 import java.io.InputStreamReader
-import org.junit.jupiter.api.Assertions.*
+import java.time.LocalDate
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class BatchCsvValidatorTest {
@@ -88,7 +89,10 @@ internal class BatchCsvValidatorTest {
   @Test
   fun `rejects row with missing or invalid date`() {
     assertValidationResults(
-        "$header\nScientific name,,0,1,2,,\nScientific name,,0,1,2,Jan 18,",
+        "$header\n" +
+            "Scientific name,,0,1,2,,\n" +
+            "Scientific name,,0,1,2,Jan 18,\n" +
+            "Scientific name,,0,1,2,2023-01-02,",
         errors =
             setOf(
                 UploadProblemsRow(
@@ -107,6 +111,15 @@ internal class BatchCsvValidatorTest {
                     typeId = UploadProblemType.MalformedValue,
                     uploadId = uploadId,
                     value = "Jan 18",
+                ),
+                UploadProblemsRow(
+                    field = "Date Added",
+                    isError = true,
+                    message = messages.csvDateAddedInFuture(),
+                    position = 4,
+                    typeId = UploadProblemType.MalformedValue,
+                    uploadId = uploadId,
+                    value = "2023-01-02",
                 ),
             ),
     )
@@ -302,7 +315,12 @@ internal class BatchCsvValidatorTest {
       warnings: Set<UploadProblemsRow> = emptySet(),
   ) {
     val validator =
-        BatchCsvValidator(uploadId, messages, setOf("Valid Location", "Valid Location 2"))
+        BatchCsvValidator(
+            uploadId,
+            messages,
+            setOf("Valid Location", "Valid Location 2"),
+            LocalDate.of(2023, 1, 1),
+        )
     validator.validate(csv.byteInputStream())
 
     val expected = mapOf("errors" to errors, "warnings" to warnings)

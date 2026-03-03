@@ -115,6 +115,8 @@ class Messages {
 
   fun csvRequiredFieldMissing() = getMessage("csvRequiredFieldMissing")
 
+  fun csvDateAddedInFuture() = getMessage("csvDateAddedInFuture")
+
   fun csvDateMalformed() = getMessage("csvDateMalformed")
 
   fun csvNameLineBreak() = getMessage("csvNameLineBreak")
