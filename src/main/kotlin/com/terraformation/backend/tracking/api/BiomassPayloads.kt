@@ -18,6 +18,9 @@ import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.NewBiomassDetailsModel
 import com.terraformation.backend.tracking.model.NewRecordedTreeModel
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
+import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
 import org.locationtech.jts.geom.Point
@@ -67,7 +70,7 @@ data class ExistingBiomassQuadratPayload(
 }
 
 data class ExistingBiomassQuadratSpeciesPayload(
-    val abundancePercent: Int,
+    val abundanceCount: Int,
     val isInvasive: Boolean,
     val isThreatened: Boolean,
     val speciesId: SpeciesId?,
@@ -77,12 +80,16 @@ data class ExistingBiomassQuadratSpeciesPayload(
       model: BiomassQuadratSpeciesModel,
       species: Map<BiomassSpeciesKey, BiomassSpeciesModel>,
   ) : this(
-      abundancePercent = model.abundanceCount,
+      abundanceCount = model.abundanceCount,
       isInvasive = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isInvasive,
       isThreatened = species[BiomassSpeciesKey(model.speciesId, model.speciesName)]!!.isThreatened,
       speciesId = model.speciesId,
       speciesName = model.speciesName,
   )
+
+  @get:Schema(description = "Use abundanceCount instead.", deprecated = true)
+  val abundancePercent: Int
+    get() = abundanceCount
 }
 
 data class NewBiomassQuadratPayload(
@@ -99,14 +106,22 @@ data class NewBiomassQuadratPayload(
 }
 
 data class NewBiomassQuadratSpeciesPayload(
-    @Schema(minimum = "0", maximum = "100") //
-    val abundancePercent: Int,
+    @Min(0)
+    @Max(25) //
+    val abundanceCount: Int?,
+    @Min(0)
+    @Max(25)
+    @Schema(description = "Use abundanceCount instead.", deprecated = true) //
+    val abundancePercent: Int?,
     val speciesId: SpeciesId?,
     val speciesName: String?,
 ) {
   fun toModel(): BiomassQuadratSpeciesModel {
     return BiomassQuadratSpeciesModel(
-        abundanceCount = abundancePercent,
+        abundanceCount =
+            abundanceCount
+                ?: abundancePercent
+                ?: throw BadRequestException("Abundance count must be between 0 and 25"),
         speciesId = speciesId,
         speciesName = speciesName,
     )
