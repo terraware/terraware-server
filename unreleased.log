@@ -1,3 +1,5 @@
+72ab769537c SW-7978 Reject future batch dates in CSVs (#4056)
+13cf7ecf080 SW-7949 Add abundanceCount to API payloads (#4054)
 e0fd09d7f3b SW-7949 Rename quadrat abundance percent to count (#4053)
 48102820d4c SW-8127 Add Off-Track status to report indicator statuses (#4045)
 c4e2d39688f Update Node.js to v24.14.0 (#4049)
