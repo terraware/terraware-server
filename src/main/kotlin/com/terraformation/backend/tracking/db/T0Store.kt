@@ -243,12 +243,14 @@ class T0Store(
       PlotSpeciesModel(
           monitoringPlotId = plotId as MonitoringPlotId,
           species =
-              records.map { record ->
-                OptionalSpeciesDensityModel(
-                    speciesId = record[speciesIdField] as SpeciesId,
-                    density = record[densityResultField] as BigDecimal?,
-                )
-              },
+              records
+                  .map { record ->
+                    OptionalSpeciesDensityModel(
+                        speciesId = record[speciesIdField] as SpeciesId,
+                        density = record[densityResultField] as BigDecimal?,
+                    )
+                  }
+                  .toSet(),
       )
     }
   }

@@ -560,15 +560,29 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           totalLive = 1,
       )
 
+      // additional observations of the same plot should not cause the species to appear twice
+      insertObservation(
+          startDate = observationStartDate.plusDays(1),
+          completedTime = observationTime.plusSeconds(86400),
+      )
+      insertObservationPlot(
+          claimedTime = observationTime,
+          claimedBy = user.userId,
+          completedTime = observationTime,
+          completedBy = user.userId,
+          isPermanent = true,
+      )
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 2)
+
       val expected =
           setOf(
               PlotSpeciesModel(
                   monitoringPlotId = monitoringPlotId,
-                  species = createSpeciesDensityList(speciesId1 to null, speciesId2 to null),
+                  species = createSpeciesDensitySet(speciesId1 to null, speciesId2 to null),
               ),
               PlotSpeciesModel(
                   monitoringPlotId = tempPlotId,
-                  species = createSpeciesDensityList(speciesId1 to null),
+                  species = createSpeciesDensitySet(speciesId1 to null),
               ),
           )
 
@@ -623,7 +637,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotSpeciesModel(
                   monitoringPlotId = plot1,
                   species =
-                      createSpeciesDensityList(
+                      createSpeciesDensitySet(
                           speciesId1 to BigDecimal.valueOf(100.0),
                           speciesId2 to BigDecimal.valueOf(200.0),
                           speciesId4 to null,
@@ -632,7 +646,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotSpeciesModel(
                   monitoringPlotId = plot2,
                   species =
-                      createSpeciesDensityList(
+                      createSpeciesDensitySet(
                           speciesId1 to BigDecimal.valueOf(100.0),
                           speciesId2 to BigDecimal.valueOf(200.0),
                           speciesId4 to null,
@@ -641,7 +655,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotSpeciesModel(
                   monitoringPlotId = plot3,
                   species =
-                      createSpeciesDensityList(
+                      createSpeciesDensitySet(
                           speciesId1 to BigDecimal.valueOf(30.0),
                           speciesId2 to BigDecimal.valueOf(39.5), // this confirms correct rounding
                           speciesId3 to BigDecimal.valueOf(50.0),
@@ -650,7 +664,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PlotSpeciesModel(
                   monitoringPlotId = plot4,
                   species =
-                      createSpeciesDensityList(
+                      createSpeciesDensitySet(
                           speciesId1 to BigDecimal.valueOf(30.0),
                           speciesId2 to BigDecimal.valueOf(39.5),
                           speciesId3 to BigDecimal.valueOf(50.0),
@@ -658,11 +672,11 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               PlotSpeciesModel(
                   monitoringPlotId = plot5,
-                  species = createSpeciesDensityList(speciesId3 to BigDecimal.valueOf(120.0)),
+                  species = createSpeciesDensitySet(speciesId3 to BigDecimal.valueOf(120.0)),
               ),
               PlotSpeciesModel(
                   monitoringPlotId = plot6,
-                  species = createSpeciesDensityList(speciesId1 to BigDecimal.valueOf(0.2)),
+                  species = createSpeciesDensitySet(speciesId1 to BigDecimal.valueOf(0.2)),
               ),
           )
 
@@ -1634,9 +1648,11 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private fun plotDensityToHectare(density: Int): BigDecimal =
       density.toBigDecimal().toPlantsPerHectare()
 
-  private fun createSpeciesDensityList(
+  private fun createSpeciesDensitySet(
       vararg densities: Pair<SpeciesId, BigDecimal?>
-  ): List<OptionalSpeciesDensityModel> {
-    return densities.map { OptionalSpeciesDensityModel(speciesId = it.first, density = it.second) }
+  ): Set<OptionalSpeciesDensityModel> {
+    return densities
+        .map { OptionalSpeciesDensityModel(speciesId = it.first, density = it.second) }
+        .toSet()
   }
 }
