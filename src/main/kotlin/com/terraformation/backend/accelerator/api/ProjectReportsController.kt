@@ -5,6 +5,7 @@ import com.terraformation.backend.accelerator.db.ReportIndicatorStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.model.AutoCalculatedIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.CommonIndicatorTargetsModel
+import com.terraformation.backend.accelerator.model.CumulativeIndicatorProgressModel
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorTargetsModel
@@ -945,13 +946,37 @@ data class ReportStandardMetricPayload(
   )
 }
 
+data class CumulativeIndicatorProgressPayload(
+    val quarter: ReportQuarter,
+    val value: Int,
+) {
+  constructor(
+      model: CumulativeIndicatorProgressModel
+  ) : this(
+      quarter = model.quarter,
+      value = model.value,
+  )
+}
+
 data class ReportCommonIndicatorPayload(
+    val baseline: BigDecimal?,
     val category: IndicatorCategory,
+    @Schema(
+        description =
+            "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
+    )
+    val currentYearProgress: List<CumulativeIndicatorProgressPayload>?,
     val description: String?,
+    val endOfProjectTarget: BigDecimal?,
     val id: CommonIndicatorId,
     val isPublishable: Boolean,
     val level: IndicatorLevel,
     val name: String,
+    @Schema(
+        description =
+            "If the indicator is cumulative, the cumulative total and the end of the previous year"
+    )
+    val previousYearCumulativeTotal: BigDecimal?,
     val progressNotes: String?,
     val projectsComments: String?,
     val refId: String,
@@ -962,12 +987,17 @@ data class ReportCommonIndicatorPayload(
   constructor(
       model: ReportCommonIndicatorModel
   ) : this(
+      baseline = model.baseline,
       category = model.indicator.category,
+      currentYearProgress =
+          model.currentYearProgress?.map { CumulativeIndicatorProgressPayload(it) },
       description = model.indicator.description,
+      endOfProjectTarget = model.endOfProjectTarget,
       id = model.indicator.id,
       isPublishable = model.indicator.isPublishable,
       level = model.indicator.level,
       name = model.indicator.name,
+      previousYearCumulativeTotal = model.previousYearCumulativeTotal,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
       refId = model.indicator.refId,
@@ -1046,12 +1076,24 @@ data class ReportSystemMetricPayload(
 }
 
 data class ReportAutoCalculatedIndicatorPayload(
+    val baseline: BigDecimal?,
     val category: IndicatorCategory,
+    @Schema(
+        description =
+            "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
+    )
+    val currentYearProgress: List<CumulativeIndicatorProgressPayload>?,
     val description: String?,
+    val endOfProjectTarget: BigDecimal?,
     val isPublishable: Boolean,
     val level: IndicatorLevel,
     val indicator: AutoCalculatedIndicator,
     val overrideValue: Int?,
+    @Schema(
+        description =
+            "If the indicator is cumulative, the cumulative total and the end of the previous year"
+    )
+    val previousYearCumulativeTotal: BigDecimal?,
     val progressNotes: String?,
     val projectsComments: String?,
     val refId: String,
@@ -1063,12 +1105,17 @@ data class ReportAutoCalculatedIndicatorPayload(
   constructor(
       model: ReportAutoCalculatedIndicatorModel
   ) : this(
+      baseline = model.baseline,
       category = model.indicator.categoryId,
+      currentYearProgress =
+          model.currentYearProgress?.map { CumulativeIndicatorProgressPayload(it) },
       description = model.indicator.description,
+      endOfProjectTarget = model.endOfProjectTarget,
       isPublishable = model.indicator.isPublishable,
       level = model.indicator.levelId,
       indicator = model.indicator,
       overrideValue = model.entry.overrideValue,
+      previousYearCumulativeTotal = model.previousYearCumulativeTotal,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
       refId = model.indicator.refId,
@@ -1160,12 +1207,24 @@ data class ReportProjectMetricPayload(
 }
 
 data class ReportProjectIndicatorPayload(
+    val baseline: BigDecimal?,
     val category: IndicatorCategory,
+    @Schema(
+        description =
+            "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
+    )
+    val currentYearProgress: List<CumulativeIndicatorProgressPayload>?,
     val description: String?,
+    val endOfProjectTarget: BigDecimal?,
     val id: ProjectIndicatorId,
     val isPublishable: Boolean,
     val level: IndicatorLevel,
     val name: String,
+    @Schema(
+        description =
+            "If the indicator is cumulative, the cumulative total and the end of the previous year"
+    )
+    val previousYearCumulativeTotal: BigDecimal?,
     val progressNotes: String?,
     val projectsComments: String?,
     val refId: String,
@@ -1177,12 +1236,17 @@ data class ReportProjectIndicatorPayload(
   constructor(
       model: ReportProjectIndicatorModel
   ) : this(
+      baseline = model.baseline,
       category = model.indicator.category,
+      currentYearProgress =
+          model.currentYearProgress?.map { CumulativeIndicatorProgressPayload(it) },
       description = model.indicator.description,
+      endOfProjectTarget = model.endOfProjectTarget,
       id = model.indicator.id,
       isPublishable = model.indicator.isPublishable,
       level = model.indicator.level,
       name = model.indicator.name,
+      previousYearCumulativeTotal = model.previousYearCumulativeTotal,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
       refId = model.indicator.refId,
