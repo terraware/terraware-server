@@ -567,12 +567,20 @@ val EMBEDDABLES =
             .withTables("accelerator.auto_calculated_indicator_targets")
             .withColumns("project_id", "auto_calculated_indicator_id"),
         EmbeddableDefinitionType()
+            .withName("published_auto_calculated_indicator_baseline_id")
+            .withTables("funder.published_auto_calculated_indicator_baselines")
+            .withColumns("project_id", "auto_calculated_indicator_id"),
+        EmbeddableDefinitionType()
             .withName("batch_sub_location_id")
             .withTables("nursery.batch_sub_locations")
             .withColumns("batch_id", "sub_location_id"),
         EmbeddableDefinitionType()
             .withName("common_indicator_target_id")
             .withTables("accelerator.common_indicator_targets")
+            .withColumns("project_id", "common_indicator_id"),
+        EmbeddableDefinitionType()
+            .withName("published_common_indicator_baseline_id")
+            .withTables("funder.published_common_indicator_baselines")
             .withColumns("project_id", "common_indicator_id"),
         EmbeddableDefinitionType()
             .withName("batch_withdrawal_id")
@@ -641,6 +649,10 @@ val EMBEDDABLES =
         EmbeddableDefinitionType()
             .withName("project_indicator_target_id")
             .withTables("accelerator.project_indicator_targets")
+            .withColumns("project_id", "project_indicator_id"),
+        EmbeddableDefinitionType()
+            .withName("published_project_indicator_baseline_id")
+            .withTables("funder.published_project_indicator_baselines")
             .withColumns("project_id", "project_indicator_id"),
         EmbeddableDefinitionType()
             .withName("project_module_id")

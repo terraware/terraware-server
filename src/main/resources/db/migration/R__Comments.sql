@@ -825,13 +825,19 @@ COMMENT ON TABLE funder.published_activities IS 'Published project activities vi
 
 COMMENT ON TABLE funder.published_activity_media_files IS 'Media files for published project activities visible to funders. It is possible for a file to continue to appear here after it has been removed from the activity if the removal has not been published yet.';
 
+COMMENT ON TABLE funder.published_auto_calculated_indicator_baselines IS 'Published project-level baseline and end-of-project target values for auto-calculated indicators.';
+
 COMMENT ON TABLE funder.published_auto_calculated_indicator_targets IS 'Published project targets for auto-calculated indicators by year';
+
+COMMENT ON TABLE funder.published_common_indicator_baselines IS 'Published project-level baseline and end-of-project target values for common indicators.';
 
 COMMENT ON TABLE funder.published_common_indicator_targets IS 'Published project targets for standard indicators by year';
 
 COMMENT ON TABLE funder.published_project_carbon_certs IS 'Carbon Certifications for published projects.';
 
 COMMENT ON TABLE funder.published_project_details IS 'Published Project Data visible to funders.';
+
+COMMENT ON TABLE funder.published_project_indicator_baselines IS 'Published project-level baseline and end-of-project target values for project-specific indicators.';
 
 COMMENT ON TABLE funder.published_project_indicator_targets IS 'Published project targets for project-specific indicators by year';
 
