@@ -1,3 +1,5 @@
+4239b222317 SW-8128 Add cumulative progress props to indicators in api (#4068)
+f3793bdf558 SW-8128 Add retrieval of cumulative progress for the report year to the model (#4067)
 af547bc9d46 SW-8128 Add previous year's sum to report api (#4062)
 d140cb0de46 SW-8128 Add Cumulative/Level indicator class to auto calculated indicators (#4064)
 a10fbf679d8 SW-5441 Add destination batch project ID search field (#4063)
