@@ -543,13 +543,13 @@ VALUES (1, 'Carbon'),
        (12, 'Values Alignment')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO accelerator.auto_calculated_indicators (id, name, description, level_id, category_id, ref_id, is_publishable, unit)
-VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 2, 2, '1.1', false, 'Seeds'),
-       (2, 'Seedlings', 'Plants in the nursery, including those provided by partners, where available. Not applicable for mangrove projects (input 0).', 2, 2, '1.2', true, 'Seedlings'),
-       (3, 'Trees Planted', 'Total trees (and plants) planted in the field.', 2, 2, '1.3', true, 'Trees'),
-       (4, 'Species Planted', 'Total species of the plants/trees planted.', 2, 2, '1.4', true, 'Species'),
-       (6, 'Hectares Planted', 'This is the hectares marked as “Planting Complete” within the Project Area.', 2, 2, '1.1.1.1', true, 'Hectares'),
-       (7, 'Survival Rate', 'Survival rate of plantings.', 3, 2, '2', true, '%')
+INSERT INTO accelerator.auto_calculated_indicators (id, name, description, class_id, level_id, category_id, ref_id, is_publishable, unit)
+VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 1, 2, 2, '1.1', false, 'Seeds'),
+       (2, 'Seedlings', 'Plants in the nursery, including those provided by partners, where available. Not applicable for mangrove projects (input 0).', 1, 2, 2, '1.2', true, 'Seedlings'),
+       (3, 'Trees Planted', 'Total trees (and plants) planted in the field.', 1, 2, 2, '1.3', true, 'Trees'),
+       (4, 'Species Planted', 'Total species of the plants/trees planted.', 2, 2, 2, '1.4', true, 'Species'),
+       (6, 'Hectares Planted', 'This is the hectares marked as “Planting Complete” within the Project Area.', 1, 2, 2, '1.1.1.1', true, 'Hectares'),
+       (7, 'Survival Rate', 'Survival rate of plantings.', 2, 3, 2, '2', true, '%')
 ON CONFLICT (id) DO UPDATE
 SET name = excluded.name,
     description = excluded.description,
