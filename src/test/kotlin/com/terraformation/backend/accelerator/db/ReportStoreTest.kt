@@ -124,6 +124,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private lateinit var organizationId: OrganizationId
+  private lateinit var otherProjectId: ProjectId
   private lateinit var projectId: ProjectId
 
   private val sitesLiveSum = 6 + 11 + 6 + 7
@@ -134,6 +135,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @BeforeEach
   fun setup() {
     organizationId = insertOrganization(timeZone = ZoneOffset.UTC)
+    otherProjectId = insertProject()
     projectId = insertProject()
     insertProjectAcceleratorDetails(dealName = "DEAL_Report Project")
     insertOrganizationUser(role = Role.Admin)
@@ -617,240 +619,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `cumulative indicators contain previous year total`() {
-      val configId = insertProjectReportConfig()
-
-      // multiple indicators should not interfere with each other's totals
-      val projectIndicatorId1 =
-          insertProjectIndicator(
-              classId = IndicatorClass.Cumulative,
-              name = "Project Indicator Name 1",
-          )
-      val projectIndicatorId2 =
-          insertProjectIndicator(
-              classId = IndicatorClass.Cumulative,
-              name = "Project Indicator Name 2",
-          )
-      val commonIndicatorId1 =
-          insertCommonIndicator(
-              name = "Common Indicator Name 1",
-              classId = IndicatorClass.Cumulative,
-          )
-      val commonIndicatorId2 =
-          insertCommonIndicator(
-              name = "Common Indicator Name 2",
-              classId = IndicatorClass.Cumulative,
-          )
-
-      // oldReport1
-      insertReport(endDate = LocalDate.of(2024, 9, 30))
-      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = 10)
-      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = 11)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 20)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = 21)
-      insertReportAutoCalculatedIndicator(
-          indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 30,
-      )
-      insertReportAutoCalculatedIndicator(
-          indicator = AutoCalculatedIndicator.HectaresPlanted,
-          systemValue = 29,
-          overrideValue = 31, // overrideValue takes precedence
-      )
-
-      // oldReport2
-      insertReport(endDate = LocalDate.of(2024, 12, 31))
-      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = 100)
-      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = 101)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 200)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = 201)
-
-      insertReportAutoCalculatedIndicator(
-          indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 300,
-          overrideValue = 301, // overrideValue takes precedence
-      )
-      insertReportAutoCalculatedIndicator(
-          indicator = AutoCalculatedIndicator.HectaresPlanted,
-          systemValue = 299,
-          overrideValue = 302,
-      )
-
-      val reportId =
-          insertReport(startDate = LocalDate.of(2025, 1, 1), endDate = LocalDate.of(2025, 3, 31))
-      insertReportProjectIndicator(indicatorId = projectIndicatorId1)
-      insertReportProjectIndicator(indicatorId = projectIndicatorId2)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId1)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId2)
-      insertReportAutoCalculatedIndicator(
-          indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 3000,
-      )
-      insertReportAutoCalculatedIndicator(
-          indicator = AutoCalculatedIndicator.HectaresPlanted,
-          systemValue = 4000,
-      )
-
-      val projectIndicators =
-          listOf(
-              ReportProjectIndicatorModel(
-                  indicator =
-                      ProjectIndicatorModel(
-                          category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
-                          description = null,
-                          id = projectIndicatorId1,
-                          isPublishable = true,
-                          level = IndicatorLevel.Impact,
-                          name = "Project Indicator Name 1",
-                          projectId = projectId,
-                          refId = "1.1",
-                          tfOwner = "Carbon",
-                      ),
-                  entry =
-                      ReportIndicatorEntryModel(
-                          modifiedBy = user.userId,
-                          modifiedTime = Instant.EPOCH,
-                      ),
-                  previousYearCumulativeTotal = BigDecimal("110"),
-              ),
-              ReportProjectIndicatorModel(
-                  indicator =
-                      ProjectIndicatorModel(
-                          category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
-                          description = null,
-                          id = projectIndicatorId2,
-                          isPublishable = true,
-                          level = IndicatorLevel.Impact,
-                          name = "Project Indicator Name 2",
-                          projectId = projectId,
-                          refId = "1.1",
-                          tfOwner = "Carbon",
-                      ),
-                  entry =
-                      ReportIndicatorEntryModel(
-                          modifiedBy = user.userId,
-                          modifiedTime = Instant.EPOCH,
-                      ),
-                  previousYearCumulativeTotal = BigDecimal("112"),
-              ),
-          )
-      val commonIndicators =
-          listOf(
-              ReportCommonIndicatorModel(
-                  indicator =
-                      CommonIndicatorModel(
-                          category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
-                          description = null,
-                          id = commonIndicatorId1,
-                          isPublishable = true,
-                          level = IndicatorLevel.Impact,
-                          name = "Common Indicator Name 1",
-                          refId = "1.1",
-                          tfOwner = "Carbon",
-                      ),
-                  entry =
-                      ReportIndicatorEntryModel(
-                          modifiedBy = user.userId,
-                          modifiedTime = Instant.EPOCH,
-                      ),
-                  previousYearCumulativeTotal = BigDecimal("220"),
-              ),
-              ReportCommonIndicatorModel(
-                  indicator =
-                      CommonIndicatorModel(
-                          category = IndicatorCategory.ProjectObjectives,
-                          classId = IndicatorClass.Cumulative,
-                          description = null,
-                          id = commonIndicatorId2,
-                          isPublishable = true,
-                          level = IndicatorLevel.Impact,
-                          name = "Common Indicator Name 2",
-                          refId = "1.1",
-                          tfOwner = "Carbon",
-                      ),
-                  entry =
-                      ReportIndicatorEntryModel(
-                          modifiedBy = user.userId,
-                          modifiedTime = Instant.EPOCH,
-                      ),
-                  previousYearCumulativeTotal = BigDecimal("222"),
-              ),
-          )
-      val autoCalculatedIndicators =
-          listOf(
-              ReportAutoCalculatedIndicatorModel(
-                  indicator = AutoCalculatedIndicator.SeedsCollected,
-                  entry =
-                      ReportAutoCalculatedIndicatorEntryModel(
-                          modifiedBy = user.userId,
-                          modifiedTime = Instant.EPOCH,
-                          systemValue = 3000,
-                          systemTime = Instant.EPOCH,
-                      ),
-                  previousYearCumulativeTotal = BigDecimal("331"),
-              ),
-              ReportAutoCalculatedIndicatorModel(
-                  indicator = AutoCalculatedIndicator.HectaresPlanted,
-                  entry =
-                      ReportAutoCalculatedIndicatorEntryModel(
-                          modifiedBy = user.userId,
-                          modifiedTime = Instant.EPOCH,
-                          systemValue = 4000,
-                          systemTime = Instant.EPOCH,
-                      ),
-                  previousYearCumulativeTotal = BigDecimal("333"),
-              ),
-              ReportAutoCalculatedIndicatorModel(
-                  indicator = AutoCalculatedIndicator.Seedlings,
-                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
-              ),
-              ReportAutoCalculatedIndicatorModel(
-                  indicator = AutoCalculatedIndicator.TreesPlanted,
-                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
-              ),
-              ReportAutoCalculatedIndicatorModel(
-                  indicator = AutoCalculatedIndicator.SpeciesPlanted,
-                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
-              ),
-              ReportAutoCalculatedIndicatorModel(
-                  indicator = AutoCalculatedIndicator.SurvivalRate,
-                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = null),
-              ),
-          )
-
-      val reportModel =
-          ReportModel(
-              id = reportId,
-              configId = configId,
-              projectId = projectId,
-              projectDealName = "DEAL_Report Project",
-              quarter = ReportQuarter.Q1,
-              status = ReportStatus.NotSubmitted,
-              startDate = LocalDate.of(2025, 1, 1),
-              endDate = LocalDate.of(2025, 3, 31),
-              createdBy = user.userId,
-              createdByUser = SimpleUserModel(user.userId, "First Last"),
-              createdTime = Instant.EPOCH,
-              modifiedBy = user.userId,
-              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
-              modifiedTime = Instant.EPOCH,
-              projectIndicators = projectIndicators,
-              commonIndicators = commonIndicators,
-              autoCalculatedIndicators = autoCalculatedIndicators,
-          )
-
-      clock.instant = LocalDate.of(2025, 3, 20).atStartOfDay().toInstant(ZoneOffset.UTC)
-      assertEquals(
-          reportModel,
-          store.fetchOne(reportId = reportId, includeIndicators = true),
-          "Indicators should have previous year cumulative totals",
-      )
-    }
-
-    @Test
     fun `queries Terraware data for auto calculated indicator`() {
       insertProjectReportConfig()
       insertReport(
@@ -1309,6 +1077,260 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser(organizationId = organizationId)
       insertUserGlobalRole(role = GlobalRole.ReadOnly)
       assertDoesNotThrow(message = "Read-only global user") { store.fetchOne(reportId) }
+    }
+
+    @Test
+    fun `cumulative indicators contain previous year total`() {
+      val otherProjectConfigId = insertProjectReportConfig(projectId = otherProjectId)
+      val configId = insertProjectReportConfig()
+
+      // multiple indicators should not interfere with each other's totals
+      val projectIndicatorId1 =
+          insertProjectIndicator(
+              classId = IndicatorClass.Cumulative,
+              name = "Project Indicator Name 1",
+          )
+      val projectIndicatorId2 =
+          insertProjectIndicator(
+              classId = IndicatorClass.Cumulative,
+              name = "Project Indicator Name 2",
+          )
+      val otherProjectIndicatorId =
+          insertProjectIndicator(
+              projectId = otherProjectId,
+              classId = IndicatorClass.Cumulative,
+              name = "Other Project's Indicator",
+          )
+      val commonIndicatorId1 =
+          insertCommonIndicator(
+              name = "Common Indicator Name 1",
+              classId = IndicatorClass.Cumulative,
+          )
+      val commonIndicatorId2 =
+          insertCommonIndicator(
+              name = "Common Indicator Name 2",
+              classId = IndicatorClass.Cumulative,
+          )
+
+      // other project's indicators shouldn't affect total
+      insertReport(
+          projectId = otherProjectId,
+          endDate = LocalDate.of(2024, 6, 30),
+          configId = otherProjectConfigId,
+      )
+      insertReportProjectIndicator(indicatorId = otherProjectIndicatorId, value = 10_000)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 20_000)
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 30_000,
+      )
+
+      // oldReport1
+      insertReport(endDate = LocalDate.of(2024, 9, 30))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = 10)
+      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = 11)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 20)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = 21)
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 30,
+      )
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
+          systemValue = 29,
+          overrideValue = 31, // overrideValue takes precedence
+      )
+
+      // oldReport2
+      insertReport(endDate = LocalDate.of(2024, 12, 31))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = 100)
+      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = 101)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 200)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = 201)
+
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 300,
+          overrideValue = 301, // overrideValue takes precedence
+      )
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
+          systemValue = 299,
+          overrideValue = 302, // overrideValue takes precedence
+      )
+
+      val reportId =
+          insertReport(startDate = LocalDate.of(2025, 1, 1), endDate = LocalDate.of(2025, 3, 31))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId1)
+      insertReportProjectIndicator(indicatorId = projectIndicatorId2)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId1)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId2)
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 3000,
+      )
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
+          systemValue = 4000,
+      )
+
+      val projectIndicators =
+          listOf(
+              ReportProjectIndicatorModel(
+                  indicator =
+                      ProjectIndicatorModel(
+                          category = IndicatorCategory.ProjectObjectives,
+                          classId = IndicatorClass.Cumulative,
+                          description = null,
+                          id = projectIndicatorId1,
+                          isPublishable = true,
+                          level = IndicatorLevel.Impact,
+                          name = "Project Indicator Name 1",
+                          projectId = projectId,
+                          refId = "1.1",
+                          tfOwner = "Carbon",
+                      ),
+                  entry =
+                      ReportIndicatorEntryModel(
+                          modifiedBy = user.userId,
+                          modifiedTime = Instant.EPOCH,
+                      ),
+                  previousYearCumulativeTotal = BigDecimal("110"),
+              ),
+              ReportProjectIndicatorModel(
+                  indicator =
+                      ProjectIndicatorModel(
+                          category = IndicatorCategory.ProjectObjectives,
+                          classId = IndicatorClass.Cumulative,
+                          description = null,
+                          id = projectIndicatorId2,
+                          isPublishable = true,
+                          level = IndicatorLevel.Impact,
+                          name = "Project Indicator Name 2",
+                          projectId = projectId,
+                          refId = "1.1",
+                          tfOwner = "Carbon",
+                      ),
+                  entry =
+                      ReportIndicatorEntryModel(
+                          modifiedBy = user.userId,
+                          modifiedTime = Instant.EPOCH,
+                      ),
+                  previousYearCumulativeTotal = BigDecimal("112"),
+              ),
+          )
+      val commonIndicators =
+          listOf(
+              ReportCommonIndicatorModel(
+                  indicator =
+                      CommonIndicatorModel(
+                          category = IndicatorCategory.ProjectObjectives,
+                          classId = IndicatorClass.Cumulative,
+                          description = null,
+                          id = commonIndicatorId1,
+                          isPublishable = true,
+                          level = IndicatorLevel.Impact,
+                          name = "Common Indicator Name 1",
+                          refId = "1.1",
+                          tfOwner = "Carbon",
+                      ),
+                  entry =
+                      ReportIndicatorEntryModel(
+                          modifiedBy = user.userId,
+                          modifiedTime = Instant.EPOCH,
+                      ),
+                  previousYearCumulativeTotal = BigDecimal("220"),
+              ),
+              ReportCommonIndicatorModel(
+                  indicator =
+                      CommonIndicatorModel(
+                          category = IndicatorCategory.ProjectObjectives,
+                          classId = IndicatorClass.Cumulative,
+                          description = null,
+                          id = commonIndicatorId2,
+                          isPublishable = true,
+                          level = IndicatorLevel.Impact,
+                          name = "Common Indicator Name 2",
+                          refId = "1.1",
+                          tfOwner = "Carbon",
+                      ),
+                  entry =
+                      ReportIndicatorEntryModel(
+                          modifiedBy = user.userId,
+                          modifiedTime = Instant.EPOCH,
+                      ),
+                  previousYearCumulativeTotal = BigDecimal("222"),
+              ),
+          )
+      val autoCalculatedIndicators =
+          listOf(
+              ReportAutoCalculatedIndicatorModel(
+                  indicator = AutoCalculatedIndicator.SeedsCollected,
+                  entry =
+                      ReportAutoCalculatedIndicatorEntryModel(
+                          modifiedBy = user.userId,
+                          modifiedTime = Instant.EPOCH,
+                          systemValue = 3000,
+                          systemTime = Instant.EPOCH,
+                      ),
+                  previousYearCumulativeTotal = BigDecimal("331"),
+              ),
+              ReportAutoCalculatedIndicatorModel(
+                  indicator = AutoCalculatedIndicator.HectaresPlanted,
+                  entry =
+                      ReportAutoCalculatedIndicatorEntryModel(
+                          modifiedBy = user.userId,
+                          modifiedTime = Instant.EPOCH,
+                          systemValue = 4000,
+                          systemTime = Instant.EPOCH,
+                      ),
+                  previousYearCumulativeTotal = BigDecimal("333"),
+              ),
+              ReportAutoCalculatedIndicatorModel(
+                  indicator = AutoCalculatedIndicator.Seedlings,
+                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
+              ),
+              ReportAutoCalculatedIndicatorModel(
+                  indicator = AutoCalculatedIndicator.TreesPlanted,
+                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
+              ),
+              ReportAutoCalculatedIndicatorModel(
+                  indicator = AutoCalculatedIndicator.SpeciesPlanted,
+                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
+              ),
+              ReportAutoCalculatedIndicatorModel(
+                  indicator = AutoCalculatedIndicator.SurvivalRate,
+                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = null),
+              ),
+          )
+
+      val reportModel =
+          ReportModel(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              projectDealName = "DEAL_Report Project",
+              quarter = ReportQuarter.Q1,
+              status = ReportStatus.NotSubmitted,
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
+              modifiedTime = Instant.EPOCH,
+              projectIndicators = projectIndicators,
+              commonIndicators = commonIndicators,
+              autoCalculatedIndicators = autoCalculatedIndicators,
+          )
+
+      clock.instant = LocalDate.of(2025, 3, 20).atStartOfDay().toInstant(ZoneOffset.UTC)
+      assertEquals(
+          reportModel,
+          store.fetchOne(reportId = reportId, includeIndicators = true),
+          "Indicators should have previous year cumulative totals",
+      )
     }
 
     @Test

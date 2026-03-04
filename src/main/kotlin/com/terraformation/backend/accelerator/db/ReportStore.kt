@@ -1615,7 +1615,7 @@ class ReportStore(
 
   private fun commonIndicatorsMultiset(): Field<List<ReportCommonIndicatorModel>> {
     val reportsForSum = REPORTS.`as`("reportsForSum")
-    val previousYearsSum =
+    val sumAtPreviousYearEnd =
         DSL.`when`(
             COMMON_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
             DSL.select(DSL.sum(REPORT_COMMON_INDICATORS.VALUE))
@@ -1623,6 +1623,7 @@ class ReportStore(
                 .join(reportsForSum)
                 .on(reportsForSum.ID.eq(REPORT_COMMON_INDICATORS.REPORT_ID))
                 .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(REPORTS.END_DATE)))
+                .and(reportsForSum.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 .and(REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID)),
         )
 
@@ -1632,7 +1633,7 @@ class ReportStore(
                     REPORT_COMMON_INDICATORS.asterisk(),
                     REPORT_COMMON_INDICATOR_TARGETS.TARGET,
                     COMMON_INDICATOR_TARGETS.asterisk(),
-                    previousYearsSum,
+                    sumAtPreviousYearEnd,
                 )
                 .from(COMMON_INDICATORS)
                 .leftJoin(REPORT_COMMON_INDICATORS)
@@ -1650,7 +1651,7 @@ class ReportStore(
                 .orderBy(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
         )
         .convertFrom { results ->
-          results.map { ReportCommonIndicatorModel.of(it, previousYearsSum) }
+          results.map { ReportCommonIndicatorModel.of(it, sumAtPreviousYearEnd) }
         }
   }
 
@@ -1669,7 +1670,7 @@ class ReportStore(
 
   private fun projectIndicatorsMultiset(): Field<List<ReportProjectIndicatorModel>> {
     val reportsForSum = REPORTS.`as`("reportsForSum")
-    val previousYearSum =
+    val sumAtPreviousYearEnd =
         DSL.`when`(
             PROJECT_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
             DSL.select(DSL.sum(REPORT_PROJECT_INDICATORS.VALUE))
@@ -1677,6 +1678,7 @@ class ReportStore(
                 .join(reportsForSum)
                 .on(reportsForSum.ID.eq(REPORT_PROJECT_INDICATORS.REPORT_ID))
                 .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(REPORTS.END_DATE)))
+                .and(reportsForSum.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 .and(REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID)),
         )
 
@@ -1686,7 +1688,7 @@ class ReportStore(
                     REPORT_PROJECT_INDICATORS.asterisk(),
                     REPORT_PROJECT_INDICATOR_TARGETS.TARGET,
                     PROJECT_INDICATOR_TARGETS.asterisk(),
-                    previousYearSum,
+                    sumAtPreviousYearEnd,
                 )
                 .from(PROJECT_INDICATORS)
                 .leftJoin(REPORT_PROJECT_INDICATORS)
@@ -1705,7 +1707,7 @@ class ReportStore(
                 .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
         )
         .convertFrom { results ->
-          results.map { ReportProjectIndicatorModel.of(it, previousYearSum) }
+          results.map { ReportProjectIndicatorModel.of(it, sumAtPreviousYearEnd) }
         }
   }
 
@@ -2009,7 +2011,7 @@ class ReportStore(
 
   private fun autoCalculatedIndicatorsMultiset(): Field<List<ReportAutoCalculatedIndicatorModel>> {
     val reportsForSum = REPORTS.`as`("reportsForSum")
-    val previousYearSum =
+    val sumAtPreviousYearEnd =
         DSL.`when`(
             AUTO_CALCULATED_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
             DSL.select(
@@ -2024,6 +2026,7 @@ class ReportStore(
                 .join(reportsForSum)
                 .on(reportsForSum.ID.eq(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID))
                 .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(REPORTS.END_DATE)))
+                .and(reportsForSum.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 .and(
                     REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.eq(
                         AUTO_CALCULATED_INDICATORS.ID
@@ -2038,7 +2041,7 @@ class ReportStore(
                     systemValueField,
                     REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET,
                     AUTO_CALCULATED_INDICATOR_TARGETS.asterisk(),
-                    previousYearSum,
+                    sumAtPreviousYearEnd,
                 )
                 .from(AUTO_CALCULATED_INDICATORS)
                 .leftJoin(REPORT_AUTO_CALCULATED_INDICATORS)
@@ -2067,7 +2070,7 @@ class ReportStore(
         )
         .convertFrom { results ->
           results.map {
-            ReportAutoCalculatedIndicatorModel.of(it, systemValueField, previousYearSum)
+            ReportAutoCalculatedIndicatorModel.of(it, systemValueField, sumAtPreviousYearEnd)
           }
         }
   }
