@@ -1145,10 +1145,51 @@
 <polygon fill="black" stroke="black" points="293.5,-590.19 301.58,-593.6 297.5,-590.09 301.5,-590 301.5,-590 301.5,-590 297.5,-590.09 301.42,-586.4 293.5,-590.19 293.5,-590.19"/>
 <ellipse fill="none" stroke="black" cx="290.3" cy="-590.26" rx="3.2" ry="3.2"/>
 </g>
-<!-- published_activity_media_files -->
+<!-- funding_entity_projects -->
 <g id="node17" class="node">
+<title>funding_entity_projects</title>
+<g id="a_node17"><a xlink:href="../../tables/funding_entity_projects.html" xlink:title="funding_entity_projects" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="660,-424 660,-508 844,-508 844,-424 660,-424"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="660,-486 660,-508 844,-508 844,-486 660,-486"/>
+<polygon fill="none" stroke="black" points="660,-486 660,-508 844,-508 844,-486 660,-486"/>
+<text text-anchor="start" x="665" y="-495.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funding_entity_projects</text>
+<text text-anchor="start" x="805" y="-494.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="660,-464 660,-486 844,-486 844,-464 660,-464"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="665" y="-481"/>
+<text text-anchor="start" x="692" y="-472.2" font-family="Helvetica,sans-Serif" font-size="11.00">funding_entity_id</text>
+<polygon fill="none" stroke="black" points="660,-442 660,-464 844,-464 844,-442 660,-442"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="665" y="-459"/>
+<text text-anchor="start" x="692" y="-450.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="660,-424 660,-442 750,-442 750,-424 660,-424"/>
+<polygon fill="none" stroke="black" points="660,-424 660,-442 750,-442 750,-424 660,-424"/>
+<text text-anchor="start" x="663" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="750,-424 750,-442 797,-442 797,-424 750,-424"/>
+<polygon fill="none" stroke="black" points="750,-424 750,-442 797,-442 797,-424 750,-424"/>
+<text text-anchor="start" x="787" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="797,-424 797,-442 844,-442 844,-424 797,-424"/>
+<polygon fill="none" stroke="black" points="797,-424 797,-442 844,-442 844,-424 797,-424"/>
+<text text-anchor="start" x="834" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- funding_entity_projects&#45;&gt;funding_entities -->
+<g id="edge3" class="edge">
+<title>funding_entity_projects:w&#45;&gt;funding_entities:e</title>
+<path fill="none" stroke="black" d="M644.44,-474.42C575.34,-468.7 559.17,-423 482.5,-423"/>
+<polygon fill="black" stroke="black" points="651.01,-474.68 658.86,-478.6 655,-474.84 659,-475 659,-475 659,-475 655,-474.84 659.14,-471.4 651.01,-474.68 651.01,-474.68"/>
+<ellipse fill="none" stroke="black" cx="647.81" cy="-474.55" rx="3.2" ry="3.2"/>
+</g>
+<!-- funding_entity_projects&#45;&gt;public.projects -->
+<g id="edge4" class="edge">
+<title>funding_entity_projects:w&#45;&gt;public.projects:e</title>
+<path fill="none" stroke="black" d="M644.64,-454.22C536.26,-473.42 578.75,-713.61 556,-735 508.68,-779.48 310.87,-716.02 265,-762 207.48,-819.66 266.69,-1053.31 232,-1127 216.79,-1159.3 188.37,-1187.61 163.59,-1207.94"/>
+<polygon fill="black" stroke="black" points="651.03,-453.68 659.3,-456.59 655.01,-453.34 659,-453 659,-453 659,-453 655.01,-453.34 658.7,-449.41 651.03,-453.68 651.03,-453.68"/>
+<ellipse fill="none" stroke="black" cx="647.84" cy="-453.95" rx="3.2" ry="3.2"/>
+</g>
+<!-- published_activity_media_files -->
+<g id="node18" class="node">
 <title>published_activity_media_files</title>
-<g id="a_node17"><a xlink:href="../../tables/published_activity_media_files.html" xlink:title="published_activity_media_files" target="_top">
+<g id="a_node18"><a xlink:href="../../tables/published_activity_media_files.html" xlink:title="published_activity_media_files" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="640,-138 640,-284 864,-284 864,-138 640,-138"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="640,-262 640,-284 864,-284 864,-262 640,-262"/>
 <polygon fill="none" stroke="black" points="640,-262 640,-284 864,-284 864,-262 640,-262"/>
@@ -1225,47 +1266,6 @@
 <polygon fill="black" stroke="black" points="637.85,-247.09 638.56,-255.05 636.96,-255.2 636.26,-247.23 637.85,-247.09"/>
 <polyline fill="none" stroke="black" points="639,-251 635.02,-251.35 "/>
 <ellipse fill="none" stroke="black" cx="631.83" cy="-251.63" rx="3.2" ry="3.2"/>
-</g>
-<!-- funding_entity_projects -->
-<g id="node18" class="node">
-<title>funding_entity_projects</title>
-<g id="a_node18"><a xlink:href="../../tables/funding_entity_projects.html" xlink:title="funding_entity_projects" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="660,-424 660,-508 844,-508 844,-424 660,-424"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="660,-486 660,-508 844,-508 844,-486 660,-486"/>
-<polygon fill="none" stroke="black" points="660,-486 660,-508 844,-508 844,-486 660,-486"/>
-<text text-anchor="start" x="665" y="-495.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">funding_entity_projects</text>
-<text text-anchor="start" x="805" y="-494.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="660,-464 660,-486 844,-486 844,-464 660,-464"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="665" y="-481"/>
-<text text-anchor="start" x="692" y="-472.2" font-family="Helvetica,sans-Serif" font-size="11.00">funding_entity_id</text>
-<polygon fill="none" stroke="black" points="660,-442 660,-464 844,-464 844,-442 660,-442"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="665" y="-459"/>
-<text text-anchor="start" x="692" y="-450.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="660,-424 660,-442 750,-442 750,-424 660,-424"/>
-<polygon fill="none" stroke="black" points="660,-424 660,-442 750,-442 750,-424 660,-424"/>
-<text text-anchor="start" x="663" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="750,-424 750,-442 797,-442 797,-424 750,-424"/>
-<polygon fill="none" stroke="black" points="750,-424 750,-442 797,-442 797,-424 750,-424"/>
-<text text-anchor="start" x="787" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="797,-424 797,-442 844,-442 844,-424 797,-424"/>
-<polygon fill="none" stroke="black" points="797,-424 797,-442 844,-442 844,-424 797,-424"/>
-<text text-anchor="start" x="834" y="-430.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- funding_entity_projects&#45;&gt;funding_entities -->
-<g id="edge3" class="edge">
-<title>funding_entity_projects:w&#45;&gt;funding_entities:e</title>
-<path fill="none" stroke="black" d="M644.44,-474.42C575.34,-468.7 559.17,-423 482.5,-423"/>
-<polygon fill="black" stroke="black" points="651.01,-474.68 658.86,-478.6 655,-474.84 659,-475 659,-475 659,-475 655,-474.84 659.14,-471.4 651.01,-474.68 651.01,-474.68"/>
-<ellipse fill="none" stroke="black" cx="647.81" cy="-474.55" rx="3.2" ry="3.2"/>
-</g>
-<!-- funding_entity_projects&#45;&gt;public.projects -->
-<g id="edge4" class="edge">
-<title>funding_entity_projects:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M644.64,-454.22C536.26,-473.42 578.75,-713.61 556,-735 508.68,-779.48 310.87,-716.02 265,-762 207.48,-819.66 266.69,-1053.31 232,-1127 216.79,-1159.3 188.37,-1187.61 163.59,-1207.94"/>
-<polygon fill="black" stroke="black" points="651.03,-453.68 659.3,-456.59 655.01,-453.34 659,-453 659,-453 659,-453 655.01,-453.34 658.7,-449.41 651.03,-453.68 651.03,-453.68"/>
-<ellipse fill="none" stroke="black" cx="647.84" cy="-453.95" rx="3.2" ry="3.2"/>
 </g>
 <!-- published_common_indicator_targets -->
 <g id="node19" class="node">
