@@ -59,7 +59,9 @@ data class ReportPhotoModel(
 data class ReportModel(
     val achievements: List<String> = emptyList(),
     val additionalComments: String? = null,
+    val autoCalculatedIndicators: List<ReportAutoCalculatedIndicatorModel> = emptyList(),
     val challenges: List<ReportChallengeModel> = emptyList(),
+    val commonIndicators: List<ReportCommonIndicatorModel> = emptyList(),
     val configId: ProjectReportConfigId,
     val createdBy: UserId,
     val createdByUser: SimpleUserModel,
@@ -78,13 +80,11 @@ data class ReportModel(
     val projectId: ProjectId,
     val projectIndicators: List<ReportProjectIndicatorModel> = emptyList(),
     val quarter: ReportQuarter?,
-    val commonIndicators: List<ReportCommonIndicatorModel> = emptyList(),
     val startDate: LocalDate,
     val status: ReportStatus,
     val submittedBy: UserId? = null,
     val submittedByUser: SimpleUserModel? = null,
     val submittedTime: Instant? = null,
-    val autoCalculatedIndicators: List<ReportAutoCalculatedIndicatorModel> = emptyList(),
 ) {
 
   /** Describes the reporting period of this report. For example "2025 Q1" or "2025 Annual" */
