@@ -91,7 +91,7 @@ val ENUM_TABLES =
                             ),
                             EnumTableColumnInfo(
                                 "class_id",
-                                "IndicatorClass?",
+                                "IndicatorClass",
                                 true,
                             ),
                             EnumTableColumnInfo(
