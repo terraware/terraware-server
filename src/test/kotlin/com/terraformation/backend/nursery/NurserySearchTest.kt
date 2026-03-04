@@ -18,6 +18,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
+import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
@@ -507,6 +508,91 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           ),
           results,
       )
+    }
+
+    @Test
+    fun `can search for both source and destination batch projects`() {
+      val projectId1 = insertProject(name = "Project 1")
+      val projectId2 = insertProject(name = "Project 2")
+      val projectId3 = insertProject(name = "Project 3")
+      val project1Batch =
+          insertBatch(
+              facilityId = facilityId,
+              germinatingQuantity = 1,
+              speciesId = speciesId1,
+              projectId = projectId1,
+          )
+      val project2Batch =
+          insertBatch(
+              facilityId = facilityId2,
+              germinatingQuantity = 1,
+              speciesId = speciesId1,
+              projectId = projectId2,
+          )
+      insertBatch(
+          facilityId = facilityId,
+          germinatingQuantity = 1,
+          speciesId = speciesId1,
+          projectId = projectId3,
+      )
+      val withdrawalId =
+          insertNurseryWithdrawal(
+              facilityId = facilityId,
+              purpose = WithdrawalPurpose.NurseryTransfer,
+              destinationFacilityId = facilityId2,
+              withdrawnDate = LocalDate.of(2021, 1, 1),
+          )
+      insertBatchWithdrawal(
+          batchId = project1Batch,
+          destinationBatchId = project2Batch,
+          germinatingQuantityWithdrawn = 1,
+      )
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawals)
+      val fields =
+          listOf(
+                  "id",
+                  "batchWithdrawals.batch_project_name",
+                  "batchWithdrawals.destinationBatchProjectName",
+              )
+              .map { prefix.resolve(it) }
+
+      listOf("Project 1", "Project 2").forEach { projectName ->
+        val filter =
+            OrNode(
+                listOf(
+                    FieldNode(
+                        prefix.resolve("batchWithdrawals.batch_project_name"),
+                        listOf(projectName),
+                    ),
+                    FieldNode(
+                        prefix.resolve("batchWithdrawals.destinationBatchProjectName"),
+                        listOf(projectName),
+                    ),
+                )
+            )
+        val orderBy = listOf(SearchSortField(prefix.resolve("id")))
+
+        val expected =
+            SearchResults(
+                listOf(
+                    mapOf(
+                        "id" to "$withdrawalId",
+                        "batchWithdrawals" to
+                            listOf(
+                                mapOf(
+                                    "batch_project_name" to "Project 1",
+                                    "destinationBatchProjectName" to "Project 2",
+                                ),
+                            ),
+                    ),
+                )
+            )
+
+        val actual = searchService.search(prefix, fields, mapOf(prefix to filter), orderBy)
+
+        assertJsonEquals(expected, actual)
+      }
     }
 
     @Test
