@@ -9,6 +9,7 @@ import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEve
 import com.terraformation.backend.accelerator.model.AutoCalculatedIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.CommonIndicatorModel
 import com.terraformation.backend.accelerator.model.CommonIndicatorTargetsModel
+import com.terraformation.backend.accelerator.model.CumulativeIndicatorProgressModel
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorModel
@@ -342,6 +343,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   baseline = BigDecimal.ONE,
                   endOfProjectTarget = BigDecimal("1000"),
+                  currentYearProgress = emptyList(),
               ),
           )
 
@@ -548,6 +550,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = user.userId,
                       ),
                   baseline = BigDecimal.TEN,
+                  currentYearProgress =
+                      listOf(CumulativeIndicatorProgressModel(ReportQuarter.Q1, 1800)),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
@@ -555,6 +559,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = 0,
                       ),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.Seedlings,
@@ -565,6 +570,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(2500),
                           modifiedBy = user.userId,
                       ),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.TreesPlanted,
@@ -580,6 +586,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   baseline = BigDecimal("20"),
                   endOfProjectTarget = BigDecimal("1500"),
+                  currentYearProgress =
+                      listOf(CumulativeIndicatorProgressModel(ReportQuarter.Q1, 800)),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,
@@ -641,6 +649,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = 98,
                       ),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
@@ -648,6 +657,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = 60,
                       ),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.Seedlings,
@@ -655,6 +665,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = 83,
                       ),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.TreesPlanted,
@@ -662,6 +673,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = 27,
                       ),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,
@@ -1195,6 +1207,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = user.userId,
                           modifiedTime = Instant.EPOCH,
                       ),
+                  currentYearProgress = emptyList(),
                   previousYearCumulativeTotal = BigDecimal("110"),
               ),
               ReportProjectIndicatorModel(
@@ -1216,6 +1229,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = user.userId,
                           modifiedTime = Instant.EPOCH,
                       ),
+                  currentYearProgress = emptyList(),
                   previousYearCumulativeTotal = BigDecimal("112"),
               ),
           )
@@ -1239,6 +1253,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = user.userId,
                           modifiedTime = Instant.EPOCH,
                       ),
+                  currentYearProgress = emptyList(),
                   previousYearCumulativeTotal = BigDecimal("220"),
               ),
               ReportCommonIndicatorModel(
@@ -1259,6 +1274,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedBy = user.userId,
                           modifiedTime = Instant.EPOCH,
                       ),
+                  currentYearProgress = emptyList(),
                   previousYearCumulativeTotal = BigDecimal("222"),
               ),
           )
@@ -1273,6 +1289,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 3000,
                           systemTime = Instant.EPOCH,
                       ),
+                  currentYearProgress =
+                      listOf(CumulativeIndicatorProgressModel(ReportQuarter.Q1, 3000)),
                   previousYearCumulativeTotal = BigDecimal("331"),
               ),
               ReportAutoCalculatedIndicatorModel(
@@ -1284,15 +1302,19 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           systemValue = 4000,
                           systemTime = Instant.EPOCH,
                       ),
+                  currentYearProgress =
+                      listOf(CumulativeIndicatorProgressModel(ReportQuarter.Q1, 4000)),
                   previousYearCumulativeTotal = BigDecimal("333"),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.Seedlings,
                   entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.TreesPlanted,
                   entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,
@@ -1330,6 +1352,330 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportModel,
           store.fetchOne(reportId = reportId, includeIndicators = true),
           "Indicators should have previous year cumulative totals",
+      )
+    }
+
+    @Test
+    fun `cumulative indicators contain current year progress`() {
+      val otherProjectConfigId = insertProjectReportConfig(projectId = otherProjectId)
+      val configId = insertProjectReportConfig()
+
+      val cumulativeCommonIndicatorId =
+          insertCommonIndicator(
+              name = "Cumulative Common Indicator",
+              classId = IndicatorClass.Cumulative,
+          )
+      val levelCommonIndicatorId =
+          insertCommonIndicator(name = "Level Common Indicator", classId = IndicatorClass.Level)
+      val cumulativeProjectIndicatorId =
+          insertProjectIndicator(
+              name = "Cumulative Project Indicator",
+              classId = IndicatorClass.Cumulative,
+          )
+      val levelProjectIndicatorId =
+          insertProjectIndicator(name = "Level Project Indicator", classId = IndicatorClass.Level)
+
+      // Q1 report - values contribute to Q4's currentYearProgress
+      val q1ReportId =
+          insertReport(
+              quarter = ReportQuarter.Q1,
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+          )
+      insertReportCommonIndicator(
+          reportId = q1ReportId,
+          indicatorId = cumulativeCommonIndicatorId,
+          value = 11,
+      )
+      insertReportCommonIndicator(
+          reportId = q1ReportId,
+          indicatorId = levelCommonIndicatorId,
+          value = 100,
+      )
+      insertReportProjectIndicator(
+          reportId = q1ReportId,
+          indicatorId = cumulativeProjectIndicatorId,
+          value = 21,
+      )
+      insertReportProjectIndicator(
+          reportId = q1ReportId,
+          indicatorId = levelProjectIndicatorId,
+          value = 100,
+      )
+      insertReportAutoCalculatedIndicator(
+          reportId = q1ReportId,
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 31,
+      )
+      insertReportAutoCalculatedIndicator(
+          reportId = q1ReportId,
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
+          systemValue = 41,
+          overrideValue = 40, // override takes precedence
+      )
+
+      // Q2 report - values contribute to Q4's currentYearProgress
+      val q2ReportId =
+          insertReport(
+              quarter = ReportQuarter.Q2,
+              startDate = LocalDate.of(2025, 4, 1),
+              endDate = LocalDate.of(2025, 6, 30),
+          )
+      insertReportCommonIndicator(
+          reportId = q2ReportId,
+          indicatorId = cumulativeCommonIndicatorId,
+          value = 12,
+      )
+      insertReportCommonIndicator(
+          reportId = q2ReportId,
+          indicatorId = levelCommonIndicatorId,
+          value = 200,
+      )
+      insertReportProjectIndicator(
+          reportId = q2ReportId,
+          indicatorId = cumulativeProjectIndicatorId,
+          value = 22,
+      )
+      insertReportProjectIndicator(
+          reportId = q2ReportId,
+          indicatorId = levelProjectIndicatorId,
+          value = 200,
+      )
+      insertReportAutoCalculatedIndicator(
+          reportId = q2ReportId,
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 32,
+      )
+      insertReportAutoCalculatedIndicator(
+          reportId = q2ReportId,
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
+          systemValue = 42,
+      )
+
+      // Q3 report - null values should be excluded from currentYearProgress
+      val q3ReportId =
+          insertReport(
+              quarter = ReportQuarter.Q3,
+              startDate = LocalDate.of(2025, 7, 1),
+              endDate = LocalDate.of(2025, 9, 30),
+          )
+      insertReportCommonIndicator(reportId = q3ReportId, indicatorId = cumulativeCommonIndicatorId)
+      insertReportProjectIndicator(
+          reportId = q3ReportId,
+          indicatorId = cumulativeProjectIndicatorId,
+      )
+      insertReportAutoCalculatedIndicator(
+          reportId = q3ReportId,
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = null,
+      )
+
+      // Q4 report (current report being fetched)
+      val reportId =
+          insertReport(
+              quarter = ReportQuarter.Q4,
+              startDate = LocalDate.of(2025, 10, 1),
+              endDate = LocalDate.of(2025, 12, 31),
+          )
+      insertReportCommonIndicator(indicatorId = cumulativeCommonIndicatorId, value = 13)
+      insertReportCommonIndicator(indicatorId = levelCommonIndicatorId, value = 300)
+      insertReportProjectIndicator(indicatorId = cumulativeProjectIndicatorId, value = 23)
+      insertReportProjectIndicator(indicatorId = levelProjectIndicatorId, value = 300)
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 33,
+      )
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
+          systemValue = 43,
+      )
+
+      // Other project's report in same year - should not appear in current year progress
+      insertReport(
+          projectId = otherProjectId,
+          configId = otherProjectConfigId,
+          quarter = ReportQuarter.Q1,
+          endDate = LocalDate.of(2025, 3, 31),
+      )
+      insertReportCommonIndicator(indicatorId = cumulativeCommonIndicatorId, value = 888)
+
+      clock.instant = LocalDate.of(2025, 12, 20).atStartOfDay().toInstant(ZoneOffset.UTC)
+
+      val expectedReportModel =
+          ReportModel(
+              id = reportId,
+              configId = configId,
+              projectId = projectId,
+              projectDealName = "DEAL_Report Project",
+              quarter = ReportQuarter.Q4,
+              status = ReportStatus.NotSubmitted,
+              startDate = LocalDate.of(2025, 10, 1),
+              endDate = LocalDate.of(2025, 12, 31),
+              createdBy = user.userId,
+              createdByUser = SimpleUserModel(user.userId, "First Last"),
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedByUser = SimpleUserModel(user.userId, "First Last"),
+              modifiedTime = Instant.EPOCH,
+              commonIndicators =
+                  listOf(
+                      ReportCommonIndicatorModel(
+                          indicator =
+                              CommonIndicatorModel(
+                                  category = IndicatorCategory.ProjectObjectives,
+                                  classId = IndicatorClass.Cumulative,
+                                  description = null,
+                                  id = cumulativeCommonIndicatorId,
+                                  isPublishable = true,
+                                  level = IndicatorLevel.Impact,
+                                  name = "Cumulative Common Indicator",
+                                  refId = "1.1",
+                                  tfOwner = "Carbon",
+                              ),
+                          entry =
+                              ReportIndicatorEntryModel(
+                                  modifiedBy = user.userId,
+                                  modifiedTime = Instant.EPOCH,
+                                  value = 13,
+                              ),
+                          currentYearProgress =
+                              listOf(
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q1, 11),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q2, 12),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q4, 13),
+                              ),
+                      ),
+                      ReportCommonIndicatorModel(
+                          indicator =
+                              CommonIndicatorModel(
+                                  category = IndicatorCategory.ProjectObjectives,
+                                  classId = IndicatorClass.Level,
+                                  description = null,
+                                  id = levelCommonIndicatorId,
+                                  isPublishable = true,
+                                  level = IndicatorLevel.Impact,
+                                  name = "Level Common Indicator",
+                                  refId = "1.1",
+                                  tfOwner = "Carbon",
+                              ),
+                          entry =
+                              ReportIndicatorEntryModel(
+                                  modifiedBy = user.userId,
+                                  modifiedTime = Instant.EPOCH,
+                                  value = 300,
+                              ),
+                      ),
+                  ),
+              projectIndicators =
+                  listOf(
+                      ReportProjectIndicatorModel(
+                          indicator =
+                              ProjectIndicatorModel(
+                                  category = IndicatorCategory.ProjectObjectives,
+                                  classId = IndicatorClass.Cumulative,
+                                  description = null,
+                                  id = cumulativeProjectIndicatorId,
+                                  isPublishable = true,
+                                  level = IndicatorLevel.Impact,
+                                  name = "Cumulative Project Indicator",
+                                  projectId = projectId,
+                                  refId = "1.1",
+                                  tfOwner = "Carbon",
+                              ),
+                          entry =
+                              ReportIndicatorEntryModel(
+                                  modifiedBy = user.userId,
+                                  modifiedTime = Instant.EPOCH,
+                                  value = 23,
+                              ),
+                          currentYearProgress =
+                              listOf(
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q1, 21),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q2, 22),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q4, 23),
+                              ),
+                      ),
+                      ReportProjectIndicatorModel(
+                          indicator =
+                              ProjectIndicatorModel(
+                                  category = IndicatorCategory.ProjectObjectives,
+                                  classId = IndicatorClass.Level,
+                                  description = null,
+                                  id = levelProjectIndicatorId,
+                                  isPublishable = true,
+                                  level = IndicatorLevel.Impact,
+                                  name = "Level Project Indicator",
+                                  projectId = projectId,
+                                  refId = "1.1",
+                                  tfOwner = "Carbon",
+                              ),
+                          entry =
+                              ReportIndicatorEntryModel(
+                                  modifiedBy = user.userId,
+                                  modifiedTime = Instant.EPOCH,
+                                  value = 300,
+                              ),
+                      ),
+                  ),
+              autoCalculatedIndicators =
+                  listOf(
+                      ReportAutoCalculatedIndicatorModel(
+                          indicator = AutoCalculatedIndicator.SeedsCollected,
+                          entry =
+                              ReportAutoCalculatedIndicatorEntryModel(
+                                  modifiedBy = user.userId,
+                                  modifiedTime = Instant.EPOCH,
+                                  systemValue = 33,
+                                  systemTime = Instant.EPOCH,
+                              ),
+                          currentYearProgress =
+                              listOf(
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q1, 31),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q2, 32),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q4, 33),
+                              ),
+                      ),
+                      ReportAutoCalculatedIndicatorModel(
+                          indicator = AutoCalculatedIndicator.HectaresPlanted,
+                          entry =
+                              ReportAutoCalculatedIndicatorEntryModel(
+                                  modifiedBy = user.userId,
+                                  modifiedTime = Instant.EPOCH,
+                                  systemValue = 43,
+                                  systemTime = Instant.EPOCH,
+                              ),
+                          currentYearProgress =
+                              listOf(
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q1, 40),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q2, 42),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q4, 43),
+                              ),
+                      ),
+                      ReportAutoCalculatedIndicatorModel(
+                          indicator = AutoCalculatedIndicator.Seedlings,
+                          entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
+                          currentYearProgress = emptyList(),
+                      ),
+                      ReportAutoCalculatedIndicatorModel(
+                          indicator = AutoCalculatedIndicator.TreesPlanted,
+                          entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
+                          currentYearProgress = emptyList(),
+                      ),
+                      ReportAutoCalculatedIndicatorModel(
+                          indicator = AutoCalculatedIndicator.SpeciesPlanted,
+                          entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = 0),
+                      ),
+                      ReportAutoCalculatedIndicatorModel(
+                          indicator = AutoCalculatedIndicator.SurvivalRate,
+                          entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = null),
+                      ),
+                  ),
+          )
+
+      assertEquals(
+          expectedReportModel,
+          store.fetchOne(reportId = reportId, includeIndicators = true),
+          "Cumulative indicators should have current year progress from all same-year quarters with values",
       )
     }
 
@@ -1496,6 +1842,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(3000),
                           modifiedBy = user.userId,
                       ),
+                  currentYearProgress =
+                      listOf(CumulativeIndicatorProgressModel(ReportQuarter.Q1, 45)),
               ),
               ReportCommonIndicatorModel(
                   indicator =
@@ -1583,6 +1931,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(500),
                           modifiedBy = user.userId,
                       ),
+                  currentYearProgress =
+                      listOf(CumulativeIndicatorProgressModel(ReportQuarter.Q1, 1800)),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
@@ -1590,6 +1940,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ReportAutoCalculatedIndicatorEntryModel(
                           systemValue = 0,
                       ),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.Seedlings,
@@ -1600,6 +1951,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(2500),
                           modifiedBy = user.userId,
                       ),
+                  currentYearProgress = emptyList(),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.TreesPlanted,
@@ -1613,6 +1965,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           modifiedTime = Instant.ofEpochSecond(700),
                           modifiedBy = user.userId,
                       ),
+                  currentYearProgress =
+                      listOf(CumulativeIndicatorProgressModel(ReportQuarter.Q1, 800)),
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SpeciesPlanted,

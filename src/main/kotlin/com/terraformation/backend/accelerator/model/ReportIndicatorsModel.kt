@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
+import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
@@ -50,12 +51,21 @@ data class ReportCommonIndicatorModel(
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
-    fun of(record: Record, previousYearTotalField: Field<BigDecimal?>): ReportCommonIndicatorModel {
+    fun of(
+        record: Record,
+        previousYearTotalField: Field<BigDecimal?>,
+        currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>>,
+    ): ReportCommonIndicatorModel {
+      val indicator = ExistingCommonIndicatorModel.of(record)
       return ReportCommonIndicatorModel(
           baseline = record[COMMON_INDICATOR_TARGETS.BASELINE],
+          currentYearProgress =
+              record[currentYearProgressField].takeIf {
+                indicator.classId == IndicatorClass.Cumulative
+              },
           endOfProjectTarget = record[COMMON_INDICATOR_TARGETS.END_TARGET],
           entry = entry(record),
-          indicator = ExistingCommonIndicatorModel.of(record),
+          indicator = indicator,
           previousYearCumulativeTotal = record[previousYearTotalField],
       )
     }
@@ -98,12 +108,18 @@ data class ReportProjectIndicatorModel(
     fun of(
         record: Record,
         previousYearTotalField: Field<BigDecimal?>,
+        currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>>,
     ): ReportProjectIndicatorModel {
+      val indicator = ExistingProjectIndicatorModel.of(record)
       return ReportProjectIndicatorModel(
           baseline = record[PROJECT_INDICATOR_TARGETS.BASELINE],
+          currentYearProgress =
+              record[currentYearProgressField].takeIf {
+                indicator.classId == IndicatorClass.Cumulative
+              },
           endOfProjectTarget = record[PROJECT_INDICATOR_TARGETS.END_TARGET],
           entry = entry(record),
-          indicator = ExistingProjectIndicatorModel.of(record),
+          indicator = indicator,
           previousYearCumulativeTotal = record[previousYearTotalField],
       )
     }
@@ -183,12 +199,18 @@ data class ReportAutoCalculatedIndicatorModel(
         record: Record,
         systemValueField: Field<Int?>,
         previousYearTotalField: Field<BigDecimal?>,
+        currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>>,
     ): ReportAutoCalculatedIndicatorModel {
+      val indicator = record[AUTO_CALCULATED_INDICATORS.ID.asNonNullable()]
       return ReportAutoCalculatedIndicatorModel(
           baseline = record[AUTO_CALCULATED_INDICATOR_TARGETS.BASELINE],
+          currentYearProgress =
+              record[currentYearProgressField].takeIf {
+                indicator.classId == IndicatorClass.Cumulative
+              },
           endOfProjectTarget = record[AUTO_CALCULATED_INDICATOR_TARGETS.END_TARGET],
           entry = ReportAutoCalculatedIndicatorEntryModel.of(record, systemValueField),
-          indicator = record[AUTO_CALCULATED_INDICATORS.ID.asNonNullable()],
+          indicator = indicator,
           previousYearCumulativeTotal = record[previousYearTotalField],
       )
     }
