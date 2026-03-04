@@ -1,5 +1,6 @@
 package com.terraformation.backend.search.table
 
+import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
@@ -10,6 +11,7 @@ import org.jooq.OrderField
 import org.jooq.Record
 import org.jooq.SelectJoinStep
 import org.jooq.TableField
+import org.jooq.impl.DSL
 
 class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
@@ -37,6 +39,16 @@ class BatchWithdrawalsTable(private val tables: SearchTables) : SearchTable() {
         integerField(
             "activeGrowthQuantityWithdrawn",
             BATCH_WITHDRAWALS.ACTIVE_GROWTH_QUANTITY_WITHDRAWN,
+        ),
+        textField(
+            "destinationBatchProjectName",
+            DSL.field(
+                DSL.select(PROJECTS.NAME)
+                    .from(BATCHES)
+                    .leftJoin(PROJECTS)
+                    .on(BATCHES.PROJECT_ID.eq(PROJECTS.ID))
+                    .where(BATCHES.ID.eq(BATCH_WITHDRAWALS.DESTINATION_BATCH_ID))
+            ),
         ),
         integerField(
             "germinatingQuantityWithdrawn",
