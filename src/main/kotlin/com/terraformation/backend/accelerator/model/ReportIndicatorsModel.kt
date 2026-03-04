@@ -95,12 +95,16 @@ data class ReportProjectIndicatorModel(
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
-    fun of(record: Record): ReportProjectIndicatorModel {
+    fun of(
+        record: Record,
+        previousYearTotalField: Field<BigDecimal?>,
+    ): ReportProjectIndicatorModel {
       return ReportProjectIndicatorModel(
           baseline = record[PROJECT_INDICATOR_TARGETS.BASELINE],
           endOfProjectTarget = record[PROJECT_INDICATOR_TARGETS.END_TARGET],
           entry = entry(record),
           indicator = ExistingProjectIndicatorModel.of(record),
+          previousYearCumulativeTotal = record[previousYearTotalField],
       )
     }
 
@@ -175,12 +179,17 @@ data class ReportAutoCalculatedIndicatorModel(
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
-    fun of(record: Record, systemValueField: Field<Int?>): ReportAutoCalculatedIndicatorModel {
+    fun of(
+        record: Record,
+        systemValueField: Field<Int?>,
+        previousYearTotalField: Field<BigDecimal?>,
+    ): ReportAutoCalculatedIndicatorModel {
       return ReportAutoCalculatedIndicatorModel(
           baseline = record[AUTO_CALCULATED_INDICATOR_TARGETS.BASELINE],
           endOfProjectTarget = record[AUTO_CALCULATED_INDICATOR_TARGETS.END_TARGET],
           entry = ReportAutoCalculatedIndicatorEntryModel.of(record, systemValueField),
           indicator = record[AUTO_CALCULATED_INDICATORS.ID.asNonNullable()],
+          previousYearCumulativeTotal = record[previousYearTotalField],
       )
     }
   }

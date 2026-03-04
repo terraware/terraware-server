@@ -1087,7 +1087,7 @@ class ReportStore(
   ): List<ReportModel> {
     val projectIndicatorsField =
         if (includeIndicators) {
-          projectIndicatorsMultiset
+          projectIndicatorsMultiset()
         } else {
           null
         }
@@ -1101,7 +1101,7 @@ class ReportStore(
 
     val autoCalculatedIndicatorsField =
         if (includeIndicators) {
-          autoCalculatedIndicatorsMultiset
+          autoCalculatedIndicatorsMultiset()
         } else {
           null
         }
@@ -1622,7 +1622,8 @@ class ReportStore(
                 .from(REPORT_COMMON_INDICATORS)
                 .join(reportsForSum)
                 .on(reportsForSum.ID.eq(REPORT_COMMON_INDICATORS.REPORT_ID))
-                .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(REPORTS.END_DATE))),
+                .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(REPORTS.END_DATE)))
+                .and(REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID)),
         )
 
     return DSL.multiset(
@@ -1666,35 +1667,47 @@ class ReportStore(
           )
           .convertFrom { results -> results.map { ReportPhotoModel.of(it) } }
 
-  private val projectIndicatorsMultiset: Field<List<ReportProjectIndicatorModel>> =
-      DSL.multiset(
-              DSL.select(
-                      PROJECT_INDICATORS.asterisk(),
-                      REPORT_PROJECT_INDICATORS.asterisk(),
-                      REPORT_PROJECT_INDICATOR_TARGETS.TARGET,
-                      PROJECT_INDICATOR_TARGETS.asterisk(),
-                  )
-                  .from(PROJECT_INDICATORS)
-                  .leftJoin(REPORT_PROJECT_INDICATORS)
-                  .on(PROJECT_INDICATORS.ID.eq(REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID))
-                  .and(REPORTS.ID.eq(REPORT_PROJECT_INDICATORS.REPORT_ID))
-                  .leftJoin(REPORT_PROJECT_INDICATOR_TARGETS)
-                  .on(
-                      REPORT_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID.eq(
-                          PROJECT_INDICATORS.ID
-                      )
-                  )
-                  .leftJoin(PROJECT_INDICATOR_TARGETS)
-                  .on(
-                      PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID)
-                          .and(PROJECT_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  )
-                  .and(REPORT_PROJECT_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  .and(REPORT_PROJECT_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
-                  .where(PROJECT_INDICATORS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
-          )
-          .convertFrom { results -> results.map { ReportProjectIndicatorModel.of(it) } }
+  private fun projectIndicatorsMultiset(): Field<List<ReportProjectIndicatorModel>> {
+    val reportsForSum = REPORTS.`as`("reportsForSum")
+    val previousYearSum =
+        DSL.`when`(
+            PROJECT_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            DSL.select(DSL.sum(REPORT_PROJECT_INDICATORS.VALUE))
+                .from(REPORT_PROJECT_INDICATORS)
+                .join(reportsForSum)
+                .on(reportsForSum.ID.eq(REPORT_PROJECT_INDICATORS.REPORT_ID))
+                .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(REPORTS.END_DATE)))
+                .and(REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID)),
+        )
+
+    return DSL.multiset(
+            DSL.select(
+                    PROJECT_INDICATORS.asterisk(),
+                    REPORT_PROJECT_INDICATORS.asterisk(),
+                    REPORT_PROJECT_INDICATOR_TARGETS.TARGET,
+                    PROJECT_INDICATOR_TARGETS.asterisk(),
+                    previousYearSum,
+                )
+                .from(PROJECT_INDICATORS)
+                .leftJoin(REPORT_PROJECT_INDICATORS)
+                .on(PROJECT_INDICATORS.ID.eq(REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID))
+                .and(REPORTS.ID.eq(REPORT_PROJECT_INDICATORS.REPORT_ID))
+                .leftJoin(REPORT_PROJECT_INDICATOR_TARGETS)
+                .on(REPORT_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID))
+                .leftJoin(PROJECT_INDICATOR_TARGETS)
+                .on(
+                    PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID)
+                        .and(PROJECT_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                )
+                .and(REPORT_PROJECT_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .and(REPORT_PROJECT_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
+                .where(PROJECT_INDICATORS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
+        )
+        .convertFrom { results ->
+          results.map { ReportProjectIndicatorModel.of(it, previousYearSum) }
+        }
+  }
 
   private fun userIsInSameOrg() =
       with(ORGANIZATION_USERS) {
@@ -1994,41 +2007,68 @@ class ReportStore(
           .`when`(REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_TIME.isNull(), systemTerrawareValueField)
           .else_(REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_VALUE)
 
-  private val autoCalculatedIndicatorsMultiset: Field<List<ReportAutoCalculatedIndicatorModel>> =
-      DSL.multiset(
-              DSL.select(
-                      AUTO_CALCULATED_INDICATORS.ID,
-                      REPORT_AUTO_CALCULATED_INDICATORS.asterisk(),
-                      systemValueField,
-                      REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET,
-                      AUTO_CALCULATED_INDICATOR_TARGETS.asterisk(),
-                  )
-                  .from(AUTO_CALCULATED_INDICATORS)
-                  .leftJoin(REPORT_AUTO_CALCULATED_INDICATORS)
-                  .on(
-                      AUTO_CALCULATED_INDICATORS.ID.eq(
-                          REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID
-                      )
-                  )
-                  .and(REPORTS.ID.eq(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID))
-                  .leftJoin(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS)
-                  .on(
-                      REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID.eq(
-                          AUTO_CALCULATED_INDICATORS.ID
-                      )
-                  )
-                  .leftJoin(AUTO_CALCULATED_INDICATOR_TARGETS)
-                  .on(
-                      AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID.eq(
-                              AUTO_CALCULATED_INDICATORS.ID
-                          )
-                          .and(AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  )
-                  .and(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                  .and(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
-                  .orderBy(AUTO_CALCULATED_INDICATORS.REF_ID, AUTO_CALCULATED_INDICATORS.ID)
-          )
-          .convertFrom { results ->
-            results.map { ReportAutoCalculatedIndicatorModel.of(it, systemValueField) }
+  private fun autoCalculatedIndicatorsMultiset(): Field<List<ReportAutoCalculatedIndicatorModel>> {
+    val reportsForSum = REPORTS.`as`("reportsForSum")
+    val previousYearSum =
+        DSL.`when`(
+            AUTO_CALCULATED_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            DSL.select(
+                    DSL.sum(
+                        DSL.coalesce(
+                            REPORT_AUTO_CALCULATED_INDICATORS.OVERRIDE_VALUE,
+                            REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_VALUE,
+                        )
+                    )
+                )
+                .from(REPORT_AUTO_CALCULATED_INDICATORS)
+                .join(reportsForSum)
+                .on(reportsForSum.ID.eq(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID))
+                .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(REPORTS.END_DATE)))
+                .and(
+                    REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID.eq(
+                        AUTO_CALCULATED_INDICATORS.ID
+                    )
+                ),
+        )
+
+    return DSL.multiset(
+            DSL.select(
+                    AUTO_CALCULATED_INDICATORS.ID,
+                    REPORT_AUTO_CALCULATED_INDICATORS.asterisk(),
+                    systemValueField,
+                    REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET,
+                    AUTO_CALCULATED_INDICATOR_TARGETS.asterisk(),
+                    previousYearSum,
+                )
+                .from(AUTO_CALCULATED_INDICATORS)
+                .leftJoin(REPORT_AUTO_CALCULATED_INDICATORS)
+                .on(
+                    AUTO_CALCULATED_INDICATORS.ID.eq(
+                        REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID
+                    )
+                )
+                .and(REPORTS.ID.eq(REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID))
+                .leftJoin(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS)
+                .on(
+                    REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID.eq(
+                        AUTO_CALCULATED_INDICATORS.ID
+                    )
+                )
+                .leftJoin(AUTO_CALCULATED_INDICATOR_TARGETS)
+                .on(
+                    AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID.eq(
+                            AUTO_CALCULATED_INDICATORS.ID
+                        )
+                        .and(AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                )
+                .and(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .and(REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.YEAR.eq(DSL.year(REPORTS.END_DATE)))
+                .orderBy(AUTO_CALCULATED_INDICATORS.REF_ID, AUTO_CALCULATED_INDICATORS.ID)
+        )
+        .convertFrom { results ->
+          results.map {
+            ReportAutoCalculatedIndicatorModel.of(it, systemValueField, previousYearSum)
           }
+        }
+  }
 }
