@@ -15,6 +15,7 @@ data class PublishedReportIndicatorModel<ID : Any>(
     val indicatorId: ID,
     val level: IndicatorLevel,
     val name: String,
+    val previousYearCumulativeTotal: BigDecimal? = null,
     val progressNotes: String?,
     val projectsComments: String?,
     val refId: String,
