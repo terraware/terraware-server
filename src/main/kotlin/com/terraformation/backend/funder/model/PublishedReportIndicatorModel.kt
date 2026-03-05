@@ -1,11 +1,13 @@
 package com.terraformation.backend.funder.model
 
 import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 
 data class PublishedReportIndicatorModel<ID : Any>(
     val category: IndicatorCategory,
+    val classId: IndicatorClass?,
     val description: String?,
     val indicatorId: ID,
     val level: IndicatorLevel,

@@ -11,6 +11,7 @@ import com.terraformation.backend.api.PHOTO_OPERATION_DESCRIPTION
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
@@ -116,6 +117,7 @@ data class PublishedReportMetricPayload(
 
 data class PublishedReportIndicatorPayload(
     val category: IndicatorCategory,
+    val classId: IndicatorClass?,
     val description: String?,
     val level: IndicatorLevel,
     val name: String,
@@ -131,6 +133,7 @@ data class PublishedReportIndicatorPayload(
       model: PublishedReportIndicatorModel<*>
   ) : this(
       category = model.category,
+      classId = model.classId,
       description = model.description,
       level = model.level,
       name = model.name,
