@@ -318,10 +318,13 @@ import com.terraformation.backend.db.funder.tables.daos.FundingEntityProjectsDao
 import com.terraformation.backend.db.funder.tables.daos.FundingEntityUsersDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedActivitiesDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedActivityMediaFilesDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedAutoCalculatedIndicatorBaselinesDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedAutoCalculatedIndicatorTargetsDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedCommonIndicatorBaselinesDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedCommonIndicatorTargetsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectCarbonCertsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectDetailsDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedProjectIndicatorBaselinesDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectIndicatorTargetsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectLandUseDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedProjectSdgDao
@@ -334,10 +337,13 @@ import com.terraformation.backend.db.funder.tables.pojos.FundingEntityProjectsRo
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityUsersRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedActivitiesRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedActivityMediaFilesRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedAutoCalculatedIndicatorBaselinesRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedAutoCalculatedIndicatorTargetsRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedCommonIndicatorBaselinesRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedCommonIndicatorTargetsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectCarbonCertsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectDetailsRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectIndicatorBaselinesRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectIndicatorTargetsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectLandUseRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedProjectSdgRow
@@ -707,12 +713,19 @@ abstract class DatabaseBackedTest {
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
   protected val publishedActivitiesDao: PublishedActivitiesDao by lazyDao()
   protected val publishedActivityMediaFilesDao: PublishedActivityMediaFilesDao by lazyDao()
+  protected val publishedAutoCalculatedIndicatorBaselinesDao:
+      PublishedAutoCalculatedIndicatorBaselinesDao by
+      lazyDao()
   protected val publishedAutoCalculatedIndicatorTargetsDao:
       PublishedAutoCalculatedIndicatorTargetsDao by
+      lazyDao()
+  protected val publishedCommonIndicatorBaselinesDao: PublishedCommonIndicatorBaselinesDao by
       lazyDao()
   protected val publishedCommonIndicatorTargetsDao: PublishedCommonIndicatorTargetsDao by lazyDao()
   protected val publishedProjectCarbonCertsDao: PublishedProjectCarbonCertsDao by lazyDao()
   protected val publishedProjectDetailsDao: PublishedProjectDetailsDao by lazyDao()
+  protected val publishedProjectIndicatorBaselinesDao: PublishedProjectIndicatorBaselinesDao by
+      lazyDao()
   protected val publishedProjectLandUseDao: PublishedProjectLandUseDao by lazyDao()
   protected val publishedProjectSdgDao: PublishedProjectSdgDao by lazyDao()
   protected val publishedReportAutoCalculatedIndicatorsDao:
@@ -3904,6 +3917,63 @@ abstract class DatabaseBackedTest {
         )
 
     autoCalculatedIndicatorTargetsDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedProjectIndicatorBaseline(
+      row: PublishedProjectIndicatorBaselinesRow = PublishedProjectIndicatorBaselinesRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      projectIndicatorId: ProjectIndicatorId =
+          row.projectIndicatorId ?: inserted.projectIndicatorId,
+      baseline: Number? = row.baseline,
+      endTarget: Number? = row.endTarget,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            projectIndicatorId = projectIndicatorId,
+            baseline = baseline?.toBigDecimal(),
+            endTarget = endTarget?.toBigDecimal(),
+        )
+
+    publishedProjectIndicatorBaselinesDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedCommonIndicatorBaseline(
+      row: PublishedCommonIndicatorBaselinesRow = PublishedCommonIndicatorBaselinesRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      commonIndicatorId: CommonIndicatorId = row.commonIndicatorId ?: inserted.commonIndicatorId,
+      baseline: Number? = row.baseline,
+      endTarget: Number? = row.endTarget,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            commonIndicatorId = commonIndicatorId,
+            baseline = baseline?.toBigDecimal(),
+            endTarget = endTarget?.toBigDecimal(),
+        )
+
+    publishedCommonIndicatorBaselinesDao.insert(rowWithDefaults)
+  }
+
+  protected fun insertPublishedAutoCalculatedIndicatorBaseline(
+      row: PublishedAutoCalculatedIndicatorBaselinesRow =
+          PublishedAutoCalculatedIndicatorBaselinesRow(),
+      projectId: ProjectId = row.projectId ?: inserted.projectId,
+      indicator: AutoCalculatedIndicator =
+          row.autoCalculatedIndicatorId ?: AutoCalculatedIndicator.SeedsCollected,
+      baseline: Number? = row.baseline,
+      endTarget: Number? = row.endTarget,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            projectId = projectId,
+            autoCalculatedIndicatorId = indicator,
+            baseline = baseline?.toBigDecimal(),
+            endTarget = endTarget?.toBigDecimal(),
+        )
+
+    publishedAutoCalculatedIndicatorBaselinesDao.insert(rowWithDefaults)
   }
 
   protected fun insertPublishedReport(
