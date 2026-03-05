@@ -256,7 +256,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       listOf(
                           PublishedReportIndicatorModel(
                               baseline = BigDecimal.valueOf(300),
-                              classId = IndicatorClass.Level,
+                              classId = IndicatorClass.Cumulative,
                               category = AutoCalculatedIndicator.SeedsCollected.categoryId,
                               description = AutoCalculatedIndicator.SeedsCollected.description,
                               endOfProjectTarget = BigDecimal.valueOf(400),
