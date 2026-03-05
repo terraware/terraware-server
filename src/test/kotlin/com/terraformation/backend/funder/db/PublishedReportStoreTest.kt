@@ -8,6 +8,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
@@ -50,6 +51,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId1 =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
+              classId = IndicatorClass.Level,
               description = "Common Indicator Description 1",
               name = "Common Indicator 1",
               refId = "1.1.2",
@@ -59,6 +61,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId2 =
           insertCommonIndicator(
               category = IndicatorCategory.Community,
+              classId = IndicatorClass.Cumulative,
               description = "Common Indicator Description 2",
               name = "Common Indicator 2",
               refId = "1.1.1",
@@ -68,6 +71,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId1 =
           insertProjectIndicator(
               category = IndicatorCategory.Biodiversity,
+              classId = IndicatorClass.Level,
               description = "Project Indicator Description 1",
               name = "Project Indicator 1",
               refId = "1.2.1",
@@ -78,6 +82,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId2 =
           insertProjectIndicator(
               category = IndicatorCategory.ProjectObjectives,
+              classId = IndicatorClass.Cumulative,
               description = "Project Indicator Description 2",
               name = "Project Indicator 2",
               refId = "1.2.11",
@@ -246,6 +251,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       listOf(
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.Biodiversity,
+                              classId = IndicatorClass.Level,
                               description = "Project Indicator Description 1",
                               indicatorId = projectIndicatorId1,
                               level = IndicatorLevel.Output,
@@ -260,6 +266,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ),
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.ProjectObjectives,
+                              classId = IndicatorClass.Cumulative,
                               description = "Project Indicator Description 2",
                               indicatorId = projectIndicatorId2,
                               level = IndicatorLevel.Outcome,
@@ -282,6 +289,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       listOf(
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.Community,
+                              classId = IndicatorClass.Cumulative,
                               description = "Common Indicator Description 2",
                               indicatorId = commonIndicatorId2,
                               level = IndicatorLevel.Outcome,
@@ -296,6 +304,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ),
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.Climate,
+                              classId = IndicatorClass.Level,
                               description = "Common Indicator Description 1",
                               indicatorId = commonIndicatorId1,
                               level = IndicatorLevel.Output,
@@ -314,6 +323,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       listOf(
                           PublishedReportIndicatorModel(
                               category = AutoCalculatedIndicator.SurvivalRate.categoryId,
+                              classId = IndicatorClass.Level,
                               description = AutoCalculatedIndicator.SurvivalRate.description,
                               indicatorId = AutoCalculatedIndicator.SurvivalRate,
                               level = AutoCalculatedIndicator.SurvivalRate.levelId,

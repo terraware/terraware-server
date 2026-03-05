@@ -4,6 +4,7 @@ import com.terraformation.backend.accelerator.model.ReportChallengeModel
 import com.terraformation.backend.accelerator.model.ReportPhotoModel
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.IndicatorCategoryConverter
+import com.terraformation.backend.db.accelerator.IndicatorClassConverter
 import com.terraformation.backend.db.accelerator.IndicatorLevelConverter
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatusConverter
@@ -137,10 +138,15 @@ class PublishedReportStore(
     val valueField = publishedIndicatorTable.field("value", Int::class.java)!!
 
     val indicatorTable = indicatorTableIdField.table!!
-    val indicatorComponentField =
+    val indicatorCategoryField =
         indicatorTable.field(
             "category_id",
             SQLDataType.INTEGER.asConvertedDataType(IndicatorCategoryConverter()),
+        )!!
+    val indicatorClassField =
+        indicatorTable.field(
+            "class_id",
+            SQLDataType.INTEGER.asConvertedDataType(IndicatorClassConverter()),
         )!!
     val indicatorDescriptionField = indicatorTable.field("description", String::class.java)!!
     val indicatorNameField = indicatorTable.field("name", String::class.java)!!
@@ -157,7 +163,8 @@ class PublishedReportStore(
                     progressNotesField,
                     projectsCommentsField,
                     publishedIndicatorIdField,
-                    indicatorComponentField,
+                    indicatorCategoryField,
+                    indicatorClassField,
                     indicatorDescriptionField,
                     indicatorNameField,
                     indicatorReferenceField,
@@ -187,7 +194,8 @@ class PublishedReportStore(
         .convertFrom { result ->
           result.map {
             PublishedReportIndicatorModel(
-                category = it[indicatorComponentField],
+                category = it[indicatorCategoryField],
+                classId = it[indicatorClassField],
                 description = it[indicatorDescriptionField],
                 indicatorId = it[publishedIndicatorIdField.asNonNullable()],
                 level = it[indicatorTypeField],
