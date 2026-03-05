@@ -66,8 +66,11 @@ import com.terraformation.backend.db.default_schema.UserIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_AUTO_CALCULATED_INDICATOR_BASELINES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_COMMON_INDICATOR_BASELINES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_COMMON_INDICATOR_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_INDICATOR_BASELINES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
@@ -680,6 +683,26 @@ class ReportStore(
           reportId,
           PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
           publishableProjectIndicators,
+      )
+
+      // Publish indicator baseline and end-of-project targets
+      publishIndicatorBaselineTargets(
+          report.projectId,
+          PUBLISHED_PROJECT_INDICATOR_BASELINES.PROJECT_INDICATOR_ID,
+          PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
+          PROJECT_INDICATORS.ID,
+      )
+      publishIndicatorBaselineTargets(
+          report.projectId,
+          PUBLISHED_COMMON_INDICATOR_BASELINES.COMMON_INDICATOR_ID,
+          COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
+          COMMON_INDICATORS.ID,
+      )
+      publishIndicatorBaselineTargets(
+          report.projectId,
+          PUBLISHED_AUTO_CALCULATED_INDICATOR_BASELINES.AUTO_CALCULATED_INDICATOR_ID,
+          AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
+          AUTO_CALCULATED_INDICATORS.ID,
       )
 
       // Publish indicator targets for the report year
@@ -1375,6 +1398,52 @@ class ReportStore(
           .deleteFrom(table)
           .where(reportIdField.eq(reportId))
           .and(indicatorIdField.notIn(entries.keys))
+          .execute()
+    }
+  }
+
+  private fun <ID : Any> publishIndicatorBaselineTargets(
+      projectId: ProjectId,
+      publishedIndicatorIdField: TableField<*, ID?>,
+      unpublishedIndicatorIdField: TableField<*, ID?>,
+      indicatorIdField: TableField<*, ID?>,
+  ) {
+    val publishedTable = publishedIndicatorIdField.table!!
+    val publishedProjectIdField =
+        publishedTable.field(
+            "project_id",
+            SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()),
+        )!!
+    val unpublishedTable = unpublishedIndicatorIdField.table!!
+    val unpublishedProjectIdField =
+        unpublishedTable.field(
+            "project_id",
+            SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()),
+        )!!
+    val unpublishedBaselineField = unpublishedTable.field("baseline", SQLDataType.NUMERIC)!!
+    val unpublishedEndTargetField = unpublishedTable.field("end_target", SQLDataType.NUMERIC)!!
+    val indicatorTable = indicatorIdField.table!!
+    val isPublishableField = indicatorTable.field("is_publishable", Boolean::class.java)!!
+
+    dslContext.transaction { _ ->
+      dslContext
+          .insertInto(publishedTable)
+          .select(
+              DSL.select(
+                      unpublishedProjectIdField,
+                      unpublishedIndicatorIdField,
+                      unpublishedBaselineField,
+                      unpublishedEndTargetField,
+                  )
+                  .from(unpublishedTable)
+                  .join(indicatorTable)
+                  .on(indicatorIdField.eq(unpublishedIndicatorIdField))
+                  .where(unpublishedProjectIdField.eq(projectId))
+                  .and(isPublishableField.isTrue),
+          )
+          .onConflict(publishedProjectIdField, publishedIndicatorIdField)
+          .doUpdate()
+          .setAllToExcluded()
           .execute()
     }
   }

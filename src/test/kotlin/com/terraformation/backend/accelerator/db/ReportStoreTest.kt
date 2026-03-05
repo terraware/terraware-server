@@ -60,8 +60,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.funder.tables.records.PublishedAutoCalculatedIndicatorBaselinesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedAutoCalculatedIndicatorTargetsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedCommonIndicatorBaselinesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedCommonIndicatorTargetsRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedProjectIndicatorBaselinesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedProjectIndicatorTargetsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportAchievementsRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedReportAutoCalculatedIndicatorsRecord
@@ -4380,6 +4383,39 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportIndicatorStatus.Unlikely,
           systemValue = 51,
       )
+
+      // Baseline and end-of-project targets
+      insertProjectIndicatorBaselineTarget(
+          projectIndicatorId = projectIndicatorId1,
+          baseline = 10,
+          endTarget = 100,
+      )
+      insertProjectIndicatorBaselineTarget(
+          projectIndicatorId = projectIndicatorId2,
+          baseline = 20,
+          endTarget = 200,
+      )
+      insertProjectIndicatorBaselineTarget(
+          projectIndicatorId = projectIndicatorNotPublishableId,
+          baseline = 30,
+          endTarget = 300,
+          // Not expected to be published because the indicator is not publishable
+      )
+      insertCommonIndicatorBaselineTarget(
+          commonIndicatorId = commonIndicatorId1,
+          baseline = 5,
+          endTarget = 50,
+      )
+      insertCommonIndicatorBaselineTarget(
+          commonIndicatorId = commonIndicatorNullValueId,
+          baseline = null,
+          endTarget = 15,
+      )
+      insertAutoCalculatedIndicatorBaselineTarget(
+          indicator = AutoCalculatedIndicator.Seedlings,
+          baseline = 25,
+          endTarget = 250,
+      )
     }
 
     @Test
@@ -4464,12 +4500,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
-
       insertPublishedReportCommonIndicator(
           indicatorId = commonIndicatorNullValueId,
           value = 100,
       )
-
       insertPublishedReportCommonIndicator(
           indicatorId = commonIndicatorNotPublishableId,
           value = 100,
@@ -4481,13 +4515,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
-
       insertPublishedReportProjectIndicator(
           indicatorId = projectIndicatorId2,
           value = 100,
           projectsComments = "Existing underperformance justification",
       )
-
       insertPublishedReportProjectIndicator(
           indicatorId = projectIndicatorNotPublishableId,
           value = 100,
@@ -4497,18 +4529,32 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicator = AutoCalculatedIndicator.SeedsCollected,
           value = 100,
       )
-
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.Seedlings,
           value = 100,
           progressNotes = "Existing progress notes",
           projectsComments = "Existing underperformance justification",
       )
-
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.TreesPlanted,
           value = 100,
           projectsComments = "Existing underperformance justification",
+      )
+
+      insertPublishedProjectIndicatorBaseline(
+          projectIndicatorId = projectIndicatorId1,
+          baseline = 999,
+          endTarget = 9999,
+      )
+      insertPublishedCommonIndicatorBaseline(
+          commonIndicatorId = commonIndicatorId1,
+          baseline = 999,
+          endTarget = 9999,
+      )
+      insertPublishedAutoCalculatedIndicatorBaseline(
+          indicator = AutoCalculatedIndicator.Seedlings,
+          baseline = 999,
+          endTarget = 9999,
       )
 
       insertPublishedReportPhoto(
@@ -4761,6 +4807,54 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           ),
           "Published auto calculated indicator targets table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedProjectIndicatorBaselinesRecord(
+                  projectId = projectId,
+                  projectIndicatorId = projectIndicatorId1,
+                  baseline = BigDecimal(10),
+                  endTarget = BigDecimal(100),
+              ),
+              PublishedProjectIndicatorBaselinesRecord(
+                  projectId = projectId,
+                  projectIndicatorId = projectIndicatorId2,
+                  baseline = BigDecimal(20),
+                  endTarget = BigDecimal(200),
+              ),
+          ),
+          "Published project indicator baselines table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedCommonIndicatorBaselinesRecord(
+                  projectId = projectId,
+                  commonIndicatorId = commonIndicatorId1,
+                  baseline = BigDecimal(5),
+                  endTarget = BigDecimal(50),
+              ),
+              PublishedCommonIndicatorBaselinesRecord(
+                  projectId = projectId,
+                  commonIndicatorId = commonIndicatorNullValueId,
+                  baseline = null,
+                  endTarget = BigDecimal(15),
+              ),
+          ),
+          "Published common indicator baselines table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedAutoCalculatedIndicatorBaselinesRecord(
+                  projectId = projectId,
+                  autoCalculatedIndicatorId = AutoCalculatedIndicator.Seedlings,
+                  baseline = BigDecimal(25),
+                  endTarget = BigDecimal(250),
+              ),
+          ),
+          "Published auto calculated indicator baselines table",
       )
     }
   }
