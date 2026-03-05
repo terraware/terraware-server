@@ -198,19 +198,11 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       insertPublishedCommonIndicatorBaseline(
-          commonIndicatorId = commonIndicatorId1,
-          baseline = 100,
-      )
-      insertPublishedCommonIndicatorBaseline(
           commonIndicatorId = commonIndicatorId2,
           baseline = 200,
           endTarget = 250,
       )
 
-      insertPublishedProjectIndicatorBaseline(
-          projectIndicatorId = projectIndicatorId1,
-          endTarget = 110,
-      )
       insertPublishedProjectIndicatorBaseline(
           projectIndicatorId = projectIndicatorId2,
           baseline = 210,
@@ -305,7 +297,6 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               unit = null,
                           ),
                           PublishedReportIndicatorModel(
-                              baseline = BigDecimal.valueOf(100),
                               category = IndicatorCategory.Climate,
                               classId = IndicatorClass.Level,
                               description = "Common Indicator Description 1",
@@ -338,7 +329,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               category = IndicatorCategory.Biodiversity,
                               classId = IndicatorClass.Level,
                               description = "Project Indicator Description 1",
-                              endOfProjectTarget = BigDecimal.valueOf(110),
+                              endOfProjectTarget = null,
                               indicatorId = projectIndicatorId1,
                               level = IndicatorLevel.Output,
                               name = "Project Indicator 1",

@@ -205,8 +205,8 @@ class PublishedReportStore(
                 .and(targetYearField.eq(DSL.year(PUBLISHED_REPORTS.END_DATE)))
                 .leftJoin(baselineTable)
                 .on(baselineTableIndicatorIdField.eq(indicatorTableIdField))
-                .where(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
                 .and(baselineProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
+                .where(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
                 .orderBy(indicatorReferenceField)
         )
         .convertFrom { result ->
