@@ -1,3 +1,4 @@
+e21a5f05b34 SW-8125 Publish baseline and end-of-project target when reports are published (#4071)
 70e615a0198 Fix db migration number conflict (#4069)
 49ee9338b15 SW-8125 Update data model to support publishable baseline and target indicator values (#4041)
 4239b222317 SW-8128 Add cumulative progress props to indicators in api (#4068)
