@@ -164,11 +164,6 @@ class PublishedReportStore(
     val endTargetField = baselineTable.field("end_target", BigDecimal::class.java)!!
 
     val indicatorTable = indicatorTableIdField.table!!
-    val indicatorClassIdField =
-        indicatorTable.field(
-            "class_id",
-            SQLDataType.INTEGER.asConvertedDataType(IndicatorClassConverter()),
-        )!!
     val indicatorCategoryField =
         indicatorTable.field(
             "category_id",
@@ -204,7 +199,7 @@ class PublishedReportStore(
     val reportsForSum = REPORTS.`as`("reportsForSum")
     val sumAtPreviousYearEnd =
         DSL.`when`(
-            indicatorClassIdField.eq(IndicatorClass.Cumulative),
+            indicatorClassField.eq(IndicatorClass.Cumulative),
             DSL.select(DSL.sum(reportValueField))
                 .from(reportIndicatorTable)
                 .join(reportsForSum)

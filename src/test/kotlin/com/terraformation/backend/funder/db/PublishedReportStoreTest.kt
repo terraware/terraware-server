@@ -52,7 +52,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId1 =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.Cumulative,
               description = "Common Indicator Description 1",
               name = "Common Indicator 1",
               refId = "1.1.2",
@@ -72,7 +72,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId1 =
           insertProjectIndicator(
               category = IndicatorCategory.Biodiversity,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.Cumulative,
               description = "Project Indicator Description 1",
               name = "Project Indicator 1",
               refId = "1.2.1",
@@ -323,7 +323,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           ),
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.Climate,
-                              classId = IndicatorClass.Level,
+                              classId = IndicatorClass.Cumulative,
                               description = "Common Indicator Description 1",
                               endOfProjectTarget = null,
                               indicatorId = commonIndicatorId1,
@@ -353,7 +353,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           PublishedReportIndicatorModel(
                               baseline = null,
                               category = IndicatorCategory.Biodiversity,
-                              classId = IndicatorClass.Level,
+                              classId = IndicatorClass.Cumulative,
                               description = "Project Indicator Description 1",
                               endOfProjectTarget = null,
                               indicatorId = projectIndicatorId1,
