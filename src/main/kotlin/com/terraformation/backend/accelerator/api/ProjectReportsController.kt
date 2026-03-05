@@ -976,7 +976,7 @@ data class ReportCommonIndicatorPayload(
     val name: String,
     @Schema(
         description =
-            "If the indicator is cumulative, the cumulative total and the end of the previous year"
+            "If the indicator is cumulative, the cumulative total at the end of the previous year"
     )
     val previousYearCumulativeTotal: BigDecimal?,
     val progressNotes: String?,
@@ -1095,7 +1095,7 @@ data class ReportAutoCalculatedIndicatorPayload(
     val overrideValue: Int?,
     @Schema(
         description =
-            "If the indicator is cumulative, the cumulative total and the end of the previous year"
+            "If the indicator is cumulative, the cumulative total at the end of the previous year"
     )
     val previousYearCumulativeTotal: BigDecimal?,
     val progressNotes: String?,
@@ -1228,7 +1228,7 @@ data class ReportProjectIndicatorPayload(
     val name: String,
     @Schema(
         description =
-            "If the indicator is cumulative, the cumulative total and the end of the previous year"
+            "If the indicator is cumulative, the cumulative total at the end of the previous year"
     )
     val previousYearCumulativeTotal: BigDecimal?,
     val progressNotes: String?,

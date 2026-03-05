@@ -16,6 +16,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
@@ -184,16 +185,42 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       insertPublishedAutoCalculatedIndicatorTarget(
-          indicator = AutoCalculatedIndicator.SurvivalRate,
+          indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 2025,
           target = 6,
       )
       insertPublishedReportAutoCalculatedIndicator(
           reportId = reportId1,
-          indicator = AutoCalculatedIndicator.SurvivalRate,
+          indicator = AutoCalculatedIndicator.SeedsCollected,
           value = 6,
           projectsComments = null,
           status = ReportIndicatorStatus.OffTrack,
+      )
+
+      insertPublishedCommonIndicatorBaseline(
+          commonIndicatorId = commonIndicatorId1,
+          baseline = 100,
+      )
+      insertPublishedCommonIndicatorBaseline(
+          commonIndicatorId = commonIndicatorId2,
+          baseline = 200,
+          endTarget = 250,
+      )
+
+      insertPublishedProjectIndicatorBaseline(
+          projectIndicatorId = projectIndicatorId1,
+          endTarget = 110,
+      )
+      insertPublishedProjectIndicatorBaseline(
+          projectIndicatorId = projectIndicatorId2,
+          baseline = 210,
+          endTarget = 220,
+      )
+
+      insertPublishedAutoCalculatedIndicatorBaseline(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          baseline = 300,
+          endTarget = 400,
       )
 
       val reportId2 =
@@ -214,7 +241,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportModel(
                   achievements = emptyList(),
                   additionalComments = null,
+                  autoCalculatedIndicators = emptyList(),
                   challenges = emptyList(),
+                  commonIndicators = emptyList(),
                   endDate = LocalDate.of(2025, 6, 30),
                   financialSummaries = null,
                   highlights = null,
@@ -226,17 +255,72 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   publishedTime = Instant.ofEpochSecond(1),
                   quarter = ReportQuarter.Q2,
                   reportId = reportId2,
-                  commonIndicators = emptyList(),
                   startDate = LocalDate.of(2025, 4, 1),
-                  autoCalculatedIndicators = emptyList(),
               ),
               PublishedReportModel(
                   achievements = listOf("achievement 1", "achievement 2"),
                   additionalComments = "additional comments",
+                  autoCalculatedIndicators =
+                      listOf(
+                          PublishedReportIndicatorModel(
+                              baseline = BigDecimal.valueOf(300),
+                              classId = IndicatorClass.Level,
+                              category = AutoCalculatedIndicator.SeedsCollected.categoryId,
+                              description = AutoCalculatedIndicator.SeedsCollected.description,
+                              endOfProjectTarget = BigDecimal.valueOf(400),
+                              indicatorId = AutoCalculatedIndicator.SeedsCollected,
+                              level = AutoCalculatedIndicator.SeedsCollected.levelId,
+                              name = AutoCalculatedIndicator.SeedsCollected.jsonValue,
+                              refId = AutoCalculatedIndicator.SeedsCollected.refId,
+                              status = ReportIndicatorStatus.OffTrack,
+                              target = 6,
+                              progressNotes = null,
+                              projectsComments = null,
+                              unit = "Seeds",
+                              value = 6,
+                          ),
+                      ),
                   challenges =
                       listOf(
                           ReportChallengeModel("challenge 1", "mitigation 1"),
                           ReportChallengeModel("challenge 2", "mitigation 2"),
+                      ),
+                  commonIndicators =
+                      listOf(
+                          PublishedReportIndicatorModel(
+                              baseline = BigDecimal.valueOf(200),
+                              category = IndicatorCategory.Community,
+                              classId = IndicatorClass.Cumulative,
+                              description = "Common Indicator Description 2",
+                              endOfProjectTarget = BigDecimal.valueOf(250),
+                              indicatorId = commonIndicatorId2,
+                              level = IndicatorLevel.Outcome,
+                              name = "Common Indicator 2",
+                              refId = "1.1.1",
+                              target = 200,
+                              value = 180,
+                              progressNotes = "progress notes 2",
+                              projectsComments = "Underperformance justification 2",
+                              status = ReportIndicatorStatus.Unlikely,
+                              unit = null,
+                          ),
+                          PublishedReportIndicatorModel(
+                              baseline = BigDecimal.valueOf(100),
+                              category = IndicatorCategory.Climate,
+                              classId = IndicatorClass.Level,
+                              description = "Common Indicator Description 1",
+                              endOfProjectTarget = null,
+                              indicatorId = commonIndicatorId1,
+                              level = IndicatorLevel.Output,
+                              name = "Common Indicator 1",
+                              status = ReportIndicatorStatus.Achieved,
+                              refId = "1.1.2",
+                              target = 100,
+                              progressNotes = null,
+                              projectsComments = null,
+                              unit = null,
+                              value = 120,
+                          ),
                       ),
                   endDate = LocalDate.of(2025, 3, 31),
                   financialSummaries = "financial summaries",
@@ -250,9 +334,11 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   projectIndicators =
                       listOf(
                           PublishedReportIndicatorModel(
+                              baseline = null,
                               category = IndicatorCategory.Biodiversity,
                               classId = IndicatorClass.Level,
                               description = "Project Indicator Description 1",
+                              endOfProjectTarget = BigDecimal.valueOf(110),
                               indicatorId = projectIndicatorId1,
                               level = IndicatorLevel.Output,
                               name = "Project Indicator 1",
@@ -265,9 +351,11 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               value = 40,
                           ),
                           PublishedReportIndicatorModel(
+                              baseline = BigDecimal.valueOf(210),
                               category = IndicatorCategory.ProjectObjectives,
                               classId = IndicatorClass.Cumulative,
                               description = "Project Indicator Description 2",
+                              endOfProjectTarget = BigDecimal.valueOf(220),
                               indicatorId = projectIndicatorId2,
                               level = IndicatorLevel.Outcome,
                               name = "Project Indicator 2",
@@ -285,58 +373,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   publishedTime = Instant.EPOCH,
                   quarter = ReportQuarter.Q1,
                   reportId = reportId1,
-                  commonIndicators =
-                      listOf(
-                          PublishedReportIndicatorModel(
-                              category = IndicatorCategory.Community,
-                              classId = IndicatorClass.Cumulative,
-                              description = "Common Indicator Description 2",
-                              indicatorId = commonIndicatorId2,
-                              level = IndicatorLevel.Outcome,
-                              name = "Common Indicator 2",
-                              refId = "1.1.1",
-                              target = 200,
-                              value = 180,
-                              progressNotes = "progress notes 2",
-                              projectsComments = "Underperformance justification 2",
-                              status = ReportIndicatorStatus.Unlikely,
-                              unit = null,
-                          ),
-                          PublishedReportIndicatorModel(
-                              category = IndicatorCategory.Climate,
-                              classId = IndicatorClass.Level,
-                              description = "Common Indicator Description 1",
-                              indicatorId = commonIndicatorId1,
-                              level = IndicatorLevel.Output,
-                              name = "Common Indicator 1",
-                              status = ReportIndicatorStatus.Achieved,
-                              refId = "1.1.2",
-                              target = 100,
-                              progressNotes = null,
-                              projectsComments = null,
-                              unit = null,
-                              value = 120,
-                          ),
-                      ),
                   startDate = LocalDate.of(2025, 1, 1),
-                  autoCalculatedIndicators =
-                      listOf(
-                          PublishedReportIndicatorModel(
-                              category = AutoCalculatedIndicator.SurvivalRate.categoryId,
-                              classId = IndicatorClass.Level,
-                              description = AutoCalculatedIndicator.SurvivalRate.description,
-                              indicatorId = AutoCalculatedIndicator.SurvivalRate,
-                              level = AutoCalculatedIndicator.SurvivalRate.levelId,
-                              name = AutoCalculatedIndicator.SurvivalRate.jsonValue,
-                              refId = AutoCalculatedIndicator.SurvivalRate.refId,
-                              status = ReportIndicatorStatus.OffTrack,
-                              target = 6,
-                              progressNotes = null,
-                              projectsComments = null,
-                              unit = "%",
-                              value = 6,
-                          ),
-                      ),
               ),
           ),
           store.fetchPublishedReports(projectId),

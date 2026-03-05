@@ -4,11 +4,14 @@ import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
+import java.math.BigDecimal
 
 data class PublishedReportIndicatorModel<ID : Any>(
+    val baseline: BigDecimal? = null,
     val category: IndicatorCategory,
     val classId: IndicatorClass?,
     val description: String?,
+    val endOfProjectTarget: BigDecimal? = null,
     val indicatorId: ID,
     val level: IndicatorLevel,
     val name: String,

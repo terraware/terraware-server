@@ -47,7 +47,7 @@ data class ReportCommonIndicatorModel(
      * year
      */
     val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
-    /** If the indicator is cumulative, the cumulative total and the end of the previous year */
+    /** If the indicator is cumulative, the cumulative total at the end of the previous year */
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
@@ -101,7 +101,7 @@ data class ReportProjectIndicatorModel(
      * year
      */
     val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
-    /** If the indicator is cumulative, the cumulative total and the end of the previous year */
+    /** If the indicator is cumulative, the cumulative total at the end of the previous year */
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {
@@ -191,7 +191,7 @@ data class ReportAutoCalculatedIndicatorModel(
      * year
      */
     val currentYearProgress: List<CumulativeIndicatorProgressModel>? = null,
-    /** If the indicator is cumulative, the cumulative total and the end of the previous year */
+    /** If the indicator is cumulative, the cumulative total at the end of the previous year */
     val previousYearCumulativeTotal: BigDecimal? = null,
 ) {
   companion object {

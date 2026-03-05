@@ -26,6 +26,7 @@ import com.terraformation.backend.funder.model.PublishedReportModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
+import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import org.springframework.core.io.InputStreamResource
@@ -116,9 +117,11 @@ data class PublishedReportMetricPayload(
 }
 
 data class PublishedReportIndicatorPayload(
+    val baseline: BigDecimal?,
     val category: IndicatorCategory,
     val classId: IndicatorClass?,
     val description: String?,
+    val endOfProjectTarget: BigDecimal?,
     val level: IndicatorLevel,
     val name: String,
     val progressNotes: String?,
@@ -132,9 +135,11 @@ data class PublishedReportIndicatorPayload(
   constructor(
       model: PublishedReportIndicatorModel<*>
   ) : this(
+      baseline = model.baseline,
       category = model.category,
       classId = model.classId,
       description = model.description,
+      endOfProjectTarget = model.endOfProjectTarget,
       level = model.level,
       name = model.name,
       progressNotes = model.progressNotes,
