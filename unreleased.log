@@ -1,3 +1,5 @@
+70e615a0198 Fix db migration number conflict (#4069)
+49ee9338b15 SW-8125 Update data model to support publishable baseline and target indicator values (#4041)
 4239b222317 SW-8128 Add cumulative progress props to indicators in api (#4068)
 f3793bdf558 SW-8128 Add retrieval of cumulative progress for the report year to the model (#4067)
 af547bc9d46 SW-8128 Add previous year's sum to report api (#4062)

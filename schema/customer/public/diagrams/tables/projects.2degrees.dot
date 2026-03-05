@@ -74,12 +74,15 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funder.funding_entity_users":"elipses":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_activities":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_activities":"published_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_auto_calculated_indicator_baselines":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_auto_calculated_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_common_indicator_baselines":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_common_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_carbon_certs":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_details":"country_code":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_details":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_details":"published_by":w -> "users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "funder.published_project_indicator_baselines":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_indicator_targets":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_land_use":"land_use_model_type_id":w -> "land_use_model_types":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_project_land_use":"project_id":w -> "projects":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -667,6 +670,18 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="funder.published_activities"
   ];
+  "funder.published_auto_calculated_indicator_baselines" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="322" HEIGHT="16"><B>funder.published_auto_calculated_indicator_baselines</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="278" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_auto_calculated_indic_82736b5c.html"
+    target="_top"
+    tooltip="funder.published_auto_calculated_indicator_baselines"
+  ];
   "funder.published_auto_calculated_indicator_targets" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -678,6 +693,18 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../funder/tables/published_auto_calculated_indic_3b9a1510.html"
     target="_top"
     tooltip="funder.published_auto_calculated_indicator_targets"
+  ];
+  "funder.published_common_indicator_baselines" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="280" HEIGHT="16"><B>funder.published_common_indicator_baselines</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="236" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_common_indicator_baselines.html"
+    target="_top"
+    tooltip="funder.published_common_indicator_baselines"
   ];
   "funder.published_common_indicator_targets" [
    label=<
@@ -713,6 +740,18 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../../funder/tables/published_project_details.html"
     target="_top"
     tooltip="funder.published_project_details"
+  ];
+  "funder.published_project_indicator_baselines" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="270" HEIGHT="16"><B>funder.published_project_indicator_baselines</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="project_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="226" HEIGHT="16">project_id</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../../funder/tables/published_project_indicator_baselines.html"
+    target="_top"
+    tooltip="funder.published_project_indicator_baselines"
   ];
   "funder.published_project_indicator_targets" [
    label=<
@@ -1031,7 +1070,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="description" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">description</TD></TR></TABLE></TD><TD PORT="description.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="country_code" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">country_code</TD></TR></TABLE></TD><TD PORT="country_code.type" ALIGN="LEFT">text[2147483647]</TD></TR>
       <TR><TD PORT="phase_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="91" HEIGHT="16">phase_id</TD></TR></TABLE></TD><TD PORT="phase_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">46 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">49 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/projects.html"
     target="_top"

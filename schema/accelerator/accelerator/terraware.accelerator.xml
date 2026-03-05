@@ -253,6 +253,7 @@
             <child column="auto_calculated_indicator_id" foreignKey="auto_calculated_indicator_tar_auto_calculated_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="auto_calculated_indicator_targets"/>
             <child column="auto_calculated_indicator_id" foreignKey="report_auto_calculated_indicator_targets_auto_calculated_indica" implied="false" onDeleteCascade="true" schema="accelerator" table="report_auto_calculated_indicator_targets"/>
             <child column="auto_calculated_indicator_id" foreignKey="report_auto_calculated_indicators_auto_calculated_indicator_id_" implied="false" onDeleteCascade="false" schema="accelerator" table="report_auto_calculated_indicators"/>
+            <child column="auto_calculated_indicator_id" foreignKey="published_auto_calculated_ind_auto_calculated_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_baselines"/>
             <child column="auto_calculated_indicator_id" foreignKey="published_auto_calculated_indicator_targets_auto_calculated_ind" implied="false" onDeleteCascade="true" schema="funder" table="published_auto_calculated_indicator_targets"/>
             <child column="auto_calculated_indicator_id" foreignKey="published_report_auto_calculated_indicators_auto_calculated_ind" implied="false" onDeleteCascade="false" schema="funder" table="published_report_auto_calculated_indicators"/>
          </column>
@@ -306,6 +307,7 @@
             <child column="common_indicator_id" foreignKey="common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicator_targets"/>
             <child column="common_indicator_id" foreignKey="report_common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_common_indicator_targets"/>
             <child column="common_indicator_id" foreignKey="report_common_indicators_common_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_common_indicators"/>
+            <child column="common_indicator_id" foreignKey="published_common_indicator_baselines_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_baselines"/>
             <child column="common_indicator_id" foreignKey="published_common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_common_indicator_targets"/>
             <child column="common_indicator_id" foreignKey="published_report_common_indicators_common_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_common_indicators"/>
          </column>
@@ -763,6 +765,7 @@
             <child column="project_indicator_id" foreignKey="project_indicator_targets_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicator_targets"/>
             <child column="project_indicator_id" foreignKey="report_project_indicator_targets_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="report_project_indicator_targets"/>
             <child column="project_indicator_id" foreignKey="report_project_indicators_project_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_project_indicators"/>
+            <child column="project_indicator_id" foreignKey="published_project_indicator_baselines_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_baselines"/>
             <child column="project_indicator_id" foreignKey="published_project_indicator_targets_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="funder" table="published_project_indicator_targets"/>
             <child column="project_indicator_id" foreignKey="published_report_project_indicators_project_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_report_project_indicators"/>
          </column>
