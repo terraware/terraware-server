@@ -52,7 +52,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val commonIndicatorId1 =
           insertCommonIndicator(
               category = IndicatorCategory.Climate,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.Cumulative,
               description = "Common Indicator Description 1",
               name = "Common Indicator 1",
               refId = "1.1.2",
@@ -72,7 +72,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectIndicatorId1 =
           insertProjectIndicator(
               category = IndicatorCategory.Biodiversity,
-              classId = IndicatorClass.Level,
+              classId = IndicatorClass.Cumulative,
               description = "Project Indicator Description 1",
               name = "Project Indicator 1",
               refId = "1.2.1",
@@ -94,6 +94,29 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val dealName = UUID.randomUUID().toString()
       insertProjectAcceleratorDetails(dealName = dealName)
       insertProjectReportConfig()
+
+      // oldReport1
+      insertReport(endDate = LocalDate.of(2024, 9, 30))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = 10)
+      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = 11)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 20)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = 21)
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 30,
+      )
+
+      // oldReport2
+      insertReport(endDate = LocalDate.of(2024, 12, 31))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = 100)
+      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = 101)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 200)
+      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = 201)
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 29,
+          overrideValue = 31,
+      )
 
       val reportId1 =
           insertReport(
@@ -264,10 +287,11 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               level = AutoCalculatedIndicator.SeedsCollected.levelId,
                               name = AutoCalculatedIndicator.SeedsCollected.jsonValue,
                               refId = AutoCalculatedIndicator.SeedsCollected.refId,
-                              status = ReportIndicatorStatus.OffTrack,
-                              target = 6,
+                              previousYearCumulativeTotal = BigDecimal("61"),
                               progressNotes = null,
                               projectsComments = null,
+                              status = ReportIndicatorStatus.OffTrack,
+                              target = 6,
                               unit = "Seeds",
                               value = 6,
                           ),
@@ -288,27 +312,29 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               indicatorId = commonIndicatorId2,
                               level = IndicatorLevel.Outcome,
                               name = "Common Indicator 2",
-                              refId = "1.1.1",
-                              target = 200,
-                              value = 180,
+                              previousYearCumulativeTotal = BigDecimal("222"),
                               progressNotes = "progress notes 2",
                               projectsComments = "Underperformance justification 2",
+                              refId = "1.1.1",
                               status = ReportIndicatorStatus.Unlikely,
+                              target = 200,
                               unit = null,
+                              value = 180,
                           ),
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.Climate,
-                              classId = IndicatorClass.Level,
+                              classId = IndicatorClass.Cumulative,
                               description = "Common Indicator Description 1",
                               endOfProjectTarget = null,
                               indicatorId = commonIndicatorId1,
                               level = IndicatorLevel.Output,
                               name = "Common Indicator 1",
-                              status = ReportIndicatorStatus.Achieved,
-                              refId = "1.1.2",
-                              target = 100,
+                              previousYearCumulativeTotal = BigDecimal("220"),
                               progressNotes = null,
                               projectsComments = null,
+                              refId = "1.1.2",
+                              status = ReportIndicatorStatus.Achieved,
+                              target = 100,
                               unit = null,
                               value = 120,
                           ),
@@ -327,17 +353,18 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           PublishedReportIndicatorModel(
                               baseline = null,
                               category = IndicatorCategory.Biodiversity,
-                              classId = IndicatorClass.Level,
+                              classId = IndicatorClass.Cumulative,
                               description = "Project Indicator Description 1",
                               endOfProjectTarget = null,
                               indicatorId = projectIndicatorId1,
                               level = IndicatorLevel.Output,
                               name = "Project Indicator 1",
+                              previousYearCumulativeTotal = BigDecimal("110"),
+                              progressNotes = "progress notes 1",
+                              projectsComments = null,
                               refId = "1.2.1",
                               status = ReportIndicatorStatus.OnTrack,
                               target = null,
-                              progressNotes = "progress notes 1",
-                              projectsComments = null,
                               unit = "%",
                               value = 40,
                           ),
@@ -350,11 +377,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               indicatorId = projectIndicatorId2,
                               level = IndicatorLevel.Outcome,
                               name = "Project Indicator 2",
+                              previousYearCumulativeTotal = BigDecimal("112"),
+                              progressNotes = null,
+                              projectsComments = null,
                               refId = "1.2.11",
                               status = null,
                               target = null,
-                              progressNotes = null,
-                              projectsComments = null,
                               unit = "USD",
                               value = null,
                           ),
