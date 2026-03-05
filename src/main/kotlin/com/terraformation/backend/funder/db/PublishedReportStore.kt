@@ -16,8 +16,11 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_AUTO_CALCULATED_INDICATOR_BASELINES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_COMMON_INDICATOR_BASELINES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_COMMON_INDICATOR_TARGETS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_INDICATOR_BASELINES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_PROJECT_INDICATOR_TARGETS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_ACHIEVEMENTS
@@ -29,6 +32,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_P
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
+import java.math.BigDecimal
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.TableField
@@ -117,9 +121,9 @@ class PublishedReportStore(
       indicatorTableIdField: TableField<*, ID?>,
       publishedIndicatorIdField: TableField<*, ID?>,
       targetTableIndicatorIdField: TableField<*, ID?>,
+      baselineTableIndicatorIdField: TableField<*, ID?>,
   ): Field<List<PublishedReportIndicatorModel<ID>>> {
     val publishedIndicatorTable = publishedIndicatorIdField.table!!
-    val targetTable = targetTableIndicatorIdField.table!!
     val reportIdField =
         publishedIndicatorTable.field(
             "report_id",
@@ -131,11 +135,27 @@ class PublishedReportStore(
             "status_id",
             SQLDataType.INTEGER.asConvertedDataType(ReportIndicatorStatusConverter()),
         )!!
-    val targetField = targetTable.field("target", Int::class.java)!!
-    val targetYearField = targetTable.field("year", Int::class.java)!!
     val projectsCommentsField =
         publishedIndicatorTable.field("projects_comments", String::class.java)!!
     val valueField = publishedIndicatorTable.field("value", Int::class.java)!!
+
+    val targetTable = targetTableIndicatorIdField.table!!
+    val targetField = targetTable.field("target", Int::class.java)!!
+    val targetYearField = targetTable.field("year", Int::class.java)!!
+    val targetProjectIdField =
+        targetTable.field(
+            "project_id",
+            SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()),
+        )!!
+
+    val baselineTable = baselineTableIndicatorIdField.table!!
+    val baselineProjectIdField =
+        baselineTable.field(
+            "project_id",
+            SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()),
+        )!!
+    val baselineField = baselineTable.field("baseline", BigDecimal::class.java)!!
+    val endTargetField = baselineTable.field("end_target", BigDecimal::class.java)!!
 
     val indicatorTable = indicatorTableIdField.table!!
     val indicatorCategoryField =
@@ -173,30 +193,30 @@ class PublishedReportStore(
                     targetField,
                     valueField,
                     unitField,
+                    baselineField,
+                    endTargetField,
                 )
                 .from(publishedIndicatorTable)
                 .join(indicatorTable)
                 .on(indicatorTableIdField.eq(publishedIndicatorIdField))
                 .leftJoin(targetTable)
                 .on(targetTableIndicatorIdField.eq(indicatorTableIdField))
-                .and(
-                    targetTable
-                        .field(
-                            "project_id",
-                            SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()),
-                        )!!
-                        .eq(PUBLISHED_REPORTS.PROJECT_ID)
-                )
+                .and(targetProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
                 .and(targetYearField.eq(DSL.year(PUBLISHED_REPORTS.END_DATE)))
+                .leftJoin(baselineTable)
+                .on(baselineTableIndicatorIdField.eq(indicatorTableIdField))
+                .and(baselineProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
                 .where(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
                 .orderBy(indicatorReferenceField)
         )
         .convertFrom { result ->
           result.map {
             PublishedReportIndicatorModel(
+                baseline = it[baselineField],
                 category = it[indicatorCategoryField],
                 classId = it[indicatorClassField],
                 description = it[indicatorDescriptionField],
+                endOfProjectTarget = it[endTargetField],
                 indicatorId = it[publishedIndicatorIdField.asNonNullable()],
                 level = it[indicatorTypeField],
                 name = it[indicatorNameField],
@@ -229,6 +249,7 @@ class PublishedReportStore(
           PROJECT_INDICATORS.ID,
           PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
           PUBLISHED_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
+          PUBLISHED_PROJECT_INDICATOR_BASELINES.PROJECT_INDICATOR_ID,
       )
 
   private val commonIndicatorsMultiset =
@@ -236,6 +257,7 @@ class PublishedReportStore(
           COMMON_INDICATORS.ID,
           PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           PUBLISHED_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
+          PUBLISHED_COMMON_INDICATOR_BASELINES.COMMON_INDICATOR_ID,
       )
 
   private val autoCalculatedIndicatorsMultiset =
@@ -243,5 +265,6 @@ class PublishedReportStore(
           AUTO_CALCULATED_INDICATORS.ID,
           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
+          PUBLISHED_AUTO_CALCULATED_INDICATOR_BASELINES.AUTO_CALCULATED_INDICATOR_ID,
       )
 }
