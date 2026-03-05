@@ -534,72 +534,84 @@ class ObservationService(
       log.info("Replacing monitoring plot $monitoringPlotId in observation $observationId")
 
       if (observationPlot.model.isPermanent) {
-        val isFirstObservation =
-            observationStore.fetchObservationsByPlantingSite(observation.plantingSiteId).none {
-              it.state == ObservationState.Completed
-            }
-        val observationHasResults = observationPlots.any { it.model.completedTime != null }
-
-        if (isFirstObservation && !observationHasResults) {
-          val replacementResult = plantingSiteStore.replacePermanentIndex(monitoringPlotId)
-
-          if (duration == ReplacementDuration.LongTerm) {
-            plantingSiteStore.makePlotUnavailable(monitoringPlotId)
-          }
-
-          // At this point we will usually have replaced the plot with a new one in a random place
-          // in the stratum that hasn't been used in an observation yet.
-          //
-          // If this is the first observation, there's a good chance that there are still substrata
-          // that haven't completed planting, and a chance that the replacement plot be in one of
-          // the incomplete substrata. In that case, we want the same behavior as during initial
-          // permanent plot selection: the plot is excluded from the observation even if that means
-          // the observation has fewer than the configured number of permanent plots.
-          val addedPlotsInRequestedSubstrata =
-              if (replacementResult.addedMonitoringPlotIds.isNotEmpty()) {
-                val substrata =
-                    stratum.substrata.filter { substratum ->
-                      substratum.monitoringPlots.any {
-                        it.id in replacementResult.addedMonitoringPlotIds
-                      }
-                    }
-                if (substrata.all { it.id in observation.requestedSubstratumIds }) {
-                  log.info(
-                      "Replacement permanent plot is in a substratum that has completed planting; " +
-                          "including the plot in this observation."
-                  )
-                  replacementResult.addedMonitoringPlotIds
-                } else {
-                  log.info(
-                      "Replacement permanent plot is in a substratum that has not completed " +
-                          "planting; not including it in this observation."
-                  )
-                  emptySet()
-                }
-              } else {
-                emptySet()
-              }
-
-          observationStore.removePlotsFromObservation(
-              observationId,
-              replacementResult.removedMonitoringPlotIds,
-          )
-          removedPlotIds.addAll(replacementResult.removedMonitoringPlotIds)
-
-          if (addedPlotsInRequestedSubstrata.isNotEmpty()) {
-            observationStore.addPlotsToObservation(
-                observationId,
-                addedPlotsInRequestedSubstrata,
-                isPermanent = true,
+        when (duration) {
+          ReplacementDuration.LongTerm -> {
+            log.info(
+                "Permanent plot being replaced long-term; assigning a new permanent plot and " +
+                    "removing the original from the available pool."
             )
-            addedPlotIds.addAll(addedPlotsInRequestedSubstrata)
+
+            // replacePermanentIndex must be called before removing the plot from the observation
+            // so that it still appears as "previously used" in the DB query that selects an
+            // unused permanent index.
+            val replacementResult = plantingSiteStore.replacePermanentIndex(monitoringPlotId)
+
+            observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
+
+            plantingSiteStore.makePlotUnavailable(monitoringPlotId)
+
+            if (replacementResult.addedMonitoringPlotIds.isNotEmpty()) {
+              val substrata =
+                  stratum.substrata.filter { substratum ->
+                    substratum.monitoringPlots.any {
+                      it.id in replacementResult.addedMonitoringPlotIds
+                    }
+                  }
+              if (substrata.all { it.id in observation.requestedSubstratumIds }) {
+                log.info(
+                    "Replacement permanent plot is in a requested substratum; " +
+                        "including it in this observation."
+                )
+                observationStore.addPlotsToObservation(
+                    observationId,
+                    replacementResult.addedMonitoringPlotIds,
+                    isPermanent = true,
+                )
+                addedPlotIds.addAll(replacementResult.addedMonitoringPlotIds)
+              } else {
+                log.info(
+                    "Replacement permanent plot is not in a requested substratum; " +
+                        "not including it in this observation."
+                )
+              }
+            }
           }
-        } else {
-          log.info(
-              "Permanent plot at a site that already has observation data; removing it from this " +
-                  "observation but it may be included in future ones."
-          )
-          observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
+          ReplacementDuration.Temporary -> {
+            log.info(
+                "Permanent plot being replaced temporarily; assigning a temporary substitute " +
+                    "for this observation. The permanent plot remains available for future observations."
+            )
+            observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
+
+            val replacementPlotBoundary =
+                stratum
+                    .findUnusedSquares(
+                        count = 1,
+                        excludePlotIds = observationPlotIds,
+                        exclusion = plantingSite.exclusion,
+                        gridOrigin = gridOrigin,
+                        searchBoundary = substratum.boundary,
+                    )
+                    .firstOrNull()
+
+            if (replacementPlotBoundary != null) {
+              val replacementPlotId =
+                  plantingSiteStore.createTemporaryPlot(
+                      plantingSite.id,
+                      stratum.id,
+                      replacementPlotBoundary,
+                  )
+              log.info("Adding temporary replacement plot $replacementPlotId")
+              addedPlotIds.add(replacementPlotId)
+              observationStore.addPlotsToObservation(
+                  observationId,
+                  listOf(replacementPlotId),
+                  isPermanent = false,
+              )
+            } else {
+              log.info("No temporary plots available in substratum for replacement")
+            }
+          }
         }
       } else {
         observationStore.removePlotsFromObservation(observationId, listOf(monitoringPlotId))
