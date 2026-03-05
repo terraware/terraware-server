@@ -38,6 +38,7 @@ import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
 import com.terraformation.backend.db.accelerator.IndicatorCategory
+import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ProjectIndicatorId
 import com.terraformation.backend.db.accelerator.ProjectReportConfigId
@@ -961,6 +962,7 @@ data class CumulativeIndicatorProgressPayload(
 data class ReportCommonIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
+    val classId: IndicatorClass?,
     @Schema(
         description =
             "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
@@ -989,6 +991,7 @@ data class ReportCommonIndicatorPayload(
   ) : this(
       baseline = model.baseline,
       category = model.indicator.category,
+      classId = model.indicator.classId,
       currentYearProgress =
           model.currentYearProgress?.map { CumulativeIndicatorProgressPayload(it) },
       description = model.indicator.description,
@@ -1078,6 +1081,7 @@ data class ReportSystemMetricPayload(
 data class ReportAutoCalculatedIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
+    val classId: IndicatorClass?,
     @Schema(
         description =
             "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
@@ -1107,6 +1111,7 @@ data class ReportAutoCalculatedIndicatorPayload(
   ) : this(
       baseline = model.baseline,
       category = model.indicator.categoryId,
+      classId = model.indicator.classId,
       currentYearProgress =
           model.currentYearProgress?.map { CumulativeIndicatorProgressPayload(it) },
       description = model.indicator.description,
@@ -1209,6 +1214,7 @@ data class ReportProjectMetricPayload(
 data class ReportProjectIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
+    val classId: IndicatorClass?,
     @Schema(
         description =
             "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
@@ -1238,6 +1244,7 @@ data class ReportProjectIndicatorPayload(
   ) : this(
       baseline = model.baseline,
       category = model.indicator.category,
+      classId = model.indicator.classId,
       currentYearProgress =
           model.currentYearProgress?.map { CumulativeIndicatorProgressPayload(it) },
       description = model.indicator.description,
