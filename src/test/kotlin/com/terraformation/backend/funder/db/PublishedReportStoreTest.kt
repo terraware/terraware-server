@@ -706,6 +706,19 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportIndicatorStatus.OnTrack,
       )
 
+      // Q4 report (future quarter relative to the published Q3 report - should be excluded)
+      val q4ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 10, 1),
+              endDate = LocalDate.of(2025, 12, 31),
+              quarter = ReportQuarter.Q4,
+          )
+      insertReportCommonIndicator(
+          reportId = q4ReportId,
+          indicatorId = commonIndicatorId,
+          value = 40,
+      )
+
       val reports = store.fetchPublishedReports(projectId)
       val indicator = reports.single().commonIndicators.single()
 
@@ -716,6 +729,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q3, value = 30),
           ),
           indicator.currentYearProgress,
+          "currentYearProgress must not include quarters after the published report's quarter",
       )
     }
 

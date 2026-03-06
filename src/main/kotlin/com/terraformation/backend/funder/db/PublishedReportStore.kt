@@ -239,6 +239,9 @@ class PublishedReportStore(
                     .and(reportsForProgress.PROJECT_ID.eq(PUBLISHED_REPORTS.PROJECT_ID))
                     .and(indicatorIdForProgress.eq(indicatorTableIdField))
                     .and(indicatorValueProgressField.isNotNull)
+                    .and(
+                        reportsForProgress.REPORT_QUARTER_ID.le(PUBLISHED_REPORTS.REPORT_QUARTER_ID)
+                    )
                     .orderBy(reportsForProgress.REPORT_QUARTER_ID)
             )
             .convertFrom { results ->
