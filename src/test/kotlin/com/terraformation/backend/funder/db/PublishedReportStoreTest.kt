@@ -14,6 +14,7 @@ import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
 import com.terraformation.backend.db.accelerator.ReportQuarter
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.funder.model.PublishedCumulativeIndicatorProgressModel
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import java.math.BigDecimal
@@ -281,6 +282,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               baseline = BigDecimal.valueOf(300),
                               classId = IndicatorClass.Cumulative,
                               category = AutoCalculatedIndicator.SeedsCollected.categoryId,
+                              currentYearProgress = emptyList(),
                               description = AutoCalculatedIndicator.SeedsCollected.description,
                               endOfProjectTarget = BigDecimal.valueOf(400),
                               indicatorId = AutoCalculatedIndicator.SeedsCollected,
@@ -307,6 +309,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               baseline = BigDecimal.valueOf(200),
                               category = IndicatorCategory.Community,
                               classId = IndicatorClass.Cumulative,
+                              currentYearProgress = emptyList(),
                               description = "Common Indicator Description 2",
                               endOfProjectTarget = BigDecimal.valueOf(250),
                               indicatorId = commonIndicatorId2,
@@ -324,6 +327,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.Climate,
                               classId = IndicatorClass.Cumulative,
+                              currentYearProgress = emptyList(),
                               description = "Common Indicator Description 1",
                               endOfProjectTarget = null,
                               indicatorId = commonIndicatorId1,
@@ -354,6 +358,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               baseline = null,
                               category = IndicatorCategory.Biodiversity,
                               classId = IndicatorClass.Cumulative,
+                              currentYearProgress = emptyList(),
                               description = "Project Indicator Description 1",
                               endOfProjectTarget = null,
                               indicatorId = projectIndicatorId1,
@@ -372,6 +377,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               baseline = BigDecimal.valueOf(210),
                               category = IndicatorCategory.ProjectObjectives,
                               classId = IndicatorClass.Cumulative,
+                              currentYearProgress = emptyList(),
                               description = "Project Indicator Description 2",
                               endOfProjectTarget = BigDecimal.valueOf(220),
                               indicatorId = projectIndicatorId2,
@@ -457,6 +463,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PublishedReportIndicatorModel(
               category = IndicatorCategory.Biodiversity,
               classId = IndicatorClass.Level,
+              currentYearProgress = emptyList(),
               description = "Project Indicator Description",
               indicatorId = projectIndicatorId,
               level = IndicatorLevel.Output,
@@ -534,6 +541,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PublishedReportIndicatorModel(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.Cumulative,
+              currentYearProgress = emptyList(),
               description = "Common Indicator Description",
               indicatorId = commonIndicatorId,
               level = IndicatorLevel.Output,
@@ -601,6 +609,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PublishedReportIndicatorModel(
               category = AutoCalculatedIndicator.SurvivalRate.categoryId,
               classId = IndicatorClass.Level,
+              currentYearProgress = emptyList(),
               description = AutoCalculatedIndicator.SurvivalRate.description,
               indicatorId = AutoCalculatedIndicator.SurvivalRate,
               level = AutoCalculatedIndicator.SurvivalRate.levelId,
@@ -617,6 +626,236 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(expected),
           reports.single().autoCalculatedIndicators,
           "Other years and projects don't affect auto-calculated indicators",
+      )
+    }
+
+    @Test
+    fun `currentYearProgress contains only same-year quarters with non-null values`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+
+      val commonIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              classId = IndicatorClass.Cumulative,
+              description = "Cumulative Indicator Description",
+              name = "Cumulative Indicator",
+              refId = "1.1.1",
+              level = IndicatorLevel.Output,
+          )
+
+      // Prior year report — must NOT appear in currentYearProgress
+      val priorYearReportId =
+          insertReport(
+              startDate = LocalDate.of(2024, 10, 1),
+              endDate = LocalDate.of(2024, 12, 31),
+              quarter = ReportQuarter.Q4,
+          )
+      insertReportCommonIndicator(
+          reportId = priorYearReportId,
+          indicatorId = commonIndicatorId,
+          value = 999,
+      )
+
+      val q1ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              quarter = ReportQuarter.Q1,
+          )
+      insertReportCommonIndicator(
+          reportId = q1ReportId,
+          indicatorId = commonIndicatorId,
+          value = 10,
+      )
+
+      val q2ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 4, 1),
+              endDate = LocalDate.of(2025, 6, 30),
+              quarter = ReportQuarter.Q2,
+          )
+      insertReportCommonIndicator(
+          reportId = q2ReportId,
+          indicatorId = commonIndicatorId,
+          value = 20,
+      )
+
+      val q3ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 7, 1),
+              endDate = LocalDate.of(2025, 9, 30),
+              quarter = ReportQuarter.Q3,
+          )
+      insertReportCommonIndicator(
+          reportId = q3ReportId,
+          indicatorId = commonIndicatorId,
+          value = 30,
+      )
+
+      insertPublishedReport(
+          reportId = q3ReportId,
+          startDate = LocalDate.of(2025, 7, 1),
+          endDate = LocalDate.of(2025, 9, 30),
+          quarter = ReportQuarter.Q3,
+      )
+      insertPublishedReportCommonIndicator(
+          reportId = q3ReportId,
+          indicatorId = commonIndicatorId,
+          value = 30,
+          status = ReportIndicatorStatus.OnTrack,
+      )
+
+      val reports = store.fetchPublishedReports(projectId)
+      val indicator = reports.single().commonIndicators.single()
+
+      assertEquals(
+          listOf(
+              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q1, value = 10),
+              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q2, value = 20),
+              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q3, value = 30),
+          ),
+          indicator.currentYearProgress,
+      )
+    }
+
+    @Test
+    fun `currentYearProgress excludes quarters where the indicator value is null`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+
+      val commonIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              classId = IndicatorClass.Cumulative,
+              description = "Cumulative Indicator Description",
+              name = "Cumulative Indicator",
+              refId = "1.1.1",
+              level = IndicatorLevel.Output,
+          )
+
+      val q1ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              quarter = ReportQuarter.Q1,
+          )
+      insertReportCommonIndicator(
+          reportId = q1ReportId,
+          indicatorId = commonIndicatorId,
+          value = 10,
+      )
+
+      // Q2 has a null value for this indicator — must be excluded
+      val q2ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 4, 1),
+              endDate = LocalDate.of(2025, 6, 30),
+              quarter = ReportQuarter.Q2,
+          )
+      insertReportCommonIndicator(
+          reportId = q2ReportId,
+          indicatorId = commonIndicatorId,
+          value = null,
+      )
+
+      val q3ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 7, 1),
+              endDate = LocalDate.of(2025, 9, 30),
+              quarter = ReportQuarter.Q3,
+          )
+      insertReportCommonIndicator(
+          reportId = q3ReportId,
+          indicatorId = commonIndicatorId,
+          value = 30,
+      )
+
+      insertPublishedReport(
+          reportId = q3ReportId,
+          startDate = LocalDate.of(2025, 7, 1),
+          endDate = LocalDate.of(2025, 9, 30),
+          quarter = ReportQuarter.Q3,
+      )
+      insertPublishedReportCommonIndicator(
+          reportId = q3ReportId,
+          indicatorId = commonIndicatorId,
+          value = 30,
+          status = ReportIndicatorStatus.OnTrack,
+      )
+
+      val reports = store.fetchPublishedReports(projectId)
+      val indicator = reports.single().commonIndicators.single()
+
+      assertEquals(
+          listOf(
+              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q1, value = 10),
+              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q3, value = 30),
+          ),
+          indicator.currentYearProgress,
+          "Quarters with null indicator values must be excluded from currentYearProgress",
+      )
+    }
+
+    @Test
+    fun `currentYearProgress is empty for a non-cumulative indicator`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+
+      val levelIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              classId = IndicatorClass.Level,
+              description = "Level Indicator Description",
+              name = "Level Indicator",
+              refId = "1.1.1",
+              level = IndicatorLevel.Output,
+          )
+
+      val q1ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              quarter = ReportQuarter.Q1,
+          )
+      insertReportCommonIndicator(reportId = q1ReportId, indicatorId = levelIndicatorId, value = 50)
+
+      val q2ReportId =
+          insertReport(
+              startDate = LocalDate.of(2025, 4, 1),
+              endDate = LocalDate.of(2025, 6, 30),
+              quarter = ReportQuarter.Q2,
+          )
+      insertReportCommonIndicator(reportId = q2ReportId, indicatorId = levelIndicatorId, value = 60)
+
+      insertPublishedReport(
+          reportId = q2ReportId,
+          startDate = LocalDate.of(2025, 4, 1),
+          endDate = LocalDate.of(2025, 6, 30),
+          quarter = ReportQuarter.Q2,
+      )
+      insertPublishedReportCommonIndicator(
+          reportId = q2ReportId,
+          indicatorId = levelIndicatorId,
+          value = 60,
+          status = ReportIndicatorStatus.OnTrack,
+      )
+
+      val reports = store.fetchPublishedReports(projectId)
+      val indicator = reports.single().commonIndicators.single()
+
+      assertEquals(
+          IndicatorClass.Level,
+          indicator.classId,
+          "Indicator class should be Level for this test",
+      )
+      assertEquals(
+          listOf(
+              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q1, value = 50),
+              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q2, value = 60),
+          ),
+          indicator.currentYearProgress,
+          "currentYearProgress is populated regardless of indicator class; consumers decide whether to use it",
       )
     }
 

@@ -34,6 +34,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_C
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_COMMON_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
+import com.terraformation.backend.funder.model.PublishedCumulativeIndicatorProgressModel
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
@@ -209,6 +210,46 @@ class PublishedReportStore(
                 .and(reportTableIndicatorIdField.eq(indicatorTableIdField)),
         )
 
+    val reportsForProgress = REPORTS.`as`("reportsForProgress")
+    val reportIndicatorsForProgress = reportIndicatorTable.`as`("reportIndicatorsForProgress")
+    val indicatorIdForProgress = reportIndicatorsForProgress.field(reportTableIndicatorIdField)!!
+    val indicatorValueProgressField =
+        reportIndicatorsForProgress.field("value", Int::class.java)
+            ?: DSL.coalesce(
+                reportIndicatorsForProgress.field("override_value", Int::class.java)!!,
+                reportIndicatorsForProgress.field("system_value", Int::class.java)!!,
+            )
+    val currentYearProgressField: Field<List<PublishedCumulativeIndicatorProgressModel>> =
+        DSL.multiset(
+                DSL.select(reportsForProgress.REPORT_QUARTER_ID, indicatorValueProgressField)
+                    .from(reportIndicatorsForProgress)
+                    .join(reportsForProgress)
+                    .on(
+                        reportsForProgress.ID.eq(
+                            reportIndicatorsForProgress.field(
+                                "report_id",
+                                SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
+                            )
+                        )
+                    )
+                    .where(
+                        DSL.year(reportsForProgress.END_DATE)
+                            .eq(DSL.year(PUBLISHED_REPORTS.END_DATE))
+                    )
+                    .and(reportsForProgress.PROJECT_ID.eq(PUBLISHED_REPORTS.PROJECT_ID))
+                    .and(indicatorIdForProgress.eq(indicatorTableIdField))
+                    .and(indicatorValueProgressField.isNotNull)
+                    .orderBy(reportsForProgress.REPORT_QUARTER_ID)
+            )
+            .convertFrom { results ->
+              results.map { record ->
+                PublishedCumulativeIndicatorProgressModel(
+                    quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
+                    value = record[indicatorValueProgressField]!!,
+                )
+              }
+            }
+
     return DSL.multiset(
             DSL.select(
                     progressNotesField,
@@ -227,6 +268,7 @@ class PublishedReportStore(
                     baselineField,
                     endTargetField,
                     sumAtPreviousYearEnd,
+                    currentYearProgressField,
                 )
                 .from(publishedIndicatorTable)
                 .join(indicatorTable)
@@ -247,6 +289,7 @@ class PublishedReportStore(
                 baseline = it[baselineField],
                 category = it[indicatorCategoryField],
                 classId = it[indicatorClassField],
+                currentYearProgress = it[currentYearProgressField],
                 description = it[indicatorDescriptionField],
                 endOfProjectTarget = it[endTargetField],
                 indicatorId = it[publishedIndicatorIdField.asNonNullable()],
