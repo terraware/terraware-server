@@ -2073,7 +2073,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `replaces permanent plot if this is the first observation and there are no completed plots`() {
+    fun `can reuse existing temporary plot as replacement permanent plot`() {
       insertStratum(numPermanentPlots = 1, width = 2, height = 4)
       insertSubstratum(width = 2, height = 4)
       insertObservationRequestedSubstratum()
@@ -2085,7 +2085,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               observationId,
               plotId1,
               "why not",
-              ReplacementDuration.Temporary,
+              ReplacementDuration.LongTerm,
           )
 
       assertEquals(
@@ -2096,15 +2096,15 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           result,
       )
 
+      val plot1Row = monitoringPlotsDao.fetchOneById(plotId1)!!
+
+      assertNull(plot1Row.permanentIndex, "Plot $plotId1 index")
+      assertFalse(plot1Row.isAvailable!!, "Plot $plotId1 available")
+
       assertEquals(
           1,
           monitoringPlotsDao.fetchOneById(plotId2)!!.permanentIndex,
           "Should have moved second permanent plot to first place",
-      )
-      assertNotEquals(
-          1,
-          monitoringPlotsDao.fetchOneById(plotId1)!!.permanentIndex,
-          "Plot $plotId1 index",
       )
     }
 
@@ -2123,7 +2123,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               observationId,
               plotId1,
               "why not",
-              ReplacementDuration.Temporary,
+              ReplacementDuration.LongTerm,
           )
 
       assertEquals(
@@ -2147,22 +2147,43 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `marks permanent plot as unavailable and swaps in a new one if this is the first observation and duration is long-term`() {
+    fun `does not include newly-created plot in observation if it is in an unrequested substratum`() {
+      insertStratum(numPermanentPlots = 2, width = 1, height = 2)
+      insertSubstratum(width = 1, height = 1)
+      insertObservationRequestedSubstratum()
       val plotId1 = insertPermanentPlot(1, isPermanent = true)
-      insertPermanentPlot(2)
-      insertPermanentPlot(3)
+      val plotId2 = insertPermanentPlot(2, isPermanent = true)
 
-      testPermanentPlotReplacement(plotId1)
+      insertSubstratum(y = 1, width = 1, height = 1)
+
+      val result =
+          service.replaceMonitoringPlot(
+              observationId,
+              plotId1,
+              "why not",
+              ReplacementDuration.LongTerm,
+          )
+
+      assertEquals(
+          ReplacementResult(
+              addedMonitoringPlotIds = emptySet(),
+              removedMonitoringPlotIds = setOf(plotId1),
+          ),
+          result,
+      )
+
+      assertEquals(1, observationPlotsDao.findAll().size, "Number of plots in observation")
+      assertEquals(
+          2,
+          monitoringPlotsDao.fetchOneById(plotId2)!!.permanentIndex,
+          "Plot $plotId2 index should not have changed",
+      )
     }
 
     @Test
-    fun `creates a new plot to replace permanent plot if this is the first observation and duration is long-term`() {
+    fun `creates a new plot to replace permanent plot if duration is long-term`() {
       val plotId1 = insertPermanentPlot(1, isPermanent = true)
 
-      testPermanentPlotReplacement(plotId1)
-    }
-
-    private fun testPermanentPlotReplacement(plotId1: MonitoringPlotId) {
       val result =
           service.replaceMonitoringPlot(
               observationId,
@@ -2192,44 +2213,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `removes permanent plot but keeps it available if this is the first observation and there are already completed plots`() {
-      val plotId1 = insertPermanentPlot(1)
-      val plotId2 = insertPermanentPlot(2)
-      insertObservationPlot(monitoringPlotId = plotId1, isPermanent = true)
-      insertObservationPlot(
-          monitoringPlotId = plotId2,
-          isPermanent = true,
-          claimedBy = user.userId,
-          claimedTime = Instant.EPOCH,
-          completedBy = user.userId,
-          completedTime = Instant.EPOCH,
-      )
-
-      val result =
-          service.replaceMonitoringPlot(
-              observationId,
-              plotId1,
-              "forest fire",
-              ReplacementDuration.LongTerm,
-          )
-
-      assertEquals(
-          ReplacementResult(
-              addedMonitoringPlotIds = emptySet(),
-              removedMonitoringPlotIds = setOf(plotId1),
-          ),
-          result,
-      )
-
-      assertEquals(
-          true,
-          monitoringPlotsDao.fetchOneById(plotId1)!!.isAvailable,
-          "Monitoring plot should remain available",
-      )
-    }
-
-    @Test
-    fun `removes permanent plot but keeps it available if this is not the first observation`() {
+    fun `assigns temporary replacement for permanent plot if duration is temporary`() {
       observationsDao.update(
           observationsDao
               .fetchOneById(inserted.observationId)!!
@@ -2237,6 +2221,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       val newObservationId = insertObservation()
+      insertObservationRequestedSubstratum()
 
       val plotId1 = insertPermanentPlot(1, isPermanent = true)
 
@@ -2245,21 +2230,27 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               newObservationId,
               plotId1,
               "forest fire",
-              ReplacementDuration.LongTerm,
+              ReplacementDuration.Temporary,
           )
 
-      assertEquals(
-          ReplacementResult(
-              addedMonitoringPlotIds = emptySet(),
-              removedMonitoringPlotIds = setOf(plotId1),
-          ),
-          result,
+      assertSetEquals(setOf(plotId1), result.removedMonitoringPlotIds, "Removed plot IDs")
+      assertEquals(1, result.addedMonitoringPlotIds.size, "Number of replacement plot IDs added")
+
+      val plotId1Row = monitoringPlotsDao.fetchOneById(plotId1)!!
+      assertEquals(true, plotId1Row.isAvailable, "Original permanent plot should remain available")
+      assertEquals(1, plotId1Row.permanentIndex, "Permanent index should be unchanged")
+
+      val replacementId = result.addedMonitoringPlotIds.first()
+      assertNull(
+          monitoringPlotsDao.fetchOneById(replacementId)!!.permanentIndex,
+          "Replacement plot should not have a permanent index",
       )
 
-      assertEquals(
-          true,
-          monitoringPlotsDao.fetchOneById(plotId1)!!.isAvailable,
-          "Monitoring plot should remain available",
+      val allObsPlots = observationPlotsDao.findAll().associateBy { it.monitoringPlotId }
+      assertFalse(plotId1 in allObsPlots, "Original plot should not be in observation")
+      assertFalse(
+          allObsPlots[replacementId]!!.isPermanent!!,
+          "Replacement observation plot should not be marked as permanent",
       )
     }
 
