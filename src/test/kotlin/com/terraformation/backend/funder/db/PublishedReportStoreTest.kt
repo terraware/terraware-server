@@ -690,7 +690,8 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = q3ReportId,
           indicatorId = commonIndicatorId,
-          value = 30,
+          // current quarter value is ignored, only published value is used for the current quarter
+          value = 29,
       )
 
       insertPublishedReport(
@@ -729,12 +730,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q3, value = 30),
           ),
           indicator.currentYearProgress,
-          "currentYearProgress must not include quarters after the published report's quarter",
+          "currentYearProgress contains all quarters in the current year, excluding future quarters",
       )
     }
 
     @Test
-    fun `currentYearProgress excludes quarters where the indicator value is null`() {
+    fun `currentYearProgress excludes quarters where the indicator value is null and excludes current quarter if unpublished`() {
       insertFundingEntityProject()
       insertProjectReportConfig()
 
@@ -791,12 +792,6 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           endDate = LocalDate.of(2025, 9, 30),
           quarter = ReportQuarter.Q3,
       )
-      insertPublishedReportCommonIndicator(
-          reportId = q3ReportId,
-          indicatorId = commonIndicatorId,
-          value = 30,
-          status = ReportIndicatorStatus.OnTrack,
-      )
 
       val reports = store.fetchPublishedReports(projectId)
       val indicator = reports.single().commonIndicators.single()
@@ -804,10 +799,11 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           listOf(
               PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q1, value = 10),
-              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q3, value = 30),
+              // q2 is excluded because it has a null value
+              // q3 is excluded because it has a non-null value but no published value
           ),
           indicator.currentYearProgress,
-          "Quarters with null indicator values must be excluded from currentYearProgress",
+          "Quarters with null indicator values must be excluded from currentYearProgress, and the current quarter must be excluded if unpublished",
       )
     }
 
