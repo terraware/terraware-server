@@ -1797,11 +1797,7 @@ class ReportStore(
                     .and(reportsForProgress.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                     .and(rpiForProgress.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID))
                     .and(rpiForProgress.VALUE.isNotNull)
-                    .and(
-                        REPORTS.REPORT_QUARTER_ID.isNull.or(
-                            reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID)
-                        )
-                    )
+                    .and(reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID))
                     .orderBy(reportsForProgress.REPORT_QUARTER_ID)
             )
             .convertFrom { results ->
@@ -2188,11 +2184,7 @@ class ReportStore(
                         )
                     )
                     .and(effectiveValue.isNotNull)
-                    .and(
-                        REPORTS.REPORT_QUARTER_ID.isNull.or(
-                            reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID)
-                        )
-                    )
+                    .and(reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID))
                     .orderBy(reportsForProgress.REPORT_QUARTER_ID)
             )
             .convertFrom { results ->
