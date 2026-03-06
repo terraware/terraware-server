@@ -550,9 +550,14 @@ class ObservationService(
 
             plantingSiteStore.makePlotUnavailable(monitoringPlotId)
 
+            val plantingSiteWithReplacedPlot =
+                plantingSiteStore.fetchSiteById(observation.plantingSiteId, PlantingSiteDepth.Plot)
+            val stratumWithReplacedPlot =
+                plantingSiteWithReplacedPlot.strata.first { it.id == stratum.id }
+
             if (replacementResult.addedMonitoringPlotIds.isNotEmpty()) {
               val substrata =
-                  stratum.substrata.filter { substratum ->
+                  stratumWithReplacedPlot.substrata.filter { substratum ->
                     substratum.monitoringPlots.any {
                       it.id in replacementResult.addedMonitoringPlotIds
                     }

@@ -2147,6 +2147,40 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `does not include newly-created plot in observation if it is in an unrequested substratum`() {
+      insertStratum(numPermanentPlots = 2, width = 1, height = 2)
+      insertSubstratum(width = 1, height = 1)
+      insertObservationRequestedSubstratum()
+      val plotId1 = insertPermanentPlot(1, isPermanent = true)
+      val plotId2 = insertPermanentPlot(2, isPermanent = true)
+
+      insertSubstratum(y = 1, width = 1, height = 1)
+
+      val result =
+          service.replaceMonitoringPlot(
+              observationId,
+              plotId1,
+              "why not",
+              ReplacementDuration.LongTerm,
+          )
+
+      assertEquals(
+          ReplacementResult(
+              addedMonitoringPlotIds = emptySet(),
+              removedMonitoringPlotIds = setOf(plotId1),
+          ),
+          result,
+      )
+
+      assertEquals(1, observationPlotsDao.findAll().size, "Number of plots in observation")
+      assertEquals(
+          2,
+          monitoringPlotsDao.fetchOneById(plotId2)!!.permanentIndex,
+          "Plot $plotId2 index should not have changed",
+      )
+    }
+
+    @Test
     fun `creates a new plot to replace permanent plot if duration is long-term`() {
       val plotId1 = insertPermanentPlot(1, isPermanent = true)
 
