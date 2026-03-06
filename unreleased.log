@@ -1,3 +1,1 @@
-61c1b744619 SW-8146 Fix indicators showing up multiple times in reports (#4080)
-42021907b63 SW-8093 Retrieve previous year cumulative totals for published reports (#4076)
-ca656753c2b SW-8125 Add baseline and end-of-project target to PublishedReportPayload (#4073)
+b6d21dc26cc Update plugin com.diffplug.spotless to v8.3.0 (#4079)
