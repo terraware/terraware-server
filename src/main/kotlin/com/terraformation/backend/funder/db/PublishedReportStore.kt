@@ -244,41 +244,50 @@ class PublishedReportStore(
         )
 
     val currentYearProgressField: Field<List<PublishedCumulativeIndicatorProgressModel>> =
-        DSL.multiset(
-                DSL.select(
-                        reportsForProgress.REPORT_QUARTER_ID,
-                        progressValue.`as`("progress_value"),
-                    )
-                    .from(reportIndicatorsForProgress)
-                    .join(reportsForProgress)
-                    .on(reportsForProgress.ID.eq(reportIdProgressField))
-                    .leftJoin(publishedIndicatorForProgress)
-                    .on(
-                        publishedReportIdForProgressField
-                            .eq(reportIdProgressField)
-                            .and(publishedIndicatorIdForProgress.eq(indicatorTableIdField))
-                            .and(publishedReportIdForProgressField.eq(PUBLISHED_REPORTS.REPORT_ID))
-                    )
-                    .where(
-                        DSL.year(reportsForProgress.END_DATE)
-                            .eq(DSL.year(PUBLISHED_REPORTS.END_DATE))
-                    )
-                    .and(reportsForProgress.PROJECT_ID.eq(PUBLISHED_REPORTS.PROJECT_ID))
-                    .and(indicatorIdForProgress.eq(indicatorTableIdField))
-                    .and(progressValue.isNotNull)
-                    .and(
-                        reportsForProgress.REPORT_QUARTER_ID.le(PUBLISHED_REPORTS.REPORT_QUARTER_ID)
-                    )
-                    .orderBy(reportsForProgress.REPORT_QUARTER_ID)
-            )
-            .convertFrom { results ->
-              results.map { record ->
-                PublishedCumulativeIndicatorProgressModel(
-                    quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
-                    value = record[DSL.field("progress_value", SQLDataType.INTEGER)]!!,
+        DSL.`when`(
+            indicatorClassField.eq(IndicatorClass.Cumulative),
+            DSL.multiset(
+                    DSL.select(
+                            reportsForProgress.REPORT_QUARTER_ID,
+                            progressValue.`as`("progress_value"),
+                        )
+                        .from(reportIndicatorsForProgress)
+                        .join(reportsForProgress)
+                        .on(reportsForProgress.ID.eq(reportIdProgressField))
+                        .leftJoin(publishedIndicatorForProgress)
+                        .on(
+                            publishedReportIdForProgressField
+                                .eq(reportIdProgressField)
+                                .and(publishedIndicatorIdForProgress.eq(indicatorTableIdField))
+                                .and(
+                                    publishedReportIdForProgressField.eq(
+                                        PUBLISHED_REPORTS.REPORT_ID
+                                    )
+                                )
+                        )
+                        .where(
+                            DSL.year(reportsForProgress.END_DATE)
+                                .eq(DSL.year(PUBLISHED_REPORTS.END_DATE))
+                        )
+                        .and(reportsForProgress.PROJECT_ID.eq(PUBLISHED_REPORTS.PROJECT_ID))
+                        .and(indicatorIdForProgress.eq(indicatorTableIdField))
+                        .and(progressValue.isNotNull)
+                        .and(
+                            reportsForProgress.REPORT_QUARTER_ID.le(
+                                PUBLISHED_REPORTS.REPORT_QUARTER_ID
+                            )
+                        )
+                        .orderBy(reportsForProgress.REPORT_QUARTER_ID)
                 )
-              }
-            }
+                .convertFrom { results ->
+                  results.map { record ->
+                    PublishedCumulativeIndicatorProgressModel(
+                        quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
+                        value = record[DSL.field("progress_value", SQLDataType.INTEGER)]!!,
+                    )
+                  }
+                },
+        )
 
     val reportIndicatorForReport = reportIndicatorTable.`as`("reportIndicatorForReport")
     val repIndicatorIdForReport = reportIndicatorForReport.field(reportTableIndicatorIdField)!!
@@ -338,25 +347,28 @@ class PublishedReportStore(
                 .orderBy(indicatorReferenceField)
         )
         .convertFrom { result ->
-          result.map {
+          result.map { record ->
             PublishedReportIndicatorModel(
-                baseline = it[baselineField],
-                category = it[indicatorCategoryField],
-                classId = it[indicatorClassField],
-                currentYearProgress = it[currentYearProgressField],
-                description = it[indicatorDescriptionField],
-                endOfProjectTarget = it[endTargetField],
-                indicatorId = it[indicatorTableIdField.asNonNullable()],
-                level = it[indicatorTypeField],
-                name = it[indicatorNameField],
-                previousYearCumulativeTotal = it[sumAtPreviousYearEnd],
-                progressNotes = it[progressNotesField],
-                projectsComments = it[projectsCommentsField],
-                refId = it[indicatorReferenceField],
-                status = it[statusField],
-                target = it[targetField],
-                unit = it[unitField],
-                value = it[valueField],
+                baseline = record[baselineField],
+                category = record[indicatorCategoryField],
+                classId = record[indicatorClassField],
+                currentYearProgress =
+                    record[currentYearProgressField].takeIf {
+                      record[indicatorClassField] == IndicatorClass.Cumulative
+                    },
+                description = record[indicatorDescriptionField],
+                endOfProjectTarget = record[endTargetField],
+                indicatorId = record[indicatorTableIdField.asNonNullable()],
+                level = record[indicatorTypeField],
+                name = record[indicatorNameField],
+                previousYearCumulativeTotal = record[sumAtPreviousYearEnd],
+                progressNotes = record[progressNotesField],
+                projectsComments = record[projectsCommentsField],
+                refId = record[indicatorReferenceField],
+                status = record[statusField],
+                target = record[targetField],
+                unit = record[unitField],
+                value = record[valueField],
             )
           }
         }
