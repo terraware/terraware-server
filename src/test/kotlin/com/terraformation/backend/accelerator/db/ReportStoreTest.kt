@@ -1059,6 +1059,160 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           "Read-only admin user can see all project reports",
       )
     }
+
+    @Test
+    fun `only includes project indicator targets for the report year and project`() {
+      clock.instant = LocalDate.of(2025, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
+      insertProjectReportConfig()
+      insertReport(
+          endDate = LocalDate.of(2024, Month.DECEMBER, 31),
+      )
+      val projectIndicatorId = insertProjectIndicator()
+
+      // Target for the report's year (2024) - should be included
+      insertReportProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId,
+          year = 2024,
+          target = 100,
+      )
+      // Target for a different year - should not cause duplicate rows
+      insertReportProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId,
+          year = 2025,
+          target = 999,
+      )
+      // Target for a different project in the same year - should not cause duplicate rows
+      insertReportProjectIndicatorTarget(
+          projectId = otherProjectId,
+          projectIndicatorId = projectIndicatorId,
+          year = 2024,
+          target = 888,
+      )
+
+      val report = store.fetch(includeIndicators = true).single()
+      val expected =
+          ReportProjectIndicatorModel(
+              indicator =
+                  ProjectIndicatorModel(
+                      id = projectIndicatorId,
+                      active = true,
+                      category = IndicatorCategory.ProjectObjectives,
+                      description = null,
+                      isPublishable = true,
+                      level = IndicatorLevel.Impact,
+                      name = "Indicator name",
+                      projectId = projectId,
+                      refId = "1.1",
+                      tfOwner = "Carbon",
+                  ),
+              entry = ReportIndicatorEntryModel(target = 100),
+          )
+      assertEquals(
+          listOf(expected),
+          report.projectIndicators,
+          "Other years and projects don't affect project indicators",
+      )
+    }
+
+    @Test
+    fun `only includes common indicator targets for the report year and project`() {
+      clock.instant = LocalDate.of(2025, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
+      insertProjectReportConfig()
+      insertReport(
+          endDate = LocalDate.of(2024, Month.DECEMBER, 31),
+      )
+      val commonIndicatorId = insertCommonIndicator()
+
+      // Target for the report's year (2024) - should be included
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId,
+          year = 2024,
+          target = 200,
+      )
+      // Target for a different year - should not cause duplicate rows
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId,
+          year = 2025,
+          target = 999,
+      )
+      // Target for a different project in the same year - should not cause duplicate rows
+      insertReportCommonIndicatorTarget(
+          projectId = otherProjectId,
+          commonIndicatorId = commonIndicatorId,
+          year = 2024,
+          target = 888,
+      )
+
+      val report = store.fetch(includeIndicators = true).single()
+      val expected =
+          ReportCommonIndicatorModel(
+              indicator =
+                  CommonIndicatorModel(
+                      id = commonIndicatorId,
+                      category = IndicatorCategory.ProjectObjectives,
+                      description = null,
+                      isPublishable = true,
+                      level = IndicatorLevel.Impact,
+                      name = "Indicator name",
+                      refId = "1.1",
+                      tfOwner = "Carbon",
+                  ),
+              entry = ReportIndicatorEntryModel(target = 200),
+          )
+      assertEquals(
+          listOf(expected),
+          report.commonIndicators,
+          "Other years and projects don't affect common indicators",
+      )
+    }
+
+    @Test
+    fun `only includes auto-calculated indicator targets for the report year and project`() {
+      clock.instant = LocalDate.of(2025, Month.JANUARY, 1).atStartOfDay().toInstant(ZoneOffset.UTC)
+      insertProjectReportConfig()
+      insertReport(
+          endDate = LocalDate.of(2024, Month.DECEMBER, 31),
+      )
+
+      // Target for the report's year (2024) - should be included
+      insertReportAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          year = 2024,
+          target = 300,
+      )
+      // Target for a different year - should not cause duplicate rows
+      insertReportAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          year = 2025,
+          target = 999,
+      )
+      // Target for a different project in the same year - should not cause duplicate rows
+      insertReportAutoCalculatedIndicatorTarget(
+          projectId = otherProjectId,
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          year = 2024,
+          target = 888,
+      )
+
+      val report = store.fetch(includeIndicators = true).single()
+      val expected =
+          ReportAutoCalculatedIndicatorModel(
+              indicator = AutoCalculatedIndicator.SeedsCollected,
+              entry =
+                  ReportAutoCalculatedIndicatorEntryModel(
+                      target = 300,
+                      systemValue = 0,
+                  ),
+              currentYearProgress = emptyList(),
+          )
+      assertEquals(
+          expected,
+          report.autoCalculatedIndicators.single {
+            it.indicator == AutoCalculatedIndicator.SeedsCollected
+          },
+          "Other years and projects don't affect auto-calculated indicators",
+      )
+    }
   }
 
   @Nested

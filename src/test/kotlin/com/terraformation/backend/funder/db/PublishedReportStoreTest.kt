@@ -400,6 +400,227 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `only includes project indicator targets for the report year and project`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+
+      val projectIndicatorId =
+          insertProjectIndicator(
+              category = IndicatorCategory.Biodiversity,
+              classId = IndicatorClass.Level,
+              description = "Project Indicator Description",
+              name = "Project Indicator",
+              refId = "1.2.1",
+              level = IndicatorLevel.Output,
+          )
+
+      val reportId =
+          insertReport(
+              startDate = LocalDate.of(2024, 1, 1),
+              endDate = LocalDate.of(2024, 12, 31),
+          )
+      insertPublishedReport(
+          reportId = reportId,
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 12, 31),
+      )
+      insertPublishedReportProjectIndicator(
+          reportId = reportId,
+          indicatorId = projectIndicatorId,
+          value = 10,
+          status = ReportIndicatorStatus.OnTrack,
+      )
+
+      // Target for the report's year (2024) — should be included
+      insertPublishedProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId,
+          year = 2024,
+          target = 100,
+      )
+      // Target for a different year — should not cause a duplicate row
+      insertPublishedProjectIndicatorTarget(
+          projectIndicatorId = projectIndicatorId,
+          year = 2025,
+          target = 999,
+      )
+      // Target for a different project in the same year — should not cause a duplicate row
+      val otherProjectId = insertProject()
+      insertPublishedProjectIndicatorTarget(
+          projectId = otherProjectId,
+          projectIndicatorId = projectIndicatorId,
+          year = 2024,
+          target = 888,
+      )
+
+      val reports = store.fetchPublishedReports(projectId)
+      val expected =
+          PublishedReportIndicatorModel(
+              category = IndicatorCategory.Biodiversity,
+              classId = IndicatorClass.Level,
+              description = "Project Indicator Description",
+              indicatorId = projectIndicatorId,
+              level = IndicatorLevel.Output,
+              name = "Project Indicator",
+              progressNotes = null,
+              projectsComments = null,
+              refId = "1.2.1",
+              status = ReportIndicatorStatus.OnTrack,
+              target = 100,
+              unit = null,
+              value = 10,
+          )
+      assertEquals(
+          listOf(expected),
+          reports.single().projectIndicators,
+          "Other years and projects don't affect project indicators",
+      )
+    }
+
+    @Test
+    fun `only includes common indicator targets for the report year and project`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+
+      val commonIndicatorId =
+          insertCommonIndicator(
+              category = IndicatorCategory.Climate,
+              classId = IndicatorClass.Cumulative,
+              description = "Common Indicator Description",
+              name = "Common Indicator",
+              refId = "1.1.1",
+              level = IndicatorLevel.Output,
+          )
+
+      val reportId =
+          insertReport(
+              startDate = LocalDate.of(2024, 1, 1),
+              endDate = LocalDate.of(2024, 12, 31),
+          )
+      insertPublishedReport(
+          reportId = reportId,
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 12, 31),
+      )
+      insertPublishedReportCommonIndicator(
+          reportId = reportId,
+          indicatorId = commonIndicatorId,
+          value = 20,
+          status = ReportIndicatorStatus.Achieved,
+      )
+
+      // Target for the report's year (2024) — should be included
+      insertPublishedCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId,
+          year = 2024,
+          target = 200,
+      )
+      // Target for a different year — should not cause a duplicate row
+      insertPublishedCommonIndicatorTarget(
+          commonIndicatorId = commonIndicatorId,
+          year = 2025,
+          target = 999,
+      )
+      // Target for a different project in the same year — should not cause a duplicate row
+      val otherProjectId = insertProject()
+      insertPublishedCommonIndicatorTarget(
+          projectId = otherProjectId,
+          commonIndicatorId = commonIndicatorId,
+          year = 2024,
+          target = 888,
+      )
+
+      val reports = store.fetchPublishedReports(projectId)
+      val expected =
+          PublishedReportIndicatorModel(
+              category = IndicatorCategory.Climate,
+              classId = IndicatorClass.Cumulative,
+              description = "Common Indicator Description",
+              indicatorId = commonIndicatorId,
+              level = IndicatorLevel.Output,
+              name = "Common Indicator",
+              progressNotes = null,
+              projectsComments = null,
+              refId = "1.1.1",
+              status = ReportIndicatorStatus.Achieved,
+              target = 200,
+              unit = null,
+              value = 20,
+          )
+      assertEquals(
+          listOf(expected),
+          reports.single().commonIndicators,
+          "Other years and projects don't affect common indicators",
+      )
+    }
+
+    @Test
+    fun `only includes auto-calculated indicator targets for the report year and project`() {
+      insertFundingEntityProject()
+      insertProjectReportConfig()
+
+      val reportId =
+          insertReport(
+              startDate = LocalDate.of(2024, 1, 1),
+              endDate = LocalDate.of(2024, 12, 31),
+          )
+      insertPublishedReport(
+          reportId = reportId,
+          startDate = LocalDate.of(2024, 1, 1),
+          endDate = LocalDate.of(2024, 12, 31),
+      )
+      insertPublishedReportAutoCalculatedIndicator(
+          reportId = reportId,
+          indicator = AutoCalculatedIndicator.SurvivalRate,
+          value = 5,
+          status = ReportIndicatorStatus.OnTrack,
+      )
+
+      // Target for the report's year (2024) — should be included
+      insertPublishedAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.SurvivalRate,
+          year = 2024,
+          target = 300,
+      )
+      // Target for a different year — should not cause a duplicate row
+      insertPublishedAutoCalculatedIndicatorTarget(
+          indicator = AutoCalculatedIndicator.SurvivalRate,
+          year = 2025,
+          target = 999,
+      )
+      // Target for a different project in the same year — should not cause a duplicate row
+      val otherProjectId = insertProject()
+      insertPublishedAutoCalculatedIndicatorTarget(
+          projectId = otherProjectId,
+          indicator = AutoCalculatedIndicator.SurvivalRate,
+          year = 2024,
+          target = 888,
+      )
+
+      val reports = store.fetchPublishedReports(projectId)
+      val expected =
+          PublishedReportIndicatorModel(
+              category = AutoCalculatedIndicator.SurvivalRate.categoryId,
+              classId = IndicatorClass.Level,
+              description = AutoCalculatedIndicator.SurvivalRate.description,
+              indicatorId = AutoCalculatedIndicator.SurvivalRate,
+              level = AutoCalculatedIndicator.SurvivalRate.levelId,
+              name = AutoCalculatedIndicator.SurvivalRate.jsonValue,
+              progressNotes = null,
+              projectsComments = null,
+              refId = AutoCalculatedIndicator.SurvivalRate.refId,
+              status = ReportIndicatorStatus.OnTrack,
+              target = 300,
+              unit = "%",
+              value = 5,
+          )
+      assertEquals(
+          listOf(expected),
+          reports.single().autoCalculatedIndicators,
+          "Other years and projects don't affect auto-calculated indicators",
+      )
+    }
+
+    @Test
     fun `throws exception if no permission to read project reports`() {
       val projectId = insertProject()
 
