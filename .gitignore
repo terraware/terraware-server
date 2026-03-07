@@ -14,9 +14,10 @@ openapi.yaml
 .run
 docker/volumes
 
-# Share Claude Code skills, but not local configuration
+# Share Claude Code skills and agents, but not local configuration
 .claude/*
 !.claude/skills
+!.claude/agents
 
 # Kotlin compiler temporary files
 .kotlin
