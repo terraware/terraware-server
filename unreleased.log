@@ -1,1 +1,6 @@
+415cccd2845 Add test agent to claude agents (#4087)
+81753d7e9d3 SW-8093 Only include currentYearProgress when indicator is cumulative (#4085)
+9cc1b8d8096 SW-8093 Exclude future quarters from current year progress in reports (#4084)
+4e52c876e37 SW-8093 Add current year progress to published report model and api (#4083)
+c04159803ed SW-8022 Always assign new plot to replace permanent one (#4081)
 b6d21dc26cc Update plugin com.diffplug.spotless to v8.3.0 (#4079)
