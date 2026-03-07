@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.funder.PublishedReportService
 import com.terraformation.backend.funder.db.PublishedReportStore
+import com.terraformation.backend.funder.model.PublishedCumulativeIndicatorProgressModel
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import io.swagger.v3.oas.annotations.Operation
@@ -85,6 +86,18 @@ data class ReportChallengePayload(
     val mitigationPlan: String,
 )
 
+data class PublishedCumulativeIndicatorProgressPayload(
+    val quarter: ReportQuarter,
+    val value: Int,
+) {
+  constructor(
+      model: PublishedCumulativeIndicatorProgressModel
+  ) : this(
+      quarter = model.quarter,
+      value = model.value,
+  )
+}
+
 @Schema(description = "Use PublishedReportIndicatorPayload instead", deprecated = true)
 data class PublishedReportMetricPayload(
     val component: IndicatorCategory,
@@ -120,6 +133,14 @@ data class PublishedReportIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
     val classId: IndicatorClass?,
+    @Schema(
+        description =
+            "If the indicator is cumulative, the list of actual values for all quarters in the " +
+                "report's year. Note that only the report's quarter will be a published value, the " +
+                "rest will be current values whether or not they are the same as their published " +
+                "counterparts."
+    )
+    val currentYearProgress: List<PublishedCumulativeIndicatorProgressPayload>?,
     val description: String?,
     val endOfProjectTarget: BigDecimal?,
     val level: IndicatorLevel,
@@ -143,6 +164,8 @@ data class PublishedReportIndicatorPayload(
       baseline = model.baseline,
       category = model.category,
       classId = model.classId,
+      currentYearProgress =
+          model.currentYearProgress?.map { PublishedCumulativeIndicatorProgressPayload(it) },
       description = model.description,
       endOfProjectTarget = model.endOfProjectTarget,
       level = model.level,

@@ -4,12 +4,19 @@ import com.terraformation.backend.db.accelerator.IndicatorCategory
 import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatus
+import com.terraformation.backend.db.accelerator.ReportQuarter
 import java.math.BigDecimal
+
+data class PublishedCumulativeIndicatorProgressModel(
+    val quarter: ReportQuarter,
+    val value: Int,
+)
 
 data class PublishedReportIndicatorModel<ID : Any>(
     val baseline: BigDecimal? = null,
     val category: IndicatorCategory,
     val classId: IndicatorClass?,
+    val currentYearProgress: List<PublishedCumulativeIndicatorProgressModel>? = null,
     val description: String?,
     val endOfProjectTarget: BigDecimal? = null,
     val indicatorId: ID,

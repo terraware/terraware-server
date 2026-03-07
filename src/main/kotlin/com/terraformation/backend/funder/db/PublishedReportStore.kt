@@ -34,6 +34,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_C
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_COMMON_INDICATORS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PHOTOS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_PROJECT_INDICATORS
+import com.terraformation.backend.funder.model.PublishedCumulativeIndicatorProgressModel
 import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
@@ -209,11 +210,89 @@ class PublishedReportStore(
                 .and(reportTableIndicatorIdField.eq(indicatorTableIdField)),
         )
 
+    val reportsForProgress = REPORTS.`as`("reportsForProgress")
+    val reportIndicatorsForProgress = reportIndicatorTable.`as`("reportIndicatorsForProgress")
+    val indicatorIdForProgress = reportIndicatorsForProgress.field(reportTableIndicatorIdField)!!
+    val indicatorValueProgressField =
+        reportIndicatorsForProgress.field("value", Int::class.java)
+            ?: DSL.coalesce(
+                reportIndicatorsForProgress.field("override_value", Int::class.java)!!,
+                reportIndicatorsForProgress.field("system_value", Int::class.java)!!,
+            )
+    val reportIdProgressField =
+        reportIndicatorsForProgress.field(
+            "report_id",
+            SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
+        )!!
+    val publishedIndicatorForProgress =
+        publishedIndicatorTable.`as`("publishedIndicatorForProgress")
+    val publishedReportIdForProgressField =
+        publishedIndicatorForProgress.field(
+            "report_id",
+            SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
+        )!!
+    val publishedIndicatorIdForProgress =
+        publishedIndicatorForProgress.field(publishedIndicatorIdField)!!
+    val publishedValueForProgress = publishedIndicatorForProgress.field("value", Int::class.java)!!
+    // For previous quarters, use the report value directly. For the current quarter, use the
+    // published value only (null if no published entry, which excludes it from the result).
+    val progressValue =
+        DSL.if_(
+            reportsForProgress.REPORT_QUARTER_ID.eq(PUBLISHED_REPORTS.REPORT_QUARTER_ID),
+            publishedValueForProgress,
+            indicatorValueProgressField,
+        )
+
+    val currentYearProgressField: Field<List<PublishedCumulativeIndicatorProgressModel>> =
+        DSL.multiset(
+                DSL.select(
+                        reportsForProgress.REPORT_QUARTER_ID,
+                        progressValue.`as`("progress_value"),
+                    )
+                    .from(reportIndicatorsForProgress)
+                    .join(reportsForProgress)
+                    .on(reportsForProgress.ID.eq(reportIdProgressField))
+                    .leftJoin(publishedIndicatorForProgress)
+                    .on(
+                        publishedReportIdForProgressField
+                            .eq(reportIdProgressField)
+                            .and(publishedIndicatorIdForProgress.eq(indicatorTableIdField))
+                            .and(publishedReportIdForProgressField.eq(PUBLISHED_REPORTS.REPORT_ID))
+                    )
+                    .where(
+                        DSL.year(reportsForProgress.END_DATE)
+                            .eq(DSL.year(PUBLISHED_REPORTS.END_DATE))
+                    )
+                    .and(reportsForProgress.PROJECT_ID.eq(PUBLISHED_REPORTS.PROJECT_ID))
+                    .and(indicatorIdForProgress.eq(indicatorTableIdField))
+                    .and(progressValue.isNotNull)
+                    .and(
+                        reportsForProgress.REPORT_QUARTER_ID.le(PUBLISHED_REPORTS.REPORT_QUARTER_ID)
+                    )
+                    .orderBy(reportsForProgress.REPORT_QUARTER_ID)
+            )
+            .convertFrom { results ->
+              results.map { record ->
+                PublishedCumulativeIndicatorProgressModel(
+                    quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
+                    value = record[DSL.field("progress_value", SQLDataType.INTEGER)]!!,
+                )
+              }
+            }
+
+    val reportIndicatorForReport = reportIndicatorTable.`as`("reportIndicatorForReport")
+    val repIndicatorIdForReport = reportIndicatorForReport.field(reportTableIndicatorIdField)!!
+    val repReportIdForReport =
+        reportIndicatorForReport.field(
+            "report_id",
+            SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
+        )!!
+
     return DSL.multiset(
             DSL.select(
                     progressNotesField,
                     projectsCommentsField,
-                    publishedIndicatorIdField,
+                    indicatorTableIdField,
                     indicatorCategoryField,
                     indicatorClassField,
                     indicatorDescriptionField,
@@ -227,18 +306,35 @@ class PublishedReportStore(
                     baselineField,
                     endTargetField,
                     sumAtPreviousYearEnd,
+                    currentYearProgressField,
                 )
-                .from(publishedIndicatorTable)
-                .join(indicatorTable)
-                .on(indicatorTableIdField.eq(publishedIndicatorIdField))
+                .from(indicatorTable)
+                .leftJoin(publishedIndicatorTable)
+                .on(
+                    publishedIndicatorIdField
+                        .eq(indicatorTableIdField)
+                        .and(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
+                )
+                .leftJoin(reportIndicatorForReport)
+                .on(
+                    repIndicatorIdForReport
+                        .eq(indicatorTableIdField)
+                        .and(repReportIdForReport.eq(PUBLISHED_REPORTS.REPORT_ID))
+                )
                 .leftJoin(targetTable)
-                .on(targetTableIndicatorIdField.eq(indicatorTableIdField))
-                .and(targetProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
-                .and(targetYearField.eq(DSL.year(PUBLISHED_REPORTS.END_DATE)))
+                .on(
+                    targetTableIndicatorIdField
+                        .eq(indicatorTableIdField)
+                        .and(targetProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
+                        .and(targetYearField.eq(DSL.year(PUBLISHED_REPORTS.END_DATE)))
+                )
                 .leftJoin(baselineTable)
-                .on(baselineTableIndicatorIdField.eq(indicatorTableIdField))
-                .and(baselineProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
-                .where(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
+                .on(
+                    baselineTableIndicatorIdField
+                        .eq(indicatorTableIdField)
+                        .and(baselineProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
+                )
+                .where(publishedIndicatorIdField.isNotNull.or(repIndicatorIdForReport.isNotNull))
                 .orderBy(indicatorReferenceField)
         )
         .convertFrom { result ->
@@ -247,9 +343,10 @@ class PublishedReportStore(
                 baseline = it[baselineField],
                 category = it[indicatorCategoryField],
                 classId = it[indicatorClassField],
+                currentYearProgress = it[currentYearProgressField],
                 description = it[indicatorDescriptionField],
                 endOfProjectTarget = it[endTargetField],
-                indicatorId = it[publishedIndicatorIdField.asNonNullable()],
+                indicatorId = it[indicatorTableIdField.asNonNullable()],
                 level = it[indicatorTypeField],
                 name = it[indicatorNameField],
                 previousYearCumulativeTotal = it[sumAtPreviousYearEnd],
