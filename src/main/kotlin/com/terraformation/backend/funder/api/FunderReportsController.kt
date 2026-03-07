@@ -135,7 +135,7 @@ data class PublishedReportIndicatorPayload(
     val classId: IndicatorClass?,
     @Schema(
         description =
-            "If the indicator is cumulative, the list of actual values for all quarters in the" +
+            "If the indicator is cumulative, the list of actual values for all quarters in the " +
                 "report's year. Note that only the report's quarter will be a published value, the " +
                 "rest will be current values whether or not they are the same as their published " +
                 "counterparts."
