@@ -1700,29 +1700,32 @@ class ReportStore(
     val reportsForProgress = REPORTS.`as`("reportsForProgress")
     val rciForProgress = REPORT_COMMON_INDICATORS.`as`("rciForProgress")
     val currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>> =
-        DSL.multiset(
-                DSL.select(
-                        reportsForProgress.REPORT_QUARTER_ID,
-                        rciForProgress.VALUE,
-                    )
-                    .from(rciForProgress)
-                    .join(reportsForProgress)
-                    .on(reportsForProgress.ID.eq(rciForProgress.REPORT_ID))
-                    .where(DSL.year(reportsForProgress.END_DATE).eq(DSL.year(REPORTS.END_DATE)))
-                    .and(reportsForProgress.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                    .and(rciForProgress.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID))
-                    .and(rciForProgress.VALUE.isNotNull)
-                    .and(reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID))
-                    .orderBy(reportsForProgress.REPORT_QUARTER_ID)
-            )
-            .convertFrom { results ->
-              results.map { record ->
-                CumulativeIndicatorProgressModel(
-                    quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
-                    value = record[rciForProgress.VALUE]!!,
+        DSL.`when`(
+            COMMON_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            DSL.multiset(
+                    DSL.select(
+                            reportsForProgress.REPORT_QUARTER_ID,
+                            rciForProgress.VALUE,
+                        )
+                        .from(rciForProgress)
+                        .join(reportsForProgress)
+                        .on(reportsForProgress.ID.eq(rciForProgress.REPORT_ID))
+                        .where(DSL.year(reportsForProgress.END_DATE).eq(DSL.year(REPORTS.END_DATE)))
+                        .and(reportsForProgress.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                        .and(rciForProgress.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID))
+                        .and(rciForProgress.VALUE.isNotNull)
+                        .and(reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID))
+                        .orderBy(reportsForProgress.REPORT_QUARTER_ID)
                 )
-              }
-            }
+                .convertFrom { results ->
+                  results.map { record ->
+                    CumulativeIndicatorProgressModel(
+                        quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
+                        value = record[rciForProgress.VALUE]!!,
+                    )
+                  }
+                },
+        )
 
     return DSL.multiset(
             DSL.select(
@@ -1785,29 +1788,32 @@ class ReportStore(
     val reportsForProgress = REPORTS.`as`("reportsForProgress")
     val rpiForProgress = REPORT_PROJECT_INDICATORS.`as`("rpiForProgress")
     val currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>> =
-        DSL.multiset(
-                DSL.select(
-                        reportsForProgress.REPORT_QUARTER_ID,
-                        rpiForProgress.VALUE,
-                    )
-                    .from(rpiForProgress)
-                    .join(reportsForProgress)
-                    .on(reportsForProgress.ID.eq(rpiForProgress.REPORT_ID))
-                    .where(DSL.year(reportsForProgress.END_DATE).eq(DSL.year(REPORTS.END_DATE)))
-                    .and(reportsForProgress.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                    .and(rpiForProgress.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID))
-                    .and(rpiForProgress.VALUE.isNotNull)
-                    .and(reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID))
-                    .orderBy(reportsForProgress.REPORT_QUARTER_ID)
-            )
-            .convertFrom { results ->
-              results.map { record ->
-                CumulativeIndicatorProgressModel(
-                    quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
-                    value = record[rpiForProgress.VALUE]!!,
+        DSL.`when`(
+            PROJECT_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            DSL.multiset(
+                    DSL.select(
+                            reportsForProgress.REPORT_QUARTER_ID,
+                            rpiForProgress.VALUE,
+                        )
+                        .from(rpiForProgress)
+                        .join(reportsForProgress)
+                        .on(reportsForProgress.ID.eq(rpiForProgress.REPORT_ID))
+                        .where(DSL.year(reportsForProgress.END_DATE).eq(DSL.year(REPORTS.END_DATE)))
+                        .and(reportsForProgress.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                        .and(rpiForProgress.PROJECT_INDICATOR_ID.eq(PROJECT_INDICATORS.ID))
+                        .and(rpiForProgress.VALUE.isNotNull)
+                        .and(reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID))
+                        .orderBy(reportsForProgress.REPORT_QUARTER_ID)
                 )
-              }
-            }
+                .convertFrom { results ->
+                  results.map { record ->
+                    CumulativeIndicatorProgressModel(
+                        quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
+                        value = record[rpiForProgress.VALUE]!!,
+                    )
+                  }
+                },
+        )
 
     return DSL.multiset(
             DSL.select(
@@ -2168,33 +2174,36 @@ class ReportStore(
     val raciForProgress = REPORT_AUTO_CALCULATED_INDICATORS.`as`("raciForProgress")
     val effectiveValue = DSL.coalesce(raciForProgress.OVERRIDE_VALUE, raciForProgress.SYSTEM_VALUE)
     val currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>> =
-        DSL.multiset(
-                DSL.select(
-                        reportsForProgress.REPORT_QUARTER_ID,
-                        effectiveValue,
-                    )
-                    .from(raciForProgress)
-                    .join(reportsForProgress)
-                    .on(reportsForProgress.ID.eq(raciForProgress.REPORT_ID))
-                    .where(DSL.year(reportsForProgress.END_DATE).eq(DSL.year(REPORTS.END_DATE)))
-                    .and(reportsForProgress.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                    .and(
-                        raciForProgress.AUTO_CALCULATED_INDICATOR_ID.eq(
-                            AUTO_CALCULATED_INDICATORS.ID
+        DSL.`when`(
+            AUTO_CALCULATED_INDICATORS.CLASS_ID.eq(IndicatorClass.Cumulative),
+            DSL.multiset(
+                    DSL.select(
+                            reportsForProgress.REPORT_QUARTER_ID,
+                            effectiveValue,
                         )
-                    )
-                    .and(effectiveValue.isNotNull)
-                    .and(reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID))
-                    .orderBy(reportsForProgress.REPORT_QUARTER_ID)
-            )
-            .convertFrom { results ->
-              results.map { record ->
-                CumulativeIndicatorProgressModel(
-                    quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
-                    value = record[effectiveValue]!!,
+                        .from(raciForProgress)
+                        .join(reportsForProgress)
+                        .on(reportsForProgress.ID.eq(raciForProgress.REPORT_ID))
+                        .where(DSL.year(reportsForProgress.END_DATE).eq(DSL.year(REPORTS.END_DATE)))
+                        .and(reportsForProgress.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                        .and(
+                            raciForProgress.AUTO_CALCULATED_INDICATOR_ID.eq(
+                                AUTO_CALCULATED_INDICATORS.ID
+                            )
+                        )
+                        .and(effectiveValue.isNotNull)
+                        .and(reportsForProgress.REPORT_QUARTER_ID.le(REPORTS.REPORT_QUARTER_ID))
+                        .orderBy(reportsForProgress.REPORT_QUARTER_ID)
                 )
-              }
-            }
+                .convertFrom { results ->
+                  results.map { record ->
+                    CumulativeIndicatorProgressModel(
+                        quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
+                        value = record[effectiveValue]!!,
+                    )
+                  }
+                },
+        )
 
     return DSL.multiset(
             DSL.select(
