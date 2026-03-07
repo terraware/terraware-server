@@ -22,6 +22,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.util.UUID
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -463,7 +464,6 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PublishedReportIndicatorModel(
               category = IndicatorCategory.Biodiversity,
               classId = IndicatorClass.Level,
-              currentYearProgress = emptyList(),
               description = "Project Indicator Description",
               indicatorId = projectIndicatorId,
               level = IndicatorLevel.Output,
@@ -609,7 +609,6 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PublishedReportIndicatorModel(
               category = AutoCalculatedIndicator.SurvivalRate.categoryId,
               classId = IndicatorClass.Level,
-              currentYearProgress = emptyList(),
               description = AutoCalculatedIndicator.SurvivalRate.description,
               indicatorId = AutoCalculatedIndicator.SurvivalRate,
               level = AutoCalculatedIndicator.SurvivalRate.levelId,
@@ -808,7 +807,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `currentYearProgress is empty for a non-cumulative indicator`() {
+    fun `currentYearProgress is null for a non-cumulative indicator`() {
       insertFundingEntityProject()
       insertProjectReportConfig()
 
@@ -859,13 +858,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicator.classId,
           "Indicator class should be Level for this test",
       )
-      assertEquals(
-          listOf(
-              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q1, value = 50),
-              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q2, value = 60),
-          ),
+      assertNull(
           indicator.currentYearProgress,
-          "currentYearProgress is populated regardless of indicator class; consumers decide whether to use it",
+          "currentYearProgress is null for non-cumulative indicators",
       )
     }
 
