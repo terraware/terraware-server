@@ -1532,7 +1532,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val levelProjectIndicatorId =
           insertProjectIndicator(name = "Level Project Indicator", classId = IndicatorClass.Level)
 
-      // Q1 report - values contribute to Q4's currentYearProgress
+      // Q1 report - values contribute to Q3's currentYearProgress
       val q1ReportId =
           insertReport(
               quarter = ReportQuarter.Q1,
@@ -1571,7 +1571,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           overrideValue = 40, // override takes precedence
       )
 
-      // Q2 report - values contribute to Q4's currentYearProgress
+      // Q2 report - values contribute to Q3's currentYearProgress
       val q2ReportId =
           insertReport(
               quarter = ReportQuarter.Q2,
@@ -1609,30 +1609,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           systemValue = 42,
       )
 
-      // Q3 report - null values should be excluded from currentYearProgress
-      val q3ReportId =
+      // Q3 report (current report being fetched)
+      val reportId =
           insertReport(
               quarter = ReportQuarter.Q3,
               startDate = LocalDate.of(2025, 7, 1),
               endDate = LocalDate.of(2025, 9, 30),
-          )
-      insertReportCommonIndicator(reportId = q3ReportId, indicatorId = cumulativeCommonIndicatorId)
-      insertReportProjectIndicator(
-          reportId = q3ReportId,
-          indicatorId = cumulativeProjectIndicatorId,
-      )
-      insertReportAutoCalculatedIndicator(
-          reportId = q3ReportId,
-          indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = null,
-      )
-
-      // Q4 report (current report being fetched)
-      val reportId =
-          insertReport(
-              quarter = ReportQuarter.Q4,
-              startDate = LocalDate.of(2025, 10, 1),
-              endDate = LocalDate.of(2025, 12, 31),
           )
       insertReportCommonIndicator(indicatorId = cumulativeCommonIndicatorId, value = 13)
       insertReportCommonIndicator(indicatorId = levelCommonIndicatorId, value = 300)
@@ -1645,6 +1627,34 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.HectaresPlanted,
           systemValue = 43,
+      )
+
+      // Q4 report (future quarter relative to Q3 - should be excluded from currentYearProgress)
+      val q4ReportId =
+          insertReport(
+              quarter = ReportQuarter.Q4,
+              startDate = LocalDate.of(2025, 10, 1),
+              endDate = LocalDate.of(2025, 12, 31),
+          )
+      insertReportCommonIndicator(
+          reportId = q4ReportId,
+          indicatorId = cumulativeCommonIndicatorId,
+          value = 14,
+      )
+      insertReportProjectIndicator(
+          reportId = q4ReportId,
+          indicatorId = cumulativeProjectIndicatorId,
+          value = 24,
+      )
+      insertReportAutoCalculatedIndicator(
+          reportId = q4ReportId,
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          systemValue = 34,
+      )
+      insertReportAutoCalculatedIndicator(
+          reportId = q4ReportId,
+          indicator = AutoCalculatedIndicator.HectaresPlanted,
+          systemValue = 44,
       )
 
       // Other project's report in same year - should not appear in current year progress
@@ -1664,10 +1674,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               configId = configId,
               projectId = projectId,
               projectDealName = "DEAL_Report Project",
-              quarter = ReportQuarter.Q4,
+              quarter = ReportQuarter.Q3,
               status = ReportStatus.NotSubmitted,
-              startDate = LocalDate.of(2025, 10, 1),
-              endDate = LocalDate.of(2025, 12, 31),
+              startDate = LocalDate.of(2025, 7, 1),
+              endDate = LocalDate.of(2025, 9, 30),
               createdBy = user.userId,
               createdByUser = SimpleUserModel(user.userId, "First Last"),
               createdTime = Instant.EPOCH,
@@ -1699,7 +1709,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               listOf(
                                   CumulativeIndicatorProgressModel(ReportQuarter.Q1, 11),
                                   CumulativeIndicatorProgressModel(ReportQuarter.Q2, 12),
-                                  CumulativeIndicatorProgressModel(ReportQuarter.Q4, 13),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q3, 13),
                               ),
                       ),
                       ReportCommonIndicatorModel(
@@ -1749,7 +1759,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               listOf(
                                   CumulativeIndicatorProgressModel(ReportQuarter.Q1, 21),
                                   CumulativeIndicatorProgressModel(ReportQuarter.Q2, 22),
-                                  CumulativeIndicatorProgressModel(ReportQuarter.Q4, 23),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q3, 23),
                               ),
                       ),
                       ReportProjectIndicatorModel(
@@ -1789,7 +1799,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               listOf(
                                   CumulativeIndicatorProgressModel(ReportQuarter.Q1, 31),
                                   CumulativeIndicatorProgressModel(ReportQuarter.Q2, 32),
-                                  CumulativeIndicatorProgressModel(ReportQuarter.Q4, 33),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q3, 33),
                               ),
                       ),
                       ReportAutoCalculatedIndicatorModel(
@@ -1805,7 +1815,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               listOf(
                                   CumulativeIndicatorProgressModel(ReportQuarter.Q1, 40),
                                   CumulativeIndicatorProgressModel(ReportQuarter.Q2, 42),
-                                  CumulativeIndicatorProgressModel(ReportQuarter.Q4, 43),
+                                  CumulativeIndicatorProgressModel(ReportQuarter.Q3, 43),
                               ),
                       ),
                       ReportAutoCalculatedIndicatorModel(
@@ -1832,7 +1842,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           expectedReportModel,
           store.fetchOne(reportId = reportId, includeIndicators = true),
-          "Cumulative indicators should have current year progress from all same-year quarters with values",
+          "Cumulative indicators should have current year progress from all same-year quarters with values excluding future quarters",
       )
     }
 
