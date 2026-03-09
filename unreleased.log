@@ -1,3 +1,4 @@
+96b9ef64362 Add Quarterly to indicator frequencies (#4086)
 9a2df58b396 Update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.16 (#4097)
 84d459ee8cb Update GitHub Actions (#4094)
 415cccd2845 Add test agent to claude agents (#4087)
