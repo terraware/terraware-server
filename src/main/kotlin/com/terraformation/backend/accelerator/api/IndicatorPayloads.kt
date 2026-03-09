@@ -244,6 +244,7 @@ data class NewMetricPayload(
 }
 
 data class NewIndicatorPayload(
+    val active: Boolean,
     val category: IndicatorCategory,
     val classId: IndicatorClass?,
     val description: String?,
@@ -259,6 +260,7 @@ data class NewIndicatorPayload(
 ) {
   fun toProjectIndicatorModel(projectId: ProjectId): NewProjectIndicatorModel {
     return NewProjectIndicatorModel(
+        active = active,
         category = category,
         classId = classId,
         description = description,
@@ -278,6 +280,7 @@ data class NewIndicatorPayload(
 
   fun toCommonIndicatorModel(): NewCommonIndicatorModel {
     return NewCommonIndicatorModel(
+        active = active,
         category = category,
         classId = classId,
         description = description,
