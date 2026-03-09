@@ -282,10 +282,10 @@ VALUES (1, 'Project Objectives'),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.indicator_levels (id, name)
-VALUES (1, 'Activity'),
+VALUES (1, 'Process'),
        (2, 'Output'),
        (3, 'Outcome'),
-       (4, 'Impact')
+       (4, 'Goal')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.internal_interests (id, name)

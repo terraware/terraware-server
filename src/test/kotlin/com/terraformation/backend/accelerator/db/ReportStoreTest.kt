@@ -300,7 +300,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               notes = "Project indicator notes",
               primaryDataSource = "Project data source",
               refId = "2.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       // Insert target into new target table (report end date is 1970-01-02, so year is 1970)
@@ -332,7 +332,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           name = "Project Indicator Name",
                           notes = "Project indicator notes",
                           primaryDataSource = "Project data source",
-                          level = IndicatorLevel.Activity,
+                          level = IndicatorLevel.Process,
                           projectId = projectId,
                           refId = "2.0",
                           tfOwner = "Carbon",
@@ -356,7 +356,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               classId = IndicatorClass.Level,
               description = "Climate common indicator description",
               frequency = IndicatorFrequency.BiAnnual,
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
               name = "Climate Common Indicator",
               notes = "Common indicator notes",
               primaryDataSource = "Common data source",
@@ -376,7 +376,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertCommonIndicator(
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
-              level = IndicatorLevel.Impact,
+              level = IndicatorLevel.Goal,
               name = "Project Objectives Indicator",
               refId = "2.0",
           )
@@ -428,7 +428,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Project objectives indicator description",
                           id = commonIndicatorId3,
                           isPublishable = true,
-                          level = IndicatorLevel.Impact,
+                          level = IndicatorLevel.Goal,
                           name = "Project Objectives Indicator",
                           refId = "2.0",
                           tfOwner = "Carbon",
@@ -447,7 +447,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           frequency = IndicatorFrequency.BiAnnual,
                           id = commonIndicatorId1,
                           isPublishable = true,
-                          level = IndicatorLevel.Activity,
+                          level = IndicatorLevel.Process,
                           name = "Climate Common Indicator",
                           notes = "Common indicator notes",
                           primaryDataSource = "Common data source",
@@ -1099,7 +1099,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       category = IndicatorCategory.ProjectObjectives,
                       description = null,
                       isPublishable = true,
-                      level = IndicatorLevel.Impact,
+                      level = IndicatorLevel.Goal,
                       name = "Indicator name",
                       projectId = projectId,
                       refId = "1.1",
@@ -1152,7 +1152,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       category = IndicatorCategory.ProjectObjectives,
                       description = null,
                       isPublishable = true,
-                      level = IndicatorLevel.Impact,
+                      level = IndicatorLevel.Goal,
                       name = "Indicator name",
                       refId = "1.1",
                       tfOwner = "Carbon",
@@ -1353,7 +1353,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = null,
                           id = projectIndicatorId1,
                           isPublishable = true,
-                          level = IndicatorLevel.Impact,
+                          level = IndicatorLevel.Goal,
                           name = "Project Indicator Name 1",
                           projectId = projectId,
                           refId = "1.1",
@@ -1375,7 +1375,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = null,
                           id = projectIndicatorId2,
                           isPublishable = true,
-                          level = IndicatorLevel.Impact,
+                          level = IndicatorLevel.Goal,
                           name = "Project Indicator Name 2",
                           projectId = projectId,
                           refId = "1.1",
@@ -1400,7 +1400,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = null,
                           id = commonIndicatorId1,
                           isPublishable = true,
-                          level = IndicatorLevel.Impact,
+                          level = IndicatorLevel.Goal,
                           name = "Common Indicator Name 1",
                           refId = "1.1",
                           tfOwner = "Carbon",
@@ -1421,7 +1421,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = null,
                           id = commonIndicatorId2,
                           isPublishable = true,
-                          level = IndicatorLevel.Impact,
+                          level = IndicatorLevel.Goal,
                           name = "Common Indicator Name 2",
                           refId = "1.1",
                           tfOwner = "Carbon",
@@ -1694,7 +1694,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   description = null,
                                   id = cumulativeCommonIndicatorId,
                                   isPublishable = true,
-                                  level = IndicatorLevel.Impact,
+                                  level = IndicatorLevel.Goal,
                                   name = "Cumulative Common Indicator",
                                   refId = "1.1",
                                   tfOwner = "Carbon",
@@ -1720,7 +1720,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   description = null,
                                   id = levelCommonIndicatorId,
                                   isPublishable = true,
-                                  level = IndicatorLevel.Impact,
+                                  level = IndicatorLevel.Goal,
                                   name = "Level Common Indicator",
                                   refId = "1.1",
                                   tfOwner = "Carbon",
@@ -1743,7 +1743,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   description = null,
                                   id = cumulativeProjectIndicatorId,
                                   isPublishable = true,
-                                  level = IndicatorLevel.Impact,
+                                  level = IndicatorLevel.Goal,
                                   name = "Cumulative Project Indicator",
                                   projectId = projectId,
                                   refId = "1.1",
@@ -1770,7 +1770,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                                   description = null,
                                   id = levelProjectIndicatorId,
                                   isPublishable = true,
-                                  level = IndicatorLevel.Impact,
+                                  level = IndicatorLevel.Goal,
                                   name = "Level Project Indicator",
                                   projectId = projectId,
                                   refId = "1.1",
@@ -1861,7 +1861,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               notes = "Project indicator notes",
               primaryDataSource = "Project data source",
               refId = "2.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       insertReportProjectIndicatorTarget(
@@ -1888,7 +1888,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           frequency = IndicatorFrequency.MRVCycle,
                           id = projectIndicatorId,
                           isPublishable = true,
-                          level = IndicatorLevel.Activity,
+                          level = IndicatorLevel.Process,
                           name = "Project Indicator Name",
                           notes = "Project indicator notes",
                           primaryDataSource = "Project data source",
@@ -1912,7 +1912,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               classId = IndicatorClass.Cumulative,
               description = "Climate common indicator description",
               frequency = IndicatorFrequency.Annual,
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
               name = "Climate Common Indicator",
               notes = "Common indicator notes",
               primaryDataSource = "Common data source",
@@ -1933,7 +1933,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertCommonIndicator(
               category = IndicatorCategory.ProjectObjectives,
               description = "Project objectives indicator description",
-              level = IndicatorLevel.Impact,
+              level = IndicatorLevel.Goal,
               name = "Project Objectives Indicator",
               refId = "2.0",
           )
@@ -1976,7 +1976,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           description = "Project objectives indicator description",
                           id = commonIndicatorId3,
                           isPublishable = true,
-                          level = IndicatorLevel.Impact,
+                          level = IndicatorLevel.Goal,
                           name = "Project Objectives Indicator",
                           refId = "2.0",
                           tfOwner = "Carbon",
@@ -1993,7 +1993,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           frequency = IndicatorFrequency.Annual,
                           id = commonIndicatorId1,
                           isPublishable = true,
-                          level = IndicatorLevel.Activity,
+                          level = IndicatorLevel.Process,
                           name = "Climate Common Indicator",
                           notes = "Common indicator notes",
                           primaryDataSource = "Common data source",
@@ -2465,7 +2465,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Climate common indicator description",
               name = "Climate Common Indicator",
               refId = "2.1",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       val commonIndicatorId2 =
@@ -2483,7 +2483,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project objectives indicator description",
               name = "Project Objectives Indicator",
               refId = "2.0",
-              level = IndicatorLevel.Impact,
+              level = IndicatorLevel.Goal,
           )
 
       // This has no entry and will not have any updates
@@ -2492,7 +2492,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           description = "Biodiversity indicator description",
           name = "Biodiversity Indicator",
           refId = "7.0",
-          level = IndicatorLevel.Impact,
+          level = IndicatorLevel.Goal,
       )
 
       val projectIndicatorId =
@@ -2501,7 +2501,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project Indicator description",
               name = "Project Indicator Name",
               refId = "2.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       val configId = insertProjectReportConfig()
@@ -2952,7 +2952,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Climate common indicator description",
               name = "Climate Common Indicator",
               refId = "2.1",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       val commonIndicatorId2 =
@@ -2970,7 +2970,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project objectives indicator description",
               name = "Project Objectives Indicator",
               refId = "2.0",
-              level = IndicatorLevel.Impact,
+              level = IndicatorLevel.Goal,
           )
 
       // This has no entry and will not have any updates
@@ -2979,7 +2979,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           description = "Biodiversity indicator description",
           name = "Biodiversity Indicator",
           refId = "7.0",
-          level = IndicatorLevel.Impact,
+          level = IndicatorLevel.Goal,
       )
 
       val projectIndicatorId =
@@ -2988,7 +2988,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Project Indicator description",
               name = "Project Indicator Name",
               refId = "2.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       val configId = insertProjectReportConfig()
@@ -6202,7 +6202,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       store.updateProjectIndicatorTarget(
@@ -6228,7 +6228,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       insertReportProjectIndicatorTarget(
@@ -6258,7 +6258,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       store.updateProjectIndicatorTarget(
@@ -6285,7 +6285,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       assertThrows<AccessDeniedException> {
@@ -6309,7 +6309,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       store.updateCommonIndicatorTarget(
@@ -6335,7 +6335,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       insertReportCommonIndicatorTarget(
@@ -6365,7 +6365,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       store.updateCommonIndicatorTarget(
@@ -6392,7 +6392,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       assertThrows<AccessDeniedException> {
@@ -6496,7 +6496,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator 1",
               name = "Test Indicator 1",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
       val projectIndicatorId2 =
           insertProjectIndicator(
@@ -6504,7 +6504,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator 2",
               name = "Test Indicator 2",
               refId = "2.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       insertReportProjectIndicatorTarget(
@@ -6558,7 +6558,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator 1",
               name = "Test Indicator 1",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
       val commonIndicatorId2 =
           insertCommonIndicator(
@@ -6566,7 +6566,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator 2",
               name = "Test Indicator 2",
               refId = "2.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       insertReportCommonIndicatorTarget(
@@ -6670,7 +6670,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       store.updateProjectIndicatorBaselineTarget(
@@ -6698,7 +6698,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
       insertProjectIndicatorBaselineTarget(baseline = 50, endTarget = 500)
 
@@ -6708,7 +6708,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Other indicator",
               name = "Other Indicator",
               refId = "2.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
       insertProjectIndicatorBaselineTarget(baseline = 10, endTarget = 100)
 
@@ -6745,7 +6745,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       store.updateProjectIndicatorBaselineTarget(
@@ -6775,7 +6775,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       assertThrows<AccessDeniedException> {
@@ -6799,7 +6799,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       store.updateCommonIndicatorBaselineTarget(
@@ -6827,7 +6827,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
       insertCommonIndicatorBaselineTarget(baseline = 75, endTarget = 750)
 
@@ -6837,7 +6837,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Other indicator",
               name = "Other Indicator",
               refId = "2.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
       insertCommonIndicatorBaselineTarget(baseline = 20, endTarget = 200)
 
@@ -6874,7 +6874,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       store.updateCommonIndicatorBaselineTarget(
@@ -6904,7 +6904,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Test indicator",
               name = "Test Indicator",
               refId = "1.0",
-              level = IndicatorLevel.Activity,
+              level = IndicatorLevel.Process,
           )
 
       assertThrows<AccessDeniedException> {
