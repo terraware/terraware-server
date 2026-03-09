@@ -649,7 +649,7 @@ class ReportStore(
 
       val publishableAutoCalculatedIndicators =
           report.autoCalculatedIndicators
-              .filter { it.indicator.isPublishable }
+              .filter { it.indicator.isPublishable && it.indicator.active }
               .associate { (indicator, entry) ->
                 indicator to
                     ReportIndicatorEntryModel(
@@ -662,11 +662,15 @@ class ReportStore(
               }
       val publishableCommonIndicator =
           report.commonIndicators
-              .filter { it.indicator.isPublishable && it.entry.value != null }
+              .filter {
+                it.indicator.isPublishable && it.indicator.active && it.entry.value != null
+              }
               .associate { it.indicator.id to it.entry }
       val publishableProjectIndicators =
           report.projectIndicators
-              .filter { it.indicator.isPublishable && it.entry.value != null }
+              .filter {
+                it.indicator.isPublishable && it.indicator.active && it.entry.value != null
+              }
               .associate { it.indicator.id to it.entry }
 
       publishReportIndicators(

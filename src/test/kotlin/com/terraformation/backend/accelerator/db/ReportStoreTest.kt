@@ -4735,6 +4735,82 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
 
+    @Test
+    fun `only publishes active indicators and deletes inactive indicators`() {
+      // Insert inactive common and project indicators that have values so they would be published
+      // if the active filter were not applied.
+      val inactiveCommonIndicatorId = insertCommonIndicator(active = false, isPublishable = true)
+      val inactiveProjectIndicatorId =
+          insertProjectIndicator(active = false, isPublishable = true)
+
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = inactiveCommonIndicatorId,
+          year = 2030,
+          target = 55,
+      )
+      insertReportCommonIndicator(
+          reportId = reportId,
+          indicatorId = inactiveCommonIndicatorId,
+          value = 55,
+          status = ReportIndicatorStatus.Achieved,
+      )
+
+      insertReportProjectIndicatorTarget(
+          projectIndicatorId = inactiveProjectIndicatorId,
+          year = 2030,
+          target = 66,
+      )
+      insertReportProjectIndicator(
+          reportId = reportId,
+          indicatorId = inactiveProjectIndicatorId,
+          value = 66,
+          status = ReportIndicatorStatus.Achieved,
+      )
+
+      // Pre-insert previously published rows for the inactive indicators so we can verify they are
+      // deleted on re-publish.
+      insertPublishedReportCommonIndicator(
+          indicatorId = inactiveCommonIndicatorId,
+          value = 55,
+      )
+      insertPublishedReportProjectIndicator(
+          indicatorId = inactiveProjectIndicatorId,
+          value = 66,
+      )
+
+      clock.instant = Instant.ofEpochSecond(10000)
+      store.publishReport(reportId)
+
+      val publishedCommonIndicatorIds =
+          publishedReportCommonIndicatorsDao.fetchByReportId(reportId).map {
+            it.commonIndicatorId!!
+          }
+      val publishedProjectIndicatorIds =
+          publishedReportProjectIndicatorsDao.fetchByReportId(reportId).map {
+            it.projectIndicatorId!!
+          }
+
+      // Active indicators from setupReport() must still be published.
+      assertTrue(
+          publishedCommonIndicatorIds.contains(commonIndicatorId1),
+          "Active common indicator 1 must be published",
+      )
+      assertTrue(
+          publishedProjectIndicatorIds.contains(projectIndicatorId1),
+          "Active project indicator 1 must be published",
+      )
+
+      // Inactive indicators must not appear in the published tables.
+      assertFalse(
+          publishedCommonIndicatorIds.contains(inactiveCommonIndicatorId),
+          "Inactive common indicator must not be published",
+      )
+      assertFalse(
+          publishedProjectIndicatorIds.contains(inactiveProjectIndicatorId),
+          "Inactive project indicator must not be published",
+      )
+    }
+
     // Helper function to validate the report from setupReport() is in the published reports tables
     private fun assertPublishedReport(publishedBy: UserId, publishedTime: Instant) {
       assertTableEquals(
