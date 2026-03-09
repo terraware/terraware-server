@@ -15,7 +15,7 @@ data class PublishedCumulativeIndicatorProgressModel(
 data class PublishedReportIndicatorModel<ID : Any>(
     val baseline: BigDecimal? = null,
     val category: IndicatorCategory,
-    val classId: IndicatorClass?,
+    val classId: IndicatorClass,
     val currentYearProgress: List<PublishedCumulativeIndicatorProgressModel>? = null,
     val description: String?,
     val endOfProjectTarget: BigDecimal? = null,

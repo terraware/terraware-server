@@ -133,7 +133,7 @@ data class AutoCalculatedIndicatorPayload(
     val indicator: AutoCalculatedIndicator,
     val active: Boolean = indicator.active,
     val category: IndicatorCategory = indicator.categoryId,
-    val classId: IndicatorClass? = indicator.classId,
+    val classId: IndicatorClass = indicator.classId,
     val description: String = indicator.description,
     val frequency: IndicatorFrequency? = indicator.frequencyId,
     val level: IndicatorLevel = indicator.levelId,

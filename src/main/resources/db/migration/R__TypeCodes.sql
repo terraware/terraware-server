@@ -554,6 +554,7 @@ VALUES (1, 'Seeds Collected', 'Total seed count checked-into accessions.', 1, 2,
 ON CONFLICT (id) DO UPDATE
 SET name = excluded.name,
     description = excluded.description,
+    class_id = excluded.class_id,
     level_id = excluded.level_id,
     category_id = excluded.category_id,
     ref_id = excluded.ref_id,

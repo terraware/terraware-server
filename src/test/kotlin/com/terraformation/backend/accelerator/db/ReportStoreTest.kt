@@ -425,6 +425,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
+                          classId = IndicatorClass.Level,
                           description = "Project objectives indicator description",
                           id = commonIndicatorId3,
                           isPublishable = true,
@@ -469,6 +470,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.Community,
+                          classId = IndicatorClass.Level,
                           description = "Community indicator description",
                           id = commonIndicatorId2,
                           isPublishable = true,
@@ -1097,6 +1099,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       id = projectIndicatorId,
                       active = true,
                       category = IndicatorCategory.ProjectObjectives,
+                      classId = IndicatorClass.Level,
                       description = null,
                       isPublishable = true,
                       level = IndicatorLevel.Impact,
@@ -1150,6 +1153,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   CommonIndicatorModel(
                       id = commonIndicatorId,
                       category = IndicatorCategory.ProjectObjectives,
+                      classId = IndicatorClass.Level,
                       description = null,
                       isPublishable = true,
                       level = IndicatorLevel.Impact,
@@ -1973,6 +1977,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.ProjectObjectives,
+                          classId = IndicatorClass.Level,
                           description = "Project objectives indicator description",
                           id = commonIndicatorId3,
                           isPublishable = true,
@@ -2016,6 +2021,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator =
                       CommonIndicatorModel(
                           category = IndicatorCategory.Community,
+                          classId = IndicatorClass.Level,
                           description = "Community indicator description",
                           id = commonIndicatorId2,
                           isPublishable = false,

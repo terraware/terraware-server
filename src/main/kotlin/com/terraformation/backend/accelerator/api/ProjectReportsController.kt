@@ -962,7 +962,7 @@ data class CumulativeIndicatorProgressPayload(
 data class ReportCommonIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
-    val classId: IndicatorClass?,
+    val classId: IndicatorClass,
     @Schema(
         description =
             "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
@@ -1081,7 +1081,7 @@ data class ReportSystemMetricPayload(
 data class ReportAutoCalculatedIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
-    val classId: IndicatorClass?,
+    val classId: IndicatorClass,
     @Schema(
         description =
             "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
@@ -1214,7 +1214,7 @@ data class ReportProjectMetricPayload(
 data class ReportProjectIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
-    val classId: IndicatorClass?,
+    val classId: IndicatorClass,
     @Schema(
         description =
             "If the indicator is cumulative, the list of actual values for all quarters in the report's year"
