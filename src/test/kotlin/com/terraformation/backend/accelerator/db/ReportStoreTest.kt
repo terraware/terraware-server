@@ -4738,10 +4738,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `only publishes active indicators and deletes inactive indicators`() {
       // Insert inactive common and project indicators that have values so they would be published
-      // if the active filter were not applied.
+      // if they were active.
       val inactiveCommonIndicatorId = insertCommonIndicator(active = false, isPublishable = true)
-      val inactiveProjectIndicatorId =
-          insertProjectIndicator(active = false, isPublishable = true)
+      val inactiveProjectIndicatorId = insertProjectIndicator(active = false, isPublishable = true)
 
       insertReportCommonIndicatorTarget(
           commonIndicatorId = inactiveCommonIndicatorId,
@@ -4767,8 +4766,9 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           status = ReportIndicatorStatus.Achieved,
       )
 
-      // Pre-insert previously published rows for the inactive indicators so we can verify they are
-      // deleted on re-publish.
+      // Pre-insert a published report with rows for the inactive indicators so we can verify they
+      // are deleted on re-publish.
+      insertPublishedReport(reportId = reportId, projectId = projectId)
       insertPublishedReportCommonIndicator(
           indicatorId = inactiveCommonIndicatorId,
           value = 55,
@@ -4781,33 +4781,44 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       clock.instant = Instant.ofEpochSecond(10000)
       store.publishReport(reportId)
 
-      val publishedCommonIndicatorIds =
-          publishedReportCommonIndicatorsDao.fetchByReportId(reportId).map {
-            it.commonIndicatorId!!
-          }
-      val publishedProjectIndicatorIds =
-          publishedReportProjectIndicatorsDao.fetchByReportId(reportId).map {
-            it.projectIndicatorId!!
-          }
+      assertTableEquals(
+          listOf(
+              PublishedReportCommonIndicatorsRecord(
+                  reportId = reportId,
+                  commonIndicatorId = commonIndicatorId1,
+                  statusId = ReportIndicatorStatus.Achieved,
+                  value = 10,
+                  progressNotes = "Common Indicator 1 Progress notes",
+              ),
+              PublishedReportCommonIndicatorsRecord(
+                  reportId = reportId,
+                  commonIndicatorId = commonIndicatorId2,
+                  statusId = ReportIndicatorStatus.OnTrack,
+                  value = 19,
+                  projectsComments = "Common Indicator 2 Underperformance",
+              ),
+          ),
+          "Published report common indicators table",
+      )
 
-      // Active indicators from setupReport() must still be published.
-      assertTrue(
-          publishedCommonIndicatorIds.contains(commonIndicatorId1),
-          "Active common indicator 1 must be published",
-      )
-      assertTrue(
-          publishedProjectIndicatorIds.contains(projectIndicatorId1),
-          "Active project indicator 1 must be published",
-      )
-
-      // Inactive indicators must not appear in the published tables.
-      assertFalse(
-          publishedCommonIndicatorIds.contains(inactiveCommonIndicatorId),
-          "Inactive common indicator must not be published",
-      )
-      assertFalse(
-          publishedProjectIndicatorIds.contains(inactiveProjectIndicatorId),
-          "Inactive project indicator must not be published",
+      assertTableEquals(
+          listOf(
+              PublishedReportProjectIndicatorsRecord(
+                  reportId = reportId,
+                  projectIndicatorId = projectIndicatorId1,
+                  statusId = ReportIndicatorStatus.Achieved,
+                  value = 30,
+                  progressNotes = "Project Indicator 1 Progress notes",
+              ),
+              PublishedReportProjectIndicatorsRecord(
+                  reportId = reportId,
+                  projectIndicatorId = projectIndicatorId2,
+                  statusId = ReportIndicatorStatus.Unlikely,
+                  value = 39,
+                  projectsComments = "Project Indicator 2 Underperformance",
+              ),
+          ),
+          "Published report project indicators table",
       )
     }
 
