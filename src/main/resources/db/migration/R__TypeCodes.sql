@@ -494,7 +494,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO accelerator.indicator_frequencies (id, name)
 VALUES (1, 'Annual'),
        (2, 'Bi-Annual'),
-       (3, 'MRV Cycle')
+       (3, 'MRV Cycle'),
+       (4, 'Quarterly')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.report_indicator_statuses (id, name)
