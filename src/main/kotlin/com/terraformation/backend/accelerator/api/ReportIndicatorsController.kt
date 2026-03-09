@@ -139,6 +139,7 @@ data class AutoCalculatedIndicatorPayload(
     val level: IndicatorLevel = indicator.levelId,
     val name: String = indicator.jsonValue,
     val notes: String? = indicator.notes,
+    val precision: Int = indicator.precision,
     val primaryDataSource: String? = indicator.primaryDataSource,
     val refId: String = indicator.refId,
     val tfOwner: String? = indicator.tfOwner,

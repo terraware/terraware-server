@@ -117,6 +117,10 @@ val ENUM_TABLES =
                                 "String?",
                             ),
                             EnumTableColumnInfo(
+                                "precision",
+                                "Int",
+                            ),
+                            EnumTableColumnInfo(
                                 "primary_data_source",
                                 "String?",
                             ),
