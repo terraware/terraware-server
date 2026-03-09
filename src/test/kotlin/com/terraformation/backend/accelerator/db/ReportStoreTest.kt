@@ -4735,6 +4735,93 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
 
+    @Test
+    fun `only publishes active indicators and deletes inactive indicators`() {
+      // Insert inactive common and project indicators that have values so they would be published
+      // if they were active.
+      val inactiveCommonIndicatorId = insertCommonIndicator(active = false, isPublishable = true)
+      val inactiveProjectIndicatorId = insertProjectIndicator(active = false, isPublishable = true)
+
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = inactiveCommonIndicatorId,
+          year = 2030,
+          target = 55,
+      )
+      insertReportCommonIndicator(
+          reportId = reportId,
+          indicatorId = inactiveCommonIndicatorId,
+          value = 55,
+          status = ReportIndicatorStatus.Achieved,
+      )
+
+      insertReportProjectIndicatorTarget(
+          projectIndicatorId = inactiveProjectIndicatorId,
+          year = 2030,
+          target = 66,
+      )
+      insertReportProjectIndicator(
+          reportId = reportId,
+          indicatorId = inactiveProjectIndicatorId,
+          value = 66,
+          status = ReportIndicatorStatus.Achieved,
+      )
+
+      // Pre-insert a published report with rows for the inactive indicators so we can verify they
+      // are deleted on re-publish.
+      insertPublishedReport(reportId = reportId, projectId = projectId)
+      insertPublishedReportCommonIndicator(
+          indicatorId = inactiveCommonIndicatorId,
+          value = 55,
+      )
+      insertPublishedReportProjectIndicator(
+          indicatorId = inactiveProjectIndicatorId,
+          value = 66,
+      )
+
+      clock.instant = Instant.ofEpochSecond(10000)
+      store.publishReport(reportId)
+
+      assertTableEquals(
+          listOf(
+              PublishedReportCommonIndicatorsRecord(
+                  reportId = reportId,
+                  commonIndicatorId = commonIndicatorId1,
+                  statusId = ReportIndicatorStatus.Achieved,
+                  value = 10,
+                  progressNotes = "Common Indicator 1 Progress notes",
+              ),
+              PublishedReportCommonIndicatorsRecord(
+                  reportId = reportId,
+                  commonIndicatorId = commonIndicatorId2,
+                  statusId = ReportIndicatorStatus.OnTrack,
+                  value = 19,
+                  projectsComments = "Common Indicator 2 Underperformance",
+              ),
+          ),
+          "Published report common indicators table",
+      )
+
+      assertTableEquals(
+          listOf(
+              PublishedReportProjectIndicatorsRecord(
+                  reportId = reportId,
+                  projectIndicatorId = projectIndicatorId1,
+                  statusId = ReportIndicatorStatus.Achieved,
+                  value = 30,
+                  progressNotes = "Project Indicator 1 Progress notes",
+              ),
+              PublishedReportProjectIndicatorsRecord(
+                  reportId = reportId,
+                  projectIndicatorId = projectIndicatorId2,
+                  statusId = ReportIndicatorStatus.Unlikely,
+                  value = 39,
+                  projectsComments = "Project Indicator 2 Underperformance",
+              ),
+          ),
+          "Published report project indicators table",
+      )
+    }
+
     // Helper function to validate the report from setupReport() is in the published reports tables
     private fun assertPublishedReport(publishedBy: UserId, publishedTime: Instant) {
       assertTableEquals(
