@@ -1,3 +1,5 @@
+a6a076e9313 SW-8151 Only retrieve active indicators in accelerator reports (#4113)
+b66c3bae06a SW-8151 Only publish active indicators (#4112)
 177f1f2f480 SW-8151 Add active boolean to NewIndicatorPayload (#4110)
 dbba2313320 SW-8152 Update names of Indicator Levels (#4106)
 3602a90e1f1 Update dependency org.jobrunr:jobrunr-spring-boot-3-starter to v8.5.0 (#4101)
