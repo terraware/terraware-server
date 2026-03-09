@@ -1753,6 +1753,7 @@ class ReportStore(
                     COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID.eq(COMMON_INDICATORS.ID)
                         .and(COMMON_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 )
+                .where(COMMON_INDICATORS.ACTIVE.isTrue)
                 .orderBy(COMMON_INDICATORS.REF_ID, COMMON_INDICATORS.ID)
         )
         .convertFrom { results ->
@@ -1842,6 +1843,7 @@ class ReportStore(
                         .and(PROJECT_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 )
                 .where(PROJECT_INDICATORS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .and(PROJECT_INDICATORS.ACTIVE.isTrue)
                 .orderBy(PROJECT_INDICATORS.REF_ID, PROJECT_INDICATORS.ID)
         )
         .convertFrom { results ->
@@ -2242,6 +2244,7 @@ class ReportStore(
                         )
                         .and(AUTO_CALCULATED_INDICATOR_TARGETS.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 )
+                .where(AUTO_CALCULATED_INDICATORS.ACTIVE.isTrue)
                 .orderBy(AUTO_CALCULATED_INDICATORS.REF_ID, AUTO_CALCULATED_INDICATORS.ID)
         )
         .convertFrom { results ->

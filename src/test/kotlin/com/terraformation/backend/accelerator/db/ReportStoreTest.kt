@@ -53,6 +53,7 @@ import com.terraformation.backend.db.accelerator.tables.records.ReportChallenges
 import com.terraformation.backend.db.accelerator.tables.records.ReportCommonIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportProjectIndicatorsRecord
 import com.terraformation.backend.db.accelerator.tables.records.ReportsRecord
+import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_ACHIEVEMENTS
 import com.terraformation.backend.db.accelerator.tables.references.REPORT_CHALLENGES
 import com.terraformation.backend.db.default_schema.GlobalRole
@@ -1213,6 +1214,44 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           "Other years and projects don't affect auto-calculated indicators",
       )
     }
+
+    @Test
+    fun `omits inactive indicators from results`() {
+      insertProjectReportConfig()
+      insertReport(status = ReportStatus.NotSubmitted)
+
+      val activeCommonId = insertCommonIndicator(name = "Active Common Indicator")
+      insertCommonIndicator(name = "Inactive Common Indicator", active = false)
+
+      val activeProjectId = insertProjectIndicator(name = "Active Project Indicator")
+      insertProjectIndicator(name = "Inactive Project Indicator", active = false)
+
+      // Mark SeedsCollected inactive via direct DB update
+      dslContext
+          .update(AUTO_CALCULATED_INDICATORS)
+          .set(AUTO_CALCULATED_INDICATORS.ACTIVE, false)
+          .where(AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SeedsCollected))
+          .execute()
+
+      val report = store.fetch(includeIndicators = true).single()
+
+      assertEquals(
+          listOf(activeCommonId),
+          report.commonIndicators.map { it.indicator.id },
+          "Only the active common indicator should be returned",
+      )
+      assertEquals(
+          listOf(activeProjectId),
+          report.projectIndicators.map { it.indicator.id },
+          "Only the active project indicator should be returned",
+      )
+      assertFalse(
+          report.autoCalculatedIndicators.any {
+            it.indicator == AutoCalculatedIndicator.SeedsCollected
+          },
+          "Inactive auto-calculated indicator SeedsCollected should not appear in results",
+      )
+    }
   }
 
   @Nested
@@ -2189,6 +2228,44 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           store.fetchOne(reportId, includeIndicators = false),
           "Fetch one without indicators",
+      )
+    }
+
+    @Test
+    fun `omits inactive indicators when fetching a single report`() {
+      insertProjectReportConfig()
+      val reportId = insertReport(status = ReportStatus.NotSubmitted)
+
+      val activeCommonId = insertCommonIndicator(name = "Active Common Indicator")
+      insertCommonIndicator(name = "Inactive Common Indicator", active = false)
+
+      val activeProjectId = insertProjectIndicator(name = "Active Project Indicator")
+      insertProjectIndicator(name = "Inactive Project Indicator", active = false)
+
+      // Mark SeedsCollected inactive via direct DB update
+      dslContext
+          .update(AUTO_CALCULATED_INDICATORS)
+          .set(AUTO_CALCULATED_INDICATORS.ACTIVE, false)
+          .where(AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SeedsCollected))
+          .execute()
+
+      val report = store.fetchOne(reportId, includeIndicators = true)
+
+      assertEquals(
+          listOf(activeCommonId),
+          report.commonIndicators.map { it.indicator.id },
+          "fetchOne should return only active common indicators",
+      )
+      assertEquals(
+          listOf(activeProjectId),
+          report.projectIndicators.map { it.indicator.id },
+          "fetchOne should return only active project indicators",
+      )
+      assertFalse(
+          report.autoCalculatedIndicators.any {
+            it.indicator == AutoCalculatedIndicator.SeedsCollected
+          },
+          "fetchOne should not return inactive auto-calculated indicator SeedsCollected",
       )
     }
   }
