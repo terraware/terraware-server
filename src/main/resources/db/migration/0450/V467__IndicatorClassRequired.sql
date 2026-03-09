@@ -12,12 +12,10 @@ SET class_id = 2
 WHERE class_id IS NULL;
 
 ALTER TABLE accelerator.common_indicators
-ALTER COLUMN class_id SET NOT NULL,
-ALTER COLUMN class_id SET DEFAULT 2;
+ALTER COLUMN class_id SET NOT NULL;
 
 ALTER TABLE accelerator.project_indicators
-ALTER COLUMN class_id SET NOT NULL,
-ALTER COLUMN class_id SET DEFAULT 2;
+ALTER COLUMN class_id SET NOT NULL;
 
 ALTER TABLE accelerator.auto_calculated_indicators
 ALTER COLUMN class_id SET NOT NULL;
