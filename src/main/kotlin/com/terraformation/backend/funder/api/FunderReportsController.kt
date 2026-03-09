@@ -132,7 +132,7 @@ data class PublishedReportMetricPayload(
 data class PublishedReportIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
-    val classId: IndicatorClass?,
+    val classId: IndicatorClass,
     @Schema(
         description =
             "If the indicator is cumulative, the list of actual values for all quarters in the " +

@@ -42,6 +42,7 @@ data class ExistingProjectMetricPayload(
   fun toModel(): ExistingProjectIndicatorModel {
     return ExistingProjectIndicatorModel(
         id = id,
+        classId = IndicatorClass.Level,
         projectId = projectId,
         name = name,
         description = description,
@@ -57,7 +58,7 @@ data class ExistingProjectMetricPayload(
 data class ExistingProjectIndicatorPayload(
     val active: Boolean,
     val category: IndicatorCategory,
-    val classId: IndicatorClass?,
+    val classId: IndicatorClass,
     val description: String?,
     val frequency: IndicatorFrequency?,
     val id: ProjectIndicatorId,
@@ -139,6 +140,7 @@ data class ExistingStandardMetricPayload(
   fun toModel(): ExistingCommonIndicatorModel {
     return ExistingCommonIndicatorModel(
         id = id,
+        classId = IndicatorClass.Level,
         name = name,
         description = description,
         category = component,
@@ -153,7 +155,7 @@ data class ExistingStandardMetricPayload(
 data class ExistingCommonIndicatorPayload(
     val active: Boolean,
     val category: IndicatorCategory,
-    val classId: IndicatorClass?,
+    val classId: IndicatorClass,
     val description: String?,
     val frequency: IndicatorFrequency?,
     val id: CommonIndicatorId,
@@ -218,6 +220,7 @@ data class NewMetricPayload(
   fun toProjectIndicatorModel(projectId: ProjectId): NewProjectIndicatorModel {
     return NewProjectIndicatorModel(
         id = null,
+        classId = IndicatorClass.Level,
         projectId = projectId,
         name = name,
         description = description,
@@ -232,6 +235,7 @@ data class NewMetricPayload(
   fun toCommonIndicatorModel(): NewCommonIndicatorModel {
     return NewCommonIndicatorModel(
         id = null,
+        classId = IndicatorClass.Level,
         name = name,
         description = description,
         category = component,
@@ -246,7 +250,7 @@ data class NewMetricPayload(
 data class NewIndicatorPayload(
     val active: Boolean,
     val category: IndicatorCategory,
-    val classId: IndicatorClass?,
+    val classId: IndicatorClass,
     val description: String?,
     val frequency: IndicatorFrequency?,
     val isPublishable: Boolean,
