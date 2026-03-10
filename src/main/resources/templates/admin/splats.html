@@ -51,7 +51,7 @@
             <tr>
                 <td rowspan="3">extract</td>
                 <td>FPS</td>
-                <td><input type="text" name="fps" placeholder="3"/></td>
+                <td><input type="text" name="fps" placeholder="10"/></td>
                 <td>
                     Frames per second to extract from the video.
                 </td>
@@ -78,7 +78,7 @@
             <tr>
                 <td rowspan="2">filter-blurry</td>
                 <td>Keep %</td>
-                <td><input type="text" name="keepPercent" placeholder="90"/></td>
+                <td><input type="text" name="keepPercent" placeholder="100"/></td>
                 <td>
                     Percentage of frames to keep after checking for blurriness. If this is 90, the
                     blurriest 10% of frames will be dropped. A value of 100 will skip the filter-blurry
@@ -137,8 +137,8 @@
                 <td>Command</td>
                 <td>
                     <select name="mapper">
-                        <option value="colmap">COLMAP</option>
-                        <option value="glomap" selected>GLOMAP</option>
+                        <option value="colmap" selected>COLMAP</option>
+                        <option value="glomap">GLOMAP</option>
                     </select>
                 <td>
                     Which command to use for the mapper phase of the SfM step.
