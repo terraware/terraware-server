@@ -142,12 +142,13 @@ class PublishedReportStore(
             "status_id",
             SQLDataType.INTEGER.asConvertedDataType(ReportIndicatorStatusConverter()),
         )!!
+
     val projectsCommentsField =
         publishedIndicatorTable.field("projects_comments", String::class.java)!!
-    val valueField = publishedIndicatorTable.field("value", Int::class.java)!!
+    val valueField = publishedIndicatorTable.field("value", BigDecimal::class.java)!!
 
     val targetTable = targetTableIndicatorIdField.table!!
-    val targetField = targetTable.field("target", Int::class.java)!!
+    val targetField = targetTable.field("target", BigDecimal::class.java)!!
     val targetYearField = targetTable.field("year", Int::class.java)!!
     val targetProjectIdField =
         targetTable.field(
@@ -192,10 +193,10 @@ class PublishedReportStore(
             SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
         )!!
     val reportValueField =
-        reportIndicatorTable.field("value", Int::class.java)
+        reportIndicatorTable.field("value", BigDecimal::class.java)
             ?: DSL.coalesce(
-                reportIndicatorTable.field("override_value", Int::class.java)!!,
-                reportIndicatorTable.field("system_value", Int::class.java)!!,
+                reportIndicatorTable.field("override_value", BigDecimal::class.java)!!,
+                reportIndicatorTable.field("system_value", BigDecimal::class.java)!!,
             )
     val reportsForSum = REPORTS.`as`("reportsForSum")
     val sumAtPreviousYearEnd =
@@ -214,10 +215,10 @@ class PublishedReportStore(
     val reportIndicatorsForProgress = reportIndicatorTable.`as`("reportIndicatorsForProgress")
     val indicatorIdForProgress = reportIndicatorsForProgress.field(reportTableIndicatorIdField)!!
     val indicatorValueProgressField =
-        reportIndicatorsForProgress.field("value", Int::class.java)
+        reportIndicatorsForProgress.field("value", BigDecimal::class.java)
             ?: DSL.coalesce(
-                reportIndicatorsForProgress.field("override_value", Int::class.java)!!,
-                reportIndicatorsForProgress.field("system_value", Int::class.java)!!,
+                reportIndicatorsForProgress.field("override_value", BigDecimal::class.java)!!,
+                reportIndicatorsForProgress.field("system_value", BigDecimal::class.java)!!,
             )
     val reportIdProgressField =
         reportIndicatorsForProgress.field(
@@ -233,7 +234,8 @@ class PublishedReportStore(
         )!!
     val publishedIndicatorIdForProgress =
         publishedIndicatorForProgress.field(publishedIndicatorIdField)!!
-    val publishedValueForProgress = publishedIndicatorForProgress.field("value", Int::class.java)!!
+    val publishedValueForProgress =
+        publishedIndicatorForProgress.field("value", BigDecimal::class.java)!!
     // For previous quarters, use the report value directly. For the current quarter, use the
     // published value only (null if no published entry, which excludes it from the result).
     val progressValue =
@@ -283,7 +285,7 @@ class PublishedReportStore(
                   results.map { record ->
                     PublishedCumulativeIndicatorProgressModel(
                         quarter = record[reportsForProgress.REPORT_QUARTER_ID]!!,
-                        value = record[DSL.field("progress_value", SQLDataType.INTEGER)]!!,
+                        value = record[DSL.field("progress_value", SQLDataType.NUMERIC)]!!,
                     )
                   }
                 },

@@ -100,6 +100,7 @@ import java.time.InstantSource
 import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
+import kotlin.toBigDecimal
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -785,7 +786,7 @@ class ReportStore(
       projectId: ProjectId,
       year: Int,
       indicatorId: ProjectIndicatorId,
-      target: Int?,
+      target: BigDecimal?,
   ) {
     requirePermissions { updateProjectReports(projectId) }
 
@@ -807,7 +808,7 @@ class ReportStore(
       projectId: ProjectId,
       year: Int,
       indicatorId: CommonIndicatorId,
-      target: Int?,
+      target: BigDecimal?,
   ) {
     requirePermissions { updateProjectReports(projectId) }
 
@@ -829,7 +830,7 @@ class ReportStore(
       projectId: ProjectId,
       year: Int,
       indicatorId: AutoCalculatedIndicator,
-      target: Int?,
+      target: BigDecimal?,
   ) {
     requirePermissions { updateProjectReports(projectId) }
 
@@ -1327,7 +1328,7 @@ class ReportStore(
     val table = indicatorIdField.table!!
     val reportIdField =
         table.field("report_id", SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()))!!
-    val valueField = table.field("value", Int::class.java)!!
+    val valueField = table.field("value", BigDecimal::class.java)!!
     val projectsCommentsField = table.field("projects_comments", String::class.java)!!
     val progressNotesField = table.field("progress_notes", String::class.java)
     val statusField =
@@ -1456,7 +1457,7 @@ class ReportStore(
       projectId: ProjectId,
       year: Int,
       indicatorIdField: TableField<*, ID?>,
-      targets: Map<ID, Int?>,
+      targets: Map<ID, BigDecimal?>,
   ) {
     if (targets.isEmpty()) {
       return
@@ -1466,7 +1467,7 @@ class ReportStore(
     val projectIdField =
         table.field("project_id", SQLDataType.BIGINT.asConvertedDataType(ProjectIdConverter()))!!
     val yearField = table.field("year", Int::class.java)!!
-    val targetField = table.field("target", Int::class.java)!!
+    val targetField = table.field("target", BigDecimal::class.java)!!
 
     var insertQuery = dslContext.insertInto(table).set()
 
@@ -1938,20 +1939,19 @@ class ReportStore(
   private val hectaresPlantedField =
       with(SUBSTRATA) {
         DSL.field(
-                DSL.select(DSL.sum(AREA_HA))
-                    .from(this)
-                    .join(PLANTING_SITES)
-                    .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
-                    .where(
-                        timestampToLocalDateField(
-                                PLANTING_COMPLETED_TIME,
-                                plantingSiteTimeZoneField(PLANTING_SITE_ID),
-                            )
-                            .le(REPORTS.END_DATE)
-                    )
-                    .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-            )
-            .convertFrom { it.toInt() }
+            DSL.select(DSL.sum(AREA_HA))
+                .from(this)
+                .join(PLANTING_SITES)
+                .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
+                .where(
+                    timestampToLocalDateField(
+                            PLANTING_COMPLETED_TIME,
+                            plantingSiteTimeZoneField(PLANTING_SITE_ID),
+                        )
+                        .le(REPORTS.END_DATE)
+                )
+                .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+        )
       }
 
   private val observationsInReportPeriod =
@@ -1973,7 +1973,7 @@ class ReportStore(
           )
 
   // Calculate survival rate by fetching observations from observationResultsStore
-  private fun calculateSurvivalRateForReport(reportId: ReportId): Int? {
+  private fun calculateSurvivalRateForReport(reportId: ReportId): BigDecimal? {
     // retrieve the latest observation for each planting site in the report's project within the
     // report period. observationsInReportPeriod only returns one observation per planting site.
     val observationIds =
@@ -2013,18 +2013,17 @@ class ReportStore(
           }
     }
 
-    return calculateSurvivalRate(numKnownLive, sumDensity)
+    return calculateSurvivalRate(numKnownLive, sumDensity)?.toBigDecimal()
   }
 
   private val seedsCollectedField =
       with(ACCESSIONS) {
         DSL.field(
-                DSL.select(DSL.sum(EST_SEED_COUNT) + DSL.sum(TOTAL_WITHDRAWN_COUNT))
-                    .from(this)
-                    .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                    .and(COLLECTED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
-            )
-            .convertFrom { it?.toInt() }
+            DSL.select(DSL.sum(EST_SEED_COUNT) + DSL.sum(TOTAL_WITHDRAWN_COUNT))
+                .from(this)
+                .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .and(COLLECTED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
+        )
       }
 
   private val withdrawnSeedlingsField =
@@ -2048,17 +2047,16 @@ class ReportStore(
   private val seedlingsField =
       with(BATCHES) {
         DSL.field(
-                DSL.select(
-                        DSL.sum(READY_QUANTITY) +
-                            DSL.sum(GERMINATING_QUANTITY) +
-                            DSL.sum(ACTIVE_GROWTH_QUANTITY) +
-                            DSL.coalesce(DSL.sum(withdrawnSeedlingsField), 0)
-                    )
-                    .from(this)
-                    .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                    .and(ADDED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
-            )
-            .convertFrom { it?.toInt() }
+            DSL.select(
+                    DSL.sum(READY_QUANTITY) +
+                        DSL.sum(GERMINATING_QUANTITY) +
+                        DSL.sum(ACTIVE_GROWTH_QUANTITY) +
+                        DSL.coalesce(DSL.sum(withdrawnSeedlingsField), 0)
+                )
+                .from(this)
+                .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .and(ADDED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
+        )
       }
 
   // For species, we total up the number of trees planted per species, and take only ones that are
@@ -2066,53 +2064,53 @@ class ReportStore(
   private val speciesPlantedField =
       with(PLANTINGS) {
         DSL.field(
-            DSL.select(DSL.count())
-                .from(
-                    DSL.select(SPECIES_ID)
-                        .from(this)
-                        .join(DELIVERIES)
-                        .on(DELIVERIES.ID.eq(DELIVERY_ID))
-                        .join(WITHDRAWAL_SUMMARIES)
-                        .on(WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID))
-                        .join(PLANTING_SITES)
-                        .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
-                        .where(
-                            WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE.between(
-                                REPORTS.START_DATE,
-                                REPORTS.END_DATE,
+                DSL.select(DSL.count())
+                    .from(
+                        DSL.select(SPECIES_ID)
+                            .from(this)
+                            .join(DELIVERIES)
+                            .on(DELIVERIES.ID.eq(DELIVERY_ID))
+                            .join(WITHDRAWAL_SUMMARIES)
+                            .on(WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                            .join(PLANTING_SITES)
+                            .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
+                            .where(
+                                WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE.between(
+                                    REPORTS.START_DATE,
+                                    REPORTS.END_DATE,
+                                )
                             )
-                        )
-                        .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                        .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
-                        .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull)
-                        .groupBy(SPECIES_ID)
-                        .having(DSL.sum(NUM_PLANTS).ge(BigDecimal.ZERO))
-                )
-        )
+                            .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                            .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
+                            .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull)
+                            .groupBy(SPECIES_ID)
+                            .having(DSL.sum(NUM_PLANTS).ge(BigDecimal.ZERO))
+                    )
+            )
+            .convertFrom { it?.toBigDecimal() }
       }
 
   private val treesPlantedField =
       with(PLANTINGS) {
         DSL.field(
-                DSL.select(DSL.sum(NUM_PLANTS))
-                    .from(this)
-                    .join(DELIVERIES)
-                    .on(DELIVERIES.ID.eq(DELIVERY_ID))
-                    .join(WITHDRAWAL_SUMMARIES)
-                    .on(WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID))
-                    .join(PLANTING_SITES)
-                    .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
-                    .where(
-                        WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE.between(
-                            REPORTS.START_DATE,
-                            REPORTS.END_DATE,
-                        )
+            DSL.select(DSL.sum(NUM_PLANTS))
+                .from(this)
+                .join(DELIVERIES)
+                .on(DELIVERIES.ID.eq(DELIVERY_ID))
+                .join(WITHDRAWAL_SUMMARIES)
+                .on(WITHDRAWAL_SUMMARIES.ID.eq(DELIVERIES.WITHDRAWAL_ID))
+                .join(PLANTING_SITES)
+                .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
+                .where(
+                    WITHDRAWAL_SUMMARIES.WITHDRAWN_DATE.between(
+                        REPORTS.START_DATE,
+                        REPORTS.END_DATE,
                     )
-                    .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                    .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
-                    .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull)
-            )
-            .convertFrom { it?.toInt() }
+                )
+                .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
+                .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull)
+        )
       }
 
   private val systemTerrawareValueField =
@@ -2142,8 +2140,8 @@ class ReportStore(
                   AUTO_CALCULATED_INDICATORS.ID.eq(AutoCalculatedIndicator.SurvivalRate),
                   DSL.value(null, REPORT_AUTO_CALCULATED_INDICATORS.SYSTEM_VALUE),
               )
-              .else_(0),
-          DSL.value(0),
+              .else_(BigDecimal.ZERO),
+          DSL.value(BigDecimal.ZERO),
       )
 
   private val systemValueField =

@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.model
 
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
+import java.math.BigDecimal
 
 val TRACKED_ACCUMULATED_INDICATORS =
     listOf(
@@ -11,5 +12,5 @@ val TRACKED_ACCUMULATED_INDICATORS =
 
 data class IndicatorProgressModel(
     val indicator: AutoCalculatedIndicator,
-    val progress: Int,
+    val progress: BigDecimal,
 )

@@ -192,13 +192,13 @@ data class MetricProgressPayload(
       model: IndicatorProgressModel
   ) : this(
       metric = model.indicator,
-      progress = model.progress,
+      progress = model.progress.toInt(),
   )
 }
 
 data class IndicatorProgressPayload(
     val indicator: AutoCalculatedIndicator,
-    val progress: Int,
+    val progress: BigDecimal,
 ) {
   constructor(
       model: IndicatorProgressModel

@@ -24,7 +24,7 @@ import org.jooq.Record
 
 data class CumulativeIndicatorProgressModel(
     val quarter: ReportQuarter,
-    val value: Int,
+    val value: BigDecimal,
 )
 
 data class ReportIndicatorEntryModel(
@@ -33,8 +33,8 @@ data class ReportIndicatorEntryModel(
     val projectsComments: String? = null,
     val progressNotes: String? = null,
     val status: ReportIndicatorStatus? = null,
-    val target: Int? = null,
-    val value: Int? = null,
+    val target: BigDecimal? = null,
+    val value: BigDecimal? = null,
 )
 
 data class ReportCommonIndicatorModel(
@@ -146,11 +146,11 @@ data class ReportProjectIndicatorModel(
 }
 
 data class ReportAutoCalculatedIndicatorEntryModel(
-    val target: Int? = null,
-    val systemValue: Int?,
+    val target: BigDecimal? = null,
+    val systemValue: BigDecimal?,
     /** Time when system value is recorded. If null, the system value is current. */
     val systemTime: Instant? = null,
-    val overrideValue: Int? = null,
+    val overrideValue: BigDecimal? = null,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
     val progressNotes: String? = null,
@@ -158,7 +158,10 @@ data class ReportAutoCalculatedIndicatorEntryModel(
     val status: ReportIndicatorStatus? = null,
 ) {
   companion object {
-    fun of(record: Record, systemValueField: Field<Int?>): ReportAutoCalculatedIndicatorEntryModel {
+    fun of(
+        record: Record,
+        systemValueField: Field<BigDecimal?>,
+    ): ReportAutoCalculatedIndicatorEntryModel {
       return with(REPORT_AUTO_CALCULATED_INDICATORS) {
         ReportAutoCalculatedIndicatorEntryModel(
             target = record[REPORT_AUTO_CALCULATED_INDICATOR_TARGETS.TARGET],
@@ -197,7 +200,7 @@ data class ReportAutoCalculatedIndicatorModel(
   companion object {
     fun of(
         record: Record,
-        systemValueField: Field<Int?>,
+        systemValueField: Field<BigDecimal?>,
         previousYearTotalField: Field<BigDecimal?>,
         currentYearProgressField: Field<List<CumulativeIndicatorProgressModel>>,
     ): ReportAutoCalculatedIndicatorModel {

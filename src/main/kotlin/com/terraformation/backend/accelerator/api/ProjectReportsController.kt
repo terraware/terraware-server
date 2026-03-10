@@ -569,7 +569,7 @@ class ProjectReportsController(
         projectId = projectId,
         year = payload.year,
         indicatorId = payload.metricId,
-        target = payload.target,
+        target = payload.target?.toBigDecimal(),
     )
     return SimpleSuccessResponsePayload()
   }
@@ -586,7 +586,7 @@ class ProjectReportsController(
         projectId = projectId,
         year = payload.year,
         indicatorId = payload.metricId,
-        target = payload.target,
+        target = payload.target?.toBigDecimal(),
     )
     return SimpleSuccessResponsePayload()
   }
@@ -603,7 +603,7 @@ class ProjectReportsController(
         projectId = projectId,
         year = payload.year,
         indicatorId = payload.metric,
-        target = payload.target,
+        target = payload.target?.toBigDecimal(),
     )
     return SimpleSuccessResponsePayload()
   }
@@ -941,15 +941,15 @@ data class ReportStandardMetricPayload(
       projectsComments = model.entry.projectsComments,
       reference = model.indicator.refId,
       status = model.entry.status,
-      target = model.entry.target,
+      target = model.entry.target?.toInt(),
       type = model.indicator.level,
-      value = model.entry.value,
+      value = model.entry.value?.toInt(),
   )
 }
 
 data class CumulativeIndicatorProgressPayload(
     val quarter: ReportQuarter,
-    val value: Int,
+    val value: BigDecimal,
 ) {
   constructor(
       model: CumulativeIndicatorProgressModel
@@ -983,8 +983,8 @@ data class ReportCommonIndicatorPayload(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
-    val target: Int?,
-    val value: Int?,
+    val target: BigDecimal?,
+    val value: BigDecimal?,
 ) {
   constructor(
       model: ReportCommonIndicatorModel
@@ -1023,7 +1023,7 @@ data class ReportStandardMetricEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = value,
+          value = value?.toBigDecimal(),
       )
 }
 
@@ -1032,7 +1032,7 @@ data class ReportCommonIndicatorEntriesPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportIndicatorStatus?,
-    val value: Int?,
+    val value: BigDecimal?,
 ) {
   fun toModel() =
       ReportIndicatorEntryModel(
@@ -1066,14 +1066,14 @@ data class ReportSystemMetricPayload(
       description = model.indicator.description,
       isPublishable = model.indicator.isPublishable,
       metric = model.indicator,
-      overrideValue = model.entry.overrideValue,
+      overrideValue = model.entry.overrideValue?.toInt(),
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
       reference = model.indicator.refId,
       status = model.entry.status,
       systemTime = model.entry.systemTime,
-      systemValue = model.entry.systemValue,
-      target = model.entry.target,
+      systemValue = model.entry.systemValue?.toInt(),
+      target = model.entry.target?.toInt(),
       type = model.indicator.levelId,
   )
 }
@@ -1092,7 +1092,7 @@ data class ReportAutoCalculatedIndicatorPayload(
     val isPublishable: Boolean,
     val level: IndicatorLevel,
     val indicator: AutoCalculatedIndicator,
-    val overrideValue: Int?,
+    val overrideValue: BigDecimal?,
     @Schema(
         description =
             "If the indicator is cumulative, the cumulative total at the end of the previous year"
@@ -1103,8 +1103,8 @@ data class ReportAutoCalculatedIndicatorPayload(
     val refId: String,
     val status: ReportIndicatorStatus?,
     val systemTime: Instant?,
-    val systemValue: Int?,
-    val target: Int?,
+    val systemValue: BigDecimal?,
+    val target: BigDecimal?,
 ) {
   constructor(
       model: ReportAutoCalculatedIndicatorModel
@@ -1144,13 +1144,13 @@ data class ReportSystemMetricEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = overrideValue,
+          value = overrideValue?.toBigDecimal(),
       )
 }
 
 data class ReportAutoCalculatedIndicatorEntriesPayload(
     val indicator: AutoCalculatedIndicator,
-    val overrideValue: Int?,
+    val overrideValue: BigDecimal?,
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportIndicatorStatus?,
@@ -1204,10 +1204,10 @@ data class ReportProjectMetricPayload(
       projectsComments = model.entry.projectsComments,
       reference = model.indicator.refId,
       status = model.entry.status,
-      target = model.entry.target,
+      target = model.entry.target?.toInt(),
       type = model.indicator.level,
       unit = model.indicator.unit,
-      value = model.entry.value,
+      value = model.entry.value?.toInt(),
   )
 }
 
@@ -1235,9 +1235,9 @@ data class ReportProjectIndicatorPayload(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
-    val target: Int?,
+    val target: BigDecimal?,
     val unit: String?,
-    val value: Int?,
+    val value: BigDecimal?,
 ) {
   constructor(
       model: ReportProjectIndicatorModel
@@ -1277,7 +1277,7 @@ data class ReportProjectMetricEntriesPayload(
           progressNotes = progressNotes,
           projectsComments = projectsComments,
           status = status,
-          value = value,
+          value = value?.toBigDecimal(),
       )
 }
 
@@ -1286,7 +1286,7 @@ data class ReportProjectIndicatorEntriesPayload(
     val progressNotes: String?,
     val projectsComments: String?,
     val status: ReportIndicatorStatus?,
-    val value: Int?,
+    val value: BigDecimal?,
 ) {
   fun toModel() =
       ReportIndicatorEntryModel(
@@ -1375,19 +1375,19 @@ data class UpdateSystemMetricTargetRequestPayload(
 data class UpdateProjectIndicatorTargetRequestPayload(
     val year: Int,
     val indicatorId: ProjectIndicatorId,
-    val target: Int?,
+    val target: BigDecimal?,
 )
 
 data class UpdateCommonIndicatorTargetRequestPayload(
     val year: Int,
     val indicatorId: CommonIndicatorId,
-    val target: Int?,
+    val target: BigDecimal?,
 )
 
 data class UpdateAutoCalculatedIndicatorTargetRequestPayload(
     val year: Int,
     val indicator: AutoCalculatedIndicator,
-    val target: Int?,
+    val target: BigDecimal?,
 )
 
 data class UpdateProjectIndicatorBaselineTargetRequestPayload(

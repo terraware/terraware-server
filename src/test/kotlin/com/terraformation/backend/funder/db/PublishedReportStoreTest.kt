@@ -99,25 +99,25 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       // oldReport1
       insertReport(endDate = LocalDate.of(2024, 9, 30))
-      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = 10)
-      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = 11)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 20)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = 21)
+      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = BigDecimal(10))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = BigDecimal(11))
+      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = BigDecimal(20))
+      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = BigDecimal(21))
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 30,
+          systemValue = BigDecimal(30),
       )
 
       // oldReport2
       insertReport(endDate = LocalDate.of(2024, 12, 31))
-      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = 100)
-      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = 101)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = 200)
-      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = 201)
+      insertReportProjectIndicator(indicatorId = projectIndicatorId1, value = BigDecimal(100))
+      insertReportProjectIndicator(indicatorId = projectIndicatorId2, value = BigDecimal(101))
+      insertReportCommonIndicator(indicatorId = commonIndicatorId1, value = BigDecimal(200))
+      insertReportCommonIndicator(indicatorId = commonIndicatorId2, value = BigDecimal(201))
       insertReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          systemValue = 29,
-          overrideValue = 31,
+          systemValue = BigDecimal(29),
+          overrideValue = BigDecimal(31),
       )
 
       val reportId1 =
@@ -158,12 +158,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId1,
           year = 2025,
-          target = 100,
+          target = BigDecimal(100),
       )
       insertPublishedReportCommonIndicator(
           reportId = reportId1,
           indicatorId = commonIndicatorId1,
-          value = 120,
+          value = BigDecimal(120),
           projectsComments = null,
           status = ReportIndicatorStatus.Achieved,
       )
@@ -171,12 +171,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId2,
           year = 2025,
-          target = 200,
+          target = BigDecimal(200),
       )
       insertPublishedReportCommonIndicator(
           reportId = reportId1,
           indicatorId = commonIndicatorId2,
-          value = 180,
+          value = BigDecimal(180),
           progressNotes = "progress notes 2",
           projectsComments = "Underperformance justification 2",
           status = ReportIndicatorStatus.Unlikely,
@@ -190,7 +190,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportProjectIndicator(
           reportId = reportId1,
           indicatorId = projectIndicatorId1,
-          value = 40,
+          value = BigDecimal(40),
           progressNotes = "progress notes 1",
           projectsComments = null,
           status = ReportIndicatorStatus.OnTrack,
@@ -212,12 +212,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           year = 2025,
-          target = 6,
+          target = BigDecimal(6),
       )
       insertPublishedReportAutoCalculatedIndicator(
           reportId = reportId1,
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          value = 6,
+          value = BigDecimal(6),
           projectsComments = null,
           status = ReportIndicatorStatus.OffTrack,
       )
@@ -225,19 +225,19 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedCommonIndicatorBaseline(
           commonIndicatorId = commonIndicatorId2,
           baseline = 200,
-          endTarget = 250,
+          endTarget = BigDecimal(250),
       )
 
       insertPublishedProjectIndicatorBaseline(
           projectIndicatorId = projectIndicatorId2,
           baseline = 210,
-          endTarget = 220,
+          endTarget = BigDecimal(220),
       )
 
       insertPublishedAutoCalculatedIndicatorBaseline(
           indicator = AutoCalculatedIndicator.SeedsCollected,
           baseline = 300,
-          endTarget = 400,
+          endTarget = BigDecimal(400),
       )
 
       val reportId2 =
@@ -294,9 +294,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               progressNotes = null,
                               projectsComments = null,
                               status = ReportIndicatorStatus.OffTrack,
-                              target = 6,
+                              target = BigDecimal(6),
                               unit = "Seeds",
-                              value = 6,
+                              value = BigDecimal(6),
                           ),
                       ),
                   challenges =
@@ -321,9 +321,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               projectsComments = "Underperformance justification 2",
                               refId = "1.1.1",
                               status = ReportIndicatorStatus.Unlikely,
-                              target = 200,
+                              target = BigDecimal(200),
                               unit = null,
-                              value = 180,
+                              value = BigDecimal(180),
                           ),
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.Climate,
@@ -339,9 +339,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               projectsComments = null,
                               refId = "1.1.2",
                               status = ReportIndicatorStatus.Achieved,
-                              target = 100,
+                              target = BigDecimal(100),
                               unit = null,
-                              value = 120,
+                              value = BigDecimal(120),
                           ),
                       ),
                   endDate = LocalDate.of(2025, 3, 31),
@@ -372,7 +372,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               status = ReportIndicatorStatus.OnTrack,
                               target = null,
                               unit = "%",
-                              value = 40,
+                              value = BigDecimal(40),
                           ),
                           PublishedReportIndicatorModel(
                               baseline = BigDecimal.valueOf(210),
@@ -434,7 +434,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportProjectIndicator(
           reportId = reportId,
           indicatorId = projectIndicatorId,
-          value = 10,
+          value = BigDecimal(10),
           status = ReportIndicatorStatus.OnTrack,
       )
 
@@ -442,13 +442,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId,
           year = 2024,
-          target = 100,
+          target = BigDecimal(100),
       )
       // Target for a different year — should not cause a duplicate row
       insertPublishedProjectIndicatorTarget(
           projectIndicatorId = projectIndicatorId,
           year = 2025,
-          target = 999,
+          target = BigDecimal(999),
       )
       // Target for a different project in the same year — should not cause a duplicate row
       val otherProjectId = insertProject()
@@ -456,7 +456,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = otherProjectId,
           projectIndicatorId = projectIndicatorId,
           year = 2024,
-          target = 888,
+          target = BigDecimal(888),
       )
 
       val reports = store.fetchPublishedReports(projectId)
@@ -472,9 +472,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectsComments = null,
               refId = "1.2.1",
               status = ReportIndicatorStatus.OnTrack,
-              target = 100,
+              target = BigDecimal(100),
               unit = null,
-              value = 10,
+              value = BigDecimal(10),
           )
       assertEquals(
           listOf(expected),
@@ -511,7 +511,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportCommonIndicator(
           reportId = reportId,
           indicatorId = commonIndicatorId,
-          value = 20,
+          value = BigDecimal(20),
           status = ReportIndicatorStatus.Achieved,
       )
 
@@ -519,13 +519,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId,
           year = 2024,
-          target = 200,
+          target = BigDecimal(200),
       )
       // Target for a different year — should not cause a duplicate row
       insertPublishedCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId,
           year = 2025,
-          target = 999,
+          target = BigDecimal(999),
       )
       // Target for a different project in the same year — should not cause a duplicate row
       val otherProjectId = insertProject()
@@ -533,7 +533,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = otherProjectId,
           commonIndicatorId = commonIndicatorId,
           year = 2024,
-          target = 888,
+          target = BigDecimal(888),
       )
 
       val reports = store.fetchPublishedReports(projectId)
@@ -550,9 +550,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectsComments = null,
               refId = "1.1.1",
               status = ReportIndicatorStatus.Achieved,
-              target = 200,
+              target = BigDecimal(200),
               unit = null,
-              value = 20,
+              value = BigDecimal(20),
           )
       assertEquals(
           listOf(expected),
@@ -579,7 +579,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportAutoCalculatedIndicator(
           reportId = reportId,
           indicator = AutoCalculatedIndicator.SurvivalRate,
-          value = 5,
+          value = BigDecimal(5),
           status = ReportIndicatorStatus.OnTrack,
       )
 
@@ -587,13 +587,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SurvivalRate,
           year = 2024,
-          target = 300,
+          target = BigDecimal(300),
       )
       // Target for a different year — should not cause a duplicate row
       insertPublishedAutoCalculatedIndicatorTarget(
           indicator = AutoCalculatedIndicator.SurvivalRate,
           year = 2025,
-          target = 999,
+          target = BigDecimal(999),
       )
       // Target for a different project in the same year — should not cause a duplicate row
       val otherProjectId = insertProject()
@@ -601,7 +601,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           projectId = otherProjectId,
           indicator = AutoCalculatedIndicator.SurvivalRate,
           year = 2024,
-          target = 888,
+          target = BigDecimal(888),
       )
 
       val reports = store.fetchPublishedReports(projectId)
@@ -617,9 +617,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectsComments = null,
               refId = AutoCalculatedIndicator.SurvivalRate.refId,
               status = ReportIndicatorStatus.OnTrack,
-              target = 300,
+              target = BigDecimal(300),
               unit = "%",
-              value = 5,
+              value = BigDecimal(5),
           )
       assertEquals(
           listOf(expected),
@@ -653,7 +653,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = priorYearReportId,
           indicatorId = commonIndicatorId,
-          value = 999,
+          value = BigDecimal(999),
       )
 
       val q1ReportId =
@@ -665,7 +665,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = q1ReportId,
           indicatorId = commonIndicatorId,
-          value = 10,
+          value = BigDecimal(10),
       )
 
       val q2ReportId =
@@ -677,7 +677,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = q2ReportId,
           indicatorId = commonIndicatorId,
-          value = 20,
+          value = BigDecimal(20),
       )
 
       val q3ReportId =
@@ -690,7 +690,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           reportId = q3ReportId,
           indicatorId = commonIndicatorId,
           // current quarter value is ignored, only published value is used for the current quarter
-          value = 29,
+          value = BigDecimal(29),
       )
 
       insertPublishedReport(
@@ -702,7 +702,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportCommonIndicator(
           reportId = q3ReportId,
           indicatorId = commonIndicatorId,
-          value = 30,
+          value = BigDecimal(30),
           status = ReportIndicatorStatus.OnTrack,
       )
 
@@ -716,7 +716,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = q4ReportId,
           indicatorId = commonIndicatorId,
-          value = 40,
+          value = BigDecimal(40),
       )
 
       val reports = store.fetchPublishedReports(projectId)
@@ -724,9 +724,18 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(
-              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q1, value = 10),
-              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q2, value = 20),
-              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q3, value = 30),
+              PublishedCumulativeIndicatorProgressModel(
+                  quarter = ReportQuarter.Q1,
+                  value = BigDecimal(10),
+              ),
+              PublishedCumulativeIndicatorProgressModel(
+                  quarter = ReportQuarter.Q2,
+                  value = BigDecimal(20),
+              ),
+              PublishedCumulativeIndicatorProgressModel(
+                  quarter = ReportQuarter.Q3,
+                  value = BigDecimal(30),
+              ),
           ),
           indicator.currentYearProgress,
           "currentYearProgress contains all quarters in the current year, excluding future quarters",
@@ -757,7 +766,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = q1ReportId,
           indicatorId = commonIndicatorId,
-          value = 10,
+          value = BigDecimal(10),
       )
 
       // Q2 has a null value for this indicator — must be excluded
@@ -782,7 +791,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicator(
           reportId = q3ReportId,
           indicatorId = commonIndicatorId,
-          value = 30,
+          value = BigDecimal(30),
       )
 
       insertPublishedReport(
@@ -797,7 +806,10 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertEquals(
           listOf(
-              PublishedCumulativeIndicatorProgressModel(quarter = ReportQuarter.Q1, value = 10),
+              PublishedCumulativeIndicatorProgressModel(
+                  quarter = ReportQuarter.Q1,
+                  value = BigDecimal(10),
+              ),
               // q2 is excluded because it has a null value
               // q3 is excluded because it has a non-null value but no published value
           ),
@@ -827,7 +839,11 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 3, 31),
               quarter = ReportQuarter.Q1,
           )
-      insertReportCommonIndicator(reportId = q1ReportId, indicatorId = levelIndicatorId, value = 50)
+      insertReportCommonIndicator(
+          reportId = q1ReportId,
+          indicatorId = levelIndicatorId,
+          value = BigDecimal(50),
+      )
 
       val q2ReportId =
           insertReport(
@@ -835,7 +851,11 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 6, 30),
               quarter = ReportQuarter.Q2,
           )
-      insertReportCommonIndicator(reportId = q2ReportId, indicatorId = levelIndicatorId, value = 60)
+      insertReportCommonIndicator(
+          reportId = q2ReportId,
+          indicatorId = levelIndicatorId,
+          value = BigDecimal(60),
+      )
 
       insertPublishedReport(
           reportId = q2ReportId,
@@ -846,7 +866,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPublishedReportCommonIndicator(
           reportId = q2ReportId,
           indicatorId = levelIndicatorId,
-          value = 60,
+          value = BigDecimal(60),
           status = ReportIndicatorStatus.OnTrack,
       )
 
