@@ -1,3 +1,4 @@
+6e20d5a0fdc Update splatter admin UI with new defaults (#4121)
 0f650c33b07 Make IndicatorClass required and non-nullable with default of Level (#4114)
 a6a076e9313 SW-8151 Only retrieve active indicators in accelerator reports (#4113)
 b66c3bae06a SW-8151 Only publish active indicators (#4112)
