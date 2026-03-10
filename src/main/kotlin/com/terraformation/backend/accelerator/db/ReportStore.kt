@@ -1936,24 +1936,6 @@ class ReportStore(
         .asNonNullable()
   }
 
-  private val hectaresPlantedField =
-      with(SUBSTRATA) {
-        DSL.field(
-            DSL.select(DSL.sum(AREA_HA))
-                .from(this)
-                .join(PLANTING_SITES)
-                .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
-                .where(
-                    timestampToLocalDateField(
-                            PLANTING_COMPLETED_TIME,
-                            plantingSiteTimeZoneField(PLANTING_SITE_ID),
-                        )
-                        .le(REPORTS.END_DATE)
-                )
-                .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
-        )
-      }
-
   private val observationsInReportPeriod =
       DSL.select(OBSERVATIONS.ID)
           .distinctOn(OBSERVATIONS.PLANTING_SITE_ID)
@@ -2016,16 +1998,6 @@ class ReportStore(
     return calculateSurvivalRate(numKnownLive, sumDensity)?.toBigDecimal()
   }
 
-  private val seedsCollectedField =
-      with(ACCESSIONS) {
-        DSL.field(
-            DSL.select(DSL.sum(EST_SEED_COUNT) + DSL.sum(TOTAL_WITHDRAWN_COUNT))
-                .from(this)
-                .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                .and(COLLECTED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
-        )
-      }
-
   private val withdrawnSeedlingsField =
       with(BATCH_WITHDRAWALS) {
         DSL.field(
@@ -2056,6 +2028,16 @@ class ReportStore(
                 .from(this)
                 .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 .and(ADDED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
+        )
+      }
+
+  private val seedsCollectedField =
+      with(ACCESSIONS) {
+        DSL.field(
+            DSL.select(DSL.sum(EST_SEED_COUNT) + DSL.sum(TOTAL_WITHDRAWN_COUNT))
+                .from(this)
+                .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
+                .and(COLLECTED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
         )
       }
 
@@ -2110,6 +2092,24 @@ class ReportStore(
                 .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
                 .and(WITHDRAWAL_SUMMARIES.PURPOSE_ID.notEqual(WithdrawalPurpose.Undo))
                 .and(WITHDRAWAL_SUMMARIES.UNDONE_BY_WITHDRAWAL_ID.isNull)
+        )
+      }
+
+  private val hectaresPlantedField =
+      with(SUBSTRATA) {
+        DSL.field(
+            DSL.select(DSL.sum(AREA_HA))
+                .from(this)
+                .join(PLANTING_SITES)
+                .on(PLANTING_SITES.ID.eq(PLANTING_SITE_ID))
+                .where(
+                    timestampToLocalDateField(
+                            PLANTING_COMPLETED_TIME,
+                            plantingSiteTimeZoneField(PLANTING_SITE_ID),
+                        )
+                        .between(REPORTS.START_DATE, REPORTS.END_DATE)
+                )
+                .and(PLANTING_SITES.PROJECT_ID.eq(REPORTS.PROJECT_ID))
         )
       }
 

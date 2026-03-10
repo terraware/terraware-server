@@ -665,7 +665,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   indicator = AutoCalculatedIndicator.HectaresPlanted,
                   entry =
                       ReportAutoCalculatedIndicatorEntryModel(
-                          systemValue = BigDecimal(60),
+                          systemValue = BigDecimal(40),
                       ),
                   currentYearProgress = emptyList(),
               ),
@@ -3674,7 +3674,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.HectaresPlanted,
-                  systemValue = BigDecimal(60),
+                  systemValue = BigDecimal(40),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -5616,6 +5616,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         plotDensity = BigDecimal.valueOf(13).toPlantsPerHectare(),
     )
 
+    // Not counted towards hectares planted, planting completed before report period
     val subzoneId2 =
         insertSubstratum(
             areaHa = BigDecimal(20),
