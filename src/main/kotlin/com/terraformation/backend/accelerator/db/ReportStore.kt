@@ -715,15 +715,15 @@ class ReportStore(
 
       val autoCalculatedIndicatorTargets =
           report.autoCalculatedIndicators
-              .filter { (indicator) -> indicator.isPublishable }
+              .filter { (indicator) -> indicator.isPublishable && indicator.active }
               .associate { (indicator, entry) -> indicator to entry.target }
       val commonIndicatorTargets =
           report.commonIndicators
-              .filter { (indicator) -> indicator.isPublishable }
+              .filter { (indicator) -> indicator.isPublishable && indicator.active }
               .associate { (indicator, entry) -> indicator.id to entry.target }
       val projectIndicatorTargets =
           report.projectIndicators
-              .filter { (indicator) -> indicator.isPublishable }
+              .filter { (indicator) -> indicator.isPublishable && indicator.active }
               .associate { (indicator, entry) -> indicator.id to entry.target }
 
       publishReportIndicatorTargets(
