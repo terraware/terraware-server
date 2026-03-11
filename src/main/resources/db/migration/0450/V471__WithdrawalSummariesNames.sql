@@ -61,9 +61,14 @@ FROM nursery.withdrawals withdrawals
                                     ((delivery_substrata.substratum_names || ' ('::text) ||
                                      string_agg(ss.name, ', '::text ORDER BY ss.name)) ||
                                     ')'::text AS substratum_names,
-                                    ((delivery_substrata.stratum_names || ' ('::text) ||
-                                     string_agg(s.name, ', '::text ORDER BY s.name)) ||
-                                    ')'::text AS stratum_names
+                                    CASE
+                                        WHEN string_agg(DISTINCT s.name, ', '::text ORDER BY s.name) IS NOT DISTINCT FROM
+                                             delivery_substrata.stratum_names
+                                            THEN delivery_substrata.stratum_names
+                                        ELSE ((delivery_substrata.stratum_names || ' ('::text) ||
+                                              string_agg(DISTINCT s.name, ', '::text ORDER BY s.name)) ||
+                                             ')'::text
+                                        END   AS stratum_names
                              FROM tracking.substrata ss
                                       JOIN tracking.plantings pl ON ss.id = pl.substratum_id
                                       JOIN tracking.strata s ON s.id = ss.stratum_id
