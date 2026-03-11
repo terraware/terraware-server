@@ -1,3 +1,4 @@
+8cb614f07b9 SW-8179 Use only published data for cumulative indicators' progress (#4131)
 e4c5f16984a SW-8162 Add substratum (short) names and stratum names to NurseryWithdrawalsTable (#4124)
 b07f96e1aca SW-8169 Update HectaresPlanted indicator definition (#4125)
 5def001cd53 SW-8096 Change indicators target/value/progress to Numeric/BigDecimal (#4123)

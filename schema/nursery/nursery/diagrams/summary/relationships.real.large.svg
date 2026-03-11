@@ -386,9 +386,9 @@
 <ellipse fill="none" stroke="black" cx="565.52" cy="-1008.97" rx="3.2" ry="3.2"/>
 </g>
 <!-- batch_quantity_history_types -->
-<g id="node11" class="node">
+<g id="node12" class="node">
 <title>batch_quantity_history_types</title>
-<g id="a_node11"><a xlink:href="../../tables/batch_quantity_history_types.html" xlink:title="batch_quantity_history_types" target="_top">
+<g id="a_node12"><a xlink:href="../../tables/batch_quantity_history_types.html" xlink:title="batch_quantity_history_types" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="261.5,-735 261.5,-819 480.5,-819 480.5,-735 261.5,-735"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="262,-797 262,-819 481,-819 481,-797 262,-797"/>
 <polygon fill="none" stroke="black" points="262,-797 262,-819 481,-819 481,-797 262,-797"/>
@@ -700,9 +700,9 @@
 <ellipse fill="none" stroke="black" cx="566.94" cy="-2204.25" rx="3.2" ry="3.2"/>
 </g>
 <!-- batch_details_history_sub_locations -->
-<g id="node12" class="node">
+<g id="node11" class="node">
 <title>batch_details_history_sub_locations</title>
-<g id="a_node12"><a xlink:href="../../tables/batch_details_history_sub_locations.html" xlink:title="batch_details_history_sub_locations" target="_top">
+<g id="a_node11"><a xlink:href="../../tables/batch_details_history_sub_locations.html" xlink:title="batch_details_history_sub_locations" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="831,-2375 831,-2481 1087,-2481 1087,-2375 831,-2375"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="831,-2459 831,-2481 1087,-2481 1087,-2459 831,-2459"/>
 <polygon fill="none" stroke="black" points="831,-2459 831,-2481 1087,-2481 1087,-2459 831,-2459"/>
