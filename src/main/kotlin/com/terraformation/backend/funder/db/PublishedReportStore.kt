@@ -14,9 +14,6 @@ import com.terraformation.backend.db.accelerator.tables.references.COMMON_INDICA
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_INDICATORS
 import com.terraformation.backend.db.accelerator.tables.references.REPORTS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_AUTO_CALCULATED_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_COMMON_INDICATORS
-import com.terraformation.backend.db.accelerator.tables.references.REPORT_PROJECT_INDICATORS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectIdConverter
@@ -128,7 +125,6 @@ class PublishedReportStore(
       publishedIndicatorIdField: TableField<*, ID?>,
       targetTableIndicatorIdField: TableField<*, ID?>,
       baselineTableIndicatorIdField: TableField<*, ID?>,
-      reportTableIndicatorIdField: TableField<*, ID?>,
   ): Field<List<PublishedReportIndicatorModel<ID>>> {
     val publishedIndicatorTable = publishedIndicatorIdField.table!!
     val reportIdField =
@@ -186,64 +182,47 @@ class PublishedReportStore(
         )!!
     val unitField = indicatorTable.field("unit", String::class.java) ?: DSL.value(null as String?)
 
-    val reportIndicatorTable = reportTableIndicatorIdField.table!!
-    val reportIndicatorReportField =
-        reportIndicatorTable.field(
+    val publishedIndicatorTableForSum = publishedIndicatorTable.`as`("publishedIndicatorForSum")
+    val sumIndicatorIdField = publishedIndicatorTableForSum.field(publishedIndicatorIdField)!!
+    val publishedIndicatorSumReportField =
+        publishedIndicatorTableForSum.field(
             "report_id",
             SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
         )!!
-    val reportValueField =
-        reportIndicatorTable.field("value", BigDecimal::class.java)
+    val publishedValueForSumField =
+        publishedIndicatorTableForSum.field("value", BigDecimal::class.java)
             ?: DSL.coalesce(
-                reportIndicatorTable.field("override_value", BigDecimal::class.java)!!,
-                reportIndicatorTable.field("system_value", BigDecimal::class.java)!!,
+                publishedIndicatorTableForSum.field("override_value", BigDecimal::class.java)!!,
+                publishedIndicatorTableForSum.field("system_value", BigDecimal::class.java)!!,
             )
     val reportsForSum = REPORTS.`as`("reportsForSum")
     val sumAtPreviousYearEnd =
         DSL.`when`(
             indicatorClassField.eq(IndicatorClass.Cumulative),
-            DSL.select(DSL.sum(reportValueField))
-                .from(reportIndicatorTable)
+            DSL.select(DSL.sum(publishedValueForSumField))
+                .from(publishedIndicatorTableForSum)
                 .join(reportsForSum)
-                .on(reportsForSum.ID.eq(reportIndicatorReportField))
+                .on(reportsForSum.ID.eq(publishedIndicatorSumReportField))
                 .where(DSL.year(reportsForSum.END_DATE).lt(DSL.year(PUBLISHED_REPORTS.END_DATE)))
                 .and(reportsForSum.PROJECT_ID.eq(PUBLISHED_REPORTS.PROJECT_ID))
-                .and(reportTableIndicatorIdField.eq(indicatorTableIdField)),
+                .and(sumIndicatorIdField.eq(indicatorTableIdField)),
         )
 
     val reportsForProgress = REPORTS.`as`("reportsForProgress")
-    val reportIndicatorsForProgress = reportIndicatorTable.`as`("reportIndicatorsForProgress")
-    val indicatorIdForProgress = reportIndicatorsForProgress.field(reportTableIndicatorIdField)!!
+    val publishedIndicatorsForProgress =
+        publishedIndicatorTable.`as`("publishedIndicatorsForProgress")
+    val indicatorIdForProgress = publishedIndicatorsForProgress.field(publishedIndicatorIdField)!!
     val indicatorValueProgressField =
-        reportIndicatorsForProgress.field("value", BigDecimal::class.java)
+        publishedIndicatorsForProgress.field("value", BigDecimal::class.java)
             ?: DSL.coalesce(
-                reportIndicatorsForProgress.field("override_value", BigDecimal::class.java)!!,
-                reportIndicatorsForProgress.field("system_value", BigDecimal::class.java)!!,
+                publishedIndicatorsForProgress.field("override_value", BigDecimal::class.java)!!,
+                publishedIndicatorsForProgress.field("system_value", BigDecimal::class.java)!!,
             )
     val reportIdProgressField =
-        reportIndicatorsForProgress.field(
+        publishedIndicatorsForProgress.field(
             "report_id",
             SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
         )!!
-    val publishedIndicatorForProgress =
-        publishedIndicatorTable.`as`("publishedIndicatorForProgress")
-    val publishedReportIdForProgressField =
-        publishedIndicatorForProgress.field(
-            "report_id",
-            SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
-        )!!
-    val publishedIndicatorIdForProgress =
-        publishedIndicatorForProgress.field(publishedIndicatorIdField)!!
-    val publishedValueForProgress =
-        publishedIndicatorForProgress.field("value", BigDecimal::class.java)!!
-    // For previous quarters, use the report value directly. For the current quarter, use the
-    // published value only (null if no published entry, which excludes it from the result).
-    val progressValue =
-        DSL.if_(
-            reportsForProgress.REPORT_QUARTER_ID.eq(PUBLISHED_REPORTS.REPORT_QUARTER_ID),
-            publishedValueForProgress,
-            indicatorValueProgressField,
-        )
 
     val currentYearProgressField: Field<List<PublishedCumulativeIndicatorProgressModel>> =
         DSL.`when`(
@@ -251,29 +230,18 @@ class PublishedReportStore(
             DSL.multiset(
                     DSL.select(
                             reportsForProgress.REPORT_QUARTER_ID,
-                            progressValue.`as`("progress_value"),
+                            indicatorValueProgressField.`as`("progress_value"),
                         )
-                        .from(reportIndicatorsForProgress)
+                        .from(publishedIndicatorsForProgress)
                         .join(reportsForProgress)
                         .on(reportsForProgress.ID.eq(reportIdProgressField))
-                        .leftJoin(publishedIndicatorForProgress)
-                        .on(
-                            publishedReportIdForProgressField
-                                .eq(reportIdProgressField)
-                                .and(publishedIndicatorIdForProgress.eq(indicatorTableIdField))
-                                .and(
-                                    publishedReportIdForProgressField.eq(
-                                        PUBLISHED_REPORTS.REPORT_ID
-                                    )
-                                )
-                        )
                         .where(
                             DSL.year(reportsForProgress.END_DATE)
                                 .eq(DSL.year(PUBLISHED_REPORTS.END_DATE))
                         )
                         .and(reportsForProgress.PROJECT_ID.eq(PUBLISHED_REPORTS.PROJECT_ID))
                         .and(indicatorIdForProgress.eq(indicatorTableIdField))
-                        .and(progressValue.isNotNull)
+                        .and(indicatorValueProgressField.isNotNull)
                         .and(
                             reportsForProgress.REPORT_QUARTER_ID.le(
                                 PUBLISHED_REPORTS.REPORT_QUARTER_ID
@@ -290,14 +258,6 @@ class PublishedReportStore(
                   }
                 },
         )
-
-    val reportIndicatorForReport = reportIndicatorTable.`as`("reportIndicatorForReport")
-    val repIndicatorIdForReport = reportIndicatorForReport.field(reportTableIndicatorIdField)!!
-    val repReportIdForReport =
-        reportIndicatorForReport.field(
-            "report_id",
-            SQLDataType.BIGINT.asConvertedDataType(ReportIdConverter()),
-        )!!
 
     return DSL.multiset(
             DSL.select(
@@ -326,12 +286,6 @@ class PublishedReportStore(
                         .eq(indicatorTableIdField)
                         .and(reportIdField.eq(PUBLISHED_REPORTS.REPORT_ID))
                 )
-                .leftJoin(reportIndicatorForReport)
-                .on(
-                    repIndicatorIdForReport
-                        .eq(indicatorTableIdField)
-                        .and(repReportIdForReport.eq(PUBLISHED_REPORTS.REPORT_ID))
-                )
                 .leftJoin(targetTable)
                 .on(
                     targetTableIndicatorIdField
@@ -345,7 +299,7 @@ class PublishedReportStore(
                         .eq(indicatorTableIdField)
                         .and(baselineProjectIdField.eq(PUBLISHED_REPORTS.PROJECT_ID))
                 )
-                .where(publishedIndicatorIdField.isNotNull.or(repIndicatorIdForReport.isNotNull))
+                .where(publishedIndicatorIdField.isNotNull)
                 .orderBy(indicatorReferenceField)
         )
         .convertFrom { result ->
@@ -394,7 +348,6 @@ class PublishedReportStore(
           PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
           PUBLISHED_PROJECT_INDICATOR_TARGETS.PROJECT_INDICATOR_ID,
           PUBLISHED_PROJECT_INDICATOR_BASELINES.PROJECT_INDICATOR_ID,
-          REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
       )
 
   private val commonIndicatorsMultiset =
@@ -403,7 +356,6 @@ class PublishedReportStore(
           PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
           PUBLISHED_COMMON_INDICATOR_TARGETS.COMMON_INDICATOR_ID,
           PUBLISHED_COMMON_INDICATOR_BASELINES.COMMON_INDICATOR_ID,
-          REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
       )
 
   private val autoCalculatedIndicatorsMultiset =
@@ -412,6 +364,5 @@ class PublishedReportStore(
           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_TARGETS.AUTO_CALCULATED_INDICATOR_ID,
           PUBLISHED_AUTO_CALCULATED_INDICATOR_BASELINES.AUTO_CALCULATED_INDICATOR_ID,
-          REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
       )
 }

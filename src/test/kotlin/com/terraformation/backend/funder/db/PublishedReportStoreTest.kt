@@ -107,6 +107,25 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicator = AutoCalculatedIndicator.SeedsCollected,
           systemValue = BigDecimal(30),
       )
+      insertPublishedReport(
+          quarter = ReportQuarter.Q3,
+          startDate = LocalDate.of(2024, 7, 1),
+          endDate = LocalDate.of(2024, 9, 30),
+      )
+      insertPublishedReportProjectIndicator(
+          indicatorId = projectIndicatorId1,
+          value = BigDecimal(10),
+      )
+      insertPublishedReportProjectIndicator(
+          indicatorId = projectIndicatorId2,
+          value = BigDecimal(11),
+      )
+      insertPublishedReportCommonIndicator(indicatorId = commonIndicatorId1, value = BigDecimal(20))
+      insertPublishedReportCommonIndicator(indicatorId = commonIndicatorId2, value = BigDecimal(21))
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          value = BigDecimal(30),
+      )
 
       // oldReport2
       insertReport(endDate = LocalDate.of(2024, 12, 31))
@@ -118,6 +137,31 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           indicator = AutoCalculatedIndicator.SeedsCollected,
           systemValue = BigDecimal(29),
           overrideValue = BigDecimal(31),
+      )
+      insertPublishedReport(
+          quarter = ReportQuarter.Q4,
+          startDate = LocalDate.of(2024, 10, 1),
+          endDate = LocalDate.of(2024, 12, 31),
+      )
+      insertPublishedReportProjectIndicator(
+          indicatorId = projectIndicatorId1,
+          value = BigDecimal(100),
+      )
+      insertPublishedReportProjectIndicator(
+          indicatorId = projectIndicatorId2,
+          value = BigDecimal(101),
+      )
+      insertPublishedReportCommonIndicator(
+          indicatorId = commonIndicatorId1,
+          value = BigDecimal(200),
+      )
+      insertPublishedReportCommonIndicator(
+          indicatorId = commonIndicatorId2,
+          value = BigDecimal(201),
+      )
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.SeedsCollected,
+          value = BigDecimal(31),
       )
 
       val reportId1 =
@@ -258,6 +302,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               PublishedReportModel(
                   achievements = emptyList(),
                   additionalComments = null,
+                  // indicators are only included in current quarter if they have a published value
                   autoCalculatedIndicators = emptyList(),
                   challenges = emptyList(),
                   commonIndicators = emptyList(),
@@ -283,7 +328,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               baseline = BigDecimal.valueOf(300),
                               classId = IndicatorClass.Cumulative,
                               category = AutoCalculatedIndicator.SeedsCollected.categoryId,
-                              currentYearProgress = emptyList(),
+                              currentYearProgress =
+                                  listOf(
+                                      PublishedCumulativeIndicatorProgressModel(
+                                          quarter = ReportQuarter.Q1,
+                                          value = BigDecimal(6),
+                                      )
+                                  ),
                               description = AutoCalculatedIndicator.SeedsCollected.description,
                               endOfProjectTarget = BigDecimal.valueOf(400),
                               indicatorId = AutoCalculatedIndicator.SeedsCollected,
@@ -310,7 +361,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               baseline = BigDecimal.valueOf(200),
                               category = IndicatorCategory.Community,
                               classId = IndicatorClass.Cumulative,
-                              currentYearProgress = emptyList(),
+                              currentYearProgress =
+                                  listOf(
+                                      PublishedCumulativeIndicatorProgressModel(
+                                          quarter = ReportQuarter.Q1,
+                                          value = BigDecimal(180),
+                                      )
+                                  ),
                               description = "Common Indicator Description 2",
                               endOfProjectTarget = BigDecimal.valueOf(250),
                               indicatorId = commonIndicatorId2,
@@ -328,7 +385,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           PublishedReportIndicatorModel(
                               category = IndicatorCategory.Climate,
                               classId = IndicatorClass.Cumulative,
-                              currentYearProgress = emptyList(),
+                              currentYearProgress =
+                                  listOf(
+                                      PublishedCumulativeIndicatorProgressModel(
+                                          quarter = ReportQuarter.Q1,
+                                          value = BigDecimal(120),
+                                      )
+                                  ),
                               description = "Common Indicator Description 1",
                               endOfProjectTarget = null,
                               indicatorId = commonIndicatorId1,
@@ -359,7 +422,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               baseline = null,
                               category = IndicatorCategory.Biodiversity,
                               classId = IndicatorClass.Cumulative,
-                              currentYearProgress = emptyList(),
+                              currentYearProgress =
+                                  listOf(
+                                      PublishedCumulativeIndicatorProgressModel(
+                                          quarter = ReportQuarter.Q1,
+                                          value = BigDecimal(40),
+                                      )
+                                  ),
                               description = "Project Indicator Description 1",
                               endOfProjectTarget = null,
                               indicatorId = projectIndicatorId1,
@@ -402,7 +471,9 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   startDate = LocalDate.of(2025, 1, 1),
               ),
           ),
-          store.fetchPublishedReports(projectId),
+          store.fetchPublishedReports(projectId).filter {
+            listOf(reportId1, reportId2).contains(it.reportId) // ignore previous year's setup data
+          },
       )
     }
 
@@ -541,7 +612,13 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           PublishedReportIndicatorModel(
               category = IndicatorCategory.Climate,
               classId = IndicatorClass.Cumulative,
-              currentYearProgress = emptyList(),
+              currentYearProgress =
+                  listOf(
+                      PublishedCumulativeIndicatorProgressModel(
+                          quarter = ReportQuarter.Q1,
+                          value = BigDecimal(20),
+                      )
+                  ),
               description = "Common Indicator Description",
               indicatorId = commonIndicatorId,
               level = IndicatorLevel.Output,
@@ -650,7 +727,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2024, 12, 31),
               quarter = ReportQuarter.Q4,
           )
-      insertReportCommonIndicator(
+      insertPublishedReport(
+          startDate = LocalDate.of(2024, 10, 1),
+          endDate = LocalDate.of(2024, 12, 31),
+          quarter = ReportQuarter.Q4,
+      )
+      insertPublishedReportCommonIndicator(
           reportId = priorYearReportId,
           indicatorId = commonIndicatorId,
           value = BigDecimal(999),
@@ -662,7 +744,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 3, 31),
               quarter = ReportQuarter.Q1,
           )
-      insertReportCommonIndicator(
+      insertPublishedReport(
+          startDate = LocalDate.of(2025, 1, 1),
+          endDate = LocalDate.of(2025, 3, 31),
+          quarter = ReportQuarter.Q1,
+      )
+      insertPublishedReportCommonIndicator(
           reportId = q1ReportId,
           indicatorId = commonIndicatorId,
           value = BigDecimal(10),
@@ -674,7 +761,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 6, 30),
               quarter = ReportQuarter.Q2,
           )
-      insertReportCommonIndicator(
+      insertPublishedReport(
+          startDate = LocalDate.of(2025, 4, 1),
+          endDate = LocalDate.of(2025, 6, 30),
+          quarter = ReportQuarter.Q2,
+      )
+      insertPublishedReportCommonIndicator(
           reportId = q2ReportId,
           indicatorId = commonIndicatorId,
           value = BigDecimal(20),
@@ -686,18 +778,16 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 9, 30),
               quarter = ReportQuarter.Q3,
           )
+      insertPublishedReport(
+          startDate = LocalDate.of(2025, 7, 1),
+          endDate = LocalDate.of(2025, 9, 30),
+          quarter = ReportQuarter.Q3,
+      )
       insertReportCommonIndicator(
           reportId = q3ReportId,
           indicatorId = commonIndicatorId,
           // current quarter value is ignored, only published value is used for the current quarter
           value = BigDecimal(29),
-      )
-
-      insertPublishedReport(
-          reportId = q3ReportId,
-          startDate = LocalDate.of(2025, 7, 1),
-          endDate = LocalDate.of(2025, 9, 30),
-          quarter = ReportQuarter.Q3,
       )
       insertPublishedReportCommonIndicator(
           reportId = q3ReportId,
@@ -713,14 +803,19 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 12, 31),
               quarter = ReportQuarter.Q4,
           )
-      insertReportCommonIndicator(
+      insertPublishedReport(
+          startDate = LocalDate.of(2025, 10, 1),
+          endDate = LocalDate.of(2025, 12, 31),
+          quarter = ReportQuarter.Q4,
+      )
+      insertPublishedReportCommonIndicator(
           reportId = q4ReportId,
           indicatorId = commonIndicatorId,
           value = BigDecimal(40),
       )
 
       val reports = store.fetchPublishedReports(projectId)
-      val indicator = reports.single().commonIndicators.single()
+      val indicator = reports.find { it.reportId == q3ReportId }!!.commonIndicators.single()
 
       assertEquals(
           listOf(
@@ -743,7 +838,7 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `currentYearProgress excludes quarters where the indicator value is null and excludes current quarter if unpublished`() {
+    fun `currentYearProgress excludes quarters where the indicator value is null`() {
       insertFundingEntityProject()
       insertProjectReportConfig()
 
@@ -763,7 +858,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 3, 31),
               quarter = ReportQuarter.Q1,
           )
-      insertReportCommonIndicator(
+      insertPublishedReport(
+          startDate = LocalDate.of(2025, 1, 1),
+          endDate = LocalDate.of(2025, 3, 31),
+          quarter = ReportQuarter.Q1,
+      )
+      insertPublishedReportCommonIndicator(
           reportId = q1ReportId,
           indicatorId = commonIndicatorId,
           value = BigDecimal(10),
@@ -776,7 +876,12 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 6, 30),
               quarter = ReportQuarter.Q2,
           )
-      insertReportCommonIndicator(
+      insertPublishedReport(
+          startDate = LocalDate.of(2025, 4, 1),
+          endDate = LocalDate.of(2025, 6, 30),
+          quarter = ReportQuarter.Q2,
+      )
+      insertPublishedReportCommonIndicator(
           reportId = q2ReportId,
           indicatorId = commonIndicatorId,
           value = null,
@@ -788,21 +893,19 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               endDate = LocalDate.of(2025, 9, 30),
               quarter = ReportQuarter.Q3,
           )
-      insertReportCommonIndicator(
+      insertPublishedReport(
+          startDate = LocalDate.of(2025, 7, 1),
+          endDate = LocalDate.of(2025, 9, 30),
+          quarter = ReportQuarter.Q3,
+      )
+      insertPublishedReportCommonIndicator(
           reportId = q3ReportId,
           indicatorId = commonIndicatorId,
           value = BigDecimal(30),
       )
 
-      insertPublishedReport(
-          reportId = q3ReportId,
-          startDate = LocalDate.of(2025, 7, 1),
-          endDate = LocalDate.of(2025, 9, 30),
-          quarter = ReportQuarter.Q3,
-      )
-
       val reports = store.fetchPublishedReports(projectId)
-      val indicator = reports.single().commonIndicators.single()
+      val indicator = reports.find { it.reportId == q3ReportId }!!.commonIndicators.single()
 
       assertEquals(
           listOf(
@@ -811,7 +914,10 @@ class PublishedReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   value = BigDecimal(10),
               ),
               // q2 is excluded because it has a null value
-              // q3 is excluded because it has a non-null value but no published value
+              PublishedCumulativeIndicatorProgressModel(
+                  quarter = ReportQuarter.Q3,
+                  value = BigDecimal(30),
+              ),
           ),
           indicator.currentYearProgress,
           "Quarters with null indicator values must be excluded from currentYearProgress, and the current quarter must be excluded if unpublished",
