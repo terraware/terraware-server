@@ -88,7 +88,7 @@ data class ReportChallengePayload(
 
 data class PublishedCumulativeIndicatorProgressPayload(
     val quarter: ReportQuarter,
-    val value: Int,
+    val value: BigDecimal,
 ) {
   constructor(
       model: PublishedCumulativeIndicatorProgressModel
@@ -122,10 +122,10 @@ data class PublishedReportMetricPayload(
       projectsComments = model.projectsComments,
       reference = model.refId,
       status = model.status,
-      target = model.target,
+      target = model.target?.toInt(),
       type = model.level,
       unit = model.unit,
-      value = model.value,
+      value = model.value?.toInt(),
   )
 }
 
@@ -154,9 +154,9 @@ data class PublishedReportIndicatorPayload(
     val projectsComments: String?,
     val refId: String,
     val status: ReportIndicatorStatus?,
-    val target: Int?,
+    val target: BigDecimal?,
     val unit: String?,
-    val value: Int?,
+    val value: BigDecimal?,
 ) {
   constructor(
       model: PublishedReportIndicatorModel<*>

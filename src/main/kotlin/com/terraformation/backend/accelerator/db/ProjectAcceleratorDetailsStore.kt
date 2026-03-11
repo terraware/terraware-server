@@ -18,6 +18,7 @@ import com.terraformation.backend.db.default_schema.tables.references.PROJECT_LA
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORTS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS
 import jakarta.inject.Named
+import java.math.BigDecimal
 import java.net.URI
 import java.time.InstantSource
 import org.jooq.Condition
@@ -213,7 +214,8 @@ class ProjectAcceleratorDetailsStore(
                   AutoCalculatedIndicator.SpeciesPlanted
               ),
               DSL.max(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.VALUE),
-              DSL.sum(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.VALUE).cast(Int::class.java),
+              DSL.sum(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.VALUE)
+                  .cast(BigDecimal::class.java),
           )
       return DSL.multiset(
               DSL.select(
@@ -243,7 +245,7 @@ class ProjectAcceleratorDetailsStore(
                       record[
                           PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS
                               .AUTO_CALCULATED_INDICATOR_ID]!!,
-                  progress = record[progressField] ?: 0,
+                  progress = record[progressField] ?: BigDecimal.ZERO,
               )
             }
           }

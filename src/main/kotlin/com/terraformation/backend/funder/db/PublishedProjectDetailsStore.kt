@@ -83,7 +83,8 @@ class PublishedProjectDetailsStore(
                       AutoCalculatedIndicator.SpeciesPlanted
                   ),
                   DSL.max(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.VALUE),
-                  DSL.sum(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.VALUE).cast(Int::class.java),
+                  DSL.sum(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.VALUE)
+                      .cast(BigDecimal::class.java),
               )
           dslContext
               .select(AUTO_CALCULATED_INDICATOR_ID, progressField)
@@ -108,7 +109,7 @@ class PublishedProjectDetailsStore(
                         record[
                             PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS
                                 .AUTO_CALCULATED_INDICATOR_ID]!!,
-                    progress = record[progressField] ?: 0,
+                    progress = record[progressField] ?: BigDecimal.ZERO,
                 )
               }
         }

@@ -61,38 +61,38 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
       insertPublishedReport()
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.HectaresPlanted,
-          value = 100,
+          value = BigDecimal(100),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          value = 10,
+          value = BigDecimal(10),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          value = 1000,
+          value = BigDecimal(1000),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
-          value = 1,
+          value = BigDecimal(1),
       )
 
       insertReport()
       insertPublishedReport()
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.HectaresPlanted,
-          value = 200,
+          value = BigDecimal(200),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.TreesPlanted,
-          value = 20,
+          value = BigDecimal(20),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SeedsCollected,
-          value = 2000,
+          value = BigDecimal(2000),
       )
       insertPublishedReportAutoCalculatedIndicator(
           indicator = AutoCalculatedIndicator.SpeciesPlanted,
-          value = 2,
+          value = BigDecimal(2),
       )
 
       // To ensure that the fetchOne works as expected when there are multiple rows
@@ -169,12 +169,18 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               maxCarbonAccumulation = detailsRow.maxCarbonAccumulation,
               indicatorProgress =
                   listOf(
-                      IndicatorProgressModel(indicator = AutoCalculatedIndicator.TreesPlanted, 30),
+                      IndicatorProgressModel(
+                          indicator = AutoCalculatedIndicator.TreesPlanted,
+                          BigDecimal(30),
+                      ),
                       // Species Planted utilize max instead of sum
-                      IndicatorProgressModel(indicator = AutoCalculatedIndicator.SpeciesPlanted, 2),
+                      IndicatorProgressModel(
+                          indicator = AutoCalculatedIndicator.SpeciesPlanted,
+                          BigDecimal(2),
+                      ),
                       IndicatorProgressModel(
                           indicator = AutoCalculatedIndicator.HectaresPlanted,
-                          300,
+                          BigDecimal(300),
                       ),
                       // Seeds Collected and other indicator progress is not tracked
                   ),
