@@ -32,7 +32,7 @@
 <polygon fill="none" stroke="black" points="277.5,-266 277.5,-288 448.5,-288 448.5,-266 277.5,-266"/>
 <text text-anchor="start" x="297.5" y="-274.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
 <polygon fill="none" stroke="black" points="448.5,-266 448.5,-288 548.5,-288 548.5,-266 448.5,-266"/>
-<text text-anchor="start" x="451.5" y="-274.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<text text-anchor="start" x="451.5" y="-274.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
 <polygon fill="none" stroke="black" points="277.5,-244 277.5,-266 448.5,-266 448.5,-244 277.5,-244"/>
 <text text-anchor="start" x="297.5" y="-252.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="448.5,-244 448.5,-266 548.5,-266 548.5,-244 448.5,-244"/>

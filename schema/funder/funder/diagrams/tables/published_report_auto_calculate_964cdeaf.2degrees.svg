@@ -91,7 +91,7 @@
 <polygon fill="none" stroke="black" points="211.5,-439 211.5,-461 498.5,-461 498.5,-439 211.5,-439"/>
 <text text-anchor="start" x="231.5" y="-447.2" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
 <polygon fill="none" stroke="black" points="498.5,-439 498.5,-461 592.5,-461 592.5,-439 498.5,-439"/>
-<text text-anchor="start" x="501.5" y="-447.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<text text-anchor="start" x="501.5" y="-447.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
 <polygon fill="none" stroke="black" points="211.5,-417 211.5,-439 498.5,-439 498.5,-417 211.5,-417"/>
 <text text-anchor="start" x="231.5" y="-425.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="498.5,-417 498.5,-439 592.5,-439 592.5,-417 498.5,-417"/>

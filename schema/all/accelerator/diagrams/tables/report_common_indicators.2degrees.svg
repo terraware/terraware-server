@@ -1069,7 +1069,7 @@
 <polygon fill="none" stroke="black" points="726,-846.49 726,-868.49 907,-868.49 907,-846.49 726,-846.49"/>
 <text text-anchor="start" x="746" y="-854.69" font-family="Helvetica,sans-Serif" font-size="11.00">value</text>
 <polygon fill="none" stroke="black" points="907,-846.49 907,-868.49 1007,-868.49 1007,-846.49 907,-846.49"/>
-<text text-anchor="start" x="910" y="-854.69" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<text text-anchor="start" x="910" y="-854.69" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
 <polygon fill="none" stroke="black" points="726,-824.49 726,-846.49 907,-846.49 907,-824.49 726,-824.49"/>
 <text text-anchor="start" x="746" y="-832.69" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="907,-824.49 907,-846.49 1007,-846.49 1007,-824.49 907,-824.49"/>

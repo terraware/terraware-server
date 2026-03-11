@@ -292,6 +292,7 @@
             <parent column="id" foreignKey="auto_calculated_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="tf_owner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="14" name="precision" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="auto_calculated_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -346,6 +347,7 @@
             <parent column="id" foreignKey="standard_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="tf_owner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="14" name="precision" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="common_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -831,6 +833,7 @@
             <parent column="id" foreignKey="project_indicators_frequency_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="indicator_frequencies"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="tf_owner" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="0" digits="0" id="15" name="precision" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="project_indicators_pkey" unique="true">
             <column ascending="true" name="id"/>
@@ -1013,7 +1016,7 @@
             <parent column="id" foreignKey="report_auto_calculated_indicator_targets_auto_calculated_indica" implied="false" onDeleteCascade="true" schema="accelerator" table="auto_calculated_indicators"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <primaryKey column="project_id" sequenceNumberInPK="1"/>
          <primaryKey column="auto_calculated_indicator_id" sequenceNumberInPK="2"/>
          <primaryKey column="year" sequenceNumberInPK="3"/>
@@ -1034,9 +1037,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="auto_calculated_indicator_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="report_auto_calculated_indicators_auto_calculated_indicator_id_" implied="false" onDeleteCascade="false" schema="accelerator" table="auto_calculated_indicators"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="system_value" nullable="true" remarks="Value collected via Terraware data. Null before value is submitted." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="system_value" nullable="true" remarks="Value collected via Terraware data. Null before value is submitted." size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="6" id="3" name="system_time" nullable="true" remarks="System value recorded time. If null, the value is not recorded yet and a live query of Terraware data should be used instead." size="35" type="timestamptz" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="override_value" nullable="true" remarks="Value inputted by accelerator admin to override system value. Null for no overrides." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="override_value" nullable="true" remarks="Value inputted by accelerator admin to override system value. Null for no overrides." size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -1079,7 +1082,7 @@
             <parent column="id" foreignKey="report_common_indicator_targets_common_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="common_indicators"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <primaryKey column="project_id" sequenceNumberInPK="1"/>
          <primaryKey column="common_indicator_id" sequenceNumberInPK="2"/>
          <primaryKey column="year" sequenceNumberInPK="3"/>
@@ -1100,7 +1103,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="common_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_common_indicators_common_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="common_indicators"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -1173,7 +1176,7 @@
             <parent column="id" foreignKey="report_project_indicator_targets_project_indicator_id_fkey" implied="false" onDeleteCascade="true" schema="accelerator" table="project_indicators"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="year" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="target" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <primaryKey column="project_id" sequenceNumberInPK="1"/>
          <primaryKey column="project_indicator_id" sequenceNumberInPK="2"/>
          <primaryKey column="year" sequenceNumberInPK="3"/>
@@ -1194,7 +1197,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="project_indicator_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="report_project_indicators_project_indicator_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_indicators"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="value" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="projects_comments" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="progress_notes" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="modified_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
@@ -1259,8 +1262,8 @@
             <parent column="id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="project_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
             <parent column="project_id" foreignKey="reports_config_id_project_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="project_report_configs"/>
+            <parent column="id" foreignKey="reports_project_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="projects"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="status_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="reports_status_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="report_statuses"/>

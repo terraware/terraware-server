@@ -32,7 +32,7 @@
 <polygon fill="none" stroke="black" points="442,-257 442,-279 666,-279 666,-257 442,-257"/>
 <text text-anchor="start" x="462" y="-265.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_value</text>
 <polygon fill="none" stroke="black" points="666,-257 666,-279 766,-279 766,-257 666,-257"/>
-<text text-anchor="start" x="669" y="-265.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<text text-anchor="start" x="669" y="-265.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
 <polygon fill="none" stroke="black" points="442,-235 442,-257 666,-257 666,-235 442,-235"/>
 <text text-anchor="start" x="462" y="-243.2" font-family="Helvetica,sans-Serif" font-size="11.00">system_time</text>
 <polygon fill="none" stroke="black" points="666,-235 666,-257 766,-257 766,-235 666,-235"/>
@@ -40,7 +40,7 @@
 <polygon fill="none" stroke="black" points="442,-213 442,-235 666,-235 666,-213 442,-213"/>
 <text text-anchor="start" x="462" y="-221.2" font-family="Helvetica,sans-Serif" font-size="11.00">override_value</text>
 <polygon fill="none" stroke="black" points="666,-213 666,-235 766,-235 766,-213 666,-213"/>
-<text text-anchor="start" x="669" y="-221.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<text text-anchor="start" x="669" y="-221.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
 <polygon fill="none" stroke="black" points="442,-191 442,-213 666,-213 666,-191 442,-191"/>
 <text text-anchor="start" x="462" y="-199.2" font-family="Helvetica,sans-Serif" font-size="11.00">projects_comments</text>
 <polygon fill="none" stroke="black" points="666,-191 666,-213 766,-213 766,-191 666,-191"/>

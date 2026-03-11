@@ -1,3 +1,6 @@
+b07f96e1aca SW-8169 Update HectaresPlanted indicator definition (#4125)
+5def001cd53 SW-8096 Change indicators target/value/progress to Numeric/BigDecimal (#4123)
+6cb01c8a185 SW-8096 Add precision to indicators (#4120)
 6e20d5a0fdc Update splatter admin UI with new defaults (#4121)
 0f650c33b07 Make IndicatorClass required and non-nullable with default of Level (#4114)
 a6a076e9313 SW-8151 Only retrieve active indicators in accelerator reports (#4113)

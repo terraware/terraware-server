@@ -758,56 +758,56 @@
 <g id="node25" class="node">
 <title>report_project_indicator_targets</title>
 <g id="a_node25"><a xlink:href="../../tables/report_project_indicator_targets.html" xlink:title="report_project_indicator_targets" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="799.5,-301 799.5,-433 1062.5,-433 1062.5,-301 799.5,-301"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="802,-409 802,-431 1061,-431 1061,-409 802,-409"/>
-<polygon fill="none" stroke="black" points="802,-409 802,-431 1061,-431 1061,-409 802,-409"/>
-<text text-anchor="start" x="807" y="-418.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">report_project_indicator_targets</text>
-<text text-anchor="start" x="1022" y="-417.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="802,-387 802,-409 1015,-409 1015,-387 802,-387"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="807" y="-404"/>
-<text text-anchor="start" x="822" y="-395.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
-<polygon fill="none" stroke="black" points="1015,-387 1015,-409 1061,-409 1061,-387 1015,-387"/>
-<text text-anchor="start" x="1018" y="-395.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="none" stroke="black" points="802,-365 802,-387 1015,-387 1015,-365 802,-365"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="807" y="-382"/>
-<text text-anchor="start" x="822" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_indicator_id</text>
-<polygon fill="none" stroke="black" points="1015,-365 1015,-387 1061,-387 1061,-365 1015,-365"/>
-<text text-anchor="start" x="1018" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
-<polygon fill="none" stroke="black" points="802,-343 802,-365 1015,-365 1015,-343 802,-343"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="807" y="-360"/>
-<text text-anchor="start" x="822" y="-351.2" font-family="Helvetica,sans-Serif" font-size="11.00">year</text>
-<polygon fill="none" stroke="black" points="1015,-343 1015,-365 1061,-365 1061,-343 1015,-343"/>
-<text text-anchor="start" x="1018" y="-351.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="none" stroke="black" points="802,-321 802,-343 1015,-343 1015,-321 802,-321"/>
-<text text-anchor="start" x="822" y="-329.2" font-family="Helvetica,sans-Serif" font-size="11.00">target</text>
-<polygon fill="none" stroke="black" points="1015,-321 1015,-343 1061,-343 1061,-321 1015,-321"/>
-<text text-anchor="start" x="1018" y="-329.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="#ffffff" stroke="transparent" points="802,-303 802,-321 913,-321 913,-303 802,-303"/>
-<polygon fill="none" stroke="black" points="802,-303 802,-321 913,-321 913,-303 802,-303"/>
-<text text-anchor="start" x="805" y="-309.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="913,-303 913,-321 1015,-321 1015,-303 913,-303"/>
-<polygon fill="none" stroke="black" points="913,-303 913,-321 1015,-321 1015,-303 913,-303"/>
-<text text-anchor="start" x="1005" y="-309.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1015,-303 1015,-321 1061,-321 1061,-303 1015,-303"/>
-<polygon fill="none" stroke="black" points="1015,-303 1015,-321 1061,-321 1061,-303 1015,-303"/>
-<text text-anchor="start" x="1042" y="-309.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="800.5,-302 800.5,-432 1061.5,-432 1061.5,-302 800.5,-302"/>
+<polygon fill="#ffffff" stroke="transparent" points="791,-301 791,-433 1071,-433 1071,-301 791,-301"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="793,-409 793,-431 1069,-431 1069,-409 793,-409"/>
+<polygon fill="none" stroke="black" points="793,-409 793,-431 1069,-431 1069,-409 793,-409"/>
+<text text-anchor="start" x="798" y="-418.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">report_project_indicator_targets</text>
+<text text-anchor="start" x="1030" y="-417.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="793,-387 793,-409 1006,-409 1006,-387 793,-387"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="798" y="-404"/>
+<text text-anchor="start" x="813" y="-395.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="none" stroke="black" points="1006,-387 1006,-409 1069,-409 1069,-387 1006,-387"/>
+<text text-anchor="start" x="1009" y="-395.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="none" stroke="black" points="793,-365 793,-387 1006,-387 1006,-365 793,-365"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="798" y="-382"/>
+<text text-anchor="start" x="813" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_indicator_id</text>
+<polygon fill="none" stroke="black" points="1006,-365 1006,-387 1069,-387 1069,-365 1006,-365"/>
+<text text-anchor="start" x="1009" y="-373.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="none" stroke="black" points="793,-343 793,-365 1006,-365 1006,-343 793,-343"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="798" y="-360"/>
+<text text-anchor="start" x="813" y="-351.2" font-family="Helvetica,sans-Serif" font-size="11.00">year</text>
+<polygon fill="none" stroke="black" points="1006,-343 1006,-365 1069,-365 1069,-343 1006,-343"/>
+<text text-anchor="start" x="1009" y="-351.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
+<polygon fill="none" stroke="black" points="793,-321 793,-343 1006,-343 1006,-321 793,-321"/>
+<text text-anchor="start" x="813" y="-329.2" font-family="Helvetica,sans-Serif" font-size="11.00">target</text>
+<polygon fill="none" stroke="black" points="1006,-321 1006,-343 1069,-343 1069,-321 1006,-321"/>
+<text text-anchor="start" x="1009" y="-329.2" font-family="Helvetica,sans-Serif" font-size="11.00">numeric[0]</text>
+<polygon fill="#ffffff" stroke="transparent" points="793,-303 793,-321 904,-321 904,-303 793,-303"/>
+<polygon fill="none" stroke="black" points="793,-303 793,-321 904,-321 904,-303 793,-303"/>
+<text text-anchor="start" x="796" y="-309.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="904,-303 904,-321 1006,-321 1006,-303 904,-303"/>
+<polygon fill="none" stroke="black" points="904,-303 904,-321 1006,-321 1006,-303 904,-303"/>
+<text text-anchor="start" x="996" y="-309.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1006,-303 1006,-321 1069,-321 1069,-303 1006,-303"/>
+<polygon fill="none" stroke="black" points="1006,-303 1006,-321 1069,-321 1069,-303 1006,-303"/>
+<text text-anchor="start" x="1050" y="-309.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="792,-302 792,-432 1070,-432 1070,-302 792,-302"/>
 </a>
 </g>
 </g>
 <!-- report_project_indicator_targets&#45;&gt;public.projects -->
 <g id="edge27" class="edge">
 <title>report_project_indicator_targets:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M786.53,-395.91C765.62,-389.18 760.87,-368.09 733,-361 602.06,-327.68 532.7,-274.39 429,-361 376.71,-404.68 320.43,-893.88 306.01,-1026.82"/>
-<polygon fill="black" stroke="black" points="793.08,-396.86 800.49,-401.56 797.04,-397.43 801,-398 801,-398 801,-398 797.04,-397.43 801.51,-394.44 793.08,-396.86 793.08,-396.86"/>
-<ellipse fill="none" stroke="black" cx="789.91" cy="-396.4" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M777.61,-395.32C760.58,-388.03 757.17,-367.95 733,-361 603.15,-323.65 532.7,-274.39 429,-361 376.71,-404.68 320.43,-893.88 306.01,-1026.82"/>
+<polygon fill="black" stroke="black" points="784.14,-396.53 791.34,-401.54 788.07,-397.27 792,-398 792,-398 792,-398 788.07,-397.27 792.66,-394.46 784.14,-396.53 784.14,-396.53"/>
+<ellipse fill="none" stroke="black" cx="780.99" cy="-395.95" rx="3.2" ry="3.2"/>
 </g>
 <!-- report_project_indicator_targets&#45;&gt;project_indicators -->
 <g id="edge28" class="edge">
 <title>report_project_indicator_targets:w&#45;&gt;project_indicators:e</title>
-<path fill="none" stroke="black" d="M787.93,-369.66C758.81,-353.89 687.86,-312.02 637.4,-282.04"/>
-<polygon fill="black" stroke="black" points="793.8,-372.51 799.43,-379.24 797.4,-374.25 801,-376 801,-376 801,-376 797.4,-374.25 802.57,-372.76 793.8,-372.51 793.8,-372.51"/>
-<ellipse fill="none" stroke="black" cx="790.92" cy="-371.11" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M777.66,-374.12C759.72,-368.77 754.44,-353 733,-340 701.33,-320.8 665.87,-299.42 637.27,-282.21"/>
+<polygon fill="black" stroke="black" points="784.07,-374.96 791.53,-379.57 788.03,-375.48 792,-376 792,-376 792,-376 788.03,-375.48 792.47,-372.43 784.07,-374.96 784.07,-374.96"/>
+<ellipse fill="none" stroke="black" cx="780.89" cy="-374.54" rx="3.2" ry="3.2"/>
 </g>
 <!-- report_project_indicators -->
 <g id="node26" class="node">
