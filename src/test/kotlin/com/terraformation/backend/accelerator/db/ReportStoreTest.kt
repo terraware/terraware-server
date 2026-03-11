@@ -2055,10 +2055,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId1,
           year = 1970,
-          target =
-              BigDecimal(
-                  55,
-              ),
+          target = BigDecimal(55),
       )
       insertReportCommonIndicator(
           reportId = reportId,
@@ -2073,10 +2070,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId2,
           year = 1970,
-          target =
-              BigDecimal(
-                  25,
-              ),
+          target = BigDecimal(25),
       )
       insertReportCommonIndicator(
           reportId = reportId,
@@ -2680,10 +2674,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId1,
           year = 1970,
-          target =
-              BigDecimal(
-                  55,
-              ),
+          target = BigDecimal(55),
       )
       insertReportCommonIndicator(
           reportId = reportId,
@@ -2698,10 +2689,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId2,
           year = 1970,
-          target =
-              BigDecimal(
-                  30,
-              ),
+          target = BigDecimal(30),
       )
       insertReportCommonIndicator(
           reportId = reportId,
@@ -3166,10 +3154,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId1,
           year = 1970,
-          target =
-              BigDecimal(
-                  55,
-              ),
+          target = BigDecimal(55),
       )
       insertReportCommonIndicator(
           reportId = reportId,
@@ -3184,10 +3169,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId2,
           year = 1970,
-          target =
-              BigDecimal(
-                  30,
-              ),
+          target = BigDecimal(30),
       )
       insertReportCommonIndicator(
           reportId = reportId,
@@ -4565,10 +4547,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId1,
           year = 2030,
-          target =
-              BigDecimal(
-                  10,
-              ),
+          target = BigDecimal(10),
       )
       insertReportCommonIndicator(
           reportId = reportId,
@@ -4582,10 +4561,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertReportCommonIndicatorTarget(
           commonIndicatorId = commonIndicatorId2,
           year = 2030,
-          target =
-              BigDecimal(
-                  20,
-              ),
+          target = BigDecimal(20),
       )
       insertReportCommonIndicator(
           reportId = reportId,
