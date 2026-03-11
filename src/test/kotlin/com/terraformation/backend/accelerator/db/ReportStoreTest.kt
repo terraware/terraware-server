@@ -4981,6 +4981,92 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
 
+    @Test
+    fun `does not publish targets for inactive common indicator`() {
+      val inactiveCommonIndicatorId = insertCommonIndicator(active = false, isPublishable = true)
+
+      insertReportCommonIndicatorTarget(
+          commonIndicatorId = inactiveCommonIndicatorId,
+          year = 2030,
+          target = BigDecimal(77),
+      )
+      insertReportCommonIndicator(
+          reportId = reportId,
+          indicatorId = inactiveCommonIndicatorId,
+          value = BigDecimal(77),
+          status = ReportIndicatorStatus.Achieved,
+      )
+
+      store.publishReport(reportId)
+
+      assertTableEquals(
+          listOf(
+              PublishedCommonIndicatorTargetsRecord(
+                  projectId = projectId,
+                  commonIndicatorId = commonIndicatorId1,
+                  year = 2030,
+                  target = BigDecimal(10),
+              ),
+              PublishedCommonIndicatorTargetsRecord(
+                  projectId = projectId,
+                  commonIndicatorId = commonIndicatorId2,
+                  year = 2030,
+                  target = BigDecimal(20),
+              ),
+              PublishedCommonIndicatorTargetsRecord(
+                  projectId = projectId,
+                  commonIndicatorId = commonIndicatorNullValueId,
+                  year = 2030,
+                  target = BigDecimal(999),
+              ),
+          ),
+          "Published common indicator targets table should not include inactive indicator",
+      )
+    }
+
+    @Test
+    fun `does not publish targets for inactive project indicator`() {
+      val inactiveProjectIndicatorId = insertProjectIndicator(active = false, isPublishable = true)
+
+      insertReportProjectIndicatorTarget(
+          projectIndicatorId = inactiveProjectIndicatorId,
+          year = 2030,
+          target = BigDecimal(88),
+      )
+      insertReportProjectIndicator(
+          reportId = reportId,
+          indicatorId = inactiveProjectIndicatorId,
+          value = BigDecimal(88),
+          status = ReportIndicatorStatus.Achieved,
+      )
+
+      store.publishReport(reportId)
+
+      assertTableEquals(
+          listOf(
+              PublishedProjectIndicatorTargetsRecord(
+                  projectId = projectId,
+                  projectIndicatorId = projectIndicatorId1,
+                  year = 2030,
+                  target = BigDecimal(30),
+              ),
+              PublishedProjectIndicatorTargetsRecord(
+                  projectId = projectId,
+                  projectIndicatorId = projectIndicatorId2,
+                  year = 2030,
+                  target = BigDecimal(40),
+              ),
+              PublishedProjectIndicatorTargetsRecord(
+                  projectId = projectId,
+                  projectIndicatorId = projectIndicatorNullValueId,
+                  year = 2030,
+                  target = BigDecimal(999),
+              ),
+          ),
+          "Published project indicator targets table should not include inactive indicator",
+      )
+    }
+
     // Helper function to validate the report from setupReport() is in the published reports tables
     private fun assertPublishedReport(publishedBy: UserId, publishedTime: Instant) {
       assertTableEquals(
