@@ -133,22 +133,11 @@
 
         <tbody>
             <tr>
-                <td rowspan="2">mapper</td>
-                <td>Command</td>
-                <td>
-                    <select name="mapper">
-                        <option value="colmap" selected>COLMAP</option>
-                        <option value="glomap">GLOMAP</option>
-                    </select>
-                <td>
-                    Which command to use for the mapper phase of the SfM step.
-                </td>
-            </tr>
-            <tr>
+                <td>colmap</td>
                 <td>Other Args</td>
-                <td><input type="text" name="stepArgs[mapper]"/></td>
+                <td><input type="text" name="stepArgs[colmap]"/></td>
                 <td>
-                    Additional space-separated arguments to pass to the colmap or glomap.
+                    Additional space-separated arguments to pass to colmap.
                 </td>
             </tr>
         </tbody>
@@ -157,13 +146,96 @@
 
         <tbody>
             <tr>
-                <td>model-converter</td>
+                <td>model-converter-1</td>
                 <td>Other Args</td>
-                <td><input type="text" name="stepArgs[model-converter]"/></td>
+                <td><input type="text" name="stepArgs[model-converter-1]"/></td>
                 <td>
-                    Additional space-separated arguments to pass to colmap model_converter.
+                    Additional space-separated arguments to pass to the first invocation of
+                    colmap model_converter.
                 </td>
             </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td>check-1</td>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[check-1]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to the first invocation of
+                    check_reconstruction.py.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+            <tr>
+                <td>prune-spikes</td>
+                <td>Other Args</td>
+                <td><input type="text" name="stepArgs[prune-spikes]"/></td>
+                <td>
+                    Additional space-separated arguments to pass to prune_spikes.py if it is run.
+                </td>
+            </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+        <tr>
+            <td>check-2</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[check-2]"/></td>
+            <td>
+                Additional space-separated arguments to pass to the second invocation of
+                check_reconstruction.py, after prune-spikes.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+        <tr>
+            <td>glomap</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[glomap]"/></td>
+            <td>
+                Additional space-separated arguments to pass to glomap if check-2 fails.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+        <tr>
+            <td>model-converter-2</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[model-converter-2]"/></td>
+            <td>
+                Additional space-separated arguments to pass to the second invocation of
+                colmap model_converter, after glomap.
+            </td>
+        </tr>
+        </tbody>
+
+        <tr><td colspan="4"><hr/></td></tr>
+
+        <tbody>
+        <tr>
+            <td>check-3</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[check-3]"/></td>
+            <td>
+                Additional space-separated arguments to pass to the third invocation of
+                check_reconstruction.py, after glomap or colmap.
+            </td>
+        </tr>
         </tbody>
 
         <tr><td colspan="4"><hr/></td></tr>
@@ -180,8 +252,8 @@
                     </select>
                 </td>
                 <td>
-                    Enable or disable tail pruning. Default is enabled for COLMAP and disabled for
-                    GLOMAP.
+                    Enable or disable tail pruning. Default is enabled. Tail pruning is not run if
+                    check-3 succeeds, regardless of this setting.
                 </td>
             </tr>
             <tr>
@@ -265,9 +337,8 @@
                 <td>Abort After</td>
                 <td><input type="text" name="abortAfter"/></td>
                 <td>
-                    Abort the processing run after this step. Step names are the same as the splat.py
-                    command names for steps that use splat.py. Additional step names: prune-tail,
-                    link-images, link-images-factor, gsplat, splat-transform.
+                    Abort the processing run after this step. Step names are the same as the
+                    names in the left column of this table.
                 </td>
             </tr>
             <tr>
@@ -275,9 +346,8 @@
                 <td><input type="text" name="restartAt"/></td>
                 <td>
                     Restart the processing run at this step, using the files in the archived job
-                    directory. Step names are the same as the splat.py command names for steps that
-                    use splat.py. Additional step names: prune-tail, link-images, link-images-factor,
-                    gsplat, splat-transform.
+                    directory. Step names are the same as the names in the left column of this
+                    table.
                 </td>
             </tr>
 

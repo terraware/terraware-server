@@ -41,7 +41,6 @@ class AdminSplatsController(
       @RequestParam featureMatcherSubcommand: String?,
       @RequestParam fps: Int?,
       @RequestParam keepPercent: Double?,
-      @RequestParam mapper: String?,
       @RequestParam maxSize: Int?,
       @RequestParam maxSteps: Int?,
       @RequestParam restartAt: String?,
@@ -64,7 +63,6 @@ class AdminSplatsController(
                       "filter-blurry" to listOf("--no-filter-blurry")
                     }
                   },
-                  mapper?.ifBlank { null }?.let { "mapper" to listOf("--mapper", mapper) },
                   maxSize?.let { "extract" to listOf("--max-size", "$maxSize") },
                   maxSteps?.let { "gsplat" to listOf("--max_steps", "$maxSteps") },
                   ssimLambda?.let { "gsplat" to listOf("--ssim_lambda", "$ssimLambda") },
