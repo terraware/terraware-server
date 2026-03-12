@@ -1,6 +1,8 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ReportStore
+import com.terraformation.backend.accelerator.model.PublishedReportComparedProps
+import com.terraformation.backend.accelerator.model.ReportModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
@@ -9,6 +11,7 @@ import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.tables.daos.ReportPhotosDao
 import com.terraformation.backend.db.accelerator.tables.pojos.ReportPhotosRow
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.funder.tables.daos.PublishedReportPhotosDao
 import com.terraformation.backend.db.funder.tables.pojos.PublishedReportPhotosRow
 import com.terraformation.backend.file.FileService
@@ -16,6 +19,7 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
+import com.terraformation.backend.funder.db.PublishedReportStore
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.io.InputStream
@@ -31,6 +35,7 @@ class ReportService(
     private val reportPhotosDao: ReportPhotosDao,
     private val reportStore: ReportStore,
     private val publishedReportPhotosDao: PublishedReportPhotosDao,
+    private val publishedReportStore: PublishedReportStore,
     private val systemUser: SystemUser,
     private val thumbnailService: ThumbnailService,
 ) {
@@ -46,6 +51,41 @@ class ReportService(
         log.warn("Failed to notify upcoming reports: ${e.message}")
       }
     }
+  }
+
+  fun fetch(
+      projectId: ProjectId? = null,
+      year: Int? = null,
+      includeArchived: Boolean = false,
+      includeFuture: Boolean = false,
+      includeIndicators: Boolean = false,
+      computeUnpublishedChanges: Boolean = false,
+  ): List<ReportModel> {
+    val reports =
+        reportStore.fetch(
+            projectId = projectId,
+            year = year,
+            includeArchived = includeArchived,
+            includeFuture = includeFuture,
+            includeIndicators = includeIndicators,
+        )
+    if (!computeUnpublishedChanges) {
+      return reports
+    }
+    return applyUnpublishedProperties(reports, includeIndicators)
+  }
+
+  fun fetchOne(
+      reportId: ReportId,
+      includeIndicators: Boolean = false,
+      computeUnpublishedChanges: Boolean = true,
+  ): ReportModel {
+    val report = reportStore.fetchOne(reportId, includeIndicators)
+    if (!computeUnpublishedChanges) {
+      return report
+    }
+    val results = applyUnpublishedProperties(listOf(report), includeIndicators)
+    return results.first()
   }
 
   fun deleteReportPhoto(reportId: ReportId, fileId: FileId) {
@@ -117,6 +157,81 @@ class ReportService(
     }
 
     reportPhotosDao.update(reportPhotosRow.copy(caption = caption))
+  }
+
+  private fun applyUnpublishedProperties(
+      reports: List<ReportModel>,
+      includeIndicators: Boolean,
+  ): List<ReportModel> {
+    if (reports.isEmpty()) {
+      return reports
+    }
+
+    val publishedByReportId = publishedReportStore.fetchPublishedReportsByIds(reports.map { it.id })
+
+    return reports.map { report ->
+      val published = publishedByReportId[report.id] ?: return@map report
+
+      val changed = mutableListOf<PublishedReportComparedProps>()
+
+      if (report.highlights != published.highlights) {
+        changed.add(PublishedReportComparedProps.Highlights)
+      }
+      if (report.financialSummaries != published.financialSummaries) {
+        changed.add(PublishedReportComparedProps.FinancialSummaries)
+      }
+      if (report.additionalComments != published.additionalComments) {
+        changed.add(PublishedReportComparedProps.AdditionalComments)
+      }
+
+      if (report.achievements.toSet() != published.achievements.toSet()) {
+        changed.add(PublishedReportComparedProps.Achievements)
+      }
+
+      val currentChallenges = report.challenges.map { it.challenge to it.mitigationPlan }.toSet()
+      val pubChallenges = published.challenges.map { it.challenge to it.mitigationPlan }.toSet()
+      if (currentChallenges != pubChallenges) {
+        changed.add(PublishedReportComparedProps.Challenges)
+      }
+
+      if (report.photos.map { it.fileId }.toSet() != published.photos.map { it.fileId }.toSet()) {
+        changed.add(PublishedReportComparedProps.Photos)
+      }
+
+      if (includeIndicators) {
+        val pubAutoCalc =
+            published.autoCalculatedIndicators.associate { it.indicatorId to it.value }
+        val hasAutoCalcChanged =
+            pubAutoCalc.any { (indicator, pubValue) ->
+              val current = report.autoCalculatedIndicators.find { it.indicator == indicator }
+              val currentValue = current?.let { it.entry.overrideValue ?: it.entry.systemValue }
+              currentValue != pubValue
+            }
+        if (hasAutoCalcChanged) {
+          changed.add(PublishedReportComparedProps.AutoCalculatedIndicators)
+        }
+
+        val pubCommon = published.commonIndicators.associate { it.indicatorId to it.value }
+        val currentCommon =
+            report.commonIndicators
+                .filter { it.indicator.isPublishable }
+                .associate { it.indicator.id to it.entry.value }
+        if (currentCommon != pubCommon) {
+          changed.add(PublishedReportComparedProps.CommonIndicators)
+        }
+
+        val pubProject = published.projectIndicators.associate { it.indicatorId to it.value }
+        val currentProject =
+            report.projectIndicators
+                .filter { it.indicator.isPublishable }
+                .associate { it.indicator.id to it.entry.value }
+        if (currentProject != pubProject) {
+          changed.add(PublishedReportComparedProps.ProjectIndicators)
+        }
+      }
+
+      report.copy(unpublishedProperties = changed)
+    }
   }
 
   private fun deletePublishedReportPhoto(reportId: ReportId, fileId: FileId) {

@@ -7,6 +7,7 @@ import com.terraformation.backend.db.accelerator.IndicatorCategoryConverter
 import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorClassConverter
 import com.terraformation.backend.db.accelerator.IndicatorLevelConverter
+import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.accelerator.ReportIdConverter
 import com.terraformation.backend.db.accelerator.ReportIndicatorStatusConverter
 import com.terraformation.backend.db.accelerator.tables.references.AUTO_CALCULATED_INDICATORS
@@ -36,6 +37,7 @@ import com.terraformation.backend.funder.model.PublishedReportIndicatorModel
 import com.terraformation.backend.funder.model.PublishedReportModel
 import jakarta.inject.Named
 import java.math.BigDecimal
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.TableField
@@ -49,6 +51,25 @@ class PublishedReportStore(
   fun fetchPublishedReports(projectId: ProjectId): List<PublishedReportModel> {
     requirePermissions { readPublishedReports(projectId) }
 
+    return fetchByCondition(PUBLISHED_REPORTS.PROJECT_ID.eq(projectId))
+  }
+
+  /**
+   * Fetches published reports by their report IDs without a permission check. Callers are
+   * responsible for ensuring the current user has permission to access the reports.
+   */
+  fun fetchPublishedReportsByIds(
+      reportIds: Collection<ReportId>
+  ): Map<ReportId, PublishedReportModel> {
+    // TODO read published report perms?
+    if (reportIds.isEmpty()) {
+      return emptyMap()
+    }
+
+    return fetchByCondition(PUBLISHED_REPORTS.REPORT_ID.`in`(reportIds)).associateBy { it.reportId }
+  }
+
+  private fun fetchByCondition(condition: Condition): List<PublishedReportModel> {
     return dslContext
         .select(
             PUBLISHED_REPORTS.asterisk(),
@@ -66,7 +87,7 @@ class PublishedReportStore(
         .on(PUBLISHED_REPORTS.PROJECT_ID.eq(PROJECTS.ID))
         .leftJoin(PROJECT_ACCELERATOR_DETAILS)
         .on(PUBLISHED_REPORTS.PROJECT_ID.eq(PROJECT_ACCELERATOR_DETAILS.PROJECT_ID))
-        .where(PUBLISHED_REPORTS.PROJECT_ID.eq(projectId))
+        .where(condition)
         .orderBy(PUBLISHED_REPORTS.END_DATE.desc())
         .fetch { record ->
           PublishedReportModel(

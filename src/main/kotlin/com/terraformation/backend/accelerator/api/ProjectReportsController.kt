@@ -103,12 +103,13 @@ class ProjectReportsController(
       @RequestParam includeIndicators: Boolean? = null,
   ): ListAcceleratorReportsResponsePayload {
     val reports =
-        reportStore.fetch(
+        reportService.fetch(
             projectId = projectId,
             year = year,
             includeArchived = includeArchived ?: false,
             includeFuture = includeFuture ?: false,
             includeIndicators = includeIndicators ?: includeMetrics ?: false,
+            computeUnpublishedChanges = false,
         )
     return ListAcceleratorReportsResponsePayload(reports.map { AcceleratorReportPayload(it) })
   }
@@ -125,9 +126,10 @@ class ProjectReportsController(
       @RequestParam includeIndicators: Boolean? = null,
   ): GetAcceleratorReportResponsePayload {
     val model =
-        reportStore.fetchOne(
+        reportService.fetchOne(
             reportId = reportId,
             includeIndicators = includeIndicators ?: includeMetrics ?: false,
+            computeUnpublishedChanges = true,
         )
     return GetAcceleratorReportResponsePayload(AcceleratorReportPayload(model))
   }

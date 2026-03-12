@@ -11,7 +11,6 @@ import com.terraformation.backend.accelerator.model.IndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorTargetsModel
 import com.terraformation.backend.accelerator.model.ProjectReportConfigModel
-import com.terraformation.backend.accelerator.model.PublishedReportComparedProps
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
@@ -92,6 +91,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.model.calculateSurvivalRate
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -119,8 +119,7 @@ class ReportStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
-    private val observationResultsStore:
-        com.terraformation.backend.tracking.db.ObservationResultsStore,
+    private val observationResultsStore: ObservationResultsStore,
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
@@ -1171,253 +1170,30 @@ class ReportStore(
             .filter { currentUser().canReadReport(it.id) }
 
     // Post-process survival rate indicators
-    val reportsWithSurvivalRate =
-        if (includeIndicators) {
-          reports.map { report ->
-            val survivalRateIndicator =
-                report.autoCalculatedIndicators.find {
-                  it.indicator == AutoCalculatedIndicator.SurvivalRate
+    if (includeIndicators) {
+      return reports.map { report ->
+        val survivalRateIndicator =
+            report.autoCalculatedIndicators.find {
+              it.indicator == AutoCalculatedIndicator.SurvivalRate
+            }
+        // only calculate if systemValue is 0 from the jOOQ
+        if (survivalRateIndicator != null && survivalRateIndicator.entry.systemTime == null) {
+          val calculatedSurvivalRate = calculateSurvivalRateForReport(report.id)
+          val updatedIndicators =
+              report.autoCalculatedIndicators.map { indicator ->
+                if (indicator.indicator == AutoCalculatedIndicator.SurvivalRate) {
+                  indicator.copy(entry = indicator.entry.copy(systemValue = calculatedSurvivalRate))
+                } else {
+                  indicator
                 }
-            // only calculate if systemValue is 0 from the jOOQ
-            if (survivalRateIndicator != null && survivalRateIndicator.entry.systemTime == null) {
-              val calculatedSurvivalRate = calculateSurvivalRateForReport(report.id)
-              val updatedIndicators =
-                  report.autoCalculatedIndicators.map { indicator ->
-                    if (indicator.indicator == AutoCalculatedIndicator.SurvivalRate) {
-                      indicator.copy(
-                          entry = indicator.entry.copy(systemValue = calculatedSurvivalRate)
-                      )
-                    } else {
-                      indicator
-                    }
-                  }
-              report.copy(autoCalculatedIndicators = updatedIndicators)
-            } else {
-              report
-            }
-          }
-        } else {
-          reports
-        }
-
-    val unpublishedPropertiesMap =
-        computeUnpublishedPropertiesForReports(reportsWithSurvivalRate, includeIndicators)
-    return reportsWithSurvivalRate.map { report ->
-      report.copy(unpublishedProperties = unpublishedPropertiesMap[report.id] ?: emptyList())
-    }
-  }
-
-  /**
-   * For each report in the list, computes which properties differ from the published version.
-   * Returns a map from report ID to the list of changed properties. If a report has no published
-   * version, the map entry value is `null`. If all properties match, the list is empty.
-   */
-  private fun computeUnpublishedPropertiesForReports(
-      reports: List<ReportModel>,
-      includeIndicators: Boolean,
-  ): Map<ReportId, List<PublishedReportComparedProps>?> {
-    if (reports.isEmpty()) {
-      return emptyMap()
-    }
-
-    val reportIds = reports.map { it.id }
-
-    // Fetch published report scalar fields
-    val publishedScalars =
-        dslContext
-            .select(
-                PUBLISHED_REPORTS.REPORT_ID,
-                PUBLISHED_REPORTS.HIGHLIGHTS,
-                PUBLISHED_REPORTS.FINANCIAL_SUMMARIES,
-                PUBLISHED_REPORTS.ADDITIONAL_COMMENTS,
-            )
-            .from(PUBLISHED_REPORTS)
-            .where(PUBLISHED_REPORTS.REPORT_ID.`in`(reportIds))
-            .fetchMap(PUBLISHED_REPORTS.REPORT_ID)
-
-    // Fetch published achievements
-    val publishedAchievements: Map<ReportId, Set<String>> =
-        dslContext
-            .select(
-                PUBLISHED_REPORT_ACHIEVEMENTS.REPORT_ID,
-                PUBLISHED_REPORT_ACHIEVEMENTS.ACHIEVEMENT,
-            )
-            .from(PUBLISHED_REPORT_ACHIEVEMENTS)
-            .where(PUBLISHED_REPORT_ACHIEVEMENTS.REPORT_ID.`in`(reportIds))
-            .fetch()
-            .groupBy(
-                { it[PUBLISHED_REPORT_ACHIEVEMENTS.REPORT_ID]!! },
-                { it[PUBLISHED_REPORT_ACHIEVEMENTS.ACHIEVEMENT]!! },
-            )
-            .mapValues { it.value.toSet() }
-
-    // Fetch published challenges
-    val publishedChallenges: Map<ReportId, Set<Pair<String, String>>> =
-        dslContext
-            .select(
-                PUBLISHED_REPORT_CHALLENGES.REPORT_ID,
-                PUBLISHED_REPORT_CHALLENGES.CHALLENGE,
-                PUBLISHED_REPORT_CHALLENGES.MITIGATION_PLAN,
-            )
-            .from(PUBLISHED_REPORT_CHALLENGES)
-            .where(PUBLISHED_REPORT_CHALLENGES.REPORT_ID.`in`(reportIds))
-            .fetch()
-            .groupBy(
-                { it[PUBLISHED_REPORT_CHALLENGES.REPORT_ID]!! },
-                {
-                  it[PUBLISHED_REPORT_CHALLENGES.CHALLENGE]!! to
-                      it[PUBLISHED_REPORT_CHALLENGES.MITIGATION_PLAN]!!
-                },
-            )
-            .mapValues { it.value.toSet() }
-
-    // Fetch published photo file IDs
-    val publishedPhotoFileIds:
-        Map<ReportId, Set<com.terraformation.backend.db.default_schema.FileId>> =
-        dslContext
-            .select(PUBLISHED_REPORT_PHOTOS.REPORT_ID, PUBLISHED_REPORT_PHOTOS.FILE_ID)
-            .from(PUBLISHED_REPORT_PHOTOS)
-            .where(PUBLISHED_REPORT_PHOTOS.REPORT_ID.`in`(reportIds))
-            .fetch()
-            .groupBy(
-                { it[PUBLISHED_REPORT_PHOTOS.REPORT_ID]!! },
-                { it[PUBLISHED_REPORT_PHOTOS.FILE_ID]!! },
-            )
-            .mapValues { it.value.toSet() }
-
-    // Fetch published auto-calculated indicator values (publishable only)
-    val publishedAutoCalcValues: Map<ReportId, Map<AutoCalculatedIndicator, BigDecimal?>> =
-        dslContext
-            .select(
-                PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID,
-                PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID,
-                PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.VALUE,
-            )
-            .from(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS)
-            .join(AUTO_CALCULATED_INDICATORS)
-            .on(
-                AUTO_CALCULATED_INDICATORS.ID.eq(
-                    PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID
-                )
-            )
-            .where(PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID.`in`(reportIds))
-            .and(AUTO_CALCULATED_INDICATORS.IS_PUBLISHABLE.isTrue)
-            .fetch()
-            .groupBy({ it[PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.REPORT_ID]!! }) { record ->
-              record[PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.AUTO_CALCULATED_INDICATOR_ID]!! to
-                  record[PUBLISHED_REPORT_AUTO_CALCULATED_INDICATORS.VALUE]
-            }
-            .mapValues { it.value.toMap() }
-
-    // Fetch published common indicator values (publishable only)
-    val publishedCommonValues: Map<ReportId, Map<CommonIndicatorId, BigDecimal?>> =
-        dslContext
-            .select(
-                PUBLISHED_REPORT_COMMON_INDICATORS.REPORT_ID,
-                PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID,
-                PUBLISHED_REPORT_COMMON_INDICATORS.VALUE,
-            )
-            .from(PUBLISHED_REPORT_COMMON_INDICATORS)
-            .join(COMMON_INDICATORS)
-            .on(COMMON_INDICATORS.ID.eq(PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID))
-            .where(PUBLISHED_REPORT_COMMON_INDICATORS.REPORT_ID.`in`(reportIds))
-            .and(COMMON_INDICATORS.IS_PUBLISHABLE.isTrue)
-            .fetch()
-            .groupBy({ it[PUBLISHED_REPORT_COMMON_INDICATORS.REPORT_ID]!! }) { record ->
-              record[PUBLISHED_REPORT_COMMON_INDICATORS.COMMON_INDICATOR_ID]!! to
-                  record[PUBLISHED_REPORT_COMMON_INDICATORS.VALUE]
-            }
-            .mapValues { it.value.toMap() }
-
-    // Fetch published project indicator values (publishable only)
-    val publishedProjectValues: Map<ReportId, Map<ProjectIndicatorId, BigDecimal?>> =
-        dslContext
-            .select(
-                PUBLISHED_REPORT_PROJECT_INDICATORS.REPORT_ID,
-                PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID,
-                PUBLISHED_REPORT_PROJECT_INDICATORS.VALUE,
-            )
-            .from(PUBLISHED_REPORT_PROJECT_INDICATORS)
-            .join(PROJECT_INDICATORS)
-            .on(PROJECT_INDICATORS.ID.eq(PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID))
-            .where(PUBLISHED_REPORT_PROJECT_INDICATORS.REPORT_ID.`in`(reportIds))
-            .and(PROJECT_INDICATORS.IS_PUBLISHABLE.isTrue)
-            .fetch()
-            .groupBy({ it[PUBLISHED_REPORT_PROJECT_INDICATORS.REPORT_ID]!! }) { record ->
-              record[PUBLISHED_REPORT_PROJECT_INDICATORS.PROJECT_INDICATOR_ID]!! to
-                  record[PUBLISHED_REPORT_PROJECT_INDICATORS.VALUE]
-            }
-            .mapValues { it.value.toMap() }
-
-    return reports.associate { report ->
-      val pubRecord = publishedScalars[report.id]
-
-      if (pubRecord == null) {
-        report.id to null
-      } else {
-        val changed = mutableListOf<PublishedReportComparedProps>()
-
-        if (report.highlights != pubRecord[PUBLISHED_REPORTS.HIGHLIGHTS]) {
-          changed.add(PublishedReportComparedProps.Highlights)
-        }
-        if (report.financialSummaries != pubRecord[PUBLISHED_REPORTS.FINANCIAL_SUMMARIES]) {
-          changed.add(PublishedReportComparedProps.FinancialSummaries)
-        }
-        if (report.additionalComments != pubRecord[PUBLISHED_REPORTS.ADDITIONAL_COMMENTS]) {
-          changed.add(PublishedReportComparedProps.AdditionalComments)
-        }
-
-        val currentAchievements = report.achievements.toSet()
-        val pubAchievements = publishedAchievements[report.id] ?: emptySet()
-        if (currentAchievements != pubAchievements) {
-          changed.add(PublishedReportComparedProps.Achievements)
-        }
-
-        val currentChallenges = report.challenges.map { it.challenge to it.mitigationPlan }.toSet()
-        val pubChallenges = publishedChallenges[report.id] ?: emptySet()
-        if (currentChallenges != pubChallenges) {
-          changed.add(PublishedReportComparedProps.Challenges)
-        }
-
-        val currentPhotoIds = report.photos.map { it.fileId }.toSet()
-        val pubPhotoIds = publishedPhotoFileIds[report.id] ?: emptySet()
-        if (currentPhotoIds != pubPhotoIds) {
-          changed.add(PublishedReportComparedProps.Photos)
-        }
-
-        if (includeIndicators) {
-          val pubAutoCalc = publishedAutoCalcValues[report.id] ?: emptyMap()
-          val hasAutoCalcChanged =
-              pubAutoCalc.any { (indicator, pubValue) ->
-                val current = report.autoCalculatedIndicators.find { it.indicator == indicator }
-                val currentValue = current?.let { it.entry.overrideValue ?: it.entry.systemValue }
-                currentValue != pubValue
               }
-          if (hasAutoCalcChanged) {
-            changed.add(PublishedReportComparedProps.AutoCalculatedIndicators)
-          }
-
-          val pubCommon = publishedCommonValues[report.id] ?: emptyMap()
-          val currentCommon =
-              report.commonIndicators
-                  .filter { it.indicator.isPublishable }
-                  .associate { it.indicator.id to it.entry.value }
-          if (currentCommon != pubCommon) {
-            changed.add(PublishedReportComparedProps.CommonIndicators)
-          }
-
-          val pubProject = publishedProjectValues[report.id] ?: emptyMap()
-          val currentProject =
-              report.projectIndicators
-                  .filter { it.indicator.isPublishable }
-                  .associate { it.indicator.id to it.entry.value }
-          if (currentProject != pubProject) {
-            changed.add(PublishedReportComparedProps.ProjectIndicators)
-          }
+          report.copy(autoCalculatedIndicators = updatedIndicators)
+        } else {
+          report
         }
-
-        report.id to changed
       }
+    } else {
+      return reports
     }
   }
 
