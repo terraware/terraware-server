@@ -1,3 +1,5 @@
+9980bd6a44c Update dependency black to v26.3.0 (#4118)
+3b111a74c79 Update dependency html-minifier-next to v5.2.0 (#4129)
 8c07ee379c2 Only publish targets for active indicators (#4133)
 8cb614f07b9 SW-8179 Use only published data for cumulative indicators' progress (#4131)
 e4c5f16984a SW-8162 Add substratum (short) names and stratum names to NurseryWithdrawalsTable (#4124)
