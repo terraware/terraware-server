@@ -91,6 +91,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.model.calculateSurvivalRate
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -118,8 +119,7 @@ class ReportStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
-    private val observationResultsStore:
-        com.terraformation.backend.tracking.db.ObservationResultsStore,
+    private val observationResultsStore: ObservationResultsStore,
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
