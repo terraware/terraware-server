@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.model
 
+import com.fasterxml.jackson.annotation.JsonValue
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.SimpleUserModel
 import com.terraformation.backend.db.accelerator.CommonIndicatorId
@@ -20,6 +21,18 @@ import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
 import org.jooq.Record
+
+enum class PublishedReportComparedProps(@get:JsonValue val jsonValue: String) {
+  Achievements("achievements"),
+  AdditionalComments("additionalComments"),
+  AutoCalculatedIndicators("autoCalculatedIndicators"),
+  Challenges("challenges"),
+  CommonIndicators("commonIndicators"),
+  FinancialSummaries("financialSummaries"),
+  Highlights("highlights"),
+  Photos("photos"),
+  ProjectIndicators("projectIndicators"),
+}
 
 data class ReportChallengeModel(
     val challenge: String,
@@ -85,6 +98,7 @@ data class ReportModel(
     val submittedBy: UserId? = null,
     val submittedByUser: SimpleUserModel? = null,
     val submittedTime: Instant? = null,
+    val unpublishedProperties: List<PublishedReportComparedProps> = emptyList(),
 ) {
 
   /** Describes the reporting period of this report. For example "2025 Q1" or "2025 Annual" */
@@ -153,6 +167,7 @@ data class ReportModel(
         achievementsField: Field<List<String>>?,
         challengesField: Field<List<ReportChallengeModel>>?,
         usersField: Field<Map<UserId, SimpleUserModel>>,
+        unpublishedProperties: List<PublishedReportComparedProps> = emptyList(),
     ): ReportModel {
       val usersMap = record[usersField]!!
       val createdById = record[REPORTS.CREATED_BY]!!
@@ -195,6 +210,7 @@ data class ReportModel(
             commonIndicators = commonIndicatorsField?.let { record[it] } ?: emptyList(),
             autoCalculatedIndicators =
                 autoCalculatedIndicatorsField?.let { record[it] } ?: emptyList(),
+            unpublishedProperties = unpublishedProperties,
         )
       }
     }

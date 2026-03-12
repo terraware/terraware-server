@@ -9,6 +9,7 @@ import com.terraformation.backend.accelerator.model.CumulativeIndicatorProgressM
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorTargetsModel
+import com.terraformation.backend.accelerator.model.PublishedReportComparedProps
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
@@ -102,12 +103,13 @@ class ProjectReportsController(
       @RequestParam includeIndicators: Boolean? = null,
   ): ListAcceleratorReportsResponsePayload {
     val reports =
-        reportStore.fetch(
+        reportService.fetch(
             projectId = projectId,
             year = year,
             includeArchived = includeArchived ?: false,
             includeFuture = includeFuture ?: false,
             includeIndicators = includeIndicators ?: includeMetrics ?: false,
+            computeUnpublishedChanges = false,
         )
     return ListAcceleratorReportsResponsePayload(reports.map { AcceleratorReportPayload(it) })
   }
@@ -124,9 +126,10 @@ class ProjectReportsController(
       @RequestParam includeIndicators: Boolean? = null,
   ): GetAcceleratorReportResponsePayload {
     val model =
-        reportStore.fetchOne(
+        reportService.fetchOne(
             reportId = reportId,
             includeIndicators = includeIndicators ?: includeMetrics ?: false,
+            computeUnpublishedChanges = true,
         )
     return GetAcceleratorReportResponsePayload(AcceleratorReportPayload(model))
   }
@@ -859,6 +862,7 @@ data class AcceleratorReportPayload(
     val submittedTime: Instant?,
     @Schema(description = "Use autoCalculatedIndicators instead", deprecated = true)
     val systemMetrics: List<ReportSystemMetricPayload>,
+    val unpublishedProperties: List<PublishedReportComparedProps>,
 ) {
   constructor(
       model: ReportModel
@@ -890,6 +894,7 @@ data class AcceleratorReportPayload(
       submittedByUser = model.submittedByUser?.let { SimpleUserPayload(it) },
       submittedTime = model.submittedTime,
       systemMetrics = model.autoCalculatedIndicators.map { ReportSystemMetricPayload(it) },
+      unpublishedProperties = model.unpublishedProperties,
   )
 }
 
