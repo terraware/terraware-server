@@ -205,6 +205,11 @@ class ReportService(
       }
 
       if (includeIndicators) {
+        // For auto calculated indicators, only compare published to current when there is a
+        // published row. The current report will always have all publishable auto calc indicators
+        // with a value of 0 even if those indicators don't have values in the report. Additionally,
+        // we always publish auto calc indicators whether they have a value or not when publishing.
+        // Thus we only care about the current indicators if there's no corresponding auto calc.
         val pubAutoCalc =
             published.autoCalculatedIndicators.associate {
               it.indicatorId to (it.value to it.progressNotes)
@@ -219,7 +224,6 @@ class ReportService(
         if (hasAutoCalcChanged) {
           changed.add(PublishedReportComparedProps.AutoCalculatedIndicators)
         }
-
         val pubCommon =
             published.commonIndicators.associate {
               it.indicatorId to (it.value to it.progressNotes)
