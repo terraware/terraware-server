@@ -9,6 +9,7 @@ import com.terraformation.backend.accelerator.model.CumulativeIndicatorProgressM
 import com.terraformation.backend.accelerator.model.ExistingProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.NewProjectReportConfigModel
 import com.terraformation.backend.accelerator.model.ProjectIndicatorTargetsModel
+import com.terraformation.backend.accelerator.model.PublishedReportComparedProps
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorModel
 import com.terraformation.backend.accelerator.model.ReportAutoCalculatedIndicatorTargetModel
 import com.terraformation.backend.accelerator.model.ReportChallengeModel
@@ -859,6 +860,7 @@ data class AcceleratorReportPayload(
     val submittedTime: Instant?,
     @Schema(description = "Use autoCalculatedIndicators instead", deprecated = true)
     val systemMetrics: List<ReportSystemMetricPayload>,
+    val unpublishedProperties: List<PublishedReportComparedProps>,
 ) {
   constructor(
       model: ReportModel
@@ -890,6 +892,7 @@ data class AcceleratorReportPayload(
       submittedByUser = model.submittedByUser?.let { SimpleUserPayload(it) },
       submittedTime = model.submittedTime,
       systemMetrics = model.autoCalculatedIndicators.map { ReportSystemMetricPayload(it) },
+      unpublishedProperties = model.unpublishedProperties,
   )
 }
 
