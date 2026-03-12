@@ -1,2 +1,3 @@
+65e767b6e54 SW-8170 Calculate unpublished properties for reports (#4138)
 d055c6160a0 SW-8170 Add fetch by report ids method to PublishedReportStore (#4137)
 c0d14062347 SW-8180 Add new splatter steps to admin UI (#4139)

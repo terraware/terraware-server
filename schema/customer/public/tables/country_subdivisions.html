@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>country_subdivisions</h1><p><span id="recordNumber">-1</span> rows</p><br />
+                    <h1>country_subdivisions</h1><p><span id="recordNumber">57</span> rows</p><br />
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="fa fa-file-text-o"></i>
@@ -253,12 +253,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>country_subdivisions_code_length</td>
-                                    <td>((length(code) &gt;&#61; 4) AND (length(code) &lt;&#61; 6))</td>
-                                </tr>
-                                <tr>
                                     <td>country_subdivisions_code_matches_country</td>
                                     <td>(substr(code, 1, 2) &#61; country_code)</td>
+                                </tr>
+                                <tr>
+                                    <td>country_subdivisions_code_length</td>
+                                    <td>((length(code) &gt;&#61; 4) AND (length(code) &lt;&#61; 6))</td>
                                 </tr>
                                 </tbody>
                             </table>
