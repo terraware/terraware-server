@@ -206,36 +206,44 @@ class ReportService(
 
       if (includeIndicators) {
         val pubAutoCalc =
-            published.autoCalculatedIndicators.associate { it.indicatorId to it.value }
+            published.autoCalculatedIndicators.associate {
+              it.indicatorId to (it.value to it.progressNotes)
+            }
         val hasAutoCalcChanged =
-            pubAutoCalc.any { (indicator, pubValue) ->
+            pubAutoCalc.any { (indicator, pubData) ->
               val current = report.autoCalculatedIndicators.find { it.indicator == indicator }
               val currentValue = current?.let { it.entry.overrideValue ?: it.entry.systemValue }
-              currentValue != pubValue
+              val currentProgressNotes = current?.entry?.progressNotes
+              currentValue != pubData.first || currentProgressNotes != pubData.second
             }
         if (hasAutoCalcChanged) {
           changed.add(PublishedReportComparedProps.AutoCalculatedIndicators)
         }
 
-        val pubCommon = published.commonIndicators.associate { it.indicatorId to it.value }
+        val pubCommon =
+            published.commonIndicators.associate {
+              it.indicatorId to (it.value to it.progressNotes)
+            }
         val currentCommon =
             report.commonIndicators
                 .filter { it.indicator.isPublishable }
-                .associate { it.indicator.id to it.entry.value }
+                .associate { it.indicator.id to (it.entry.value to it.entry.progressNotes) }
         if (currentCommon != pubCommon) {
           changed.add(PublishedReportComparedProps.CommonIndicators)
         }
 
-        val pubProject = published.projectIndicators.associate { it.indicatorId to it.value }
+        val pubProject =
+            published.projectIndicators.associate {
+              it.indicatorId to (it.value to it.progressNotes)
+            }
         val currentProject =
             report.projectIndicators
                 .filter { it.indicator.isPublishable }
-                .associate { it.indicator.id to it.entry.value }
+                .associate { it.indicator.id to (it.entry.value to it.entry.progressNotes) }
         if (currentProject != pubProject) {
           changed.add(PublishedReportComparedProps.ProjectIndicators)
         }
       }
-
       report.copy(unpublishedProperties = changed)
     }
   }

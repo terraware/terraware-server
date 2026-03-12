@@ -685,7 +685,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `does not compare progress notes or projectsComments for commonIndicators`() {
+    fun `does not identify commonIndicators as changed when only projectsComments changed`() {
       insertCommonIndicator(isPublishable = true)
       insertPublishedReport(
           highlights = "highlights",
@@ -694,12 +694,10 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       insertPublishedReportCommonIndicator(
           value = BigDecimal(10),
-          progressNotes = "old progress notes",
           projectsComments = "old projects comments",
       )
       insertReportCommonIndicator(
           value = BigDecimal(10),
-          progressNotes = "new progress notes",
           projectsComments = "new projects comments",
       )
 
@@ -708,8 +706,144 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           service
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
               .unpublishedProperties,
-          "CommonIndicators should not be flagged when only notes/comments changed",
+          "CommonIndicators should not be flagged when only projectsComments changed",
       )
     }
+
+    @Test
+    fun `identifies commonIndicators as changed when progressNotes changed`() {
+      insertCommonIndicator(isPublishable = true)
+      insertPublishedReport(
+          highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+      )
+      insertPublishedReportCommonIndicator(value = BigDecimal(10), progressNotes = "old notes")
+      insertReportCommonIndicator(value = BigDecimal(10), progressNotes = "new notes")
+
+      assertEquals(
+          listOf(PublishedReportComparedProps.CommonIndicators),
+          service
+              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+              .unpublishedProperties,
+          "CommonIndicators should be flagged when progressNotes changed",
+      )
+    }
+
+    @Test
+    fun `identifies projectIndicators as changed when progressNotes changed`() {
+      insertProjectIndicator(isPublishable = true)
+      insertPublishedReport(
+          highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+      )
+      insertPublishedReportProjectIndicator(value = BigDecimal(10), progressNotes = "old notes")
+      insertReportProjectIndicator(value = BigDecimal(10), progressNotes = "new notes")
+
+      assertEquals(
+          listOf(PublishedReportComparedProps.ProjectIndicators),
+          service
+              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+              .unpublishedProperties,
+          "ProjectIndicators should be flagged when progressNotes changed",
+      )
+    }
+
+    @Test
+    fun `identifies autoCalculatedIndicators as changed when progressNotes changed`() {
+      insertPublishedReport(
+          highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+      )
+      insertPublishedReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.Seedlings,
+          value = BigDecimal(40),
+          progressNotes = "old notes",
+      )
+      insertReportAutoCalculatedIndicator(
+          indicator = AutoCalculatedIndicator.Seedlings,
+          systemValue = BigDecimal(40),
+          progressNotes = "new notes",
+      )
+
+      assertEquals(
+          listOf(PublishedReportComparedProps.AutoCalculatedIndicators),
+          service
+              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+              .unpublishedProperties,
+          "AutoCalculatedIndicators should be flagged when progressNotes changed",
+      )
+    }
+
+    //    @Test
+    //    fun `does not identify commonIndicators as changed when progressNotes matches`() {
+    //      insertCommonIndicator(isPublishable = true)
+    //      insertPublishedReport(
+    //          highlights = "highlights",
+    //          additionalComments = "additional comments",
+    //          financialSummaries = "financial summaries",
+    //      )
+    //      insertPublishedReportCommonIndicator(value = BigDecimal(10), progressNotes = "same
+    // notes")
+    //      insertReportCommonIndicator(value = BigDecimal(10), progressNotes = "same notes")
+    //
+    //      assertEquals(
+    //          emptyList<PublishedReportComparedProps>(),
+    //          service
+    //              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+    //              .unpublishedProperties,
+    //          "CommonIndicators should not be flagged when progressNotes matches",
+    //      )
+    //    }
+    //
+    //    @Test
+    //    fun `does not identify projectIndicators as changed when progressNotes matches`() {
+    //      insertProjectIndicator(isPublishable = true)
+    //      insertPublishedReport(
+    //          highlights = "highlights",
+    //          additionalComments = "additional comments",
+    //          financialSummaries = "financial summaries",
+    //      )
+    //      insertPublishedReportProjectIndicator(value = BigDecimal(10), progressNotes = "same
+    // notes")
+    //      insertReportProjectIndicator(value = BigDecimal(10), progressNotes = "same notes")
+    //
+    //      assertEquals(
+    //          emptyList<PublishedReportComparedProps>(),
+    //          service
+    //              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+    //              .unpublishedProperties,
+    //          "ProjectIndicators should not be flagged when progressNotes matches",
+    //      )
+    //    }
+    //
+    //    @Test
+    //    fun `does not identify autoCalculatedIndicators as changed when progressNotes matches`() {
+    //      insertPublishedReport(
+    //          highlights = "highlights",
+    //          additionalComments = "additional comments",
+    //          financialSummaries = "financial summaries",
+    //      )
+    //      insertPublishedReportAutoCalculatedIndicator(
+    //          indicator = AutoCalculatedIndicator.Seedlings,
+    //          value = BigDecimal(40),
+    //          progressNotes = "same notes",
+    //      )
+    //      insertReportAutoCalculatedIndicator(
+    //          indicator = AutoCalculatedIndicator.Seedlings,
+    //          systemValue = BigDecimal(40),
+    //          progressNotes = "same notes",
+    //      )
+    //
+    //      assertEquals(
+    //          emptyList<PublishedReportComparedProps>(),
+    //          service
+    //              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+    //              .unpublishedProperties,
+    //          "AutoCalculatedIndicators should not be flagged when progressNotes matches",
+    //      )
+    //    }
   }
 }
