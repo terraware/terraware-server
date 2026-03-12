@@ -507,16 +507,21 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           overrideValue = BigDecimal(60),
       )
 
+      insertFile()
+      insertReportPhoto(caption = "new caption")
+      insertPublishedReportPhoto(caption = "old caption")
+
       assertEquals(
           setOf(
-              PublishedReportComparedProps.Highlights,
               PublishedReportComparedProps.Achievements,
-              PublishedReportComparedProps.Challenges,
               PublishedReportComparedProps.AdditionalComments,
-              PublishedReportComparedProps.FinancialSummaries,
-              PublishedReportComparedProps.CommonIndicators,
-              PublishedReportComparedProps.ProjectIndicators,
               PublishedReportComparedProps.AutoCalculatedIndicators,
+              PublishedReportComparedProps.Challenges,
+              PublishedReportComparedProps.CommonIndicators,
+              PublishedReportComparedProps.FinancialSummaries,
+              PublishedReportComparedProps.Highlights,
+              PublishedReportComparedProps.Photos,
+              PublishedReportComparedProps.ProjectIndicators,
           ),
           service
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)

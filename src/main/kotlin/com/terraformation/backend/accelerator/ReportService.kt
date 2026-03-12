@@ -198,7 +198,9 @@ class ReportService(
         changed.add(PublishedReportComparedProps.Challenges)
       }
 
-      if (report.photos.map { it.fileId }.toSet() != published.photos.map { it.fileId }.toSet()) {
+      val currentPhotos = report.photos.map { it.fileId to it.caption }.toSet()
+      val publishedPhotos = published.photos.map { it.fileId to it.caption }.toSet()
+      if (currentPhotos != publishedPhotos) {
         changed.add(PublishedReportComparedProps.Photos)
       }
 
