@@ -604,7 +604,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           service
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
               .unpublishedProperties,
-          "CommonIndicators should not be flagged for non-publishable indicators",
+          "CommonIndicators should not be flagged for indicators with null values",
       )
     }
 
@@ -643,7 +643,7 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           service
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
               .unpublishedProperties,
-          "ProjectIndicators should not be flagged for non-publishable indicators",
+          "ProjectIndicators should not be flagged for indicators with null values",
       )
     }
 
