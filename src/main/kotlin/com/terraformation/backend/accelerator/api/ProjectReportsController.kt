@@ -979,6 +979,7 @@ data class ReportCommonIndicatorPayload(
     val isPublishable: Boolean,
     val level: IndicatorLevel,
     val name: String,
+    val precision: Int,
     @Schema(
         description =
             "If the indicator is cumulative, the cumulative total at the end of the previous year"
@@ -1005,6 +1006,7 @@ data class ReportCommonIndicatorPayload(
       isPublishable = model.indicator.isPublishable,
       level = model.indicator.level,
       name = model.indicator.name,
+      precision = model.indicator.precision,
       previousYearCumulativeTotal = model.previousYearCumulativeTotal,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
@@ -1098,6 +1100,7 @@ data class ReportAutoCalculatedIndicatorPayload(
     val level: IndicatorLevel,
     val indicator: AutoCalculatedIndicator,
     val overrideValue: BigDecimal?,
+    val precision: Int,
     @Schema(
         description =
             "If the indicator is cumulative, the cumulative total at the end of the previous year"
@@ -1125,6 +1128,7 @@ data class ReportAutoCalculatedIndicatorPayload(
       level = model.indicator.levelId,
       indicator = model.indicator,
       overrideValue = model.entry.overrideValue,
+      precision = model.indicator.precision,
       previousYearCumulativeTotal = model.previousYearCumulativeTotal,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
@@ -1231,6 +1235,7 @@ data class ReportProjectIndicatorPayload(
     val isPublishable: Boolean,
     val level: IndicatorLevel,
     val name: String,
+    val precision: Int,
     @Schema(
         description =
             "If the indicator is cumulative, the cumulative total at the end of the previous year"
@@ -1258,6 +1263,7 @@ data class ReportProjectIndicatorPayload(
       isPublishable = model.indicator.isPublishable,
       level = model.indicator.level,
       name = model.indicator.name,
+      precision = model.indicator.precision,
       previousYearCumulativeTotal = model.previousYearCumulativeTotal,
       progressNotes = model.entry.progressNotes,
       projectsComments = model.entry.projectsComments,
