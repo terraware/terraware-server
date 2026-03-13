@@ -224,13 +224,15 @@ class ReportService(
         if (hasAutoCalcChanged) {
           changed.add(PublishedReportComparedProps.AutoCalculatedIndicators)
         }
+        // only check common and project indicators with a non-null value, since that's all we
+        // publish for those
         val pubCommon =
             published.commonIndicators.associate {
               it.indicatorId to (it.value to it.progressNotes)
             }
         val currentCommon =
             report.commonIndicators
-                .filter { it.indicator.isPublishable }
+                .filter { it.indicator.isPublishable && it.entry.value != null }
                 .associate { it.indicator.id to (it.entry.value to it.entry.progressNotes) }
         if (currentCommon != pubCommon) {
           changed.add(PublishedReportComparedProps.CommonIndicators)
@@ -242,7 +244,7 @@ class ReportService(
             }
         val currentProject =
             report.projectIndicators
-                .filter { it.indicator.isPublishable }
+                .filter { it.indicator.isPublishable && it.entry.value != null }
                 .associate { it.indicator.id to (it.entry.value to it.entry.progressNotes) }
         if (currentProject != pubProject) {
           changed.add(PublishedReportComparedProps.ProjectIndicators)
