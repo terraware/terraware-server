@@ -590,6 +590,25 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `does not check commonIndicators with null values`() {
+      insertCommonIndicator(isPublishable = true)
+      insertPublishedReport(
+          highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+      )
+      insertReportCommonIndicator(value = null)
+
+      assertEquals(
+          emptyList<PublishedReportComparedProps>(),
+          service
+              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+              .unpublishedProperties,
+          "CommonIndicators should not be flagged for indicators with null values",
+      )
+    }
+
+    @Test
     fun `does not identify projectIndicators as changed for non-publishable indicators`() {
       insertProjectIndicator(isPublishable = false)
       insertPublishedReport(
@@ -606,6 +625,25 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
               .unpublishedProperties,
           "ProjectIndicators should not be flagged for non-publishable indicators",
+      )
+    }
+
+    @Test
+    fun `does not check projectIndicators with null values`() {
+      insertProjectIndicator(isPublishable = true)
+      insertPublishedReport(
+          highlights = "highlights",
+          additionalComments = "additional comments",
+          financialSummaries = "financial summaries",
+      )
+      insertReportProjectIndicator(value = null)
+
+      assertEquals(
+          emptyList<PublishedReportComparedProps>(),
+          service
+              .fetchOne(reportId, includeIndicators = true, computeUnpublishedChanges = true)
+              .unpublishedProperties,
+          "ProjectIndicators should not be flagged for indicators with null values",
       )
     }
 
