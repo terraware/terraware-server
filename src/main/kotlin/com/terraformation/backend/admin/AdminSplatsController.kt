@@ -38,6 +38,7 @@ class AdminSplatsController(
       @RequestParam fileId: FileId,
       @RequestParam abortAfter: String?,
       @RequestParam dataFactor: Int?,
+      @RequestParam densStrategy: String?,
       @RequestParam featureMatcherSubcommand: String?,
       @RequestParam fps: Int?,
       @RequestParam keepPercent: Double?,
@@ -54,6 +55,7 @@ class AdminSplatsController(
       val stepArgs =
           listOfNotNull(
                   dataFactor?.let { "gsplat" to listOf("--data_factor", "$dataFactor") },
+                  densStrategy?.let { "gsplat" to listOf("--strategy", it) },
                   featureMatcherSubcommand?.let { "feature-matcher" to listOf("--subcommand", it) },
                   fps?.let { "extract" to listOf("--fps", "$fps") },
                   keepPercent?.let {
