@@ -50,7 +50,8 @@
         </tr>
         <tr>
             <td><label for="description">Description</label></td>
-            <td><input type="text" id="description" name="description" th:value="${tag.description}"/></td>
+            <td><input type="text" id="description" name="description"
+                       th:value="${tag.description}"/></td>
         </tr>
         <tr>
             <td>Type</td>
@@ -64,7 +65,8 @@
     </table>
 </form>
 
-<form id="deleteTagForm" method="POST" th:action="|/admin/deleteInternalTag/${tag.id}|" th:if="!${tag.isSystem}">
+<form id="deleteTagForm" method="POST" th:action="|/admin/deleteInternalTag/${tag.id}|"
+      th:if="!${tag.isSystem}">
     <table>
         <tr>
             <td>
@@ -77,7 +79,9 @@
 <h3>Organizations With This Tag</h3>
 
 <ul th:if="!${organizations.isEmpty()}">
-    <li th:each="organization : ${organizations}" th:text="|${organization.name} (${organization.id})|">Org Name (123)</li>
+    <li th:each="organization : ${organizations}"
+        th:text="|${organization.name} (${organization.id})|">Org Name (123)
+    </li>
 </ul>
 
 <p th:if="${organizations.isEmpty()}">

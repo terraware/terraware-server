@@ -2,8 +2,13 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{/admin/header :: head}">
     <style th:fragment="additionalStyle">
-        form { padding-bottom: 1em; }
-        mux-player { max-width: 640px; }
+        form {
+            padding-bottom: 1em;
+        }
+
+        mux-player {
+            max-width: 640px;
+        }
     </style>
 </head>
 <body>
@@ -14,7 +19,7 @@
 
 <h2>ConvertAPI Integration</h2>
 
-<img th:if="${fileId != null}" height="100" th:src="|/admin/mux/thumbnail/${fileId}?height=100|" />
+<img th:if="${fileId != null}" height="100" th:src="|/admin/mux/thumbnail/${fileId}?height=100|"/>
 
 <th:block th:if="${convertApiEnabled}">
     <h3>Upload File and View Thumbnail</h3>

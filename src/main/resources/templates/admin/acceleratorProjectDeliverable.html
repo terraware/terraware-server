@@ -47,21 +47,22 @@
     <tr>
         <td>Set Override</td>
         <td>
-            <form method="POST" th:action="|/admin/acceleratorProjects/${project.id}/deliverables/${deliverable.id}|">
-                <input type="hidden" name="operation" value="upsert" />
+            <form method="POST"
+                  th:action="|/admin/acceleratorProjects/${project.id}/deliverables/${deliverable.id}|">
+                <input type="hidden" name="operation" value="upsert"/>
                 <input type="date"
                        name="dueDate"
                        required
                        th:disabled="${!canManageDeliverables}"
-                       th:value="${dueDates.projectDueDate}" />
+                       th:value="${dueDates.projectDueDate}"/>
                 <input type="submit"
                        th:if="${dueDates.projectDueDate != null}"
                        th:disabled="${!canManageDeliverables}"
-                       value="Update" />
+                       value="Update"/>
                 <input type="submit"
                        th:if="${dueDates.projectDueDate == null}"
                        th:disabled="${!canManageDeliverables}"
-                       value="Add" />
+                       value="Add"/>
             </form>
         </td>
     </tr>
@@ -70,10 +71,10 @@
         <td>
             <form method="POST"
                   th:action="|/admin/acceleratorProjects/${project.id}/deliverables/${deliverable.id}|">
-                <input type="hidden" name="operation" value="remove" />
+                <input type="hidden" name="operation" value="remove"/>
                 <input type="submit"
                        th:disabled="${!canManageDeliverables}"
-                       value="Remove" />
+                       value="Remove"/>
             </form>
         </td>
     </tr>

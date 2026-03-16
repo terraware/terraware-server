@@ -6,10 +6,12 @@
             color: darkgreen;
             white-space: preserve-breaks;
         }
+
         .answer {
             color: blue;
             margin-left: 10em;
         }
+
         .error {
             color: red;
             margin-left: 10em;
@@ -17,7 +19,9 @@
     </style>
 
     <th:block th:fragment="additionalScript">
-        <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/htmx.org@2.0.4"
+                integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+                crossorigin="anonymous"></script>
 
         <script>
             function submitOnEnter(event) {

@@ -10,7 +10,7 @@
             padding: .25em;
         }
 
-        table#substrata>tbody>tr>:nth-child(n+3):nth-child(-n+5) {
+        table#substrata > tbody > tr > :nth-child(n+3):nth-child(-n+5) {
             text-align: right;
         }
 
@@ -104,8 +104,8 @@
                 let plantsWarning = '';
                 if (numPlants > 0) {
                     plantsWarning =
-                        `This site has ${numPlants} plants of ${numSpecies} species! ` +
-                        'Deleting it will destroy all records of those plants. ';
+                            `This site has ${numPlants} plants of ${numSpecies} species! ` +
+                            'Deleting it will destroy all records of those plants. ';
                 }
 
                 if (!confirm(plantsWarning + 'Are you sure?')) {
@@ -147,7 +147,8 @@
 </p>
 
 <div id="mapButton" th:if="${site.boundary} != null">
-    <button onclick="showMapPopup()">Click to View Map</button> (opens in new window)
+    <button onclick="showMapPopup()">Click to View Map</button>
+    (opens in new window)
 </div>
 
 <form method="POST" action="/admin/updatePlantingSite" th:if="${canUpdatePlantingSite}">
@@ -244,32 +245,41 @@
             <tr th:each="stratum : ${site.strata}">
                 <td th:text="${stratum.id}">1</td>
                 <td title="Stratum name edits will not show up in the site's map history; they will be applied retroactively, as if they had been the names in the most recently uploaded shapefile. If you want the old names to appear in the map history, upload a new shapefile instead of renaming the strata here.">
-                    <input required name="name" th:value="${stratum.name}" th:form="|stratum-${stratum.id}|"/>
+                    <input required name="name" th:value="${stratum.name}"
+                           th:form="|stratum-${stratum.id}|"/>
                     &#9432;
                 </td>
                 <td>
                     <input type="number" required min="1" name="targetPlantingDensity" size="8"
-                           th:value="${stratum.targetPlantingDensity}" th:form="|stratum-${stratum.id}|"/>
+                           th:value="${stratum.targetPlantingDensity}"
+                           th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="variance" size="8" th:id="|variance-${stratum.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="variance" size="8"
+                           th:id="|variance-${stratum.id}|"
                            th:value="${stratum.variance}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="errorMargin" th:id="|errorMargin-${stratum.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="errorMargin"
+                           th:id="|errorMargin-${stratum.id}|"
                            th:value="${stratum.errorMargin}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0.001" step="0.001" name="studentsT" th:id="|studentsT-${stratum.id}|"
+                    <input type="number" required min="0.001" step="0.001" name="studentsT"
+                           th:id="|studentsT-${stratum.id}|"
                            th:value="${stratum.studentsT}" th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="1" name="numPermanent" th:id="|numPermanent-${stratum.id}|"
-                           th:value="${stratum.numPermanentPlots}" th:form="|stratum-${stratum.id}|"/>
+                    <input type="number" required min="1" name="numPermanent"
+                           th:id="|numPermanent-${stratum.id}|"
+                           th:value="${stratum.numPermanentPlots}"
+                           th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
-                    <input type="number" required min="0" name="numTemporary" th:id="|numTemporary-${stratum.id}|"
-                           th:value="${stratum.numTemporaryPlots}" th:form="|stratum-${stratum.id}|"/>
+                    <input type="number" required min="0" name="numTemporary"
+                           th:id="|numTemporary-${stratum.id}|"
+                           th:value="${stratum.numTemporaryPlots}"
+                           th:form="|stratum-${stratum.id}|"/>
                 </td>
                 <td>
                     <span th:id="|total-${stratum.id}|"
@@ -278,7 +288,8 @@
                     </span>
                 </td>
                 <td style="padding-left: 8px;">
-                    <form method="POST" action="/admin/updateStratum" th:id="|stratum-${stratum.id}|">
+                    <form method="POST" action="/admin/updateStratum"
+                          th:id="|stratum-${stratum.id}|">
                         <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
                         <input type="hidden" name="stratumId" th:value="${stratum.id}"/>
                         <input type="submit" value="Update"/>
@@ -294,7 +305,8 @@
 
         <h3>Upload New Shapefiles</h3>
 
-        <form method="POST" enctype="multipart/form-data" action="/admin/updatePlantingSiteShapefiles">
+        <form method="POST" enctype="multipart/form-data"
+              action="/admin/updatePlantingSiteShapefiles">
             <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
             <label>
                 Zipfile
@@ -377,10 +389,10 @@
             <td th:text="${observation.startDate}">2023-01-01</td>
             <td th:text="${observation.endDate}">2023-01-31</td>
             <td>
-                    <div th:each="substratumId : ${observation.requestedSubstratumIds}"
-                        th:text="|${substrataById.get(substratumId).fullName} (${substratumId})|">
-                        abc-123 (456)
-                    </div>
+                <div th:each="substratumId : ${observation.requestedSubstratumIds}"
+                     th:text="|${substrataById.get(substratumId).fullName} (${substratumId})|">
+                    abc-123 (456)
+                </div>
             </td>
             <td th:text="${observation.state}">Upcoming</td>
             <td>
@@ -398,10 +410,12 @@
         <tr th:if="${canCreateObservation}">
             <td></td>
             <td>
-                <input type="date" form="createObservation" name="startDate" th:value="${nextObservationStart}"/>
+                <input type="date" form="createObservation" name="startDate"
+                       th:value="${nextObservationStart}"/>
             </td>
             <td>
-                <input type="date" form="createObservation" name="endDate" th:value="${nextObservationEnd}"/>
+                <input type="date" form="createObservation" name="endDate"
+                       th:value="${nextObservationEnd}"/>
             </td>
             <td>
                 <select multiple form="createObservation" name="requestedSubstratumIds">
