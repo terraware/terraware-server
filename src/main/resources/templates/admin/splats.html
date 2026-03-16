@@ -5,6 +5,7 @@
         td {
             vertical-align: top;
         }
+
         td input {
             margin-top: 0;
         }
@@ -26,75 +27,87 @@
 <form method="POST" action="/admin/splats/process">
     <table>
         <thead>
-            <tr>
-                <th>Step</th>
-                <th>Setting</th>
-                <th/>
-                <th>Explanation</th>
-            </tr>
+        <tr>
+            <th>Step</th>
+            <th>Setting</th>
+            <th/>
+            <th>Explanation</th>
+        </tr>
         </thead>
         <tbody>
-            <tr>
-                <td rowspan="2"></td>
-                <td>Observation&nbsp;ID</td>
-                <td colspan="2"><input type="text" name="observationId" required/></td>
-            </tr>
-            <tr>
-                <td>File ID</td>
-                <td colspan="2"><input type="text" name="fileId" required/></td>
-            </tr>
+        <tr>
+            <td rowspan="2"></td>
+            <td>Observation&nbsp;ID</td>
+            <td colspan="2"><input type="text" name="observationId" required/></td>
+        </tr>
+        <tr>
+            <td>File ID</td>
+            <td colspan="2"><input type="text" name="fileId" required/></td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td rowspan="3">extract</td>
-                <td>FPS</td>
-                <td><input type="text" name="fps" placeholder="10"/></td>
-                <td>
-                    Frames per second to extract from the video.
-                </td>
-            </tr>
-            <tr>
-                <td>Max Size</td>
-                <td><input type="text" name="maxSize" placeholder="1600"/></td>
-                <td>
-                    Downscale video frames to fit within a square this many pixels tall and wide.
-                </td>
-            </tr>
-            <tr>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[extract]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to splat.py extract.
-                </td>
-            </tr>
+        <tr>
+            <td rowspan="3">extract</td>
+            <td>FPS</td>
+            <td><input type="text" name="fps" placeholder="10"/></td>
+            <td>
+                Frames per second to extract from the video.
+            </td>
+        </tr>
+        <tr>
+            <td>Max Size</td>
+            <td><input type="text" name="maxSize" placeholder="1600"/></td>
+            <td>
+                Downscale video frames to fit within a square this many pixels tall and wide.
+            </td>
+        </tr>
+        <tr>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[extract]"/></td>
+            <td>
+                Additional space-separated arguments to pass to splat.py extract.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td rowspan="2">filter-blurry</td>
-                <td>Keep %</td>
-                <td><input type="text" name="keepPercent" placeholder="100"/></td>
-                <td>
-                    Percentage of frames to keep after checking for blurriness. If this is 90, the
-                    blurriest 10% of frames will be dropped. A value of 100 will skip the filter-blurry
-                    step.
-                </td>
-            </tr>
-            <tr>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[filter-blurry]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to splat.py filter-blurry.
-                </td>
-            </tr>
+        <tr>
+            <td rowspan="2">filter-blurry</td>
+            <td>Keep %</td>
+            <td><input type="text" name="keepPercent" placeholder="100"/></td>
+            <td>
+                Percentage of frames to keep after checking for blurriness. If this is 90, the
+                blurriest 10% of frames will be dropped. A value of 100 will skip the filter-blurry
+                step.
+            </td>
+        </tr>
+        <tr>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[filter-blurry]"/></td>
+            <td>
+                Additional space-separated arguments to pass to splat.py filter-blurry.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
         <tr>
@@ -107,83 +120,108 @@
         </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td rowspan="2">feature-matcher</td>
-                <td>Subcommand</td>
-                <td>
-                    <input type="text" name="featureMatcherSubcommand" placeholder="sequential_matcher"/>
-                </td>
-                <td>
-                    Which colmap subcommand to use for feature matching.
-                </td>
-            </tr>
-            <tr>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[feature-matcher]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to colmap.
-                </td>
-            </tr>
+        <tr>
+            <td rowspan="2">feature-matcher</td>
+            <td>Subcommand</td>
+            <td>
+                <input type="text" name="featureMatcherSubcommand"
+                       placeholder="sequential_matcher"/>
+            </td>
+            <td>
+                Which colmap subcommand to use for feature matching.
+            </td>
+        </tr>
+        <tr>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[feature-matcher]"/></td>
+            <td>
+                Additional space-separated arguments to pass to colmap.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td>colmap</td>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[colmap]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to colmap.
-                </td>
-            </tr>
+        <tr>
+            <td>colmap</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[colmap]"/></td>
+            <td>
+                Additional space-separated arguments to pass to colmap.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td>model-converter-1</td>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[model-converter-1]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to the first invocation of
-                    colmap model_converter.
-                </td>
-            </tr>
+        <tr>
+            <td>model-converter-1</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[model-converter-1]"/></td>
+            <td>
+                Additional space-separated arguments to pass to the first invocation of
+                colmap model_converter.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td>check-1</td>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[check-1]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to the first invocation of
-                    check_reconstruction.py.
-                </td>
-            </tr>
+        <tr>
+            <td>check-1</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[check-1]"/></td>
+            <td>
+                Additional space-separated arguments to pass to the first invocation of
+                check_reconstruction.py.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td>prune-spikes</td>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[prune-spikes]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to prune_spikes.py if it is run.
-                </td>
-            </tr>
+        <tr>
+            <td>prune-spikes</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[prune-spikes]"/></td>
+            <td>
+                Additional space-separated arguments to pass to prune_spikes.py if it is run.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
         <tr>
@@ -197,7 +235,11 @@
         </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
         <tr>
@@ -210,7 +252,11 @@
         </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
         <tr>
@@ -224,7 +270,11 @@
         </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
         <tr>
@@ -238,135 +288,163 @@
         </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td rowspan="2">prune-tail</td>
-                <td>Tail Pruning</td>
-                <td>
-                    <select name="tailPruning">
-                        <option value="" selected>Default</option>
-                        <option value="true">Enable</option>
-                        <option value="false">Disable</option>
-                    </select>
-                </td>
-                <td>
-                    Enable or disable tail pruning. Default is enabled. Tail pruning is not run if
-                    check-3 succeeds, regardless of this setting.
-                </td>
-            </tr>
-            <tr>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[prune-tail]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to prune_tail.py.
-                </td>
-            </tr>
+        <tr>
+            <td rowspan="2">prune-tail</td>
+            <td>Tail Pruning</td>
+            <td>
+                <select name="tailPruning">
+                    <option value="" selected>Default</option>
+                    <option value="true">Enable</option>
+                    <option value="false">Disable</option>
+                </select>
+            </td>
+            <td>
+                Enable or disable tail pruning. Default is enabled. Tail pruning is not run if
+                check-3 succeeds, regardless of this setting.
+            </td>
+        </tr>
+        <tr>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[prune-tail]"/></td>
+            <td>
+                Additional space-separated arguments to pass to prune_tail.py.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td>prepare</td>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[prepare]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to splat.py prepare.
-                </td>
-            </tr>
+        <tr>
+            <td>prepare</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[prepare]"/></td>
+            <td>
+                Additional space-separated arguments to pass to splat.py prepare.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td rowspan="4">gsplat</td>
-                <td>Data Factor</td>
-                <td><input type="text" name="dataFactor" placeholder="1"/></td>
-                <td>
-                    Downscale frames by this factor during model training. You will probably want
-                    to adjust Max Size rather than this.
-                </td>
-            </tr>
-            <tr>
-                <td>Max Steps</td>
-                <td><input type="text" name="maxSteps" placeholder="30000"/></td>
-                <td>
-                    Number of training steps to run.
-                </td>
-            </tr>
-            <tr>
-                <td>SSIM Lambda</td>
-                <td><input type="text" name="ssimLambda" placeholder="0.1"/></td>
-                <td>
-                    Controls how much the training loss emphasizes structural similarity (SSIM) versus
-                    raw pixel accuracy. Higher values tend to produce smoother, more visually
-                    consistent results, while lower values prioritize sharper pixel-level detail.
-                    Higher values also tend to produce larger model files.
-                </td>
-            </tr>
-            <tr>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[gsplat]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to simple_trainer.py.
-                </td>
-            </tr>
+        <tr>
+            <td rowspan="4">gsplat</td>
+            <td>Data Factor</td>
+            <td><input type="text" name="dataFactor" placeholder="1"/></td>
+            <td>
+                Downscale frames by this factor during model training. You will probably want
+                to adjust Max Size rather than this.
+            </td>
+        </tr>
+        <tr>
+            <td>Max Steps</td>
+            <td><input type="text" name="maxSteps" placeholder="30000"/></td>
+            <td>
+                Number of training steps to run.
+            </td>
+        </tr>
+        <tr>
+            <td>SSIM Lambda</td>
+            <td><input type="text" name="ssimLambda" placeholder="0.1"/></td>
+            <td>
+                Controls how much the training loss emphasizes structural similarity (SSIM) versus
+                raw pixel accuracy. Higher values tend to produce smoother, more visually
+                consistent results, while lower values prioritize sharper pixel-level detail.
+                Higher values also tend to produce larger model files.
+            </td>
+        </tr>
+        <tr>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[gsplat]"/></td>
+            <td>
+                Additional space-separated arguments to pass to simple_trainer.py.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td>splat-transform</td>
-                <td>Other Args</td>
-                <td><input type="text" name="stepArgs[splat-transform]"/></td>
-                <td>
-                    Additional space-separated arguments to pass to splat-transform.
-                </td>
-            </tr>
+        <tr>
+            <td>splat-transform</td>
+            <td>Other Args</td>
+            <td><input type="text" name="stepArgs[splat-transform]"/></td>
+            <td>
+                Additional space-separated arguments to pass to splat-transform.
+            </td>
+        </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
-            <tr>
-                <td rowspan="4"></td>
-                <td>Abort After</td>
-                <td><input type="text" name="abortAfter"/></td>
-                <td>
-                    Abort the processing run after this step. Step names are the same as the
-                    names in the left column of this table.
-                </td>
-            </tr>
-            <tr>
-                <td>Restart At</td>
-                <td><input type="text" name="restartAt"/></td>
-                <td>
-                    Restart the processing run at this step, using the files in the archived job
-                    directory. Step names are the same as the names in the left column of this
-                    table.
-                </td>
-            </tr>
+        <tr>
+            <td rowspan="4"></td>
+            <td>Abort After</td>
+            <td><input type="text" name="abortAfter"/></td>
+            <td>
+                Abort the processing run after this step. Step names are the same as the
+                names in the left column of this table.
+            </td>
+        </tr>
+        <tr>
+            <td>Restart At</td>
+            <td><input type="text" name="restartAt"/></td>
+            <td>
+                Restart the processing run at this step, using the files in the archived job
+                directory. Step names are the same as the names in the left column of this
+                table.
+            </td>
+        </tr>
 
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tbody>
         <tr>
             <td rowspan="2">birdnet</td>
             <td>Run BirdNET</td>
-            <td><input type="checkbox" id="runBirdNet" name="runBirdNet" /></td>
+            <td><input type="checkbox" id="runBirdNet" name="runBirdNet"/></td>
             <td>
                 Enable BirdNET
             </td>
         </tr>
         </tbody>
 
-        <tr><td colspan="4"><hr/></td></tr>
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
 
         <tr>
             <td colspan="2"/>

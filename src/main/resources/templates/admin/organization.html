@@ -56,7 +56,7 @@
 
             const map = new mapboxgl.Map({
                 container: 'map',
-                fitBoundsOptions: { padding: 10 },
+                fitBoundsOptions: {padding: 10},
                 style: 'mapbox://styles/mapbox/satellite-streets-v12',
             });
 
@@ -127,7 +127,7 @@
                 const points = [];
                 let position = startingPoint;
                 for (const step of path) {
-                    position = turf.destination(position, step[1], step[0], { units: 'meters'});
+                    position = turf.destination(position, step[1], step[0], {units: 'meters'});
                     points.push(position.geometry.coordinates);
                 }
 
@@ -153,13 +153,14 @@
                 map.easeTo({center: [lng, lat], zoom: 18});
 
                 // Allow the user to drag the site boundary around.
-                draw.changeMode('simple_select', { featureIds: featureIds });
+                draw.changeMode('simple_select', {featureIds: featureIds});
             };
 
             document.getElementById('addMinimalSite').addEventListener('click', addMinimalSite);
             orientation.addEventListener('change', addMinimalSite);
         });
     }
+
     /*]]>*/
 </script>
 

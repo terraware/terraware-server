@@ -6,7 +6,7 @@
 <span th:replace="~{/admin/header :: top}"/>
 
 <a href="/admin/">Home</a>
- -
+-
 <a href="/admin/acceleratorProjects">Accelerator Projects</a>
 
 <h2 th:text="|${project.name} (${project.id})|">Project (123)</h2>
@@ -52,7 +52,7 @@
             <form method="POST"
                   th:id="|deliverables-${module.id}|"
                   th:action="|/admin/acceleratorProjects/${project.id}/deliverables|">
-                <input type="submit" value="View" />
+                <input type="submit" value="View"/>
             </form>
         </td>
     </tr>

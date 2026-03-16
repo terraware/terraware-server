@@ -53,7 +53,7 @@
                     <option th:each="availableFeatureType : ${availableFeatureTypes}"
                             th:value="${availableFeatureType}"
                             th:text="${availableFeatureType.displayName}"
-                            th:selected="${availableFeatureType == featureType}" />
+                            th:selected="${availableFeatureType == featureType}"/>
                 </select>
             </label>
             <label>
@@ -64,26 +64,32 @@
                 View As
                 <select name="resultFormat">
                     <option value="Map" th:selected="${resultFormat == 'Map'}">Map</option>
-                    <option value="GeoJsonLongLat" th:selected="${resultFormat == 'GeoJsonLongLat'}">GeoJSON (longitude/latitude)</option>
-                    <option value="GeoJsonOriginal" th:selected="${resultFormat == 'GeoJsonOriginal'}">GeoJSON (original coordinate system)</option>
+                    <option value="GeoJsonLongLat"
+                            th:selected="${resultFormat == 'GeoJsonLongLat'}">GeoJSON
+                        (longitude/latitude)
+                    </option>
+                    <option value="GeoJsonOriginal"
+                            th:selected="${resultFormat == 'GeoJsonOriginal'}">GeoJSON (original
+                        coordinate system)
+                    </option>
                 </select>
             </label>
             <input type="submit" value="Query"/>
         </form>
 
         <p th:if="${geoJsonResults != null || results != null}">
-            <form method="POST" action="/admin/geoServer/setForProject">
-                <input type="hidden" name="featureType" th:value="${featureType}"/>
-                <input type="hidden" name="filter" th:value="${filter}"/>
-                <input type="hidden" name="resultFormat" th:value="${resultFormat}"/>
-                <label>
-                    Use filter
-                    <code th:text="${filter}">x=y</code>
-                    <th:block th:text="|as ${featureType.displayName} CQL for project ID|"/>
-                    <input type="number" name="projectId" required />
-                    <input type="submit" value="Update Project" />
-                </label>
-            </form>
+        <form method="POST" action="/admin/geoServer/setForProject">
+            <input type="hidden" name="featureType" th:value="${featureType}"/>
+            <input type="hidden" name="filter" th:value="${filter}"/>
+            <input type="hidden" name="resultFormat" th:value="${resultFormat}"/>
+            <label>
+                Use filter
+                <code th:text="${filter}">x=y</code>
+                <th:block th:text="|as ${featureType.displayName} CQL for project ID|"/>
+                <input type="number" name="projectId" required/>
+                <input type="submit" value="Update Project"/>
+            </label>
+        </form>
         </p>
 
         <th:block th:if="${results != null}">

@@ -29,7 +29,8 @@
             <a th:href="|/admin/deviceManagers/${manager.id}|" th:text="${manager.sensorKitId}">ABCDE</a>
         </td>
         <td th:text="${manager.facilityId}">
-            <a th:href="|/admin/facility/${manager.facilityId}|" th:text="${manager.facilityId}">567</a>
+            <a th:href="|/admin/facility/${manager.facilityId}|"
+               th:text="${manager.facilityId}">567</a>
         </td>
         <td th:text="${manager.userId}">123</td>
         <td th:text="${manager.isOnline()}">true</td>

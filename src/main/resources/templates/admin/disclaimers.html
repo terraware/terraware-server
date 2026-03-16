@@ -38,7 +38,8 @@
         </td>
         <td th:text="${disclaimer.users.size()}">Disclaimer Number of Acceptance</td>
         <td>
-            <form method="POST" id="delete" th:action="|/admin/disclaimers/${disclaimer.id}/delete|">
+            <form method="POST" id="delete"
+                  th:action="|/admin/disclaimers/${disclaimer.id}/delete|">
                 <input type="submit" value="Delete"/>
             </form>
         </td>
@@ -53,21 +54,21 @@
         Effective Date
         <input type="date"
                name="effectiveDate"
-               required />
+               required/>
     </label>
-    <br />
+    <br/>
     <label>
         Content
-        <br />
+        <br/>
         <textarea
                 name="content"
                 rows="4"
                 cols="50"
                 placeholder="Enter disclaimer content here"></textarea>
     </label>
-    <br />
+    <br/>
     <input type="submit"
-           value="Submit" />
+           value="Submit"/>
 </form>
 
 </body>

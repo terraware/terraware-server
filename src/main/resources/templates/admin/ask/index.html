@@ -20,7 +20,8 @@
     <label>
         Project:
         <select name="projectId">
-            <option th:each="project : ${projects}" th:value="${project.id}" th:text="|${project.name} (${project.id})|"/>
+            <option th:each="project : ${projects}" th:value="${project.id}"
+                    th:text="|${project.name} (${project.id})|"/>
         </select>
     </label>
     <br/>
