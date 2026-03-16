@@ -220,7 +220,7 @@ jobs:
 
     - name: Post release notes on Slack
       if: env.TIER == 'PROD'
-      uses: slackapi/slack-github-action@v2.1.1
+      uses: slackapi/slack-github-action@v3.0.1
       with:
         webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
         webhook-type: webhook-trigger
