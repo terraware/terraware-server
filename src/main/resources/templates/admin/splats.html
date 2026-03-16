@@ -344,7 +344,23 @@
 
         <tbody>
         <tr>
-            <td rowspan="4">gsplat</td>
+            <td rowspan="5">gsplat</td>
+            <td>Densification Strategy</td>
+            <td>
+                <select name="densStrategy">
+                    <option value="default" selected>Default</option>
+                    <option value="mcmc">MCMC</option>
+                </select>
+            </td>
+            <td>
+                Densification Strategy to use by gsplat simple_trainer script. Default is the same
+                as the <a target="_blank" href="https://arxiv.org/abs/2308.04079">original Gaussian
+                Splatting paper</a>, MCMC is from the
+                <a target="_blank" href="https://arxiv.org/abs/2404.09591">Markov Chain Monte Carlo
+                    paper</a>.
+            </td>
+        </tr>
+        <tr>
             <td>Data Factor</td>
             <td><input type="text" name="dataFactor" placeholder="1"/></td>
             <td>
