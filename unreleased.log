@@ -1,3 +1,4 @@
+c7b6afbac71 Format admin html pages according to .editorconfig (#4153)
 94a5d921179 Only compare unpublished non-null values for indicators (#4145)
 388b4629c6b Add precision to report indicator payloads (#4143)
 65e767b6e54 SW-8170 Calculate unpublished properties for reports (#4138)
