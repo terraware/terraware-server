@@ -26,18 +26,14 @@ import org.jooq.impl.DSL
 class ReportIndicatorStore(
     private val dslContext: DSLContext,
 ) {
-  fun fetchOneCommonIndicator(indicatorId: CommonIndicatorId): ExistingCommonIndicatorModel {
-    requirePermissions { readProjectReportConfigs() }
+  // all users can access common indicators
+  fun fetchOneCommonIndicator(indicatorId: CommonIndicatorId): ExistingCommonIndicatorModel =
+      fetchCommonIndicators(COMMON_INDICATORS.ID.eq(indicatorId)).firstOrNull()
+          ?: throw CommonIndicatorNotFoundException(indicatorId)
 
-    return fetchCommonIndicators(COMMON_INDICATORS.ID.eq(indicatorId)).firstOrNull()
-        ?: throw CommonIndicatorNotFoundException(indicatorId)
-  }
-
-  fun fetchAllCommonIndicators(): List<ExistingCommonIndicatorModel> {
-    requirePermissions { readProjectReportConfigs() }
-
-    return fetchCommonIndicators(DSL.trueCondition())
-  }
+  // all users can access common indicators
+  fun fetchAllCommonIndicators(): List<ExistingCommonIndicatorModel> =
+      fetchCommonIndicators(DSL.trueCondition())
 
   fun createCommonIndicator(model: NewCommonIndicatorModel): CommonIndicatorId {
     requirePermissions { manageProjectReportConfigs() }
@@ -102,14 +98,18 @@ class ReportIndicatorStore(
   }
 
   fun fetchOneProjectIndicator(indicatorId: ProjectIndicatorId): ExistingProjectIndicatorModel {
-    requirePermissions { readProjectReportConfigs() }
+    val indicator = fetchProjectIndicators(PROJECT_INDICATORS.ID.eq(indicatorId)).firstOrNull()
 
-    return fetchProjectIndicators(PROJECT_INDICATORS.ID.eq(indicatorId)).firstOrNull()
-        ?: throw ProjectIndicatorNotFoundException(indicatorId)
+    if (indicator == null) {
+      throw ProjectIndicatorNotFoundException(indicatorId)
+    } else {
+      requirePermissions { readProjectIndicators(indicator.projectId) }
+      return indicator
+    }
   }
 
   fun fetchProjectIndicatorsForProject(projectId: ProjectId): List<ExistingProjectIndicatorModel> {
-    requirePermissions { readProjectReportConfigs() }
+    requirePermissions { readProjectIndicators(projectId) }
 
     return fetchProjectIndicators(PROJECT_INDICATORS.PROJECT_ID.eq(projectId))
   }
@@ -178,13 +178,11 @@ class ReportIndicatorStore(
         .fetch { ProjectIndicatorModel.of(it) }
   }
 
-  fun fetchAutoCalculatedIndicators(): List<AutoCalculatedIndicator> {
-    requirePermissions { readProjectReportConfigs() }
-
-    return with(AUTO_CALCULATED_INDICATORS) {
-      dslContext.select(ID).from(AUTO_CALCULATED_INDICATORS).orderBy(REF_ID).fetch {
-        it[ID.asNonNullable()]
+  // all users can access auto calculated indicators
+  fun fetchAutoCalculatedIndicators(): List<AutoCalculatedIndicator> =
+      with(AUTO_CALCULATED_INDICATORS) {
+        dslContext.select(ID).from(AUTO_CALCULATED_INDICATORS).orderBy(REF_ID).fetch {
+          it[ID.asNonNullable()]
+        }
       }
-    }
-  }
 }
