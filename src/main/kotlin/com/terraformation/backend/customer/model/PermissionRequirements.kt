@@ -1087,6 +1087,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun readProjectIndicators(projectId: ProjectId) {
+    user.recordPermissionChecks {
+      if (!user.canReadProjectIndicators(projectId)) {
+        throw AccessDeniedException("No permission to read project indicators")
+      }
+    }
+  }
+
   fun readProjectModules(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canReadProjectModules(projectId)) {

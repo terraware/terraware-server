@@ -757,6 +757,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun readProjectIndicators() {
+    assertThrows<AccessDeniedException> { requirements.readProjectIndicators(projectId) }
+
+    grant { user.canReadProjectIndicators(projectId) }
+    requirements.readProjectIndicators(projectId)
+  }
+
+  @Test
   fun readProjectModules() {
     assertThrows<ProjectNotFoundException> { requirements.readProjectModules(projectId) }
 

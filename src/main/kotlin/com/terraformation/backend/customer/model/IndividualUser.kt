@@ -459,6 +459,9 @@ data class IndividualUser(
   override fun canReadProjectDeliverables(projectId: ProjectId): Boolean =
       isReadOnlyOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
+  override fun canReadProjectIndicators(projectId: ProjectId): Boolean =
+      isReadOnlyOrHigher() || isAdminOrHigher(parentStore.getOrganizationId(projectId))
+
   override fun canReadProjectModules(projectId: ProjectId): Boolean {
     val organizationId = parentStore.getOrganizationId(projectId) ?: return false
     return isMember(organizationId) ||
