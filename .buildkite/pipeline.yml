@@ -1,0 +1,228 @@
+# See .buildkite/README.md for details about this pipeline.
+
+common:
+  - &cache-common-args
+    backend: s3
+    compression: tgz
+    restore: pipeline
+
+  - &cache-gradle-home-args
+    <<: *cache-common-args
+    path: ".gradle-home"
+
+  - &cache-gradle-home
+    cache#v1.10.0:
+      <<: *cache-gradle-home-args
+
+  - &load-secrets
+    seek-oss/aws-sm#v2.4.1:
+      json-to-env:
+        - secret-id: "buildkite_build_secrets"
+
+  - &restore-build-cache
+    artifacts#v1.9.4:
+      download: ".gradle-home/caches/build-cache-1"
+      compressed: "build-cache.tgz"
+
+  - &restore-build
+    artifacts#v1.9.4:
+      download: "build"
+      compressed: "build.tgz"
+
+  - &restore-dot-gradle
+    artifacts#v1.9.4:
+      download: ".gradle"
+      compressed: "dot-gradle.tgz"
+
+  - &shallow-clone
+    peakon/git-shallow-clone#v0.0.1:
+      depth: 1
+
+agents:
+  # Run all steps on the same kind of runner.
+  queue: "x86-8core"
+
+steps:
+  - label: ":gradle: Build and test"
+    key: "build-and-test"
+    plugins:
+      - *shallow-clone
+      - cache#v1.10.0:
+          <<: *cache-gradle-home-args
+          manifest:
+            - "build.gradle.kts"
+            - "gradle.properties"
+            - "settings.gradle.kts"
+          save:
+            - file
+            - branch
+          force: true
+      - cache#v1.10.0:
+          <<: *cache-common-args
+          path: "node_modules"
+          manifest: "yarn.lock"
+          save:
+            - file
+            - branch
+          force: true
+      - artifacts#v1.9.4:
+          upload: "build"
+          compressed: "build.tgz"
+      - artifacts#v1.9.4:
+          upload: ".gradle"
+          compressed: "dot-gradle.tgz"
+      - artifacts#v1.9.4:
+          upload: ".gradle-home/caches/build-cache-1"
+          compressed: "build-cache.tgz"
+    command: .buildkite/scripts/build-and-test.sh
+    artifact_paths:
+      # We need to upload the test results as individual files so they can be consumed by the
+      # junit-annotate plugin.
+      - "build/test-results/**/*.xml"
+
+  - label: ":junit: Run external service integration tests"
+    key: "external-tests"
+    depends_on: "build-and-test"
+    soft_fail: true
+    if: "build.branch != 'main' && build.tag == null"
+    plugins:
+      - *shallow-clone
+      - *cache-gradle-home
+      - *restore-build-cache
+      - *restore-build
+      - *restore-dot-gradle
+      - *load-secrets
+    command: .buildkite/scripts/run-external-tests.sh
+    artifact_paths:
+      # We need to upload the test results as individual files so they can be consumed by the
+      # junit-annotate plugin.
+      - "build/test-results/**/*.xml"
+    env:
+      TEST_S3_BUCKET_NAME: "terraformation-buildkite-test"
+
+  - label: ":python: Check scripts"
+    key: "check-scripts"
+    depends_on:
+      - step: "build-and-test"
+      - step: "external-tests"
+        allow_failure: true
+    if_changed: "scripts/**"
+    plugins:
+      - *shallow-clone
+      - cache#v1.10.0:
+          <<: *cache-common-args
+          manifest: "scripts/requirements.txt"
+          path: "scripts/.venv"
+          save:
+            - "file"
+            - "branch"
+          force: true
+    command: .buildkite/scripts/check-scripts.sh
+
+  - label: ":junit: Annotate build with test results"
+    key: "junit-annotate"
+    depends_on:
+      - step: "build-and-test"
+      - step: "check-scripts"
+      - step: "external-tests"
+        allow_failure: true
+    plugins:
+      - *shallow-clone
+      - junit-annotate#v2.5.0:
+          artifacts: "build/test-results/**/*.xml"
+          always-annotate: true
+          report-slowest: 10
+
+  - label: ":docker: Build and push Docker image"
+    key: "docker"
+    depends_on: "junit-annotate"
+    plugins:
+      - *shallow-clone
+      - *load-secrets
+      - *cache-gradle-home
+      - cache#v1.10.0:
+          <<: *cache-common-args
+          path: ".buildx-cache"
+          save:
+            - branch
+          force: true
+      - *restore-build-cache
+      - *restore-build
+      - *restore-dot-gradle
+    command: .buildkite/scripts/docker-build-push.sh
+
+  - label: ":buildkite: Promote branch-level caches to pipeline-level"
+    key: "promote-caches"
+    depends_on: "docker"
+    branches: "main"
+    plugins:
+      - *shallow-clone
+      - cache#v1.10.0: &promote-cache
+          <<: *cache-gradle-home-args
+          save: "pipeline"
+          force: true
+      - cache#v1.10.0:
+          <<: *promote-cache
+          path: "node_modules"
+      - cache#v1.10.0:
+          <<: *promote-cache
+          path: ".buildx-cache"
+    command: "rm -rf .gradle-home/caches/build-cache-1"
+
+  - label: ":buildkite: Promote branch-level script cache to pipeline-level"
+    key: "promote-script-cache"
+    depends_on: "promote-caches"
+    branches: "main"
+    if_changed: "scripts/**"
+    plugins:
+      - *shallow-clone
+      - cache#v1.10.0:
+          <<: *cache-common-args
+          path: "scripts/.venv"
+          restore: "branch"
+          save: "pipeline"
+          force: true
+    command: "echo --- :buildkite: Loaded branch-level script cache"
+
+  - label: ":amazon-ecs: Deploy to ECS"
+    key: "deploy"
+    depends_on: "promote-script-cache"
+    if: "build.branch == 'main' || build.tag =~ /^v2[0-9]+\\.[0-9]+/"
+    plugins:
+      - *shallow-clone
+    command: .buildkite/scripts/deploy-ecs.sh
+
+  - label: ":slack: Release notes & Jira transitions"
+    key: "release-notes"
+    depends_on: "deploy"
+    if: "build.tag =~ /^v2[0-9]+\\.[0-9]+/"
+    plugins:
+      - *shallow-clone
+      - *load-secrets
+    command: .buildkite/scripts/release-notes.sh
+
+  - label: ":speech_balloon: Notify PR of staging deploy"
+    key: "notify-pr"
+    depends_on: "release-notes"
+    branches: "main"
+    plugins:
+      - *shallow-clone
+      - *load-secrets
+      - pr-commenter#v0.3.0:
+          message: "Staging deployment complete."
+          allow-repeats: false
+
+  - label: ":books: Generate and deploy docs"
+    key: "generate-docs"
+    depends_on:
+      - "docker"
+      - "notify-pr"
+    branches: "main"
+    plugins:
+      - *shallow-clone
+      - *load-secrets
+      - *cache-gradle-home
+      - *restore-build-cache
+      - *restore-build
+      - *restore-dot-gradle
+    command: .buildkite/scripts/deploy-docs.sh
