@@ -20,6 +20,7 @@ import com.terraformation.backend.db.accelerator.tables.records.CommonIndicators
 import com.terraformation.backend.db.accelerator.tables.records.ProjectIndicatorsRecord
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.Role
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -86,25 +87,6 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         assertThrows<CommonIndicatorNotFoundException> {
           store.fetchOneCommonIndicator(CommonIndicatorId(-1))
         }
-      }
-
-      @Test
-      fun `throws access denied exception for non-global role users`() {
-        val indicatorId =
-            insertCommonIndicator(
-                category = IndicatorCategory.Climate,
-                description = "Climate common indicator description",
-                name = "Climate Common Indicator",
-                refId = "3.0",
-                level = IndicatorLevel.Process,
-                unit = "%",
-            )
-
-        deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        assertThrows<AccessDeniedException> { store.fetchOneCommonIndicator(indicatorId) }
-
-        insertUserGlobalRole(role = GlobalRole.ReadOnly)
-        assertDoesNotThrow { store.fetchOneCommonIndicator(indicatorId) }
       }
     }
 
@@ -214,15 +196,6 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             store.fetchAllCommonIndicators().map { it.id },
         )
       }
-
-      @Test
-      fun `throws access denied exception for non-global role users`() {
-        deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        assertThrows<AccessDeniedException> { store.fetchAllCommonIndicators() }
-
-        insertUserGlobalRole(role = GlobalRole.ReadOnly)
-        assertDoesNotThrow { store.fetchAllCommonIndicators() }
-      }
     }
 
     @Nested
@@ -305,8 +278,9 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
-      fun `throws access denied exception for non-global role users`() {
+      fun `throws access denied exception for non-global role users and non-admins`() {
         insertOrganization()
+        insertOrganizationUser(role = Role.Contributor)
         val projectId = insertProject()
         val indicatorId =
             insertProjectIndicator(
@@ -321,6 +295,11 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         assertThrows<AccessDeniedException> { store.fetchOneProjectIndicator(indicatorId) }
 
+        deleteOrganizationUser()
+        insertOrganizationUser(role = Role.Admin)
+        assertDoesNotThrow { store.fetchOneProjectIndicator(indicatorId) }
+
+        deleteOrganizationUser()
         insertUserGlobalRole(role = GlobalRole.ReadOnly)
         assertDoesNotThrow { store.fetchOneProjectIndicator(indicatorId) }
       }
@@ -422,11 +401,17 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
-      fun `throws access denied exception for non-global role users`() {
+      fun `throws access denied exception for non-global role users and non-admins`() {
         insertOrganization()
+        insertOrganizationUser(role = Role.Contributor)
         val projectId = insertProject()
+
         deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
         assertThrows<AccessDeniedException> { store.fetchProjectIndicatorsForProject(projectId) }
+
+        deleteOrganizationUser()
+        insertOrganizationUser(role = Role.Admin)
+        assertDoesNotThrow { store.fetchProjectIndicatorsForProject(projectId) }
 
         insertUserGlobalRole(role = GlobalRole.ReadOnly)
         assertDoesNotThrow { store.fetchProjectIndicatorsForProject(projectId) }
@@ -454,15 +439,6 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             }
 
         assertEquals(sortedAutoCalculatedIndicators, store.fetchAutoCalculatedIndicators())
-      }
-
-      @Test
-      fun `throws access denied exception for non-global role users`() {
-        deleteUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
-        assertThrows<AccessDeniedException> { store.fetchAutoCalculatedIndicators() }
-
-        insertUserGlobalRole(role = GlobalRole.ReadOnly)
-        assertDoesNotThrow { store.fetchAutoCalculatedIndicators() }
       }
     }
   }
