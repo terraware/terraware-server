@@ -197,16 +197,6 @@ class SplatService(
     }
   }
 
-  fun listObservationSplatAnnotations(
-      observationId: ObservationId,
-      fileId: FileId,
-  ): List<ExistingSplatAnnotationModel> {
-    ensureObservationFile(observationId, fileId)
-    ensureSplat(fileId)
-
-    return listSplatAnnotations(fileId)
-  }
-
   fun setObservationSplatAnnotations(
       observationId: ObservationId,
       fileId: FileId,
