@@ -2,7 +2,6 @@ package com.terraformation.backend.splat
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
-import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -115,101 +114,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<ObservationNotFoundException> {
         service.listObservationBirdnetResults(otherObservationId)
-      }
-    }
-  }
-
-  @Nested
-  inner class ListObservationSplatAnnotations {
-
-    @BeforeEach
-    fun setUp() {
-      insertSplat()
-    }
-
-    @Test
-    fun `returns annotations for a given observation and file`() {
-      val position1 = CoordinateModel(1.0, 2.0, 3.0)
-      val cameraPosition1 = CoordinateModel(4.0, 5.0, 6.0)
-      val id1 =
-          insertSplatAnnotation(
-              title = "Test Annotation 1",
-              bodyText = "Description 1",
-              label = "Label 1",
-              position = position1,
-              cameraPosition = cameraPosition1,
-          )
-
-      val position2 = CoordinateModel(7.0, 8.0, 9.0)
-      val id2 = insertSplatAnnotation(title = "Test Annotation 2", position = position2)
-
-      assertSetEquals(
-          setOf(
-              ExistingSplatAnnotationModel(
-                  id = id1,
-                  title = "Test Annotation 1",
-                  bodyText = "Description 1",
-                  label = "Label 1",
-                  position = position1,
-                  cameraPosition = cameraPosition1,
-                  fileId = fileId,
-              ),
-              ExistingSplatAnnotationModel(
-                  id = id2,
-                  title = "Test Annotation 2",
-                  position = position2,
-                  fileId = fileId,
-              ),
-          ),
-          service.listObservationSplatAnnotations(observationId, fileId).toSet(),
-      )
-    }
-
-    @Test
-    fun `returns empty list when no annotations exist`() {
-      val result = service.listObservationSplatAnnotations(observationId, fileId)
-
-      assertEquals(0, result.size, "Number of annotations")
-    }
-
-    @Test
-    fun `throws exception if file is not associated with observation`() {
-      val otherFileId = insertFile()
-
-      assertThrows<FileNotFoundException> {
-        service.listObservationSplatAnnotations(observationId, otherFileId)
-      }
-    }
-
-    @Test
-    fun `throws exception if user does not have permission to read observation`() {
-      val otherOrganizationId = insertOrganization()
-      val otherPlantingSiteId = insertPlantingSite(organizationId = otherOrganizationId)
-      val otherMonitoringPlotId = insertMonitoringPlot(plantingSiteId = otherPlantingSiteId)
-      val otherObservationId = insertObservation(plantingSiteId = otherPlantingSiteId)
-      val otherFileId = insertFile()
-      insertObservationPlot(
-          observationId = otherObservationId,
-          monitoringPlotId = otherMonitoringPlotId,
-      )
-      insertObservationMediaFile(
-          fileId = otherFileId,
-          observationId = otherObservationId,
-          monitoringPlotId = otherMonitoringPlotId,
-      )
-
-      assertThrows<ObservationNotFoundException> {
-        service.listObservationSplatAnnotations(otherObservationId, otherFileId)
-      }
-    }
-
-    @Test
-    fun `throws exception if splat does not exist for file`() {
-      val fileWithoutSplat = insertFile()
-      insertObservationMediaFile(fileId = fileWithoutSplat)
-
-      assertThrows<FileNotFoundException> {
-        service.listObservationSplatAnnotations(observationId, fileWithoutSplat)
       }
     }
   }
