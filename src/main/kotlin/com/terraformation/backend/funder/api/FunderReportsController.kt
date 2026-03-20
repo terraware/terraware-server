@@ -98,37 +98,6 @@ data class PublishedCumulativeIndicatorProgressPayload(
   )
 }
 
-@Schema(description = "Use PublishedReportIndicatorPayload instead", deprecated = true)
-data class PublishedReportMetricPayload(
-    val component: IndicatorCategory,
-    val description: String?,
-    val name: String,
-    val progressNotes: String?,
-    val projectsComments: String?,
-    val reference: String,
-    val status: ReportIndicatorStatus?,
-    val target: Int?,
-    val type: IndicatorLevel,
-    val unit: String?,
-    val value: Int?,
-) {
-  constructor(
-      model: PublishedReportIndicatorModel<*>
-  ) : this(
-      component = model.category,
-      description = model.description,
-      name = model.name,
-      progressNotes = model.progressNotes,
-      projectsComments = model.projectsComments,
-      reference = model.refId,
-      status = model.status,
-      target = model.target?.toInt(),
-      type = model.level,
-      unit = model.unit,
-      value = model.value?.toInt(),
-  )
-}
-
 data class PublishedReportIndicatorPayload(
     val baseline: BigDecimal?,
     val category: IndicatorCategory,
@@ -193,18 +162,12 @@ data class PublishedReportPayload(
     val photos: List<ReportPhotoPayload>,
     val projectId: ProjectId,
     val projectIndicators: List<PublishedReportIndicatorPayload>,
-    @Schema(description = "Use projectIndicators instead", deprecated = true)
-    val projectMetrics: List<PublishedReportMetricPayload>,
     val projectName: String,
     val publishedBy: UserId,
     val publishedTime: Instant,
     val quarter: ReportQuarter?,
     val reportId: ReportId,
-    @Schema(description = "Use commonIndicators instead", deprecated = true)
-    val standardMetrics: List<PublishedReportMetricPayload>,
     val startDate: LocalDate,
-    @Schema(description = "Use autoCalculatedIndicators instead", deprecated = true)
-    val systemMetrics: List<PublishedReportMetricPayload>,
 ) {
   constructor(
       model: PublishedReportModel
@@ -221,15 +184,12 @@ data class PublishedReportPayload(
       photos = model.photos.map { ReportPhotoPayload(it) },
       projectId = model.projectId,
       projectIndicators = model.projectIndicators.map { PublishedReportIndicatorPayload(it) },
-      projectMetrics = model.projectIndicators.map { PublishedReportMetricPayload(it) },
       projectName = model.projectName,
       publishedBy = model.publishedBy,
       publishedTime = model.publishedTime,
       quarter = model.quarter,
       reportId = model.reportId,
-      standardMetrics = model.commonIndicators.map { PublishedReportMetricPayload(it) },
       startDate = model.startDate,
-      systemMetrics = model.autoCalculatedIndicators.map { PublishedReportMetricPayload(it) },
   )
 }
 
