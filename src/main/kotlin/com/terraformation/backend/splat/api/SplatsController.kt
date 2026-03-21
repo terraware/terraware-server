@@ -157,23 +157,6 @@ class SplatsController(
   @ApiResponse404(
       "The plot observation does not exist, or does not have a splat for the requested file ID."
   )
-  @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
-  @Operation(summary = "Use /info instead", deprecated = true)
-  fun listObservationSplatAnnotations(
-      @PathVariable observationId: ObservationId,
-      @PathVariable fileId: FileId,
-  ): ListObservationSplatAnnotationsResponsePayload {
-    val models = splatService.listObservationSplatAnnotations(observationId, fileId)
-
-    return ListObservationSplatAnnotationsResponsePayload(
-        models.map { SplatAnnotationPayload.of(it) }
-    )
-  }
-
-  @ApiResponse200
-  @ApiResponse404(
-      "The plot observation does not exist, or does not have a splat for the requested file ID."
-  )
   @PostMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
   @Operation(
       summary = "Sets the list of annotations for a splat model.",
@@ -257,10 +240,6 @@ data class GetObservationSplatInfoResponsePayload(
       originPosition = model.originPosition?.let { CoordinatePayload.of(it) },
   )
 }
-
-data class ListObservationSplatAnnotationsResponsePayload(
-    val annotations: List<SplatAnnotationPayload>,
-) : SuccessResponsePayload
 
 data class SetSplatAnnotationRequestPayload(
     val bodyText: String?,
