@@ -24,7 +24,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "8.0.12"
   id("com.diffplug.spotless") version "8.3.0"
-  id("org.springframework.boot") version "3.5.11"
+  id("org.springframework.boot") version "3.5.12"
   id("io.spring.dependency-management") version "1.1.7"
 
   // Add the build target to generate Swagger docs
@@ -95,7 +95,7 @@ dependencies {
   implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2"))
   implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
-  implementation(platform("org.springframework.ai:spring-ai-bom:1.1.2"))
+  implementation(platform("org.springframework.ai:spring-ai-bom:1.1.3"))
   implementation("org.springframework.ai:spring-ai-starter-model-openai")
   implementation("org.springframework.ai:spring-ai-starter-vector-store-pgvector")
   implementation("org.springframework.ai:spring-ai-advisors-vector-store")
@@ -114,7 +114,7 @@ dependencies {
   implementation("com.squarespace.cldr-engine:cldr-engine:1.12.0")
   implementation("commons-codec:commons-codec:1.21.0")
   implementation("commons-validator:commons-validator:1.10.1")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.7.0")
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.7.1")
   implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
@@ -136,7 +136,7 @@ dependencies {
   implementation("org.geotools:gt-xml:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-core:$geoToolsVersion")
   implementation("org.geotools.xsd:gt-xsd-kml:$geoToolsVersion")
-  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:8.5.0")
+  implementation("org.jobrunr:jobrunr-spring-boot-3-starter:8.5.1")
   implementation("org.jooq:jooq:$jooqVersion")
   implementation("org.locationtech.jts:jts-core:$jtsVersion")
   implementation("org.locationtech.jts.io:jts-io-common:$jtsVersion")
