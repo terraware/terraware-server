@@ -103,8 +103,6 @@ data class ProjectAcceleratorDetailsPayload(
     val landUseModelHectares: Map<LandUseModelType, BigDecimal>?,
     val maxCarbonAccumulation: BigDecimal?,
     val methodologyNumber: String?,
-    @Schema(description = "Use indicatorProgress instead", deprecated = true)
-    val metricProgress: List<MetricProgressPayload>,
     val minCarbonAccumulation: BigDecimal?,
     val minProjectArea: BigDecimal?,
     val numCommunities: Int?,
@@ -156,7 +154,6 @@ data class ProjectAcceleratorDetailsPayload(
       landUseModelHectares = model.landUseModelHectares,
       maxCarbonAccumulation = model.maxCarbonAccumulation,
       methodologyNumber = model.methodologyNumber,
-      metricProgress = model.indicatorProgress.map { MetricProgressPayload(it) },
       minCarbonAccumulation = model.minCarbonAccumulation,
       minProjectArea = model.minProjectArea,
       numCommunities = model.numCommunities,
@@ -180,19 +177,6 @@ data class ProjectAcceleratorDetailsPayload(
       totalVCU = model.totalVCU,
       verraLink = model.verraLink,
       whatNeedsToBeTrue = model.whatNeedsToBeTrue,
-  )
-}
-
-@Schema(description = "Use IndicatorProgressPayload instead", deprecated = true)
-data class MetricProgressPayload(
-    val metric: AutoCalculatedIndicator,
-    val progress: Int,
-) {
-  constructor(
-      model: IndicatorProgressModel
-  ) : this(
-      metric = model.indicator,
-      progress = model.progress.toInt(),
   )
 }
 

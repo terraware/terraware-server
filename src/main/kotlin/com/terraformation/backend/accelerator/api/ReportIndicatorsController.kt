@@ -12,7 +12,6 @@ import com.terraformation.backend.db.accelerator.IndicatorClass
 import com.terraformation.backend.db.accelerator.IndicatorFrequency
 import com.terraformation.backend.db.accelerator.IndicatorLevel
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -26,43 +25,6 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/accelerator/reports")
 @RestController
 class ReportIndicatorsController(private val indicatorStore: ReportIndicatorStore) {
-  @ApiResponse200
-  @GetMapping("/standardMetrics")
-  @Operation(summary = "Use /commonIndicators instead", deprecated = true)
-  fun listStandardMetric(): ListStandardMetricsResponsePayload {
-    val models = indicatorStore.fetchAllCommonIndicators()
-    return ListStandardMetricsResponsePayload(models.map { ExistingStandardMetricPayload(it) })
-  }
-
-  @ApiResponse200
-  @PutMapping("/standardMetrics")
-  @Operation(summary = "Use /commonIndicators instead", deprecated = true)
-  fun createStandardMetric(
-      @RequestBody @Valid payload: CreateStandardMetricRequestPayload,
-  ): SimpleSuccessResponsePayload {
-    indicatorStore.createCommonIndicator(payload.metric.toCommonIndicatorModel())
-    return SimpleSuccessResponsePayload()
-  }
-
-  @ApiResponse200
-  @PostMapping("/standardMetrics/{metricId}")
-  @Operation(summary = "Use /commonIndicators/{indicatorId} instead", deprecated = true)
-  fun updateStandardMetric(
-      @PathVariable metricId: CommonIndicatorId,
-      @RequestBody payload: UpdateStandardMetricRequestPayload,
-  ): SimpleSuccessResponsePayload {
-    indicatorStore.updateCommonIndicator(metricId) { payload.metric.toModel() }
-    return SimpleSuccessResponsePayload()
-  }
-
-  @ApiResponse200
-  @GetMapping("/systemMetrics")
-  @Operation(summary = "Use /autoCalculatedIndicators instead", deprecated = true)
-  fun listSystemMetrics(): ListSystemMetricsResponsePayload {
-    val indicators = indicatorStore.fetchAutoCalculatedIndicators()
-    return ListSystemMetricsResponsePayload(indicators.map { SystemMetricPayload(it) })
-  }
-
   @ApiResponse200
   @GetMapping("/commonIndicators")
   @Operation(summary = "List all common indicators.")
@@ -102,32 +64,6 @@ class ReportIndicatorsController(private val indicatorStore: ReportIndicatorStor
     )
   }
 }
-
-@Schema(description = "Use AutoCalculatedIndicatorPayload instead", deprecated = true)
-data class SystemMetricPayload(
-    val metric: AutoCalculatedIndicator,
-    val name: String = metric.jsonValue,
-    val description: String = metric.description,
-    val component: IndicatorCategory = metric.categoryId,
-    val type: IndicatorLevel = metric.levelId,
-    val reference: String = metric.refId,
-)
-
-@Schema(description = "Use CreateCommonIndicatorRequestPayload instead", deprecated = true)
-data class CreateStandardMetricRequestPayload(@field:Valid val metric: NewMetricPayload)
-
-@Schema(description = "Use ListCommonIndicatorsResponsePayload instead", deprecated = true)
-data class ListStandardMetricsResponsePayload(val metrics: List<ExistingStandardMetricPayload>) :
-    SuccessResponsePayload
-
-@Schema(description = "Use ListAutoCalculatedIndicatorsResponsePayload instead", deprecated = true)
-data class ListSystemMetricsResponsePayload(val metrics: List<SystemMetricPayload>) :
-    SuccessResponsePayload
-
-@Schema(description = "Use UpdateCommonIndicatorRequestPayload instead", deprecated = true)
-data class UpdateStandardMetricRequestPayload(
-    @field:Valid val metric: ExistingStandardMetricPayload
-)
 
 data class AutoCalculatedIndicatorPayload(
     val indicator: AutoCalculatedIndicator,
