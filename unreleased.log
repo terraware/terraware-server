@@ -1,3 +1,5 @@
+252d5fc56ab Update geoToolsVersion to v34.3 (#4169)
+2bd9def6ae7 Update dependency org.apache.tika:tika-core to v3.3.0 (#4168)
 66626771847 Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.6.+ (#4152)
 178f939b400 Update slackapi/slack-github-action action to v3 (#4151)
 260011d8b77 Update dependency com.google.apis:google-api-services-drive to v3-rev20260305-2.0.0 (#4150)
