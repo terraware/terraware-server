@@ -40,17 +40,18 @@ if [[ "$IS_CD" == true ]]; then
     echo "--- :docker: Build and push Docker image"
 
     docker_image="${TERRAWARE_SERVER_DOCKER_IMAGE:-terraware/terraware-server}"
-    docker_tags="${docker_image}:$COMMIT_SHA,${docker_image}:${TIER}"
+    docker_tags="-t ${docker_image}:$COMMIT_SHA -t ${docker_image}:${TIER}"
     push_option="--push"
 else
     echo "--- :docker: Build Docker image"
 
-    docker_tags="test"
+    docker_tags="-t test"
     push_option=
 fi
 
 cd build/docker
 
+# shellcheck disable=SC2086
 docker buildx build \
         --builder="$builder_name" \
         --cache-from type=local,src="${BUILDKITE_BUILD_CHECKOUT_PATH}/.buildx-cache" \
@@ -58,7 +59,7 @@ docker buildx build \
         --platform linux/amd64,linux/arm64 \
         --progress quiet \
         $push_option \
-        -t "$docker_tags" \
+        $docker_tags \
         .
 
 echo "~~~ :docker: Use build cache from this build for subsequent builds"
