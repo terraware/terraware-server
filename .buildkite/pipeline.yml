@@ -203,7 +203,9 @@ steps:
 
   - label: ":speech_balloon: Notify PR of staging deploy"
     key: "notify-pr"
-    depends_on: "release-notes"
+    depends_on:
+      - "deploy"
+      - "release-notes"
     branches: "main"
     plugins:
       - *shallow-clone
