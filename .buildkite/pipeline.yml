@@ -208,9 +208,7 @@ steps:
     plugins:
       - *shallow-clone
       - *load-secrets
-      - pr-commenter#v0.3.0:
-          message: "Staging deployment complete."
-          allow-repeats: false
+    command: .buildkite/scripts/notify-pr.sh
 
   - label: ":books: Generate and deploy docs"
     key: "generate-docs"
