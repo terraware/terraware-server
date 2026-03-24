@@ -1,1 +1,8 @@
-b6a49a5 Clear old build caches
+66626771847 Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.6.+ (#4152)
+178f939b400 Update slackapi/slack-github-action action to v3 (#4151)
+260011d8b77 Update dependency com.google.apis:google-api-services-drive to v3-rev20260305-2.0.0 (#4150)
+e48fac0a2e3 Update Spring dependencies (#4149)
+eb4eedcf0f7 Update dependency pyjwt to v2.12.0 [SECURITY] (#4147)
+d5b2ed9f9eb Update dependency black to v26.3.1 [SECURITY] (#4136)
+f14e513bf2c SW-8120 Remove Metric endpoints and payloads (#4165)
+537eab0bd4f SW-8211 Remove ListSplatAnnotations endpoint (#4162)
