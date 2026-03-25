@@ -64,6 +64,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         assertEquals(
             ExistingCommonIndicatorModel(
                 id = indicatorId,
+                active = true,
                 category = IndicatorCategory.Climate,
                 classId = IndicatorClass.Cumulative,
                 description = "Climate common indicator description",
@@ -224,6 +225,7 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         assertEquals(
             ExistingProjectIndicatorModel(
                 id = indicatorId,
+                active = true,
                 projectId = projectId,
                 category = IndicatorCategory.Climate,
                 classId = IndicatorClass.Level,
@@ -518,6 +520,45 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `persists active = false when explicitly set`() {
+        val model =
+            NewCommonIndicatorModel(
+                id = null,
+                active = false,
+                category = IndicatorCategory.ProjectObjectives,
+                classId = IndicatorClass.Level,
+                description = "Inactive indicator description",
+                isPublishable = false,
+                level = IndicatorLevel.Goal,
+                name = "Inactive Common Indicator",
+                precision = 0,
+                refId = "9.9",
+                unit = "%",
+            )
+
+        val newIndicatorId = store.createCommonIndicator(model)
+
+        assertTableEquals(
+            listOf(
+                CommonIndicatorsRecord(
+                    id = newIndicatorId,
+                    active = false,
+                    categoryId = IndicatorCategory.ProjectObjectives,
+                    classId = IndicatorClass.Level,
+                    description = "Inactive indicator description",
+                    isPublishable = false,
+                    levelId = IndicatorLevel.Goal,
+                    name = "Inactive Common Indicator",
+                    precision = 0,
+                    refId = "9.9",
+                    tfOwner = null,
+                    unit = "%",
+                )
+            )
+        )
+      }
+
+      @Test
       fun `throws access denied exception for non-accelerator admin`() {
         val model =
             NewCommonIndicatorModel(
@@ -618,6 +659,49 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `persists active = false when explicitly set`() {
+        insertOrganization()
+        val projectId = insertProject()
+        val model =
+            NewProjectIndicatorModel(
+                id = null,
+                active = false,
+                projectId = projectId,
+                category = IndicatorCategory.ProjectObjectives,
+                classId = IndicatorClass.Level,
+                description = "Inactive project indicator description",
+                isPublishable = false,
+                level = IndicatorLevel.Goal,
+                name = "Inactive Project Indicator",
+                precision = 0,
+                refId = "9.9",
+                unit = "kg",
+            )
+
+        val newIndicatorId = store.createProjectIndicator(model)
+
+        assertTableEquals(
+            listOf(
+                ProjectIndicatorsRecord(
+                    id = newIndicatorId,
+                    active = false,
+                    categoryId = IndicatorCategory.ProjectObjectives,
+                    classId = IndicatorClass.Level,
+                    description = "Inactive project indicator description",
+                    isPublishable = false,
+                    levelId = IndicatorLevel.Goal,
+                    name = "Inactive Project Indicator",
+                    precision = 0,
+                    projectId = projectId,
+                    refId = "9.9",
+                    tfOwner = null,
+                    unit = "kg",
+                )
+            )
+        )
+      }
+
+      @Test
       fun `throws access denied exception for non-accelerator admin`() {
         insertOrganization()
         val projectId = insertProject()
@@ -703,6 +787,41 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `persists active change from true to false`() {
+        val existingIndicatorId =
+            insertCommonIndicator(
+                active = true,
+                category = IndicatorCategory.Climate,
+                description = "Climate common indicator description",
+                level = IndicatorLevel.Process,
+                name = "Climate Common Indicator",
+                refId = "3.0",
+                unit = "%",
+            )
+
+        store.updateCommonIndicator(existingIndicatorId) { it.copy(active = false) }
+
+        assertTableEquals(
+            listOf(
+                CommonIndicatorsRecord(
+                    id = existingIndicatorId,
+                    active = false,
+                    categoryId = IndicatorCategory.Climate,
+                    classId = IndicatorClass.Level,
+                    description = "Climate common indicator description",
+                    isPublishable = true,
+                    levelId = IndicatorLevel.Process,
+                    name = "Climate Common Indicator",
+                    precision = 0,
+                    refId = "3.0",
+                    tfOwner = "Carbon",
+                    unit = "%",
+                )
+            )
+        )
+      }
+
+      @Test
       fun `throws access denied exception for non-accelerator admin`() {
         val existingIndicatorId =
             insertCommonIndicator(
@@ -782,6 +901,45 @@ class ReportIndicatorStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   refId = "1.0",
                   tfOwner = "Biodiversity",
                   unit = "inches",
+              )
+          )
+      )
+    }
+
+    @Test
+    fun `persists active change from true to false`() {
+      insertOrganization()
+      val projectId = insertProject()
+      val existingIndicatorId =
+          insertProjectIndicator(
+              active = true,
+              category = IndicatorCategory.Climate,
+              description = "Climate project indicator description",
+              level = IndicatorLevel.Process,
+              name = "Climate Project Indicator",
+              projectId = projectId,
+              refId = "3.0",
+              unit = "feet",
+          )
+
+      store.updateProjectIndicator(existingIndicatorId) { it.copy(active = false) }
+
+      assertTableEquals(
+          listOf(
+              ProjectIndicatorsRecord(
+                  id = existingIndicatorId,
+                  active = false,
+                  categoryId = IndicatorCategory.Climate,
+                  classId = IndicatorClass.Level,
+                  description = "Climate project indicator description",
+                  isPublishable = true,
+                  levelId = IndicatorLevel.Process,
+                  name = "Climate Project Indicator",
+                  precision = 0,
+                  projectId = projectId,
+                  refId = "3.0",
+                  tfOwner = "Carbon",
+                  unit = "feet",
               )
           )
       )
