@@ -47,8 +47,8 @@ class DraftPlantingSitesController(
             data = payload.data,
             description = payload.description,
             name = payload.name,
-            numStrata = payload.numStrata ?: payload.numPlantingZones,
-            numSubstrata = payload.numSubstrata ?: payload.numPlantingSubzones,
+            numStrata = payload.numStrata,
+            numSubstrata = payload.numSubstrata,
             organizationId = payload.organizationId,
             projectId = payload.projectId,
             timeZone = payload.timeZone,
@@ -127,14 +127,6 @@ data class DraftPlantingSitePayload(
       projectId = record.projectId,
       timeZone = record.timeZone,
   )
-
-  @Deprecated("Use numSubstrata instead.")
-  val numPlantingSubzones: Int?
-    get() = numSubstrata
-
-  @Deprecated("Use numStrata instead.")
-  val numPlantingZones: Int?
-    get() = numStrata
 }
 
 data class GetDraftPlantingSiteResponsePayload(val site: DraftPlantingSitePayload) :
@@ -151,10 +143,6 @@ data class CreateDraftPlantingSiteRequestPayload(
     val data: ArbitraryJsonObject,
     val description: String?,
     val name: String,
-    @Schema(description = "Use numSubstrata instead", deprecated = true)
-    val numPlantingSubzones: Int?,
-    @Schema(description = "Use numStrata instead", deprecated = true) //
-    val numPlantingZones: Int?,
     @Schema(
         description =
             "If the user has started defining strata, the number of strata defined so far."
@@ -184,10 +172,6 @@ data class UpdateDraftPlantingSiteRequestPayload(
     val data: ArbitraryJsonObject,
     val description: String?,
     val name: String,
-    @Schema(description = "Use numSubstrata instead", deprecated = true)
-    val numPlantingSubzones: Int?,
-    @Schema(description = "Use numStrata instead", deprecated = true) //
-    val numPlantingZones: Int?,
     @Schema(
         description =
             "If the user has started defining strata, the number of strata defined so far."
@@ -207,8 +191,8 @@ data class UpdateDraftPlantingSiteRequestPayload(
     record.data = data
     record.description = description
     record.name = name
-    record.numSubstrata = numSubstrata ?: numPlantingSubzones
-    record.numStrata = numStrata ?: numPlantingZones
+    record.numSubstrata = numSubstrata
+    record.numStrata = numStrata
     record.projectId = projectId
     record.timeZone = timeZone
   }
