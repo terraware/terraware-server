@@ -41,6 +41,7 @@ class ReportIndicatorStore(
     return with(COMMON_INDICATORS) {
       dslContext
           .insertInto(this)
+          .set(ACTIVE, model.active)
           .set(CATEGORY_ID, model.category)
           .set(CLASS_ID, model.classId)
           .set(DESCRIPTION, model.description)
@@ -71,6 +72,7 @@ class ReportIndicatorStore(
     with(COMMON_INDICATORS) {
       dslContext
           .update(this)
+          .set(ACTIVE, new.active)
           .set(CATEGORY_ID, new.category)
           .set(CLASS_ID, new.classId)
           .set(DESCRIPTION, new.description)
@@ -120,6 +122,7 @@ class ReportIndicatorStore(
     return with(PROJECT_INDICATORS) {
       dslContext
           .insertInto(this)
+          .set(ACTIVE, model.active)
           .set(CATEGORY_ID, model.category)
           .set(CLASS_ID, model.classId)
           .set(DESCRIPTION, model.description)
@@ -152,6 +155,7 @@ class ReportIndicatorStore(
     with(PROJECT_INDICATORS) {
       dslContext
           .update(this)
+          .set(ACTIVE, new.active)
           .set(CATEGORY_ID, new.category)
           .set(CLASS_ID, new.classId)
           .set(DESCRIPTION, new.description)
