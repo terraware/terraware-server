@@ -1,3 +1,4 @@
+1269327e422 SW-8239 Set active flag based on payload for common and project indicators (#4175)
 2eb0a97c434 Update plugin com.diffplug.spotless to v8.4.0 (#4172)
 15b84b3f37f Removed list histories endpoint (#4170)
 252d5fc56ab Update geoToolsVersion to v34.3 (#4169)
