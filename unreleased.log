@@ -1,3 +1,7 @@
+df7a8cdcbba SW-7951 Remove num zones from draft planting sites controller (#4179)
+01802015dfd SW-7951 Remove num zones from search api (#4178)
+f614eb0c908 SW-7951 Add includeZones prop (default true) to get/list planting sites (#4177)
+9fecbf882ac SW-7951 Remove unused zone references from properties in existing payloads (#4174)
 1269327e422 SW-8239 Set active flag based on payload for common and project indicators (#4175)
 2eb0a97c434 Update plugin com.diffplug.spotless to v8.4.0 (#4172)
 15b84b3f37f Removed list histories endpoint (#4170)

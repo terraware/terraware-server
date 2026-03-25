@@ -157,11 +157,6 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_select_option_values.variable_id references variable_selects.variable_id via variable_select_option_values_variable_id_fkey"><a href='variable_selects.html'>variable_selects</a><span class='relatedKey'>.variable_id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_variable_id_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="variable_select_option_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_select_option_values_variable_value_id_variable_i_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_id</span></td>
                                                 <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
@@ -169,6 +164,11 @@
                                             <tr>
                                                 <td title="variable_select_option_values.[option_id, variable_id] references variable_select_options.[id, variable_id] via variable_select_option_values_option_id_variable_id_fkey"><a href='variable_select_options.html'>variable_select_options</a><span class='relatedKey'>.variable_id</span></td>
                                                 <td class="constraint detail">variable_select_option_values_option_id_variable_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="variable_select_option_values.variable_id references variable_selects.variable_id via variable_select_option_values_variable_id_fkey"><a href='variable_selects.html'>variable_selects</a><span class='relatedKey'>.variable_id</span></td>
+                                                <td class="constraint detail">variable_select_option_values_variable_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -189,13 +189,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_select_option_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_select_option_values_variable_value_id_variable_i_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey</td>
+                                                <td title="variable_select_option_values.variable_type_id references variable_types.id via variable_select_option_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_select_option_values_variable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="variable_select_option_values.variable_type_id references variable_types.id via variable_select_option_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_select_option_values_variable_type_id_fkey</td>
+                                                <td title="variable_select_option_values.[variable_value_id, variable_id, variable_type_id] references variable_values.[id, variable_id, variable_type_id] via variable_select_option_values_variable_value_id_variable_i_fkey"><a href='variable_values.html'>variable_values</a><span class='relatedKey'>.variable_type_id</span></td>
+                                                <td class="constraint detail">variable_select_option_values_variable_value_id_variable_i_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
