@@ -449,30 +449,6 @@ data class PlantingSitePayload(
   )
 }
 
-// response payload
-@Schema(description = "Use SubstratumHistoryResponsePayload instead", deprecated = true)
-data class PlantingSubzoneHistoryPayload(
-    val areaHa: BigDecimal,
-    val boundary: MultiPolygon,
-    val fullName: String,
-    val id: SubstratumHistoryId,
-    val monitoringPlots: List<MonitoringPlotHistoryPayload>,
-    val name: String,
-    val plantingSubzoneId: SubstratumId?,
-) {
-  constructor(
-      model: SubstratumHistoryModel
-  ) : this(
-      areaHa = model.areaHa,
-      boundary = model.boundary,
-      fullName = model.fullName,
-      id = model.id,
-      monitoringPlots = model.monitoringPlots.map { MonitoringPlotHistoryPayload(it) },
-      name = model.name,
-      plantingSubzoneId = model.substratumId,
-  )
-}
-
 data class SubstratumHistoryResponsePayload(
     val areaHa: BigDecimal,
     val boundary: MultiPolygon,
@@ -493,28 +469,6 @@ data class SubstratumHistoryResponsePayload(
       monitoringPlots = model.monitoringPlots.map { MonitoringPlotHistoryPayload(it) },
       name = model.name,
       substratumId = model.substratumId,
-  )
-}
-
-// response payload
-@Schema(description = "Use StratumHistoryResponsePayload instead", deprecated = true)
-data class PlantingZoneHistoryPayload(
-    val areaHa: BigDecimal,
-    val boundary: MultiPolygon,
-    val id: StratumHistoryId,
-    val name: String,
-    val plantingSubzones: List<PlantingSubzoneHistoryPayload>,
-    val plantingZoneId: StratumId?,
-) {
-  constructor(
-      model: StratumHistoryModel
-  ) : this(
-      areaHa = model.areaHa,
-      boundary = model.boundary,
-      id = model.id,
-      name = model.name,
-      plantingSubzones = model.substrata.map { PlantingSubzoneHistoryPayload(it) },
-      plantingZoneId = model.stratumId,
   )
 }
 
@@ -547,8 +501,6 @@ data class PlantingSiteHistoryPayload(
     val exclusion: MultiPolygon? = null,
     val id: PlantingSiteHistoryId,
     val plantingSiteId: PlantingSiteId,
-    @Schema(description = "Use strata instead", deprecated = true)
-    val plantingZones: List<PlantingZoneHistoryPayload>,
     val strata: List<StratumHistoryResponsePayload>,
 ) {
   constructor(
@@ -560,28 +512,7 @@ data class PlantingSiteHistoryPayload(
       exclusion = model.exclusion,
       id = model.id,
       plantingSiteId = model.plantingSiteId,
-      plantingZones = model.strata.map { PlantingZoneHistoryPayload(it) },
       strata = model.strata.map { StratumHistoryResponsePayload(it) },
-  )
-}
-
-// response payload
-@Schema(description = "Use SubstratumReportedPlantsResponsePayload instead", deprecated = true)
-data class PlantingSubzoneReportedPlantsPayload(
-    val id: SubstratumId,
-    val plantsSinceLastObservation: Int,
-    val species: List<ReportedSpeciesPayload>,
-    val totalPlants: Int,
-    val totalSpecies: Int,
-) {
-  constructor(
-      substratumTotals: PlantingSiteReportedPlantTotals.Substratum
-  ) : this(
-      id = substratumTotals.id,
-      plantsSinceLastObservation = substratumTotals.plantsSinceLastObservation,
-      species = substratumTotals.species.map { ReportedSpeciesPayload(it) },
-      totalPlants = substratumTotals.totalPlants,
-      totalSpecies = substratumTotals.totalSpecies,
   )
 }
 
@@ -600,30 +531,6 @@ data class SubstratumReportedPlantsResponsePayload(
       species = substratumTotals.species.map { ReportedSpeciesPayload(it) },
       totalPlants = substratumTotals.totalPlants,
       totalSpecies = substratumTotals.totalSpecies,
-  )
-}
-
-// response payload
-@Schema(description = "Use StratumReportedPlantsResponsePayload instead", deprecated = true)
-data class PlantingZoneReportedPlantsPayload(
-    val id: StratumId,
-    val plantsSinceLastObservation: Int,
-    val plantingSubzones: List<PlantingSubzoneReportedPlantsPayload>,
-    val progressPercent: Int,
-    val species: List<ReportedSpeciesPayload>,
-    val totalPlants: Int,
-    val totalSpecies: Int,
-) {
-  constructor(
-      stratumTotals: PlantingSiteReportedPlantTotals.Stratum
-  ) : this(
-      id = stratumTotals.id,
-      plantsSinceLastObservation = stratumTotals.plantsSinceLastObservation,
-      plantingSubzones = stratumTotals.substrata.map { PlantingSubzoneReportedPlantsPayload(it) },
-      progressPercent = stratumTotals.progressPercent,
-      species = stratumTotals.species.map { ReportedSpeciesPayload(it) },
-      totalPlants = stratumTotals.totalPlants,
-      totalSpecies = stratumTotals.totalSpecies,
   )
 }
 
@@ -652,8 +559,6 @@ data class StratumReportedPlantsResponsePayload(
 // response payload
 data class PlantingSiteReportedPlantsPayload(
     val id: PlantingSiteId,
-    @Schema(description = "Use strata instead", deprecated = true)
-    val plantingZones: List<PlantingZoneReportedPlantsPayload>,
     val plantsSinceLastObservation: Int,
     val progressPercent: Int?,
     val species: List<ReportedSpeciesPayload>,
@@ -664,7 +569,6 @@ data class PlantingSiteReportedPlantsPayload(
       totals: PlantingSiteReportedPlantTotals
   ) : this(
       id = totals.id,
-      plantingZones = totals.strata.map { PlantingZoneReportedPlantsPayload(it) },
       plantsSinceLastObservation = totals.plantsSinceLastObservation,
       progressPercent = totals.progressPercent,
       species = totals.species.map { ReportedSpeciesPayload(it) },
@@ -707,28 +611,6 @@ data class UpdatedPlantingSeasonPayload(
   fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, id = id, startDate = startDate)
 }
 
-@Schema(description = "Use NewSubstratumPayload", deprecated = true)
-data class NewPlantingSubzonePayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
-    val boundary: Geometry,
-    val name: String,
-) {
-  fun validate() {
-    if (boundary !is MultiPolygon && boundary !is Polygon) {
-      throw IllegalArgumentException("Substratum boundaries must be Polygon or MultiPolygon")
-    }
-  }
-
-  fun toModel(stratumName: String, exclusion: MultiPolygon?): NewSubstratumModel {
-    return SubstratumModel.create(
-        boundary = boundary.toMultiPolygon(),
-        exclusion = exclusion,
-        fullName = "$stratumName-$name",
-        name = name,
-    )
-  }
-}
-
 data class NewSubstratumPayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry,
@@ -751,34 +633,6 @@ data class NewSubstratumPayload(
         exclusion = exclusion,
         fullName = "$stratumName-$name",
         name = name,
-    )
-  }
-}
-
-@Schema(description = "Use NewStratumPayload", deprecated = true)
-data class NewPlantingZonePayload(
-    @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
-    val boundary: Geometry,
-    val name: String,
-    val plantingSubzones: List<NewPlantingSubzonePayload>?,
-    val targetPlantingDensity: BigDecimal?,
-) {
-  fun validate() {
-    if (boundary !is MultiPolygon && boundary !is Polygon) {
-      throw IllegalArgumentException("Stratum boundaries must be Polygon or MultiPolygon")
-    }
-
-    plantingSubzones?.forEach { it.validate() }
-  }
-
-  fun toModel(exclusion: MultiPolygon?): NewStratumModel {
-    return StratumModel.create(
-        boundary = boundary.toMultiPolygon(),
-        exclusion = exclusion,
-        name = name,
-        targetPlantingDensity =
-            targetPlantingDensity ?: StratumModel.DEFAULT_TARGET_PLANTING_DENSITY,
-        substrata = plantingSubzones?.map { it.toModel(name, exclusion) } ?: emptyList(),
     )
   }
 }
@@ -839,14 +693,6 @@ data class PlantingSiteValidationProblemPayload(
   constructor(
       model: PlantingSiteValidationFailure
   ) : this(model.conflictsWith, model.stratumName, model.substratumName, model.type)
-
-  @Deprecated("Use stratum instead")
-  val plantingZone: String?
-    get() = stratum
-
-  @Deprecated("Use substratum instead")
-  val plantingSubzone: String?
-    get() = substratum
 }
 
 data class CreatePlantingSiteRequestPayload(
@@ -858,8 +704,6 @@ data class CreatePlantingSiteRequestPayload(
     val name: String,
     val organizationId: OrganizationId,
     val plantingSeasons: List<NewPlantingSeasonPayload>? = null,
-    @Schema(description = "Use strata instead", deprecated = true)
-    val plantingZones: List<NewPlantingZonePayload>? = null,
     val projectId: ProjectId? = null,
     @Schema(
         description =
@@ -879,7 +723,6 @@ data class CreatePlantingSiteRequestPayload(
     }
 
     strata?.forEach { it.validate() }
-    plantingZones?.forEach { it.validate() }
   }
 
   fun toModel(): NewPlantingSiteModel {
@@ -891,10 +734,7 @@ data class CreatePlantingSiteRequestPayload(
         exclusion = exclusionMultiPolygon,
         name = name,
         organizationId = organizationId,
-        strata =
-            strata?.map { it.toModel(exclusionMultiPolygon) }
-                ?: plantingZones?.map { it.toModel(exclusionMultiPolygon) }
-                ?: emptyList(),
+        strata = strata?.map { it.toModel(exclusionMultiPolygon) } ?: emptyList(),
         projectId = projectId,
         timeZone = timeZone,
     )
