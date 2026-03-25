@@ -86,6 +86,7 @@ class PlantingSitesController(
           defaultValue = "false",
       )
       full: Boolean?,
+      @RequestParam includeZones: Boolean? = true,
   ): ListPlantingSitesResponsePayload {
     val depth = if (full == true) PlantingSiteDepth.Plot else PlantingSiteDepth.Site
     val models =
@@ -96,7 +97,7 @@ class PlantingSitesController(
         } else {
           throw BadRequestException("One of organizationId or projectId must be specified")
         }
-    val payloads = models.map { PlantingSitePayload(it) }
+    val payloads = models.map { PlantingSitePayload(it, includeZones ?: true) }
     return ListPlantingSitesResponsePayload(payloads)
   }
 
@@ -106,10 +107,11 @@ class PlantingSitesController(
       description = "Includes information about the site's strata and substrata.",
   )
   fun getPlantingSite(
-      @PathVariable("id") id: PlantingSiteId,
+      @PathVariable id: PlantingSiteId,
+      @RequestParam includeZones: Boolean? = true,
   ): GetPlantingSiteResponsePayload {
     val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot)
-    return GetPlantingSiteResponsePayload(PlantingSitePayload(model))
+    return GetPlantingSiteResponsePayload(PlantingSitePayload(model, includeZones ?: true))
   }
 
   @GetMapping("/{id}/history/{historyId}")
@@ -427,7 +429,8 @@ data class PlantingSitePayload(
     val timeZone: ZoneId?,
 ) {
   constructor(
-      model: ExistingPlantingSiteModel
+      model: ExistingPlantingSiteModel,
+      includeZones: Boolean = true,
   ) : this(
       adHocPlots = model.adHocPlots.map { MonitoringPlotPayload(it) },
       areaHa = model.areaHa,
@@ -441,7 +444,7 @@ data class PlantingSitePayload(
       name = model.name,
       organizationId = model.organizationId,
       plantingSeasons = model.plantingSeasons.map { PlantingSeasonPayload(it) },
-      plantingZones = model.strata.map { PlantingZonePayload(it) },
+      plantingZones = if (includeZones) model.strata.map { PlantingZonePayload(it) } else null,
       projectId = model.projectId,
       strata = model.strata.map { StratumResponsePayload(it) },
       survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
