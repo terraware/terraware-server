@@ -1,0 +1,39 @@
+#!/bin/bash
+#
+# Set environment variables that can be consumed by commands. This is run after plugins
+# such as the AWS Secrets Manager plugin, so it can refer to any environment variables
+# set by those plugins.
+#
+# The Buildkite agent effectively sources this file in bash before launching commands,
+# so any environment variables exported here will be available to all commands. See
+# https://buildkite.com/docs/agent/hooks for more details.
+#
+
+set -euo pipefail
+
+# Define tier based on branch/tag
+if [[ "${BUILDKITE_TAG:-}" =~ ^v[0-9]+\.[0-9.]+ ]]; then
+    TIER=PROD
+    IS_CD=true
+elif [[ "${BUILDKITE_BRANCH}" == "main" ]]; then
+    TIER=STAGING
+    IS_CD=true
+else
+    TIER=CI
+    IS_CD=false
+fi
+
+COMMIT_SHA="${BUILDKITE_COMMIT:0:12}"
+
+# If this commit's title has a suffix like (#123), it's probably a merged PR.
+MERGED_PR_NUMBER=$(git log -1 --pretty=%s | sed -En 's/.*\(#([0-9]+)\)$/\1/p')
+
+# Put all downloaded Gradle dependencies, etc., under the repo directory so they can be
+# loaded and restored from cache without clobbering global state.
+GRADLE_USER_HOME="${BUILDKITE_BUILD_CHECKOUT_PATH}/.gradle-home"
+
+export COMMIT_SHA
+export GRADLE_USER_HOME
+export IS_CD
+export MERGED_PR_NUMBER
+export TIER
