@@ -226,7 +226,7 @@ class ActivityStore(
         when (mediaDepth) {
           ActivityMediaDepth.None -> null
           ActivityMediaDepth.CoverPhotos -> ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO.isTrue()
-          ActivityMediaDepth.All -> DSL.falseCondition()
+          ActivityMediaDepth.All -> DSL.trueCondition()
         }
     return with(ACTIVITIES) {
       if (mediaCondition != null) {
