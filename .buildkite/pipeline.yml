@@ -186,7 +186,10 @@ steps:
 
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
-    depends_on: "promote-script-cache"
+    depends_on:
+      - "docker"
+      - "promote-caches"
+      - "promote-script-cache"
     if: "build.branch == 'main' || build.tag =~ /^v2[0-9]+\\.[0-9]+/"
     plugins:
       - *shallow-clone
