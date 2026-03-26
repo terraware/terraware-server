@@ -61,15 +61,11 @@ class ActivitiesController(
   @Operation(summary = "Lists all of a project's activities.")
   @GetMapping
   fun listActivities(
-      @RequestParam projectId: ProjectId,
-      @Parameter(description = "If true, include a list of media files for each activity.")
-      @RequestParam(defaultValue = "false")
-      includeCoverPhotos: Boolean = false,
-      @RequestParam(defaultValue = "true") includeMedia: Boolean = true,
+    @RequestParam projectId: ProjectId,
+    @Parameter(description = "The media files to include for each activity.")
+    @RequestParam(defaultValue = "All")
+    depth: ActivityMediaDepth = ActivityMediaDepth.All,
   ): ListActivitiesResponsePayload {
-    val depth =
-        if (includeMedia) ActivityMediaDepth.All
-        else if (includeCoverPhotos) ActivityMediaDepth.CoverPhotos else ActivityMediaDepth.None
     val activities = activityStore.fetchByProjectId(projectId, depth)
 
     return ListActivitiesResponsePayload(activities.map { ActivityPayload(it) })

@@ -222,14 +222,13 @@ class ActivityStore(
       condition: Condition,
       mediaDepth: ActivityMediaDepth,
   ): List<ExistingActivityModel> {
-    val mediaCondition =
-        when (mediaDepth) {
-          ActivityMediaDepth.None -> null
-          ActivityMediaDepth.CoverPhotos -> ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO.isTrue()
-          ActivityMediaDepth.All -> DSL.trueCondition()
-        }
     return with(ACTIVITIES) {
-      if (mediaCondition != null) {
+      if (mediaDepth != ActivityMediaDepth.None) {
+        val mediaCondition =
+            when (mediaDepth) {
+              ActivityMediaDepth.CoverPhotos -> ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO.isTrue()
+              ActivityMediaDepth.All -> DSL.trueCondition()
+            }
         val mediaField = mediaMultiset(mediaCondition)
         dslContext
             .select(
