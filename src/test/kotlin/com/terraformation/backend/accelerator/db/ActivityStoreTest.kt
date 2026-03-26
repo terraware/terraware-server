@@ -259,7 +259,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
           )
 
-      assertEquals(expected, store.fetchOneById(activityId, ActivityMediaDepth.All))
+      assertEquals(expected, store.fetchOneById(activityId, ActivityMediaDepth.CoverPhotos))
     }
 
     @Test
