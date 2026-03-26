@@ -44,7 +44,7 @@ echo "--- :atlassian-jira: Transition Jira issues"
 if [[ -n "${JIRA_BASE_URL:-}" && -n "${JIRA_USER_EMAIL:-}" && -n "${JIRA_API_TOKEN:-}" ]]; then
     # Fetch the unreleased log from GitHub Pages and extract Jira issue keys
     JIRA_ISSUES=$(curl -s https://terraware.github.io/terraware-server/unreleased.log |
-        grep -Eo 'SW-[0-9]+' || true |
+        (grep -Eo 'SW-[0-9]+' || true) |
         sort -u)
 
     JIRA_AUTH=$(echo -n "${JIRA_USER_EMAIL}:${JIRA_API_TOKEN}" | base64)
