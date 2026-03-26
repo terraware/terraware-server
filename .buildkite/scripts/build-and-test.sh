@@ -43,6 +43,11 @@ echo "--- :gradle: Compile tests"
 ./gradlew testClasses
 
 echo "--- :junit: Run tests"
+
+# Suppress some debug log messages that add up to megabytes of test output and slow down annotating
+# the test results.
+export LOGGING_LEVEL_COM_TERRAFORMATION_BACKEND_SEARCH=INFO
+
 ./gradlew test
 
 # We don't run the tests that depend on external services here. We want failures in that test suite
