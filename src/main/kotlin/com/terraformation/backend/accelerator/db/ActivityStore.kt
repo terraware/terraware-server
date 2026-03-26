@@ -2,6 +2,7 @@ package com.terraformation.backend.accelerator.db
 
 import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
+import com.terraformation.backend.accelerator.model.ActivityMediaDepth
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
@@ -82,7 +83,7 @@ class ActivityStore(
     requirePermissions { deleteActivity(activityId) }
 
     // Check that the activity exists.
-    fetchOneById(activityId, false)
+    fetchOneById(activityId)
 
     if (isPublished(activityId) && !currentUser().canManageActivity(activityId)) {
       throw CannotDeletePublishedActivityException(activityId)
@@ -171,25 +172,28 @@ class ActivityStore(
     }
   }
 
-  fun fetchOneById(activityId: ActivityId, includeMedia: Boolean = false): ExistingActivityModel {
+  fun fetchOneById(
+      activityId: ActivityId,
+      mediaDepth: ActivityMediaDepth = ActivityMediaDepth.None,
+  ): ExistingActivityModel {
     requirePermissions { readActivity(activityId) }
 
-    return fetchByCondition(ACTIVITIES.ID.eq(activityId), includeMedia).firstOrNull()
+    return fetchByCondition(ACTIVITIES.ID.eq(activityId), mediaDepth).firstOrNull()
         ?: throw ActivityNotFoundException(activityId)
   }
 
   fun fetchByProjectId(
       projectId: ProjectId,
-      includeMedia: Boolean = false,
+      mediaDepth: ActivityMediaDepth = ActivityMediaDepth.None,
   ): List<ExistingActivityModel> {
     requirePermissions { listActivities(projectId) }
 
-    return fetchByCondition(ACTIVITIES.PROJECT_ID.eq(projectId), includeMedia)
+    return fetchByCondition(ACTIVITIES.PROJECT_ID.eq(projectId), mediaDepth)
   }
 
   private val geolocationField = FILES.GEOLOCATION.forMultiset()
 
-  private val mediaMultiset =
+  private fun mediaMultiset(condition: Condition) =
       DSL.multiset(
               DSL.select(
                       ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID,
@@ -209,29 +213,37 @@ class ActivityStore(
                   .join(FILES)
                   .on(ACTIVITY_MEDIA_FILES.FILE_ID.eq(FILES.ID))
                   .where(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(ACTIVITIES.ID))
+                  .and(condition)
                   .orderBy(ACTIVITY_MEDIA_FILES.LIST_POSITION)
           )
           .convertFrom { result -> result.map { ActivityMediaModel.of(it, geolocationField) } }
 
   private fun fetchByCondition(
       condition: Condition,
-      includeMedia: Boolean,
+      mediaDepth: ActivityMediaDepth,
   ): List<ExistingActivityModel> {
+    val mediaCondition =
+        when (mediaDepth) {
+          ActivityMediaDepth.None -> null
+          ActivityMediaDepth.CoverPhotos -> ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO.isTrue()
+          ActivityMediaDepth.All -> DSL.falseCondition()
+        }
     return with(ACTIVITIES) {
-      if (includeMedia) {
+      if (mediaCondition != null) {
+        val mediaField = mediaMultiset(mediaCondition)
         dslContext
             .select(
                 asterisk(),
                 PUBLISHED_ACTIVITIES.PUBLISHED_BY,
                 PUBLISHED_ACTIVITIES.PUBLISHED_TIME,
-                mediaMultiset,
+                mediaField,
             )
             .from(ACTIVITIES)
             .leftJoin(PUBLISHED_ACTIVITIES)
             .on(ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
             .where(condition)
             .orderBy(ID)
-            .fetch { ExistingActivityModel.of(it, mediaMultiset) }
+            .fetch { ExistingActivityModel.of(it, mediaField) }
       } else {
         dslContext
             .select(
