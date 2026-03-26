@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Keep fetching older and older commits until we find a particular tag.
+# Fetch all the commits between a particular tag and the current HEAD.
 #
 set -euo pipefail
 
@@ -16,19 +16,21 @@ MAX_DEPTH=500
 STEP=50
 DEPTH=0
 
+HEAD_REF="$(git rev-parse HEAD)"
+
 while true; do
-    if git rev-parse "$SEARCH_TAG" >/dev/null 2>&1; then
-        echo "Found tag $SEARCH_TAG"
+    if git merge-base --is-ancestor "$SEARCH_TAG" HEAD >/dev/null 2>&1; then
+        echo "Found history from $SEARCH_TAG to HEAD"
         exit 0
     fi
 
     if [ "$DEPTH" -ge "$MAX_DEPTH" ]; then
-        echo "Could not find tag $SEARCH_TAG"
+        echo "Could not find history between $SEARCH_TAG and HEAD"
         exit 1
     fi
 
     DEPTH=$((DEPTH + STEP))
 
     echo "Fetching with depth=$DEPTH"
-    git fetch --tags --depth=$DEPTH
+    git fetch --depth=$DEPTH origin "$HEAD_REF"
 done
