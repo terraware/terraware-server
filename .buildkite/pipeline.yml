@@ -128,7 +128,7 @@ steps:
         allow_failure: true
     plugins:
       - *shallow-clone
-      - junit-annotate#v2.5.0:
+      - junit-annotate#v2.7.0:
           artifacts: "build/test-results/**/*.xml"
           always-annotate: true
           report-slowest: 10
