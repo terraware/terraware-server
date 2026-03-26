@@ -186,6 +186,8 @@ steps:
 
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
+    concurrency: 1
+    concurrency_group: "terraware-server/deploy"
     depends_on:
       - "docker"
       - "promote-caches"
