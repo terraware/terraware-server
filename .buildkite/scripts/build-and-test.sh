@@ -10,19 +10,19 @@ if [ -d "$GRADLE_USER_HOME/caches/build-cache-1" ]; then
     rm -rf "$GRADLE_USER_HOME/caches/build-cache-1"
 fi
 
-./gradlew --build-cache downloadDependencies yarn
+./gradlew downloadDependencies yarn
 
 echo "--- :gradle: Generate jOOQ classes"
-./gradlew --build-cache generateJooqClasses
+./gradlew generateJooqClasses
 
 echo "--- :gradle: Check code style"
-./gradlew --build-cache spotlessCheck
+./gradlew spotlessCheck
 
 echo "--- :gradle: Compile main"
-./gradlew --build-cache classes
+./gradlew classes
 
 echo "--- :openapi: Generate OpenAPI docs to test that server can start up"
-./gradlew --build-cache generateOpenApiDocs
+./gradlew generateOpenApiDocs
 
 echo "--- :openapi: Diff OpenAPI docs against staging"
 if curl -f -s https://staging.terraware.io/v3/api-docs.yaml > staging.yaml; then
@@ -40,10 +40,10 @@ else
 fi
 
 echo "--- :gradle: Compile tests"
-./gradlew --build-cache testClasses
+./gradlew testClasses
 
 echo "--- :junit: Run tests"
-./gradlew --build-cache test
+./gradlew test
 
 # We don't run the tests that depend on external services here. We want failures in that test suite
 # to show up as soft failures in the build status, which requires that we run them in a separate

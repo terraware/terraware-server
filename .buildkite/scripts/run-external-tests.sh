@@ -14,4 +14,4 @@ export TERRAWARE_ATLASSIAN_APITOKEN="$TEST_ATLASSIAN_APITOKEN"
 export TERRAWARE_ATLASSIAN_SERVICEDESKKEY="$TEST_ATLASSIAN_SERVICE_DESK_KEY"
 export TERRAWARE_MAPBOX_APITOKEN="$TEST_MAPBOX_APITOKEN"
 
-./gradlew --build-cache -x generateJooqClasses test --tests='*ExternalTest'
+./gradlew -x generateJooqClasses test --tests='*ExternalTest'
