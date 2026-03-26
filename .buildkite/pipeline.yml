@@ -193,6 +193,7 @@ steps:
     if: "build.branch == 'main' || build.tag =~ /^v2[0-9]+\\.[0-9]+/"
     plugins:
       - *shallow-clone
+      - *load-secrets
     command: .buildkite/scripts/deploy-ecs.sh
 
   - label: ":slack: Release notes & Jira transitions"
