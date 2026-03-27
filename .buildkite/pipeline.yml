@@ -56,8 +56,8 @@ agents:
   queue: "x86-8core"
 
 steps:
-  - label: ":gradle: Build and test"
-    key: "build-and-test"
+  - label: ":gradle: Build"
+    key: "build"
     plugins:
       - *shallow-clone
       - cache#v1.10.0:
@@ -79,15 +79,39 @@ steps:
       - artifacts#v1.9.4:
           upload: ".gradle-home/caches/build-cache-1"
           compressed: "build-cache.tgz"
-    command: .buildkite/scripts/build-and-test.sh
+    command: .buildkite/scripts/build.sh
+    artifact_paths:
+      - "build/generator.*"
+
+  - label: ":gradle: Run internal tests"
+    key: "run-tests"
+    depends_on: "build"
+    plugins:
+      - *shallow-clone
+      - *cache-gradle-home
+      - *cache-node-modules
+      - *restore-build-cache
+      - *restore-build
+      - *restore-dot-gradle
+      - artifacts#v1.9.4:
+          upload: "build"
+          compressed: "build.tgz"
+      - artifacts#v1.9.4:
+          upload: ".gradle"
+          compressed: "dot-gradle.tgz"
+      - artifacts#v1.9.4:
+          upload: ".gradle-home/caches/build-cache-1"
+          compressed: "build-cache.tgz"
+    command: .buildkite/scripts/run-tests.sh
     artifact_paths:
       # We need to upload the test results as individual files so they can be consumed by the
       # junit-annotate plugin.
       - "build/test-results/**/*.xml"
+      - "build/generator.*"
 
   - label: ":junit: Run external service integration tests"
     key: "external-tests"
-    depends_on: "build-and-test"
+    depends_on: "run-tests"
     soft_fail: true
     if: "build.branch != 'main' && build.tag == null"
     plugins:
@@ -108,10 +132,6 @@ steps:
 
   - label: ":python: Check scripts"
     key: "check-scripts"
-    depends_on:
-      - step: "build-and-test"
-      - step: "external-tests"
-        allow_failure: true
     if_changed: "scripts/**"
     plugins:
       - *shallow-clone
@@ -128,8 +148,7 @@ steps:
   - label: ":junit: Annotate build with test results"
     key: "junit-annotate"
     depends_on:
-      - step: "build-and-test"
-      - step: "check-scripts"
+      - step: "run-tests"
       - step: "external-tests"
         allow_failure: true
     plugins:
@@ -141,7 +160,7 @@ steps:
 
   - label: ":docker: Build and push Docker image"
     key: "docker"
-    depends_on: "junit-annotate"
+    depends_on: "build"
     plugins:
       - *shallow-clone
       - *load-secrets
@@ -177,7 +196,7 @@ steps:
 
   - label: ":buildkite: Promote branch-level script cache to pipeline-level"
     key: "promote-script-cache"
-    depends_on: "promote-caches"
+    depends_on: "check-scripts"
     branches: "main"
     if_changed: "scripts/**"
     plugins:
@@ -194,10 +213,7 @@ steps:
     key: "deploy"
     concurrency: 1
     concurrency_group: "terraware-server/deploy"
-    depends_on:
-      - "docker"
-      - "promote-caches"
-      - "promote-script-cache"
+    depends_on: "docker"
     if: "build.branch == 'main' || build.tag =~ /^v2[0-9]+\\.[0-9]+/"
     plugins:
       - *shallow-clone
@@ -215,9 +231,7 @@ steps:
 
   - label: ":speech_balloon: Notify PR of staging deploy"
     key: "notify-pr"
-    depends_on:
-      - "deploy"
-      - "release-notes"
+    depends_on: "deploy"
     branches: "main"
     plugins:
       - *shallow-clone
@@ -226,9 +240,7 @@ steps:
 
   - label: ":books: Generate and deploy docs"
     key: "generate-docs"
-    depends_on:
-      - "docker"
-      - "notify-pr"
+    depends_on: "docker"
     branches: "main"
     plugins:
       - *shallow-clone
