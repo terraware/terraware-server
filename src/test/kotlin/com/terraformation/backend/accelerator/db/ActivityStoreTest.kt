@@ -5,7 +5,6 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.event.ActivityCreatedEvent
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
-import com.terraformation.backend.accelerator.model.ActivityMediaDepth
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
@@ -67,7 +66,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   description = "Test activity description",
                   isHighlight = true,
                   projectId = projectId,
-              ),
+              )
           )
 
       assertTableEquals(
@@ -85,7 +84,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               verifiedBy = null,
               verifiedTime = null,
-          ),
+          )
       )
 
       eventPublisher.assertEventPublished(ActivityCreatedEvent(model.id))
@@ -103,7 +102,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   activityType = ActivityType.SeedCollection,
                   description = "Test activity description",
                   projectId = projectId,
-              ),
+              )
           )
 
       assertTableEquals(
@@ -121,7 +120,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               verifiedBy = currentUser().userId,
               verifiedTime = clock.instant(),
-          ),
+          )
       )
     }
 
@@ -191,75 +190,6 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
 
       assertEquals(expected, store.fetchOneById(activityId))
-    }
-
-    @Test
-    fun `includes cover photo`() {
-      insertOrganizationUser(role = Role.Admin)
-
-      val activityId =
-          insertActivity(
-              activityDate = LocalDate.of(2024, 2, 20),
-              activityType = ActivityType.Monitoring,
-              description = "Test monitoring activity",
-          )
-      val fileId1 =
-          insertFile(
-              capturedLocalTime = LocalDate.of(2024, 2, 19).atStartOfDay(),
-              storageUrl = "s3://x/y/my-file.jpg",
-          )
-      insertActivityMediaFile(
-          caption = "Caption 1",
-          isCoverPhoto = true,
-      )
-      insertFile(
-          capturedLocalTime = LocalDate.of(2024, 2, 20).atStartOfDay(),
-          createdTime = Instant.ofEpochSecond(1),
-          geolocation = point(1),
-      )
-      insertActivityMediaFile(
-          caption = "Caption 2",
-          isHiddenOnMap = true,
-          type = ActivityMediaType.Video,
-      )
-
-      insertActivity()
-      insertFile()
-      insertActivityMediaFile()
-
-      val expected =
-          ExistingActivityModel(
-              activityDate = LocalDate.of(2024, 2, 20),
-              activityStatus = ActivityStatus.NotVerified,
-              activityType = ActivityType.Monitoring,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              description = "Test monitoring activity",
-              id = activityId,
-              isHighlight = false,
-              media =
-                  listOf(
-                      ActivityMediaModel(
-                          activityId = activityId,
-                          caption = "Caption 1",
-                          capturedLocalTime = LocalDate.of(2024, 2, 19).atStartOfDay(),
-                          createdBy = user.userId,
-                          createdTime = Instant.EPOCH,
-                          fileId = fileId1,
-                          fileName = "my-file.jpg",
-                          geolocation = null,
-                          isCoverPhoto = true,
-                          isHiddenOnMap = false,
-                          listPosition = 1,
-                          type = ActivityMediaType.Photo,
-                      ),
-                  ),
-              modifiedBy = user.userId,
-              modifiedTime = Instant.EPOCH,
-              projectId = projectId,
-          )
-
-      assertEquals(expected, store.fetchOneById(activityId, ActivityMediaDepth.CoverPhotos))
     }
 
     @Test
@@ -343,7 +273,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
           )
 
-      assertEquals(expected, store.fetchOneById(activityId, ActivityMediaDepth.All))
+      assertEquals(expected, store.fetchOneById(activityId, true))
     }
 
     @Test
@@ -462,7 +392,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
           )
 
-      assertEquals(expected, store.fetchByProjectId(projectId, ActivityMediaDepth.All))
+      assertEquals(expected, store.fetchByProjectId(projectId, includeMedia = true))
     }
 
     @Test
@@ -596,7 +526,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               verifiedBy = null,
               verifiedTime = null,
-          ),
+          )
       )
     }
 
@@ -642,7 +572,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               verifiedBy = otherUserId,
               verifiedTime = Instant.ofEpochSecond(50),
-          ),
+          )
       )
     }
 
@@ -684,7 +614,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               verifiedBy = otherUserId,
               verifiedTime = Instant.ofEpochSecond(50),
-          ),
+          )
       )
     }
 
@@ -729,7 +659,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
               verifiedBy = user.userId,
               verifiedTime = updateTime,
-          ),
+          )
       )
     }
 

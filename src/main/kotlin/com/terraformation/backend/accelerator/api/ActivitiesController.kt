@@ -3,7 +3,6 @@ package com.terraformation.backend.accelerator.api
 import com.terraformation.backend.accelerator.ActivityMediaService
 import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.ActivityStore
-import com.terraformation.backend.accelerator.model.ActivityMediaDepth
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
@@ -62,11 +61,11 @@ class ActivitiesController(
   @GetMapping
   fun listActivities(
       @RequestParam projectId: ProjectId,
-      @Parameter(description = "The media files to include for each activity.")
-      @RequestParam(defaultValue = "All")
-      depth: ActivityMediaDepth = ActivityMediaDepth.All,
+      @Parameter(description = "If true, include a list of media files for each activity.")
+      @RequestParam(defaultValue = "true")
+      includeMedia: Boolean = true,
   ): ListActivitiesResponsePayload {
-    val activities = activityStore.fetchByProjectId(projectId, depth)
+    val activities = activityStore.fetchByProjectId(projectId, includeMedia)
 
     return ListActivitiesResponsePayload(activities.map { ActivityPayload(it) })
   }
@@ -74,7 +73,7 @@ class ActivitiesController(
   @Operation(summary = "Gets information about a single activity.")
   @GetMapping("/{activityId}")
   fun getActivity(@PathVariable activityId: ActivityId): GetActivityResponsePayload {
-    val activity = activityStore.fetchOneById(activityId, ActivityMediaDepth.All)
+    val activity = activityStore.fetchOneById(activityId, includeMedia = true)
 
     return GetActivityResponsePayload(ActivityPayload(activity))
   }
