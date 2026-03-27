@@ -19,8 +19,8 @@ install_corretto() {
         sudo dnf install -y "java-${JAVA_VERSION}-amazon-corretto-devel"
     fi
 
-    echo "JAVA_HOME=${JAVA_HOME}" >> "$BUILDKITE_ENV_FILE"
-    echo "org.gradle.java.installations.paths=${JAVA_HOME}" >> gradle.properties
+    #echo "JAVA_HOME=${JAVA_HOME}" >> "$BUILDKITE_ENV_FILE"
+    #echo "org.gradle.java.installations.paths=${JAVA_HOME}" >> gradle.properties
 }
 
 install_jq() {
