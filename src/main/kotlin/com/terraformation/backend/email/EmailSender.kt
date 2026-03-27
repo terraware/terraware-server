@@ -67,20 +67,19 @@ class EmailSender(
         message.from?.getOrNull(0)?.toString()
             ?: throw IllegalArgumentException("No sender address specified")
 
-    val response =
-        sesClient.sendEmail { builder ->
-          builder.fromEmailAddress(sender)
-          builder.destination(
-              Destination.builder()
-                  .toAddresses(message.getRecipientsString(Message.RecipientType.TO))
-                  .ccAddresses(message.getRecipientsString(Message.RecipientType.CC))
-                  .bccAddresses(message.getRecipientsString(Message.RecipientType.BCC))
-                  .build(),
-          )
-          builder.content(
-              EmailContent.builder().raw(RawMessage.builder().data(sdkBytes).build()).build()
-          )
-        }
+    val response = sesClient.sendEmail { builder ->
+      builder.fromEmailAddress(sender)
+      builder.destination(
+          Destination.builder()
+              .toAddresses(message.getRecipientsString(Message.RecipientType.TO))
+              .ccAddresses(message.getRecipientsString(Message.RecipientType.CC))
+              .bccAddresses(message.getRecipientsString(Message.RecipientType.BCC))
+              .build(),
+      )
+      builder.content(
+          EmailContent.builder().raw(RawMessage.builder().data(sdkBytes).build()).build()
+      )
+    }
 
     return response.messageId()
   }

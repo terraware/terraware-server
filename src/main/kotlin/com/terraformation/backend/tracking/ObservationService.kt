@@ -843,8 +843,9 @@ class ObservationService(
       firstPlantingElapsedWeeks: Long,
       siteIds: List<PlantingSiteId>,
   ): Collection<PlantingSiteId> {
-    val observationCompletedTimes =
-        siteIds.associateWith { observationStore.fetchLastCompletedObservationTime(it) }
+    val observationCompletedTimes = siteIds.associateWith {
+      observationStore.fetchLastCompletedObservationTime(it)
+    }
 
     return siteIds.filter { plantingSiteId ->
       observationCompletedTimes[plantingSiteId]?.let { elapsedWeeks(it, completedTimeElapsedWeeks) }

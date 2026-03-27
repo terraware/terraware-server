@@ -156,22 +156,20 @@ class EventLogStore(
 
   private fun getLikeConditions(
       requestedConcreteClasses: List<KClass<out PersistentEvent>>
-  ): List<Condition> =
-      requestedConcreteClasses.map {
-        EVENT_LOG.EVENT_CLASS.like(it.java.name.substringBeforeLast('V') + "V%")
-      }
+  ): List<Condition> = requestedConcreteClasses.map {
+    EVENT_LOG.EVENT_CLASS.like(it.java.name.substringBeforeLast('V') + "V%")
+  }
 
   private fun <T : PersistentEvent> getConcreteClasses(
       requestedClasses: Collection<KClass<out T>>
   ): List<KClass<out T>> {
-    val requestedConcreteClasses =
-        requestedClasses.flatMap { requestedClass ->
-          if (requestedClass.isSealed) {
-            requestedClass.sealedSubclasses.filterNot { it.isSubclassOf(UpgradableEvent::class) }
-          } else {
-            listOf(requestedClass)
-          }
-        }
+    val requestedConcreteClasses = requestedClasses.flatMap { requestedClass ->
+      if (requestedClass.isSealed) {
+        requestedClass.sealedSubclasses.filterNot { it.isSubclassOf(UpgradableEvent::class) }
+      } else {
+        listOf(requestedClass)
+      }
+    }
     return requestedConcreteClasses
   }
 

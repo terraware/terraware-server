@@ -81,26 +81,26 @@ class AdminEventLogController(
 
     model.addAttribute("tableColumns", allColumns)
 
-    val tableRows =
-        events.map { eventLogEntry ->
-          val user = usersById[eventLogEntry.createdBy]!!
-          val userTooltip = "${user.fullName}\n${user.email}"
-          val event = eventLogEntry.event
-          val eventClass = event.javaClass
+    val tableRows = events.map { eventLogEntry ->
+      val user = usersById[eventLogEntry.createdBy]!!
+      val userTooltip = "${user.fullName}\n${user.email}"
+      val event = eventLogEntry.event
+      val eventClass = event.javaClass
 
-          val fixedCells =
-              listOf(
-                  TableCell("${eventLogEntry.id}"),
-                  TableCell(dateTimeFormatter.format(eventLogEntry.createdTime)),
-                  TableCell("${eventLogEntry.createdBy}", userTooltip),
-                  TableCell(eventClass.simpleName.substringBeforeLast('V'), eventClass.name),
-              )
+      val fixedCells =
+          listOf(
+              TableCell("${eventLogEntry.id}"),
+              TableCell(dateTimeFormatter.format(eventLogEntry.createdTime)),
+              TableCell("${eventLogEntry.createdBy}", userTooltip),
+              TableCell(eventClass.simpleName.substringBeforeLast('V'), eventClass.name),
+          )
 
-          val propertyCells =
-              propertyColumns.map { column -> TableCell(getPropertyValue(event, column.name)) }
+      val propertyCells = propertyColumns.map { column ->
+        TableCell(getPropertyValue(event, column.name))
+      }
 
-          fixedCells + propertyCells
-        }
+      fixedCells + propertyCells
+    }
 
     model.addAttribute("tableRows", tableRows)
   }

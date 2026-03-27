@@ -139,14 +139,13 @@ class ObservationsController(
       throw BadRequestException("Must specify organizationId or plantingSiteId")
     }
 
-    val payloads =
-        observations.map { observation ->
-          ObservationPayload(
-              observation,
-              plotCounts[observation.id],
-              plantingSites[observation.plantingSiteId]!!.name,
-          )
-        }
+    val payloads = observations.map { observation ->
+      ObservationPayload(
+          observation,
+          plotCounts[observation.id],
+          plantingSites[observation.plantingSiteId]!!.name,
+      )
+    }
 
     return ListObservationsResponsePayload(
         observations = payloads,
@@ -666,14 +665,13 @@ class ObservationsController(
       throw BadRequestException("Must specify organizationId or plantingSiteId")
     }
 
-    val payloads =
-        observations.map { observation ->
-          ObservationPayload(
-              observation,
-              plotCounts[observation.id],
-              plantingSites[observation.plantingSiteId]!!.name,
-          )
-        }
+    val payloads = observations.map { observation ->
+      ObservationPayload(
+          observation,
+          plotCounts[observation.id],
+          plantingSites[observation.plantingSiteId]!!.name,
+      )
+    }
 
     return ListAdHocObservationsResponsePayload(
         observations = payloads,

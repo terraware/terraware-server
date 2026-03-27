@@ -90,6 +90,7 @@ class DeviceManagerStore(
     deviceManagersDao.update(row)
   }
 
-  private fun DeviceManagersRow.unlessInaccessible(): DeviceManagersRow? =
-      id?.let { if (currentUser().canReadDeviceManager(it)) this else null }
+  private fun DeviceManagersRow.unlessInaccessible(): DeviceManagersRow? = id?.let {
+    if (currentUser().canReadDeviceManager(it)) this else null
+  }
 }

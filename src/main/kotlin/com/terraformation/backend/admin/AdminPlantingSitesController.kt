@@ -118,25 +118,22 @@ class AdminPlantingSitesController(
         observations.map { it.id }.associateWith { currentUser().canManageObservation(it) }
 
     // Explain why an observation doesn't have a "Start" button if it's not obvious from the state.
-    val observationMessages =
-        observations.associate { observation ->
-          observation.id to
-              when {
-                plantCounts.isEmpty() -> "No reported plants"
-                observation.startDate > LocalDate.now(clock) -> "Start date is in future"
-                canManageObservations[observation.id] != true ->
-                    "No permission to start observation"
-                else -> null
-              }
-        }
-    val canStartObservations =
-        observations.associate { observation ->
-          observation.id to
-              (observation.state == ObservationState.Upcoming &&
-                  observation.startDate <= LocalDate.now(clock) &&
-                  canManageObservations[observation.id] == true &&
-                  plantCounts.isNotEmpty())
-        }
+    val observationMessages = observations.associate { observation ->
+      observation.id to
+          when {
+            plantCounts.isEmpty() -> "No reported plants"
+            observation.startDate > LocalDate.now(clock) -> "Start date is in future"
+            canManageObservations[observation.id] != true -> "No permission to start observation"
+            else -> null
+          }
+    }
+    val canStartObservations = observations.associate { observation ->
+      observation.id to
+          (observation.state == ObservationState.Upcoming &&
+              observation.startDate <= LocalDate.now(clock) &&
+              canManageObservations[observation.id] == true &&
+              plantCounts.isNotEmpty())
+    }
 
     val nextObservationStart = plantingSite.getNextObservationStart(clock)
     val nextObservationEnd = nextObservationStart?.plusMonths(1)?.minusDays(1)

@@ -315,24 +315,23 @@ data class AccessionModel(
         existing.withdrawals
             .filter { it.viabilityTestId != null }
             .associateBy { it.viabilityTestId!! }
-    val testWithdrawals =
-        viabilityTests.map { test ->
-          val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
-          val withdrawn =
-              test.seedsTested?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
+    val testWithdrawals = viabilityTests.map { test ->
+      val existingWithdrawal = test.id?.let { existingTestWithdrawals[it] }
+      val withdrawn =
+          test.seedsTested?.let { SeedQuantityModel(BigDecimal(it), SeedQuantityUnits.Seeds) }
 
-          WithdrawalModel(
-              createdTime = existingWithdrawal?.createdTime,
-              date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
-              id = existingWithdrawal?.id,
-              purpose = WithdrawalPurpose.ViabilityTesting,
-              staffResponsible = test.staffResponsible,
-              viabilityTest = test,
-              viabilityTestId = test.id,
-              withdrawn = withdrawn,
-              withdrawnByUserId = test.withdrawnByUserId ?: existingWithdrawal?.withdrawnByUserId,
-          )
-        }
+      WithdrawalModel(
+          createdTime = existingWithdrawal?.createdTime,
+          date = test.startDate ?: existingWithdrawal?.date ?: LocalDate.now(clock),
+          id = existingWithdrawal?.id,
+          purpose = WithdrawalPurpose.ViabilityTesting,
+          staffResponsible = test.staffResponsible,
+          viabilityTest = test,
+          viabilityTestId = test.id,
+          withdrawn = withdrawn,
+          withdrawnByUserId = test.withdrawnByUserId ?: existingWithdrawal?.withdrawnByUserId,
+      )
+    }
 
     val unsortedWithdrawals = nonTestWithdrawals + testWithdrawals
 

@@ -161,8 +161,9 @@ class PlantingSiteEditCalculator(
     val fractionOfDesiredAreaOverlappingWithExisting =
         min(1.0, overlappingBoundary.area / desiredUsableBoundary.area)
 
-    val existingPlotsInDesiredStratum =
-        existingMonitoringPlots.filter { it.boundary.nearlyCoveredBy(desiredUsableBoundary) }
+    val existingPlotsInDesiredStratum = existingMonitoringPlots.filter {
+      it.boundary.nearlyCoveredBy(desiredUsableBoundary)
+    }
     val (candidatePlots, disqualifiedPlots) =
         existingPlotsInDesiredStratum.partition {
           it.isAvailable && !it.isAdHoc && it.sizeMeters == MONITORING_PLOT_SIZE_INT
@@ -228,11 +229,10 @@ class PlantingSiteEditCalculator(
             .filterValues { it == null }
             .keys
             .map { newSubstratum ->
-              val adoptEdits =
-                  monitoringPlotEdits.filter {
-                    it is MonitoringPlotEdit.Adopt &&
-                        desiredSubstrataByMonitoringPlotId[it.monitoringPlotId] == newSubstratum
-                  }
+              val adoptEdits = monitoringPlotEdits.filter {
+                it is MonitoringPlotEdit.Adopt &&
+                    desiredSubstrataByMonitoringPlotId[it.monitoringPlotId] == newSubstratum
+              }
               SubstratumEdit.Create(newSubstratum, adoptEdits)
             }
 

@@ -44,18 +44,17 @@ class ValuesController(
       throw BadRequestException("Cannot list values of nested fields.")
     }
 
-    val values =
-        fields.mapValues { (_, searchField) ->
-          val values =
-              searchService.fetchValues(
-                  rootPrefix,
-                  searchField,
-                  mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
-                  limit = limit,
-              )
-          val partial = values.size > limit
-          FieldValuesPayload(values.take(limit), partial)
-        }
+    val values = fields.mapValues { (_, searchField) ->
+      val values =
+          searchService.fetchValues(
+              rootPrefix,
+              searchField,
+              mapOf(rootPrefix to payload.toSearchNode(rootPrefix)),
+              limit = limit,
+          )
+      val partial = values.size > limit
+      FieldValuesPayload(values.take(limit), partial)
+    }
 
     return ListFieldValuesResponsePayload(values)
   }

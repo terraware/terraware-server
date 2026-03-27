@@ -801,8 +801,9 @@ class SpeciesStore(
   fun updateProblems(speciesId: SpeciesId, problems: Collection<SpeciesProblemsRow>) {
     requirePermissions { updateSpecies(speciesId) }
 
-    val problemsWithMetadata =
-        problems.map { it.copy(speciesId = speciesId, createdTime = clock.instant()) }
+    val problemsWithMetadata = problems.map {
+      it.copy(speciesId = speciesId, createdTime = clock.instant())
+    }
 
     dslContext.transaction { _ ->
       dslContext

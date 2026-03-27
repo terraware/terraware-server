@@ -145,14 +145,13 @@ fun updateSelectValueOperation(
     existingValue: ExistingSelectValue?,
     newValue: Set<String>,
 ): ValueOperation? {
-  val options =
-      newValue.map { selection ->
-        variable.options.firstOrNull { it.name == selection }
-            ?: throw IllegalStateException(
-                "Selection $selection not recognized as an option for variable ${variable.name} " +
-                    "with stable ID ${variable.stableId}"
-            )
-      }
+  val options = newValue.map { selection ->
+    variable.options.firstOrNull { it.name == selection }
+        ?: throw IllegalStateException(
+            "Selection $selection not recognized as an option for variable ${variable.name} " +
+                "with stable ID ${variable.stableId}"
+        )
+  }
   val optionIds = options.map { it.id }.toSet()
 
   if (existingValue == null || existingValue.value.isEmpty()) {

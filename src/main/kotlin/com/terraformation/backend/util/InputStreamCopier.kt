@@ -251,21 +251,16 @@ class InputStreamCopier(
     dataAvailable.signalAll()
   }
 
-  private fun waitForData(position: Long): Boolean =
-      lock.withLock {
-        while (
-            totalBytesRead.get() <= position &&
-                !sourceExhausted.get() &&
-                sourceException.get() == null
-        ) {
-          dataAvailable.await()
-        }
+  private fun waitForData(position: Long): Boolean = lock.withLock {
+    while (
+        totalBytesRead.get() <= position && !sourceExhausted.get() && sourceException.get() == null
+    ) {
+      dataAvailable.await()
+    }
 
-        sourceException.get()?.let {
-          throw IOException("Unable to read from source input stream", it)
-        }
-        return totalBytesRead.get() > position || sourceExhausted.get()
-      }
+    sourceException.get()?.let { throw IOException("Unable to read from source input stream", it) }
+    return totalBytesRead.get() > position || sourceExhausted.get()
+  }
 
   private fun checkEndOfStream(position: Long): Boolean {
     return sourceExhausted.get() && position >= totalBytesRead.get()

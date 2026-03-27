@@ -40,14 +40,13 @@ class ProjectScoresController(
   ): GetProjectScoresResponsePayload {
     val scoresByPhase = projectScoreStore.fetchScores(projectId)
 
-    val phaseScores =
-        scoresByPhase.map { (phase, scoreModels) ->
-          PhaseScores(
-              phase,
-              scoreModels.map { Score(it.category, it.modifiedTime, it.qualitative, it.score) },
-              ProjectScoreModel.totalScore(phase, scoreModels),
-          )
-        }
+    val phaseScores = scoresByPhase.map { (phase, scoreModels) ->
+      PhaseScores(
+          phase,
+          scoreModels.map { Score(it.category, it.modifiedTime, it.qualitative, it.score) },
+          ProjectScoreModel.totalScore(phase, scoreModels),
+      )
+    }
 
     return GetProjectScoresResponsePayload(phaseScores)
   }

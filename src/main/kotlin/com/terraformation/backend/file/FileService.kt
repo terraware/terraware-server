@@ -114,8 +114,9 @@ class FileService(
               // buffered wrapper away and close the copy stream; another copy stream is used to
               // read the actual EXIF metadata to avoid BufferedInputStream copying bytes around
               // needlessly.
-              fileType =
-                  fileTypeStream.use { FileTypeDetector.detectFileType(BufferedInputStream(it)) }
+              fileType = fileTypeStream.use {
+                FileTypeDetector.detectFileType(BufferedInputStream(it))
+              }
 
               if (fileType != FileType.Unknown) {
                 exifMetadata = ImageMetadataReader.readMetadata(exifStream, -1, fileType)
@@ -304,10 +305,9 @@ class FileService(
 
   /** Returns true if a file is referenced by any application-specific entities. */
   private fun isReferenced(fileId: FileId): Boolean {
-    val existsConditions =
-        activeReferringFields.map { field ->
-          DSL.exists(DSL.selectOne().from(field.table).where(field.eq(fileId)))
-        }
+    val existsConditions = activeReferringFields.map { field ->
+      DSL.exists(DSL.selectOne().from(field.table).where(field.eq(fileId)))
+    }
 
     return dslContext.select(DSL.or(existsConditions)).fetchSingle().value1()
   }

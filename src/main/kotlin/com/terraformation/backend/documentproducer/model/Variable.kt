@@ -496,10 +496,9 @@ data class SelectVariable(
           else -> null
         }
 
-    val newOptionIds =
-        oldValueNames?.mapNotNull { oldName ->
-          options.firstOrNull { it.name.equals(oldName.trim(), ignoreCase = true) }?.id
-        }
+    val newOptionIds = oldValueNames?.mapNotNull { oldName ->
+      options.firstOrNull { it.name.equals(oldName.trim(), ignoreCase = true) }?.id
+    }
 
     return if (!newOptionIds.isNullOrEmpty()) {
       NewSelectValue(baseForValue(oldValue, newRowValueId), newOptionIds.toSet())

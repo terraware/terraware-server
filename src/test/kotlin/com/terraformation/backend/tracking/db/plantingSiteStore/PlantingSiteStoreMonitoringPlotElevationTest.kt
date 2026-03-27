@@ -239,15 +239,14 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
               )
           )
 
-      val updatedRecords =
-          existingRows.map { row ->
-            when (row.id) {
-              org1Site1PlotId1 -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TEN))
-              org1Site1PlotId2 -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TWO))
-              org1Site2PlotId -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.ONE))
-              else -> MonitoringPlotsRecord(row)
-            }
-          }
+      val updatedRecords = existingRows.map { row ->
+        when (row.id) {
+          org1Site1PlotId1 -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TEN))
+          org1Site1PlotId2 -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TWO))
+          org1Site2PlotId -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.ONE))
+          else -> MonitoringPlotsRecord(row)
+        }
+      }
 
       assertTableEquals(updatedRecords, "Monitoring plots table")
       assertEquals(3, rowsUpdated, "Rows updated")
@@ -309,30 +308,28 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
       val existingRows = monitoringPlotsDao.findAll()
 
       val systemUser = SystemUser(usersDao)
-      val rowsUpdated =
-          systemUser.run {
-            store.updateMonitoringPlotElevation(
-                mapOf(
-                    org1Site1PlotId1 to BigDecimal.TEN,
-                    org1Site1PlotId2 to BigDecimal.TWO,
-                    org1Site2PlotId to BigDecimal.ONE,
-                    org2PlotId to BigDecimal.TEN,
-                    otherOrgPlotId to BigDecimal.TEN,
-                )
+      val rowsUpdated = systemUser.run {
+        store.updateMonitoringPlotElevation(
+            mapOf(
+                org1Site1PlotId1 to BigDecimal.TEN,
+                org1Site1PlotId2 to BigDecimal.TWO,
+                org1Site2PlotId to BigDecimal.ONE,
+                org2PlotId to BigDecimal.TEN,
+                otherOrgPlotId to BigDecimal.TEN,
             )
-          }
+        )
+      }
 
-      val updatedRecords =
-          existingRows.map { row ->
-            when (row.id) {
-              org1Site1PlotId1 -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TEN))
-              org1Site1PlotId2 -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TWO))
-              org1Site2PlotId -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.ONE))
-              org2PlotId -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TEN))
-              otherOrgPlotId -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TEN))
-              else -> MonitoringPlotsRecord(row)
-            }
-          }
+      val updatedRecords = existingRows.map { row ->
+        when (row.id) {
+          org1Site1PlotId1 -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TEN))
+          org1Site1PlotId2 -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TWO))
+          org1Site2PlotId -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.ONE))
+          org2PlotId -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TEN))
+          otherOrgPlotId -> MonitoringPlotsRecord(row.copy(elevationMeters = BigDecimal.TEN))
+          else -> MonitoringPlotsRecord(row)
+        }
+      }
 
       assertTableEquals(updatedRecords, "Monitoring plots table")
       assertEquals(5, rowsUpdated, "Rows updated")

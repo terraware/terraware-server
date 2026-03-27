@@ -56,13 +56,12 @@ class ProjectService(
             }
             .mapNotNull { it.userId }
 
-    val usersToAdd =
-        internalUsers.filter { finalUser ->
-          val existingUser = existingUsersMap[finalUser.userId]
-          existingUser == null ||
-              existingUser.projectInternalRoleId != finalUser.role ||
-              existingUser.roleName != finalUser.roleName
-        }
+    val usersToAdd = internalUsers.filter { finalUser ->
+      val existingUser = existingUsersMap[finalUser.userId]
+      existingUser == null ||
+          existingUser.projectInternalRoleId != finalUser.role ||
+          existingUser.roleName != finalUser.roleName
+    }
 
     projectStore.removeInternalUsers(projectId, usersToRemove)
     projectStore.addInternalUsers(projectId, usersToAdd)

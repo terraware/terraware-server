@@ -16,8 +16,9 @@ class LocaleConverter : AbstractConverter<String, Locale>(String::class.java, Lo
    * @throws DateTimeException The zone name wasn't found in the list of zones recognized by the
    *   java.time package.
    */
-  override fun from(databaseObject: String?): Locale? =
-      databaseObject?.let { Locale.forLanguageTag(it) }
+  override fun from(databaseObject: String?): Locale? = databaseObject?.let {
+    Locale.forLanguageTag(it)
+  }
 
   override fun to(locale: Locale?): String? = locale?.toLanguageTag()
 }

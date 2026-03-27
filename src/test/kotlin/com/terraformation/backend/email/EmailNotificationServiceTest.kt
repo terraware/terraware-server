@@ -1742,11 +1742,10 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser, tfContactUser1)
 
     val siteName = "Test Site"
-    val existingModel =
-        PlantingSiteBuilder.existingSite {
-          name = siteName
-          organizationId = organization.id
-        }
+    val existingModel = PlantingSiteBuilder.existingSite {
+      name = siteName
+      organizationId = organization.id
+    }
 
     val event =
         PlantingSiteMapEditedEvent(
@@ -1778,11 +1777,10 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser)
 
     val siteName = "Test Site"
-    val existingModel =
-        PlantingSiteBuilder.existingSite {
-          name = siteName
-          organizationId = organization.id
-        }
+    val existingModel = PlantingSiteBuilder.existingSite {
+      name = siteName
+      organizationId = organization.id
+    }
 
     val event =
         PlantingSiteMapEditedEvent(
@@ -1815,11 +1813,10 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchWithGlobalRoles() } returns listOf(acceleratorUser)
 
     val siteName = "Test Site"
-    val existingModel =
-        PlantingSiteBuilder.existingSite {
-          name = siteName
-          organizationId = organization.id
-        }
+    val existingModel = PlantingSiteBuilder.existingSite {
+      name = siteName
+      organizationId = organization.id
+    }
 
     every { parentStore.getOrganizationId(existingModel.id) } returns nonAcceleratorOrganization.id
     val event =

@@ -141,21 +141,19 @@ class ParticipantProjectSpeciesService(
 
     val speciesData =
         participantProjectSpeciesStore.fetchSpeciesForParticipantProject(event.projectId)
-    val rows: List<List<Pair<String, String?>>> =
-        speciesData.map {
-          listOf(
-              "Project ID" to it.project.id.toString(),
-              "Species ID" to it.species.id.toString(),
-              "Status" to it.participantProjectSpecies.submissionStatus.jsonValue,
-              "Rationale" to it.participantProjectSpecies.rationale,
-              "Feedback" to it.participantProjectSpecies.feedback,
-              "Internal Comment" to it.participantProjectSpecies.internalComment,
-              "Native / Non-Native" to
-                  it.participantProjectSpecies.speciesNativeCategory?.jsonValue,
-              "Species Scientific Name" to it.species.scientificName,
-              "Species Common Name" to it.species.commonName,
-          )
-        }
+    val rows: List<List<Pair<String, String?>>> = speciesData.map {
+      listOf(
+          "Project ID" to it.project.id.toString(),
+          "Species ID" to it.species.id.toString(),
+          "Status" to it.participantProjectSpecies.submissionStatus.jsonValue,
+          "Rationale" to it.participantProjectSpecies.rationale,
+          "Feedback" to it.participantProjectSpecies.feedback,
+          "Internal Comment" to it.participantProjectSpecies.internalComment,
+          "Native / Non-Native" to it.participantProjectSpecies.speciesNativeCategory?.jsonValue,
+          "Species Scientific Name" to it.species.scientificName,
+          "Species Common Name" to it.species.commonName,
+      )
+    }
 
     val stream = ByteArrayOutputStream()
     val streamWriter = OutputStreamWriter(stream)

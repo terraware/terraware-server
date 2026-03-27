@@ -146,13 +146,12 @@ class SeedFundReportStore(
             .orderBy(PROJECTS.ID)
             .fetch()
 
-    val projects =
-        projectSettings.map { record ->
-          val projectId = record[PROJECTS.ID.asNonNullable()]
-          val isEnabled = record[PROJECT_REPORT_SETTINGS.IS_ENABLED]
+    val projects = projectSettings.map { record ->
+      val projectId = record[PROJECTS.ID.asNonNullable()]
+      val isEnabled = record[PROJECT_REPORT_SETTINGS.IS_ENABLED]
 
-          SeedFundReportProjectSettingsModel(projectId, isEnabled != null, isEnabled ?: true)
-        }
+      SeedFundReportProjectSettingsModel(projectId, isEnabled != null, isEnabled ?: true)
+    }
 
     return SeedFundReportSettingsModel(
         isConfigured = organizationSettings != null,
@@ -276,8 +275,9 @@ class SeedFundReportStore(
       projectId: ProjectId? = null,
       body: SeedFundReportBodyModel,
   ): SeedFundReportMetadata {
-    val project =
-        projectId?.let { projectsDao.fetchOneById(it) ?: throw ProjectNotFoundException(it) }
+    val project = projectId?.let {
+      projectsDao.fetchOneById(it) ?: throw ProjectNotFoundException(it)
+    }
     if (project != null && project.organizationId != organizationId) {
       throw ProjectInDifferentOrganizationException()
     }

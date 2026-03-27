@@ -52,8 +52,9 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     val childFeatures =
         parentFeature.getAttribute("Feature") as? Collection<*>
             ?: throw ContentFormatException("No features found in KML file")
-    val geometries =
-        childFeatures.mapNotNull { (it as? SimpleFeature)?.defaultGeometry as? Geometry }
+    val geometries = childFeatures.mapNotNull {
+      (it as? SimpleFeature)?.defaultGeometry as? Geometry
+    }
 
     if (geometries.isEmpty()) {
       throw ContentFormatException("No valid geometries found in KML file")

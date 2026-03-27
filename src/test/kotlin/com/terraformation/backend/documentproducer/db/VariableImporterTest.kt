@@ -346,15 +346,17 @@ class VariableImporterTest : DatabaseTest(), RunsAsUser {
       val variableSelectEAGER = selectRows.find { it.variableId == variableEAGER.id }
       val variableSelectOptionsEAGER = selectOptionRows.filter { it.variableId == variableEAGER.id }
       // Scrutinize a specific option we expect
-      val variableSelectOption3EAGER =
-          variableSelectOptionsEAGER.find { it.name!!.endsWith("medium") }
+      val variableSelectOption3EAGER = variableSelectOptionsEAGER.find {
+        it.name!!.endsWith("medium")
+      }
 
       val variableMUMS = getVariableByName("Made up multi select")
       val variableSelectMUMS = selectRows.find { it.variableId == variableMUMS.id }
       val variableSelectOptionsMUMS = selectOptionRows.filter { it.variableId == variableMUMS.id }
       // Scrutinize a specific option we expect
-      val variableSelectOption4MUMS =
-          variableSelectOptionsMUMS.find { it.name!!.endsWith("Option 4") }
+      val variableSelectOption4MUMS = variableSelectOptionsMUMS.find {
+        it.name!!.endsWith("Option 4")
+      }
 
       assertEquals(emptyList<String>(), importResult.errors, "no errors")
       assertFalse(variableEAGER.isList!!, "single select is not a list")

@@ -309,13 +309,13 @@ class Messages {
   fun searchFieldDisplayName(tableName: String, fieldName: String) =
       getMessage("search.$tableName.$fieldName")
 
-  fun timestampOrNull(value: ZonedDateTime?) =
-      value?.let {
-        DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(currentLocale()).format(it)
-      }
+  fun timestampOrNull(value: ZonedDateTime?) = value?.let {
+    DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(currentLocale()).format(it)
+  }
 
-  fun timestampOrNull(value: Instant?, timeZone: ZoneId?) =
-      value?.let { timestampOrNull(it.atZone(timeZone ?: ZoneOffset.UTC)) }
+  fun timestampOrNull(value: Instant?, timeZone: ZoneId?) = value?.let {
+    timestampOrNull(it.atZone(timeZone ?: ZoneOffset.UTC))
+  }
 
   fun userAddedToOrganizationNotification(orgName: String): NotificationMessage =
       NotificationMessage(

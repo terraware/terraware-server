@@ -108,12 +108,11 @@ abstract class PermissionCheck {
   private fun removePermissionCheckFrames(
       stack: List<StackWalker.StackFrame>
   ): List<StackWalker.StackFrame> {
-    val lastPermissionCheckIndex =
-        stack.indexOfLast { frame ->
-          frame.className.endsWith("PermissionRequirements") ||
-              frame.className.endsWith("RequirePermissionsKt") ||
-              frame.className.endsWith("IndividualUser")
-        }
+    val lastPermissionCheckIndex = stack.indexOfLast { frame ->
+      frame.className.endsWith("PermissionRequirements") ||
+          frame.className.endsWith("RequirePermissionsKt") ||
+          frame.className.endsWith("IndividualUser")
+    }
 
     return stack.drop(lastPermissionCheckIndex + 1)
   }
