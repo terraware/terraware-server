@@ -662,9 +662,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val tempPlotRatesUpdated = mapOf(speciesId to 100.0 * 1 / 30, null to 100.0 * 1 / 30)
     val obs2AllPlotsRatesUpdated = mapOf(speciesId to 100.0 * 2 / 40, null to 100.0 * 2 / 40)
     val allPlotRatesUpdated = mapOf(speciesId to 100.0 * 4 / 75, null to 100.0 * 4 / 75)
-    // plots in deleted substrata currently affect species calculations only at a site level. This
-    // is a bug that will be addressed later.
-    val partialUpdatedRates = mapOf(speciesId to 100.0 * 5 / 75, null to 100.0 * 4 / 75)
+    // plots in deleted substrata currently affect species calculations at a site and stratum level.
+    val speciesRatesUpdated = mapOf(speciesId to 100.0 * 5 / 75, null to 100.0 * 4 / 75)
     val obs1Expected =
         SurvivalRates(
             mapOf(
@@ -675,8 +674,8 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
                 plotInDeletedSubstratum to mapOf(speciesId to 0, null to 100.0 * 1 / 6),
             ),
             mapOf(substratumId to allPlotRatesUpdated),
-            mapOf(stratumId to partialUpdatedRates),
-            mapOf(plantingSiteId to partialUpdatedRates),
+            mapOf(stratumId to speciesRatesUpdated),
+            mapOf(plantingSiteId to speciesRatesUpdated),
         )
     val obs2Expected =
         SurvivalRates(

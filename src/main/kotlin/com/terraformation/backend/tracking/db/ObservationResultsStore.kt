@@ -655,7 +655,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                                     .STRATUM_ID
                             )
                         )
-                    //                        )
                 )
                 .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
                 .orderBy(SPECIES_ID, SPECIES_NAME)
@@ -830,8 +829,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .and(
                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
               )
-              //
-              // .and(MONITORING_PLOT_HISTORIES.substratumHistories.SUBSTRATUM_ID.isNotNull)
               .groupBy(MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID, SPECIES_ID)
               .asTable()
         }
@@ -854,7 +851,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .and(observationIdForPlot(MONITORING_PLOT_ID, OBSERVATIONS.ID, false).isNotNull)
               .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
-              //              .and(substratumHistories.SUBSTRATUM_ID.isNotNull)
               .groupBy(SUBSTRATUM_ID, STRATUM_T0_TEMP_DENSITIES.SPECIES_ID)
               .asTable()
         }
@@ -971,7 +967,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                             )
                     )
                 )
-            //                .and(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.isNotNull)
         )
         .convertFrom { results ->
           results.map { record: Record ->
@@ -1088,7 +1083,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .and(
                   MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
               )
-              //              .and(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.isNotNull)
               .groupBy(stratumHistoryAlias.STRATUM_ID, SPECIES_ID)
               .asTable()
         }
@@ -1113,7 +1107,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               .and(observationIdForPlot(MONITORING_PLOT_ID, OBSERVATIONS.ID, false).isNotNull)
               .and(PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
               .and(plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true))
-              //              .and(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.isNotNull)
               .groupBy(
                   substratumHistories.stratumHistories.STRATUM_ID,
                   STRATUM_T0_TEMP_DENSITIES.SPECIES_ID,
