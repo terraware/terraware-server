@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator.api
 
 import com.terraformation.backend.accelerator.db.ActivityStore
+import com.terraformation.backend.accelerator.model.ActivityMediaDepth
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.accelerator.model.ExistingActivityModel
 import com.terraformation.backend.accelerator.model.NewActivityModel
@@ -50,7 +51,8 @@ class ActivitiesAdminController(
       @RequestParam(defaultValue = "true")
       includeMedia: Boolean = true,
   ): AdminListActivitiesResponsePayload {
-    val activities = activityStore.fetchByProjectId(projectId, includeMedia)
+    val depth = if (includeMedia) ActivityMediaDepth.All else ActivityMediaDepth.None
+    val activities = activityStore.fetchByProjectId(projectId, depth)
 
     return AdminListActivitiesResponsePayload(activities.map { AdminActivityPayload(it) })
   }
@@ -63,7 +65,7 @@ class ActivitiesAdminController(
       [GlobalRole.ReadOnly, GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin]
   )
   fun adminGetActivity(@PathVariable("id") id: ActivityId): AdminGetActivityResponsePayload {
-    val activity = activityStore.fetchOneById(id, includeMedia = true)
+    val activity = activityStore.fetchOneById(id, ActivityMediaDepth.All)
 
     return AdminGetActivityResponsePayload(AdminActivityPayload(activity))
   }
