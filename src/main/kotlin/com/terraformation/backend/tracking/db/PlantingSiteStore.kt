@@ -845,8 +845,8 @@ class PlantingSiteStore(
         }
       }
       is SubstratumEdit.Delete -> {
-        // Plots will be deleted by ON DELETE CASCADE. This may legitimately delete 0 rows if the
-        // parent stratum has already been deleted.
+        // This may legitimately delete 0 rows if the parent stratum has already been deleted.
+        // Plots will be updated to have a null substratum_id by ON DELETE SET NULL.
         dslContext.deleteFrom(SUBSTRATA).where(SUBSTRATA.ID.eq(edit.existingModel.id)).execute()
 
         replacementResults.add(

@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
@@ -506,7 +507,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val tempPlotRemoved = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
     insertStratumT0TempDensity(stratumDensity = BigDecimal.valueOf(20).toPlantsPerHectare())
-    val plotInDeletedSubstratum = insertMonitoringPlot(permanentIndex = 3, substratumId = null)
+    val deletedSubstratum = insertSubstratum()
+    insertObservationRequestedSubstratum()
+    val plotInDeletedSubstratum =
+        insertMonitoringPlot(permanentIndex = 3, substratumId = deletedSubstratum)
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
     insertPlotT0Density(plotDensity = BigDecimal.valueOf(6).toPlantsPerHectare())
 
@@ -550,7 +554,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val permPlot1Rates = mapOf(speciesId to 100.0 * 1 / 10, null to 100.0 * 1 / 10)
     val permPlot2Rates = mapOf(speciesId to 100.0 * 1 / 5, null to 100.0 * 1 / 5)
     val tempPlotRates = mapOf(speciesId to 100.0 * 1 / 20, null to 100.0 * 1 / 20)
-    val allPlotRates = mapOf(speciesId to 100.0 * 4 / 55, null to 100.0 * 4 / 55)
+    val substratumRates = mapOf(speciesId to 100.0 * 4 / 55, null to 100.0 * 4 / 55)
+    val deletedSubstratumRates = mapOf(speciesId to 100.0 * 1 / 6, null to 100.0 * 1 / 6)
+    val allPlotRates = mapOf(speciesId to 100.0 * 5 / 61, null to 100.0 * 5 / 61)
+    val plotInDeletedSsRates = mapOf(speciesId to 100.0 * 1 / 6, null to 100.0 * 1 / 6)
     assertSurvivalRates(
         SurvivalRates(
             mapOf(
@@ -558,8 +565,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
                 permanentPlotRemoved to permPlot2Rates,
                 tempPlot to tempPlotRates,
                 tempPlotRemoved to tempPlotRates,
+                plotInDeletedSubstratum to plotInDeletedSsRates,
             ),
-            mapOf(substratumId to allPlotRates),
+            mapOf(substratumId to substratumRates, deletedSubstratum to deletedSubstratumRates),
             mapOf(stratumId to allPlotRates),
             mapOf(plantingSiteId to allPlotRates),
         ),
@@ -569,7 +577,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     // update planting site
     insertPlantingSiteHistory()
     insertStratumHistory()
-    insertSubstratumHistory()
+    insertSubstratumHistory(substratumId = substratumId)
     dslContext
         .update(MONITORING_PLOTS)
         .set(MONITORING_PLOTS.PERMANENT_INDEX, DSL.castNull(SQLDataType.INTEGER))
@@ -579,8 +587,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         )
         .where(MONITORING_PLOTS.ID.`in`(removedPlots))
         .execute()
-    val newPlotHistory = insertMonitoringPlotHistory(monitoringPlotId = plotId)
-    val newTempPlotHistory = insertMonitoringPlotHistory(monitoringPlotId = tempPlot)
+    val newPlotHistory =
+        insertMonitoringPlotHistory(monitoringPlotId = plotId, substratumId = substratumId)
+    val newTempPlotHistory =
+        insertMonitoringPlotHistory(monitoringPlotId = tempPlot, substratumId = substratumId)
     removedPlots.forEach {
       insertMonitoringPlotHistory(
           monitoringPlotId = it,
@@ -588,13 +598,18 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           substratumHistoryId = null,
       )
     }
-    // deleted substratum
-    insertSubstratumHistory(substratumId = null)
-    insertMonitoringPlotHistory(monitoringPlotId = plotInDeletedSubstratum, substratumId = null)
+    // delete substratum
+    dslContext.deleteFrom(SUBSTRATA).where(SUBSTRATA.ID.eq(deletedSubstratum)).execute()
+    val deletedSubstratumHistory2 = insertSubstratumHistory(substratumId = null)
+    insertMonitoringPlotHistory(
+        monitoringPlotId = plotInDeletedSubstratum,
+        substratumId = null,
+        substratumHistoryId = deletedSubstratumHistory2,
+    )
     // end planting site update
 
     val observationId2 = insertObservation()
-    insertObservationRequestedSubstratum()
+    insertObservationRequestedSubstratum(substratumId = substratumId)
     insertObservationPlot(
         claimedBy = user.userId,
         monitoringPlotId = plotId,
@@ -649,7 +664,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val allPlotRatesUpdated = mapOf(speciesId to 100.0 * 4 / 75, null to 100.0 * 4 / 75)
     // plots in deleted substrata currently affect species calculations only at a site level. This
     // is a bug that will be addressed later.
-    val siteRatesUpdated = mapOf(speciesId to 100.0 * 5 / 75, null to 100.0 * 4 / 75)
+    val partialUpdatedRates = mapOf(speciesId to 100.0 * 5 / 75, null to 100.0 * 4 / 75)
     val obs1Expected =
         SurvivalRates(
             mapOf(
@@ -657,10 +672,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
                 permanentPlotRemoved to permPlot2Rates,
                 tempPlot to tempPlotRatesUpdated,
                 tempPlotRemoved to tempPlotRatesUpdated,
+                plotInDeletedSubstratum to mapOf(speciesId to 0, null to 100.0 * 1 / 6),
             ),
             mapOf(substratumId to allPlotRatesUpdated),
-            mapOf(stratumId to allPlotRatesUpdated),
-            mapOf(plantingSiteId to siteRatesUpdated),
+            mapOf(stratumId to partialUpdatedRates),
+            mapOf(plantingSiteId to partialUpdatedRates),
         )
     val obs2Expected =
         SurvivalRates(
