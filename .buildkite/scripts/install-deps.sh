@@ -11,8 +11,7 @@ NODE_VERSION=22
 PYTHON_VERSION=3.13
 
 install_corretto() {
-    JAVA_HOME="/usr/lib/jvm/java-${JAVA_VERSION}-amazon-corretto"
-    if [ -f "$JAVA_HOME/bin/java" ]; then
+    if [ -f "/usr/lib/jvm/java-${JAVA_VERSION}-amazon-corretto/bin/java" ]; then
         return
     fi
 
@@ -20,9 +19,6 @@ install_corretto() {
     sudo rpm --import https://yum.corretto.aws/corretto.key
     sudo curl -sL -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo
     sudo dnf install -y "java-${JAVA_VERSION}-amazon-corretto-devel"
-
-    echo "JAVA_HOME=${JAVA_HOME}" >> "$BUILDKITE_ENV_FILE"
-    echo "org.gradle.java.installations.paths=${JAVA_HOME}" >> gradle.properties
 }
 
 install_jq() {
