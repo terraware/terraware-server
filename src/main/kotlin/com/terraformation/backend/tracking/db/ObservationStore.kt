@@ -1623,7 +1623,7 @@ class ObservationStore(
   }
 
   fun recalculateSurvivalRates(stratumId: StratumId) {
-    val substratumGroups: Map<SubstratumId, List<MonitoringPlotId>> =
+    val substratumGroups: Map<SubstratumId?, List<MonitoringPlotId>> =
         with(SUBSTRATUM_HISTORIES) {
           dslContext
               .selectDistinct(
@@ -1635,7 +1635,7 @@ class ObservationStore(
               .on(ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
               .where(stratumHistories.STRATUM_ID.eq(stratumId))
               .fetchGroups(
-                  SUBSTRATUM_ID.asNonNullable(),
+                  SUBSTRATUM_ID,
                   MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.asNonNullable(),
               )
         }
@@ -1644,7 +1644,9 @@ class ObservationStore(
       recalculateSurvivalRate(ObservationSpeciesPlot(it))
     }
 
-    substratumGroups.keys.forEach { recalculateSurvivalRate(ObservationSpeciesSubstratum(it)) }
+    substratumGroups.keys.filterNotNull().forEach {
+      recalculateSurvivalRate(ObservationSpeciesSubstratum(it))
+    }
 
     recalculateSurvivalRate(ObservationSpeciesStratum(stratumId))
 

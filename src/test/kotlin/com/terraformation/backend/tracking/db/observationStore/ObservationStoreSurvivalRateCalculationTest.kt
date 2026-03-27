@@ -506,8 +506,12 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val tempPlotRemoved = insertMonitoringPlot()
     insertObservationPlot(claimedBy = user.userId, isPermanent = false)
     insertStratumT0TempDensity(stratumDensity = BigDecimal.valueOf(20).toPlantsPerHectare())
+    val plotInDeletedSubstratum = insertMonitoringPlot(permanentIndex = 3, substratumId = null)
+    insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(6).toPlantsPerHectare())
 
-    val obs1Plots = listOf(plotId, permanentPlotRemoved, tempPlot, tempPlotRemoved)
+    val obs1Plots =
+        listOf(plotId, permanentPlotRemoved, tempPlot, tempPlotRemoved, plotInDeletedSubstratum)
     val obs2Plots = listOf(plotId, tempPlot)
     val removedPlots = listOf(permanentPlotRemoved, tempPlotRemoved)
 
@@ -584,6 +588,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           substratumHistoryId = null,
       )
     }
+    // deleted substratum
+    insertSubstratumHistory(substratumId = null)
+    insertMonitoringPlotHistory(monitoringPlotId = plotInDeletedSubstratum, substratumId = null)
     // end planting site update
 
     val observationId2 = insertObservation()
@@ -640,6 +647,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     val tempPlotRatesUpdated = mapOf(speciesId to 100.0 * 1 / 30, null to 100.0 * 1 / 30)
     val obs2AllPlotsRatesUpdated = mapOf(speciesId to 100.0 * 2 / 40, null to 100.0 * 2 / 40)
     val allPlotRatesUpdated = mapOf(speciesId to 100.0 * 4 / 75, null to 100.0 * 4 / 75)
+    // plots in deleted substrata currently affect species calculations only at a site level. This
+    // is a bug that will be addressed later.
+    val siteRatesUpdated = mapOf(speciesId to 100.0 * 5 / 75, null to 100.0 * 4 / 75)
     val obs1Expected =
         SurvivalRates(
             mapOf(
@@ -650,7 +660,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             ),
             mapOf(substratumId to allPlotRatesUpdated),
             mapOf(stratumId to allPlotRatesUpdated),
-            mapOf(plantingSiteId to allPlotRatesUpdated),
+            mapOf(plantingSiteId to siteRatesUpdated),
         )
     val obs2Expected =
         SurvivalRates(
@@ -659,8 +669,22 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(stratumId to obs2AllPlotsRatesUpdated),
             mapOf(plantingSiteId to obs2AllPlotsRatesUpdated),
         )
-    assertSurvivalRates(obs1Expected, obs1UpdatedResults, "Observation 1 is updated correctly")
-    assertSurvivalRates(obs2Expected, obs2UpdatedResults, "Observation 2 is updated correctly")
+    assertAll(
+        {
+          assertSurvivalRates(
+              obs1Expected,
+              obs1UpdatedResults,
+              "Observation 1 is updated correctly",
+          )
+        },
+        {
+          assertSurvivalRates(
+              obs2Expected,
+              obs2UpdatedResults,
+              "Observation 2 is updated correctly",
+          )
+        },
+    )
   }
 
   @Test
