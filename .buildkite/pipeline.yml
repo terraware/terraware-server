@@ -9,10 +9,23 @@ common:
   - &cache-gradle-home-args
     <<: *cache-common-args
     path: ".gradle-home"
+    manifest:
+      - "build.gradle.kts"
+      - "gradle.properties"
+      - "settings.gradle.kts"
 
   - &cache-gradle-home
     cache#v1.10.0:
       <<: *cache-gradle-home-args
+
+  - &cache-node-modules-args
+    <<: *cache-common-args
+    path: "node_modules"
+    manifest: "yarn.lock"
+
+  - &cache-node-modules
+    cache#v1.10.0:
+      <<: *cache-node-modules-args
 
   - &load-secrets
     seek-oss/aws-sm#v2.4.1:
@@ -49,22 +62,14 @@ steps:
       - *shallow-clone
       - cache#v1.10.0:
           <<: *cache-gradle-home-args
-          manifest:
-            - "build.gradle.kts"
-            - "gradle.properties"
-            - "settings.gradle.kts"
           save:
             - file
             - branch
-          force: true
       - cache#v1.10.0:
-          <<: *cache-common-args
-          path: "node_modules"
-          manifest: "yarn.lock"
+          <<: *cache-node-modules-args
           save:
             - file
             - branch
-          force: true
       - artifacts#v1.9.4:
           upload: "build"
           compressed: "build.tgz"
@@ -88,6 +93,7 @@ steps:
     plugins:
       - *shallow-clone
       - *cache-gradle-home
+      - *cache-node-modules
       - *restore-build-cache
       - *restore-build
       - *restore-dot-gradle
@@ -140,6 +146,7 @@ steps:
       - *shallow-clone
       - *load-secrets
       - *cache-gradle-home
+      - *cache-node-modules
       - cache#v1.10.0:
           <<: *cache-common-args
           path: ".buildx-cache"
@@ -160,10 +167,9 @@ steps:
       - cache#v1.10.0: &promote-cache
           <<: *cache-gradle-home-args
           save: "pipeline"
-          force: true
       - cache#v1.10.0:
-          <<: *promote-cache
-          path: "node_modules"
+          <<: *cache-node-modules-args
+          save: "pipeline"
       - cache#v1.10.0:
           <<: *promote-cache
           path: ".buildx-cache"
