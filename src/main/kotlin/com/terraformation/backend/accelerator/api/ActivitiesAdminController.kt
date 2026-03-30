@@ -48,10 +48,9 @@ class ActivitiesAdminController(
   fun adminListActivities(
       @QueryParam("projectId") projectId: ProjectId,
       @Parameter(description = "If true, include a list of media files for each activity.")
-      @RequestParam(defaultValue = "true")
-      includeMedia: Boolean = true,
+      @RequestParam(defaultValue = "All")
+      depth: ActivityMediaDepth = ActivityMediaDepth.All,
   ): AdminListActivitiesResponsePayload {
-    val depth = if (includeMedia) ActivityMediaDepth.All else ActivityMediaDepth.None
     val activities = activityStore.fetchByProjectId(projectId, depth)
 
     return AdminListActivitiesResponsePayload(activities.map { AdminActivityPayload(it) })
