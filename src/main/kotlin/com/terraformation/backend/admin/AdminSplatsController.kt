@@ -10,6 +10,7 @@ import com.terraformation.backend.splat.SplatGenerationParams
 import com.terraformation.backend.splat.SplatService
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
@@ -28,7 +29,10 @@ class AdminSplatsController(
     private val splatsDao: SplatsDao,
 ) {
   @GetMapping("/splats")
-  fun splatsHome(): String {
+  fun splatsHome(model: Model): String {
+    if (!model.containsAttribute("stepArgs")) {
+      model.addAttribute("stepArgs", emptyMap<String, String>())
+    }
     return "/admin/splats"
   }
 
@@ -115,6 +119,22 @@ class AdminSplatsController(
     } catch (e: Exception) {
       redirectAttributes.failureMessage = "Splat generation failed: ${e.message}"
     }
+
+    redirectAttributes.addFlashAttribute("observationId", "$observationId")
+    redirectAttributes.addFlashAttribute("fileId", "$fileId")
+    redirectAttributes.addFlashAttribute("abortAfter", abortAfter)
+    redirectAttributes.addFlashAttribute("dataFactor", dataFactor)
+    redirectAttributes.addFlashAttribute("densStrategy", densStrategy)
+    redirectAttributes.addFlashAttribute("featureMatcherSubcommand", featureMatcherSubcommand)
+    redirectAttributes.addFlashAttribute("fps", fps)
+    redirectAttributes.addFlashAttribute("keepPercent", keepPercent)
+    redirectAttributes.addFlashAttribute("maxSize", maxSize)
+    redirectAttributes.addFlashAttribute("maxSteps", maxSteps)
+    redirectAttributes.addFlashAttribute("restartAt", restartAt)
+    redirectAttributes.addFlashAttribute("runBirdNet", runBirdNet)
+    redirectAttributes.addFlashAttribute("ssimLambda", ssimLambda)
+    redirectAttributes.addFlashAttribute("tailPruning", tailPruning)
+    redirectAttributes.addFlashAttribute("stepArgs", payload.stepArgs)
 
     return redirectToSplatsHome()
   }

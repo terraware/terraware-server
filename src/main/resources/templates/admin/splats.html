@@ -38,11 +38,11 @@
         <tr>
             <td rowspan="2"></td>
             <td>Observation&nbsp;ID</td>
-            <td colspan="2"><input type="text" name="observationId" required/></td>
+            <td colspan="2"><input type="text" name="observationId" required th:value="${observationId}"/></td>
         </tr>
         <tr>
             <td>File ID</td>
-            <td colspan="2"><input type="text" name="fileId" required/></td>
+            <td colspan="2"><input type="text" name="fileId" required th:value="${fileId}"/></td>
         </tr>
         </tbody>
 
@@ -56,21 +56,21 @@
         <tr>
             <td rowspan="3">extract</td>
             <td>FPS</td>
-            <td><input type="text" name="fps" placeholder="10"/></td>
+            <td><input type="text" name="fps" placeholder="10" th:value="${fps}"/></td>
             <td>
                 Frames per second to extract from the video.
             </td>
         </tr>
         <tr>
             <td>Max Size</td>
-            <td><input type="text" name="maxSize" placeholder="1600"/></td>
+            <td><input type="text" name="maxSize" placeholder="1600" th:value="${maxSize}"/></td>
             <td>
                 Downscale video frames to fit within a square this many pixels tall and wide.
             </td>
         </tr>
         <tr>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[extract]"/></td>
+            <td><input type="text" name="stepArgs[extract]" th:value="${stepArgs['extract']}"/></td>
             <td>
                 Additional space-separated arguments to pass to splat.py extract.
             </td>
@@ -87,7 +87,7 @@
         <tr>
             <td rowspan="2">filter-blurry</td>
             <td>Keep %</td>
-            <td><input type="text" name="keepPercent" placeholder="100"/></td>
+            <td><input type="text" name="keepPercent" placeholder="100" th:value="${keepPercent}"/></td>
             <td>
                 Percentage of frames to keep after checking for blurriness. If this is 90, the
                 blurriest 10% of frames will be dropped. A value of 100 will skip the filter-blurry
@@ -96,7 +96,7 @@
         </tr>
         <tr>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[filter-blurry]"/></td>
+            <td><input type="text" name="stepArgs[filter-blurry]" th:value="${stepArgs['filter-blurry']}"/></td>
             <td>
                 Additional space-separated arguments to pass to splat.py filter-blurry.
             </td>
@@ -113,7 +113,7 @@
         <tr>
             <td>feature-extractor</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[feature-extractor]"/></td>
+            <td><input type="text" name="stepArgs[feature-extractor]" th:value="${stepArgs['feature-extractor']}"/></td>
             <td>
                 Additional space-separated arguments to pass to colmap feature_extractor.
             </td>
@@ -132,7 +132,7 @@
             <td>Subcommand</td>
             <td>
                 <input type="text" name="featureMatcherSubcommand"
-                       placeholder="sequential_matcher"/>
+                       placeholder="sequential_matcher" th:value="${featureMatcherSubcommand}"/>
             </td>
             <td>
                 Which colmap subcommand to use for feature matching.
@@ -140,7 +140,7 @@
         </tr>
         <tr>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[feature-matcher]"/></td>
+            <td><input type="text" name="stepArgs[feature-matcher]" th:value="${stepArgs['feature-matcher']}"/></td>
             <td>
                 Additional space-separated arguments to pass to colmap.
             </td>
@@ -157,7 +157,7 @@
         <tr>
             <td>colmap</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[colmap]"/></td>
+            <td><input type="text" name="stepArgs[colmap]" th:value="${stepArgs['colmap']}"/></td>
             <td>
                 Additional space-separated arguments to pass to colmap.
             </td>
@@ -174,7 +174,7 @@
         <tr>
             <td>model-converter-1</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[model-converter-1]"/></td>
+            <td><input type="text" name="stepArgs[model-converter-1]" th:value="${stepArgs['model-converter-1']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the first invocation of
                 colmap model_converter.
@@ -192,7 +192,7 @@
         <tr>
             <td>check-1</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[check-1]"/></td>
+            <td><input type="text" name="stepArgs[check-1]" th:value="${stepArgs['check-1']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the first invocation of
                 check_reconstruction.py.
@@ -210,7 +210,7 @@
         <tr>
             <td>prune-spikes</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[prune-spikes]"/></td>
+            <td><input type="text" name="stepArgs[prune-spikes]" th:value="${stepArgs['prune-spikes']}"/></td>
             <td>
                 Additional space-separated arguments to pass to prune_spikes.py if it is run.
             </td>
@@ -227,7 +227,7 @@
         <tr>
             <td>check-2</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[check-2]"/></td>
+            <td><input type="text" name="stepArgs[check-2]" th:value="${stepArgs['check-2']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the second invocation of
                 check_reconstruction.py, after prune-spikes.
@@ -245,7 +245,7 @@
         <tr>
             <td>glomap</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[glomap]"/></td>
+            <td><input type="text" name="stepArgs[glomap]" th:value="${stepArgs['glomap']}"/></td>
             <td>
                 Additional space-separated arguments to pass to glomap if check-2 fails.
             </td>
@@ -262,7 +262,7 @@
         <tr>
             <td>model-converter-2</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[model-converter-2]"/></td>
+            <td><input type="text" name="stepArgs[model-converter-2]" th:value="${stepArgs['model-converter-2']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the second invocation of
                 colmap model_converter, after glomap.
@@ -280,7 +280,7 @@
         <tr>
             <td>check-3</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[check-3]"/></td>
+            <td><input type="text" name="stepArgs[check-3]" th:value="${stepArgs['check-3']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the third invocation of
                 check_reconstruction.py, after glomap or colmap.
@@ -300,9 +300,9 @@
             <td>Tail Pruning</td>
             <td>
                 <select name="tailPruning">
-                    <option value="" selected>Default</option>
-                    <option value="true">Enable</option>
-                    <option value="false">Disable</option>
+                    <option value="" th:selected="${tailPruning == null}">Default</option>
+                    <option value="true" th:selected="${tailPruning != null and tailPruning}">Enable</option>
+                    <option value="false" th:selected="${tailPruning != null and !tailPruning}">Disable</option>
                 </select>
             </td>
             <td>
@@ -312,7 +312,7 @@
         </tr>
         <tr>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[prune-tail]"/></td>
+            <td><input type="text" name="stepArgs[prune-tail]" th:value="${stepArgs['prune-tail']}"/></td>
             <td>
                 Additional space-separated arguments to pass to prune_tail.py.
             </td>
@@ -329,7 +329,7 @@
         <tr>
             <td>prepare</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[prepare]"/></td>
+            <td><input type="text" name="stepArgs[prepare]" th:value="${stepArgs['prepare']}"/></td>
             <td>
                 Additional space-separated arguments to pass to splat.py prepare.
             </td>
@@ -348,8 +348,8 @@
             <td>Densification Strategy</td>
             <td>
                 <select name="densStrategy">
-                    <option value="default" selected>Default</option>
-                    <option value="mcmc">MCMC</option>
+                    <option value="default" th:selected="${densStrategy == null or densStrategy == 'default'}">Default</option>
+                    <option value="mcmc" th:selected="${densStrategy == 'mcmc'}">MCMC</option>
                 </select>
             </td>
             <td>
@@ -362,7 +362,7 @@
         </tr>
         <tr>
             <td>Data Factor</td>
-            <td><input type="text" name="dataFactor" placeholder="1"/></td>
+            <td><input type="text" name="dataFactor" placeholder="1" th:value="${dataFactor}"/></td>
             <td>
                 Downscale frames by this factor during model training. You will probably want
                 to adjust Max Size rather than this.
@@ -370,14 +370,14 @@
         </tr>
         <tr>
             <td>Max Steps</td>
-            <td><input type="text" name="maxSteps" placeholder="30000"/></td>
+            <td><input type="text" name="maxSteps" placeholder="30000" th:value="${maxSteps}"/></td>
             <td>
                 Number of training steps to run.
             </td>
         </tr>
         <tr>
             <td>SSIM Lambda</td>
-            <td><input type="text" name="ssimLambda" placeholder="0.1"/></td>
+            <td><input type="text" name="ssimLambda" placeholder="0.1" th:value="${ssimLambda}"/></td>
             <td>
                 Controls how much the training loss emphasizes structural similarity (SSIM) versus
                 raw pixel accuracy. Higher values tend to produce smoother, more visually
@@ -387,7 +387,7 @@
         </tr>
         <tr>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[gsplat]"/></td>
+            <td><input type="text" name="stepArgs[gsplat]" th:value="${stepArgs['gsplat']}"/></td>
             <td>
                 Additional space-separated arguments to pass to simple_trainer.py.
             </td>
@@ -404,7 +404,7 @@
         <tr>
             <td>splat-transform</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[splat-transform]"/></td>
+            <td><input type="text" name="stepArgs[splat-transform]" th:value="${stepArgs['splat-transform']}"/></td>
             <td>
                 Additional space-separated arguments to pass to splat-transform.
             </td>
@@ -421,7 +421,7 @@
         <tr>
             <td rowspan="4"></td>
             <td>Abort After</td>
-            <td><input type="text" name="abortAfter"/></td>
+            <td><input type="text" name="abortAfter" th:value="${abortAfter}"/></td>
             <td>
                 Abort the processing run after this step. Step names are the same as the
                 names in the left column of this table.
@@ -429,7 +429,7 @@
         </tr>
         <tr>
             <td>Restart At</td>
-            <td><input type="text" name="restartAt"/></td>
+            <td><input type="text" name="restartAt" th:value="${restartAt}"/></td>
             <td>
                 Restart the processing run at this step, using the files in the archived job
                 directory. Step names are the same as the names in the left column of this
@@ -449,7 +449,7 @@
         <tr>
             <td rowspan="2">birdnet</td>
             <td>Run BirdNET</td>
-            <td><input type="checkbox" id="runBirdNet" name="runBirdNet"/></td>
+            <td><input type="checkbox" id="runBirdNet" name="runBirdNet" th:checked="${runBirdNet}"/></td>
             <td>
                 Enable BirdNET
             </td>
