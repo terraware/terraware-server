@@ -64,6 +64,30 @@ install_python() {
     sudo dnf install -y python$PYTHON_VERSION
 }
 
+install_ecr_credential_helper() {
+    if command -v docker-credential-ecr-login &>/dev/null; then
+        return
+    fi
+
+    echo "Installing Amazon ECR Docker Credential Helper..."
+
+    local version="0.12.0"
+    local arch
+    case "$(uname -m)" in
+        aarch64) arch="arm64" ;;
+        x86_64)  arch="amd64" ;;
+        *)
+            echo "Unsupported architecture: $(uname -m)"
+            exit 1
+            ;;
+    esac
+
+    local url="https://amazon-ecr-credential-helper-releases.s3.us-east-2.amazonaws.com/${version}/linux-${arch}/docker-credential-ecr-login"
+    curl -fsSL "$url" -o /tmp/docker-credential-ecr-login
+    sudo install -m 755 /tmp/docker-credential-ecr-login /usr/local/bin/docker-credential-ecr-login
+    rm -f /tmp/docker-credential-ecr-login
+}
+
 echo "--- :linux: Install system packages"
 
 for arg in "$@"; do
@@ -72,6 +96,7 @@ for arg in "$@"; do
         --tools)  install_jq && install_yq && install_rsync ;;
         --node)   install_node ;;
         --python) install_python ;;
+        --ecr)    install_ecr_credential_helper ;;
         *)
             echo "Unknown argument: $arg"
             exit 1

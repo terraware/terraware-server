@@ -33,10 +33,6 @@ docker buildx create --name "$builder_name" --driver docker-container
 trap cleanup_builder EXIT
 
 if [[ "$IS_CD" == true ]]; then
-    echo "--- :docker: Log into Docker Hub"
-
-    docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_TOKEN"
-
     echo "--- :docker: Build and push Docker image"
 
     docker_image="${TERRAWARE_SERVER_DOCKER_IMAGE:-terraware/terraware-server}"

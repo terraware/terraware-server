@@ -149,6 +149,8 @@ steps:
     plugins:
       - *shallow-clone
       - *load-secrets
+      - ecr#v2.12.0:
+          credential-helper: true
       - *cache-gradle-home
       - *cache-node-modules
       - cache#v1.10.0:
