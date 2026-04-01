@@ -10,7 +10,7 @@ echo "--- :python: Install packages"
 
 cd scripts
 
-PIP_CACHE="$(pwd)/.pip-cache"
+PIP_CACHE_DIR="$(pwd)/.pip-cache"
 VENV_DIR="$(pwd)/.venv"
 
 echo "Creating venv with $(python$PYTHON_VERSION -V)"
@@ -19,7 +19,7 @@ python$PYTHON_VERSION -m venv "$VENV_DIR"
 PATH="${VENV_DIR}/bin:$PATH"
 export PATH
 
-PIP_CACHE="$PIP_CACHE" pip3 install -r requirements.txt
+PIP_CACHE_DIR="$PIP_CACHE_DIR" pip3 install -r requirements.txt
 
 echo "--- :python: Check formatting"
 
