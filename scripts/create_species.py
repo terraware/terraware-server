@@ -56,3 +56,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Dummy change to make CI run scripts checks
