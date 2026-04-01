@@ -62,21 +62,20 @@ class WeightField(
           SearchFilterType.Exact -> {
             val nullCondition = if (hasNull) gramsField.isNull else null
 
-            val exactMatchConditions =
-                nonNullQuantities.map { quantityModel ->
-                  val gramsCondition =
-                      gramsField.eq(quantityModel.toUnits(SeedQuantityUnits.Grams).quantity)
-                  if (desiredUnits != SeedQuantityUnits.Grams) {
-                    DSL.or(
-                        gramsCondition,
-                        unitsField
-                            .eq(quantityModel.units)
-                            .and(quantityField.eq(quantityModel.quantity)),
-                    )
-                  } else {
-                    gramsCondition
-                  }
-                }
+            val exactMatchConditions = nonNullQuantities.map { quantityModel ->
+              val gramsCondition =
+                  gramsField.eq(quantityModel.toUnits(SeedQuantityUnits.Grams).quantity)
+              if (desiredUnits != SeedQuantityUnits.Grams) {
+                DSL.or(
+                    gramsCondition,
+                    unitsField
+                        .eq(quantityModel.units)
+                        .and(quantityField.eq(quantityModel.quantity)),
+                )
+              } else {
+                gramsCondition
+              }
+            }
 
             DSL.or(exactMatchConditions + listOfNotNull(nullCondition))
           }
@@ -89,8 +88,9 @@ class WeightField(
               )
             }
 
-            val gramsQuantities =
-                quantityModels.map { it?.toUnits(SeedQuantityUnits.Grams)?.quantity }
+            val gramsQuantities = quantityModels.map {
+              it?.toUnits(SeedQuantityUnits.Grams)?.quantity
+            }
 
             if (gramsQuantities[0] != null && gramsQuantities[1] != null) {
               gramsField.between(gramsQuantities[0], gramsQuantities[1])
@@ -104,19 +104,18 @@ class WeightField(
           SearchFilterType.Fuzzy -> {
             val nullCondition = if (hasNull) gramsField.isNull else null
 
-            val rangeConditions =
-                nonNullQuantities.map { quantityModel ->
-                  // Range that rounds to the search value, e.g., 432.1 -> BETWEEN(432.05, 432.15)
-                  val scale = quantityModel.quantity.scale()
-                  val maxDifference =
-                      SeedQuantityModel(BigDecimal(".5").movePointLeft(scale), quantityModel.units)
-                  val lowerBound = quantityModel - maxDifference
-                  val upperBound = quantityModel + maxDifference
-                  val lowerGrams = lowerBound.toUnits(SeedQuantityUnits.Grams).quantity
-                  val upperGrams = upperBound.toUnits(SeedQuantityUnits.Grams).quantity
+            val rangeConditions = nonNullQuantities.map { quantityModel ->
+              // Range that rounds to the search value, e.g., 432.1 -> BETWEEN(432.05, 432.15)
+              val scale = quantityModel.quantity.scale()
+              val maxDifference =
+                  SeedQuantityModel(BigDecimal(".5").movePointLeft(scale), quantityModel.units)
+              val lowerBound = quantityModel - maxDifference
+              val upperBound = quantityModel + maxDifference
+              val lowerGrams = lowerBound.toUnits(SeedQuantityUnits.Grams).quantity
+              val upperGrams = upperBound.toUnits(SeedQuantityUnits.Grams).quantity
 
-                  gramsField.between(lowerGrams, upperGrams)
-                }
+              gramsField.between(lowerGrams, upperGrams)
+            }
 
             DSL.or(rangeConditions + listOfNotNull(nullCondition))
           }

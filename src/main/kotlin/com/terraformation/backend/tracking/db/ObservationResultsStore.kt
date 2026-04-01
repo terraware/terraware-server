@@ -196,13 +196,12 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
             .groupBy { it.substratumId }
 
-    val latestPerSubstratum =
-        resultsBySubstratum.mapValues { (_, results) ->
-          results.maxBy { result ->
-            // Completed time should have at least one non-nulls by filtering by Completed.
-            result.monitoringPlots.maxOf { it.completedTime ?: Instant.EPOCH }
-          }
-        }
+    val latestPerSubstratum = resultsBySubstratum.mapValues { (_, results) ->
+      results.maxBy { result ->
+        // Completed time should have at least one non-nulls by filtering by Completed.
+        result.monitoringPlots.maxOf { it.completedTime ?: Instant.EPOCH }
+      }
+    }
 
     val stratumResults =
         allSubstratumIdsByStratumIds
@@ -211,8 +210,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val areaHa = stratumAreasById[stratumId]!!
               val substratumIds = it.value
-              val substratumResults =
-                  substratumIds.associateWith { substratumId -> latestPerSubstratum[substratumId] }
+              val substratumResults = substratumIds.associateWith { substratumId ->
+                latestPerSubstratum[substratumId]
+              }
 
               stratumId to
                   ObservationStratumRollupResultsModel.of(
@@ -762,11 +762,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         .asNonNullable()]
             val totalLive = species.sumOf { it.totalLive }
             val totalPlants = species.sumOf { it.totalLive + it.totalExisting + it.totalDead }
-            val totalLiveSpeciesExceptUnknown =
-                species.count {
-                  it.certainty != RecordedSpeciesCertainty.Unknown &&
-                      (it.totalLive + it.totalExisting) > 0
-                }
+            val totalLiveSpeciesExceptUnknown = species.count {
+              it.certainty != RecordedSpeciesCertainty.Unknown &&
+                  (it.totalLive + it.totalExisting) > 0
+            }
 
             val survivalRate = species.calculateSurvivalRate(survivalRateIncludesTempPlots)
 
@@ -983,11 +982,10 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
             val species = record[substratumSpeciesMultisetField]
             val totalPlants = species.sumOf { it.totalLive + it.totalDead }
-            val totalLiveSpeciesExceptUnknown =
-                species.count {
-                  it.certainty != RecordedSpeciesCertainty.Unknown &&
-                      (it.totalLive + it.totalExisting) > 0
-                }
+            val totalLiveSpeciesExceptUnknown = species.count {
+              it.certainty != RecordedSpeciesCertainty.Unknown &&
+                  (it.totalLive + it.totalExisting) > 0
+            }
 
             val isCompleted =
                 monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
@@ -998,8 +996,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   null
                 }
 
-            val survivalRatePlots =
-                monitoringPlots.filter { survivalRateIncludesTempPlots || it.isPermanent }
+            val survivalRatePlots = monitoringPlots.filter {
+              survivalRateIncludesTempPlots || it.isPermanent
+            }
             val survivalRate =
                 if (
                     survivalRatePlots.isNotEmpty() &&
@@ -1286,11 +1285,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
                         .asNonNullable()]
 
-            val identifiedSpecies =
-                species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+            val identifiedSpecies = species.filter {
+              it.certainty != RecordedSpeciesCertainty.Unknown
+            }
             val totalPlants = species.sumOf { it.totalLive + it.totalDead }
-            val totalLiveSpeciesExceptUnknown =
-                identifiedSpecies.count { (it.totalLive + it.totalExisting) > 0 }
+            val totalLiveSpeciesExceptUnknown = identifiedSpecies.count {
+              (it.totalLive + it.totalExisting) > 0
+            }
 
             val isCompleted =
                 substrata.isNotEmpty() &&
@@ -1308,10 +1309,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
             val monitoringPlots = substrata.flatMap { it.monitoringPlots }
 
-            val survivalRateSubstrata =
-                substrata.filter { substratum ->
-                  substratum.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
-                }
+            val survivalRateSubstrata = substrata.filter { substratum ->
+              substratum.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
+            }
             val survivalRate =
                 if (
                     survivalRateSubstrata.isNotEmpty() &&

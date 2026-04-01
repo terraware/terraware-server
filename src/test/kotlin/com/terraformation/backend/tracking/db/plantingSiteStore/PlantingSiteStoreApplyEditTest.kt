@@ -684,10 +684,9 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
           }
 
       if (expectedPlotCounts != null) {
-        val actualPlotCounts =
-            expectedPlotCounts.map { (boundary, _) ->
-              boundary to editedMonitoringPlots.count { it.boundary.nearlyCoveredBy(boundary) }
-            }
+        val actualPlotCounts = expectedPlotCounts.map { (boundary, _) ->
+          boundary to editedMonitoringPlots.count { it.boundary.nearlyCoveredBy(boundary) }
+        }
 
         assertEquals(
             expectedPlotCounts,

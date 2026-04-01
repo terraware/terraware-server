@@ -72,13 +72,12 @@ class BatchesHistoryController(
         batchDetailsHistorySubLocationsDao
             .fetchByBatchDetailsHistoryId(*detailsHistoryRows.map { it.id!! }.toTypedArray())
             .groupBy { it.batchDetailsHistoryId!! }
-    val detailsPayloads =
-        detailsHistoryRows.map { detailsHistoryRow ->
-          BatchHistoryDetailsEditedPayload(
-              detailsHistoryRow,
-              detailsSubLocations[detailsHistoryRow.id],
-          )
-        }
+    val detailsPayloads = detailsHistoryRows.map { detailsHistoryRow ->
+      BatchHistoryDetailsEditedPayload(
+          detailsHistoryRow,
+          detailsSubLocations[detailsHistoryRow.id],
+      )
+    }
 
     val incomingBatchWithdrawals =
         batchWithdrawalsDao.fetchByDestinationBatchId(batchId).associateBy { it.withdrawalId!! }
@@ -94,49 +93,47 @@ class BatchesHistoryController(
         }
 
     val quantityHistory = batchQuantityHistoryDao.fetchByBatchId(batchId)
-    val quantityPayloads =
-        quantityHistory.map { quantityHistoryRow ->
-          val withdrawalId = quantityHistoryRow.withdrawalId
-          val incomingBatchWithdrawal = incomingBatchWithdrawals[withdrawalId]
-          val incomingWithdrawal =
-              incomingBatchWithdrawal?.withdrawalId?.let { incomingWithdrawals[it] }
-          val outgoingBatchWithdrawal = outgoingBatchWithdrawals[withdrawalId]
-          val outgoingWithdrawal =
-              outgoingBatchWithdrawal?.withdrawalId?.let { outgoingWithdrawals[it] }
+    val quantityPayloads = quantityHistory.map { quantityHistoryRow ->
+      val withdrawalId = quantityHistoryRow.withdrawalId
+      val incomingBatchWithdrawal = incomingBatchWithdrawals[withdrawalId]
+      val incomingWithdrawal =
+          incomingBatchWithdrawal?.withdrawalId?.let { incomingWithdrawals[it] }
+      val outgoingBatchWithdrawal = outgoingBatchWithdrawals[withdrawalId]
+      val outgoingWithdrawal =
+          outgoingBatchWithdrawal?.withdrawalId?.let { outgoingWithdrawals[it] }
 
-          when {
-            incomingBatchWithdrawal != null && incomingWithdrawal != null -> {
-              BatchHistoryIncomingWithdrawalPayload(
-                  quantityHistoryRow,
-                  incomingBatchWithdrawal,
-                  incomingWithdrawal,
-              )
-            }
-            outgoingBatchWithdrawal != null && outgoingWithdrawal != null -> {
-              BatchHistoryOutgoingWithdrawalPayload(
-                  quantityHistoryRow,
-                  outgoingBatchWithdrawal,
-                  outgoingWithdrawal,
-              )
-            }
-            quantityHistoryRow.historyTypeId == BatchQuantityHistoryType.StatusChanged -> {
-              BatchHistoryStatusChangedPayload(quantityHistoryRow)
-            }
-            else -> {
-              BatchHistoryQuantityEditedPayload(quantityHistoryRow)
-            }
-          }
-        }
-
-    val batchPhotos = batchPhotosDao.fetchByBatchId(batchId)
-    val photoCreatedPayloads =
-        batchPhotos.map { batchPhotosRow ->
-          BatchHistoryPhotoCreatedPayload(
-              batchPhotosRow.createdBy!!,
-              batchPhotosRow.createdTime!!,
-              batchPhotosRow.fileId,
+      when {
+        incomingBatchWithdrawal != null && incomingWithdrawal != null -> {
+          BatchHistoryIncomingWithdrawalPayload(
+              quantityHistoryRow,
+              incomingBatchWithdrawal,
+              incomingWithdrawal,
           )
         }
+        outgoingBatchWithdrawal != null && outgoingWithdrawal != null -> {
+          BatchHistoryOutgoingWithdrawalPayload(
+              quantityHistoryRow,
+              outgoingBatchWithdrawal,
+              outgoingWithdrawal,
+          )
+        }
+        quantityHistoryRow.historyTypeId == BatchQuantityHistoryType.StatusChanged -> {
+          BatchHistoryStatusChangedPayload(quantityHistoryRow)
+        }
+        else -> {
+          BatchHistoryQuantityEditedPayload(quantityHistoryRow)
+        }
+      }
+    }
+
+    val batchPhotos = batchPhotosDao.fetchByBatchId(batchId)
+    val photoCreatedPayloads = batchPhotos.map { batchPhotosRow ->
+      BatchHistoryPhotoCreatedPayload(
+          batchPhotosRow.createdBy!!,
+          batchPhotosRow.createdTime!!,
+          batchPhotosRow.fileId,
+      )
+    }
     val photoDeletedPayloads =
         batchPhotos
             .filter { it.deletedTime != null }

@@ -1120,14 +1120,13 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
    * isRead, and userId, and ignores notification IDs.
    */
   private fun assertNotifications(expected: Collection<NotificationsRow>) {
-    val expectedWithDefaults =
-        expected.map { notification ->
-          notification.copy(
-              createdTime = notification.createdTime ?: Instant.EPOCH,
-              isRead = notification.isRead ?: false,
-              userId = notification.userId ?: user.userId,
-          )
-        }
+    val expectedWithDefaults = expected.map { notification ->
+      notification.copy(
+          createdTime = notification.createdTime ?: Instant.EPOCH,
+          isRead = notification.isRead ?: false,
+          userId = notification.userId ?: user.userId,
+      )
+    }
 
     val actual = notificationsDao.findAll().map { it.copy(id = null) }
 

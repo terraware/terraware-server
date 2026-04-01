@@ -92,8 +92,9 @@ class RateLimitedEventPublisherImpl(
             } else {
               // If there is already an event waiting to be published when the interval expires,
               // combine it with this event if needed.
-              val existingEvent =
-                  pendingEventJsonb?.let { objectMapper.readValue(it.data(), event.javaClass) }
+              val existingEvent = pendingEventJsonb?.let {
+                objectMapper.readValue(it.data(), event.javaClass)
+              }
               val combinedEvent = if (existingEvent != null) event.combine(existingEvent) else event
 
               if (combinedEvent != existingEvent) {
@@ -130,67 +131,66 @@ class RateLimitedEventPublisherImpl(
   fun scanPendingEvents() {
     val now = clock.instant()
 
-    val eventsToPublish =
-        dslContext.transactionResult { _ ->
-          with(RATE_LIMITED_EVENTS) {
-            val recordsPastInterval =
-                dslContext
-                    .selectFrom(RATE_LIMITED_EVENTS)
-                    .where(NEXT_TIME.le(now))
-                    .forUpdate()
-                    .skipLocked()
-                    .fetch()
+    val eventsToPublish = dslContext.transactionResult { _ ->
+      with(RATE_LIMITED_EVENTS) {
+        val recordsPastInterval =
+            dslContext
+                .selectFrom(RATE_LIMITED_EVENTS)
+                .where(NEXT_TIME.le(now))
+                .forUpdate()
+                .skipLocked()
+                .fetch()
 
-            recordsPastInterval.mapNotNull { record ->
-              if (record.pendingEvent != null) {
-                try {
-                  val event =
-                      objectMapper.readValue(
-                          record.pendingEvent!!.data(),
-                          Class.forName(record.eventClass),
-                      ) as RateLimitedEvent<*>
+        recordsPastInterval.mapNotNull { record ->
+          if (record.pendingEvent != null) {
+            try {
+              val event =
+                  objectMapper.readValue(
+                      record.pendingEvent!!.data(),
+                      Class.forName(record.eventClass),
+                  ) as RateLimitedEvent<*>
 
-                  // Reset the timer so that any subsequent events within the interval will get
-                  // deferred.
-                  dslContext
-                      .update(RATE_LIMITED_EVENTS)
-                      .set(NEXT_TIME, now + event.getMinimumInterval())
-                      .set(PENDING_EVENT, DSL.castNull(PENDING_EVENT))
-                      .where(EVENT_CLASS.eq(record.eventClass))
-                      .and(RATE_LIMIT_KEY.eq(record.rateLimitKey))
-                      .execute()
+              // Reset the timer so that any subsequent events within the interval will get
+              // deferred.
+              dslContext
+                  .update(RATE_LIMITED_EVENTS)
+                  .set(NEXT_TIME, now + event.getMinimumInterval())
+                  .set(PENDING_EVENT, DSL.castNull(PENDING_EVENT))
+                  .where(EVENT_CLASS.eq(record.eventClass))
+                  .and(RATE_LIMIT_KEY.eq(record.rateLimitKey))
+                  .execute()
 
-                  event
-                } catch (e: ClassNotFoundException) {
-                  log.error("Pending event class ${record.eventClass} no longer exists")
-                  null
-                } catch (e: JsonMappingException) {
-                  log.error("Cannot deserialize pending event of type ${record.eventClass}")
-                  log.info("JSON that failed to deserialize: ${record.pendingEvent?.data()}")
-                  null
-                } catch (e: Exception) {
-                  log.error("Error processing pending event of type ${record.eventClass}")
-                  log.info("JSON of event that failed to process: ${record.pendingEvent?.data()}")
-                  null
-                }
-              } else {
-                // We're past the minimum interval since the last event of this class/key and no
-                // event has been deferred in the meantime; delete the rate limiting record since it
-                // no longer matters.
-                log.debug(
-                    "Deleting rate limit record for event ${record.eventClass} ${record.rateLimitKey}"
-                )
-                dslContext
-                    .deleteFrom(RATE_LIMITED_EVENTS)
-                    .where(EVENT_CLASS.eq(record.eventClass))
-                    .and(RATE_LIMIT_KEY.eq(record.rateLimitKey))
-                    .execute()
-
-                null
-              }
+              event
+            } catch (e: ClassNotFoundException) {
+              log.error("Pending event class ${record.eventClass} no longer exists")
+              null
+            } catch (e: JsonMappingException) {
+              log.error("Cannot deserialize pending event of type ${record.eventClass}")
+              log.info("JSON that failed to deserialize: ${record.pendingEvent?.data()}")
+              null
+            } catch (e: Exception) {
+              log.error("Error processing pending event of type ${record.eventClass}")
+              log.info("JSON of event that failed to process: ${record.pendingEvent?.data()}")
+              null
             }
+          } else {
+            // We're past the minimum interval since the last event of this class/key and no
+            // event has been deferred in the meantime; delete the rate limiting record since it
+            // no longer matters.
+            log.debug(
+                "Deleting rate limit record for event ${record.eventClass} ${record.rateLimitKey}"
+            )
+            dslContext
+                .deleteFrom(RATE_LIMITED_EVENTS)
+                .where(EVENT_CLASS.eq(record.eventClass))
+                .and(RATE_LIMIT_KEY.eq(record.rateLimitKey))
+                .execute()
+
+            null
           }
         }
+      }
+    }
 
     eventsToPublish.forEach { event ->
       try {

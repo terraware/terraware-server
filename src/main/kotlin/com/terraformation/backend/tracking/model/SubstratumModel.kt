@@ -27,7 +27,9 @@ data class SubstratumModel<SSID : SubstratumId?>(
     val stableId: StableId,
 ) {
   fun findMonitoringPlot(monitoringPlotId: MonitoringPlotId): MonitoringPlotModel? =
-      monitoringPlots.find { it.id == monitoringPlotId }
+      monitoringPlots.find {
+        it.id == monitoringPlotId
+      }
 
   fun equals(other: Any?, tolerance: Double): Boolean {
     return other is SubstratumModel<*> &&

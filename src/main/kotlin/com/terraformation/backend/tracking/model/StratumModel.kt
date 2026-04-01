@@ -58,12 +58,11 @@ data class StratumModel<
     }
 
     val requestedSubstrata = substrata.filter { it.id != null && it.id in requestedSubstratumIds }
-    val plotsInRequestedSubstrata =
-        requestedSubstrata.flatMap { substratum ->
-          substratum.monitoringPlots.filter { plot ->
-            plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
-          }
-        }
+    val plotsInRequestedSubstrata = requestedSubstrata.flatMap { substratum ->
+      substratum.monitoringPlots.filter { plot ->
+        plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
+      }
+    }
 
     return plotsInRequestedSubstrata.map { it.id }.toSet()
   }

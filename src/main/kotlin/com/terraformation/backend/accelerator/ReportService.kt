@@ -214,13 +214,12 @@ class ReportService(
             published.autoCalculatedIndicators.associate {
               it.indicatorId to (it.value to it.progressNotes)
             }
-        val hasAutoCalcChanged =
-            pubAutoCalc.any { (indicator, pubData) ->
-              val current = report.autoCalculatedIndicators.find { it.indicator == indicator }
-              val currentValue = current?.let { it.entry.overrideValue ?: it.entry.systemValue }
-              val currentProgressNotes = current?.entry?.progressNotes
-              currentValue != pubData.first || currentProgressNotes != pubData.second
-            }
+        val hasAutoCalcChanged = pubAutoCalc.any { (indicator, pubData) ->
+          val current = report.autoCalculatedIndicators.find { it.indicator == indicator }
+          val currentValue = current?.let { it.entry.overrideValue ?: it.entry.systemValue }
+          val currentProgressNotes = current?.entry?.progressNotes
+          currentValue != pubData.first || currentProgressNotes != pubData.second
+        }
         if (hasAutoCalcChanged) {
           changed.add(PublishedReportComparedProps.AutoCalculatedIndicators)
         }

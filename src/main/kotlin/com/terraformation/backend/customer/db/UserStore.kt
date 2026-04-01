@@ -470,10 +470,9 @@ class UserStore(
           .execute()
 
       if (roles.isNotEmpty()) {
-        val records =
-            userIds.flatMap { userId ->
-              roles.map { UserGlobalRolesRecord(userId = userId, globalRoleId = it) }
-            }
+        val records = userIds.flatMap { userId ->
+          roles.map { UserGlobalRolesRecord(userId = userId, globalRoleId = it) }
+        }
 
         dslContext.insertInto(USER_GLOBAL_ROLES).set(records).execute()
       }
@@ -617,14 +616,13 @@ class UserStore(
               .build(mapOf("realm" to keycloakInfo.realm))
               .toString()
 
-      val formParameters =
-          Parameters.build {
-            append("client_id", config.keycloak.apiClientId)
-            append("scope", "offline_access")
-            append("grant_type", "password")
-            append("username", user.username)
-            append("password", randomPassword)
-          }
+      val formParameters = Parameters.build {
+        append("client_id", config.keycloak.apiClientId)
+        append("scope", "offline_access")
+        append("grant_type", "password")
+        append("username", user.username)
+        append("password", randomPassword)
+      }
 
       return runBlocking {
         try {

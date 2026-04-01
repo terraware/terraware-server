@@ -58,8 +58,9 @@ class CsvVariableNormalizer {
     return thisPath
   }
 
-  private fun getParentPath(parent: String?): String? =
-      parent?.let { variablePaths.findLast { it.endsWith("\t$parent") } }
+  private fun getParentPath(parent: String?): String? = parent?.let {
+    variablePaths.findLast { it.endsWith("\t$parent") }
+  }
 }
 
 fun splitAndTrimNewline(input: String?): List<String> =

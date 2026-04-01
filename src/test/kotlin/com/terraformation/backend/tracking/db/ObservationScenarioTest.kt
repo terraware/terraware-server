@@ -269,11 +269,10 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             .flatMap { stratum -> stratum.substrata }
             .flatMap { substratum -> substratum.monitoringPlots }
 
-    val rowKeys =
-        plots.flatMap { plot ->
-          plot.plants?.map { listOf(plot.monitoringPlotNumber.toString(), it.id.toString()) }
-              ?: emptyList()
-        }
+    val rowKeys = plots.flatMap { plot ->
+      plot.plants?.map { listOf(plot.monitoringPlotNumber.toString(), it.id.toString()) }
+          ?: emptyList()
+    }
 
     val actual =
         makeActualCsv(

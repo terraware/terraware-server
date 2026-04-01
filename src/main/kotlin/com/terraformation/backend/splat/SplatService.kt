@@ -231,11 +231,10 @@ class SplatService(
           null
         }
 
-    val birdnetOutputLocation =
-        birdnetUrl?.let {
-          val birdnetKey = it.path.trimStart('/')
-          SplatterRequestFileLocation(s3BucketName, birdnetKey)
-        }
+    val birdnetOutputLocation = birdnetUrl?.let {
+      val birdnetKey = it.path.trimStart('/')
+      SplatterRequestFileLocation(s3BucketName, birdnetKey)
+    }
 
     dslContext.transaction { _ ->
       val rowsInserted =
@@ -401,8 +400,9 @@ class SplatService(
       val now = clock.instant()
       val userId = currentUser().userId
 
-      val annotationsWithIds =
-          annotations.mapNotNull { annotation -> annotation.id?.let { it to annotation } }
+      val annotationsWithIds = annotations.mapNotNull { annotation ->
+        annotation.id?.let { it to annotation }
+      }
       val annotationsWithoutIds = annotations.filter { it.id == null }
       val requestedIds = annotationsWithIds.map { it.first }.toSet()
 

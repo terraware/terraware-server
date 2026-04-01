@@ -326,14 +326,13 @@ class EmbeddingService(
             variable.columns.map { "---" },
         )
 
-    val dataLines: List<List<String>> =
-        rows.map { row ->
-          variable.columns.map { column ->
-            valuesByVariableId[column.variable.id]
-                ?.filter { it.rowValueId == row.id }
-                ?.joinToString("; ") { it.value.toString() } ?: "-"
-          }
-        }
+    val dataLines: List<List<String>> = rows.map { row ->
+      variable.columns.map { column ->
+        valuesByVariableId[column.variable.id]
+            ?.filter { it.rowValueId == row.id }
+            ?.joinToString("; ") { it.value.toString() } ?: "-"
+      }
+    }
 
     return (headerLines + dataLines).joinToString("\n") { lineCells ->
       lineCells.joinToString(" | ", "| ", " |")

@@ -744,8 +744,9 @@ class AppNotificationService(
       internalInterest: InternalInterest? = null,
   ) {
     systemUser.run {
-      val internalInterestCondition =
-          internalInterest?.let { userInternalInterestsStore.conditionForUsers(it) }
+      val internalInterestCondition = internalInterest?.let {
+        userInternalInterestsStore.conditionForUsers(it)
+      }
       val recipients =
           userStore
               .fetchWithGlobalRoles(setOf(GlobalRole.TFExpert), internalInterestCondition)

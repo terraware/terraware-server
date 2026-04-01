@@ -88,8 +88,9 @@ class GbifStore(private val dslContext: DSLContext) {
         }
 
     // Each alias gets a LIKE condition to match the corresponding prefix
-    val prefixMatchConditions =
-        normalizedPrefixes.mapIndexed { index, prefix -> wordsAliases[index].WORD.like("$prefix%") }
+    val prefixMatchConditions = normalizedPrefixes.mapIndexed { index, prefix ->
+      wordsAliases[index].WORD.like("$prefix%")
+    }
 
     // Make the query sensitive to the order of the search terms
     val orderSensitivePattern = normalizedPrefixes.joinToString("%", "%", "%")

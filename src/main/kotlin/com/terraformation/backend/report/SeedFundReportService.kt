@@ -278,8 +278,9 @@ class SeedFundReportService(
         seedBankModels
             .map { facility ->
               val orgStats = accessionStore.getSummaryStatistics(facility.id)
-              val projectStats =
-                  projectId?.let { accessionStore.getSummaryStatistics(facility.id, it) }
+              val projectStats = projectId?.let {
+                accessionStore.getSummaryStatistics(facility.id, it)
+              }
 
               body
                   ?.seedBanks

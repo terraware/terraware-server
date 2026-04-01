@@ -116,26 +116,25 @@ class DeliveryStore(
       deliveriesDao.insert(deliveriesRow)
       val deliveryId = deliveriesRow.id!!
 
-      val plantingIds =
-          quantities.map { (speciesId, numPlants) ->
-            val plantingsRow =
-                PlantingsRow(
-                    createdBy = userId,
-                    createdTime = now,
-                    deliveryId = deliveryId,
-                    numPlants = numPlants,
-                    plantingSiteId = plantingSiteId,
-                    plantingTypeId = PlantingType.Delivery,
-                    substratumId = substratumId,
-                    speciesId = speciesId,
-                )
+      val plantingIds = quantities.map { (speciesId, numPlants) ->
+        val plantingsRow =
+            PlantingsRow(
+                createdBy = userId,
+                createdTime = now,
+                deliveryId = deliveryId,
+                numPlants = numPlants,
+                plantingSiteId = plantingSiteId,
+                plantingTypeId = PlantingType.Delivery,
+                substratumId = substratumId,
+                speciesId = speciesId,
+            )
 
-            plantingsDao.insert(plantingsRow)
+        plantingsDao.insert(plantingsRow)
 
-            addToPopulations(plantingSiteId, substratumId, speciesId, numPlants)
+        addToPopulations(plantingSiteId, substratumId, speciesId, numPlants)
 
-            plantingsRow.id!!
-          }
+        plantingsRow.id!!
+      }
 
       log.info(
           "Created delivery $deliveryId to planting site $plantingSiteId plot $substratumId with " +
@@ -166,68 +165,67 @@ class DeliveryStore(
       throw ReassignmentOfUndoneWithdrawalNotAllowedException(deliveryId)
     }
 
-    val newPlantings =
-        reassignments.flatMap { reassignment ->
-          val fromPlantingId = reassignment.fromPlantingId
+    val newPlantings = reassignments.flatMap { reassignment ->
+      val fromPlantingId = reassignment.fromPlantingId
 
-          requirePermissions { readPlanting(fromPlantingId) }
+      requirePermissions { readPlanting(fromPlantingId) }
 
-          val originalPlanting =
-              originalPlantings[fromPlantingId] ?: throw PlantingNotFoundException(fromPlantingId)
-          val speciesId = originalPlanting.speciesId!!
+      val originalPlanting =
+          originalPlantings[fromPlantingId] ?: throw PlantingNotFoundException(fromPlantingId)
+      val speciesId = originalPlanting.speciesId!!
 
-          if (originalPlanting.deliveryId != deliveryId) {
-            throw CrossDeliveryReassignmentNotAllowedException(
-                fromPlantingId,
-                originalPlanting.deliveryId!!,
-                deliveryId,
-            )
-          }
+      if (originalPlanting.deliveryId != deliveryId) {
+        throw CrossDeliveryReassignmentNotAllowedException(
+            fromPlantingId,
+            originalPlanting.deliveryId!!,
+            deliveryId,
+        )
+      }
 
-          if (originalPlanting.plantingTypeId != PlantingType.Delivery) {
-            throw ReassignmentOfReassignmentNotAllowedException(fromPlantingId)
-          }
+      if (originalPlanting.plantingTypeId != PlantingType.Delivery) {
+        throw ReassignmentOfReassignmentNotAllowedException(fromPlantingId)
+      }
 
-          // A unique constraint prevents us from having more than one ReassignmentFrom planting
-          // of a particular species on a delivery, so there's no need to scan for other
-          // reassignments to see if they add up to more than the original planting.
-          if (reassignment.numPlants > originalPlanting.numPlants!!) {
-            throw ReassignmentTooLargeException(fromPlantingId)
-          }
+      // A unique constraint prevents us from having more than one ReassignmentFrom planting
+      // of a particular species on a delivery, so there's no need to scan for other
+      // reassignments to see if they add up to more than the original planting.
+      if (reassignment.numPlants > originalPlanting.numPlants!!) {
+        throw ReassignmentTooLargeException(fromPlantingId)
+      }
 
-          if (reassignment.toSubstratumId == originalPlanting.substratumId) {
-            throw ReassignmentToSamePlotNotAllowedException(fromPlantingId)
-          }
+      if (reassignment.toSubstratumId == originalPlanting.substratumId) {
+        throw ReassignmentToSamePlotNotAllowedException(fromPlantingId)
+      }
 
-          // Unique constraint will catch duplicate reassignments, but we can throw a more precise
-          // exception by checking for them explicitly.
-          if (deliveryPlantings.any { it.speciesId == speciesId && it.id != fromPlantingId }) {
-            throw ReassignmentExistsException(fromPlantingId)
-          }
+      // Unique constraint will catch duplicate reassignments, but we can throw a more precise
+      // exception by checking for them explicitly.
+      if (deliveryPlantings.any { it.speciesId == speciesId && it.id != fromPlantingId }) {
+        throw ReassignmentExistsException(fromPlantingId)
+      }
 
-          val skeletonRow =
-              PlantingsRow(
-                  createdBy = userId,
-                  createdTime = now,
-                  deliveryId = deliveryId,
-                  plantingSiteId = plantingSiteId,
-                  speciesId = speciesId,
-              )
-
-          listOf(
-              skeletonRow.copy(
-                  numPlants = -reassignment.numPlants,
-                  plantingTypeId = PlantingType.ReassignmentFrom,
-                  substratumId = originalPlanting.substratumId,
-              ),
-              skeletonRow.copy(
-                  notes = reassignment.notes,
-                  numPlants = reassignment.numPlants,
-                  plantingTypeId = PlantingType.ReassignmentTo,
-                  substratumId = reassignment.toSubstratumId,
-              ),
+      val skeletonRow =
+          PlantingsRow(
+              createdBy = userId,
+              createdTime = now,
+              deliveryId = deliveryId,
+              plantingSiteId = plantingSiteId,
+              speciesId = speciesId,
           )
-        }
+
+      listOf(
+          skeletonRow.copy(
+              numPlants = -reassignment.numPlants,
+              plantingTypeId = PlantingType.ReassignmentFrom,
+              substratumId = originalPlanting.substratumId,
+          ),
+          skeletonRow.copy(
+              notes = reassignment.notes,
+              numPlants = reassignment.numPlants,
+              plantingTypeId = PlantingType.ReassignmentTo,
+              substratumId = reassignment.toSubstratumId,
+          ),
+      )
+    }
 
     dslContext.transaction { _ ->
       plantingsDao.insert(newPlantings)

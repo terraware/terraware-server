@@ -507,30 +507,29 @@ class VariableValueStore(
   }
 
   fun upgradeSectionValueVariables(replacements: Map<VariableId, VariableId>) {
-    val sectionOperations =
-        replacements.flatMap { (oldVariableId, newVariableId) ->
-          fetchSectionValuesUsingVariable(oldVariableId).mapNotNull { sectionValue ->
-            val valueVariable = sectionValue.value as? SectionValueVariable
-            valueVariable?.let { sectionValueVariable ->
-              UpdateValueOperation(
-                  ExistingSectionValue(
-                      BaseVariableValueProperties(
-                          sectionValue.id,
-                          sectionValue.projectId,
-                          sectionValue.listPosition,
-                          sectionValue.variableId,
-                          sectionValue.citation,
-                      ),
-                      SectionValueVariable(
-                          newVariableId,
-                          sectionValueVariable.usageType,
-                          sectionValueVariable.displayStyle,
-                      ),
-                  )
+    val sectionOperations = replacements.flatMap { (oldVariableId, newVariableId) ->
+      fetchSectionValuesUsingVariable(oldVariableId).mapNotNull { sectionValue ->
+        val valueVariable = sectionValue.value as? SectionValueVariable
+        valueVariable?.let { sectionValueVariable ->
+          UpdateValueOperation(
+              ExistingSectionValue(
+                  BaseVariableValueProperties(
+                      sectionValue.id,
+                      sectionValue.projectId,
+                      sectionValue.listPosition,
+                      sectionValue.variableId,
+                      sectionValue.citation,
+                  ),
+                  SectionValueVariable(
+                      newVariableId,
+                      sectionValueVariable.usageType,
+                      sectionValueVariable.displayStyle,
+                  ),
               )
-            }
-          }
+          )
         }
+      }
+    }
 
     sectionOperations
         .groupBy { it.projectId }
@@ -597,10 +596,9 @@ class VariableValueStore(
       throw VariableTypeMismatchException(newValue.variableId, newValue.type)
     }
 
-    val result =
-        dslContext.transactionResult { _ ->
-          insertValue(newValue.projectId, newValue.listPosition, newValue.rowValueId, newValue)
-        }
+    val result = dslContext.transactionResult { _ ->
+      insertValue(newValue.projectId, newValue.listPosition, newValue.rowValueId, newValue)
+    }
 
     // notify variable value was updated
     eventPublisher.publishEvent(VariableValueUpdatedEvent(newValue.projectId, newValue.variableId))

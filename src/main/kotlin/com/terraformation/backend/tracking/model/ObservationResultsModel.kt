@@ -293,11 +293,9 @@ data class ObservationStratumRollupResultsModel(
               .map { it.species }
               .reduce { acc, species -> acc.unionSpecies(species, survivalRateIncludesTempPlots) }
 
-      val totalLiveSpeciesExceptUnknown =
-          species.count {
-            it.certainty != RecordedSpeciesCertainty.Unknown &&
-                (it.totalLive + it.totalExisting) > 0
-          }
+      val totalLiveSpeciesExceptUnknown = species.count {
+        it.certainty != RecordedSpeciesCertainty.Unknown && (it.totalLive + it.totalExisting) > 0
+      }
 
       val completedPlotsPlantingDensities = completedMonitoringPlots.map { it.plantingDensity }
       val plantingDensity =
@@ -315,10 +313,9 @@ data class ObservationStratumRollupResultsModel(
             null
           }
 
-      val survivalRateSubstrata =
-          nonNullSubstratumResults.filter { substratum ->
-            substratum.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
-          }
+      val survivalRateSubstrata = nonNullSubstratumResults.filter { substratum ->
+        substratum.monitoringPlots.any { survivalRateIncludesTempPlots || it.isPermanent }
+      }
       val survivalRate =
           if (
               survivalRateSubstrata.isNotEmpty() &&
@@ -393,20 +390,17 @@ data class ObservationRollupResultsModel(
 
       val plantingCompleted = stratumResults.values.none { it == null || !it.plantingCompleted }
 
-      val monitoringPlots =
-          nonNullStratumResults.flatMap { stratum ->
-            stratum.substrata.flatMap { it.monitoringPlots }
-          }
+      val monitoringPlots = nonNullStratumResults.flatMap { stratum ->
+        stratum.substrata.flatMap { it.monitoringPlots }
+      }
       val species =
           nonNullStratumResults
               .map { it.species }
               .reduce { acc, species -> acc.unionSpecies(species, survivalRateIncludesTempPlots) }
 
-      val totalLiveSpeciesExceptUnknown =
-          species.count {
-            it.certainty != RecordedSpeciesCertainty.Unknown &&
-                (it.totalLive + it.totalExisting) > 0
-          }
+      val totalLiveSpeciesExceptUnknown = species.count {
+        it.certainty != RecordedSpeciesCertainty.Unknown && (it.totalLive + it.totalExisting) > 0
+      }
 
       val completedPlotsPlantingDensities =
           monitoringPlots

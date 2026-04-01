@@ -255,58 +255,57 @@ class DocumentUpgradeCalculator(
     val deleteOldTableOperations =
         existingValues[oldTable.id]?.map { DeleteValueOperation(projectId, it.id) } ?: emptyList()
 
-    val rowColOperations =
-        oldRows.flatMap { oldRow ->
-          val rowOperation =
-              AppendValueOperation(
-                  NewTableValue(
-                      BaseVariableValueProperties(null, projectId, 0, newTable.id, oldRow.citation)
-                  )
+    val rowColOperations = oldRows.flatMap { oldRow ->
+      val rowOperation =
+          AppendValueOperation(
+              NewTableValue(
+                  BaseVariableValueProperties(null, projectId, 0, newTable.id, oldRow.citation)
               )
+          )
 
-          val deleteRowOperation = oldRow.rowValueId?.let { DeleteValueOperation(projectId, it) }
+      val deleteRowOperation = oldRow.rowValueId?.let { DeleteValueOperation(projectId, it) }
 
-          val columnOperations =
-              newTable.columns
-                  .map { it.variable }
-                  .flatMap { newColumn ->
-                    if (
-                        newColumn.replacesVariableId != null &&
-                            newColumn.replacesVariableId in oldColumns
-                    ) {
-                      val oldColumn = oldColumns[newColumn.replacesVariableId]!!
+      val columnOperations =
+          newTable.columns
+              .map { it.variable }
+              .flatMap { newColumn ->
+                if (
+                    newColumn.replacesVariableId != null &&
+                        newColumn.replacesVariableId in oldColumns
+                ) {
+                  val oldColumn = oldColumns[newColumn.replacesVariableId]!!
 
-                      val appendOps =
-                          existingValues[newColumn.replacesVariableId]
-                              ?.filter { it.rowValueId == oldRow.id }
-                              ?.sortedBy { it.listPosition }
-                              ?.mapNotNull { oldValue ->
-                                newColumn.convertValue(
-                                    oldColumn,
-                                    oldValue,
-                                    null,
-                                    variableStore::fetchOneVariable,
-                                )
-                              }
-                              ?.map { AppendValueOperation(it) } ?: emptyList()
-                      val deleteOps =
-                          existingValues[newColumn.replacesVariableId]
-                              ?.filter { it.rowValueId == oldRow.id }
-                              ?.map { DeleteValueOperation(projectId, it.id) } ?: emptyList()
+                  val appendOps =
+                      existingValues[newColumn.replacesVariableId]
+                          ?.filter { it.rowValueId == oldRow.id }
+                          ?.sortedBy { it.listPosition }
+                          ?.mapNotNull { oldValue ->
+                            newColumn.convertValue(
+                                oldColumn,
+                                oldValue,
+                                null,
+                                variableStore::fetchOneVariable,
+                            )
+                          }
+                          ?.map { AppendValueOperation(it) } ?: emptyList()
+                  val deleteOps =
+                      existingValues[newColumn.replacesVariableId]
+                          ?.filter { it.rowValueId == oldRow.id }
+                          ?.map { DeleteValueOperation(projectId, it.id) } ?: emptyList()
 
-                      appendOps + deleteOps
-                    } else {
-                      emptyList<ValueOperation>()
-                    }
-                  }
+                  appendOps + deleteOps
+                } else {
+                  emptyList<ValueOperation>()
+                }
+              }
 
-          val operations =
-              listOf(rowOperation) +
-                  (if (deleteRowOperation != null) listOf(deleteRowOperation) else emptyList()) +
-                  columnOperations
+      val operations =
+          listOf(rowOperation) +
+              (if (deleteRowOperation != null) listOf(deleteRowOperation) else emptyList()) +
+              columnOperations
 
-          operations
-        }
+      operations
+    }
 
     return deleteOldTableOperations + rowColOperations
   }

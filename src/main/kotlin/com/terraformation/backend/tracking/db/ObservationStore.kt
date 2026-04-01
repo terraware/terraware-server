@@ -849,18 +849,17 @@ class ObservationStore(
           conditions.map { ObservationPlotConditionsRow(observationId, monitoringPlotId, it) }
       )
 
-      val plantsRecords =
-          plants.map { plantsRow ->
-            RecordedPlantsRecord(
-                certaintyId = plantsRow.certaintyId,
-                gpsCoordinates = plantsRow.gpsCoordinates,
-                monitoringPlotId = monitoringPlotId,
-                observationId = observationId,
-                speciesId = plantsRow.speciesId,
-                speciesName = plantsRow.speciesName,
-                statusId = plantsRow.statusId,
-            )
-          }
+      val plantsRecords = plants.map { plantsRow ->
+        RecordedPlantsRecord(
+            certaintyId = plantsRow.certaintyId,
+            gpsCoordinates = plantsRow.gpsCoordinates,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            speciesId = plantsRow.speciesId,
+            speciesName = plantsRow.speciesName,
+            statusId = plantsRow.statusId,
+        )
+      }
 
       dslContext.batchInsert(plantsRecords).execute()
 
@@ -1362,12 +1361,11 @@ class ObservationStore(
                 }
               }
               .map { it.id!! }
-      val coordinatesToInsert =
-          coordinates.filter { desired ->
-            existingCoordinates.none {
-              it.positionId == desired.position && it.gpsCoordinates == desired.gpsCoordinates
-            }
-          }
+      val coordinatesToInsert = coordinates.filter { desired ->
+        existingCoordinates.none {
+          it.positionId == desired.position && it.gpsCoordinates == desired.gpsCoordinates
+        }
+      }
 
       if (coordinateIdsToDelete.isNotEmpty()) {
         dslContext

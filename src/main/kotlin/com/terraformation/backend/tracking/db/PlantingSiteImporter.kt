@@ -260,26 +260,26 @@ class PlantingSiteImporter(
       }
     }
 
-    val substrataByStratum =
-        validSubstrata.groupBy { feature -> feature.getProperty(stratumNameProperties)!! }
+    val substrataByStratum = validSubstrata.groupBy { feature ->
+      feature.getProperty(stratumNameProperties)!!
+    }
 
     return substrataByStratum.mapNotNull { (stratumName, substratumFeatures) ->
-      val substratumModels =
-          substratumFeatures.map { substratumFeature ->
-            val boundary = convertToXY(substratumFeature.geometry)
-            val name = substratumFeature.getProperty(substratumNameProperties)!!
-            val fullName = "$stratumName-$name"
-            val stableId =
-                StableId(substratumFeature.getProperty(substratumStableIdProperties) ?: fullName)
+      val substratumModels = substratumFeatures.map { substratumFeature ->
+        val boundary = convertToXY(substratumFeature.geometry)
+        val name = substratumFeature.getProperty(substratumNameProperties)!!
+        val fullName = "$stratumName-$name"
+        val stableId =
+            StableId(substratumFeature.getProperty(substratumStableIdProperties) ?: fullName)
 
-            SubstratumModel.create(
-                boundary = boundary.toMultiPolygon(),
-                exclusion = exclusion,
-                fullName = fullName,
-                name = name,
-                stableId = stableId,
-            )
-          }
+        SubstratumModel.create(
+            boundary = boundary.toMultiPolygon(),
+            exclusion = exclusion,
+            fullName = fullName,
+            name = name,
+            stableId = stableId,
+        )
+      }
 
       val stratumBoundary = mergeToMultiPolygon(substratumModels.map { it.boundary })
 
@@ -298,14 +298,12 @@ class PlantingSiteImporter(
               .mapNotNull { it.getProperty(studentsTProperties)?.toBigDecimalOrNull() }
               .find { it.signum() > 0 } ?: StratumModel.DEFAULT_STUDENTS_T
 
-      val numPermanentPlots =
-          substratumFeatures.firstNotNullOfOrNull {
-            it.getProperty(permanentPlotCountProperties)?.toIntOrNull()
-          }
-      val numTemporaryPlots =
-          substratumFeatures.firstNotNullOfOrNull {
-            it.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
-          }
+      val numPermanentPlots = substratumFeatures.firstNotNullOfOrNull {
+        it.getProperty(permanentPlotCountProperties)?.toIntOrNull()
+      }
+      val numTemporaryPlots = substratumFeatures.firstNotNullOfOrNull {
+        it.getProperty(temporaryPlotCountProperties)?.toIntOrNull()
+      }
       val targetPlantingDensity =
           substratumFeatures.firstNotNullOfOrNull {
             it.getProperty(targetPlantingDensityProperties)?.toBigDecimalOrNull()

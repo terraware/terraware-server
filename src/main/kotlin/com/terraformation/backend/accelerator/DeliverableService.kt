@@ -30,11 +30,10 @@ class DeliverableService(
       deliverableId: DeliverableId,
       projectId: ProjectId,
   ): SubmissionId {
-    val existing =
-        systemUser.run {
-          deliverableStore.fetchDeliverables(deliverableId = deliverableId).firstOrNull()
-              ?: throw DeliverableNotFoundException(deliverableId)
-        }
+    val existing = systemUser.run {
+      deliverableStore.fetchDeliverables(deliverableId = deliverableId).firstOrNull()
+          ?: throw DeliverableNotFoundException(deliverableId)
+    }
 
     val result =
         submissionStore.createSubmission(deliverableId, projectId, SubmissionStatus.InReview)

@@ -637,10 +637,12 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     // The order the new batches get created is undefined, so either new batch ID/number could
     // be for either species. Need to load them to figure out which is which.
     val newBatches = batchesDao.fetchByFacilityId(destinationFacilityId)
-    val newSpecies1Batch1 =
-        newBatches.single { it.speciesId == speciesId && it.batchNumber!!.endsWith("11") }
-    val newSpecies1Batch2 =
-        newBatches.single { it.speciesId == speciesId && it.batchNumber!!.endsWith("12") }
+    val newSpecies1Batch1 = newBatches.single {
+      it.speciesId == speciesId && it.batchNumber!!.endsWith("11")
+    }
+    val newSpecies1Batch2 = newBatches.single {
+      it.speciesId == speciesId && it.batchNumber!!.endsWith("12")
+    }
     val newSpecies2Batch = newBatches.single { it.speciesId == speciesId2 }
 
     assertAll(

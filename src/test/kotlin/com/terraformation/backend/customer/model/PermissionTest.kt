@@ -190,8 +190,9 @@ internal class PermissionTest : DatabaseTest() {
   private val moduleIds = listOf(1000, 1001, 3000, 4000).map { ModuleId(it.toLong()) }
   private val deliverableIds = listOf(DeliverableId(1000))
   private val submissionIds = projectIds.map { SubmissionId(it.value) }
-  private val participantProjectSpeciesIds =
-      projectIds.map { ParticipantProjectSpeciesId(it.value) }
+  private val participantProjectSpeciesIds = projectIds.map {
+    ParticipantProjectSpeciesId(it.value)
+  }
 
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()

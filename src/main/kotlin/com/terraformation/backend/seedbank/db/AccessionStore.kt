@@ -272,90 +272,89 @@ class AccessionStore(
               )
 
       try {
-        val accessionId =
-            dslContext.transactionResult { _ ->
-              val accessionId =
-                  with(ACCESSIONS) {
-                    dslContext
-                        .insertInto(ACCESSIONS)
-                        .set(COLLECTED_DATE, accession.collectedDate)
-                        .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
-                        .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
-                        .set(
-                            COLLECTION_SITE_COUNTRY_SUBDIVISION,
-                            accession.collectionSiteCountrySubdivision,
-                        )
-                        .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
-                        .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
-                        .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
-                        .set(COLLECTION_SOURCE_ID, accession.collectionSource)
-                        .set(CREATED_BY, currentUser().userId)
-                        .set(CREATED_TIME, clock.instant())
-                        .set(DATA_SOURCE_ID, accession.source ?: DataSource.Web)
-                        .set(
-                            EST_SEED_COUNT,
-                            accession.calculateEstimatedSeedCount(accession.remaining),
-                        )
-                        .set(EST_WEIGHT_GRAMS, estimatedWeight?.grams)
-                        .set(EST_WEIGHT_QUANTITY, estimatedWeight?.quantity)
-                        .set(EST_WEIGHT_UNITS_ID, estimatedWeight?.units)
-                        .set(FACILITY_ID, facilityId)
-                        .set(FOUNDER_ID, accession.founderId)
-                        .set(MODIFIED_BY, currentUser().userId)
-                        .set(MODIFIED_TIME, clock.instant())
-                        .set(NUMBER, accessionNumber)
-                        .set(PROCESSING_NOTES, accession.processingNotes)
-                        .set(PROJECT_ID, accession.projectId)
-                        .set(RECEIVED_DATE, accession.receivedDate)
-                        .set(REMAINING_GRAMS, accession.remaining?.grams)
-                        .set(REMAINING_QUANTITY, accession.remaining?.quantity)
-                        .set(REMAINING_UNITS_ID, accession.remaining?.units)
-                        .set(SPECIES_ID, accession.speciesId)
-                        .set(STATE_ID, state)
-                        .set(SUB_LOCATION_ID, getSubLocationId(facilityId, accession.subLocation))
-                        .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
-                        .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
-                        .returning(ID)
-                        .fetchOne(ID)!!
-                  }
-
-              if (accession.remaining != null) {
-                with(ACCESSION_QUANTITY_HISTORY) {
-                  dslContext
-                      .insertInto(ACCESSION_QUANTITY_HISTORY)
-                      .set(ACCESSION_ID, accessionId)
-                      .set(CREATED_BY, currentUser().userId)
-                      .set(CREATED_TIME, clock.instant())
-                      .set(HISTORY_TYPE_ID, AccessionQuantityHistoryType.Observed)
-                      .set(REMAINING_QUANTITY, accession.remaining.quantity)
-                      .set(REMAINING_UNITS_ID, accession.remaining.units)
-                      .execute()
-                }
-              }
-
-              with(ACCESSION_STATE_HISTORY) {
+        val accessionId = dslContext.transactionResult { _ ->
+          val accessionId =
+              with(ACCESSIONS) {
                 dslContext
-                    .insertInto(ACCESSION_STATE_HISTORY)
-                    .set(ACCESSION_ID, accessionId)
-                    .set(REASON, "Accession created")
-                    .set(NEW_STATE_ID, state)
-                    .set(UPDATED_BY, currentUser().userId)
-                    .set(UPDATED_TIME, clock.instant())
-                    .execute()
+                    .insertInto(ACCESSIONS)
+                    .set(COLLECTED_DATE, accession.collectedDate)
+                    .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
+                    .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
+                    .set(
+                        COLLECTION_SITE_COUNTRY_SUBDIVISION,
+                        accession.collectionSiteCountrySubdivision,
+                    )
+                    .set(COLLECTION_SITE_LANDOWNER, accession.collectionSiteLandowner)
+                    .set(COLLECTION_SITE_NAME, accession.collectionSiteName)
+                    .set(COLLECTION_SITE_NOTES, accession.collectionSiteNotes)
+                    .set(COLLECTION_SOURCE_ID, accession.collectionSource)
+                    .set(CREATED_BY, currentUser().userId)
+                    .set(CREATED_TIME, clock.instant())
+                    .set(DATA_SOURCE_ID, accession.source ?: DataSource.Web)
+                    .set(
+                        EST_SEED_COUNT,
+                        accession.calculateEstimatedSeedCount(accession.remaining),
+                    )
+                    .set(EST_WEIGHT_GRAMS, estimatedWeight?.grams)
+                    .set(EST_WEIGHT_QUANTITY, estimatedWeight?.quantity)
+                    .set(EST_WEIGHT_UNITS_ID, estimatedWeight?.units)
+                    .set(FACILITY_ID, facilityId)
+                    .set(FOUNDER_ID, accession.founderId)
+                    .set(MODIFIED_BY, currentUser().userId)
+                    .set(MODIFIED_TIME, clock.instant())
+                    .set(NUMBER, accessionNumber)
+                    .set(PROCESSING_NOTES, accession.processingNotes)
+                    .set(PROJECT_ID, accession.projectId)
+                    .set(RECEIVED_DATE, accession.receivedDate)
+                    .set(REMAINING_GRAMS, accession.remaining?.grams)
+                    .set(REMAINING_QUANTITY, accession.remaining?.quantity)
+                    .set(REMAINING_UNITS_ID, accession.remaining?.units)
+                    .set(SPECIES_ID, accession.speciesId)
+                    .set(STATE_ID, state)
+                    .set(SUB_LOCATION_ID, getSubLocationId(facilityId, accession.subLocation))
+                    .set(TOTAL_VIABILITY_PERCENT, accession.totalViabilityPercent)
+                    .set(TREES_COLLECTED_FROM, accession.numberOfTrees)
+                    .returning(ID)
+                    .fetchOne(ID)!!
               }
 
-              updateCollectors(accessionId, emptyList(), accession.collectors)
-              bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
-              geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
-              viabilityTestStore.updateViabilityTests(
-                  accessionId,
-                  emptyList(),
-                  accession.viabilityTests,
-              )
-              withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
-
-              accessionId
+          if (accession.remaining != null) {
+            with(ACCESSION_QUANTITY_HISTORY) {
+              dslContext
+                  .insertInto(ACCESSION_QUANTITY_HISTORY)
+                  .set(ACCESSION_ID, accessionId)
+                  .set(CREATED_BY, currentUser().userId)
+                  .set(CREATED_TIME, clock.instant())
+                  .set(HISTORY_TYPE_ID, AccessionQuantityHistoryType.Observed)
+                  .set(REMAINING_QUANTITY, accession.remaining.quantity)
+                  .set(REMAINING_UNITS_ID, accession.remaining.units)
+                  .execute()
             }
+          }
+
+          with(ACCESSION_STATE_HISTORY) {
+            dslContext
+                .insertInto(ACCESSION_STATE_HISTORY)
+                .set(ACCESSION_ID, accessionId)
+                .set(REASON, "Accession created")
+                .set(NEW_STATE_ID, state)
+                .set(UPDATED_BY, currentUser().userId)
+                .set(UPDATED_TIME, clock.instant())
+                .execute()
+          }
+
+          updateCollectors(accessionId, emptyList(), accession.collectors)
+          bagStore.updateBags(accessionId, emptySet(), accession.bagNumbers)
+          geolocationStore.updateGeolocations(accessionId, emptySet(), accession.geolocations)
+          viabilityTestStore.updateViabilityTests(
+              accessionId,
+              emptyList(),
+              accession.viabilityTests,
+          )
+          withdrawalStore.updateWithdrawals(accessionId, emptyList(), accession.withdrawals)
+
+          accessionId
+        }
 
         return fetchOneById(accessionId)
       } catch (ex: DuplicateKeyException) {

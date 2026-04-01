@@ -80,10 +80,9 @@ data class ProjectScoreModel<INSTANT : Instant?>(
      * 0, which excludes a couple of categories that are only in phase 1.
      */
     private fun phase0Total(scores: Collection<ProjectScoreModel<*>>): BigDecimal? {
-      val weightedScores =
-          scores.mapNotNull { scoreModel ->
-            phase0Weights[scoreModel.category]?.let { weight -> scoreModel.score?.times(weight) }
-          }
+      val weightedScores = scores.mapNotNull { scoreModel ->
+        phase0Weights[scoreModel.category]?.let { weight -> scoreModel.score?.times(weight) }
+      }
 
       // For phase 0, the total is only calculated when all categories have values.
       if (weightedScores.size != phase0Weights.size) {

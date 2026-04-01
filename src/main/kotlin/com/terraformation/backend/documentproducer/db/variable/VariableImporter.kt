@@ -190,17 +190,17 @@ class VariableImporter(
 
         // Filter csv variables down to list of variables that are either the given type or children
         // of the given type
-        filteredAllVariableCsvVariables =
-            filteredAllVariableCsvVariables.filter { csvVariable ->
-              variableNameOrParentWithinList(csvVariable, filteredAllVariableCsvVariableNames)
-            }
+        filteredAllVariableCsvVariables = filteredAllVariableCsvVariables.filter { csvVariable ->
+          variableNameOrParentWithinList(csvVariable, filteredAllVariableCsvVariableNames)
+        }
       }
 
       // Ignore specific variable types during import
       if (ignoreVariableTypes != null) {
         val ignoreDataTypes = ignoreVariableTypes.map { it.value }.toSet()
-        filteredAllVariableCsvVariables =
-            filteredAllVariableCsvVariables.filterNot { it.dataType.value in ignoreDataTypes }
+        filteredAllVariableCsvVariables = filteredAllVariableCsvVariables.filterNot {
+          it.dataType.value in ignoreDataTypes
+        }
       }
 
       filteredAllVariableCsvVariables.forEach { csvVariable ->
