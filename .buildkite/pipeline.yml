@@ -27,6 +27,13 @@ common:
     cache#v1.10.0:
       <<: *cache-node-modules-args
 
+  - &cache-pip-args
+    <<: *cache-common-args
+    path: "scripts/.pip-cache"
+    manifest:
+      - "scripts/requirements.txt"
+      - ".buildkite/scripts/check-scripts.sh"
+
   - &load-secrets
     seek-oss/aws-sm#v2.4.1:
       json-to-env:
@@ -116,13 +123,10 @@ steps:
     plugins:
       - *shallow-clone
       - cache#v1.10.0:
-          <<: *cache-common-args
-          manifest: "scripts/requirements.txt"
-          path: "scripts/.venv"
+          <<: *cache-pip-args
           save:
             - "file"
             - "branch"
-          force: true
     command: .buildkite/scripts/check-scripts.sh
 
   - label: ":junit: Annotate build with test results"
@@ -183,11 +187,8 @@ steps:
     plugins:
       - *shallow-clone
       - cache#v1.10.0:
-          <<: *cache-common-args
-          path: "scripts/.venv"
-          restore: "branch"
+          <<: *cache-pip-args
           save: "pipeline"
-          force: true
     command: "echo --- :buildkite: Loaded branch-level script cache"
 
   - label: ":amazon-ecs: Deploy to ECS"

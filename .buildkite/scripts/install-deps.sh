@@ -57,7 +57,7 @@ install_node() {
 }
 
 install_python() {
-    if command -v python$PYTHON_VERSION &>/dev/null; then
+    if command -v python$PYTHON_VERSION > /dev/null; then
         return
     fi
     echo "Installing Python ${PYTHON_VERSION}..."
