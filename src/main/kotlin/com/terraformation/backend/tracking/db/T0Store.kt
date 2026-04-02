@@ -24,6 +24,7 @@ import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEv
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
+import com.terraformation.backend.tracking.model.MonitoringPlotT0StatusModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
 import com.terraformation.backend.tracking.model.PlotObservationSpeciesDensityModel
@@ -83,6 +84,45 @@ class T0Store(
 
     return isAllPermT0DataSet(plantingSiteId) &&
         (!survivalRateIncludesTempPlots(plantingSiteId) || isAllTempT0DataSet(plantingSiteId))
+  }
+
+  fun fetchMonitoringPlotsT0Status(
+      plantingSiteId: PlantingSiteId
+  ): List<MonitoringPlotT0StatusModel> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val observed =
+        DSL.exists(
+            DSL.selectOne()
+                .from(OBSERVATION_PLOTS)
+                .join(OBSERVATIONS)
+                .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+                .and(completedObservationsCondition)
+        )
+
+    val t0set =
+        DSL.exists(
+            DSL.selectOne()
+                .from(PLOT_T0_DENSITIES)
+                .where(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
+        )
+
+    return with(MONITORING_PLOTS) {
+      dslContext
+          .select(ID, observed, t0set)
+          .from(MONITORING_PLOTS)
+          .where(PLANTING_SITE_ID.eq(plantingSiteId))
+          .and(PERMANENT_INDEX.isNotNull)
+          .and(IS_AD_HOC.eq(false))
+          .fetch { record ->
+            MonitoringPlotT0StatusModel(
+                monitoringPlotId = record[ID]!!,
+                observed = record[observed],
+                t0set = record[t0set],
+            )
+          }
+    }
   }
 
   /** Fetch Plots with observations and the species densities of each observation */

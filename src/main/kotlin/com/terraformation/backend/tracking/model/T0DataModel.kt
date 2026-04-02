@@ -49,6 +49,12 @@ data class PlotT0DataModel(
     val densityData: List<SpeciesDensityModel> = emptyList(),
 )
 
+data class MonitoringPlotT0StatusModel(
+    val monitoringPlotId: MonitoringPlotId,
+    val observed: Boolean,
+    val t0set: Boolean,
+)
+
 data class StratumT0TempDataModel(
     val stratumId: StratumId,
     val densityData: List<SpeciesDensityModel> = emptyList(),
