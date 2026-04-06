@@ -38,7 +38,8 @@
         <tr>
             <td rowspan="2"></td>
             <td>Observation&nbsp;ID</td>
-            <td colspan="2"><input type="text" name="observationId" required th:value="${observationId}"/></td>
+            <td colspan="2"><input type="text" name="observationId" required
+                                   th:value="${observationId}"/></td>
         </tr>
         <tr>
             <td>File ID</td>
@@ -87,7 +88,8 @@
         <tr>
             <td rowspan="2">filter-blurry</td>
             <td>Keep %</td>
-            <td><input type="text" name="keepPercent" placeholder="100" th:value="${keepPercent}"/></td>
+            <td><input type="text" name="keepPercent" placeholder="100" th:value="${keepPercent}"/>
+            </td>
             <td>
                 Percentage of frames to keep after checking for blurriness. If this is 90, the
                 blurriest 10% of frames will be dropped. A value of 100 will skip the filter-blurry
@@ -96,7 +98,8 @@
         </tr>
         <tr>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[filter-blurry]" th:value="${stepArgs['filter-blurry']}"/></td>
+            <td><input type="text" name="stepArgs[filter-blurry]"
+                       th:value="${stepArgs['filter-blurry']}"/></td>
             <td>
                 Additional space-separated arguments to pass to splat.py filter-blurry.
             </td>
@@ -113,7 +116,8 @@
         <tr>
             <td>feature-extractor</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[feature-extractor]" th:value="${stepArgs['feature-extractor']}"/></td>
+            <td><input type="text" name="stepArgs[feature-extractor]"
+                       th:value="${stepArgs['feature-extractor']}"/></td>
             <td>
                 Additional space-separated arguments to pass to colmap feature_extractor.
             </td>
@@ -140,7 +144,8 @@
         </tr>
         <tr>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[feature-matcher]" th:value="${stepArgs['feature-matcher']}"/></td>
+            <td><input type="text" name="stepArgs[feature-matcher]"
+                       th:value="${stepArgs['feature-matcher']}"/></td>
             <td>
                 Additional space-separated arguments to pass to colmap.
             </td>
@@ -174,7 +179,8 @@
         <tr>
             <td>model-converter-1</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[model-converter-1]" th:value="${stepArgs['model-converter-1']}"/></td>
+            <td><input type="text" name="stepArgs[model-converter-1]"
+                       th:value="${stepArgs['model-converter-1']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the first invocation of
                 colmap model_converter.
@@ -210,7 +216,8 @@
         <tr>
             <td>prune-spikes</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[prune-spikes]" th:value="${stepArgs['prune-spikes']}"/></td>
+            <td><input type="text" name="stepArgs[prune-spikes]"
+                       th:value="${stepArgs['prune-spikes']}"/></td>
             <td>
                 Additional space-separated arguments to pass to prune_spikes.py if it is run.
             </td>
@@ -262,7 +269,8 @@
         <tr>
             <td>model-converter-2</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[model-converter-2]" th:value="${stepArgs['model-converter-2']}"/></td>
+            <td><input type="text" name="stepArgs[model-converter-2]"
+                       th:value="${stepArgs['model-converter-2']}"/></td>
             <td>
                 Additional space-separated arguments to pass to the second invocation of
                 colmap model_converter, after glomap.
@@ -301,8 +309,12 @@
             <td>
                 <select name="tailPruning">
                     <option value="" th:selected="${tailPruning == null}">Default</option>
-                    <option value="true" th:selected="${tailPruning != null and tailPruning}">Enable</option>
-                    <option value="false" th:selected="${tailPruning != null and !tailPruning}">Disable</option>
+                    <option value="true" th:selected="${tailPruning != null and tailPruning}">
+                        Enable
+                    </option>
+                    <option value="false" th:selected="${tailPruning != null and !tailPruning}">
+                        Disable
+                    </option>
                 </select>
             </td>
             <td>
@@ -312,7 +324,8 @@
         </tr>
         <tr>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[prune-tail]" th:value="${stepArgs['prune-tail']}"/></td>
+            <td><input type="text" name="stepArgs[prune-tail]"
+                       th:value="${stepArgs['prune-tail']}"/></td>
             <td>
                 Additional space-separated arguments to pass to prune_tail.py.
             </td>
@@ -344,11 +357,49 @@
 
         <tbody>
         <tr>
+            <td rowspan="3">sphere-init</td>
+            <td>Sphere Init</td>
+            <td><input type="checkbox" name="sphereInit" th:checked="${sphereInit}"/></td>
+            <td>
+                Enable sphere initialization to initialize the sparse point clouse with a sphere of
+                points.
+            </td>
+        </tr>
+        <tr>
+            <td>Num Points</td>
+            <td><input type="text" name="sphereInitNumPoints" placeholder="10000"
+                       th:value="${sphereInitNumPoints}"/></td>
+            <td>
+                Number of points to use when initializing the sphere.
+            </td>
+        </tr>
+        <tr>
+            <td>Radius Scale</td>
+            <td><input type="text" name="sphereInitRadiusScale" placeholder="10"
+                       th:value="${sphereInitRadiusScale}"/></td>
+            <td>
+                Scale factor for the sphere radius (this is multiplied by the average position of
+                all the points from SfM).
+            </td>
+        </tr>
+        </tbody>
+
+        <tr>
+            <td colspan="4">
+                <hr/>
+            </td>
+        </tr>
+
+        <tbody>
+        <tr>
             <td rowspan="5">gsplat</td>
             <td>Densification Strategy</td>
             <td>
                 <select name="densStrategy">
-                    <option value="default" th:selected="${densStrategy == null or densStrategy == 'default'}">Default</option>
+                    <option value="default"
+                            th:selected="${densStrategy == null or densStrategy == 'default'}">
+                        Default
+                    </option>
                     <option value="mcmc" th:selected="${densStrategy == 'mcmc'}">MCMC</option>
                 </select>
             </td>
@@ -377,7 +428,8 @@
         </tr>
         <tr>
             <td>SSIM Lambda</td>
-            <td><input type="text" name="ssimLambda" placeholder="0.1" th:value="${ssimLambda}"/></td>
+            <td><input type="text" name="ssimLambda" placeholder="0.1" th:value="${ssimLambda}"/>
+            </td>
             <td>
                 Controls how much the training loss emphasizes structural similarity (SSIM) versus
                 raw pixel accuracy. Higher values tend to produce smoother, more visually
@@ -404,7 +456,8 @@
         <tr>
             <td>splat-transform</td>
             <td>Other Args</td>
-            <td><input type="text" name="stepArgs[splat-transform]" th:value="${stepArgs['splat-transform']}"/></td>
+            <td><input type="text" name="stepArgs[splat-transform]"
+                       th:value="${stepArgs['splat-transform']}"/></td>
             <td>
                 Additional space-separated arguments to pass to splat-transform.
             </td>
@@ -449,7 +502,8 @@
         <tr>
             <td rowspan="2">birdnet</td>
             <td>Run BirdNET</td>
-            <td><input type="checkbox" id="runBirdNet" name="runBirdNet" th:checked="${runBirdNet}"/></td>
+            <td><input type="checkbox" id="runBirdNet" name="runBirdNet"
+                       th:checked="${runBirdNet}"/></td>
             <td>
                 Enable BirdNET
             </td>
