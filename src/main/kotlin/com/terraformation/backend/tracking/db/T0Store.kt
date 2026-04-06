@@ -6,6 +6,7 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -99,14 +100,40 @@ class T0Store(
                 .on(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
                 .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                 .and(completedObservationsCondition)
+                .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
         )
 
     val t0set =
         DSL.exists(
-            DSL.selectOne()
-                .from(PLOT_T0_DENSITIES)
-                .where(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
-        )
+                DSL.selectOne()
+                    .from(SUBSTRATUM_POPULATIONS)
+                    .where(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID))
+                    .and(SUBSTRATUM_POPULATIONS.TOTAL_PLANTS.gt(0))
+            )
+            .and(
+                DSL.notExists(
+                    DSL.selectOne()
+                        .from(SUBSTRATUM_POPULATIONS)
+                        .where(
+                            SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID)
+                        )
+                        .and(SUBSTRATUM_POPULATIONS.TOTAL_PLANTS.gt(0))
+                        .and(
+                            DSL.notExists(
+                                DSL.selectOne()
+                                    .from(PLOT_T0_DENSITIES)
+                                    .where(
+                                        PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
+                                    )
+                                    .and(
+                                        PLOT_T0_DENSITIES.SPECIES_ID.eq(
+                                            SUBSTRATUM_POPULATIONS.SPECIES_ID
+                                        )
+                                    )
+                            )
+                        )
+                )
+            )
 
     return with(MONITORING_PLOTS) {
       dslContext
