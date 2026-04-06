@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -1590,6 +1591,154 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               plotDensityRecord(monitoringPlotId, speciesId1, BigDecimal.TEN.toPlantsPerHectare())
           )
+      )
+    }
+  }
+
+  @Nested
+  inner class FetchMonitoringPlotsT0Status {
+    @Test
+    fun `throws exception when user lacks permission`() {
+      deleteOrganizationUser()
+
+      assertThrows<PlantingSiteNotFoundException> {
+        store.fetchMonitoringPlotsT0Status(plantingSiteId)
+      }
+    }
+
+    @Test
+    fun `only returns permanent non-ad-hoc plots`() {
+      val adHocPlotId = insertMonitoringPlot(plotNumber = 99, permanentIndex = 99, isAdHoc = true)
+
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+      val resultIds = results.map { it.monitoringPlotId }
+
+      assertTrue(resultIds.contains(monitoringPlotId), "permanent plot should be in results")
+      assertFalse(
+          resultIds.contains(tempPlotId),
+          "temp plot (no permanentIndex) should be excluded",
+      )
+      assertFalse(resultIds.contains(adHocPlotId), "ad-hoc plot should be excluded")
+    }
+
+    @Test
+    fun `observed is true when plot has a completed observation plot in a completed observation`() {
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+
+      val status = results.single { it.monitoringPlotId == monitoringPlotId }
+      assertTrue(status.observed, "observed should be true for completed observation plot")
+    }
+
+    @Test
+    fun `observed is false when observation plot is not completed`() {
+      val newObservationId = insertObservation(startDate = observationStartDate.plusDays(1))
+      val newPlotId = insertMonitoringPlot(plotNumber = 50, permanentIndex = 50)
+      insertObservationPlot(
+          observationId = newObservationId,
+          monitoringPlotId = newPlotId,
+          claimedTime = observationTime,
+          claimedBy = user.userId,
+          statusId = ObservationPlotStatus.Claimed,
+      )
+
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+
+      val status = results.single { it.monitoringPlotId == newPlotId }
+      assertFalse(
+          status.observed,
+          "observed should be false when observation plot is not completed",
+      )
+    }
+
+    @Test
+    fun `observed is false when observation state is not completed or abandoned`() {
+      val inProgressObservationId =
+          insertObservation(
+              startDate = observationStartDate.plusDays(1),
+              state = ObservationState.InProgress,
+          )
+      val newPlotId = insertMonitoringPlot(plotNumber = 51, permanentIndex = 51)
+      insertObservationPlot(
+          observationId = inProgressObservationId,
+          monitoringPlotId = newPlotId,
+          completedTime = observationTime,
+          completedBy = user.userId,
+          isPermanent = true,
+      )
+
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+
+      val status = results.single { it.monitoringPlotId == newPlotId }
+      assertFalse(
+          status.observed,
+          "observed should be false when observation state is not completed or abandoned",
+      )
+    }
+
+    @Test
+    fun `t0set is false when no species withdrawn to substratum`() {
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+
+      val status = results.single { it.monitoringPlotId == monitoringPlotId }
+      assertFalse(status.t0set, "t0set should be false when no substratum populations exist")
+    }
+
+    @Test
+    fun `t0set is false when some withdrawn species lack t0 density`() {
+      insertSubstratumPopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId2)
+      insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId1)
+
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+
+      val status = results.single { it.monitoringPlotId == monitoringPlotId }
+      assertFalse(status.t0set, "t0set should be false when some withdrawn species lack t0 density")
+    }
+
+    @Test
+    fun `t0set is true when all withdrawn species have t0 densities`() {
+      insertSubstratumPopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId2)
+      insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId1)
+      insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId2)
+
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+
+      val status = results.single { it.monitoringPlotId == monitoringPlotId }
+      assertTrue(
+          status.t0set,
+          "t0set should be true when all withdrawn species have t0 densities",
+      )
+    }
+
+    @Test
+    fun `t0set ignores species with total_plants = 0`() {
+      insertSubstratumPopulation(speciesId = speciesId1, totalPlants = 0)
+      insertSubstratumPopulation(speciesId = speciesId2, totalPlants = 1)
+      insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId2)
+
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+
+      val status = results.single { it.monitoringPlotId == monitoringPlotId }
+      assertTrue(
+          status.t0set,
+          "t0set should be true when only species with total_plants > 0 are considered",
+      )
+    }
+
+    @Test
+    fun `does not return plots from other planting sites`() {
+      insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      val otherSitePlotId = insertMonitoringPlot(plotNumber = 77, permanentIndex = 77)
+
+      val results = store.fetchMonitoringPlotsT0Status(plantingSiteId)
+      val resultIds = results.map { it.monitoringPlotId }
+
+      assertFalse(
+          resultIds.contains(otherSitePlotId),
+          "plot from other planting site should not appear in results",
       )
     }
   }
