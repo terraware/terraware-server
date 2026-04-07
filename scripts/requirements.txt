@@ -1,7 +1,7 @@
-pyjwt==2.12.0
-requests==2.33.0
-types-requests==2.32.4.20260107
+pyjwt==2.12.1
+requests==2.33.1
+types-requests==2.33.0.20260402
 
 # Not needed at runtime, but needed for dev/CI
 black==26.3.1
-mypy==1.19.1
+mypy==1.20.0
