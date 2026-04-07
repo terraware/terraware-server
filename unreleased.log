@@ -1,3 +1,6 @@
+8f57c803 Update Python dependencies (#4229)
+684e2735 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v3.3.0 (#4228)
+16f81103 Update dependency requests to v2.33.0 [SECURITY] (#4196)
 05989710 Update dependency org.commonmark:commonmark to v0.28.0 (#4223)
 b0e2f7cf Update dependency software.amazon.awssdk:bom to v2.42.28 (#4212)
 ab95e136 Update dependency com.google.apis:google-api-services-drive to v3-rev20260322-2.0.0 (#4207)
