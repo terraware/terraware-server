@@ -148,7 +148,7 @@ dependencies {
   implementation("software.amazon.awssdk:rds")
   implementation("software.amazon.awssdk:s3")
   implementation("software.amazon.awssdk:sts")
-  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:3.2.0")
+  implementation("software.amazon.jdbc:aws-advanced-jdbc-wrapper:3.3.0")
 
   implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion")
 
