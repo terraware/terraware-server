@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.tracking.T0Service
 import com.terraformation.backend.tracking.db.T0Store
+import com.terraformation.backend.tracking.model.MonitoringPlotT0StatusModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
 import com.terraformation.backend.tracking.model.PlotObservationSpeciesDensityModel
@@ -52,8 +53,12 @@ class T0Controller(
       @PathVariable plantingSiteId: PlantingSiteId
   ): GetAllSiteT0DataSetResponsePayload {
     val allSet = t0Store.fetchAllT0SiteDataSet(plantingSiteId)
+    val plots = t0Store.fetchMonitoringPlotsT0Status(plantingSiteId)
 
-    return GetAllSiteT0DataSetResponsePayload(allSet = allSet)
+    return GetAllSiteT0DataSetResponsePayload(
+        allSet = allSet,
+        plots = plots.map { MonitoringPlotT0StatusPayload(it) },
+    )
   }
 
   @Operation(
@@ -242,7 +247,24 @@ data class GetSitePlotSpeciesResponsePayload(val plots: List<PlotSpeciesDensitie
 data class GetSiteT0DataResponsePayload(val data: SiteT0DataResponsePayload) :
     SuccessResponsePayload
 
-data class GetAllSiteT0DataSetResponsePayload(val allSet: Boolean) : SuccessResponsePayload
+data class MonitoringPlotT0StatusPayload(
+    val monitoringPlotId: MonitoringPlotId,
+    val observed: Boolean,
+    val t0set: Boolean,
+) {
+  constructor(
+      model: MonitoringPlotT0StatusModel
+  ) : this(
+      monitoringPlotId = model.monitoringPlotId,
+      observed = model.observed,
+      t0set = model.t0set,
+  )
+}
+
+data class GetAllSiteT0DataSetResponsePayload(
+    val allSet: Boolean,
+    val plots: List<MonitoringPlotT0StatusPayload>,
+) : SuccessResponsePayload
 
 data class AssignSiteT0DataRequestPayload(
     val plantingSiteId: PlantingSiteId,

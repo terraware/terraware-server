@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -30,6 +31,7 @@ import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
+import com.terraformation.backend.tracking.model.MonitoringPlotT0StatusModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesDensityModel
 import com.terraformation.backend.tracking.model.OptionalSpeciesDensityModel
 import com.terraformation.backend.tracking.model.PlotObservationSpeciesDensityModel
@@ -1590,6 +1592,163 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
           listOf(
               plotDensityRecord(monitoringPlotId, speciesId1, BigDecimal.TEN.toPlantsPerHectare())
           )
+      )
+    }
+  }
+
+  @Nested
+  inner class FetchMonitoringPlotsT0Status {
+    @Test
+    fun `throws exception when user lacks permission`() {
+      deleteOrganizationUser()
+
+      assertThrows<PlantingSiteNotFoundException> {
+        store.fetchMonitoringPlotsT0Status(plantingSiteId)
+      }
+    }
+
+    @Test
+    fun `only returns permanent non-ad-hoc plots`() {
+      insertMonitoringPlot(plotNumber = 99, permanentIndex = 99, isAdHoc = true)
+
+      assertEquals(
+          listOf(MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true)),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId),
+      )
+    }
+
+    @Test
+    fun `observed is true when plot has a completed observation plot in a completed observation`() {
+      assertEquals(
+          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `observed is false when observation plot is not completed`() {
+      val newObservationId = insertObservation(startDate = observationStartDate.plusDays(1))
+      val newPlotId = insertMonitoringPlot(plotNumber = 50, permanentIndex = 50)
+      insertObservationPlot(
+          observationId = newObservationId,
+          monitoringPlotId = newPlotId,
+          claimedTime = observationTime,
+          claimedBy = user.userId,
+          statusId = ObservationPlotStatus.Claimed,
+      )
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(newPlotId, observed = false, t0set = true),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == newPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `observed is false when observation state is not completed or abandoned`() {
+      val inProgressObservationId =
+          insertObservation(
+              startDate = observationStartDate.plusDays(1),
+              state = ObservationState.InProgress,
+          )
+      val newPlotId = insertMonitoringPlot(plotNumber = 51, permanentIndex = 51)
+      insertObservationPlot(
+          observationId = inProgressObservationId,
+          monitoringPlotId = newPlotId,
+          completedTime = observationTime,
+          completedBy = user.userId,
+          isPermanent = true,
+      )
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(newPlotId, observed = false, t0set = true),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == newPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `t0set is true when no species are associated with the plot`() {
+      assertEquals(
+          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `t0set is false when some withdrawn species lack t0 density`() {
+      insertSubstratumPopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId2)
+      insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId1)
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = false),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `t0set is true when all withdrawn species have t0 densities`() {
+      insertSubstratumPopulation(speciesId = speciesId1)
+      insertSubstratumPopulation(speciesId = speciesId2)
+      insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId1)
+      insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId2)
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `t0set is false when observed species lacks t0 density`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = false),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `t0set is true when t0 density of observed species is set to zero`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
+      insertPlotT0Density(
+          monitoringPlotId = monitoringPlotId,
+          speciesId = speciesId1,
+          plotDensity = BigDecimal.ZERO,
+      )
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `does not return plots from other planting sites`() {
+      insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot(plotNumber = 77, permanentIndex = 77)
+
+      assertEquals(
+          listOf(MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true)),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId),
       )
     }
   }
