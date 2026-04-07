@@ -103,37 +103,22 @@ class T0Store(
                 .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
         )
 
+    val plotSpecies = permanentPlotSpecies(plantingSiteId, requireObservations = false)
+    val plotSpeciesPlotId = plotSpecies.field("plot_id", MONITORING_PLOTS.ID.dataType)!!
+    val plotSpeciesSpeciesId = plotSpecies.field("species_id", SpeciesId::class.java)!!
+
     val t0set =
-        DSL.exists(
-                DSL.selectOne()
-                    .from(SUBSTRATUM_POPULATIONS)
-                    .where(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID))
-                    .and(SUBSTRATUM_POPULATIONS.TOTAL_PLANTS.gt(0))
-            )
-            .and(
-                DSL.notExists(
-                    DSL.selectOne()
-                        .from(SUBSTRATUM_POPULATIONS)
-                        .where(
-                            SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID)
-                        )
-                        .and(SUBSTRATUM_POPULATIONS.TOTAL_PLANTS.gt(0))
-                        .and(
-                            DSL.notExists(
-                                DSL.selectOne()
-                                    .from(PLOT_T0_DENSITIES)
-                                    .where(
-                                        PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID)
-                                    )
-                                    .and(
-                                        PLOT_T0_DENSITIES.SPECIES_ID.eq(
-                                            SUBSTRATUM_POPULATIONS.SPECIES_ID
-                                        )
-                                    )
-                            )
-                        )
+        DSL.notExists(
+            DSL.selectOne()
+                .from(plotSpecies)
+                .leftJoin(PLOT_T0_DENSITIES)
+                .on(
+                    PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(plotSpeciesPlotId)
+                        .and(PLOT_T0_DENSITIES.SPECIES_ID.eq(plotSpeciesSpeciesId))
                 )
-            )
+                .where(plotSpeciesPlotId.eq(MONITORING_PLOTS.ID))
+                .and(PLOT_T0_DENSITIES.PLOT_DENSITY.isNull)
+        )
 
     return with(MONITORING_PLOTS) {
       dslContext
@@ -837,24 +822,52 @@ class T0Store(
     }
   }
 
+  /**
+   * Returns a derived table of (plot_id, species_id) pairs for all permanent monitoring plots in
+   * the site that have relevant species. Includes withdrawn species, observed species, and species
+   * with T0 densities already recorded.
+   *
+   * @param requireObservations If true, withdrawn species are only included for plots that have
+   *   been in a completed observation. Set to false when the observation check is handled
+   *   elsewhere.
+   */
+  private fun permanentPlotSpecies(
+      plantingSiteId: PlantingSiteId,
+      requireObservations: Boolean = true,
+  ) =
+      with(MONITORING_PLOTS) {
+        val withdrawnSpecies =
+            if (requireObservations) {
+              plotSpeciesWithObservations(plantingSiteId)
+            } else {
+              DSL.selectDistinct(
+                      ID.`as`("plot_id"),
+                      SUBSTRATUM_POPULATIONS.SPECIES_ID.`as`("species_id"),
+                  )
+                  .from(MONITORING_PLOTS)
+                  .join(SUBSTRATUM_POPULATIONS)
+                  .on(SUBSTRATUM_ID.eq(SUBSTRATUM_POPULATIONS.SUBSTRATUM_ID))
+                  .where(PLANTING_SITE_ID.eq(plantingSiteId))
+            }
+
+        withdrawnSpecies
+            .unionAll(recordedObservationSpecies(plantingSiteId))
+            .unionAll(
+                DSL.selectDistinct(
+                        ID.`as`("plot_id"),
+                        PLOT_T0_DENSITIES.SPECIES_ID.`as`("species_id"),
+                    )
+                    .from(MONITORING_PLOTS)
+                    .join(PLOT_T0_DENSITIES)
+                    .on(ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
+                    .where(PLANTING_SITE_ID.eq(plantingSiteId))
+            )
+            .asTable("permanent_plot_species")
+      }
+
   private fun isAllPermT0DataSet(plantingSiteId: PlantingSiteId): Boolean {
 
-    val permanentPlotSpecies =
-        with(MONITORING_PLOTS) {
-          plotSpeciesWithObservations(plantingSiteId)
-              .unionAll(recordedObservationSpecies(plantingSiteId))
-              .unionAll(
-                  DSL.selectDistinct(
-                          ID.`as`("plot_id"),
-                          PLOT_T0_DENSITIES.SPECIES_ID.`as`("species_id"),
-                      )
-                      .from(MONITORING_PLOTS)
-                      .join(PLOT_T0_DENSITIES)
-                      .on(ID.eq(PLOT_T0_DENSITIES.MONITORING_PLOT_ID))
-                      .where(PLANTING_SITE_ID.eq(plantingSiteId))
-              )
-              .asTable("permanent_plot_species")
-        }
+    val permanentPlotSpecies = permanentPlotSpecies(plantingSiteId)
 
     val permPlotIdField = permanentPlotSpecies.field("plot_id", MONITORING_PLOTS.ID.dataType)
     val permSpeciesIdField = permanentPlotSpecies.field("species_id", SpeciesId::class.java)!!
