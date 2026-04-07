@@ -38,6 +38,7 @@ common:
     seek-oss/aws-sm#v2.4.1:
       json-to-env:
         - secret-id: "buildkite_build_secrets"
+        - secret-id: "terraware_server_build_secrets"
 
   - &restore-build-cache
     artifacts#v1.9.4:
