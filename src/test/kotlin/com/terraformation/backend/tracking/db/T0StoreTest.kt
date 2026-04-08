@@ -1819,11 +1819,15 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertEquals(
-          true,
-          store
-              .fetchMonitoringPlotsT0Status(plantingSiteId)
-              .single { it.monitoringPlotId == monitoringPlotId }
-              .substratumObserved,
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = true,
+              t0set = true,
+          ),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
       )
     }
 
@@ -1841,11 +1845,15 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertEquals(
-          false,
-          store
-              .fetchMonitoringPlotsT0Status(plantingSiteId)
-              .single { it.monitoringPlotId == monitoringPlotId }
-              .substratumObserved,
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = true,
+          ),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
       )
     }
 
@@ -1862,11 +1870,15 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertEquals(
-          false,
-          store
-              .fetchMonitoringPlotsT0Status(plantingSiteId)
-              .single { it.monitoringPlotId == monitoringPlotId }
-              .substratumObserved,
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = true,
+          ),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
       )
     }
   }
