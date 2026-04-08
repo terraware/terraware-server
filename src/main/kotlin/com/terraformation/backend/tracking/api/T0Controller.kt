@@ -250,6 +250,7 @@ data class GetSiteT0DataResponsePayload(val data: SiteT0DataResponsePayload) :
 data class MonitoringPlotT0StatusPayload(
     val monitoringPlotId: MonitoringPlotId,
     val observed: Boolean,
+    val substratumObserved: Boolean,
     val t0set: Boolean,
 ) {
   constructor(
@@ -257,6 +258,7 @@ data class MonitoringPlotT0StatusPayload(
   ) : this(
       monitoringPlotId = model.monitoringPlotId,
       observed = model.observed,
+      substratumObserved = model.substratumObserved,
       t0set = model.t0set,
   )
 }
