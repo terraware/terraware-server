@@ -1,3 +1,4 @@
+b9d5cfb4 SW-8233 Add substratumObserved to plots in allSet endpoint (#4232)
 8f57c803 Update Python dependencies (#4229)
 684e2735 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v3.3.0 (#4228)
 16f81103 Update dependency requests to v2.33.0 [SECURITY] (#4196)
