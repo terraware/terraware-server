@@ -355,66 +355,10 @@
 </a>
 </g>
 </g>
-<!-- device_templates -->
-<g id="node8" class="node">
-<title>device_templates</title>
-<g id="a_node8"><a xlink:href="../../tables/device_templates.html" xlink:title="device_templates" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1096,-2849 1096,-3153 1244,-3153 1244,-2849 1096,-2849"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1096,-3131 1096,-3153 1244,-3153 1244,-3131 1096,-3131"/>
-<polygon fill="none" stroke="black" points="1096,-3131 1096,-3153 1244,-3153 1244,-3131 1096,-3131"/>
-<text text-anchor="start" x="1101" y="-3140.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">device_templates</text>
-<text text-anchor="start" x="1205" y="-3139.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1096,-3109 1096,-3131 1244,-3131 1244,-3109 1096,-3109"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1101" y="-3126"/>
-<text text-anchor="start" x="1128" y="-3117.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="1096,-3087 1096,-3109 1244,-3109 1244,-3087 1096,-3087"/>
-<polygon fill="none" stroke="black" points="1096,-3087 1096,-3109 1244,-3109 1244,-3087 1096,-3087"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1101" y="-3104"/>
-<text text-anchor="start" x="1128" y="-3095.2" font-family="Helvetica,sans-Serif" font-size="11.00">category_id</text>
-<polygon fill="none" stroke="black" points="1096,-3065 1096,-3087 1244,-3087 1244,-3065 1096,-3065"/>
-<text text-anchor="start" x="1128" y="-3073.2" font-family="Helvetica,sans-Serif" font-size="11.00">device_type</text>
-<polygon fill="#ffffff" stroke="transparent" points="1096,-3043 1096,-3065 1244,-3065 1244,-3043 1096,-3043"/>
-<polygon fill="none" stroke="black" points="1096,-3043 1096,-3065 1244,-3065 1244,-3043 1096,-3043"/>
-<text text-anchor="start" x="1128" y="-3051.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="none" stroke="black" points="1096,-3021 1096,-3043 1244,-3043 1244,-3021 1096,-3021"/>
-<text text-anchor="start" x="1128" y="-3029.2" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
-<polygon fill="none" stroke="black" points="1096,-2999 1096,-3021 1244,-3021 1244,-2999 1096,-2999"/>
-<text text-anchor="start" x="1128" y="-3007.2" font-family="Helvetica,sans-Serif" font-size="11.00">make</text>
-<polygon fill="none" stroke="black" points="1096,-2977 1096,-2999 1244,-2999 1244,-2977 1096,-2977"/>
-<text text-anchor="start" x="1128" y="-2985.2" font-family="Helvetica,sans-Serif" font-size="11.00">model</text>
-<polygon fill="none" stroke="black" points="1096,-2955 1096,-2977 1244,-2977 1244,-2955 1096,-2955"/>
-<text text-anchor="start" x="1128" y="-2963.2" font-family="Helvetica,sans-Serif" font-size="11.00">protocol</text>
-<polygon fill="none" stroke="black" points="1096,-2933 1096,-2955 1244,-2955 1244,-2933 1096,-2933"/>
-<text text-anchor="start" x="1128" y="-2941.2" font-family="Helvetica,sans-Serif" font-size="11.00">address</text>
-<polygon fill="none" stroke="black" points="1096,-2911 1096,-2933 1244,-2933 1244,-2911 1096,-2911"/>
-<text text-anchor="start" x="1128" y="-2919.2" font-family="Helvetica,sans-Serif" font-size="11.00">port</text>
-<polygon fill="none" stroke="black" points="1096,-2889 1096,-2911 1244,-2911 1244,-2889 1096,-2889"/>
-<text text-anchor="start" x="1128" y="-2897.2" font-family="Helvetica,sans-Serif" font-size="11.00">settings</text>
-<polygon fill="none" stroke="black" points="1096,-2867 1096,-2889 1244,-2889 1244,-2867 1096,-2867"/>
-<text text-anchor="start" x="1128" y="-2875.2" font-family="Helvetica,sans-Serif" font-size="11.00">verbosity</text>
-<polygon fill="#ffffff" stroke="transparent" points="1096,-2849 1096,-2867 1168,-2867 1168,-2849 1096,-2849"/>
-<polygon fill="none" stroke="black" points="1096,-2849 1096,-2867 1168,-2867 1168,-2849 1096,-2849"/>
-<text text-anchor="start" x="1099" y="-2855.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="1168,-2849 1168,-2867 1206,-2867 1206,-2849 1168,-2849"/>
-<polygon fill="none" stroke="black" points="1168,-2849 1168,-2867 1206,-2867 1206,-2849 1168,-2849"/>
-<text text-anchor="start" x="1196" y="-2855.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1206,-2849 1206,-2867 1244,-2867 1244,-2849 1206,-2849"/>
-<polygon fill="none" stroke="black" points="1206,-2849 1206,-2867 1244,-2867 1244,-2849 1206,-2849"/>
-<text text-anchor="start" x="1234" y="-2855.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- device_templates&#45;&gt;device_template_categories -->
-<g id="edge9" class="edge">
-<title>device_templates:w&#45;&gt;device_template_categories:e</title>
-<path fill="none" stroke="black" d="M1080.59,-3098C1069.82,-3098 1062.84,-3098 1047.5,-3098"/>
-<polygon fill="black" stroke="black" points="1087,-3098 1095,-3101.6 1091,-3098 1095,-3098 1095,-3098 1095,-3098 1091,-3098 1095,-3094.4 1087,-3098 1087,-3098"/>
-<ellipse fill="none" stroke="black" cx="1083.8" cy="-3098" rx="3.2" ry="3.2"/>
-</g>
 <!-- timeseries_values -->
-<g id="node9" class="node">
+<g id="node8" class="node">
 <title>timeseries_values</title>
-<g id="a_node9"><a xlink:href="../../tables/timeseries_values.html" xlink:title="timeseries_values" target="_top">
+<g id="a_node8"><a xlink:href="../../tables/timeseries_values.html" xlink:title="timeseries_values" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1095,-1252 1095,-1358 1245,-1358 1245,-1252 1095,-1252"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1095,-1336 1095,-1358 1245,-1358 1245,-1336 1095,-1336"/>
 <polygon fill="none" stroke="black" points="1095,-1336 1095,-1358 1245,-1358 1245,-1336 1095,-1336"/>
@@ -495,6 +439,62 @@
 <path fill="none" stroke="black" d="M1079.3,-1325C1047.93,-1325 1035.03,-1325 997.5,-1325"/>
 <polygon fill="black" stroke="black" points="1086,-1325 1094,-1328.6 1090,-1325 1094,-1325 1094,-1325 1094,-1325 1090,-1325 1094,-1321.4 1086,-1325 1086,-1325"/>
 <ellipse fill="none" stroke="black" cx="1082.8" cy="-1325" rx="3.2" ry="3.2"/>
+</g>
+<!-- device_templates -->
+<g id="node9" class="node">
+<title>device_templates</title>
+<g id="a_node9"><a xlink:href="../../tables/device_templates.html" xlink:title="device_templates" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1096,-2849 1096,-3153 1244,-3153 1244,-2849 1096,-2849"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1096,-3131 1096,-3153 1244,-3153 1244,-3131 1096,-3131"/>
+<polygon fill="none" stroke="black" points="1096,-3131 1096,-3153 1244,-3153 1244,-3131 1096,-3131"/>
+<text text-anchor="start" x="1101" y="-3140.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">device_templates</text>
+<text text-anchor="start" x="1205" y="-3139.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1096,-3109 1096,-3131 1244,-3131 1244,-3109 1096,-3109"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1101" y="-3126"/>
+<text text-anchor="start" x="1128" y="-3117.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1096,-3087 1096,-3109 1244,-3109 1244,-3087 1096,-3087"/>
+<polygon fill="none" stroke="black" points="1096,-3087 1096,-3109 1244,-3109 1244,-3087 1096,-3087"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1101" y="-3104"/>
+<text text-anchor="start" x="1128" y="-3095.2" font-family="Helvetica,sans-Serif" font-size="11.00">category_id</text>
+<polygon fill="none" stroke="black" points="1096,-3065 1096,-3087 1244,-3087 1244,-3065 1096,-3065"/>
+<text text-anchor="start" x="1128" y="-3073.2" font-family="Helvetica,sans-Serif" font-size="11.00">device_type</text>
+<polygon fill="#ffffff" stroke="transparent" points="1096,-3043 1096,-3065 1244,-3065 1244,-3043 1096,-3043"/>
+<polygon fill="none" stroke="black" points="1096,-3043 1096,-3065 1244,-3065 1244,-3043 1096,-3043"/>
+<text text-anchor="start" x="1128" y="-3051.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="none" stroke="black" points="1096,-3021 1096,-3043 1244,-3043 1244,-3021 1096,-3021"/>
+<text text-anchor="start" x="1128" y="-3029.2" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
+<polygon fill="none" stroke="black" points="1096,-2999 1096,-3021 1244,-3021 1244,-2999 1096,-2999"/>
+<text text-anchor="start" x="1128" y="-3007.2" font-family="Helvetica,sans-Serif" font-size="11.00">make</text>
+<polygon fill="none" stroke="black" points="1096,-2977 1096,-2999 1244,-2999 1244,-2977 1096,-2977"/>
+<text text-anchor="start" x="1128" y="-2985.2" font-family="Helvetica,sans-Serif" font-size="11.00">model</text>
+<polygon fill="none" stroke="black" points="1096,-2955 1096,-2977 1244,-2977 1244,-2955 1096,-2955"/>
+<text text-anchor="start" x="1128" y="-2963.2" font-family="Helvetica,sans-Serif" font-size="11.00">protocol</text>
+<polygon fill="none" stroke="black" points="1096,-2933 1096,-2955 1244,-2955 1244,-2933 1096,-2933"/>
+<text text-anchor="start" x="1128" y="-2941.2" font-family="Helvetica,sans-Serif" font-size="11.00">address</text>
+<polygon fill="none" stroke="black" points="1096,-2911 1096,-2933 1244,-2933 1244,-2911 1096,-2911"/>
+<text text-anchor="start" x="1128" y="-2919.2" font-family="Helvetica,sans-Serif" font-size="11.00">port</text>
+<polygon fill="none" stroke="black" points="1096,-2889 1096,-2911 1244,-2911 1244,-2889 1096,-2889"/>
+<text text-anchor="start" x="1128" y="-2897.2" font-family="Helvetica,sans-Serif" font-size="11.00">settings</text>
+<polygon fill="none" stroke="black" points="1096,-2867 1096,-2889 1244,-2889 1244,-2867 1096,-2867"/>
+<text text-anchor="start" x="1128" y="-2875.2" font-family="Helvetica,sans-Serif" font-size="11.00">verbosity</text>
+<polygon fill="#ffffff" stroke="transparent" points="1096,-2849 1096,-2867 1168,-2867 1168,-2849 1096,-2849"/>
+<polygon fill="none" stroke="black" points="1096,-2849 1096,-2867 1168,-2867 1168,-2849 1096,-2849"/>
+<text text-anchor="start" x="1099" y="-2855.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="1168,-2849 1168,-2867 1206,-2867 1206,-2849 1168,-2849"/>
+<polygon fill="none" stroke="black" points="1168,-2849 1168,-2867 1206,-2867 1206,-2849 1168,-2849"/>
+<text text-anchor="start" x="1196" y="-2855.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1206,-2849 1206,-2867 1244,-2867 1244,-2849 1206,-2849"/>
+<polygon fill="none" stroke="black" points="1206,-2849 1206,-2867 1244,-2867 1244,-2849 1206,-2849"/>
+<text text-anchor="start" x="1234" y="-2855.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- device_templates&#45;&gt;device_template_categories -->
+<g id="edge9" class="edge">
+<title>device_templates:w&#45;&gt;device_template_categories:e</title>
+<path fill="none" stroke="black" d="M1080.59,-3098C1069.82,-3098 1062.84,-3098 1047.5,-3098"/>
+<polygon fill="black" stroke="black" points="1087,-3098 1095,-3101.6 1091,-3098 1095,-3098 1095,-3098 1095,-3098 1091,-3098 1095,-3094.4 1087,-3098 1087,-3098"/>
+<ellipse fill="none" stroke="black" cx="1083.8" cy="-3098" rx="3.2" ry="3.2"/>
 </g>
 <!-- automations -->
 <g id="node10" class="node">
