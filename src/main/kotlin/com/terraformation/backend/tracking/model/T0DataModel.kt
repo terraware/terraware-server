@@ -52,6 +52,7 @@ data class PlotT0DataModel(
 data class MonitoringPlotT0StatusModel(
     val monitoringPlotId: MonitoringPlotId,
     val observed: Boolean,
+    val substratumObserved: Boolean,
     val t0set: Boolean,
 )
 

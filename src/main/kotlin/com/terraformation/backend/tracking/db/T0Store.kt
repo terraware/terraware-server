@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
@@ -103,6 +104,18 @@ class T0Store(
                 .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
         )
 
+    val substratumObserved =
+        DSL.exists(
+            DSL.selectOne()
+                .from(OBSERVATION_REQUESTED_SUBSTRATA)
+                .join(OBSERVATIONS)
+                .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID))
+                .where(
+                    OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(MONITORING_PLOTS.SUBSTRATUM_ID)
+                )
+                .and(completedObservationsCondition)
+        )
+
     val plotSpecies = permanentPlotSpecies(plantingSiteId, requireObservations = false)
     val plotSpeciesPlotId = plotSpecies.field("plot_id", MONITORING_PLOTS.ID.dataType)!!
     val plotSpeciesSpeciesId = plotSpecies.field("species_id", SpeciesId::class.java)!!
@@ -122,7 +135,7 @@ class T0Store(
 
     return with(MONITORING_PLOTS) {
       dslContext
-          .select(ID, observed, t0set)
+          .select(ID, observed, substratumObserved, t0set)
           .from(MONITORING_PLOTS)
           .where(PLANTING_SITE_ID.eq(plantingSiteId))
           .and(PERMANENT_INDEX.isNotNull)
@@ -131,6 +144,7 @@ class T0Store(
             MonitoringPlotT0StatusModel(
                 monitoringPlotId = record[ID]!!,
                 observed = record[observed],
+                substratumObserved = record[substratumObserved],
                 t0set = record[t0set],
             )
           }

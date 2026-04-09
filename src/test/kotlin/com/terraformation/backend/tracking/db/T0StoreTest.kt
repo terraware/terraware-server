@@ -1612,7 +1612,14 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertMonitoringPlot(plotNumber = 99, permanentIndex = 99, isAdHoc = true)
 
       assertEquals(
-          listOf(MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true)),
+          listOf(
+              MonitoringPlotT0StatusModel(
+                  monitoringPlotId,
+                  observed = true,
+                  substratumObserved = false,
+                  t0set = true,
+              )
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId),
       )
     }
@@ -1620,7 +1627,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `observed is true when plot has a completed observation plot in a completed observation`() {
       assertEquals(
-          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true),
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = true,
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
             it.monitoringPlotId == monitoringPlotId
           },
@@ -1640,7 +1652,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertEquals(
-          MonitoringPlotT0StatusModel(newPlotId, observed = false, t0set = true),
+          MonitoringPlotT0StatusModel(
+              newPlotId,
+              observed = false,
+              substratumObserved = false,
+              t0set = true,
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
             it.monitoringPlotId == newPlotId
           },
@@ -1664,7 +1681,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertEquals(
-          MonitoringPlotT0StatusModel(newPlotId, observed = false, t0set = true),
+          MonitoringPlotT0StatusModel(
+              newPlotId,
+              observed = false,
+              substratumObserved = false,
+              t0set = true,
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
             it.monitoringPlotId == newPlotId
           },
@@ -1674,7 +1696,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `t0set is true when no species are associated with the plot`() {
       assertEquals(
-          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true),
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = true,
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
             it.monitoringPlotId == monitoringPlotId
           },
@@ -1688,7 +1715,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId1)
 
       assertEquals(
-          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = false),
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = false,
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
             it.monitoringPlotId == monitoringPlotId
           },
@@ -1703,7 +1735,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlotT0Density(monitoringPlotId = monitoringPlotId, speciesId = speciesId2)
 
       assertEquals(
-          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true),
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = true,
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
             it.monitoringPlotId == monitoringPlotId
           },
@@ -1715,7 +1752,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1)
 
       assertEquals(
-          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = false),
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = false,
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
             it.monitoringPlotId == monitoringPlotId
           },
@@ -1732,7 +1774,12 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertEquals(
-          MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true),
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = true,
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
             it.monitoringPlotId == monitoringPlotId
           },
@@ -1747,8 +1794,91 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertMonitoringPlot(plotNumber = 77, permanentIndex = 77)
 
       assertEquals(
-          listOf(MonitoringPlotT0StatusModel(monitoringPlotId, observed = true, t0set = true)),
+          listOf(
+              MonitoringPlotT0StatusModel(
+                  monitoringPlotId,
+                  observed = true,
+                  substratumObserved = false,
+                  t0set = true,
+              )
+          ),
           store.fetchMonitoringPlotsT0Status(plantingSiteId),
+      )
+    }
+
+    @Test
+    fun `substratumObserved is true when a completed observation requested the plot's substratum`() {
+      val completedObservationId =
+          insertObservation(
+              startDate = observationStartDate.plusDays(1),
+              completedTime = observationTime,
+          )
+      insertObservationRequestedSubstratum(
+          observationId = completedObservationId,
+          substratumId = substratumId,
+      )
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = true,
+              t0set = true,
+          ),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `substratumObserved is false when no completed observation requested the plot's substratum`() {
+      val otherSubstratumId = insertSubstratum(x = 10)
+      val completedObservationId =
+          insertObservation(
+              startDate = observationStartDate.plusDays(1),
+              completedTime = observationTime,
+          )
+      insertObservationRequestedSubstratum(
+          observationId = completedObservationId,
+          substratumId = otherSubstratumId,
+      )
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = true,
+          ),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
+      )
+    }
+
+    @Test
+    fun `substratumObserved is false when observation requesting the substratum is not completed`() {
+      val inProgressObservationId =
+          insertObservation(
+              startDate = observationStartDate.plusDays(1),
+              state = ObservationState.InProgress,
+          )
+      insertObservationRequestedSubstratum(
+          observationId = inProgressObservationId,
+          substratumId = substratumId,
+      )
+
+      assertEquals(
+          MonitoringPlotT0StatusModel(
+              monitoringPlotId,
+              observed = true,
+              substratumObserved = false,
+              t0set = true,
+          ),
+          store.fetchMonitoringPlotsT0Status(plantingSiteId).single {
+            it.monitoringPlotId == monitoringPlotId
+          },
       )
     }
   }
