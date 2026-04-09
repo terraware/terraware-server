@@ -457,10 +457,10 @@ entities@^4.2.0, entities@^4.4.0, entities@^4.5.0:
   resolved "https://registry.yarnpkg.com/entities/-/entities-4.5.0.tgz#5d268ea5e7113ec74c4d033b79ea5a35a488fb48"
   integrity sha512-V0hjH4dGPh9Ao5p0MoRY6BVqtwCjhz6vI5LT8AJ55H+4g9/4vbHx1I54fS0XuclLhDHArPQCiMjDxjaL8fPxhw==
 
-entities@^7.0.1:
-  version "7.0.1"
-  resolved "https://registry.yarnpkg.com/entities/-/entities-7.0.1.tgz#26e8a88889db63417dcb9a1e79a3f1bc92b5976b"
-  integrity sha512-TWrgLOFUQTH994YUyl1yT4uyavY5nNB5muff+RtWaqNVCAK408b5ZnnbNAUEWLTCpum9w6arT70i1XdQ4UeOPA==
+entities@^8.0.0:
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/entities/-/entities-8.0.0.tgz#c1df5fe3602429747fa233d0dd26f142f0ce4743"
+  integrity sha512-zwfzJecQ/Uej6tusMqwAqU/6KL2XaB2VZ2Jg54Je6ahNBGNH6Ek6g3jjNCF0fG9EWQKGZNddNjU5F1ZQn/sBnA==
 
 escalade@^3.1.1:
   version "3.1.1"
@@ -537,16 +537,16 @@ he@^1.2.0:
   resolved "https://registry.yarnpkg.com/he/-/he-1.2.0.tgz#84ae65fa7eafb165fddb61566ae14baf05664f0f"
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
-html-minifier-next@^5.0.0:
-  version "5.2.2"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-5.2.2.tgz#5f6a1882425442f150819bd351e4756060b8bdef"
-  integrity sha512-oJ9TWgUuLg/7RZeJBQ2JxtG3iCipqu2z4XJjwhy6zYOskK9xCBXoUjHnXNqdohQeiUoDCmcjnrLYc87JmfvXCQ==
+html-minifier-next@^6.0.0:
+  version "6.1.1"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-6.1.1.tgz#2a2bb4fffe3659e04e1febb7c40558059a76248e"
+  integrity sha512-QyJ34DU6O7ar7moQn8CgJyJPNz2VOv2VOqXPypQzItd4piqrhnTylSzPlQutAGOb6i+9zA0BVVsvpd+wy7ciKw==
   dependencies:
     commander "^14.0.2"
-    entities "^7.0.1"
+    entities "^8.0.0"
     lightningcss "^1.32.0"
     svgo "^4.0.1"
-    terser "^5.46.0"
+    terser "^5.46.1"
 
 html-minifier@^4.0.0:
   version "4.0.0"
@@ -1745,7 +1745,7 @@ svgo@^4.0.1:
     picocolors "^1.1.1"
     sax "^1.5.0"
 
-terser@^5.46.0:
+terser@^5.46.1:
   version "5.46.1"
   resolved "https://registry.yarnpkg.com/terser/-/terser-5.46.1.tgz#40e4b1e35d5f13130f82793a8b3eeb7ec3a92eee"
   integrity sha512-vzCjQO/rgUuK9sf8VJZvjqiqiHFaZLnOiimmUuOKODxWL8mm/xua7viT7aqX7dgPY60otQjUotzFMmCB4VdmqQ==
