@@ -1,3 +1,4 @@
+f7ade5c3 SW-8274 Associate splats with organizations (#4250)
 06268a07 Update Flyway to v12 (#3911)
 8b3fb44c Update Spring dependencies (#4241)
 44578f1a Avoid soon-to-be-deprecated Jackson API (#4249)

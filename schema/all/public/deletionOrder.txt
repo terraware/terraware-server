@@ -4,8 +4,8 @@ rate_limited_events
 app_versions
 project_internal_users
 organization_users
-automations
 splats
+automations
 splat_annotations
 species_problems
 organization_internal_tags

@@ -74,8 +74,8 @@ notifications
 organization_internal_tags
 species_problems
 splat_annotations
-splats
 automations
+splats
 organization_users
 project_internal_users
 app_versions
