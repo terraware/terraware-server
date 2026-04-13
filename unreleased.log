@@ -1,1 +1,5 @@
+6c59f51b Update Node.js to v24.14.1 (#4239)
+74368c75 Update ktor monorepo to v3.4.2 (#4238)
+cc6fed6a Update dependency com.google.apis:google-api-services-drive to v3-rev20260405-2.0.0 (#4236)
+799b15c2 Update dependency types-requests to v2.33.0.20260408 (#4237)
 f58d3a16 Upgrade database dependencies (#4242)
