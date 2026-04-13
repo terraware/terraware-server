@@ -141,9 +141,9 @@
             <parent column="id" foreignKey="batch_sub_locations_sub_location_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="sub_locations"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="facility_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
             <parent column="id" foreignKey="batch_sub_locations_facility_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="facilities"/>
             <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_sub_location_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="sub_locations"/>
+            <parent column="facility_id" foreignKey="batch_sub_locations_facility_id_batch_id_fkey" implied="false" onDeleteCascade="false" schema="nursery" table="batches"/>
          </column>
          <primaryKey column="batch_id" sequenceNumberInPK="1"/>
          <primaryKey column="sub_location_id" sequenceNumberInPK="2"/>
