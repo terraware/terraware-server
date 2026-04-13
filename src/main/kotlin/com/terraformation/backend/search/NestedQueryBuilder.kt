@@ -1056,7 +1056,17 @@ class NestedQueryBuilder(
         throw IllegalStateException("BUG! Root node should never be rendered as a multiset")
       }
 
-      val alias = "$prefix".replace('.', '_').lowercase() + "multiset"
+      // Use a human-readable alias for debugging if possible, but if the alias would exceed the
+      // maximum symbol length, replace the end of it with a hash.
+      val lengthLimit = 63
+      val fullAlias = "$prefix".replace('.', '_').lowercase() + "multiset"
+      val alias =
+          if (fullAlias.length <= lengthLimit) {
+            fullAlias
+          } else {
+            // 32-bit ints can be up to 10 digits long.
+            fullAlias.substring(0, lengthLimit - 10) + (fullAlias.hashCode() and 0x7fffffff)
+          }
 
       prefix.sublistField?.conditionForMultiset?.let { addCondition(it) }
 

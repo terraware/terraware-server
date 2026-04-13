@@ -247,7 +247,7 @@ tasks {
         withForcedTypes(generator.forcedTypes(basePackageName.get()))
         withEmbeddables(generator.embeddables())
         // Fix compiler warnings for PostGIS functions; see https://github.com/jOOQ/jOOQ/issues/8587
-        withTableValuedFunctions(false)
+        withTableValuedFunctionsAsTables(false)
       }
 
       generate.apply {
