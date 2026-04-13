@@ -5,7 +5,7 @@ CREATE INDEX ON splats (organization_id);
 DELETE FROM splats s
 WHERE NOT EXISTS (
     SELECT 1
-    FROM observation_media_files omf
+    FROM tracking.observation_media_files omf
     WHERE omf.file_id = s.file_id
 );
 
