@@ -40,9 +40,9 @@
 </g>
 </g>
 <!-- accessions -->
-<g id="node6" class="node">
+<g id="node5" class="node">
 <title>accessions</title>
-<g id="a_node6"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
+<g id="a_node5"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="243,-618 243,-1648 474,-1648 474,-618 243,-618"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="243.5,-1626 243.5,-1648 474.5,-1648 474.5,-1626 243.5,-1626"/>
 <polygon fill="none" stroke="black" points="243.5,-1626 243.5,-1648 474.5,-1648 474.5,-1626 243.5,-1626"/>
@@ -333,9 +333,9 @@
 <ellipse fill="none" stroke="black" cx="554.8" cy="-2487.01" rx="3.2" ry="3.2"/>
 </g>
 <!-- collection_sources -->
-<g id="node5" class="node">
+<g id="node7" class="node">
 <title>collection_sources</title>
-<g id="a_node5"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
+<g id="a_node7"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="21.5,-828 21.5,-912 174.5,-912 174.5,-828 21.5,-828"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="22,-890 22,-912 175,-912 175,-890 22,-890"/>
 <polygon fill="none" stroke="black" points="22,-890 22,-912 175,-912 175,-890 22,-890"/>
@@ -661,9 +661,9 @@
 <ellipse fill="none" stroke="black" cx="231.77" cy="-1332.21" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_tests -->
-<g id="node7" class="node">
+<g id="node6" class="node">
 <title>viability_tests</title>
-<g id="a_node7"><a xlink:href="../../tables/viability_tests.html" xlink:title="viability_tests" target="_top">
+<g id="a_node6"><a xlink:href="../../tables/viability_tests.html" xlink:title="viability_tests" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="571.5,-1979 571.5,-2371 746.5,-2371 746.5,-1979 571.5,-1979"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="572,-2349 572,-2371 747,-2371 747,-2349 572,-2349"/>
 <polygon fill="none" stroke="black" points="572,-2349 572,-2371 747,-2371 747,-2349 572,-2349"/>
