@@ -4,7 +4,6 @@ import com.terraformation.backend.search.field.AliasField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.table.AccessionsTable
 import com.terraformation.backend.util.MemoizedValue
-import kotlin.math.absoluteValue
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -1066,7 +1065,7 @@ class NestedQueryBuilder(
             fullAlias
           } else {
             // 32-bit ints can be up to 10 digits long.
-            fullAlias.substring(0, lengthLimit - 10) + fullAlias.hashCode().absoluteValue
+            fullAlias.substring(0, lengthLimit - 10) + (fullAlias.hashCode() and 0x7fffffff)
           }
 
       prefix.sublistField?.conditionForMultiset?.let { addCondition(it) }
