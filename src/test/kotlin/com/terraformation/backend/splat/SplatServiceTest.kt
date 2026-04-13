@@ -3,14 +3,17 @@ package com.terraformation.backend.splat
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
+import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
@@ -37,10 +40,11 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val sqsTemplate: SqsTemplate = mockk()
 
   private val service: SplatService by lazy {
-    SplatService(clock, config, dslContext, fileStore, sqsTemplate)
+    SplatService(clock, config, dslContext, fileStore, ParentStore(dslContext), sqsTemplate)
   }
 
   private lateinit var observationId: ObservationId
+  private lateinit var organizationId: OrganizationId
   private lateinit var fileId: FileId
 
   @BeforeEach
@@ -54,7 +58,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     every { config.splatter } returns splatterConfig
     every { config.s3BucketName } returns "bucket"
 
-    insertOrganization()
+    organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Admin)
     insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
     insertMonitoringPlot()
@@ -690,7 +694,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
-  inner class GenerateObservationSplatWithBirdnet {
+  inner class GenerateObservationSplat {
     @BeforeEach
     fun setUp() {
       every { fileStore.getPath(any()) } answers { java.nio.file.Paths.get("/path/to/video.mp4") }
@@ -701,6 +705,21 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           }
       every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } returns
           mockk(relaxed = true)
+    }
+
+    @Test
+    fun `associates splat with organization that owns observation`() {
+      insertOrganization()
+
+      service.generateObservationSplat(
+          observationId = observationId,
+          fileId = fileId,
+          runBirdnet = false,
+      )
+
+      val result = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(fileId))
+
+      assertEquals(organizationId, result.organizationId, "Organization ID")
     }
 
     @Test

@@ -2,10 +2,12 @@ package com.terraformation.backend.splat
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
@@ -18,6 +20,7 @@ import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.splat.sqs.SplatterRequestFileLocation
 import com.terraformation.backend.splat.sqs.SplatterRequestMessage
+import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import io.awspring.cloud.sqs.operations.SqsTemplate
 import jakarta.inject.Named
 import java.time.InstantSource
@@ -34,6 +37,7 @@ class SplatService(
     config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val fileStore: S3FileStore,
+    private val parentStore: ParentStore,
     private val sqsTemplate: SqsTemplate,
 ) {
   private val log = perClassLogger()
@@ -123,7 +127,11 @@ class SplatService(
   ) {
     ensureObservationFile(observationId, fileId)
 
-    generateSplat(fileId, force, params, runBirdnet)
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    generateSplat(organizationId, fileId, force, params, runBirdnet)
   }
 
   fun recordSplatError(fileId: FileId, errorMessage: String) {
@@ -209,6 +217,7 @@ class SplatService(
   }
 
   private fun generateSplat(
+      organizationId: OrganizationId,
       fileId: FileId,
       force: Boolean = false,
       params: SplatGenerationParams,
@@ -245,6 +254,7 @@ class SplatService(
                 .set(CREATED_BY, currentUser().userId)
                 .set(CREATED_TIME, clock.instant())
                 .set(FILE_ID, fileId)
+                .set(ORGANIZATION_ID, organizationId)
                 .set(SPLAT_STORAGE_URL, splatUrl)
                 .onConflictDoNothing()
                 .execute()

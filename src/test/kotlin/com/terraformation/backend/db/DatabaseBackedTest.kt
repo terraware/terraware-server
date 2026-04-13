@@ -3120,19 +3120,21 @@ abstract class DatabaseBackedTest {
           },
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
   ) {
     val rowWithDefaults =
         row.copy(
-            fileId = fileId,
             assetStatusId = assetStatus,
-            originPositionX = originPosition?.x,
-            originPositionY = originPosition?.y,
-            originPositionZ = originPosition?.z,
-            cameraPositionY = cameraPosition?.y,
             cameraPositionX = cameraPosition?.x,
+            cameraPositionY = cameraPosition?.y,
             cameraPositionZ = cameraPosition?.z,
             createdBy = createdBy,
             createdTime = createdTime,
+            fileId = fileId,
+            organizationId = organizationId,
+            originPositionX = originPosition?.x,
+            originPositionY = originPosition?.y,
+            originPositionZ = originPosition?.z,
         )
 
     splatsDao.insert(rowWithDefaults)
