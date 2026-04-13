@@ -1,3 +1,4 @@
+44578f1a Avoid soon-to-be-deprecated Jackson API (#4249)
 260d9f1f Update dependency com.drewnoakes:metadata-extractor to v2.20.0 (#4248)
 77c0b998 Upgrade to jOOQ 3.21.1 (#4244)
 e10f4182 Update plugin com.github.jk1.dependency-license-report to v3.1.2 (#4240)
