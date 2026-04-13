@@ -17,17 +17,21 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.splat.sqs.SplatterRequestFileLocation
 import com.terraformation.backend.splat.sqs.SplatterRequestMessage
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import io.awspring.cloud.sqs.operations.SqsTemplate
 import jakarta.inject.Named
+import java.net.URI
+import java.nio.file.NoSuchFileException
 import java.time.InstantSource
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.event.EventListener
 import org.springframework.http.MediaType
 
 @ConditionalOnProperty("terraware.splatter.enabled")
@@ -330,6 +334,31 @@ class SplatService(
     }
   }
 
+  @EventListener
+  fun on(event: FileDeletionStartedEvent) {
+    try {
+      val splatsRecord = dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(event.fileId)) ?: return
+
+      splatsRecord.splatStorageUrl?.let { splatStorageUrl ->
+        try {
+          fileStore.delete(splatStorageUrl)
+        } catch (_: NoSuchFileException) {
+          log.warn("Splats table referred to $splatStorageUrl which does not exist")
+        }
+
+        try {
+          fileStore.delete(URI("$splatStorageUrl$JOB_ARCHIVE_SUFFIX"))
+        } catch (_: NoSuchFileException) {
+          // Not an error if there wasn't a job archive for the splat.
+        }
+
+        splatsRecord.delete()
+      }
+    } catch (e: Exception) {
+      log.error("Unable to delete splat for file ${event.fileId}", e)
+    }
+  }
+
   private fun readSplat(fileId: FileId): SizedInputStream {
     val splatsRecord =
         dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))
@@ -513,5 +542,9 @@ class SplatService(
     if (!associationExists) {
       throw FileNotFoundException(fileId)
     }
+  }
+
+  companion object {
+    const val JOB_ARCHIVE_SUFFIX = "-job.tar.gz"
   }
 }

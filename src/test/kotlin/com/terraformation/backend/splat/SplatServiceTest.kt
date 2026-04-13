@@ -18,13 +18,18 @@ import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNO
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.file.S3FileStore
+import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.splat.sqs.SplatterRequestMessage
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import io.awspring.cloud.sqs.operations.SqsTemplate
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 import java.net.URI
+import java.nio.file.NoSuchFileException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -774,6 +779,29 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           result?.assetStatusId,
           "Asset status should be reset to Preparing",
       )
+    }
+  }
+
+  @Nested
+  inner class OnFileDeletionStartedEvent {
+    @Test
+    fun `deletes splat file from file store when media file is deleted`() {
+      val url = URI("s3://bucket/file.sog")
+      val jobArchiveUrl = URI("s3://bucket/file.sog-job.tar.gz")
+
+      every { fileStore.delete(url) } just Runs
+      every { fileStore.delete(jobArchiveUrl) } throws NoSuchFileException("Missing!")
+
+      insertSplat(splatStorageUrl = url)
+
+      val event = FileDeletionStartedEvent(fileId, "video/quicktime")
+
+      service.on(event)
+
+      verify(exactly = 1) { fileStore.delete(url) }
+      verify(exactly = 1) { fileStore.delete(jobArchiveUrl) }
+
+      assertTableEmpty(SPLATS)
     }
   }
 }
