@@ -35,7 +35,7 @@ private val prettyPrintingObjectMapper: ObjectMapper by lazy {
       .enable(SerializationFeature.INDENT_OUTPUT)
       .enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS)
       .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-      .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+      .setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY)
 }
 
 /**
