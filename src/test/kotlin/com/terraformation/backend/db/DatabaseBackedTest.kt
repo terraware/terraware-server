@@ -186,6 +186,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.InternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.NotificationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationInternalTagsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationManagedLocationTypesDao
+import com.terraformation.backend.db.default_schema.tables.daos.OrganizationMediaFilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationReportSettingsDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationUsersDao
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
@@ -237,6 +238,7 @@ import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_ECOSYSTEM_TYPES
@@ -688,6 +690,7 @@ abstract class DatabaseBackedTest {
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
   protected val organizationManagedLocationTypesDao: OrganizationManagedLocationTypesDao by
       lazyDao()
+  protected val organizationMediaFilesDao: OrganizationMediaFilesDao by lazyDao()
   protected val organizationReportSettingsDao: OrganizationReportSettingsDao by lazyDao()
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
@@ -3104,6 +3107,20 @@ abstract class DatabaseBackedTest {
         )
 
     observationMediaFilesDao.insert(rowWithDefaults)
+  }
+
+  fun insertOrganizationMediaFile(
+      fileId: FileId = inserted.fileId,
+      organizationId: OrganizationId = inserted.organizationId,
+      caption: String? = null,
+  ): FileId {
+    dslContext
+        .insertInto(ORGANIZATION_MEDIA_FILES)
+        .set(ORGANIZATION_MEDIA_FILES.FILE_ID, fileId)
+        .set(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID, organizationId)
+        .set(ORGANIZATION_MEDIA_FILES.CAPTION, caption)
+        .execute()
+    return fileId
   }
 
   fun insertSplat(

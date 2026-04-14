@@ -315,6 +315,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "notifications" to setOf(ALL, CUSTOMER),
                   "organization_internal_tags" to setOf(ALL, CUSTOMER),
                   "organization_managed_location_types" to setOf(ALL, CUSTOMER),
+                  "organization_media_files" to setOf(ALL, CUSTOMER),
                   "organization_report_settings" to setOf(ALL, CUSTOMER),
                   "organization_types" to setOf(ALL, CUSTOMER),
                   "organization_users" to setOf(ALL, CUSTOMER),

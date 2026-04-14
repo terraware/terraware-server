@@ -152,6 +152,8 @@ COMMENT ON TABLE organization_internal_tags IS 'Which internal (non-user-facing)
 
 COMMENT ON TABLE organization_managed_location_types IS 'Per-organization information about managed location types for business analytics purposes.';
 
+COMMENT ON TABLE organization_media_files IS 'Media files (photos, videos, etc.) associated with organizations.';
+
 COMMENT ON TABLE organization_report_settings IS 'Organization-level settings for quarterly reports. Project-level settings are in `project_report_settings`.';
 
 COMMENT ON TABLE organization_types IS '(Enum) Type of forestry organization for business analytics purposes.';
