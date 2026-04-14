@@ -282,7 +282,7 @@ abstract class SearchTable {
 
   inline fun <reified T : EnumFromReferenceTable<*, T>> nonLocalizableEnumField(
       fieldName: String,
-      databaseField: TableField<*, T?>,
+      databaseField: Field<T?>,
   ) = NonLocalizableEnumField(fieldName, databaseField, this, T::class.java)
 
   fun textField(fieldName: String, databaseField: Field<String?>) =

@@ -1,11 +1,13 @@
 package com.terraformation.backend.seedbank.search
 
 import com.terraformation.backend.assertJsonEquals
+import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.seedbank.ViabilityTestId
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.db.seedbank.tables.pojos.BagsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestResultsRow
 import com.terraformation.backend.db.seedbank.tables.pojos.ViabilityTestsRow
+import com.terraformation.backend.point
 import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
@@ -960,6 +962,13 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
         )
     viabilityTestsDao.insert(cutTestRow)
 
+    val fileId =
+        insertOrganizationMediaFile(
+            fileId = insertFile(contentType = "video/mp4", geolocation = point(12, 34))
+        )
+    insertBirdnetResult(assetStatus = AssetStatus.Preparing)
+    insertSplat(assetStatus = AssetStatus.Ready)
+
     val email = usersDao.fetchOneById(user.userId)!!.email!!
 
     val expectedAccessions =
@@ -1084,6 +1093,20 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
             )
         )
 
+    val expectedMediaFiles =
+        listOf(
+            mapOf(
+                "birdnetStatus" to "Preparing",
+                "contentType" to "video/mp4",
+                "createdTime" to "1970-01-01T00:00:00Z",
+                "fileId" to "$fileId",
+                "gpsCoordinates" to """{"type":"Point","coordinates":[12,34]}""",
+                "latitude" to "34",
+                "longitude" to "12",
+                "splatStatus" to "Ready",
+            )
+        )
+
     val expectedUser =
         mapOf(
             "createdTime" to "1970-01-01T00:00:00Z",
@@ -1118,6 +1141,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 "id" to "$organizationId",
                 "name" to "Organization 1",
                 "members" to expectedOrganizationUsers,
+                "organizationMediaFiles" to expectedMediaFiles,
                 "species" to expectedSpecies,
                 "timeZone" to orgTimeZone,
             )
