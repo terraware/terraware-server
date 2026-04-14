@@ -118,7 +118,7 @@ class AdminSplatsController(
 
       val storageUrl = filesDao.fetchOneById(fileId)?.storageUrl
       val modelUrl = splatsDao.fetchOneByFileId(fileId)?.splatStorageUrl
-      val jobDirUrl = "$modelUrl-job.tar.gz"
+      val jobDirUrl = "$modelUrl${SplatService.JOB_ARCHIVE_SUFFIX}"
 
       redirectAttributes.successMessage =
           "Sent request to splatter service. Model and archive will not be available until " +

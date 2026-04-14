@@ -3121,6 +3121,7 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
+      splatStorageUrl: URI? = row.splatStorageUrl,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3135,6 +3136,7 @@ abstract class DatabaseBackedTest {
             originPositionX = originPosition?.x,
             originPositionY = originPosition?.y,
             originPositionZ = originPosition?.z,
+            splatStorageUrl = splatStorageUrl,
         )
 
     splatsDao.insert(rowWithDefaults)

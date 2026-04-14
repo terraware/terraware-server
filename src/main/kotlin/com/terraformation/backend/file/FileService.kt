@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
 import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
+import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
@@ -59,6 +60,7 @@ class FileService(
       setOf(
           FILE_ACCESS_TOKENS.FILE_ID,
           MUX_ASSETS.FILE_ID,
+          SPLATS.FILE_ID,
           THUMBNAILS.FILE_ID,
       )
 
