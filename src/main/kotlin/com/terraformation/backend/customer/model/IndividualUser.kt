@@ -184,6 +184,8 @@ data class IndividualUser(
   override fun canCreateObservation(plantingSiteId: PlantingSiteId) =
       isSuperAdmin() || isManagerOrHigher(plantingSiteId)
 
+  override fun canCreateOrganizationMedia(organizationId: OrganizationId) = isMember(organizationId)
+
   override fun canCreateParticipantProjectSpecies(projectId: ProjectId) =
       isTFExpertOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
@@ -232,6 +234,8 @@ data class IndividualUser(
   override fun canDeleteFundingEntities() = isAcceleratorAdmin()
 
   override fun canDeleteOrganization(organizationId: OrganizationId) = isOwner(organizationId)
+
+  override fun canDeleteOrganizationMedia(organizationId: OrganizationId) = isMember(organizationId)
 
   override fun canDeleteParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
@@ -423,6 +427,8 @@ data class IndividualUser(
 
   override fun canReadOrganizationFeatures(organizationId: OrganizationId): Boolean =
       isManagerOrHigher(organizationId)
+
+  override fun canReadOrganizationMedia(organizationId: OrganizationId) = isMember(organizationId)
 
   override fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean {
     return if (userId == this.userId) {
@@ -669,6 +675,8 @@ data class IndividualUser(
 
   override fun canUpdateOrganization(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
+
+  override fun canUpdateOrganizationMedia(organizationId: OrganizationId) = isMember(organizationId)
 
   override fun canUpdateParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
