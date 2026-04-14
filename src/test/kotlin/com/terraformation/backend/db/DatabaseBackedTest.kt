@@ -3121,7 +3121,7 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
-      splatStorageUrl: URI? = row.splatStorageUrl,
+      splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
   ) {
     val rowWithDefaults =
         row.copy(
