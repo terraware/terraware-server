@@ -1,3 +1,5 @@
+8543ef8d Make splat storage URL non-nullable (#4252)
+9de8277e Delete splats when their videos are deleted (#4251)
 f7ade5c3 SW-8274 Associate splats with organizations (#4250)
 06268a07 Update Flyway to v12 (#3911)
 8b3fb44c Update Spring dependencies (#4241)
