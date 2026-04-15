@@ -161,6 +161,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="organization_media_files.organization_id references organizations.id via organization_media_files_organization_id_fkey"><a href='organization_media_files.html'>organization_media_files</a><span class='relatedKey'>.organization_id</span></td>
+                                                <td class="constraint detail">organization_media_files_organization_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="organization_report_settings.organization_id references organizations.id via organization_report_settings_organization_id_fkey"><a href='organization_report_settings.html'>organization_report_settings</a><span class='relatedKey'>.organization_id</span></td>
                                                 <td class="constraint detail">organization_report_settings_organization_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -539,28 +544,28 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>other_type_details_null_or_not_empty</td>
-                                    <td>((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text))</td>
+                                    <td>organizations_description_check</td>
+                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>other_type_details_only_for_other</td>
                                     <td>(((organization_type_details IS NULL) AND (organization_type_id &lt;&gt; 6)) OR ((organization_type_details IS NOT NULL) AND (organization_type_id &#61; 6)))</td>
                                 </tr>
                                 <tr>
-                                    <td>country_code_matches_subdivision</td>
-                                    <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
+                                    <td>organizations_country_code_check</td>
+                                    <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>organizations_country_subdivision_code_check</td>
                                     <td>(country_subdivision_code !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_description_check</td>
-                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>other_type_details_null_or_not_empty</td>
+                                    <td>((organization_type_details IS NULL) OR ((organization_type_details)::text &lt;&gt; &#39;&#39;::text))</td>
                                 </tr>
                                 <tr>
-                                    <td>organizations_country_code_check</td>
-                                    <td>(country_code !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    <td>country_code_matches_subdivision</td>
+                                    <td>((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) &#61; country_code))</td>
                                 </tr>
                                 </tbody>
                             </table>

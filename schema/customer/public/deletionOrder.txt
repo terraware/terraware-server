@@ -10,6 +10,7 @@ upload_problems
 seed_fund_report_photos
 seed_fund_report_files
 project_land_use_model_types
+organization_media_files
 organization_managed_location_types
 device_managers
 project_report_settings
