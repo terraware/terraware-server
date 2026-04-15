@@ -1103,6 +1103,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 "gpsCoordinates" to """{"type":"Point","coordinates":[12,34]}""",
                 "latitude" to "34",
                 "longitude" to "12",
+                "needsAttention" to "false",
                 "splatStatus" to "Ready",
             )
         )

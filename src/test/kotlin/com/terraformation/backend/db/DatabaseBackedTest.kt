@@ -3139,6 +3139,7 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
+      needsAttention: Boolean = row.needsAttention ?: false,
   ) {
     val rowWithDefaults =
         row.copy(
@@ -3149,6 +3150,7 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             fileId = fileId,
+            needsAttention = needsAttention,
             organizationId = organizationId,
             originPositionX = originPosition?.x,
             originPositionY = originPosition?.y,

@@ -54,14 +54,8 @@ class OrganizationMediaFilesTable(tables: SearchTables) : SearchTable() {
           geometryField("gpsCoordinates", filesAlias.GEOLOCATION),
           coordinateField("latitude", filesAlias.GEOLOCATION, POINT, LATITUDE),
           coordinateField("longitude", filesAlias.GEOLOCATION, POINT, LONGITUDE),
-          nonLocalizableEnumField(
-              "splatStatus",
-              DSL.field(
-                  DSL.select(SPLATS.ASSET_STATUS_ID)
-                      .from(SPLATS)
-                      .where(SPLATS.FILE_ID.eq(ORGANIZATION_MEDIA_FILES.FILE_ID))
-              ),
-          ),
+          booleanField("needsAttention", SPLATS.NEEDS_ATTENTION),
+          nonLocalizableEnumField("splatStatus", SPLATS.ASSET_STATUS_ID),
       )
 
   override val defaultOrderFields: List<OrderField<*>> = listOf(ORGANIZATION_MEDIA_FILES.FILE_ID)
@@ -70,6 +64,8 @@ class OrganizationMediaFilesTable(tables: SearchTables) : SearchTable() {
     get() =
         ORGANIZATION_MEDIA_FILES.join(filesAlias)
             .on(ORGANIZATION_MEDIA_FILES.FILE_ID.eq(filesAlias.ID))
+            .leftJoin(SPLATS)
+            .on(ORGANIZATION_MEDIA_FILES.FILE_ID.eq(SPLATS.FILE_ID))
 
   override fun conditionForVisibility(): Condition {
     return ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID.`in`(currentUser().organizationRoles.keys)
