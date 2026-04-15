@@ -3,6 +3,8 @@ package com.terraformation.backend.tracking.api
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.CustomerEndpoint
+import com.terraformation.backend.api.PHOTO_MAXHEIGHT_DESCRIPTION
+import com.terraformation.backend.api.PHOTO_MAXWIDTH_DESCRIPTION
 import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
@@ -12,6 +14,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.file.mux.MuxStreamModel
 import com.terraformation.backend.tracking.OrganizationMediaService
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import org.locationtech.jts.geom.Point
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
@@ -63,6 +67,21 @@ class OrganizationMediaController(
       @PathVariable fileId: FileId,
   ): ResponseEntity<*> {
     return organizationMediaService.read(organizationId, fileId).toResponseEntity()
+  }
+
+  @ApiResponse200
+  @ApiResponse404("The media file does not exist in this organization.")
+  @GetMapping("/{fileId}/thumbnail")
+  @Operation(summary = "Downloads a thumbnail image for an organization media file.")
+  fun getOrganizationMediaFileThumbnail(
+      @PathVariable organizationId: OrganizationId,
+      @PathVariable fileId: FileId,
+      @Parameter(description = PHOTO_MAXWIDTH_DESCRIPTION) @RequestParam maxWidth: Int? = null,
+      @Parameter(description = PHOTO_MAXHEIGHT_DESCRIPTION) @RequestParam maxHeight: Int? = null,
+  ): ResponseEntity<*> {
+    return organizationMediaService
+        .readThumbnail(organizationId, fileId, maxWidth, maxHeight)
+        .toResponseEntity()
   }
 
   @ApiResponse200

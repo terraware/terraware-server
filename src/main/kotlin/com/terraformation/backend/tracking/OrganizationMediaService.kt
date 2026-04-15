@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.file.mux.MuxService
@@ -31,6 +32,7 @@ class OrganizationMediaService(
     private val eventPublisher: ApplicationEventPublisher,
     private val fileService: FileService,
     private val muxService: MuxService,
+    private val thumbnailService: ThumbnailService,
 ) {
   private val log = perClassLogger()
 
@@ -68,6 +70,18 @@ class OrganizationMediaService(
     ensureOrganizationFile(organizationId, fileId)
 
     return fileService.readFile(fileId)
+  }
+
+  fun readThumbnail(
+      organizationId: OrganizationId,
+      fileId: FileId,
+      maxWidth: Int? = null,
+      maxHeight: Int? = null,
+  ): SizedInputStream {
+    requirePermissions { readOrganizationMedia(organizationId) }
+    ensureOrganizationFile(organizationId, fileId)
+
+    return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
   fun update(
