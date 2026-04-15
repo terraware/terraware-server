@@ -96,29 +96,51 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `returns BirdNet results for an observation`() {
-      val results = service.listObservationBirdnetResults(observationId)
+      val expected =
+          listOf(
+              ObservationBirdnetResultModel(
+                  assetStatus = AssetStatus.Ready,
+                  fileId = fileId1,
+                  monitoringPlotId = inserted.monitoringPlotId,
+                  observationId = observationId,
+                  resultsStorageUrl = null,
+              ),
+              ObservationBirdnetResultModel(
+                  assetStatus = AssetStatus.Preparing,
+                  fileId = fileId2,
+                  monitoringPlotId = inserted.monitoringPlotId,
+                  observationId = observationId,
+                  resultsStorageUrl = null,
+              ),
+          )
 
-      assertEquals(2, results.size, "Number of results")
-      assertEquals(fileId1, results[0].fileId, "First result file ID")
-      assertEquals(fileId2, results[1].fileId, "Second result file ID")
+      assertEquals(expected, service.listObservationBirdnetResults(observationId))
     }
 
     @Test
     fun `filters results by file ID`() {
-      val results = service.listObservationBirdnetResults(observationId, fileId = fileId1)
+      val expected =
+          listOf(
+              ObservationBirdnetResultModel(
+                  assetStatus = AssetStatus.Ready,
+                  fileId = fileId1,
+                  monitoringPlotId = inserted.monitoringPlotId,
+                  observationId = observationId,
+                  resultsStorageUrl = null,
+              ),
+          )
 
-      assertEquals(1, results.size, "Number of results")
-      assertEquals(fileId1, results[0].fileId, "Result file ID")
-      assertEquals(AssetStatus.Ready, results[0].assetStatus, "Asset status")
+      assertEquals(expected, service.listObservationBirdnetResults(observationId, fileId = fileId1))
     }
 
     @Test
     fun `returns empty list when no BirdNet results exist`() {
       val otherObservationId = insertObservation(state = ObservationState.InProgress)
 
-      val results = service.listObservationBirdnetResults(otherObservationId)
-
-      assertEquals(0, results.size, "Number of results")
+      assertEquals(
+          emptyList<ObservationBirdnetResultModel>(),
+          service.listObservationBirdnetResults(otherObservationId),
+      )
     }
 
     @Test
@@ -197,8 +219,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   positionY = position2.y,
                   positionZ = position2.z,
               ),
-          ),
-          where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId),
+          )
       )
     }
 
@@ -246,8 +267,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               cameraPositionX = updatedCameraPosition.x,
               cameraPositionY = updatedCameraPosition.y,
               cameraPositionZ = updatedCameraPosition.z,
-          ),
-          where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId),
+          )
       )
     }
 
@@ -305,8 +325,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   positionY = position2.y,
                   positionZ = position2.z,
               ),
-          ),
-          where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId),
+          )
       )
     }
 
@@ -361,8 +380,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   positionY = position3.y,
                   positionZ = position3.z,
               ),
-          ),
-          where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId),
+          )
       )
     }
 
@@ -376,7 +394,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.setObservationSplatAnnotations(observationId, fileId, emptyList())
 
-      assertTableEmpty(SPLAT_ANNOTATIONS, where = SPLAT_ANNOTATIONS.FILE_ID.eq(fileId))
+      assertTableEmpty(SPLAT_ANNOTATIONS)
     }
 
     @Test
@@ -673,10 +691,15 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `updates status to Ready and sets completed time`() {
       service.recordBirdnetSuccess(fileId)
 
-      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
-
-      assertEquals(AssetStatus.Ready, result?.assetStatusId, "Asset status")
-      assertEquals(clock.instant(), result?.completedTime, "Completed time")
+      assertTableEquals(
+          BirdnetResultsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Ready,
+              completedTime = clock.instant(),
+          )
+      )
     }
   }
 
@@ -696,11 +719,16 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       service.recordBirdnetError(fileId, errorMessage)
 
-      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
-
-      assertEquals(AssetStatus.Errored, result?.assetStatusId, "Asset status")
-      assertEquals(errorMessage, result?.errorMessage, "Error message")
-      assertEquals(clock.instant(), result?.completedTime, "Completed time")
+      assertTableEquals(
+          BirdnetResultsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Errored,
+              completedTime = clock.instant(),
+              errorMessage = errorMessage,
+          )
+      )
     }
   }
 
@@ -728,9 +756,16 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           runBirdnet = false,
       )
 
-      val result = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(fileId))
-
-      assertEquals(organizationId, result.organizationId, "Organization ID")
+      assertTableEquals(
+          SplatsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Preparing,
+              splatStorageUrl = URI("s3://bucket/video.sog"),
+              organizationId = organizationId,
+          )
+      )
     }
 
     @Test
@@ -741,16 +776,14 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           runBirdnet = true,
       )
 
-      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
-
-      assertEquals(fileId, result?.fileId, "File ID")
-      assertEquals(AssetStatus.Preparing, result?.assetStatusId, "Asset status")
-      assertEquals(user.userId, result?.createdBy, "Created by")
-      assertEquals(clock.instant(), result?.createdTime, "Created time")
-      assertEquals(
-          URI("s3://bucket/video_birdnet.json"),
-          result?.resultsStorageUrl,
-          "Results storage URL",
+      assertTableEquals(
+          BirdnetResultsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Preparing,
+              resultsStorageUrl = URI("s3://bucket/video_birdnet.json"),
+          )
       )
     }
 
@@ -762,9 +795,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           runBirdnet = false,
       )
 
-      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
-
-      assertEquals(null, result, "BirdNet result should not exist")
+      assertTableEmpty(BIRDNET_RESULTS)
     }
 
     @Test
@@ -778,12 +809,13 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           runBirdnet = true,
       )
 
-      val result = dslContext.fetchOne(BIRDNET_RESULTS, BIRDNET_RESULTS.FILE_ID.eq(fileId))
-
-      assertEquals(
-          AssetStatus.Preparing,
-          result?.assetStatusId,
-          "Asset status should be reset to Preparing",
+      assertTableEquals(
+          BirdnetResultsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              assetStatusId = AssetStatus.Preparing,
+          )
       )
     }
   }
