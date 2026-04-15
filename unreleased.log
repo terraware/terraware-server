@@ -1,3 +1,4 @@
+eddf85cb Delete media files when organization is deleted (#4260)
 8113eb0f Use higher-level assertions in existing SplatService tests (#4259)
 ea6b7483 SW-8274 Add splat support for organization videos (#4258)
 fdc99f08 SW-8274 Add organization-level media endpoints (#4257)

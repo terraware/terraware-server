@@ -2184,46 +2184,10 @@
 <polygon fill="black" stroke="black" points="1865.27,-1479.07 1872.08,-1484.6 1869.13,-1480.1 1873,-1481.12 1873,-1481.12 1873,-1481.12 1869.13,-1480.1 1873.92,-1477.64 1865.27,-1479.07 1865.27,-1479.07"/>
 <ellipse fill="none" stroke="black" cx="1862.17" cy="-1478.25" rx="3.2" ry="3.2"/>
 </g>
-<!-- stratum_t0_temp_densities -->
-<g id="node45" class="node">
-<title>stratum_t0_temp_densities</title>
-<g id="a_node45"><a xlink:href="../../tables/stratum_t0_temp_densities.html" xlink:title="stratum_t0_temp_densities" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="531,-1141.12 531,-1243.12 736,-1243.12 736,-1141.12 531,-1141.12"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="531.5,-1221.12 531.5,-1243.12 736.5,-1243.12 736.5,-1221.12 531.5,-1221.12"/>
-<polygon fill="none" stroke="black" points="531.5,-1221.12 531.5,-1243.12 736.5,-1243.12 736.5,-1221.12 531.5,-1221.12"/>
-<text text-anchor="start" x="536.5" y="-1230.32" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">stratum_t0_temp_densities</text>
-<text text-anchor="start" x="697.5" y="-1229.32" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="531.5,-1199.12 531.5,-1221.12 736.5,-1221.12 736.5,-1199.12 531.5,-1199.12"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="536.5" y="-1216.12"/>
-<text text-anchor="start" x="563.5" y="-1207.32" font-family="Helvetica,sans-Serif" font-size="11.00">stratum_id</text>
-<polygon fill="none" stroke="black" points="531.5,-1177.12 531.5,-1199.12 736.5,-1199.12 736.5,-1177.12 531.5,-1177.12"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="536.5" y="-1194.12"/>
-<text text-anchor="start" x="563.5" y="-1185.32" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
-<polygon fill="none" stroke="black" points="531.5,-1159.12 531.5,-1177.12 736.5,-1177.12 736.5,-1159.12 531.5,-1159.12"/>
-<text text-anchor="start" x="534.5" y="-1165.32" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="531.5,-1141.12 531.5,-1159.12 631.5,-1159.12 631.5,-1141.12 531.5,-1141.12"/>
-<polygon fill="none" stroke="black" points="531.5,-1141.12 531.5,-1159.12 631.5,-1159.12 631.5,-1141.12 531.5,-1141.12"/>
-<text text-anchor="start" x="534.5" y="-1147.32" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="631.5,-1141.12 631.5,-1159.12 683.5,-1159.12 683.5,-1141.12 631.5,-1141.12"/>
-<polygon fill="none" stroke="black" points="631.5,-1141.12 631.5,-1159.12 683.5,-1159.12 683.5,-1141.12 631.5,-1141.12"/>
-<text text-anchor="start" x="673.5" y="-1147.32" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="683.5,-1141.12 683.5,-1159.12 736.5,-1159.12 736.5,-1141.12 683.5,-1141.12"/>
-<polygon fill="none" stroke="black" points="683.5,-1141.12 683.5,-1159.12 736.5,-1159.12 736.5,-1141.12 683.5,-1141.12"/>
-<text text-anchor="start" x="726.5" y="-1147.32" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- stratum_t0_temp_densities&#45;&gt;strata -->
-<g id="edge102" class="edge">
-<title>stratum_t0_temp_densities:w&#45;&gt;strata:e</title>
-<path fill="none" stroke="black" d="M516.3,-1212.65C468.86,-1232.54 535.44,-1363.12 467.5,-1363.12"/>
-<polygon fill="black" stroke="black" points="522.62,-1211.52 531.13,-1213.67 526.56,-1210.82 530.5,-1210.12 530.5,-1210.12 530.5,-1210.12 526.56,-1210.82 529.87,-1206.58 522.62,-1211.52 522.62,-1211.52"/>
-<ellipse fill="none" stroke="black" cx="519.47" cy="-1212.08" rx="3.2" ry="3.2"/>
-</g>
 <!-- recorded_trees -->
-<g id="node46" class="node">
+<g id="node45" class="node">
 <title>recorded_trees</title>
-<g id="a_node46"><a xlink:href="../../tables/recorded_trees.html" xlink:title="recorded_trees" target="_top">
+<g id="a_node45"><a xlink:href="../../tables/recorded_trees.html" xlink:title="recorded_trees" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="2225.5,-1616.12 2225.5,-1828.12 2428.5,-1828.12 2428.5,-1616.12 2225.5,-1616.12"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="2226,-1806.12 2226,-1828.12 2429,-1828.12 2429,-1806.12 2226,-1806.12"/>
 <polygon fill="none" stroke="black" points="2226,-1806.12 2226,-1828.12 2429,-1828.12 2429,-1806.12 2226,-1806.12"/>
@@ -2306,6 +2270,42 @@
 <path fill="none" stroke="black" d="M2210.58,-1664.54C2148.61,-1677.5 2161.42,-1775.12 2088,-1775.12"/>
 <polygon fill="black" stroke="black" points="2217.04,-1663.9 2225.35,-1666.7 2221.02,-1663.51 2225,-1663.12 2225,-1663.12 2225,-1663.12 2221.02,-1663.51 2224.65,-1659.54 2217.04,-1663.9 2217.04,-1663.9"/>
 <ellipse fill="none" stroke="black" cx="2213.85" cy="-1664.22" rx="3.2" ry="3.2"/>
+</g>
+<!-- stratum_t0_temp_densities -->
+<g id="node46" class="node">
+<title>stratum_t0_temp_densities</title>
+<g id="a_node46"><a xlink:href="../../tables/stratum_t0_temp_densities.html" xlink:title="stratum_t0_temp_densities" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="531,-1141.12 531,-1243.12 736,-1243.12 736,-1141.12 531,-1141.12"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="531.5,-1221.12 531.5,-1243.12 736.5,-1243.12 736.5,-1221.12 531.5,-1221.12"/>
+<polygon fill="none" stroke="black" points="531.5,-1221.12 531.5,-1243.12 736.5,-1243.12 736.5,-1221.12 531.5,-1221.12"/>
+<text text-anchor="start" x="536.5" y="-1230.32" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">stratum_t0_temp_densities</text>
+<text text-anchor="start" x="697.5" y="-1229.32" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="531.5,-1199.12 531.5,-1221.12 736.5,-1221.12 736.5,-1199.12 531.5,-1199.12"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="536.5" y="-1216.12"/>
+<text text-anchor="start" x="563.5" y="-1207.32" font-family="Helvetica,sans-Serif" font-size="11.00">stratum_id</text>
+<polygon fill="none" stroke="black" points="531.5,-1177.12 531.5,-1199.12 736.5,-1199.12 736.5,-1177.12 531.5,-1177.12"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="536.5" y="-1194.12"/>
+<text text-anchor="start" x="563.5" y="-1185.32" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<polygon fill="none" stroke="black" points="531.5,-1159.12 531.5,-1177.12 736.5,-1177.12 736.5,-1159.12 531.5,-1159.12"/>
+<text text-anchor="start" x="534.5" y="-1165.32" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="531.5,-1141.12 531.5,-1159.12 631.5,-1159.12 631.5,-1141.12 531.5,-1141.12"/>
+<polygon fill="none" stroke="black" points="531.5,-1141.12 531.5,-1159.12 631.5,-1159.12 631.5,-1141.12 531.5,-1141.12"/>
+<text text-anchor="start" x="534.5" y="-1147.32" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="631.5,-1141.12 631.5,-1159.12 683.5,-1159.12 683.5,-1141.12 631.5,-1141.12"/>
+<polygon fill="none" stroke="black" points="631.5,-1141.12 631.5,-1159.12 683.5,-1159.12 683.5,-1141.12 631.5,-1141.12"/>
+<text text-anchor="start" x="673.5" y="-1147.32" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="683.5,-1141.12 683.5,-1159.12 736.5,-1159.12 736.5,-1141.12 683.5,-1141.12"/>
+<polygon fill="none" stroke="black" points="683.5,-1141.12 683.5,-1159.12 736.5,-1159.12 736.5,-1141.12 683.5,-1141.12"/>
+<text text-anchor="start" x="726.5" y="-1147.32" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- stratum_t0_temp_densities&#45;&gt;strata -->
+<g id="edge102" class="edge">
+<title>stratum_t0_temp_densities:w&#45;&gt;strata:e</title>
+<path fill="none" stroke="black" d="M516.3,-1212.65C468.86,-1232.54 535.44,-1363.12 467.5,-1363.12"/>
+<polygon fill="black" stroke="black" points="522.62,-1211.52 531.13,-1213.67 526.56,-1210.82 530.5,-1210.12 530.5,-1210.12 530.5,-1210.12 526.56,-1210.82 529.87,-1206.58 522.62,-1211.52 522.62,-1211.52"/>
+<ellipse fill="none" stroke="black" cx="519.47" cy="-1212.08" rx="3.2" ry="3.2"/>
 </g>
 <!-- monitoring_plot_histories&#45;&gt;monitoring_plots -->
 <g id="edge2" class="edge">
