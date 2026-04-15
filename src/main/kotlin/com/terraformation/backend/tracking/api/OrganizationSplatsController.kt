@@ -100,4 +100,21 @@ class OrganizationSplatsController(
     splatService.setOrganizationSplatAnnotations(organizationId, fileId, annotations)
     return SimpleSuccessResponsePayload()
   }
+
+  @ApiResponse200
+  @ApiResponse404("The media file does not exist in this organization, or has no splat.")
+  @PostMapping("/{fileId}/needsAttention")
+  @Operation(summary = "Flags a splat as needing administrator attention.")
+  fun setOrganizationSplatNeedsAttention(
+      @PathVariable organizationId: OrganizationId,
+      @PathVariable fileId: FileId,
+      @RequestBody payload: SetSplatNeedsAttentionRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    splatService.setOrganizationSplatNeedsAttention(organizationId, fileId, payload.needsAttention)
+    return SimpleSuccessResponsePayload()
+  }
 }
+
+data class SetSplatNeedsAttentionRequestPayload(
+    val needsAttention: Boolean,
+)

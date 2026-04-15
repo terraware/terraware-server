@@ -177,6 +177,27 @@ class SplatService(
     setSplatAnnotations(fileId, annotations)
   }
 
+  fun setOrganizationSplatNeedsAttention(
+      organizationId: OrganizationId,
+      fileId: FileId,
+      needsAttention: Boolean,
+  ) {
+    requirePermissions { updateOrganizationMedia(organizationId) }
+    ensureOrganizationMediaFile(organizationId, fileId)
+    ensureSplat(fileId)
+
+    // The requirements only call for being able to set the flag; there's no process defined to
+    // clear it. So for now, we only support the false -> true transition, but our API is already
+    // structured to support true -> false if/when the behavior of that transition is defined.
+    if (needsAttention) {
+      dslContext
+          .update(SPLATS)
+          .set(SPLATS.NEEDS_ATTENTION, true)
+          .where(SPLATS.FILE_ID.eq(fileId))
+          .execute()
+    }
+  }
+
   fun recordSplatError(fileId: FileId, errorMessage: String) {
     log.error("Splat generation failed for file $fileId: $errorMessage")
 
@@ -289,6 +310,7 @@ class SplatService(
                 .set(CREATED_BY, currentUser().userId)
                 .set(CREATED_TIME, clock.instant())
                 .set(FILE_ID, fileId)
+                .set(NEEDS_ATTENTION, false)
                 .set(ORGANIZATION_ID, organizationId)
                 .set(SPLAT_STORAGE_URL, splatUrl)
                 .onConflictDoNothing()

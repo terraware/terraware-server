@@ -764,6 +764,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               assetStatusId = AssetStatus.Preparing,
               splatStorageUrl = URI("s3://bucket/video.sog"),
               organizationId = organizationId,
+              needsAttention = false,
           )
       )
     }
@@ -877,6 +878,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               assetStatusId = AssetStatus.Preparing,
               splatStorageUrl = URI("s3://bucket/video.sog"),
               organizationId = organizationId,
+              needsAttention = false,
           )
       )
 
@@ -975,6 +977,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               assetStatusId = AssetStatus.Preparing,
               splatStorageUrl = URI("s3://bucket/splat"),
               organizationId = organizationId,
+              needsAttention = false,
           )
       )
     }
@@ -1235,6 +1238,65 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<OrganizationNotFoundException> {
         service.setOrganizationSplatAnnotations(organizationId, orgFileId, emptyList())
+      }
+    }
+  }
+
+  @Nested
+  inner class SetOrganizationSplatNeedsAttention {
+    private lateinit var orgFileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      orgFileId = insertOrganizationMediaFile()
+      insertSplat(fileId = orgFileId)
+    }
+
+    @Test
+    fun `sets needs attention on splat`() {
+      service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, true)
+
+      val record = dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(orgFileId))!!
+      assertEquals(true, record.needsAttention)
+    }
+
+    @Test
+    fun `does not clear needs attention when false is passed`() {
+      service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, true)
+      service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, false)
+
+      val record = dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(orgFileId))!!
+      assertEquals(true, record.needsAttention)
+    }
+
+    @Test
+    fun `throws exception if file does not belong to organization`() {
+      val unassociatedFileId = insertFile()
+      insertSplat(fileId = unassociatedFileId)
+
+      assertThrows<FileNotFoundException> {
+        service.setOrganizationSplatNeedsAttention(organizationId, unassociatedFileId, true)
+      }
+    }
+
+    @Test
+    fun `throws exception if splat does not exist`() {
+      val fileWithoutSplat = insertOrganizationMediaFile(fileId = insertFile())
+
+      assertThrows<FileNotFoundException> {
+        service.setOrganizationSplatNeedsAttention(organizationId, fileWithoutSplat, true)
+      }
+    }
+
+    @Test
+    fun `throws exception if user does not have permission`() {
+      val otherOrgId = insertOrganization()
+      val otherFileId = insertFile()
+      insertOrganizationMediaFile(fileId = otherFileId, organizationId = otherOrgId)
+      insertSplat(fileId = otherFileId, organizationId = otherOrgId)
+
+      assertThrows<OrganizationNotFoundException> {
+        service.setOrganizationSplatNeedsAttention(otherOrgId, otherFileId, true)
       }
     }
   }
