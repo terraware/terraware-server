@@ -25,6 +25,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -103,7 +104,7 @@ class OrganizationSplatsController(
 
   @ApiResponse200
   @ApiResponse404("The media file does not exist in this organization, or has no splat.")
-  @PostMapping("/{fileId}/needsAttention")
+  @PutMapping("/{fileId}/needsAttention")
   @Operation(summary = "Flags a splat as needing administrator attention.")
   fun setOrganizationSplatNeedsAttention(
       @PathVariable organizationId: OrganizationId,

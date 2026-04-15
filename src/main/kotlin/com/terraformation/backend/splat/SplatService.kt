@@ -195,6 +195,8 @@ class SplatService(
           .set(SPLATS.NEEDS_ATTENTION, true)
           .where(SPLATS.FILE_ID.eq(fileId))
           .execute()
+    } else {
+      log.warn("Ignoring attempt to clear needs-attention flag")
     }
   }
 
