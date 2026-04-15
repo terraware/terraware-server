@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
@@ -61,6 +62,10 @@ class OrganizationMediaService(
         }
 
     log.info("Stored media file $fileId for organization $organizationId")
+
+    if (contentType.startsWith("video/")) {
+      eventPublisher.publishEvent(OrganizationVideoUploadedEvent(fileId, organizationId))
+    }
 
     return fileId
   }

@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
+import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
@@ -84,6 +85,26 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
       assertThrows<AccessDeniedException> {
         service.upload(organizationId, multipartFile, "caption")
       }
+    }
+
+    @Test
+    fun `publishes OrganizationVideoUploadedEvent when video is uploaded`() {
+      val multipartFile = MockMultipartFile("file", "video.mp4", "video/mp4", ByteArray(1))
+
+      val insertedFileId = service.upload(organizationId, multipartFile, "Test caption")
+
+      eventPublisher.assertEventPublished(
+          OrganizationVideoUploadedEvent(insertedFileId, organizationId)
+      )
+    }
+
+    @Test
+    fun `does not publish OrganizationVideoUploadedEvent when image is uploaded`() {
+      val multipartFile = MockMultipartFile("file", "photo.jpg", "image/jpeg", ByteArray(1))
+
+      service.upload(organizationId, multipartFile, "Test caption")
+
+      eventPublisher.assertEventNotPublished<OrganizationVideoUploadedEvent>()
     }
   }
 
