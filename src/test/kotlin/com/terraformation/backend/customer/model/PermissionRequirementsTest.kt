@@ -370,6 +370,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { createObservation(plantingSiteId) } ifUser { canCreateObservation(plantingSiteId) }
 
   @Test
+  fun createOrganizationMedia() =
+      allow { createOrganizationMedia(organizationId) } ifUser
+          {
+            canCreateOrganizationMedia(organizationId)
+          }
+
+  @Test
   fun createParticipantProjectSpecies() {
     assertThrows<AccessDeniedException> { requirements.createParticipantProjectSpecies(projectId) }
 
@@ -445,6 +452,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun deleteOrganization() =
       allow { deleteOrganization(organizationId) } ifUser { canDeleteOrganization(organizationId) }
+
+  @Test
+  fun deleteOrganizationMedia() =
+      allow { deleteOrganizationMedia(organizationId) } ifUser
+          {
+            canDeleteOrganizationMedia(organizationId)
+          }
 
   @Test
   fun deleteParticipantProjectSpecies() =
@@ -696,6 +710,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
     grant { user.canReadOrganizationFeatures(organizationId) }
     requirements.readOrganizationFeatures(organizationId)
   }
+
+  @Test
+  fun readOrganizationMedia() =
+      allow { readOrganizationMedia(organizationId) } ifUser
+          {
+            canReadOrganizationMedia(organizationId)
+          }
 
   @Test
   fun readOrganizationUser() {
@@ -1064,6 +1085,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test
   fun updateOrganization() =
       allow { updateOrganization(organizationId) } ifUser { canUpdateOrganization(organizationId) }
+
+  @Test
+  fun updateOrganizationMedia() =
+      allow { updateOrganizationMedia(organizationId) } ifUser
+          {
+            canUpdateOrganizationMedia(organizationId)
+          }
 
   @Test
   fun updateOrganizationNotifications() =

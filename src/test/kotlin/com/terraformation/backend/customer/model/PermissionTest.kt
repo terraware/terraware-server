@@ -505,21 +505,25 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         createDraftPlantingSite = true,
         createFacility = true,
+        createOrganizationMedia = true,
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
         deleteOrganization = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         listReports = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationFeatures = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -747,21 +751,25 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         createDraftPlantingSite = true,
         createFacility = true,
+        createOrganizationMedia = true,
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
         deleteOrganization = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         listReports = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationFeatures = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -797,20 +805,24 @@ internal class PermissionTest : DatabaseTest() {
         addOrganizationUser = true,
         createDraftPlantingSite = true,
         createFacility = true,
+        createOrganizationMedia = true,
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         listReports = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationFeatures = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         updateOrganization = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -1029,15 +1041,19 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
+        createOrganizationMedia = true,
         createSpecies = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationFeatures = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -1216,12 +1232,16 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
+        createOrganizationMedia = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         readOrganization = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -1427,23 +1447,27 @@ internal class PermissionTest : DatabaseTest() {
         addTerraformationContact = true,
         createDraftPlantingSite = true,
         createFacility = true,
+        createOrganizationMedia = true,
         createPlantingSite = true,
         createProject = true,
         createReport = true,
         createSpecies = true,
         deleteOrganization = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         listReports = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationFeatures = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
         updateOrganization = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -1762,22 +1786,26 @@ internal class PermissionTest : DatabaseTest() {
         addTerraformationContact = true,
         createDraftPlantingSite = true,
         createFacility = true,
+        createOrganizationMedia = true,
         createPlantingSite = true,
         createProject = true,
         createReport = true,
         createSpecies = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         listReports = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationFeatures = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
         updateOrganization = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -2030,21 +2058,25 @@ internal class PermissionTest : DatabaseTest() {
         addTerraformationContact = true,
         createDraftPlantingSite = true,
         createFacility = true,
+        createOrganizationMedia = true,
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         listReports = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationFeatures = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
         updateOrganization = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -2290,21 +2322,25 @@ internal class PermissionTest : DatabaseTest() {
         addTerraformationContact = true,
         createDraftPlantingSite = true,
         createFacility = true,
+        createOrganizationMedia = true,
         createPlantingSite = true,
         createProject = true,
         createSpecies = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         listReports = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationFeatures = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
         removeOrganizationUser = true,
         removeTerraformationContact = true,
         updateOrganization = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -2538,13 +2574,17 @@ internal class PermissionTest : DatabaseTest() {
 
     permissions.expect(
         org1Id,
+        createOrganizationMedia = true,
+        deleteOrganizationMedia = true,
         listFacilities = true,
         listOrganizationUsers = true,
         readOrganization = true,
         readOrganizationDeliverables = true,
+        readOrganizationMedia = true,
         readOrganizationSelf = true,
         readOrganizationUser = true,
         removeOrganizationSelf = true,
+        updateOrganizationMedia = true,
     )
 
     permissions.expect(
@@ -3098,23 +3138,27 @@ internal class PermissionTest : DatabaseTest() {
         addTerraformationContact: Boolean = false,
         createDraftPlantingSite: Boolean = false,
         createFacility: Boolean = false,
+        createOrganizationMedia: Boolean = false,
         createPlantingSite: Boolean = false,
         createProject: Boolean = false,
         createReport: Boolean = false,
         createSpecies: Boolean = false,
         deleteOrganization: Boolean = false,
+        deleteOrganizationMedia: Boolean = false,
         listFacilities: Boolean = false,
         listOrganizationUsers: Boolean = false,
         listReports: Boolean = false,
         readOrganization: Boolean = false,
         readOrganizationDeliverables: Boolean = false,
         readOrganizationFeatures: Boolean = false,
+        readOrganizationMedia: Boolean = false,
         readOrganizationSelf: Boolean = false,
         readOrganizationUser: Boolean = false,
         removeOrganizationSelf: Boolean = false,
         removeOrganizationUser: Boolean = false,
         removeTerraformationContact: Boolean = false,
         updateOrganization: Boolean = false,
+        updateOrganizationMedia: Boolean = false,
     ) {
       organizations.forEach { organizationId ->
         val idInDatabase = getDatabaseId(organizationId)
@@ -3137,6 +3181,11 @@ internal class PermissionTest : DatabaseTest() {
             createFacility,
             user.canCreateFacility(idInDatabase),
             "Can create facility in organization $organizationId",
+        )
+        assertEquals(
+            createOrganizationMedia,
+            user.canCreateOrganizationMedia(idInDatabase),
+            "Can create media in organization $organizationId",
         )
         assertEquals(
             createPlantingSite,
@@ -3162,6 +3211,11 @@ internal class PermissionTest : DatabaseTest() {
             deleteOrganization,
             user.canDeleteOrganization(idInDatabase),
             "Can delete organization $organizationId",
+        )
+        assertEquals(
+            deleteOrganizationMedia,
+            user.canDeleteOrganizationMedia(idInDatabase),
+            "Can delete media in organization $organizationId",
         )
         assertEquals(
             listFacilities,
@@ -3194,6 +3248,11 @@ internal class PermissionTest : DatabaseTest() {
             "Can read features for organization $organizationId",
         )
         assertEquals(
+            readOrganizationMedia,
+            user.canReadOrganizationMedia(idInDatabase),
+            "Can read media in organization $organizationId",
+        )
+        assertEquals(
             readOrganizationSelf,
             user.canReadOrganizationUser(idInDatabase, userId),
             "Can read self in organization $organizationId",
@@ -3222,6 +3281,11 @@ internal class PermissionTest : DatabaseTest() {
             updateOrganization,
             user.canUpdateOrganization(idInDatabase),
             "Can update organization $organizationId",
+        )
+        assertEquals(
+            updateOrganizationMedia,
+            user.canUpdateOrganizationMedia(idInDatabase),
+            "Can update media in organization $organizationId",
         )
 
         uncheckedOrgs.remove(organizationId)

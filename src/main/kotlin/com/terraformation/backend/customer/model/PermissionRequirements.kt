@@ -307,6 +307,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createOrganizationMedia(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canCreateOrganizationMedia(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to create media in organization $organizationId")
+      }
+    }
+  }
+
   fun createParticipantProjectSpecies(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canCreateParticipantProjectSpecies(projectId)) {
@@ -477,6 +486,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canDeleteOrganization(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException("No permission to delete organization $organizationId")
+      }
+    }
+  }
+
+  fun deleteOrganizationMedia(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canDeleteOrganizationMedia(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to delete media in organization $organizationId")
       }
     }
   }
@@ -1013,6 +1031,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
         throw AccessDeniedException(
             "No permission to read features for organization $organizationId"
         )
+      }
+    }
+  }
+
+  fun readOrganizationMedia(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canReadOrganizationMedia(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to read media in organization $organizationId")
       }
     }
   }
@@ -1671,6 +1698,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
       if (!user.canUpdateOrganization(organizationId)) {
         readOrganization(organizationId)
         throw AccessDeniedException("No permission to update organization $organizationId")
+      }
+    }
+  }
+
+  fun updateOrganizationMedia(organizationId: OrganizationId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdateOrganizationMedia(organizationId)) {
+        readOrganization(organizationId)
+        throw AccessDeniedException("No permission to update media in organization $organizationId")
       }
     }
   }

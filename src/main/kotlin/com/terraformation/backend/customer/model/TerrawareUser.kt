@@ -259,6 +259,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canCreateObservation(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
+  fun canCreateOrganizationMedia(organizationId: OrganizationId): Boolean = defaultPermission
+
   fun canCreateParticipantProjectSpecies(projectId: ProjectId): Boolean = defaultPermission
 
   fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = defaultPermission
@@ -297,6 +299,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canDeleteFundingEntities(): Boolean = defaultPermission
 
   fun canDeleteOrganization(organizationId: OrganizationId): Boolean = defaultPermission
+
+  fun canDeleteOrganizationMedia(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canDeleteParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
@@ -432,6 +436,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canReadOrganizationDeliverables(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canReadOrganizationFeatures(organizationId: OrganizationId): Boolean = defaultPermission
+
+  fun canReadOrganizationMedia(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canReadOrganizationUser(organizationId: OrganizationId, userId: UserId): Boolean =
       defaultPermission
@@ -591,6 +597,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUpdateObservationQuantities(observationId: ObservationId): Boolean = defaultPermission
 
   fun canUpdateOrganization(organizationId: OrganizationId): Boolean = defaultPermission
+
+  fun canUpdateOrganizationMedia(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canUpdateParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
