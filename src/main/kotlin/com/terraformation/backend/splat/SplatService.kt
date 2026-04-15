@@ -162,16 +162,8 @@ class SplatService(
       fileId: FileId,
   ): SplatInfoModel {
     ensureOrganizationMediaFile(organizationId, fileId)
-    ensureSplat(fileId)
 
-    val annotations = listSplatAnnotations(fileId)
-    val (originPosition, cameraPosition) = getSplatPositions(fileId)
-
-    return SplatInfoModel(
-        annotations = annotations,
-        cameraPosition = cameraPosition,
-        originPosition = originPosition,
-    )
+    return getSplatInfo(fileId)
   }
 
   fun setOrganizationSplatAnnotations(
@@ -217,16 +209,8 @@ class SplatService(
       fileId: FileId,
   ): SplatInfoModel {
     ensureObservationFile(observationId, fileId)
-    ensureSplat(fileId)
 
-    val annotations = listSplatAnnotations(fileId)
-    val (originPosition, cameraPosition) = getSplatPositions(fileId)
-
-    return SplatInfoModel(
-        annotations = annotations,
-        cameraPosition = cameraPosition,
-        originPosition = originPosition,
-    )
+    return getSplatInfo(fileId)
   }
 
   fun recordBirdnetError(fileId: FileId, errorMessage: String) {
@@ -417,6 +401,19 @@ class SplatService(
       AssetStatus.Ready ->
           fileStore.read(splatsRecord.splatStorageUrl!!).withContentType(splatMimeType)
     }
+  }
+
+  private fun getSplatInfo(fileId: FileId): SplatInfoModel {
+    ensureSplat(fileId)
+
+    val annotations = listSplatAnnotations(fileId)
+    val (originPosition, cameraPosition) = getSplatPositions(fileId)
+
+    return SplatInfoModel(
+        annotations = annotations,
+        cameraPosition = cameraPosition,
+        originPosition = originPosition,
+    )
   }
 
   private fun getSplatPositions(fileId: FileId): Pair<CoordinateModel?, CoordinateModel?> {
