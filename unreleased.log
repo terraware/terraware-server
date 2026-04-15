@@ -1,3 +1,4 @@
+8113eb0f Use higher-level assertions in existing SplatService tests (#4259)
 ea6b7483 SW-8274 Add splat support for organization videos (#4258)
 fdc99f08 SW-8274 Add organization-level media endpoints (#4257)
 1d240d2b SW-8274 Add organization media to search API (#4256)
