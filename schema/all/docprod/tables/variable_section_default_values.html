@@ -174,13 +174,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_section_default_values.variable_type_id references variable_types.id via variable_section_default_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_variable_type_id_fkey</td>
+                                                <td title="variable_section_default_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_variable_id_variable_type_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
+                                                <td class="constraint detail">variable_section_default_valu_variable_id_variable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="variable_section_default_values.[variable_id, variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_variable_id_variable_type_id_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_section_default_valu_variable_id_variable_type_id_fkey</td>
+                                                <td title="variable_section_default_values.variable_type_id references variable_types.id via variable_section_default_values_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_section_default_values_variable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -279,13 +279,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="variable_section_default_values.used_variable_type_id references variable_types.id via variable_section_default_values_used_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">variable_section_default_values_used_variable_type_id_fkey</td>
+                                                <td title="variable_section_default_values.[used_variable_id, used_variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_used_variable_id_used_variab_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
+                                                <td class="constraint detail">variable_section_default_valu_used_variable_id_used_variab_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="variable_section_default_values.[used_variable_id, used_variable_type_id] references variables.[id, variable_type_id] via variable_section_default_valu_used_variable_id_used_variab_fkey"><a href='variables.html'>variables</a><span class='relatedKey'>.variable_type_id</span></td>
-                                                <td class="constraint detail">variable_section_default_valu_used_variable_id_used_variab_fkey</td>
+                                                <td title="variable_section_default_values.used_variable_type_id references variable_types.id via variable_section_default_values_used_variable_type_id_fkey"><a href='variable_types.html'>variable_types</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">variable_section_default_values_used_variable_type_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -413,6 +413,10 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>must_have_text_or_reference</td>
+                                    <td>((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL))</td>
+                                </tr>
+                                <tr>
                                     <td>variable_section_default_values_variable_type_id_check</td>
                                     <td>(variable_type_id &#61; 8)</td>
                                 </tr>
@@ -423,10 +427,6 @@
                                 <tr>
                                     <td>cannot_reference_other_sections</td>
                                     <td>((used_variable_type_id IS NULL) OR (used_variable_type_id &lt;&gt; 8))</td>
-                                </tr>
-                                <tr>
-                                    <td>must_have_text_or_reference</td>
-                                    <td>((text_value IS NOT NULL) OR (used_variable_id IS NOT NULL))</td>
                                 </tr>
                                 </tbody>
                             </table>
