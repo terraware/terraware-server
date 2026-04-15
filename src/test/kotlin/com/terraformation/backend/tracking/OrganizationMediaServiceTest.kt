@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.assertGeometryEquals
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.FileId
@@ -301,6 +302,30 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       assertThrows<AccessDeniedException> { service.getStream(organizationId, fileId) }
+    }
+  }
+
+  @Nested
+  inner class OnOrganizationDeletionStartedEvent {
+    @Test
+    fun `deletes all organization media files`() {
+      val otherOrgId = insertOrganization()
+      insertOrganizationMediaFile(fileId = insertFile(), organizationId = otherOrgId)
+
+      val expected = dslContext.fetch(ORGANIZATION_MEDIA_FILES)
+
+      val fileId1 =
+          insertOrganizationMediaFile(fileId = insertFile(), organizationId = organizationId)
+      val fileId2 =
+          insertOrganizationMediaFile(fileId = insertFile(), organizationId = organizationId)
+
+      service.on(OrganizationDeletionStartedEvent(organizationId))
+
+      assertTableEquals(expected)
+
+      eventPublisher.assertEventsPublished(
+          setOf(FileReferenceDeletedEvent(fileId1), FileReferenceDeletedEvent(fileId2))
+      )
     }
   }
 }

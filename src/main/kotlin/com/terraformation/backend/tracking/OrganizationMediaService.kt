@@ -2,8 +2,10 @@ package com.terraformation.backend.tracking
 
 import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
+import com.terraformation.backend.customer.event.OrganizationDeletionStartedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
@@ -20,6 +22,7 @@ import jakarta.inject.Named
 import org.jooq.DSLContext
 import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.event.EventListener
 import org.springframework.web.multipart.MultipartFile
 
 @Named
@@ -110,6 +113,18 @@ class OrganizationMediaService(
     ensureOrganizationFile(organizationId, fileId)
 
     return muxService.getMuxStream(fileId)
+  }
+
+  @EventListener
+  fun on(event: OrganizationDeletionStartedEvent) {
+    val fileIds =
+        dslContext
+            .select(ORGANIZATION_MEDIA_FILES.FILE_ID)
+            .from(ORGANIZATION_MEDIA_FILES)
+            .where(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID.eq(event.organizationId))
+            .fetch(ORGANIZATION_MEDIA_FILES.FILE_ID.asNonNullable())
+
+    fileIds.forEach { delete(event.organizationId, it) }
   }
 
   private fun ensureOrganizationFile(organizationId: OrganizationId, fileId: FileId) {
