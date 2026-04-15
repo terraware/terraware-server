@@ -81,6 +81,9 @@ class CoordinateField(
       override val functionName = "ST_X"
     }
 
+    /** Vertex index to use for point geometries. */
+    const val POINT = 0
+
     /**
      * Returns a jOOQ Field that extracts a single coordinate value from a particular vertex of a
      * geometry. This is the jOOQ representation of nested calls to a few PostGIS functions, e.g.,
@@ -91,16 +94,21 @@ class CoordinateField(
         vertexIndex: Int,
         axis: Axis,
     ): Field<BigDecimal?> {
-      return DSL.function(
-          axis.functionName,
-          BigDecimal::class.java,
-          DSL.function(
-              "ST_PointN",
-              Geometry::class.java,
-              DSL.function("ST_ExteriorRing", Geometry::class.java, geometryField),
-              DSL.value(vertexIndex),
-          ),
-      )
+      return if (vertexIndex == POINT) {
+        // Extracting from a POINT, so there's no exterior ring.
+        DSL.function(axis.functionName, BigDecimal::class.java, geometryField)
+      } else {
+        DSL.function(
+            axis.functionName,
+            BigDecimal::class.java,
+            DSL.function(
+                "ST_PointN",
+                Geometry::class.java,
+                DSL.function("ST_ExteriorRing", Geometry::class.java, geometryField),
+                DSL.value(vertexIndex),
+            ),
+        )
+      }
     }
   }
 }

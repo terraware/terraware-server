@@ -58,6 +58,7 @@ class SearchTables(clock: Clock) {
   val observationPlots = ObservationPlotsTable(this)
   val observations = ObservationsTable(this)
   val organizationInternalTags = OrganizationInternalTagsTable(this)
+  val organizationMediaFiles = OrganizationMediaFilesTable(this)
   val organizations = OrganizationsTable(this)
   val organizationUsers = OrganizationUsersTable(this)
   val participantProjectSpecies = ParticipantProjectSpeciesTable(this)

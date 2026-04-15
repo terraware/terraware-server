@@ -8,7 +8,6 @@ import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
 /**
@@ -21,7 +20,7 @@ import org.jooq.impl.DSL
  */
 class NonLocalizableEnumField<T : EnumFromReferenceTable<*, T>>(
     override val fieldName: String,
-    override val databaseField: TableField<*, T?>,
+    override val databaseField: Field<T?>,
     override val table: SearchTable,
     private val enumClass: Class<T>,
     override val exportable: Boolean = true,
