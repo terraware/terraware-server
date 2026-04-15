@@ -132,9 +132,9 @@
 <ellipse fill="none" stroke="black" cx="526.3" cy="-723.53" rx="3.2" ry="3.2"/>
 </g>
 <!-- variable_manifests -->
-<g id="node15" class="node">
+<g id="node14" class="node">
 <title>variable_manifests</title>
-<g id="a_node15"><a xlink:href="../../tables/variable_manifests.html" xlink:title="variable_manifests" target="_top">
+<g id="a_node14"><a xlink:href="../../tables/variable_manifests.html" xlink:title="variable_manifests" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="280.5,-2096.39 280.5,-2220.39 438.5,-2220.39 438.5,-2096.39 280.5,-2096.39"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="280.5,-2198.39 280.5,-2220.39 438.5,-2220.39 438.5,-2198.39 280.5,-2198.39"/>
 <polygon fill="none" stroke="black" points="280.5,-2198.39 280.5,-2220.39 438.5,-2220.39 438.5,-2198.39 280.5,-2198.39"/>
@@ -1052,10 +1052,24 @@
 </a>
 </g>
 </g>
+<!-- variable_manifests&#45;&gt;document_templates -->
+<g id="edge26" class="edge">
+<title>variable_manifests:w&#45;&gt;document_templates:e</title>
+<path fill="none" stroke="black" d="M265.14,-2169.25C194.84,-2211.29 275.59,-2582.39 186,-2582.39"/>
+<polygon fill="black" stroke="black" points="271.77,-2167.47 280.43,-2168.87 275.64,-2166.43 279.5,-2165.39 279.5,-2165.39 279.5,-2165.39 275.64,-2166.43 278.57,-2161.91 271.77,-2167.47 271.77,-2167.47"/>
+<ellipse fill="none" stroke="black" cx="268.68" cy="-2168.3" rx="3.2" ry="3.2"/>
+</g>
+<!-- variable_manifests&#45;&gt;public.users -->
+<g id="edge25" class="edge">
+<title>variable_manifests:w&#45;&gt;public.users:e</title>
+<path fill="none" stroke="black" d="M265.06,-2144.35C169.64,-2157.16 124.33,-2295.37 108.2,-2360.19"/>
+<polygon fill="black" stroke="black" points="271.52,-2143.92 279.74,-2146.98 275.51,-2143.65 279.5,-2143.39 279.5,-2143.39 279.5,-2143.39 275.51,-2143.65 279.26,-2139.8 271.52,-2143.92 271.52,-2143.92"/>
+<ellipse fill="none" stroke="black" cx="268.32" cy="-2144.13" rx="3.2" ry="3.2"/>
+</g>
 <!-- variable_section_values -->
-<g id="node14" class="node">
+<g id="node15" class="node">
 <title>variable_section_values</title>
-<g id="a_node14"><a xlink:href="../../tables/variable_section_values.html" xlink:title="variable_section_values" target="_top">
+<g id="a_node15"><a xlink:href="../../tables/variable_section_values.html" xlink:title="variable_section_values" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="858.5,-1106.39 858.5,-1318.39 1042.5,-1318.39 1042.5,-1106.39 858.5,-1106.39"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="858.5,-1296.39 858.5,-1318.39 1042.5,-1318.39 1042.5,-1296.39 858.5,-1296.39"/>
 <polygon fill="none" stroke="black" points="858.5,-1296.39 858.5,-1318.39 1042.5,-1318.39 1042.5,-1296.39 858.5,-1296.39"/>
@@ -1167,20 +1181,6 @@
 <path fill="none" stroke="black" d="M843,-1265.18C823,-1270.63 816.48,-1286.94 790,-1292.39 731.01,-1304.52 566.49,-1329.43 519,-1292.39 439.14,-1230.11 564.77,-1071.39 463.5,-1071.39"/>
 <polygon fill="black" stroke="black" points="849.56,-1264.37 857.94,-1266.96 853.53,-1263.88 857.5,-1263.39 857.5,-1263.39 857.5,-1263.39 853.53,-1263.88 857.06,-1259.82 849.56,-1264.37 849.56,-1264.37"/>
 <ellipse fill="none" stroke="black" cx="846.38" cy="-1264.76" rx="3.2" ry="3.2"/>
-</g>
-<!-- variable_manifests&#45;&gt;document_templates -->
-<g id="edge26" class="edge">
-<title>variable_manifests:w&#45;&gt;document_templates:e</title>
-<path fill="none" stroke="black" d="M265.14,-2169.25C194.84,-2211.29 275.59,-2582.39 186,-2582.39"/>
-<polygon fill="black" stroke="black" points="271.77,-2167.47 280.43,-2168.87 275.64,-2166.43 279.5,-2165.39 279.5,-2165.39 279.5,-2165.39 275.64,-2166.43 278.57,-2161.91 271.77,-2167.47 271.77,-2167.47"/>
-<ellipse fill="none" stroke="black" cx="268.68" cy="-2168.3" rx="3.2" ry="3.2"/>
-</g>
-<!-- variable_manifests&#45;&gt;public.users -->
-<g id="edge25" class="edge">
-<title>variable_manifests:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M265.06,-2144.35C169.64,-2157.16 124.33,-2295.37 108.2,-2360.19"/>
-<polygon fill="black" stroke="black" points="271.52,-2143.92 279.74,-2146.98 275.51,-2143.65 279.5,-2143.39 279.5,-2143.39 279.5,-2143.39 275.51,-2143.65 279.26,-2139.8 271.52,-2143.92 271.52,-2143.92"/>
-<ellipse fill="none" stroke="black" cx="268.32" cy="-2144.13" rx="3.2" ry="3.2"/>
 </g>
 <!-- variable_select_option_values -->
 <g id="node16" class="node">
@@ -1371,37 +1371,10 @@
 <polygon fill="black" stroke="black" points="547.05,-2162.46 553.18,-2168.74 550.78,-2163.93 554.5,-2165.39 554.5,-2165.39 554.5,-2165.39 550.78,-2163.93 555.82,-2162.04 547.05,-2162.46 547.05,-2162.46"/>
 <ellipse fill="none" stroke="black" cx="544.08" cy="-2161.29" rx="3.2" ry="3.2"/>
 </g>
-<!-- variable_table_styles -->
-<g id="node18" class="node">
-<title>variable_table_styles</title>
-<g id="a_node18"><a xlink:href="../../tables/variable_table_styles.html" xlink:title="variable_table_styles" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="275.5,-113.39 275.5,-197.39 443.5,-197.39 443.5,-113.39 275.5,-113.39"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="275.5,-175.39 275.5,-197.39 443.5,-197.39 443.5,-175.39 275.5,-175.39"/>
-<polygon fill="none" stroke="black" points="275.5,-175.39 275.5,-197.39 443.5,-197.39 443.5,-175.39 275.5,-175.39"/>
-<text text-anchor="start" x="280.5" y="-184.59" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">variable_table_styles</text>
-<text text-anchor="start" x="404.5" y="-183.59" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="275.5,-153.39 275.5,-175.39 443.5,-175.39 443.5,-153.39 275.5,-153.39"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="280.5" y="-170.389"/>
-<text text-anchor="start" x="307.5" y="-161.59" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="275.5,-131.39 275.5,-153.39 443.5,-153.39 443.5,-131.39 275.5,-131.39"/>
-<polygon fill="none" stroke="black" points="275.5,-131.39 275.5,-153.39 443.5,-153.39 443.5,-131.39 275.5,-131.39"/>
-<text text-anchor="start" x="307.5" y="-139.59" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="275.5,-113.39 275.5,-131.39 348.5,-131.39 348.5,-113.39 275.5,-113.39"/>
-<polygon fill="none" stroke="black" points="275.5,-113.39 275.5,-131.39 348.5,-131.39 348.5,-113.39 275.5,-113.39"/>
-<text text-anchor="start" x="278.5" y="-119.59" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="348.5,-113.39 348.5,-131.39 391.5,-131.39 391.5,-113.39 348.5,-113.39"/>
-<polygon fill="none" stroke="black" points="348.5,-113.39 348.5,-131.39 391.5,-131.39 391.5,-113.39 348.5,-113.39"/>
-<text text-anchor="start" x="381.5" y="-119.59" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="391.5,-113.39 391.5,-131.39 443.5,-131.39 443.5,-113.39 391.5,-113.39"/>
-<polygon fill="none" stroke="black" points="391.5,-113.39 391.5,-131.39 443.5,-131.39 443.5,-113.39 391.5,-113.39"/>
-<text text-anchor="start" x="424.5" y="-119.59" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
 <!-- variable_table_columns -->
-<g id="node19" class="node">
+<g id="node18" class="node">
 <title>variable_table_columns</title>
-<g id="a_node19"><a xlink:href="../../tables/variable_table_columns.html" xlink:title="variable_table_columns" target="_top">
+<g id="a_node18"><a xlink:href="../../tables/variable_table_columns.html" xlink:title="variable_table_columns" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="858.5,-97.39 858.5,-243.39 1042.5,-243.39 1042.5,-97.39 858.5,-97.39"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="858.5,-221.39 858.5,-243.39 1042.5,-243.39 1042.5,-221.39 858.5,-221.39"/>
 <polygon fill="none" stroke="black" points="858.5,-221.39 858.5,-243.39 1042.5,-243.39 1042.5,-221.39 858.5,-221.39"/>
@@ -1500,6 +1473,33 @@
 <polygon fill="black" stroke="black" points="856.49,-206.44 856.91,-214.43 855.31,-214.51 854.9,-206.52 856.49,-206.44"/>
 <polyline fill="none" stroke="black" points="857.5,-210.39 853.51,-210.6 "/>
 <ellipse fill="none" stroke="black" cx="850.31" cy="-210.76" rx="3.2" ry="3.2"/>
+</g>
+<!-- variable_table_styles -->
+<g id="node19" class="node">
+<title>variable_table_styles</title>
+<g id="a_node19"><a xlink:href="../../tables/variable_table_styles.html" xlink:title="variable_table_styles" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="275.5,-113.39 275.5,-197.39 443.5,-197.39 443.5,-113.39 275.5,-113.39"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="275.5,-175.39 275.5,-197.39 443.5,-197.39 443.5,-175.39 275.5,-175.39"/>
+<polygon fill="none" stroke="black" points="275.5,-175.39 275.5,-197.39 443.5,-197.39 443.5,-175.39 275.5,-175.39"/>
+<text text-anchor="start" x="280.5" y="-184.59" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">variable_table_styles</text>
+<text text-anchor="start" x="404.5" y="-183.59" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="275.5,-153.39 275.5,-175.39 443.5,-175.39 443.5,-153.39 275.5,-153.39"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="280.5" y="-170.389"/>
+<text text-anchor="start" x="307.5" y="-161.59" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="275.5,-131.39 275.5,-153.39 443.5,-153.39 443.5,-131.39 275.5,-131.39"/>
+<polygon fill="none" stroke="black" points="275.5,-131.39 275.5,-153.39 443.5,-153.39 443.5,-131.39 275.5,-131.39"/>
+<text text-anchor="start" x="307.5" y="-139.59" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="275.5,-113.39 275.5,-131.39 348.5,-131.39 348.5,-113.39 275.5,-113.39"/>
+<polygon fill="none" stroke="black" points="275.5,-113.39 275.5,-131.39 348.5,-131.39 348.5,-113.39 275.5,-113.39"/>
+<text text-anchor="start" x="278.5" y="-119.59" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="348.5,-113.39 348.5,-131.39 391.5,-131.39 391.5,-113.39 348.5,-113.39"/>
+<polygon fill="none" stroke="black" points="348.5,-113.39 348.5,-131.39 391.5,-131.39 391.5,-113.39 348.5,-113.39"/>
+<text text-anchor="start" x="381.5" y="-119.59" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="391.5,-113.39 391.5,-131.39 443.5,-131.39 443.5,-113.39 391.5,-113.39"/>
+<polygon fill="none" stroke="black" points="391.5,-113.39 391.5,-131.39 443.5,-131.39 443.5,-113.39 391.5,-113.39"/>
+<text text-anchor="start" x="424.5" y="-119.59" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
 </g>
 <!-- variable_selects&#45;&gt;variable_types -->
 <g id="edge74" class="edge">

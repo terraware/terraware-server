@@ -1,3 +1,4 @@
+2d49b3a7 SW-8285 Support marking splats as needing attention (#4267)
 c37bed66 SW-8274 Add organization media thumbnail endpoint (#4262)
 eddf85cb Delete media files when organization is deleted (#4260)
 8113eb0f Use higher-level assertions in existing SplatService tests (#4259)
