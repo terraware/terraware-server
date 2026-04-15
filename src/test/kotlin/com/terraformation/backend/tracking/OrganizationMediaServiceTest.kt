@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.mux.MuxService
 import com.terraformation.backend.file.mux.MuxStreamModel
@@ -42,9 +43,10 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
     FileService(dslContext, clock, eventPublisher, filesDao, fileStore)
   }
   private val muxService: MuxService = mockk()
+  private val thumbnailService: ThumbnailService = mockk()
 
   private val service: OrganizationMediaService by lazy {
-    OrganizationMediaService(dslContext, eventPublisher, fileService, muxService)
+    OrganizationMediaService(dslContext, eventPublisher, fileService, muxService, thumbnailService)
   }
 
   private lateinit var organizationId: OrganizationId
@@ -127,6 +129,52 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       assertThrows<AccessDeniedException> { service.read(organizationId, fileId) }
+    }
+  }
+
+  @Nested
+  inner class ReadThumbnail {
+    @Test
+    fun `returns thumbnail data`() {
+      val fileId =
+          insertOrganizationMediaFile(fileId = insertFile(), organizationId = organizationId)
+      val maxWidth = 40
+      val maxHeight = 30
+      val thumbnailContent = byteArrayOf(9, 8, 7)
+
+      every { thumbnailService.readFile(fileId, maxWidth, maxHeight) } returns
+          SizedInputStream(thumbnailContent.inputStream(), 3)
+
+      val inputStream = service.readThumbnail(organizationId, fileId, maxWidth, maxHeight)
+      assertArrayEquals(thumbnailContent, inputStream.readAllBytes())
+    }
+
+    @Test
+    fun `throws FileNotFoundException when file does not belong to the organization`() {
+      val otherOrgId = insertOrganization()
+      val fileId = insertOrganizationMediaFile(fileId = insertFile(), organizationId = otherOrgId)
+
+      assertThrows<FileNotFoundException> { service.readThumbnail(organizationId, fileId) }
+    }
+
+    @Test
+    fun `throws FileNotFoundException when file does not exist`() {
+      val bogusFileId = FileId(99999)
+
+      assertThrows<FileNotFoundException> { service.readThumbnail(organizationId, bogusFileId) }
+    }
+
+    @Test
+    fun `throws AccessDeniedException when user cannot read organization media`() {
+      every { user.canReadOrganizationMedia(any()) } returns false
+
+      val fileId =
+          insertOrganizationMediaFile(
+              fileId = insertFile(),
+              organizationId = organizationId,
+          )
+
+      assertThrows<AccessDeniedException> { service.readThumbnail(organizationId, fileId) }
     }
   }
 
