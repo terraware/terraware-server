@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
 import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -136,6 +137,52 @@ class SplatService(
             ?: throw ObservationNotFoundException(observationId)
 
     generateSplat(organizationId, fileId, force, params, runBirdnet)
+  }
+
+  fun generateOrganizationMediaSplat(
+      organizationId: OrganizationId,
+      fileId: FileId,
+      force: Boolean = false,
+      params: SplatGenerationParams = SplatGenerationParams(),
+      runBirdnet: Boolean = true,
+  ) {
+    ensureOrganizationMediaFile(organizationId, fileId)
+
+    generateSplat(organizationId, fileId, force, params, runBirdnet)
+  }
+
+  fun readOrganizationSplat(organizationId: OrganizationId, fileId: FileId): SizedInputStream {
+    ensureOrganizationMediaFile(organizationId, fileId)
+
+    return readSplat(fileId)
+  }
+
+  fun getOrganizationSplatInfo(
+      organizationId: OrganizationId,
+      fileId: FileId,
+  ): SplatInfoModel {
+    ensureOrganizationMediaFile(organizationId, fileId)
+    ensureSplat(fileId)
+
+    val annotations = listSplatAnnotations(fileId)
+    val (originPosition, cameraPosition) = getSplatPositions(fileId)
+
+    return SplatInfoModel(
+        annotations = annotations,
+        cameraPosition = cameraPosition,
+        originPosition = originPosition,
+    )
+  }
+
+  fun setOrganizationSplatAnnotations(
+      organizationId: OrganizationId,
+      fileId: FileId,
+      annotations: List<SplatAnnotationModel<*>>,
+  ) {
+    ensureOrganizationMediaFile(organizationId, fileId)
+    ensureSplat(fileId)
+
+    setSplatAnnotations(fileId, annotations)
   }
 
   fun recordSplatError(fileId: FileId, errorMessage: String) {
@@ -537,6 +584,21 @@ class SplatService(
             OBSERVATION_MEDIA_FILES,
             OBSERVATION_MEDIA_FILES.OBSERVATION_ID.eq(observationId)
                 .and(OBSERVATION_MEDIA_FILES.FILE_ID.eq(fileId)),
+        )
+
+    if (!associationExists) {
+      throw FileNotFoundException(fileId)
+    }
+  }
+
+  private fun ensureOrganizationMediaFile(organizationId: OrganizationId, fileId: FileId) {
+    requirePermissions { readOrganizationMedia(organizationId) }
+
+    val associationExists =
+        dslContext.fetchExists(
+            ORGANIZATION_MEDIA_FILES,
+            ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID.eq(organizationId)
+                .and(ORGANIZATION_MEDIA_FILES.FILE_ID.eq(fileId)),
         )
 
     if (!associationExists) {
