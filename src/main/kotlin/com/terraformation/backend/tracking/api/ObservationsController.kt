@@ -159,8 +159,8 @@ class ObservationsController(
   fun listObservationResults(
       @RequestParam organizationId: OrganizationId?,
       @RequestParam plantingSiteId: PlantingSiteId?,
-      @Parameter(description = "Whether to include plants in the results. Default to false")
-      includePlants: Boolean? = null,
+      @RequestParam(defaultValue = "Plot")
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
       @Parameter(
           description =
               "Maximum number of results to return. Results are always returned in order of " +
@@ -169,12 +169,6 @@ class ObservationsController(
       )
       limit: Int? = null,
   ): ListObservationResultsResponsePayload {
-    val depth =
-        if (includePlants == true) {
-          ObservationResultsDepth.Plant
-        } else {
-          ObservationResultsDepth.Plot
-        }
     val results =
         when {
           plantingSiteId != null ->
@@ -275,15 +269,9 @@ class ObservationsController(
   )
   fun getObservationResults(
       @PathVariable observationId: ObservationId,
-      @Parameter(description = "Whether to include plants in the results. Default to false")
-      includePlants: Boolean? = null,
+      @RequestParam(defaultValue = "Plot")
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
   ): GetObservationResultsResponsePayload {
-    val depth =
-        if (includePlants == true) {
-          ObservationResultsDepth.Plant
-        } else {
-          ObservationResultsDepth.Plot
-        }
     val results = observationResultsStore.fetchOneById(observationId, depth)
 
     return GetObservationResultsResponsePayload(ObservationResultsPayload(results))

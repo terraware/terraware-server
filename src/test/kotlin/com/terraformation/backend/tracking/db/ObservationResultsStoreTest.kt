@@ -26,9 +26,11 @@ import com.terraformation.backend.tracking.model.BiomassSpeciesModel
 import com.terraformation.backend.tracking.model.ExistingBiomassDetailsModel
 import com.terraformation.backend.tracking.model.ExistingRecordedTreeModel
 import com.terraformation.backend.tracking.model.ObservationMonitoringPlotMediaModel
+import com.terraformation.backend.tracking.model.ObservationMonitoringPlotResultsModel
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
 import com.terraformation.backend.tracking.model.ObservationStratumResultsModel
+import com.terraformation.backend.tracking.model.ObservationSubstratumResultsModel
 import com.terraformation.backend.tracking.model.ObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.RecordedPlantModel
 import io.mockk.every
@@ -87,16 +89,46 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
           resultsStore.fetchByOrganizationId(organizationId, depth = ObservationResultsDepth.Plant)
       val plotResults =
           resultsStore.fetchByOrganizationId(organizationId, depth = ObservationResultsDepth.Plot)
+      val substratumResults =
+          resultsStore.fetchByOrganizationId(
+              organizationId,
+              depth = ObservationResultsDepth.Substratum,
+          )
+      val stratumResults =
+          resultsStore.fetchByOrganizationId(
+              organizationId,
+              depth = ObservationResultsDepth.Stratum,
+          )
+      val siteResults =
+          resultsStore.fetchByOrganizationId(organizationId, depth = ObservationResultsDepth.Site)
 
       assertEquals(
           emptyList<RecordedPlantModel>(),
           plantResults[0].strata[0].substrata[0].monitoringPlots[0].plants,
-          "Plant depth",
+          "Plant depth contains plants",
       )
 
       assertNull(
           plotResults[0].strata[0].substrata[0].monitoringPlots[0].plants,
-          "Plot depth",
+          "Plot depth has plants = null",
+      )
+
+      assertEquals(
+          emptyList<ObservationMonitoringPlotResultsModel>(),
+          substratumResults[0].strata[0].substrata[0].monitoringPlots,
+          "Substratum depth contains empty list of monitoring plots",
+      )
+
+      assertEquals(
+          emptyList<ObservationSubstratumResultsModel>(),
+          stratumResults[0].strata[0].substrata,
+          "Stratum depth contains empty list of substrata",
+      )
+
+      assertEquals(
+          emptyList<ObservationStratumResultsModel>(),
+          siteResults[0].strata,
+          "Site depth contains empty list of strata",
       )
     }
 
