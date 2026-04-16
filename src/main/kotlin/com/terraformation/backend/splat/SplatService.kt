@@ -193,13 +193,17 @@ class SplatService(
     // clear it. So for now, we only support the false -> true transition, but our API is already
     // structured to support true -> false if/when the behavior of that transition is defined.
     if (needsAttention) {
-      dslContext
-          .update(SPLATS)
-          .set(SPLATS.NEEDS_ATTENTION, true)
-          .where(SPLATS.FILE_ID.eq(fileId))
-          .execute()
+      val rowsUpdated =
+          dslContext
+              .update(SPLATS)
+              .set(SPLATS.NEEDS_ATTENTION, true)
+              .where(SPLATS.FILE_ID.eq(fileId))
+              .and(SPLATS.NEEDS_ATTENTION.eq(false))
+              .execute()
 
-      eventPublisher.publishEvent(SplatMarkedNeedsAttentionEvent(fileId, organizationId))
+      if (rowsUpdated > 0) {
+        eventPublisher.publishEvent(SplatMarkedNeedsAttentionEvent(fileId, organizationId))
+      }
     } else {
       log.warn("Ignoring attempt to clear needs-attention flag")
     }

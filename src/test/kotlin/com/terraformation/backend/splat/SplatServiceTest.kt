@@ -1324,5 +1324,15 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventNotPublished<SplatMarkedNeedsAttentionEvent>()
     }
+
+    @Test
+    fun `does not publish redundant event when needs attention was already true`() {
+      service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, true)
+      eventPublisher.clear()
+
+      service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, true)
+
+      eventPublisher.assertEventNotPublished<SplatMarkedNeedsAttentionEvent>()
+    }
   }
 }
