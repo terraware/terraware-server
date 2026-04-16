@@ -8,7 +8,6 @@ import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SU
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.SEED_FUND_REPORTS
@@ -60,6 +59,10 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
               "inventories",
               ORGANIZATIONS.ID.eq(INVENTORIES.ORGANIZATION_ID),
           ),
+          mediaFiles.asMultiValueSublist(
+              "mediaFiles",
+              ORGANIZATIONS.ID.eq(mediaFiles.organizationIdColumn),
+          ),
           organizationUsers.asMultiValueSublist(
               "members",
               ORGANIZATIONS.ID.eq(ORGANIZATION_USERS.ORGANIZATION_ID),
@@ -67,10 +70,6 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
           nurseryWithdrawals.asMultiValueSublist(
               "nurseryWithdrawals",
               ORGANIZATIONS.ID.eq(WITHDRAWAL_SUMMARIES.ORGANIZATION_ID),
-          ),
-          organizationMediaFiles.asMultiValueSublist(
-              "organizationMediaFiles",
-              ORGANIZATIONS.ID.eq(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID),
           ),
           plantingSites.asMultiValueSublist(
               "plantingSites",

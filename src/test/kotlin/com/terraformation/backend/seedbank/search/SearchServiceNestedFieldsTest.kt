@@ -1141,8 +1141,8 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                 "facilities" to expectedFacilities,
                 "id" to "$organizationId",
                 "name" to "Organization 1",
+                "mediaFiles" to expectedMediaFiles,
                 "members" to expectedOrganizationUsers,
-                "organizationMediaFiles" to expectedMediaFiles,
                 "species" to expectedSpecies,
                 "timeZone" to orgTimeZone,
             )
