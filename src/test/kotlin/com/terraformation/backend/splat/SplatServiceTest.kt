@@ -1326,12 +1326,12 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `does not clear needs attention when false is passed`() {
+    fun `clears needs attention when false is passed`() {
       service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, true)
       service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, false)
 
       val record = dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(orgFileId))!!
-      assertEquals(true, record.needsAttention)
+      assertEquals(false, record.needsAttention)
     }
 
     @Test
