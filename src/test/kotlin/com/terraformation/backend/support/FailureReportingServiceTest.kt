@@ -1,0 +1,102 @@
+package com.terraformation.backend.support
+
+import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.model.OrganizationModel
+import com.terraformation.backend.customer.model.TerrawareUser
+import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
+import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.mockUser
+import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
+import com.terraformation.backend.support.atlassian.model.SupportRequestType
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+
+class FailureReportingServiceTest : RunsAsUser {
+  override val user: TerrawareUser = mockUser()
+
+  private val config: TerrawareServerConfig = mockk()
+  private val deliverablesDao: DeliverablesDao = mockk()
+  private val organizationStore: OrganizationStore = mockk()
+  private val projectStore: ProjectStore = mockk()
+  private val supportService: SupportService = mockk()
+
+  private val service =
+      FailureReportingService(
+          config,
+          deliverablesDao,
+          organizationStore,
+          projectStore,
+          supportService,
+      )
+
+  @Nested
+  inner class OnSplatMarkedNeedsAttention {
+    private val fileId = FileId(100)
+    private val organizationId = OrganizationId(200)
+    private val orgName = "Test Organization"
+    private val userEmail = "user@example.com"
+
+    @BeforeEach
+    fun setUp() {
+      every { user.email } returns userEmail
+
+      val orgModel: OrganizationModel = mockk()
+      every { orgModel.name } returns orgName
+      every { organizationStore.fetchOneById(organizationId) } returns orgModel
+    }
+
+    @Test
+    fun `creates Jira ticket with correct content`() {
+      every { config.atlassian } returns
+          TerrawareServerConfig.AtlassianConfig(
+              enabled = true,
+              account = "test-account",
+              apiHost = "https://test.atlassian.net",
+              apiToken = "test-token",
+              serviceDeskKey = "TEST",
+          )
+      every { supportService.submitServiceRequest(any(), any(), any()) } returns "TEST-123"
+
+      service.on(SplatMarkedNeedsAttentionEvent(fileId, organizationId))
+
+      verify {
+        supportService.submitServiceRequest(
+            SupportRequestType.BugReport,
+            "Virtual walkthrough marked as needs attention",
+            withArg { description ->
+              assertTrue(description.contains("Virtual walkthrough #$fileId")) {
+                "Description should contain file ID: $description"
+              }
+              assertTrue(description.contains(orgName)) {
+                "Description should contain org name: $description"
+              }
+              assertTrue(description.contains("$organizationId")) {
+                "Description should contain org ID: $description"
+              }
+              assertTrue(description.contains(userEmail)) {
+                "Description should contain user email: $description"
+              }
+            },
+        )
+      }
+    }
+
+    @Test
+    fun `does not call support service when Atlassian is disabled`() {
+      every { config.atlassian } returns TerrawareServerConfig.AtlassianConfig(enabled = false)
+
+      service.on(SplatMarkedNeedsAttentionEvent(fileId, organizationId))
+
+      verify(exactly = 0) { supportService.submitServiceRequest(any(), any(), any()) }
+    }
+  }
+}
