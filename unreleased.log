@@ -1,3 +1,5 @@
+15b73997 SW-8287 Automatically generate splats from org videos (#4268)
+6cacfcea SW-8286 File Jira ticket when splat needs attention (#4269)
 2d49b3a7 SW-8285 Support marking splats as needing attention (#4267)
 c37bed66 SW-8274 Add organization media thumbnail endpoint (#4262)
 eddf85cb Delete media files when organization is deleted (#4260)
