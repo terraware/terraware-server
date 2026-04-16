@@ -21,6 +21,8 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
+import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.splat.sqs.SplatterRequestFileLocation
 import com.terraformation.backend.splat.sqs.SplatterRequestMessage
@@ -213,28 +215,44 @@ class SplatService(
   fun recordSplatError(fileId: FileId, errorMessage: String) {
     log.error("Splat generation failed for file $fileId: $errorMessage")
 
-    with(SPLATS) {
-      dslContext
-          .update(SPLATS)
-          .set(ASSET_STATUS_ID, AssetStatus.Errored)
-          .set(COMPLETED_TIME, clock.instant())
-          .set(ERROR_MESSAGE, errorMessage)
-          .where(FILE_ID.eq(fileId))
-          .execute()
-    }
+    val splatRecord =
+        dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))
+            ?: throw FileNotFoundException(fileId)
+
+    splatRecord.assetStatusId = AssetStatus.Errored
+    splatRecord.completedTime = clock.instant()
+    splatRecord.errorMessage = errorMessage
+    splatRecord.update()
+
+    eventPublisher.publishEvent(
+        SplatGenerationFailedEvent(
+            fileId = fileId,
+            organizationId = splatRecord.organizationId!!,
+            uploadedByUserId = splatRecord.createdBy!!,
+            videoUploadedTime = splatRecord.createdTime!!,
+        )
+    )
   }
 
   fun recordSplatSuccess(fileId: FileId) {
     log.info("Splat generation completed for file $fileId")
 
-    with(SPLATS) {
-      dslContext
-          .update(SPLATS)
-          .set(ASSET_STATUS_ID, AssetStatus.Ready)
-          .set(COMPLETED_TIME, clock.instant())
-          .where(FILE_ID.eq(fileId))
-          .execute()
-    }
+    val splatRecord =
+        dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))
+            ?: throw FileNotFoundException(fileId)
+
+    splatRecord.assetStatusId = AssetStatus.Ready
+    splatRecord.completedTime = clock.instant()
+    splatRecord.update()
+
+    eventPublisher.publishEvent(
+        SplatGenerationCompletedEvent(
+            fileId = fileId,
+            organizationId = splatRecord.organizationId!!,
+            uploadedByUserId = splatRecord.createdBy!!,
+            videoUploadedTime = splatRecord.createdTime!!,
+        )
+    )
   }
 
   fun getObservationSplatInfo(

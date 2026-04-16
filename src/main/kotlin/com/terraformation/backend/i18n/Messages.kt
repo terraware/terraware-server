@@ -538,6 +538,18 @@ class Messages {
               ),
       )
 
+  fun splatGenerationCompleted(): NotificationMessage =
+      NotificationMessage(
+          title = getMessage("notification.splat.generationCompleted.app.title"),
+          body = getMessage("notification.splat.generationCompleted.app.body"),
+      )
+
+  fun splatGenerationFailed(uploadDateString: String): NotificationMessage =
+      NotificationMessage(
+          title = getMessage("notification.splat.generationFailed.app.title"),
+          body = getMessage("notification.splat.generationFailed.app.body", uploadDateString),
+      )
+
   fun historyAccessionCreated() = getMessage("historyAccessionCreated")
 
   fun historyAccessionQuantityUpdated(newQuantity: SeedQuantityModel) =

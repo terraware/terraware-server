@@ -1,0 +1,32 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.SplatGenerationFailed" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body>
+        <mj-include path="../../logo.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper">
+                <mj-text mj-class="text-headline06-bold">
+                    ${strings("notification.splat.generationFailed.email.body.1")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.splat.generationFailed.email.body.2")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${strings("notification.splat.generationFailed.email.body.3", uploadDateString)}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                    ${link("notification.splat.generationFailed.email.body.4",
+                        "https://knowledge.terraformation.com/hc/en-us/articles/48235134762004")}
+                </mj-text>
+                <mj-button mj-class="btn-productive-primary-md"
+                           href="${walkthroughUrl?no_esc}">${strings("notification.splat.generationFailed.email.buttonLabel")}
+                </mj-button>
+                <mj-include path="../../manageSettings.ftlh.mjml"/>
+
+                <mj-include path="../../footer.ftlh.mjml"/>
+            </mj-column>
+        </mj-section>
+    </mj-body>
+</mjml>

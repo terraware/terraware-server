@@ -583,3 +583,23 @@ class GenericEmail(
   override val templateDir: String
     get() = "generic"
 }
+
+class SplatGenerationCompleted(
+    config: TerrawareServerConfig,
+    val walkthroughUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "splat/generationCompleted"
+}
+
+class SplatGenerationFailed(
+    config: TerrawareServerConfig,
+    val uploadDate: LocalDate,
+    val walkthroughUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "splat/generationFailed"
+
+  val uploadDateString: String
+    get() = uploadDate.toString()
+}

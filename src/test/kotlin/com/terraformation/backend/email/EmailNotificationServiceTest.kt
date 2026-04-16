@@ -62,6 +62,7 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -116,6 +117,8 @@ import com.terraformation.backend.report.model.SeedFundReportMetadata
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
+import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
+import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
@@ -1925,6 +1928,90 @@ internal class EmailNotificationServiceTest {
     )
 
     verify(exactly = 1) { userStore.fetchByOrganizationId(organization.id, true, roles) }
+  }
+
+  @Test
+  fun `splatGenerationCompleted sends email to org users and uploader`() {
+    val uploaderEmail = "uploader@test.com"
+    val uploader = userForEmail(uploaderEmail, UserId(10))
+    val org1User = userForEmail("org1@terraware.io", UserId(11))
+    val org2User = userForEmail("org2@terraware.io", UserId(12))
+    every {
+      userStore.fetchByOrganizationId(organization.id, true, setOf(Role.Admin, Role.Owner))
+    } returns listOf(org1User, org2User)
+    every { userStore.fetchManyById(setOf(UserId(10))) } returns listOf(uploader)
+
+    service.on(
+        SplatGenerationCompletedEvent(
+            fileId = FileId(1),
+            organizationId = organization.id,
+            uploadedByUserId = UserId(10),
+            videoUploadedTime = Instant.EPOCH,
+        )
+    )
+
+    assertRecipientsEqual(organizationRecipients + uploaderEmail)
+    assertSubjectContains("Virtual walkthrough processing complete")
+    assertBodyContains("finished processing")
+    assertBodyContains("https://test.terraware.io/virtual-walkthroughs", "Walkthrough URL")
+
+    assertIsEventListener<SplatGenerationCompletedEvent>(service)
+  }
+
+  @Test
+  fun `splatGenerationCompleted deduplicates when uploader is org admin`() {
+    // org1User is already in organizationRecipients via the default mock
+    val org1User = userForEmail("org1@terraware.io", UserId(20))
+    every {
+      userStore.fetchByOrganizationId(organization.id, true, setOf(Role.Admin, Role.Owner))
+    } returns listOf(org1User)
+
+    service.on(
+        SplatGenerationCompletedEvent(
+            fileId = FileId(1),
+            organizationId = organization.id,
+            uploadedByUserId = UserId(20),
+            videoUploadedTime = Instant.EPOCH,
+        )
+    )
+
+    assertRecipientsEqual(setOf("org1@terraware.io"))
+    assertEquals(1, sentMessages["org1@terraware.io"]?.size, "Should receive exactly one email")
+  }
+
+  @Test
+  fun `splatGenerationFailed sends email with upload date and knowledge base link`() {
+    val uploaderEmail = "uploader@test.com"
+    val uploader = userForEmail(uploaderEmail, UserId(10))
+    val org1User = userForEmail("org1@terraware.io", UserId(11))
+    val org2User = userForEmail("org2@terraware.io", UserId(12))
+    every {
+      userStore.fetchByOrganizationId(organization.id, true, setOf(Role.Admin, Role.Owner))
+    } returns listOf(org1User, org2User)
+    every { uploader.timeZone } returns null
+    every { userStore.fetchOneById(UserId(10)) } returns uploader
+    every { userStore.fetchManyById(setOf(UserId(10))) } returns listOf(uploader)
+    every {
+      organizationStore.fetchOneById(organization.id, OrganizationStore.FetchDepth.Organization)
+    } returns organization
+
+    service.on(
+        SplatGenerationFailedEvent(
+            fileId = FileId(1),
+            organizationId = organization.id,
+            uploadedByUserId = UserId(10),
+            videoUploadedTime = Instant.EPOCH,
+        )
+    )
+
+    assertRecipientsEqual(organizationRecipients + uploaderEmail)
+    assertSubjectContains("Virtual walkthrough processing failed")
+    assertBodyContains("unable to render the model")
+    assertBodyContains("1970-01-01", "Upload date")
+    assertBodyContains("knowledge.terraformation.com", "Knowledge base link")
+    assertBodyContains("https://test.terraware.io/virtual-walkthroughs", "Walkthrough URL")
+
+    assertIsEventListener<SplatGenerationFailedEvent>(service)
   }
 
   private fun assertRecipientsEqual(expected: Set<String>) {

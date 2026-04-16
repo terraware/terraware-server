@@ -26,6 +26,8 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.point
+import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
+import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.splat.sqs.SplatterRequestMessage
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
@@ -740,6 +742,56 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               assetStatusId = AssetStatus.Errored,
               completedTime = clock.instant(),
               errorMessage = errorMessage,
+          )
+      )
+    }
+  }
+
+  @Nested
+  inner class RecordSplatSuccess {
+    private lateinit var fileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      fileId = insertFile()
+      insertSplat(fileId = fileId, assetStatus = AssetStatus.Preparing)
+    }
+
+    @Test
+    fun `publishes SplatGenerationCompletedEvent`() {
+      service.recordSplatSuccess(fileId)
+
+      eventPublisher.assertEventPublished(
+          SplatGenerationCompletedEvent(
+              fileId = fileId,
+              organizationId = organizationId,
+              uploadedByUserId = user.userId,
+              videoUploadedTime = clock.instant(),
+          )
+      )
+    }
+  }
+
+  @Nested
+  inner class RecordSplatError {
+    private lateinit var fileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      fileId = insertFile()
+      insertSplat(fileId = fileId, assetStatus = AssetStatus.Preparing)
+    }
+
+    @Test
+    fun `publishes SplatGenerationFailedEvent`() {
+      service.recordSplatError(fileId, "test error")
+
+      eventPublisher.assertEventPublished(
+          SplatGenerationFailedEvent(
+              fileId = fileId,
+              organizationId = organizationId,
+              uploadedByUserId = user.userId,
+              videoUploadedTime = clock.instant(),
           )
       )
     }
