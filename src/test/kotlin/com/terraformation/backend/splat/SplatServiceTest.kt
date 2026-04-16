@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
@@ -38,6 +39,7 @@ import java.io.ByteArrayInputStream
 import java.net.URI
 import java.nio.file.NoSuchFileException
 import java.time.Instant
+import kotlin.io.path.Path
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -1333,6 +1335,48 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, true)
 
       eventPublisher.assertEventNotPublished<SplatMarkedNeedsAttentionEvent>()
+    }
+  }
+
+  @Nested
+  inner class OnOrganizationVideoUploadedEvent {
+    private lateinit var orgFileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      orgFileId = insertOrganizationMediaFile()
+
+      every { fileStore.getPath(any()) } returns Path("/1.sog")
+      every { fileStore.getUrl(any()) } returns URI("s3://bucket/1.sog")
+      every { sqsTemplate.send(any(), any<SplatterRequestMessage>()) } returns mockk(relaxed = true)
+    }
+
+    @Test
+    fun `triggers splat generation on video upload`() {
+      service.on(OrganizationVideoUploadedEvent(orgFileId, organizationId))
+
+      assertTableEquals(
+          SplatsRecord(
+              assetStatusId = AssetStatus.Preparing,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              fileId = orgFileId,
+              needsAttention = false,
+              organizationId = organizationId,
+              splatStorageUrl = URI("s3://bucket/1.sog"),
+          )
+      )
+
+      verify(exactly = 1) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
+    }
+
+    @Test
+    fun `does not propagate exceptions from splat generation`() {
+      every { fileStore.getPath(any()) } throws RuntimeException("Simulated failure")
+
+      service.on(OrganizationVideoUploadedEvent(orgFileId, organizationId))
+
+      assertTableEmpty(SPLATS)
     }
   }
 }

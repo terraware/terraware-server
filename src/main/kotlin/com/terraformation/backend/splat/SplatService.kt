@@ -3,6 +3,7 @@ package com.terraformation.backend.splat
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
@@ -420,6 +421,15 @@ class SplatService(
       }
     } catch (e: Exception) {
       log.error("Unable to delete splat for file ${event.fileId}", e)
+    }
+  }
+
+  @EventListener
+  fun on(event: OrganizationVideoUploadedEvent) {
+    try {
+      generateOrganizationMediaSplat(event.organizationId, event.fileId)
+    } catch (e: Exception) {
+      log.error("Failed to auto-generate splat for file ${event.fileId}", e)
     }
   }
 
