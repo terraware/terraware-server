@@ -8,6 +8,7 @@ import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.email.model.EmailTemplateModel
 import com.terraformation.backend.i18n.use
@@ -101,8 +102,23 @@ class EmailService(
       model: EmailTemplateModel,
       requireOptIn: Boolean = true,
       roles: Set<Role> = defaultOrgRolesForNotification,
+      additionalUserIds: Set<UserId> = emptySet(),
   ) {
-    userStore.fetchByOrganizationId(organizationId, requireOptIn, roles).forEach { user ->
+    val roleUsers = userStore.fetchByOrganizationId(organizationId, requireOptIn, roles)
+
+    val additionalUsers =
+        if (additionalUserIds.isEmpty()) {
+          emptyList()
+        } else {
+          val roleUserIds = roleUsers.map { it.userId }.toSet()
+          if (additionalUserIds.all { it in roleUserIds }) {
+            emptyList()
+          } else {
+            userStore.fetchManyById(additionalUserIds - roleUserIds)
+          }
+        }
+
+    (roleUsers + additionalUsers).forEach { user ->
       sendUserNotification(user, model, requireOptIn)
     }
   }

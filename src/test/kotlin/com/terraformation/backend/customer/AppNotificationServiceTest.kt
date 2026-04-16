@@ -54,6 +54,7 @@ import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionStatus
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -95,6 +96,8 @@ import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
+import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -511,6 +514,111 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             )
         ),
         listOf(commonValues.copy(userId = admin), commonValues.copy(userId = owner)),
+    )
+  }
+
+  @Test
+  fun `should store splat generation completed notification for admins, owners, and uploader`() {
+    val admin = insertUser()
+    val owner = insertUser()
+    val uploader = insertUser()
+    val contributor = insertUser()
+
+    insertOrganizationUser(admin, role = Role.Admin)
+    insertOrganizationUser(owner, role = Role.Owner)
+    insertOrganizationUser(uploader, role = Role.Contributor)
+    insertOrganizationUser(contributor, role = Role.Contributor)
+
+    val commonValues =
+        NotificationsRow(
+            body = "Your video for a 3D virtual walkthrough has finished processing.",
+            localUrl = webAppUrls.virtualWalkthroughs(),
+            notificationTypeId = NotificationType.SplatGenerationCompleted,
+            organizationId = organizationId,
+            title = "Virtual walkthrough processing complete",
+        )
+
+    testMultipleEventNotifications(
+        SplatGenerationCompletedEvent(
+            fileId = FileId(1),
+            organizationId = organizationId,
+            uploadedByUserId = uploader,
+            videoUploadedTime = Instant.EPOCH,
+        ),
+        listOf(
+            commonValues.copy(userId = admin),
+            commonValues.copy(userId = owner),
+            commonValues.copy(userId = uploader),
+        ),
+    )
+  }
+
+  @Test
+  fun `should deduplicate splat generation completed notification when uploader is admin`() {
+    val admin = insertUser()
+    val owner = insertUser()
+
+    insertOrganizationUser(admin, role = Role.Admin)
+    insertOrganizationUser(owner, role = Role.Owner)
+
+    val commonValues =
+        NotificationsRow(
+            body = "Your video for a 3D virtual walkthrough has finished processing.",
+            localUrl = webAppUrls.virtualWalkthroughs(),
+            notificationTypeId = NotificationType.SplatGenerationCompleted,
+            organizationId = organizationId,
+            title = "Virtual walkthrough processing complete",
+        )
+
+    testMultipleEventNotifications(
+        SplatGenerationCompletedEvent(
+            fileId = FileId(1),
+            organizationId = organizationId,
+            uploadedByUserId = admin,
+            videoUploadedTime = Instant.EPOCH,
+        ),
+        listOf(
+            commonValues.copy(userId = admin),
+            commonValues.copy(userId = owner),
+        ),
+    )
+  }
+
+  @Test
+  fun `should store splat generation failed notification for admins, owners, and uploader`() {
+    val admin = insertUser()
+    val owner = insertUser()
+    val uploader = insertUser()
+
+    insertOrganizationUser(admin, role = Role.Admin)
+    insertOrganizationUser(owner, role = Role.Owner)
+    insertOrganizationUser(uploader, role = Role.Contributor)
+
+    val commonValues =
+        NotificationsRow(
+            body =
+                "We were unable to render the model from the video provided.\n\n" +
+                    "Video upload date: 1970-01-01\n\n" +
+                    "For tips to improve your video, see the Knowledge Base: " +
+                    "https://knowledge.terraformation.com/hc/en-us/articles/48235134762004",
+            localUrl = webAppUrls.virtualWalkthroughs(),
+            notificationTypeId = NotificationType.SplatGenerationFailed,
+            organizationId = organizationId,
+            title = "Virtual walkthrough processing failed",
+        )
+
+    testMultipleEventNotifications(
+        SplatGenerationFailedEvent(
+            fileId = FileId(1),
+            organizationId = organizationId,
+            uploadedByUserId = uploader,
+            videoUploadedTime = Instant.EPOCH,
+        ),
+        listOf(
+            commonValues.copy(userId = admin),
+            commonValues.copy(userId = owner),
+            commonValues.copy(userId = uploader),
+        ),
     )
   }
 

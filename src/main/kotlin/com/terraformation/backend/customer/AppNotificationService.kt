@@ -60,6 +60,8 @@ import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
+import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
@@ -70,6 +72,7 @@ import com.terraformation.backend.tracking.event.ScheduleObservationReminderNoti
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import java.net.URI
+import java.time.ZoneOffset
 import java.util.Locale
 import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
@@ -642,6 +645,47 @@ class AppNotificationService(
     }
   }
 
+  @EventListener
+  fun on(event: SplatGenerationCompletedEvent) {
+    val walkthroughUrl = webAppUrls.virtualWalkthroughs()
+    val renderMessage = { messages.splatGenerationCompleted() }
+
+    log.info("Creating app notifications for splat generation completed for file ${event.fileId}")
+
+    insertOrganizationNotifications(
+        event.organizationId,
+        NotificationType.SplatGenerationCompleted,
+        renderMessage,
+        walkthroughUrl,
+        setOf(Role.Admin, Role.Owner),
+        additionalUserIds = setOf(event.uploadedByUserId),
+    )
+  }
+
+  @EventListener
+  fun on(event: SplatGenerationFailedEvent) {
+    val organization = systemUser.run { organizationStore.fetchOneById(event.organizationId) }
+    val uploaderTimeZone = systemUser.run {
+      userStore.fetchOneById(event.uploadedByUserId).timeZone
+    }
+    val timeZone = organization.timeZone ?: uploaderTimeZone ?: ZoneOffset.UTC
+    val uploadDate = event.videoUploadedTime.atZone(timeZone).toLocalDate()
+
+    val walkthroughUrl = webAppUrls.virtualWalkthroughs()
+    val renderMessage = { messages.splatGenerationFailed(uploadDate.toString()) }
+
+    log.info("Creating app notifications for splat generation failed for file ${event.fileId}")
+
+    insertOrganizationNotifications(
+        event.organizationId,
+        NotificationType.SplatGenerationFailed,
+        renderMessage,
+        walkthroughUrl,
+        setOf(Role.Admin, Role.Owner),
+        additionalUserIds = setOf(event.uploadedByUserId),
+    )
+  }
+
   private fun notifyDeliverableStatusUpdated(projectId: ProjectId, deliverableId: DeliverableId) {
     systemUser.run {
       val organizationId = parentStore.getOrganizationId(projectId)!!
@@ -706,12 +750,27 @@ class AppNotificationService(
       renderMessage: () -> NotificationMessage,
       localUrl: URI,
       roles: Set<Role>? = null,
+      additionalUserIds: Set<UserId> = emptySet(),
   ) {
     systemUser.run {
-      val recipients = userStore.fetchByOrganizationId(organizationId, false, roles)
+      val roleRecipients = userStore.fetchByOrganizationId(organizationId, false, roles)
+
+      val additionalRecipients =
+          if (additionalUserIds.isEmpty()) {
+            emptyList()
+          } else {
+            val roleUserIds = roleRecipients.map { it.userId }.toSet()
+            if (additionalUserIds.all { it in roleUserIds }) {
+              emptyList()
+            } else {
+              userStore.fetchManyById(additionalUserIds - roleUserIds)
+            }
+          }
+
+      val allRecipients = roleRecipients + additionalRecipients
 
       dslContext.transaction { _ ->
-        recipients.forEach { user ->
+        allRecipients.forEach { user ->
           insert(notificationType, user, organizationId, renderMessage, localUrl)
         }
       }

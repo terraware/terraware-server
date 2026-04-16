@@ -86,6 +86,8 @@ import com.terraformation.backend.email.model.ScheduleObservation
 import com.terraformation.backend.email.model.ScheduleObservationReminder
 import com.terraformation.backend.email.model.SeedFundReportCreated
 import com.terraformation.backend.email.model.SensorBoundsAlert
+import com.terraformation.backend.email.model.SplatGenerationCompleted
+import com.terraformation.backend.email.model.SplatGenerationFailed
 import com.terraformation.backend.email.model.T0DataSet
 import com.terraformation.backend.email.model.UnknownAutomationTriggered
 import com.terraformation.backend.email.model.UserAddedToOrganization
@@ -97,6 +99,8 @@ import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
+import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
+import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationNotScheduledNotificationEvent
@@ -853,6 +857,41 @@ class EmailNotificationService(
         )
       }
     }
+  }
+
+  @EventListener
+  fun on(event: SplatGenerationCompletedEvent) {
+    val walkthroughUrl = webAppUrls.fullVirtualWalkthroughs(event.organizationId).toString()
+
+    emailService.sendOrganizationNotification(
+        event.organizationId,
+        SplatGenerationCompleted(config, walkthroughUrl),
+        roles = setOf(Role.Admin, Role.Owner),
+        additionalUserIds = setOf(event.uploadedByUserId),
+    )
+  }
+
+  @EventListener
+  fun on(event: SplatGenerationFailedEvent) {
+    val organization = systemUser.run {
+      organizationStore.fetchOneById(
+          event.organizationId,
+          OrganizationStore.FetchDepth.Organization,
+      )
+    }
+    val uploaderTimeZone = systemUser.run {
+      (userStore.fetchOneById(event.uploadedByUserId) as? IndividualUser)?.timeZone
+    }
+    val timeZone = organization.timeZone ?: uploaderTimeZone ?: ZoneOffset.UTC
+    val uploadDate = event.videoUploadedTime.atZone(timeZone).toLocalDate()
+    val walkthroughUrl = webAppUrls.fullVirtualWalkthroughs(event.organizationId).toString()
+
+    emailService.sendOrganizationNotification(
+        event.organizationId,
+        SplatGenerationFailed(config, uploadDate, walkthroughUrl),
+        roles = setOf(Role.Admin, Role.Owner),
+        additionalUserIds = setOf(event.uploadedByUserId),
+    )
   }
 
   @EventListener

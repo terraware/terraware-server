@@ -305,6 +305,17 @@ class WebAppUrls(
     return UriBuilder.fromUri(config.webAppUrl).path("/help-support/contact-us").build()
   }
 
+  fun fullVirtualWalkthroughs(organizationId: OrganizationId): URI {
+    return UriBuilder.fromUri(config.webAppUrl)
+        .path("/virtual-walkthroughs")
+        .queryParam("organizationId", organizationId)
+        .build()
+  }
+
+  fun virtualWalkthroughs(): URI {
+    return URI("/virtual-walkthroughs")
+  }
+
   /** URL of the mobile app's page in the App Store. */
   val appStore = URI("https://apps.apple.com/us/app/terraware/id1568369900")
 
