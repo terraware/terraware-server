@@ -3,7 +3,6 @@ package com.terraformation.backend.email
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.FacilityNotFoundException
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -115,9 +114,7 @@ class EmailService(
           if (additionalUserIds.all { it in roleUserIds }) {
             emptyList()
           } else {
-            userStore
-                .fetchManyById(additionalUserIds - roleUserIds)
-                .filterIsInstance<IndividualUser>()
+            userStore.fetchManyById(additionalUserIds - roleUserIds)
           }
         }
 

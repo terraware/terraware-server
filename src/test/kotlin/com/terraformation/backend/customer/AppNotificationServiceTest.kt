@@ -518,7 +518,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should store splat generation completed notification for admins owners and uploader`() {
+  fun `should store splat generation completed notification for admins, owners, and uploader`() {
     val admin = insertUser()
     val owner = insertUser()
     val uploader = insertUser()
@@ -585,7 +585,7 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   }
 
   @Test
-  fun `should store splat generation failed notification for admins owners and uploader`() {
+  fun `should store splat generation failed notification for admins, owners, and uploader`() {
     val admin = insertUser()
     val owner = insertUser()
     val uploader = insertUser()
