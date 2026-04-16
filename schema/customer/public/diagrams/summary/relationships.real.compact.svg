@@ -821,9 +821,9 @@
 <ellipse fill="none" stroke="black" cx="1285.8" cy="-5445.06" rx="3.2" ry="3.2"/>
 </g>
 <!-- countries -->
-<g id="node24" class="node">
+<g id="node25" class="node">
 <title>countries</title>
-<g id="a_node24"><a xlink:href="../../tables/countries.html" xlink:title="countries" target="_top">
+<g id="a_node25"><a xlink:href="../../tables/countries.html" xlink:title="countries" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="149,-5014 149,-5160 249,-5160 249,-5014 149,-5014"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="149,-5138 149,-5160 249,-5160 249,-5138 149,-5138"/>
 <polygon fill="none" stroke="black" points="149,-5138 149,-5160 249,-5160 249,-5138 149,-5138"/>
@@ -1300,17 +1300,10 @@
 <polygon fill="black" stroke="black" points="954.5,-2846.98 962.49,-2850.6 958.5,-2846.99 962.5,-2847 962.5,-2847 962.5,-2847 958.5,-2846.99 962.51,-2843.4 954.5,-2846.98 954.5,-2846.98"/>
 <ellipse fill="none" stroke="black" cx="951.3" cy="-2846.98" rx="3.2" ry="3.2"/>
 </g>
-<!-- countries&#45;&gt;regions -->
-<g id="edge113" class="edge">
-<title>countries:w&#45;&gt;regions:e</title>
-<path fill="none" stroke="black" d="M133.28,-5083C121.28,-5083 113.82,-5083 97,-5083"/>
-<polygon fill="black" stroke="black" points="140,-5083 148,-5086.6 144,-5083 148,-5083 148,-5083 148,-5083 144,-5083 148,-5079.4 140,-5083 140,-5083"/>
-<ellipse fill="none" stroke="black" cx="136.8" cy="-5083" rx="3.2" ry="3.2"/>
-</g>
 <!-- facility_connection_states -->
-<g id="node25" class="node">
+<g id="node24" class="node">
 <title>facility_connection_states</title>
-<g id="a_node25"><a xlink:href="../../tables/facility_connection_states.html" xlink:title="facility_connection_states" target="_top">
+<g id="a_node24"><a xlink:href="../../tables/facility_connection_states.html" xlink:title="facility_connection_states" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="599,-5373 599,-5453 797,-5453 797,-5373 599,-5373"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="599,-5431 599,-5453 797,-5453 797,-5431 599,-5431"/>
 <polygon fill="none" stroke="black" points="599,-5431 599,-5453 797,-5453 797,-5431 599,-5431"/>
@@ -1332,6 +1325,13 @@
 <text text-anchor="start" x="778" y="-5379.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>
+</g>
+<!-- countries&#45;&gt;regions -->
+<g id="edge113" class="edge">
+<title>countries:w&#45;&gt;regions:e</title>
+<path fill="none" stroke="black" d="M133.28,-5083C121.28,-5083 113.82,-5083 97,-5083"/>
+<polygon fill="black" stroke="black" points="140,-5083 148,-5086.6 144,-5083 148,-5083 148,-5083 148,-5083 144,-5083 148,-5079.4 140,-5083 140,-5083"/>
+<ellipse fill="none" stroke="black" cx="136.8" cy="-5083" rx="3.2" ry="3.2"/>
 </g>
 <!-- projects&#45;&gt;organizations -->
 <g id="edge159" class="edge">
