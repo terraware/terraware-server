@@ -20,6 +20,7 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.splat.sqs.SplatterRequestFileLocation
 import com.terraformation.backend.splat.sqs.SplatterRequestMessage
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
@@ -32,6 +33,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import org.jooq.DSLContext
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 import org.springframework.http.MediaType
 
@@ -41,6 +43,7 @@ class SplatService(
     private val clock: InstantSource,
     config: TerrawareServerConfig,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val fileStore: S3FileStore,
     private val parentStore: ParentStore,
     private val sqsTemplate: SqsTemplate,
@@ -195,6 +198,8 @@ class SplatService(
           .set(SPLATS.NEEDS_ATTENTION, true)
           .where(SPLATS.FILE_ID.eq(fileId))
           .execute()
+
+      eventPublisher.publishEvent(SplatMarkedNeedsAttentionEvent(fileId, organizationId))
     } else {
       log.warn("Ignoring attempt to clear needs-attention flag")
     }

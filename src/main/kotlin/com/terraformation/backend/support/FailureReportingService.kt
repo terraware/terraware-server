@@ -1,11 +1,13 @@
 package com.terraformation.backend.support
 
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import jakarta.inject.Named
 import org.springframework.context.event.EventListener
@@ -57,6 +59,38 @@ class FailureReportingService(
       }
     } catch (e: Exception) {
       log.error("Failed to file support ticket for upload failure", e)
+    }
+  }
+
+  @EventListener
+  fun on(event: SplatMarkedNeedsAttentionEvent) {
+    try {
+      val organization = organizationStore.fetchOneById(event.organizationId)
+      val userEmail = currentUser().email
+
+      val description =
+          """
+            A virtual walkthrough was manually marked as needing attention by a user.
+
+            Virtual walkthrough #${event.fileId}.
+
+            Org: ${organization.name} (ID: ${event.organizationId})
+
+            User who marked as needs attention: $userEmail
+          """
+              .trimIndent()
+
+      if (config.atlassian.enabled) {
+        supportService.submitServiceRequest(
+            SupportRequestType.BugReport,
+            "Virtual walkthrough marked as needs attention",
+            description,
+        )
+      } else {
+        log.info("Atlassian integration disabled; would file support ticket:\n$description")
+      }
+    } catch (e: Exception) {
+      log.error("Failed to file support ticket for needs-attention splat ${event.fileId}", e)
     }
   }
 }

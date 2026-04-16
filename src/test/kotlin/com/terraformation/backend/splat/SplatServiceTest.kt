@@ -2,6 +2,7 @@ package com.terraformation.backend.splat
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
@@ -24,6 +25,7 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.point
+import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.splat.sqs.SplatterRequestMessage
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import io.awspring.cloud.sqs.operations.SqsTemplate
@@ -47,11 +49,20 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
+  private val eventPublisher = TestEventPublisher()
   private val fileStore: S3FileStore = mockk()
   private val sqsTemplate: SqsTemplate = mockk()
 
   private val service: SplatService by lazy {
-    SplatService(clock, config, dslContext, fileStore, ParentStore(dslContext), sqsTemplate)
+    SplatService(
+        clock,
+        config,
+        dslContext,
+        eventPublisher,
+        fileStore,
+        ParentStore(dslContext),
+        sqsTemplate,
+    )
   }
 
   private lateinit var observationId: ObservationId
@@ -1298,6 +1309,20 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<OrganizationNotFoundException> {
         service.setOrganizationSplatNeedsAttention(otherOrgId, otherFileId, true)
       }
+    }
+
+    @Test
+    fun `publishes event when needs attention is set to true`() {
+      service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, true)
+
+      eventPublisher.assertEventPublished(SplatMarkedNeedsAttentionEvent(orgFileId, organizationId))
+    }
+
+    @Test
+    fun `does not publish event when needs attention is set to false`() {
+      service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, false)
+
+      eventPublisher.assertEventNotPublished<SplatMarkedNeedsAttentionEvent>()
     }
   }
 }
