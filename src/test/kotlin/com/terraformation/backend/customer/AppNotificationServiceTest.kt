@@ -98,6 +98,7 @@ import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
+import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -618,6 +619,124 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             commonValues.copy(userId = admin),
             commonValues.copy(userId = owner),
             commonValues.copy(userId = uploader),
+        ),
+    )
+  }
+
+  @Test
+  fun `should store splat marked needs attention notification for admins owners and uploader`() {
+    val admin = insertUser()
+    val owner = insertUser()
+    val uploader = insertUser()
+    val marker = insertUser(email = "marker@test.com")
+    val contributor = insertUser()
+
+    insertOrganizationUser(admin, role = Role.Admin)
+    insertOrganizationUser(owner, role = Role.Owner)
+    insertOrganizationUser(uploader, role = Role.Contributor)
+    insertOrganizationUser(marker, role = Role.Admin)
+    insertOrganizationUser(contributor, role = Role.Contributor)
+
+    val commonValues =
+        NotificationsRow(
+            body =
+                "A virtual walkthrough was marked as needing attention by a user in your organization.\n\n" +
+                    "Video upload date: 1970-01-01\n\n" +
+                    "User who updated the status: marker@test.com",
+            localUrl = webAppUrls.virtualWalkthroughs(),
+            notificationTypeId = NotificationType.SplatMarkedNeedsAttention,
+            organizationId = organizationId,
+            title = "Virtual walkthrough needs attention",
+        )
+
+    testMultipleEventNotifications(
+        SplatMarkedNeedsAttentionEvent(
+            fileId = FileId(1),
+            markedByUserId = marker,
+            organizationId = organizationId,
+            uploadedByUserId = uploader,
+            videoUploadedTime = Instant.EPOCH,
+        ),
+        listOf(
+            commonValues.copy(userId = admin),
+            commonValues.copy(userId = owner),
+            commonValues.copy(userId = marker),
+            commonValues.copy(userId = uploader),
+        ),
+    )
+  }
+
+  @Test
+  fun `should deduplicate splat marked needs attention notification when uploader is admin`() {
+    val admin = insertUser()
+    val owner = insertUser()
+    val marker = insertUser(email = "marker@test.com")
+
+    insertOrganizationUser(admin, role = Role.Admin)
+    insertOrganizationUser(owner, role = Role.Owner)
+    insertOrganizationUser(marker, role = Role.Admin)
+
+    val commonValues =
+        NotificationsRow(
+            body =
+                "A virtual walkthrough was marked as needing attention by a user in your organization.\n\n" +
+                    "Video upload date: 1970-01-01\n\n" +
+                    "User who updated the status: marker@test.com",
+            localUrl = webAppUrls.virtualWalkthroughs(),
+            notificationTypeId = NotificationType.SplatMarkedNeedsAttention,
+            organizationId = organizationId,
+            title = "Virtual walkthrough needs attention",
+        )
+
+    testMultipleEventNotifications(
+        SplatMarkedNeedsAttentionEvent(
+            fileId = FileId(1),
+            markedByUserId = marker,
+            organizationId = organizationId,
+            uploadedByUserId = admin,
+            videoUploadedTime = Instant.EPOCH,
+        ),
+        listOf(
+            commonValues.copy(userId = admin),
+            commonValues.copy(userId = owner),
+            commonValues.copy(userId = marker),
+        ),
+    )
+  }
+
+  @Test
+  fun `should not notify contributor marker who is not an admin owner or uploader`() {
+    val admin = insertUser()
+    val owner = insertUser()
+    val marker = insertUser(email = "marker@test.com")
+
+    insertOrganizationUser(admin, role = Role.Admin)
+    insertOrganizationUser(owner, role = Role.Owner)
+    insertOrganizationUser(marker, role = Role.Contributor)
+
+    val commonValues =
+        NotificationsRow(
+            body =
+                "A virtual walkthrough was marked as needing attention by a user in your organization.\n\n" +
+                    "Video upload date: 1970-01-01\n\n" +
+                    "User who updated the status: marker@test.com",
+            localUrl = webAppUrls.virtualWalkthroughs(),
+            notificationTypeId = NotificationType.SplatMarkedNeedsAttention,
+            organizationId = organizationId,
+            title = "Virtual walkthrough needs attention",
+        )
+
+    testMultipleEventNotifications(
+        SplatMarkedNeedsAttentionEvent(
+            fileId = FileId(1),
+            markedByUserId = marker,
+            organizationId = organizationId,
+            uploadedByUserId = admin,
+            videoUploadedTime = Instant.EPOCH,
+        ),
+        listOf(
+            commonValues.copy(userId = admin),
+            commonValues.copy(userId = owner),
         ),
     )
   }

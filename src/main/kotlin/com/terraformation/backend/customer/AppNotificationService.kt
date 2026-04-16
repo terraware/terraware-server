@@ -62,6 +62,7 @@ import com.terraformation.backend.seedbank.event.AccessionDryingEndEvent
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
+import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
@@ -679,6 +680,31 @@ class AppNotificationService(
     insertOrganizationNotifications(
         event.organizationId,
         NotificationType.SplatGenerationFailed,
+        renderMessage,
+        walkthroughUrl,
+        setOf(Role.Admin, Role.Owner),
+        additionalUserIds = setOf(event.uploadedByUserId),
+    )
+  }
+
+  @EventListener
+  fun on(event: SplatMarkedNeedsAttentionEvent) {
+    val organization = systemUser.run { organizationStore.fetchOneById(event.organizationId) }
+    val uploaderTimeZone = systemUser.run {
+      userStore.fetchOneById(event.uploadedByUserId).timeZone
+    }
+    val timeZone = organization.timeZone ?: uploaderTimeZone ?: ZoneOffset.UTC
+    val uploadDate = event.videoUploadedTime.atZone(timeZone).toLocalDate()
+    val markedByEmail = systemUser.run { userStore.fetchOneById(event.markedByUserId).email }
+
+    val walkthroughUrl = webAppUrls.virtualWalkthroughs()
+    val renderMessage = { messages.splatMarkedNeedsAttention(uploadDate.toString(), markedByEmail) }
+
+    log.info("Creating app notifications for splat marked needs attention for file ${event.fileId}")
+
+    insertOrganizationNotifications(
+        event.organizationId,
+        NotificationType.SplatMarkedNeedsAttention,
         renderMessage,
         walkthroughUrl,
         setOf(Role.Admin, Role.Owner),

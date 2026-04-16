@@ -603,3 +603,16 @@ class SplatGenerationFailed(
   val uploadDateString: String
     get() = uploadDate.toString()
 }
+
+class SplatMarkedNeedsAttention(
+    config: TerrawareServerConfig,
+    val uploadDate: LocalDate,
+    val markedByEmail: String,
+    val walkthroughUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "splat/markedNeedsAttention"
+
+  val uploadDateString: String
+    get() = uploadDate.toString()
+}

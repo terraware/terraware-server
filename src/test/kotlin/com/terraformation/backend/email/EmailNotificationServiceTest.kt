@@ -119,6 +119,7 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
+import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
@@ -2012,6 +2013,45 @@ internal class EmailNotificationServiceTest {
     assertBodyContains("https://test.terraware.io/virtual-walkthroughs", "Walkthrough URL")
 
     assertIsEventListener<SplatGenerationFailedEvent>(service)
+  }
+
+  @Test
+  fun `splatMarkedNeedsAttention sends email to org users and uploader with date and marker email`() {
+    val uploaderEmail = "uploader@test.com"
+    val markerEmail = "marker@test.com"
+    val uploader = userForEmail(uploaderEmail, UserId(30))
+    val marker = userForEmail(markerEmail, UserId(31))
+    val org1User = userForEmail("org1@terraware.io", UserId(32))
+    val org2User = userForEmail("org2@terraware.io", UserId(33))
+    every {
+      userStore.fetchByOrganizationId(organization.id, true, setOf(Role.Admin, Role.Owner))
+    } returns listOf(org1User, org2User)
+    every { uploader.timeZone } returns null
+    every { userStore.fetchOneById(UserId(30)) } returns uploader
+    every { userStore.fetchOneById(UserId(31)) } returns marker
+    every { userStore.fetchManyById(setOf(UserId(30))) } returns listOf(uploader)
+    every {
+      organizationStore.fetchOneById(organization.id, OrganizationStore.FetchDepth.Organization)
+    } returns organization
+
+    service.on(
+        SplatMarkedNeedsAttentionEvent(
+            fileId = FileId(1),
+            markedByUserId = UserId(31),
+            organizationId = organization.id,
+            uploadedByUserId = UserId(30),
+            videoUploadedTime = Instant.EPOCH,
+        )
+    )
+
+    assertRecipientsEqual(organizationRecipients + uploaderEmail)
+    assertSubjectContains("Virtual walkthrough needs attention")
+    assertBodyContains("marked as needing attention")
+    assertBodyContains("1970-01-01", "Upload date")
+    assertBodyContains(markerEmail, "Marker email")
+    assertBodyContains("https://test.terraware.io/virtual-walkthroughs", "Walkthrough URL")
+
+    assertIsEventListener<SplatMarkedNeedsAttentionEvent>(service)
   }
 
   private fun assertRecipientsEqual(expected: Set<String>) {

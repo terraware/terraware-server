@@ -1369,7 +1369,15 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `publishes event when needs attention is set to true`() {
       service.setOrganizationSplatNeedsAttention(organizationId, orgFileId, true)
 
-      eventPublisher.assertEventPublished(SplatMarkedNeedsAttentionEvent(orgFileId, organizationId))
+      eventPublisher.assertEventPublished(
+          SplatMarkedNeedsAttentionEvent(
+              fileId = orgFileId,
+              markedByUserId = user.userId,
+              organizationId = organizationId,
+              uploadedByUserId = user.userId,
+              videoUploadedTime = Instant.EPOCH,
+          )
+      )
     }
 
     @Test
