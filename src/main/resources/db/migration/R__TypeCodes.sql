@@ -359,7 +359,8 @@ VALUES (1, 'User Added to Organization', 1),
        (34, 'Accelerator Report Published', 1),
        (35, 'Activity Created', 1),
        (36, 'Splat Generation Completed', 1),
-       (37, 'Splat Generation Failed', 1)
+       (37, 'Splat Generation Failed', 1),
+       (38, 'Splat Marked Needs Attention', 1)
 ON CONFLICT (id) DO UPDATE SET name                        = excluded.name,
                                notification_criticality_id = excluded.notification_criticality_id;
 

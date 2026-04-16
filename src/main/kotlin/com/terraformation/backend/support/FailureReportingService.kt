@@ -1,10 +1,11 @@
 package com.terraformation.backend.support
 
 import com.terraformation.backend.accelerator.event.DeliverableDocumentUploadFailedEvent
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
+import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
@@ -19,6 +20,8 @@ class FailureReportingService(
     private val organizationStore: OrganizationStore,
     private val projectStore: ProjectStore,
     private val supportService: SupportService,
+    private val systemUser: SystemUser,
+    private val userStore: UserStore,
 ) {
   private val log = perClassLogger()
 
@@ -32,18 +35,18 @@ class FailureReportingService(
       val description =
           """
             An error occurred when a user tried to upload a document for a deliverable. This is a system-generated support ticket.
-            
+
             Reason: ${event.reason.description}
-            
+
             Organization: ${organization.name}
             Project: ${project.name}
-            
+
             Deliverable: ${deliverablesRow?.name ?: "N/A"} (ID ${event.deliverableId})
-            
+
             Service: ${event.documentStore}
             Folder: ${event.documentStoreFolder ?: "Not configured"}
             File: ${event.fileName ?: "N/A"}
-            
+
             System error: ${event.exception}
           """
               .trimIndent()
@@ -66,7 +69,7 @@ class FailureReportingService(
   fun on(event: SplatMarkedNeedsAttentionEvent) {
     try {
       val organization = organizationStore.fetchOneById(event.organizationId)
-      val userEmail = currentUser().email
+      val userEmail = systemUser.run { userStore.fetchOneById(event.markedByUserId).email }
 
       val description =
           """

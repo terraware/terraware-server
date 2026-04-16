@@ -550,6 +550,20 @@ class Messages {
           body = getMessage("notification.splat.generationFailed.app.body", uploadDateString),
       )
 
+  fun splatMarkedNeedsAttention(
+      uploadDateString: String,
+      markedByEmail: String,
+  ): NotificationMessage =
+      NotificationMessage(
+          title = getMessage("notification.splat.markedNeedsAttention.app.title"),
+          body =
+              getMessage(
+                  "notification.splat.markedNeedsAttention.app.body",
+                  uploadDateString,
+                  markedByEmail,
+              ),
+      )
+
   fun historyAccessionCreated() = getMessage("historyAccessionCreated")
 
   fun historyAccessionQuantityUpdated(newQuantity: SeedQuantityModel) =

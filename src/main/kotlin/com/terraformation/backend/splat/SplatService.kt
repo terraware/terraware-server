@@ -205,7 +205,16 @@ class SplatService(
               .execute()
 
       if (rowsUpdated > 0) {
-        eventPublisher.publishEvent(SplatMarkedNeedsAttentionEvent(fileId, organizationId))
+        val splatRecord = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(fileId))
+        eventPublisher.publishEvent(
+            SplatMarkedNeedsAttentionEvent(
+                fileId = fileId,
+                markedByUserId = currentUser().userId,
+                organizationId = organizationId,
+                uploadedByUserId = splatRecord.createdBy!!,
+                videoUploadedTime = splatRecord.createdTime!!,
+            )
+        )
       }
     } else {
       log.warn("Ignoring attempt to clear needs-attention flag")
