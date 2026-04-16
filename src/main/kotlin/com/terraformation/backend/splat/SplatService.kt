@@ -215,9 +215,13 @@ class SplatService(
   fun recordSplatError(fileId: FileId, errorMessage: String) {
     log.error("Splat generation failed for file $fileId: $errorMessage")
 
-    val splatRecord =
-        dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))
-            ?: throw FileNotFoundException(fileId)
+    val splatRecord = dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))
+    if (splatRecord == null) {
+      log.warn(
+          "No splats row found for file $fileId; might have been deleted before processing was done"
+      )
+      return
+    }
 
     splatRecord.assetStatusId = AssetStatus.Errored
     splatRecord.completedTime = clock.instant()
@@ -237,9 +241,13 @@ class SplatService(
   fun recordSplatSuccess(fileId: FileId) {
     log.info("Splat generation completed for file $fileId")
 
-    val splatRecord =
-        dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))
-            ?: throw FileNotFoundException(fileId)
+    val splatRecord = dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))
+    if (splatRecord == null) {
+      log.warn(
+          "No splats row found for file $fileId; might have been deleted before processing was done"
+      )
+      return
+    }
 
     splatRecord.assetStatusId = AssetStatus.Ready
     splatRecord.completedTime = clock.instant()
