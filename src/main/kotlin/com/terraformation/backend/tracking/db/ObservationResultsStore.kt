@@ -206,7 +206,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     },
             )
           }
-      else -> results
+      ObservationResultsDepth.Plot,
+      ObservationResultsDepth.Plant -> results
     }
   }
 
@@ -1726,7 +1727,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                     },
             )
           }
-      else -> results
+      ObservationResultsDepth.Plot,
+      ObservationResultsDepth.Plant -> results
     }
   }
 }
