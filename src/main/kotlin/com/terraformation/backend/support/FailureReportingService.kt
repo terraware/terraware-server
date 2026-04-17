@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import jakarta.inject.Named
@@ -94,6 +95,38 @@ class FailureReportingService(
       }
     } catch (e: Exception) {
       log.error("Failed to file support ticket for needs-attention splat ${event.fileId}", e)
+    }
+  }
+
+  @EventListener
+  fun on(event: SplatDeletedEvent) {
+    try {
+      val organization = organizationStore.fetchOneById(event.organizationId)
+      val userEmail = systemUser.run { userStore.fetchOneById(event.deletedByUserId).email }
+
+      val description =
+          """
+            A virtual walkthrough was removed by a user.
+
+            Virtual walkthrough #${event.fileId}.
+
+            Org: ${organization.name} (ID: ${event.organizationId})
+
+            User who removed walkthrough: $userEmail
+          """
+              .trimIndent()
+
+      if (config.atlassian.enabled) {
+        supportService.submitServiceRequest(
+            SupportRequestType.BugReport,
+            "Virtual walkthrough removed by user",
+            description,
+        )
+      } else {
+        log.info("Atlassian integration disabled; would file support ticket:\n$description")
+      }
+    } catch (e: Exception) {
+      log.error("Failed to file support ticket for deleted splat ${event.fileId}", e)
     }
   }
 }
