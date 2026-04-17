@@ -342,7 +342,6 @@ class NotificationService(
 
     sendToFacility(
         event.facilityId,
-        appContent = null,
         emailContent =
             FacilityAlertRequested(config, event.body, facility, requestedByUser, event.subject),
     )
@@ -624,7 +623,6 @@ class NotificationService(
       val (plantingSite, organization) = fetchSiteAndOrg(event.observation.plantingSiteId)
       sendToOrganization(
           plantingSite.organizationId,
-          appContent = null,
           emailContent =
               ObservationScheduled(
                   config,
@@ -645,7 +643,6 @@ class NotificationService(
       val (plantingSite, organization) = fetchSiteAndOrg(event.originalObservation.plantingSiteId)
       sendToOrganization(
           plantingSite.organizationId,
-          appContent = null,
           emailContent =
               ObservationRescheduled(
                   config,
@@ -676,7 +673,6 @@ class NotificationService(
     val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
     sendToOrganization(
         plantingSite.organizationId,
-        appContent = null,
         emailContent =
             ObservationNotStarted(config, plantingSite.name, webAppUrls.fullContactUs().toString()),
         roles = setOf(Role.Admin, Role.Owner),
@@ -1080,7 +1076,6 @@ class NotificationService(
         sendToOrganization(
             organizationId,
             appContent,
-            emailContent = null,
             roles = setOf(Role.Owner, Role.Admin, Role.Manager),
         )
       }
@@ -1426,7 +1421,6 @@ class NotificationService(
 
       sendToOrganization(
           event.organizationId,
-          appContent = null,
           emailContent = emailContent,
           roles = setOf(Role.TerraformationContact),
           requireEmailOptIn = false,
@@ -1465,7 +1459,6 @@ class NotificationService(
 
       sendToOrganization(
           event.organizationId,
-          appContent = null,
           emailContent = emailContent,
           roles = setOf(Role.TerraformationContact),
           requireEmailOptIn = false,
@@ -1500,8 +1493,8 @@ class NotificationService(
 
   private fun sendToFacility(
       facilityId: FacilityId,
-      appContent: AppContent?,
-      emailContent: EmailTemplateModel?,
+      appContent: AppContent? = null,
+      emailContent: EmailTemplateModel? = null,
       batchEmail: Boolean = false,
   ) {
     val organizationId = parentStore.getOrganizationId(facilityId)!!
@@ -1516,8 +1509,8 @@ class NotificationService(
    */
   private fun sendToOrganization(
       organizationId: OrganizationId,
-      appContent: AppContent?,
-      emailContent: EmailTemplateModel?,
+      appContent: AppContent? = null,
+      emailContent: EmailTemplateModel? = null,
       roles: Set<Role>? = null,
       additionalUserIds: Set<UserId> = emptySet(),
       requireEmailOptIn: Boolean = true,
@@ -1570,8 +1563,8 @@ class NotificationService(
 
   private fun sendToAccelerator(
       organizationId: OrganizationId,
-      appContent: AppContent?,
-      emailContent: EmailTemplateModel?,
+      appContent: AppContent? = null,
+      emailContent: EmailTemplateModel? = null,
       internalInterest: InternalInterest? = null,
   ) {
     systemUser.run {
@@ -1597,8 +1590,8 @@ class NotificationService(
 
   private fun sendToProjectInternalUsers(
       projectId: ProjectId,
-      appContent: AppContent?,
-      emailContent: EmailTemplateModel?,
+      appContent: AppContent? = null,
+      emailContent: EmailTemplateModel? = null,
       role: ProjectInternalRole,
   ) {
     systemUser.run {
@@ -1613,8 +1606,8 @@ class NotificationService(
 
   private fun sendToFundingEntity(
       fundingEntityId: FundingEntityId,
-      appContent: AppContent?,
-      emailContent: EmailTemplateModel?,
+      appContent: AppContent? = null,
+      emailContent: EmailTemplateModel? = null,
   ) {
     systemUser.run {
       val recipients = userStore.fetchByFundingEntityId(fundingEntityId)
@@ -1699,8 +1692,8 @@ class NotificationService(
 
   private fun sendToUser(
       user: TerrawareUser,
-      appContent: AppContent?,
-      emailContent: EmailTemplateModel?,
+      appContent: AppContent? = null,
+      emailContent: EmailTemplateModel? = null,
       organizationId: OrganizationId? = null,
       requireEmailOptIn: Boolean = true,
   ) {
