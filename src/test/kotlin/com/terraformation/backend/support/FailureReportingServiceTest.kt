@@ -173,20 +173,16 @@ class FailureReportingServiceTest {
         supportService.submitServiceRequest(
             SupportRequestType.BugReport,
             "Virtual walkthrough removed by user",
-            withArg { description ->
-              assertTrue(description.contains("Virtual walkthrough #$fileId")) {
-                "Description should contain file ID: $description"
-              }
-              assertTrue(description.contains(orgName)) {
-                "Description should contain org name: $description"
-              }
-              assertTrue(description.contains("$organizationId")) {
-                "Description should contain org ID: $description"
-              }
-              assertTrue(description.contains(userEmail)) {
-                "Description should contain user email: $description"
-              }
-            },
+            """
+            A virtual walkthrough was removed by a user.
+
+            Virtual walkthrough #$fileId.
+
+            Org: $orgName (ID: $organizationId)
+
+            User who removed walkthrough: $userEmail
+            """
+                .trimIndent(),
         )
       }
     }
