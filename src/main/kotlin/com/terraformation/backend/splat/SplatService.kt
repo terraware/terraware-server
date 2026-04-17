@@ -21,6 +21,7 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
@@ -212,6 +213,46 @@ class SplatService(
           )
       )
     }
+  }
+
+  fun deleteObservationSplat(observationId: ObservationId, fileId: FileId) {
+    requirePermissions { updateObservation(observationId) }
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    deleteSplatRows(fileId, organizationId)
+  }
+
+  fun deleteOrganizationSplat(organizationId: OrganizationId, fileId: FileId) {
+    requirePermissions { updateOrganizationMedia(organizationId) }
+    ensureOrganizationMediaFile(organizationId, fileId)
+    ensureSplat(fileId)
+
+    deleteSplatRows(fileId, organizationId)
+  }
+
+  private fun deleteSplatRows(fileId: FileId, organizationId: OrganizationId) {
+    val splatRecord = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(fileId))
+
+    dslContext.transaction { _ ->
+      dslContext.deleteFrom(SPLAT_ANNOTATIONS).where(SPLAT_ANNOTATIONS.FILE_ID.eq(fileId)).execute()
+      dslContext.deleteFrom(BIRDNET_RESULTS).where(BIRDNET_RESULTS.FILE_ID.eq(fileId)).execute()
+      dslContext.deleteFrom(SPLATS).where(SPLATS.FILE_ID.eq(fileId)).execute()
+    }
+
+    eventPublisher.publishEvent(
+        SplatDeletedEvent(
+            deletedByUserId = currentUser().userId,
+            fileId = fileId,
+            organizationId = organizationId,
+            uploadedByUserId = splatRecord.createdBy!!,
+            videoUploadedTime = splatRecord.createdTime!!,
+        )
+    )
   }
 
   fun recordSplatError(fileId: FileId, errorMessage: String) {
