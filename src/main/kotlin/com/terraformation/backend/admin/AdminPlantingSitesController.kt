@@ -754,6 +754,32 @@ class AdminPlantingSitesController(
     return redirectToAdminHome()
   }
 
+  @PostMapping("/recalculatePlantingSiteAreas")
+  @RequireGlobalRole([GlobalRole.SuperAdmin])
+  fun recalculatePlantingSiteAreas(redirectAttributes: RedirectAttributes): String {
+    val successDetails = mutableListOf<String>()
+    val failureDetails = mutableListOf<String>()
+
+    try {
+      systemUser.run {
+        plantingSiteStore.recalculatePlantingSiteAreas(successDetails::add, failureDetails::add)
+      }
+
+      redirectAttributes.successMessage = "Recalculated planting site areas"
+      redirectAttributes.successDetails = successDetails
+
+      if (failureDetails.isNotEmpty()) {
+        redirectAttributes.failureMessage = "Failed to recalculate some planting site areas"
+        redirectAttributes.failureDetails = failureDetails
+      }
+    } catch (e: Exception) {
+      log.error("Failed to recalculate planting site areas", e)
+      redirectAttributes.failureMessage = "Failed to recalculate planting site areas: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
   @PostMapping("/migrateSimplePlantingSites")
   @RequireGlobalRole([GlobalRole.SuperAdmin])
   fun migrateSimplePlantingSites(redirectAttributes: RedirectAttributes): String {

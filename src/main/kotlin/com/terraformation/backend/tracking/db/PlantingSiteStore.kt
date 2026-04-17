@@ -99,6 +99,7 @@ import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
+import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toInstant
@@ -2062,6 +2063,96 @@ class PlantingSiteStore(
                 .execute()
 
         log.info("Inserted $rowsInserted substratum populations")
+      }
+    }
+  }
+
+  /**
+   * Recomputes the `area_ha` columns for every planting site that has a boundary, along with all of
+   * its strata and substrata.
+   *
+   * Each site is processed in its own transaction; a failure on one site is logged and reported but
+   * does not stop the migration. `modified_by` and `modified_time` columns are intentionally left
+   * untouched, as this is a precision correction rather than a user-driven edit. History tables are
+   * also left alone.
+   */
+  fun recalculatePlantingSiteAreas(
+      addSuccessMessage: (String) -> Unit,
+      addFailureMessage: (String) -> Unit,
+  ) {
+    val siteIds =
+        dslContext
+            .select(PLANTING_SITES.ID)
+            .from(PLANTING_SITES)
+            .where(PLANTING_SITES.BOUNDARY.isNotNull)
+            .orderBy(PLANTING_SITES.ID)
+            .fetch(PLANTING_SITES.ID.asNonNullable())
+
+    siteIds.forEach { siteId ->
+      try {
+        dslContext.transaction { _ ->
+          val site = fetchSiteById(siteId, PlantingSiteDepth.Substratum)
+          val boundary = site.boundary ?: return@transaction
+          val exclusion = site.exclusion
+
+          val newSiteArea =
+              boundary.differenceNullable(exclusion).calculateAreaHectares().let { area ->
+                if (area.signum() > 0) area else null
+              }
+
+          val siteChanged = !newSiteArea.equalsIgnoreScale(site.areaHa)
+          if (siteChanged) {
+            dslContext
+                .update(PLANTING_SITES)
+                .set(PLANTING_SITES.AREA_HA, newSiteArea)
+                .where(PLANTING_SITES.ID.eq(siteId))
+                .execute()
+          }
+
+          var stratumChanges = 0
+          var substratumChanges = 0
+
+          site.strata.forEach { stratum ->
+            val newStratumArea =
+                stratum.boundary.differenceNullable(exclusion).calculateAreaHectares()
+            if (!newStratumArea.equalsIgnoreScale(stratum.areaHa)) {
+              dslContext
+                  .update(STRATA)
+                  .set(STRATA.AREA_HA, newStratumArea)
+                  .where(STRATA.ID.eq(stratum.id))
+                  .execute()
+              stratumChanges++
+            }
+
+            stratum.substrata.forEach { substratum ->
+              val newSubstratumArea =
+                  substratum.boundary.differenceNullable(exclusion).calculateAreaHectares()
+              if (!newSubstratumArea.equalsIgnoreScale(substratum.areaHa)) {
+                dslContext
+                    .update(SUBSTRATA)
+                    .set(SUBSTRATA.AREA_HA, newSubstratumArea)
+                    .where(SUBSTRATA.ID.eq(substratum.id))
+                    .execute()
+                substratumChanges++
+              }
+            }
+          }
+
+          if (siteChanged || stratumChanges > 0 || substratumChanges > 0) {
+            val parts =
+                listOfNotNull(
+                    if (siteChanged) "site (${site.areaHa} -> $newSiteArea)" else null,
+                    if (stratumChanges > 0) "$stratumChanges strata" else null,
+                    if (substratumChanges > 0) "$substratumChanges substrata" else null,
+                )
+            addSuccessMessage(
+                "Recalculated planting site $siteId (${site.name}): ${parts.joinToString(", ")}"
+            )
+          }
+        }
+      } catch (e: Exception) {
+        log.error("Unable to recalculate areas for planting site $siteId", e)
+        addFailureMessage("Unable to recalculate planting site $siteId: ${e.message}")
       }
     }
   }

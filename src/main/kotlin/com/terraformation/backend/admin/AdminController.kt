@@ -89,6 +89,10 @@ class AdminController(
         GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
     model.addAttribute(
+        "canRecalculatePlantingSiteAreas",
+        GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
+    model.addAttribute(
         "canRemoveOrganizationUser",
         GlobalRole.SuperAdmin in currentUser().globalRoles,
     )
