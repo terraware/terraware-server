@@ -29,7 +29,7 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal("12.5"),
+            areaHaDifference = BigDecimal("12.505"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
@@ -75,14 +75,14 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal("12.5"),
+            areaHaDifference = BigDecimal("12.505"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
                         addedRegion = newSubstratumBoundary,
-                        areaHaDifference = BigDecimal("12.5"),
+                        areaHaDifference = BigDecimal("12.505"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
@@ -171,14 +171,14 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal("5.0"),
+            areaHaDifference = BigDecimal("5.002"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
                         addedRegion = rectangle(x = 500, width = 200, height = 500),
-                        areaHaDifference = BigDecimal("5.0"),
+                        areaHaDifference = BigDecimal("5.002"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
@@ -192,7 +192,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 500, width = 200, height = 500),
-                                    areaHaDifference = BigDecimal("5.0"),
+                                    areaHaDifference = BigDecimal("5.002"),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
                                     removedRegion = rectangle(x = 0, width = 100, height = 500),
@@ -230,7 +230,7 @@ class PlantingSiteEditCalculatorTest {
                     // Stratum B moves to west edge of site and grows from 200m to 500m wide
                     StratumEdit.Update(
                         addedRegion = rectangle(x = 0, width = 500, height = 500),
-                        areaHaDifference = BigDecimal(15),
+                        areaHaDifference = BigDecimal("15.007"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[1],
                         monitoringPlotEdits = emptyList(),
@@ -238,7 +238,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 0, width = 500, height = 500),
-                                    areaHaDifference = BigDecimal(15),
+                                    areaHaDifference = BigDecimal("15.007"),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[1].substrata[0],
                                     monitoringPlotEdits =
@@ -253,7 +253,7 @@ class PlantingSiteEditCalculatorTest {
                     // Stratum A moves to east edge of site and shrinks from 800m to 500m wide
                     StratumEdit.Update(
                         addedRegion = rectangle(x = 800, width = 200, height = 500),
-                        areaHaDifference = BigDecimal(-15),
+                        areaHaDifference = BigDecimal("-15.007"),
                         desiredModel = desired.strata[1],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
@@ -269,7 +269,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 800, width = 200, height = 500),
-                                    areaHaDifference = BigDecimal(-15),
+                                    areaHaDifference = BigDecimal("-15.007"),
                                     desiredModel = desired.strata[1].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
@@ -340,7 +340,7 @@ class PlantingSiteEditCalculatorTest {
                     // Stratum A shrinks
                     StratumEdit.Update(
                         addedRegion = rectangle(0),
-                        areaHaDifference = BigDecimal("-12.5"),
+                        areaHaDifference = BigDecimal("-12.506"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
@@ -391,7 +391,7 @@ class PlantingSiteEditCalculatorTest {
                     // Stratum A shrinks
                     StratumEdit.Update(
                         addedRegion = rectangle(0),
-                        areaHaDifference = BigDecimal("-12.5"),
+                        areaHaDifference = BigDecimal("-12.506"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
@@ -400,7 +400,7 @@ class PlantingSiteEditCalculatorTest {
                     ),
                     StratumEdit.Update(
                         addedRegion = rectangle(x = 250, width = 250, height = 500),
-                        areaHaDifference = BigDecimal("12.5"),
+                        areaHaDifference = BigDecimal("12.506"),
                         desiredModel = desired.strata[1],
                         existingModel = existing.strata[1],
                         monitoringPlotEdits = emptyList(),
@@ -475,7 +475,7 @@ class PlantingSiteEditCalculatorTest {
                     ),
                     StratumEdit.Update(
                         addedRegion = rectangle(0),
-                        areaHaDifference = BigDecimal(-25),
+                        areaHaDifference = BigDecimal("-25.010"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
@@ -489,7 +489,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
-                                    areaHaDifference = BigDecimal(-25),
+                                    areaHaDifference = BigDecimal("-25.010"),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits = emptyList(),
@@ -536,14 +536,14 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal("-25.0"),
+            areaHaDifference = BigDecimal("-25.011"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
                         addedRegion = rectangle(x = 500, width = 280, height = 500),
-                        areaHaDifference = BigDecimal.ZERO,
+                        areaHaDifference = BigDecimal("-0.001"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
@@ -557,7 +557,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 500, width = 280, height = 500),
-                                    areaHaDifference = BigDecimal.ZERO,
+                                    areaHaDifference = BigDecimal("-0.001"),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
@@ -636,14 +636,14 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal(25),
+            areaHaDifference = BigDecimal("25.011"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
                         addedRegion = rectangle(x = 100, width = 500, height = 500),
-                        areaHaDifference = BigDecimal(25),
+                        areaHaDifference = BigDecimal("25.011"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
@@ -651,7 +651,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 100, width = 500, height = 500),
-                                    areaHaDifference = BigDecimal(25),
+                                    areaHaDifference = BigDecimal("25.011"),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
@@ -689,13 +689,13 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal(5),
+            areaHaDifference = BigDecimal("5.003"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
-                        areaHaDifference = BigDecimal(5),
+                        areaHaDifference = BigDecimal("5.003"),
                         addedRegion = rectangle(x = 400, width = 100, height = 500),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
@@ -707,7 +707,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = rectangle(x = 400, width = 100, height = 500),
-                                    areaHaDifference = BigDecimal(5),
+                                    areaHaDifference = BigDecimal("5.003"),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
                                     // The unqualified plots are already in the correct substratum
@@ -742,14 +742,14 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal("10.0"),
+            areaHaDifference = BigDecimal("10.004"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
                         addedRegion = addedRegion,
-                        areaHaDifference = BigDecimal("10.0"),
+                        areaHaDifference = BigDecimal("10.004"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
@@ -772,7 +772,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = addedRegion,
-                                    areaHaDifference = BigDecimal("10.0"),
+                                    areaHaDifference = BigDecimal("10.004"),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits = emptyList(),
@@ -882,7 +882,7 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal("-12.5"),
+            areaHaDifference = BigDecimal("-12.505"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
@@ -918,14 +918,14 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal(-25),
+            areaHaDifference = BigDecimal("-25.010"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
                         addedRegion = rectangle(0),
-                        areaHaDifference = BigDecimal(-25),
+                        areaHaDifference = BigDecimal("-25.010"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits =
@@ -1086,14 +1086,14 @@ class PlantingSiteEditCalculatorTest {
 
     assertEditResult(
         PlantingSiteEdit(
-            areaHaDifference = BigDecimal("-0.1"),
+            areaHaDifference = BigDecimal("-0.063"),
             desiredModel = desired,
             existingModel = existing,
             stratumEdits =
                 listOf(
                     StratumEdit.Update(
                         addedRegion = rectangle(0),
-                        areaHaDifference = BigDecimal("-0.1"),
+                        areaHaDifference = BigDecimal("-0.063"),
                         desiredModel = desired.strata[0],
                         existingModel = existing.strata[0],
                         monitoringPlotEdits = emptyList(),
@@ -1101,7 +1101,7 @@ class PlantingSiteEditCalculatorTest {
                             listOf(
                                 SubstratumEdit.Update(
                                     addedRegion = rectangle(0),
-                                    areaHaDifference = BigDecimal("-0.1"),
+                                    areaHaDifference = BigDecimal("-0.063"),
                                     desiredModel = desired.strata[0].substrata[0],
                                     existingModel = existing.strata[0].substrata[0],
                                     monitoringPlotEdits =
