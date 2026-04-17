@@ -4,7 +4,6 @@ import com.terraformation.backend.db.SRID
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Geometry
-
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier
 
 /**

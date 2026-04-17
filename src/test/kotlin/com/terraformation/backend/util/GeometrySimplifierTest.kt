@@ -1,7 +1,6 @@
 package com.terraformation.backend.util
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.gis.GeometryFileParser
