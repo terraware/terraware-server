@@ -125,7 +125,7 @@ dependencies {
   implementation("jakarta.ws.rs:jakarta.ws.rs-api:4.0.0")
   implementation("net.coobird:thumbnailator:0.4.21")
   implementation("org.apache.tika:tika-core:3.3.0")
-  implementation("org.bouncycastle:bcpkix-jdk18on:1.83")
+  implementation("org.bouncycastle:bcpkix-jdk18on:1.84")
   implementation("org.commonmark:commonmark:0.28.0")
   implementation("org.flywaydb:flyway-core:$flywayVersion")
   implementation("org.flywaydb:flyway-database-postgresql:$flywayVersion")
