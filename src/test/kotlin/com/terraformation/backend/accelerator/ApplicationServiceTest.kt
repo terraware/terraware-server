@@ -272,7 +272,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       val updatedVariableValues =
           ProjectAcceleratorVariableValuesModel(
-              applicationReforestableLand = BigDecimal("100.0"),
+              applicationReforestableLand = BigDecimal("99.950"),
               countryCode = "KE",
               dealName = internalName,
               landUseModelTypes = setOf(LandUseModelType.Mangroves, LandUseModelType.NativeForest),
@@ -296,7 +296,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
 
       assertEquals(
           ProjectAcceleratorDetailsModel(
-              applicationReforestableLand = BigDecimal("100.0"),
+              applicationReforestableLand = BigDecimal("99.950"),
               countryCode = "KE",
               dealName = internalName,
               fileNaming = internalName,

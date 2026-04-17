@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking.model
 import java.math.BigDecimal
 
 /** Number of digits after the decimal point to retain in area (hectares) calculations. */
-const val HECTARES_SCALE = 1
+const val HECTARES_SCALE = 3
 
 /** The maximum size of the envelope (bounding box) of a site. */
 val MAX_SITE_ENVELOPE_AREA_HA = BigDecimal(20000)

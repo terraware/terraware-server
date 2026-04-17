@@ -45,7 +45,7 @@ class ExtensionsTest {
               )
           )
 
-      assertEquals(BigDecimal("101.8"), geometry.calculateAreaHectares())
+      assertEquals(BigDecimal("101.816"), geometry.calculateAreaHectares())
     }
 
     @Test
@@ -66,7 +66,7 @@ class ExtensionsTest {
               )
           )
 
-      assertEquals(BigDecimal("101.8"), geometry.calculateAreaHectares())
+      assertEquals(BigDecimal("101.816"), geometry.calculateAreaHectares())
     }
 
     @Test
@@ -87,7 +87,7 @@ class ExtensionsTest {
               )
           )
 
-      assertEquals(BigDecimal("101.8"), geometry.calculateAreaHectares())
+      assertEquals(BigDecimal("101.816"), geometry.calculateAreaHectares())
     }
 
     @Test

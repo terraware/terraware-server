@@ -55,7 +55,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSitesRow(
-                  areaHa = BigDecimal("4.0"),
+                  areaHa = BigDecimal("4.002"),
                   boundary = newBoundary,
                   gridOrigin = initialModel.gridOrigin,
                   id = initialModel.id,
@@ -77,7 +77,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       assertSetEquals(
           setOf(
               PlantingSiteHistoriesRow(
-                  areaHa = BigDecimal("1.0"),
+                  areaHa = BigDecimal("1.002"),
                   boundary = initialModel.boundary,
                   createdBy = user.userId,
                   createdTime = createdTime,
@@ -85,7 +85,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
                   plantingSiteId = initialModel.id,
               ),
               PlantingSiteHistoriesRow(
-                  areaHa = BigDecimal("4.0"),
+                  areaHa = BigDecimal("4.002"),
                   boundary = newBoundary,
                   createdBy = user.userId,
                   createdTime = clock.instant,
