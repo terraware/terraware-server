@@ -278,6 +278,20 @@
             <input type="submit" value="Recalculate"/>
         </form>
     </th:block>
+
+    <th:block th:if="${canRecalculatePlantingSiteAreas}">
+        <h3>Recalculate Planting Site Areas</h3>
+
+        <p>
+            This recomputes the area in hectares for every planting site, stratum, and substratum.
+            Use this once to upgrade areas that were calculated before the precision was increased
+            to three decimal places.
+        </p>
+
+        <form method="POST" action="/admin/recalculatePlantingSiteAreas">
+            <input type="submit" value="Recalculate Planting Site Areas"/>
+        </form>
+    </th:block>
 </details>
 
 <details id="sendTestEmail" class="section" th:if="${canSendTestEmail}">
