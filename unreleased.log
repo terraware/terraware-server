@@ -1,3 +1,4 @@
+3f1fcd1c SW-8276 Implemented geometry simplifier and test (#4286)
 3d14eab7 SW-8218 Increase area-in-hectares precision (#4287)
 90ee8702 SW-8286 File Jira ticket when a splat is deleted (#4282)
 9ecea5ae Combine notification services (#4283)
