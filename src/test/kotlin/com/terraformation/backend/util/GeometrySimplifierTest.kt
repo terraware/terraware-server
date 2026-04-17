@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.gis.GeometryFileParser
-import com.terraformation.backend.log.perClassLogger
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.junit.jupiter.api.Assertions.*
@@ -16,24 +15,27 @@ class GeometrySimplifierTest {
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
   private val parser = GeometryFileParser(objectMapper)
 
-  private val log = perClassLogger()
+  @Test
+  fun `simplifies geometry for a polygon`() {
+    runGeoJson("/gis/simplification/simple.geojson")
+  }
 
   @Test
-  fun `simplifies geometry`() {
-    val original = parseGeoJson("/gis/simplification.geojson")
-    val simplified = simplifier.simplify(original)
+  fun `simplifies geometry for a multi-polygon`() {
+    runGeoJson("/gis/simplification/multipolygon.geojson")
+  }
 
+  private fun runGeoJson(path: String) {
+    val original = parseGeoJson(path)
+
+    val simplified = simplifier.simplify(original)
     val jaccardSimilarity = jaccard(simplified, original)
     val reductionRate = reductionRatio(simplified, original)
 
-    log.info("Jaccard similarity: $jaccardSimilarity")
-    log.info("Reduction rate: $reductionRate")
-
     assertTrue(jaccardSimilarity > 0.95, "Simplified geometry should be very similar")
-    assertTrue(reductionRate < 0.70, "Simplified geometry should be smaller")
+    assertTrue(reductionRate > 0.50, "Simplified geometry should be smaller")
   }
 
-  /** computes the [Jaccard similarity](https://en.wikipedia.org/wiki/Jaccard_index) */
   private fun jaccard(simplified: Geometry, original: Geometry): Double {
     val projectedOriginal = projectToMercator(original)
     val projectedSimplified = projectToMercator(simplified)

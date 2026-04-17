@@ -41,7 +41,7 @@ class GeometryFileParser(private val objectMapper: ObjectMapper) {
     return try {
       objectMapper.readValue<Geometry>(content)
     } catch (e: JsonParseException) {
-      throw ContentFormatException("File does not appear to be valid GeoJSON")
+      throw ContentFormatException("File does not appear to be valid GeoJSON: ${e.message}")
     }
   }
 
