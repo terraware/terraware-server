@@ -1,3 +1,4 @@
+90ee8702 SW-8286 File Jira ticket when a splat is deleted (#4282)
 9ecea5ae Combine notification services (#4283)
 de63d349 SW-8274 APIs to delete splats (#4281)
 8cc04486 Update dependency org.bouncycastle:bcpkix-jdk18on to v1.84 (#4280)
