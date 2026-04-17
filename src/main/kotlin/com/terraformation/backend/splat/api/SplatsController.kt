@@ -31,6 +31,7 @@ import jakarta.ws.rs.ServiceUnavailableException
 import java.math.BigDecimal
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -151,6 +152,20 @@ class SplatsController(
     val infoModel = splatService.getObservationSplatInfo(observationId, fileId)
 
     return GetObservationSplatInfoResponsePayload(infoModel)
+  }
+
+  @ApiResponse200
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a splat for the requested file ID."
+  )
+  @DeleteMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}")
+  @Operation(summary = "Deletes a 3D Gaussian splat model from an observation.")
+  fun deleteObservationSplat(
+      @PathVariable observationId: ObservationId,
+      @PathVariable fileId: FileId,
+  ): SimpleSuccessResponsePayload {
+    splatService.deleteObservationSplat(observationId, fileId)
+    return SimpleSuccessResponsePayload()
   }
 
   @ApiResponse200

@@ -22,6 +22,7 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.ws.rs.ServiceUnavailableException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -73,6 +74,18 @@ class OrganizationSplatsController(
       @RequestBody payload: GenerateSplatRequestPayload,
   ): SimpleSuccessResponsePayload {
     splatService.generateOrganizationMediaSplat(organizationId, payload.fileId)
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse404("The media file does not exist in this organization, or has no splat.")
+  @DeleteMapping("/{fileId}")
+  @Operation(summary = "Deletes a 3D Gaussian splat model for an organization video.")
+  fun deleteOrganizationSplat(
+      @PathVariable organizationId: OrganizationId,
+      @PathVariable fileId: FileId,
+  ): SimpleSuccessResponsePayload {
+    splatService.deleteOrganizationSplat(organizationId, fileId)
     return SimpleSuccessResponsePayload()
   }
 

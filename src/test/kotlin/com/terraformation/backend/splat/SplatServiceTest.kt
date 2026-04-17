@@ -26,6 +26,7 @@ import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.point
+import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
@@ -172,7 +173,6 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class SetObservationSplatAnnotations {
-
     @BeforeEach
     fun setUp() {
       insertSplat()
@@ -488,6 +488,131 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<FileNotFoundException> {
         service.setObservationSplatAnnotations(observationId, fileWithoutSplat, emptyList())
+      }
+    }
+  }
+
+  @Nested
+  inner class DeleteObservationSplat {
+    @BeforeEach
+    fun setUp() {
+      insertSplat()
+      insertBirdnetResult()
+      insertSplatAnnotation()
+    }
+
+    @Test
+    fun `removes splat, birdnet result, and annotations from database`() {
+      service.deleteObservationSplat(observationId, fileId)
+
+      assertTableEmpty(SPLATS)
+      assertTableEmpty(BIRDNET_RESULTS)
+      assertTableEmpty(SPLAT_ANNOTATIONS)
+
+      verify(exactly = 0) { fileStore.delete(any()) }
+
+      eventPublisher.assertEventPublished(
+          SplatDeletedEvent(
+              deletedByUserId = user.userId,
+              fileId = fileId,
+              organizationId = organizationId,
+              uploadedByUserId = user.userId,
+              videoUploadedTime = Instant.EPOCH,
+          )
+      )
+    }
+
+    @Test
+    fun `throws exception if splat does not exist for file`() {
+      val fileWithoutSplat = insertFile()
+      insertObservationMediaFile(fileId = fileWithoutSplat)
+
+      assertThrows<FileNotFoundException> {
+        service.deleteObservationSplat(observationId, fileWithoutSplat)
+      }
+    }
+
+    @Test
+    fun `throws exception if file is not associated with observation`() {
+      val otherFileId = insertFile()
+      insertSplat(fileId = otherFileId)
+
+      assertThrows<FileNotFoundException> {
+        service.deleteObservationSplat(observationId, otherFileId)
+      }
+    }
+
+    @Test
+    fun `throws exception if user does not have permission to update observation`() {
+      deleteOrganizationUser()
+
+      assertThrows<ObservationNotFoundException> {
+        service.deleteObservationSplat(observationId, fileId)
+      }
+    }
+  }
+
+  @Nested
+  inner class DeleteOrganizationSplat {
+    private lateinit var orgFileId: FileId
+
+    @BeforeEach
+    fun setUp() {
+      orgFileId = insertOrganizationMediaFile()
+      insertSplat(fileId = orgFileId)
+      insertBirdnetResult(fileId = orgFileId)
+      insertSplatAnnotation(fileId = orgFileId)
+    }
+
+    @Test
+    fun `removes splat, birdnet result, and annotations from database`() {
+      service.deleteOrganizationSplat(organizationId, orgFileId)
+
+      assertTableEmpty(SPLATS)
+      assertTableEmpty(BIRDNET_RESULTS)
+      assertTableEmpty(SPLAT_ANNOTATIONS)
+
+      verify(exactly = 0) { fileStore.delete(any()) }
+
+      eventPublisher.assertEventPublished(
+          SplatDeletedEvent(
+              deletedByUserId = user.userId,
+              fileId = orgFileId,
+              organizationId = organizationId,
+              uploadedByUserId = user.userId,
+              videoUploadedTime = Instant.EPOCH,
+          )
+      )
+    }
+
+    @Test
+    fun `throws exception if file does not belong to organization`() {
+      val unassociatedFileId = insertFile()
+      insertSplat(fileId = unassociatedFileId)
+
+      assertThrows<FileNotFoundException> {
+        service.deleteOrganizationSplat(organizationId, unassociatedFileId)
+      }
+    }
+
+    @Test
+    fun `throws exception if splat does not exist`() {
+      val fileWithoutSplat = insertOrganizationMediaFile(fileId = insertFile())
+
+      assertThrows<FileNotFoundException> {
+        service.deleteOrganizationSplat(organizationId, fileWithoutSplat)
+      }
+    }
+
+    @Test
+    fun `throws exception if user does not have permission`() {
+      val otherOrgId = insertOrganization()
+      val otherFileId = insertFile()
+      insertOrganizationMediaFile(fileId = otherFileId, organizationId = otherOrgId)
+      insertSplat(fileId = otherFileId, organizationId = otherOrgId)
+
+      assertThrows<OrganizationNotFoundException> {
+        service.deleteOrganizationSplat(otherOrgId, otherFileId)
       }
     }
   }
