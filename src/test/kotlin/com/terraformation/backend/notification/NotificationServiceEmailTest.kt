@@ -1,8 +1,10 @@
-package com.terraformation.backend.email
+package com.terraformation.backend.notification
 
 import com.terraformation.backend.accelerator.ProjectAcceleratorDetailsService
 import com.terraformation.backend.accelerator.db.ActivityStore
 import com.terraformation.backend.accelerator.db.DeliverableStore
+import com.terraformation.backend.accelerator.db.ModuleEventStore
+import com.terraformation.backend.accelerator.db.ModuleStore
 import com.terraformation.backend.accelerator.db.ReportStore
 import com.terraformation.backend.accelerator.event.AcceleratorReportPublishedEvent
 import com.terraformation.backend.accelerator.event.AcceleratorReportUpcomingEvent
@@ -22,6 +24,7 @@ import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.AutomationStore
 import com.terraformation.backend.customer.db.FacilityStore
+import com.terraformation.backend.customer.db.NotificationStore
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
@@ -104,11 +107,16 @@ import com.terraformation.backend.documentproducer.model.BaseVariableProperties
 import com.terraformation.backend.documentproducer.model.ExistingDocumentModel
 import com.terraformation.backend.documentproducer.model.SectionVariable
 import com.terraformation.backend.dummyKeycloakInfo
+import com.terraformation.backend.email.EmailSender
+import com.terraformation.backend.email.EmailService
+import com.terraformation.backend.email.WebAppUrls
+import com.terraformation.backend.email.getRecipientsString
 import com.terraformation.backend.email.model.ObservationNotScheduled
 import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.funder.event.FunderInvitedToFundingEntityEvent
 import com.terraformation.backend.funder.model.FundingEntityModel
 import com.terraformation.backend.i18n.Locales
+import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.toGibberish
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
@@ -173,6 +181,9 @@ import java.time.Month
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Locale
+import org.jooq.Configuration as JooqConfiguration
+import org.jooq.DSLContext
+import org.jooq.TransactionalRunnable
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -181,7 +192,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.mail.javamail.JavaMailSenderImpl
 
-internal class EmailNotificationServiceTest {
+internal class NotificationServiceEmailTest {
   private val acceleratorUser: IndividualUser = mockk()
   private val activityStore: ActivityStore = mockk()
   private val adminUser: IndividualUser = mockk()
@@ -209,13 +220,26 @@ internal class EmailNotificationServiceTest {
   private val variableOwnerStore: VariableOwnerStore = mockk()
   private val variableStore: VariableStore = mockk()
 
+  private val messages: Messages = Messages()
+  private val moduleEventStore: ModuleEventStore = mockk(relaxed = true)
+  private val moduleStore: ModuleStore = mockk(relaxed = true)
+  private val notificationStore: NotificationStore = mockk(relaxed = true)
+  private val dslContext: DSLContext =
+      mockk<DSLContext>().apply {
+        // Execute the transaction block synchronously so app-side app-notification inserts run.
+        every { transaction(any<TransactionalRunnable>()) } answers
+            {
+              firstArg<TransactionalRunnable>().run(mockk<JooqConfiguration>(relaxed = true))
+            }
+      }
+
   private val webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
 
   private val freeMarkerConfig =
       Configuration(Configuration.VERSION_2_3_31).apply {
         // Load the email template files from the templates folder in the build output.
         setClassLoaderForTemplateLoading(
-            EmailNotificationServiceTest::class.java.classLoader,
+            NotificationServiceEmailTest::class.java.classLoader,
             "templates",
         )
       }
@@ -224,7 +248,7 @@ internal class EmailNotificationServiceTest {
       spyk(EmailService(config, freeMarkerConfig, parentStore, sender, userStore))
 
   private val service =
-      EmailNotificationService(
+      NotificationService(
           activityStore,
           automationStore,
           clock,
@@ -232,9 +256,14 @@ internal class EmailNotificationServiceTest {
           deliverableStore,
           deviceStore,
           documentStore,
+          dslContext,
           emailService,
           facilityStore,
           fundingEntityStore,
+          messages,
+          moduleEventStore,
+          moduleStore,
+          notificationStore,
           observationStore,
           organizationStore,
           parentStore,
@@ -592,6 +621,7 @@ internal class EmailNotificationServiceTest {
     every { userStore.fetchByFundingEntityId(fundingEntity.id) } returns listOf(funderUser)
     every { userStore.fetchByOrganizationId(any(), any(), any()) } returns
         organizationRecipients.map { userForEmail(it) }
+    every { userStore.fetchManyById(any()) } returns emptyList()
     every {
       userStore.fetchByOrganizationId(organization.id, false, setOf(Role.TerraformationContact))
     } returns listOf(tfContactUser1, tfContactUser2)
@@ -2185,7 +2215,7 @@ internal class EmailNotificationServiceTest {
     } else {
       every { mock.locale } returns Locale.ENGLISH
     }
-    userId?.let { every { mock.userId } returns it }
+    every { mock.userId } returns (userId ?: UserId(0))
 
     return mock
   }
@@ -2200,6 +2230,7 @@ internal class EmailNotificationServiceTest {
     } else {
       every { mock.locale } returns Locale.ENGLISH
     }
+    every { mock.userId } returns UserId(0)
 
     return mock
   }

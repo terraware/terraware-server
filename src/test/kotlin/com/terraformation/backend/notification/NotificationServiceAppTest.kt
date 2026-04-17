@@ -1,4 +1,4 @@
-package com.terraformation.backend.customer
+package com.terraformation.backend.notification
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.RunsAsUser
@@ -81,7 +81,9 @@ import com.terraformation.backend.documentproducer.event.CompletedSectionVariabl
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.dummyKeycloakInfo
+import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.WebAppUrls
+import com.terraformation.backend.funder.db.FundingEntityStore
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import com.terraformation.backend.mockUser
@@ -100,6 +102,7 @@ import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.tracking.db.ObservationResultsStore
+import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
@@ -125,7 +128,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 
-internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
+internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
   val deliverable = mockDeliverable()
 
@@ -161,7 +164,10 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
   private lateinit var variableOwnerStore: VariableOwnerStore
   private lateinit var variableStore: VariableStore
   private lateinit var webAppUrls: WebAppUrls
-  private lateinit var service: AppNotificationService
+  private val emailService: EmailService = mockk(relaxed = true)
+  private val fundingEntityStore: FundingEntityStore = mockk(relaxed = true)
+  private val observationStore: ObservationStore = mockk(relaxed = true)
+  private lateinit var service: NotificationService
 
   @BeforeEach
   fun setUp() {
@@ -304,17 +310,23 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
 
     webAppUrls = WebAppUrls(config, dummyKeycloakInfo())
     service =
-        AppNotificationService(
+        NotificationService(
             activityStore,
             automationStore,
+            clock,
+            config,
             deliverableStore,
             deviceStore,
             documentStore,
             dslContext,
+            emailService,
             facilityStore,
+            fundingEntityStore,
+            messages,
             moduleEventStore,
             moduleStore,
             notificationStore,
+            observationStore,
             organizationStore,
             parentStore,
             plantingSiteStore,
@@ -327,7 +339,6 @@ internal class AppNotificationServiceTest : DatabaseTest(), RunsAsUser {
             userStore,
             variableOwnerStore,
             variableStore,
-            messages,
             webAppUrls,
         )
 
