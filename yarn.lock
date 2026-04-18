@@ -538,9 +538,9 @@ he@^1.2.0:
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
 html-minifier-next@^6.0.0:
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-6.1.1.tgz#2a2bb4fffe3659e04e1febb7c40558059a76248e"
-  integrity sha512-QyJ34DU6O7ar7moQn8CgJyJPNz2VOv2VOqXPypQzItd4piqrhnTylSzPlQutAGOb6i+9zA0BVVsvpd+wy7ciKw==
+  version "6.1.2"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-6.1.2.tgz#10e049370dd2dcfc7d63cc943209d80ecb31acfe"
+  integrity sha512-iDkgNERz1zgYJgkBz7Z4DboolPiKLioslKxKMh33gJ+QStkoDPp7kCb/3/oLfu5j9sYOUxxxvigCOdsG1chw6g==
   dependencies:
     commander "^14.0.2"
     entities "^8.0.0"
