@@ -523,6 +523,18 @@ COMMENT ON COLUMN tracking.planting_sites.organization_id IS 'Which organization
 
 COMMENT ON TABLE tracking.planting_types IS '(Enum) Type of planting associated with a delivery. Different planting types distinguish reassignments from initial plantings.';
 
+COMMENT ON TABLE tracking.simplified_planting_site_histories IS 'Simplified boundary geometries for planting site versions.';
+
+COMMENT ON TABLE tracking.simplified_planting_sites IS 'Simplified boundary geometries for planting sites.';
+
+COMMENT ON TABLE tracking.simplified_strata IS 'Simplified boundary geometries for strata.';
+
+COMMENT ON TABLE tracking.simplified_stratum_histories IS 'Simplified boundary geometries for stratum versions.';
+
+COMMENT ON TABLE tracking.simplified_substrata IS 'Simplified boundary geometries for substrata.';
+
+COMMENT ON TABLE tracking.simplified_substratum_histories IS 'Simplified boundary geometries for substratum versions.';
+
 COMMENT ON TABLE tracking.substratum_histories IS 'Versions of substratum maps over time. Each time a planting site map changes, its substrata'' maps are inserted into this table.';
 
 COMMENT ON TABLE tracking.substratum_populations IS 'Total number of plants of each species in each substratum.';

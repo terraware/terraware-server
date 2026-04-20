@@ -7,6 +7,7 @@ import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import jakarta.inject.Named
@@ -70,5 +71,14 @@ class PlantingSiteService(
   @EventListener
   fun on(event: PlantingSiteMapEditedEvent) {
     deliveryStore.recalculateStratumPopulations(event.edited.id)
+  }
+
+  @EventListener
+  fun on(event: PlantingSiteHistoryCreatedEvent) {
+    plantingSiteStore.upsertSimplifiedPlantingSite(event.plantingSiteId)
+    plantingSiteStore.upsertSimplifiedPlantingSiteHistory(
+        event.plantingSiteId,
+        event.plantingSiteHistoryId,
+    )
   }
 }

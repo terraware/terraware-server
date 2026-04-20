@@ -53,6 +53,12 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_STRATA
+import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_STRATUM_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_SUBSTRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_POPULATIONS
@@ -71,6 +77,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
+import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
@@ -97,6 +104,7 @@ import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.StratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
+import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
@@ -119,6 +127,7 @@ import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -130,6 +139,7 @@ class PlantingSiteStore(
     private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val geometrySimplifier: GeometrySimplifier,
     private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val parentStore: ParentStore,
@@ -409,7 +419,6 @@ class PlantingSiteStore(
       val plantingSiteId = plantingSitesRow.id!!
 
       var siteHistoryId: PlantingSiteHistoryId? = null
-
       if (newModel.boundary != null && newModel.gridOrigin != null) {
         siteHistoryId =
             insertPlantingSiteHistory(newModel, newModel.gridOrigin, now, plantingSiteId)
@@ -417,12 +426,13 @@ class PlantingSiteStore(
         newModel.strata.forEach { stratum ->
           val stratumId = createStratum(stratum, plantingSiteId, now)
           val stratumHistoryId = insertStratumHistory(stratum, siteHistoryId, stratumId)
-
           stratum.substrata.forEach { substratum ->
             val substratumId = createSubstratum(substratum, plantingSiteId, stratumId, now)
             insertSubstratumHistory(substratum, stratumHistoryId, substratumId)
           }
         }
+
+        eventPublisher.publishEvent(PlantingSiteHistoryCreatedEvent(plantingSiteId, siteHistoryId))
       }
 
       val effectiveTimeZone = newModel.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
@@ -492,7 +502,9 @@ class PlantingSiteStore(
       )
 
       if (
-          edited.boundary != null && !edited.boundary.equalsOrBothNull(initial.boundary) ||
+          initial.strata.isEmpty() &&
+              edited.boundary != null &&
+              !edited.boundary.equalsOrBothNull(initial.boundary) ||
               !edited.exclusion.equalsOrBothNull(initial.exclusion)
       ) {
         val historiesRecord =
@@ -508,6 +520,8 @@ class PlantingSiteStore(
                 .attach(dslContext)
 
         historiesRecord.insert()
+        val siteHistoryId = historiesRecord.id!!
+        eventPublisher.publishEvent(PlantingSiteHistoryCreatedEvent(plantingSiteId, siteHistoryId))
       }
 
       if (initialTimeZone != editedTimeZone) {
@@ -584,7 +598,6 @@ class PlantingSiteStore(
                 .returning(ID)
                 .fetchOne(ID)!!
           }
-
       useTemporaryNames(plantingSiteEdit)
 
       plantingSiteEdit.stratumEdits.forEach {
@@ -639,8 +652,73 @@ class PlantingSiteStore(
               ReplacementResult.merge(replacementResults),
           )
       )
+      eventPublisher.publishEvent(
+          PlantingSiteHistoryCreatedEvent(plantingSiteId, plantingSiteHistoryId)
+      )
 
       edited
+    }
+  }
+
+  fun upsertSimplifiedPlantingSite(plantingSiteId: PlantingSiteId) {
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
+
+    dslContext.transaction { _ ->
+      if (site.boundary != null) {
+        simplifyAndUpsertRow(
+            SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID,
+            plantingSiteId,
+            site.boundary,
+            site.exclusion,
+        )
+
+        site.strata.forEach { stratum ->
+          simplifyAndUpsertRow(SIMPLIFIED_STRATA.STRATUM_ID, stratum.id, stratum.boundary)
+          stratum.substrata.forEach { substratum ->
+            simplifyAndUpsertRow(
+                SIMPLIFIED_SUBSTRATA.SUBSTRATUM_ID,
+                substratum.id,
+                substratum.boundary,
+            )
+          }
+        }
+      }
+    }
+  }
+
+  fun upsertSimplifiedPlantingSiteHistory(
+      plantingSiteId: PlantingSiteId,
+      plantingSiteHistoryId: PlantingSiteHistoryId,
+  ) {
+    requirePermissions { updatePlantingSite(plantingSiteId) }
+
+    val siteHistory =
+        fetchSiteHistoryById(plantingSiteId, plantingSiteHistoryId, PlantingSiteDepth.Substratum)
+
+    dslContext.transaction { _ ->
+      simplifyAndUpsertRow(
+          SIMPLIFIED_PLANTING_SITE_HISTORIES.PLANTING_SITE_HISTORY_ID,
+          siteHistory.id,
+          siteHistory.boundary,
+          siteHistory.exclusion,
+      )
+
+      siteHistory.strata.forEach { stratumHistory ->
+        simplifyAndUpsertRow(
+            SIMPLIFIED_STRATUM_HISTORIES.STRATUM_HISTORY_ID,
+            stratumHistory.id,
+            stratumHistory.boundary,
+        )
+        stratumHistory.substrata.forEach { substratumHistory ->
+          simplifyAndUpsertRow(
+              SIMPLIFIED_SUBSTRATUM_HISTORIES.SUBSTRATUM_HISTORY_ID,
+              substratumHistory.id,
+              substratumHistory.boundary,
+          )
+        }
+      }
     }
   }
 
@@ -2930,6 +3008,34 @@ class PlantingSiteStore(
           .set(SUBSTRATUM_ID, substratumId)
           .returning(ID)
           .fetchOne(ID)!!
+    }
+  }
+
+  private fun <ID : Any> simplifyAndUpsertRow(
+      idField: TableField<*, ID?>,
+      id: ID,
+      boundary: Geometry,
+      exclusion: Geometry? = null,
+  ) {
+    val table = idField.table!!
+
+    val simplifiedBoundary = geometrySimplifier.simplify(boundary)
+    val simplifiedExclusion = exclusion?.let { geometrySimplifier.simplify(it) }
+
+    val boundaryField = table.field("boundary", Geometry::class.java)!!
+    val exclusionField = exclusion?.let { table.field("exclusion", Geometry::class.java)!! }
+
+    dslContext.transaction { _ ->
+      dslContext
+          .insertInto(table)
+          .set(idField, id)
+          .set(boundaryField, simplifiedBoundary)
+          .apply { exclusionField?.let { this.set(exclusionField, simplifiedExclusion) } }
+          .onConflict()
+          .doUpdate()
+          .set(boundaryField, simplifiedBoundary)
+          .apply { exclusionField?.let { this.set(exclusionField, simplifiedExclusion) } }
+          .execute()
     }
   }
 }

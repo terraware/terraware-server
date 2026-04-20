@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
@@ -149,6 +150,11 @@ data class PlantingSiteMapEditedEvent(
     val edited: ExistingPlantingSiteModel,
     val plantingSiteEdit: PlantingSiteEdit,
     val monitoringPlotReplacements: ReplacementResult,
+)
+
+data class PlantingSiteHistoryCreatedEvent(
+    val plantingSiteId: PlantingSiteId,
+    val plantingSiteHistoryId: PlantingSiteHistoryId,
 )
 
 data class T0PlotDataAssignedEvent(

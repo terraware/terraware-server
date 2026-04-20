@@ -227,6 +227,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             publisher,
+            mockk(),
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,

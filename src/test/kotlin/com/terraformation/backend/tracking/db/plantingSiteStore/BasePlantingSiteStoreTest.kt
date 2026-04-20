@@ -10,7 +10,9 @@ import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
+import io.mockk.mockk
 import java.time.ZoneId
 import org.junit.jupiter.api.BeforeEach
 
@@ -22,6 +24,7 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
   protected val identifierGenerator: IdentifierGenerator by lazy {
     IdentifierGenerator(clock, dslContext)
   }
+  protected val geometrySimplifier = mockk<GeometrySimplifier>()
   protected val rateLimitedEventPublisher = TestEventPublisher()
   protected val store: PlantingSiteStore by lazy {
     PlantingSiteStore(
@@ -29,6 +32,7 @@ internal abstract class BasePlantingSiteStoreTest : DatabaseTest(), RunsAsUser {
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        geometrySimplifier,
         identifierGenerator,
         monitoringPlotsDao,
         ParentStore(dslContext),

@@ -1,6 +1,7 @@
 package com.terraformation.backend.util
 
 import com.terraformation.backend.db.SRID
+import jakarta.inject.Named
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.locationtech.jts.geom.Geometry
@@ -11,6 +12,7 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier
  * [Ramer–Douglas–Peucker](https://en.wikipedia.org/wiki/Ramer%E2%80%93Douglas%E2%80%93Peucker_algorithm)
  * method.
  */
+@Named
 class GeometrySimplifier {
   val TOLERANCE_M: Double = 0.5
 

@@ -17,6 +17,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.util.Turtle
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -34,6 +35,7 @@ class PlantingSiteStoreCreateAdHocMonitoringPlotsTest : DatabaseTest(), RunsAsDa
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        mockk(),
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),

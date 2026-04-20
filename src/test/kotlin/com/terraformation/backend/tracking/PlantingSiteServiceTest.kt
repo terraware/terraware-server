@@ -12,6 +12,8 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.PlantingSiteInUseException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsRecord
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
 import com.terraformation.backend.mockUser
@@ -19,11 +21,14 @@ import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
+import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.util.toInstant
 import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.ZoneId
@@ -49,6 +54,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        mockk(),
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
@@ -248,6 +254,38 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       )
 
       assertIsEventListener<PlantingSiteMapEditedEvent>(service)
+    }
+
+    @Nested
+    inner class OnPlantingSiteHistoryCreatedEvent {
+      private val mockPlantingSiteStore: PlantingSiteStore = mockk()
+      private val testService by lazy {
+        PlantingSiteService(deliveryStore, eventPublisher, mockPlantingSiteStore)
+      }
+
+      @BeforeEach
+      fun setupMockPlantingSiteStore() {
+        every { mockPlantingSiteStore.upsertSimplifiedPlantingSite(any()) } returns Unit
+        every { mockPlantingSiteStore.upsertSimplifiedPlantingSiteHistory(any(), any()) } returns
+            Unit
+      }
+
+      @Test
+      fun `generates simplified site and site history`() {
+        val plantingSiteId = PlantingSiteId(1)
+        val plantingSiteHistoryId = PlantingSiteHistoryId(1)
+        testService.on(PlantingSiteHistoryCreatedEvent(plantingSiteId, plantingSiteHistoryId))
+
+        verify(exactly = 1) { mockPlantingSiteStore.upsertSimplifiedPlantingSite(plantingSiteId) }
+        verify(exactly = 1) {
+          mockPlantingSiteStore.upsertSimplifiedPlantingSiteHistory(
+              plantingSiteId,
+              plantingSiteHistoryId,
+          )
+        }
+
+        assertIsEventListener<PlantingSiteHistoryCreatedEvent>(service)
+      }
     }
   }
 }
