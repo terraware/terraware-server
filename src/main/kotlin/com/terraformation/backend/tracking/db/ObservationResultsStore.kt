@@ -148,22 +148,67 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       plantingSiteId: PlantingSiteId,
       limit: Int? = null,
       maxCompletionTime: Instant? = null,
+      depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
   ): List<ObservationRollupResultsModel> {
-    val completedObservations =
-        fetchByPlantingSiteId(plantingSiteId, maxCompletionTime = maxCompletionTime).filter {
-          (it.state == ObservationState.Completed || it.state == ObservationState.Abandoned) &&
-              it.completedTime != null
+    val queryDepth =
+        if (depth == ObservationResultsDepth.Plant) {
+          ObservationResultsDepth.Plant
+        } else {
+          ObservationResultsDepth.Plot
         }
+
+    val completedObservations =
+        fetchByPlantingSiteId(
+                plantingSiteId,
+                depth = queryDepth,
+                maxCompletionTime = maxCompletionTime,
+            )
+            .filter {
+              (it.state == ObservationState.Completed || it.state == ObservationState.Abandoned) &&
+                  it.completedTime != null
+            }
 
     val numObservations = completedObservations.size
-    val depth = max(1, limit?.let { min(it, numObservations) } ?: numObservations)
+    val size = max(1, limit?.let { min(it, numObservations) } ?: numObservations)
 
     // Remove observations one at a time, to build a historical summary
-    return List(depth) {
-          val observations = completedObservations.takeLast(numObservations - it)
-          plantingSiteSummary(plantingSiteId, observations)
-        }
-        .filterNotNull()
+    val results =
+        List(size) {
+              val observations = completedObservations.takeLast(numObservations - it)
+              plantingSiteSummary(plantingSiteId, observations)
+            }
+            .filterNotNull()
+
+    return when (depth) {
+      ObservationResultsDepth.Site -> results.map { site -> site.copy(strata = emptyList()) }
+      ObservationResultsDepth.Stratum ->
+          results.map { site ->
+            site.copy(
+                strata =
+                    site.strata.map { stratum ->
+                      stratum.copy(
+                          substrata = emptyList(),
+                      )
+                    },
+            )
+          }
+      ObservationResultsDepth.Substratum ->
+          results.map { site ->
+            site.copy(
+                strata =
+                    site.strata.map { stratum ->
+                      stratum.copy(
+                          substrata =
+                              stratum.substrata.map { substratum ->
+                                substratum.copy(monitoringPlots = emptyList())
+                              }
+                      )
+                    },
+            )
+          }
+      ObservationResultsDepth.Plot,
+      ObservationResultsDepth.Plant -> results
+    }
   }
 
   private fun plantingSiteSummary(
@@ -1532,114 +1577,158 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
       limit: Int?,
   ): List<ObservationResultsModel> {
-    val adHocPlotsField = adHocMonitoringPlotsMultiset(depth)
-    val strataField = stratumMultiset(depth)
+
+    // Current implementation requires plot level data to build results. Results will be pruned
+    // after query
+    val queryDepth =
+        if (depth == ObservationResultsDepth.Plant) {
+          ObservationResultsDepth.Plant
+        } else {
+          ObservationResultsDepth.Plot
+        }
+
+    val adHocPlotsField = adHocMonitoringPlotsMultiset(queryDepth)
+    val strataField = stratumMultiset(queryDepth)
     val plantingSiteSpeciesMultisetField = plantingSiteSpeciesMultiset()
 
-    return dslContext
-        .select(
-            adHocPlotsField,
-            biomassDetailsMultiset,
-            OBSERVATIONS.COMPLETED_TIME,
-            OBSERVATIONS.ID,
-            OBSERVATIONS.IS_AD_HOC,
-            OBSERVATIONS.OBSERVATION_TYPE_ID,
-            OBSERVATIONS.PLANTING_SITE_ID,
-            OBSERVATIONS.START_DATE,
-            OBSERVATIONS.STATE_ID,
-            PLANTING_SITE_HISTORIES.AREA_HA,
-            PLANTING_SITE_HISTORIES.ID,
-            plantingSiteSpeciesMultisetField,
-            strataField,
-            OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
-        )
-        .from(OBSERVATIONS)
-        .leftJoin(PLANTING_SITE_HISTORIES)
-        .on(OBSERVATIONS.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
-        .where(condition)
-        .orderBy(OBSERVATIONS.COMPLETED_TIME.desc().nullsLast(), OBSERVATIONS.ID.desc())
-        .let { if (limit != null) it.limit(limit) else it }
-        .fetch { record ->
-          // Area can be null for an observation that has not started.
-          val areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA]
+    val results =
+        dslContext
+            .select(
+                adHocPlotsField,
+                biomassDetailsMultiset,
+                OBSERVATIONS.COMPLETED_TIME,
+                OBSERVATIONS.ID,
+                OBSERVATIONS.IS_AD_HOC,
+                OBSERVATIONS.OBSERVATION_TYPE_ID,
+                OBSERVATIONS.PLANTING_SITE_ID,
+                OBSERVATIONS.START_DATE,
+                OBSERVATIONS.STATE_ID,
+                PLANTING_SITE_HISTORIES.AREA_HA,
+                PLANTING_SITE_HISTORIES.ID,
+                plantingSiteSpeciesMultisetField,
+                strataField,
+                OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS,
+            )
+            .from(OBSERVATIONS)
+            .leftJoin(PLANTING_SITE_HISTORIES)
+            .on(OBSERVATIONS.PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID))
+            .where(condition)
+            .orderBy(OBSERVATIONS.COMPLETED_TIME.desc().nullsLast(), OBSERVATIONS.ID.desc())
+            .let { if (limit != null) it.limit(limit) else it }
+            .fetch { record ->
+              // Area can be null for an observation that has not started.
+              val areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA]
 
-          val strata = record[strataField]
-          val species = record[plantingSiteSpeciesMultisetField]
-          val survivalRateIncludesTempPlots =
-              record[OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable()]
+              val strata = record[strataField]
+              val species = record[plantingSiteSpeciesMultisetField]
+              val survivalRateIncludesTempPlots =
+                  record[
+                      OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable()]
 
-          val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
-          val liveSpecies = knownSpecies.filter { it.totalLive > 0 || it.totalExisting > 0 }
+              val knownSpecies = species.filter { it.certainty != RecordedSpeciesCertainty.Unknown }
+              val liveSpecies = knownSpecies.filter { it.totalLive > 0 || it.totalExisting > 0 }
 
-          val plantingCompleted = strata.isNotEmpty() && strata.all { it.plantingCompleted }
+              val plantingCompleted = strata.isNotEmpty() && strata.all { it.plantingCompleted }
 
-          val monitoringPlots = strata.flatMap { it.substrata }.flatMap { it.monitoringPlots }
-          val completedPlotsPlantingDensities =
-              monitoringPlots
-                  .filter { it.status == ObservationPlotStatus.Completed }
-                  .map { it.plantingDensity }
-          val plantingDensity =
-              if (completedPlotsPlantingDensities.isNotEmpty()) {
-                completedPlotsPlantingDensities.average()
-              } else {
-                0.0
-              }
-          val plantingDensityStdDev = completedPlotsPlantingDensities.calculateStandardDeviation()
+              val monitoringPlots = strata.flatMap { it.substrata }.flatMap { it.monitoringPlots }
+              val completedPlotsPlantingDensities =
+                  monitoringPlots
+                      .filter { it.status == ObservationPlotStatus.Completed }
+                      .map { it.plantingDensity }
+              val plantingDensity =
+                  if (completedPlotsPlantingDensities.isNotEmpty()) {
+                    completedPlotsPlantingDensities.average()
+                  } else {
+                    0.0
+                  }
+              val plantingDensityStdDev =
+                  completedPlotsPlantingDensities.calculateStandardDeviation()
 
-          val estimatedPlants =
-              if (strata.isNotEmpty() && strata.all { it.estimatedPlants != null }) {
-                strata.mapNotNull { it.estimatedPlants }.sum()
-              } else {
-                null
-              }
+              val estimatedPlants =
+                  if (strata.isNotEmpty() && strata.all { it.estimatedPlants != null }) {
+                    strata.mapNotNull { it.estimatedPlants }.sum()
+                  } else {
+                    null
+                  }
 
-          val totalSpecies = liveSpecies.size
-          val totalPlants = species.sumOf { it.totalLive + it.totalDead }
+              val totalSpecies = liveSpecies.size
+              val totalPlants = species.sumOf { it.totalLive + it.totalDead }
 
-          val survivalRate =
-              if (strata.isNotEmpty() && strata.all { it.survivalRate != null }) {
-                species.calculateSurvivalRate(survivalRateIncludesTempPlots)
-              } else {
-                null
-              }
-          val survivalRateStdDev =
-              if (survivalRate != null) {
-                monitoringPlots
-                    .mapNotNull { plot ->
-                      plot.survivalRate?.let { survivalRate ->
-                        val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
-                        survivalRate to sumDensity.toDouble()
-                      }
-                    }
-                    .calculateWeightedStandardDeviation()
-              } else {
-                null
-              }
+              val survivalRate =
+                  if (strata.isNotEmpty() && strata.all { it.survivalRate != null }) {
+                    species.calculateSurvivalRate(survivalRateIncludesTempPlots)
+                  } else {
+                    null
+                  }
+              val survivalRateStdDev =
+                  if (survivalRate != null) {
+                    monitoringPlots
+                        .mapNotNull { plot ->
+                          plot.survivalRate?.let { survivalRate ->
+                            val sumDensity = plot.species.mapNotNull { it.t0Density }.sumOf { it }
+                            survivalRate to sumDensity.toDouble()
+                          }
+                        }
+                        .calculateWeightedStandardDeviation()
+                  } else {
+                    null
+                  }
 
-          ObservationResultsModel(
-              adHocPlot = record[adHocPlotsField].firstOrNull(),
-              areaHa = areaHa,
-              biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
-              completedTime = record[OBSERVATIONS.COMPLETED_TIME],
-              estimatedPlants = estimatedPlants,
-              isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
-              observationId = record[OBSERVATIONS.ID.asNonNullable()],
-              observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID.asNonNullable()],
-              plantingCompleted = plantingCompleted,
-              plantingDensity = plantingDensity.roundToInt(),
-              plantingDensityStdDev = plantingDensityStdDev,
-              plantingSiteHistoryId = record[PLANTING_SITE_HISTORIES.ID],
-              plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
-              species = knownSpecies,
-              startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
-              state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
-              strata = strata,
-              survivalRate = survivalRate,
-              survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
-              survivalRateStdDev = survivalRateStdDev,
-              totalPlants = totalPlants,
-              totalSpecies = totalSpecies,
-          )
-        }
+              ObservationResultsModel(
+                  adHocPlot = record[adHocPlotsField].firstOrNull(),
+                  areaHa = areaHa,
+                  biomassDetails = record[biomassDetailsMultiset].firstOrNull(),
+                  completedTime = record[OBSERVATIONS.COMPLETED_TIME],
+                  estimatedPlants = estimatedPlants,
+                  isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
+                  observationId = record[OBSERVATIONS.ID.asNonNullable()],
+                  observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID.asNonNullable()],
+                  plantingCompleted = plantingCompleted,
+                  plantingDensity = plantingDensity.roundToInt(),
+                  plantingDensityStdDev = plantingDensityStdDev,
+                  plantingSiteHistoryId = record[PLANTING_SITE_HISTORIES.ID],
+                  plantingSiteId = record[OBSERVATIONS.PLANTING_SITE_ID.asNonNullable()],
+                  species = knownSpecies,
+                  startDate = record[OBSERVATIONS.START_DATE.asNonNullable()],
+                  state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
+                  strata = strata,
+                  survivalRate = survivalRate,
+                  survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
+                  survivalRateStdDev = survivalRateStdDev,
+                  totalPlants = totalPlants,
+                  totalSpecies = totalSpecies,
+              )
+            }
+
+    return when (depth) {
+      ObservationResultsDepth.Site -> results.map { site -> site.copy(strata = emptyList()) }
+      ObservationResultsDepth.Stratum ->
+          results.map { site ->
+            site.copy(
+                strata =
+                    site.strata.map { stratum ->
+                      stratum.copy(
+                          substrata = emptyList(),
+                      )
+                    },
+            )
+          }
+      ObservationResultsDepth.Substratum ->
+          results.map { site ->
+            site.copy(
+                strata =
+                    site.strata.map { stratum ->
+                      stratum.copy(
+                          substrata =
+                              stratum.substrata.map { substratum ->
+                                substratum.copy(monitoringPlots = emptyList())
+                              }
+                      )
+                    },
+            )
+          }
+      ObservationResultsDepth.Plot,
+      ObservationResultsDepth.Plant -> results
+    }
   }
 }
