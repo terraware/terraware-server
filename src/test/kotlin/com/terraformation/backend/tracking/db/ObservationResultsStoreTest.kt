@@ -78,6 +78,30 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     }
 
     @Test
+    fun `respects states`() {
+      val completedObservationId1 = insertObservation(completedTime = Instant.ofEpochSecond(1))
+      val completedObservationId2 = insertObservation(completedTime = Instant.ofEpochSecond(2))
+      val inProgressObservationId = insertObservation(state = ObservationState.InProgress)
+      insertObservation(state = ObservationState.Upcoming)
+
+      val results =
+          resultsStore.fetchByOrganizationId(
+              organizationId,
+              states = setOf(ObservationState.Completed, ObservationState.InProgress),
+          )
+
+      assertEquals(
+          listOf(
+              completedObservationId2,
+              completedObservationId1,
+              inProgressObservationId,
+          ),
+          results.map { it.observationId },
+          "Observation IDs",
+      )
+    }
+
+    @Test
     fun `respects depth`() {
       insertStratum()
       insertSubstratum()

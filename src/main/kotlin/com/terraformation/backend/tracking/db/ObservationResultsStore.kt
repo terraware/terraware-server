@@ -104,6 +104,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       limit: Int? = null,
       maxCompletionTime: Instant? = null,
       isAdHoc: Boolean = false,
+      states: Set<ObservationState>? = null,
   ): List<ObservationResultsModel> {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -112,6 +113,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId),
             OBSERVATIONS.IS_AD_HOC.eq(isAdHoc),
             maxCompletionTime?.let { OBSERVATIONS.COMPLETED_TIME.lessOrEqual(it) },
+            states?.let { OBSERVATIONS.STATE_ID.`in`(states) },
         ),
         depth,
         limit,
@@ -123,6 +125,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
       limit: Int? = null,
       isAdHoc: Boolean = false,
+      states: Set<ObservationState>? = null,
   ): List<ObservationResultsModel> {
     requirePermissions { readOrganization(organizationId) }
 
@@ -130,6 +133,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         DSL.and(
             OBSERVATIONS.plantingSites.ORGANIZATION_ID.eq(organizationId),
             OBSERVATIONS.IS_AD_HOC.eq(isAdHoc),
+            states?.let { OBSERVATIONS.STATE_ID.`in`(states) },
         ),
         depth,
         limit,

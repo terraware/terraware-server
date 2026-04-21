@@ -161,6 +161,8 @@ class ObservationsController(
       @RequestParam plantingSiteId: PlantingSiteId?,
       @RequestParam(defaultValue = "Plot")
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
+      @RequestParam("state", required = false) //
+      states: Set<ObservationState>?,
       @Parameter(
           description =
               "Maximum number of results to return. Results are always returned in order of " +
@@ -172,9 +174,19 @@ class ObservationsController(
     val results =
         when {
           plantingSiteId != null ->
-              observationResultsStore.fetchByPlantingSiteId(plantingSiteId, depth, limit)
+              observationResultsStore.fetchByPlantingSiteId(
+                  plantingSiteId,
+                  depth,
+                  limit,
+                  states = states,
+              )
           organizationId != null ->
-              observationResultsStore.fetchByOrganizationId(organizationId, depth, limit)
+              observationResultsStore.fetchByOrganizationId(
+                  organizationId,
+                  depth,
+                  limit,
+                  states = states,
+              )
           else -> throw BadRequestException("Must specify a search criterion")
         }
 
