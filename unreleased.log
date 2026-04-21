@@ -1,3 +1,4 @@
+8f1e0753 Update Node.js to v24.15.0 (#4296)
 61ac9d89 SW-8289 Added depth options to observation results (#4276)
 a2f50046 SW-8218 Add admin UI function to recalculate areas (#4288)
 3f1fcd1c SW-8276 Implemented geometry simplifier and test (#4286)
