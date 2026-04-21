@@ -1,3 +1,4 @@
+70523b34 Update dependency mypy to v1.20.1 (#4294)
 d52c93fb Update dependency io.swagger.core.v3:swagger-annotations to v2.2.48 (#4293)
 1e420a81 Update dependency html-minifier-next to v6.1.2 (#4292)
 2160614c SW-8278 Used simplified geometry for planting site history (#4302)
