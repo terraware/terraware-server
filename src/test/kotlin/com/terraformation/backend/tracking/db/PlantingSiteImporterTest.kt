@@ -14,7 +14,6 @@ import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.Shapefile
 import io.mockk.every
-import io.mockk.mockk
 import java.math.BigDecimal
 import kotlin.io.path.Path
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -40,7 +39,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
-            mockk(),
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),

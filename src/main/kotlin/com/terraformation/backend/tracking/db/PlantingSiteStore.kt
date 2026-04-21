@@ -139,7 +139,6 @@ class PlantingSiteStore(
     private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
-    private val geometrySimplifier: GeometrySimplifier,
     private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val parentStore: ParentStore,
@@ -3019,8 +3018,8 @@ class PlantingSiteStore(
   ) {
     val table = idField.table!!
 
-    val simplifiedBoundary = geometrySimplifier.simplify(boundary)
-    val simplifiedExclusion = exclusion?.let { geometrySimplifier.simplify(it) }
+    val simplifiedBoundary = GeometrySimplifier.simplify(boundary)
+    val simplifiedExclusion = exclusion?.let { GeometrySimplifier.simplify(it) }
 
     val boundaryField = table.field("boundary", Geometry::class.java)!!
     val exclusionField = exclusion?.let { table.field("exclusion", Geometry::class.java)!! }

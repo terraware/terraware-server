@@ -14,9 +14,15 @@ import com.terraformation.backend.db.tracking.tables.records.SimplifiedStratumHi
 import com.terraformation.backend.db.tracking.tables.records.SimplifiedSubstrataRecord
 import com.terraformation.backend.db.tracking.tables.records.SimplifiedSubstratumHistoriesRecord
 import com.terraformation.backend.point
+import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.equalsOrBothNull
+import io.mockk.clearMocks
 import io.mockk.every
+import io.mockk.mockkObject
+import io.mockk.unmockkObject
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.MultiPolygon
@@ -101,22 +107,22 @@ internal class PlantingSiteStoreSimplifySiteTest : BasePlantingSiteStoreTest() {
 
   @BeforeEach
   fun setUpSimplifiedSites() {
-    every { geometrySimplifier.simplify(match { siteBoundary.equalsOrBothNull(it) }) } returns
+    every { GeometrySimplifier.simplify(match { siteBoundary.equalsOrBothNull(it) }) } returns
         simplifiedSiteBoundary
-    every { geometrySimplifier.simplify(match { exclusion.equalsOrBothNull(it) }) } returns
+    every { GeometrySimplifier.simplify(match { exclusion.equalsOrBothNull(it) }) } returns
         simplifiedExclusion
-    every { geometrySimplifier.simplify(match { stratumBoundaryA.equalsOrBothNull(it) }) } returns
+    every { GeometrySimplifier.simplify(match { stratumBoundaryA.equalsOrBothNull(it) }) } returns
         simplifiedStratumBoundaryA
-    every { geometrySimplifier.simplify(match { stratumBoundaryB.equalsOrBothNull(it) }) } returns
+    every { GeometrySimplifier.simplify(match { stratumBoundaryB.equalsOrBothNull(it) }) } returns
         simplifiedStratumBoundaryB
     every {
-      geometrySimplifier.simplify(match { substratumBoundaryA1.equalsOrBothNull(it) })
+      GeometrySimplifier.simplify(match { substratumBoundaryA1.equalsOrBothNull(it) })
     } returns simplifiedSubstratumBoundaryA1
     every {
-      geometrySimplifier.simplify(match { substratumBoundaryA2.equalsOrBothNull(it) })
+      GeometrySimplifier.simplify(match { substratumBoundaryA2.equalsOrBothNull(it) })
     } returns simplifiedSubstratumBoundaryA2
     every {
-      geometrySimplifier.simplify(match { substratumBoundaryB.equalsOrBothNull(it) })
+      GeometrySimplifier.simplify(match { substratumBoundaryB.equalsOrBothNull(it) })
     } returns simplifiedSubstratumBoundaryB
 
     siteId =
@@ -152,6 +158,11 @@ internal class PlantingSiteStoreSimplifySiteTest : BasePlantingSiteStoreTest() {
     insertPlantingSite(name = "Non-simplified site")
     insertStratum()
     insertSubstratum()
+  }
+
+  @AfterEach
+  fun cleanup() {
+    clearMocks(GeometrySimplifier.Companion)
   }
 
   @Test
@@ -407,5 +418,19 @@ internal class PlantingSiteStoreSimplifySiteTest : BasePlantingSiteStoreTest() {
         otherSubstratumRecord.boundary,
         "Unchanged simplified substratum boundary",
     )
+  }
+
+  companion object {
+    @JvmStatic
+    @BeforeAll
+    fun setupMock() {
+      mockkObject(GeometrySimplifier.Companion)
+    }
+
+    @JvmStatic
+    @BeforeAll
+    fun teardownMock() {
+      unmockkObject(GeometrySimplifier.Companion)
+    }
   }
 }

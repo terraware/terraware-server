@@ -169,7 +169,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         TestSingletons.countryDetector,
         dslContext,
         TestEventPublisher(),
-        mockk(),
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,

@@ -41,7 +41,6 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
-            mockk(),
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),

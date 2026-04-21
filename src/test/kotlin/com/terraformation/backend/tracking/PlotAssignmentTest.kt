@@ -53,7 +53,6 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
-        mockk(),
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,

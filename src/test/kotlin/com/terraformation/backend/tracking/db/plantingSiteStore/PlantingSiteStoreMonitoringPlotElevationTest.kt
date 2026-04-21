@@ -16,7 +16,6 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
-import io.mockk.mockk
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -34,7 +33,6 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
-        mockk(),
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),

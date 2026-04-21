@@ -29,7 +29,6 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
-import io.mockk.mockk
 import java.time.temporal.ChronoUnit
 import org.jooq.Configuration
 
@@ -96,7 +95,6 @@ class ObservationScenario(
                 CountryDetector(),
                 test.dslContext,
                 eventPublisher,
-                mockk(),
                 identifierGenerator,
                 MonitoringPlotsDao(configuration),
                 parentStore,

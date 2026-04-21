@@ -23,7 +23,6 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.StratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
-import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -42,7 +41,6 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
-        mockk(),
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
