@@ -136,6 +136,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="simplified_strata.stratum_id references strata.id via simplified_strata_stratum_id_fkey"><a href='simplified_strata.html'>simplified_strata</a><span class='relatedKey'>.stratum_id</span></td>
+                                                <td class="constraint detail">simplified_strata_stratum_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="stratum_histories.stratum_id references strata.id via stratum_histories_stratum_id_fkey"><a href='stratum_histories.html'>stratum_histories</a><span class='relatedKey'>.stratum_id</span></td>
                                                 <td class="constraint detail">stratum_histories_stratum_id_fkey</td>
                                                 <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
@@ -560,20 +565,20 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>positive_target_density</td>
-                                    <td>(target_planting_density &gt; (0)::numeric)</td>
-                                </tr>
-                                <tr>
-                                    <td>area_positive</td>
-                                    <td>(area_ha &gt; (0)::numeric)</td>
-                                </tr>
-                                <tr>
                                     <td>must_have_permanent_clusters</td>
                                     <td>(num_permanent_plots &gt; 0)</td>
                                 </tr>
                                 <tr>
+                                    <td>positive_target_density</td>
+                                    <td>(target_planting_density &gt; (0)::numeric)</td>
+                                </tr>
+                                <tr>
                                     <td>no_negative_temporary_plots</td>
                                     <td>(num_temporary_plots &gt;&#61; 0)</td>
+                                </tr>
+                                <tr>
+                                    <td>area_positive</td>
+                                    <td>(area_ha &gt; (0)::numeric)</td>
                                 </tr>
                                 </tbody>
                             </table>

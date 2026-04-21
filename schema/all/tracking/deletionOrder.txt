@@ -19,6 +19,12 @@ planting_site_populations
 planting_site_notifications
 observation_requested_substrata
 monitoring_plot_overlaps
+simplified_substratum_histories
+simplified_substrata
+simplified_stratum_histories
+simplified_strata
+simplified_planting_sites
+simplified_planting_site_histories
 planting_seasons
 observation_biomass_quadrat_details
 deliveries

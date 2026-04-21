@@ -16,6 +16,12 @@ monitoring_plot_overlaps
 substratum_populations
 stratum_t0_temp_densities
 stratum_populations
+simplified_substratum_histories
+simplified_substrata
+simplified_stratum_histories
+simplified_strata
+simplified_planting_sites
+simplified_planting_site_histories
 plot_t0_densities
 planting_site_populations
 planting_site_notifications

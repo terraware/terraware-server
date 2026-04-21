@@ -28,6 +28,12 @@ planting_seasons
 planting_site_notifications
 planting_site_populations
 plot_t0_densities
+simplified_planting_site_histories
+simplified_planting_sites
+simplified_strata
+simplified_stratum_histories
+simplified_substrata
+simplified_substratum_histories
 stratum_populations
 stratum_t0_temp_densities
 substratum_populations

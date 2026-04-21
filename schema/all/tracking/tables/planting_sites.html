@@ -181,6 +181,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="simplified_planting_sites.planting_site_id references planting_sites.id via simplified_planting_sites_planting_site_id_fkey"><a href='simplified_planting_sites.html'>simplified_planting_sites</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">simplified_planting_sites_planting_site_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="strata.planting_site_id references planting_sites.id via strata_planting_site_id_fkey"><a href='strata.html'>strata</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">strata_planting_site_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -560,12 +565,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>area_positive</td>
-                                    <td>(area_ha &gt; (0)::numeric)</td>
-                                </tr>
-                                <tr>
                                     <td>planting_sites_description_check</td>
                                     <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>area_positive</td>
+                                    <td>(area_ha &gt; (0)::numeric)</td>
                                 </tr>
                                 </tbody>
                             </table>
