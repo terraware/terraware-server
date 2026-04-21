@@ -12,27 +12,29 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier
  * method.
  */
 class GeometrySimplifier {
-  val TOLERANCE_M: Double = 0.5
+  companion object {
+    val TOLERANCE_M: Double = 0.5
 
-  /**
-   * Simplifies geometry within a tolerance of 0.5 meter. The simplification will be performed in
-   * the Web Mercator CRS. The results will be projected back to the original CRS
-   */
-  fun simplify(geometry: Geometry): Geometry {
-    val geometryMercator = project(geometry, geometry.srid, SRID.SPHERICAL_MERCATOR)
-    val simplifiedGeometry = TopologyPreservingSimplifier.simplify(geometryMercator, TOLERANCE_M)
-    return project(simplifiedGeometry, SRID.SPHERICAL_MERCATOR, geometry.srid)
-  }
+    /**
+     * Simplifies geometry within a tolerance of 0.5 meter. The simplification will be performed in
+     * the Web Mercator CRS. The results will be projected back to the original CRS
+     */
+    fun simplify(geometry: Geometry): Geometry {
+      val geometryMercator = project(geometry, geometry.srid, SRID.SPHERICAL_MERCATOR)
+      val simplifiedGeometry = TopologyPreservingSimplifier.simplify(geometryMercator, TOLERANCE_M)
+      return project(simplifiedGeometry, SRID.SPHERICAL_MERCATOR, geometry.srid)
+    }
 
-  private fun project(geometry: Geometry, originalSrid: Int, targetSrid: Int): Geometry {
-    val crs = CRS.decode("EPSG:${originalSrid}", true)
-    val targetCrs = CRS.decode("EPSG:${targetSrid}", true)
+    private fun project(geometry: Geometry, originalSrid: Int, targetSrid: Int): Geometry {
+      val crs = CRS.decode("EPSG:${originalSrid}", true)
+      val targetCrs = CRS.decode("EPSG:${targetSrid}", true)
 
-    if (crs == targetCrs) {
-      return geometry
-    } else {
-      val transform = CRS.findMathTransform(crs, targetCrs)
-      return JTS.transform(geometry, transform)
+      if (crs == targetCrs) {
+        return geometry
+      } else {
+        val transform = CRS.findMathTransform(crs, targetCrs)
+        return JTS.transform(geometry, transform)
+      }
     }
   }
 }

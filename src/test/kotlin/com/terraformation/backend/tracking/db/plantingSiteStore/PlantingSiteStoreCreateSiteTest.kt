@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HI
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlantingSiteMapInvalidException
+import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooFarInFutureException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooLongException
@@ -456,6 +457,14 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       )
 
       assertTableEmpty(MONITORING_PLOT_HISTORIES)
+
+      eventPublisher.assertEventPublished(
+          PlantingSiteHistoryCreatedEvent(
+              plantingSiteId = model.id,
+              plantingSiteHistoryId = model.historyId!!,
+          ),
+          "Published new planting site history event",
+      )
     }
 
     @Test

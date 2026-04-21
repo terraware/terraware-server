@@ -452,6 +452,12 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedTreesDao
+import com.terraformation.backend.db.tracking.tables.daos.SimplifiedPlantingSiteHistoriesDao
+import com.terraformation.backend.db.tracking.tables.daos.SimplifiedPlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.SimplifiedStrataDao
+import com.terraformation.backend.db.tracking.tables.daos.SimplifiedStratumHistoriesDao
+import com.terraformation.backend.db.tracking.tables.daos.SimplifiedSubstrataDao
+import com.terraformation.backend.db.tracking.tables.daos.SimplifiedSubstratumHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.StratumHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.StratumPopulationsDao
@@ -485,6 +491,12 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensitiesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedPlantingSiteHistoriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedPlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedStrataRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedStratumHistoriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedSubstrataRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedSubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
@@ -763,6 +775,12 @@ abstract class DatabaseBackedTest {
       lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val speciesSuccessionalGroupsDao: SpeciesSuccessionalGroupsDao by lazyDao()
+  protected val simplifiedPlantingSiteHistoriesDao: SimplifiedPlantingSiteHistoriesDao by lazyDao()
+  protected val simplifiedPlantingSitesDao: SimplifiedPlantingSitesDao by lazyDao()
+  protected val simplifiedStrataDao: SimplifiedStrataDao by lazyDao()
+  protected val simplifiedStratumHistoriesDao: SimplifiedStratumHistoriesDao by lazyDao()
+  protected val simplifiedSubstrataDao: SimplifiedSubstrataDao by lazyDao()
+  protected val simplifiedSubstratumHistoriesDao: SimplifiedSubstratumHistoriesDao by lazyDao()
   protected val splatAnnotationsDao: SplatAnnotationsDao by lazyDao()
   protected val splatsDao: SplatsDao by lazyDao()
   protected val stratumHistoriesDao: StratumHistoriesDao by lazyDao()
@@ -2344,6 +2362,96 @@ abstract class DatabaseBackedTest {
     plantingSiteNotificationsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.plantingSiteNotificationIds.add(it) }
+  }
+
+  fun insertSimplifiedPlantingSite(
+      row: SimplifiedPlantingSitesRow = SimplifiedPlantingSitesRow(),
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
+      boundary: Geometry = row.boundary ?: lastPlantingSitesRow.boundary ?: point(1),
+      exclusion: Geometry? = row.exclusion ?: lastPlantingSitesRow.exclusion,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            plantingSiteId = plantingSiteId,
+            boundary = boundary,
+            exclusion = exclusion,
+        )
+
+    simplifiedPlantingSitesDao.insert(rowWithDefaults)
+  }
+
+  fun insertSimplifiedPlantingSiteHistory(
+      row: SimplifiedPlantingSiteHistoriesRow = SimplifiedPlantingSiteHistoriesRow(),
+      plantingSiteHistoryId: PlantingSiteHistoryId =
+          row.plantingSiteHistoryId ?: inserted.plantingSiteHistoryId,
+      boundary: Geometry = row.boundary ?: lastPlantingSitesRow.boundary ?: point(1),
+      exclusion: Geometry? = row.exclusion ?: lastPlantingSitesRow.exclusion,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            plantingSiteHistoryId = plantingSiteHistoryId,
+            boundary = boundary,
+            exclusion = exclusion,
+        )
+
+    simplifiedPlantingSiteHistoriesDao.insert(rowWithDefaults)
+  }
+
+  fun insertSimplifiedStratum(
+      row: SimplifiedStrataRow = SimplifiedStrataRow(),
+      stratumId: StratumId = row.stratumId ?: inserted.stratumId,
+      boundary: Geometry = row.boundary ?: lastStrataRow.boundary ?: point(1),
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            stratumId = stratumId,
+            boundary = boundary,
+        )
+
+    simplifiedStrataDao.insert(rowWithDefaults)
+  }
+
+  fun insertSimplifiedStratumHistory(
+      row: SimplifiedStratumHistoriesRow = SimplifiedStratumHistoriesRow(),
+      stratumHistoryId: StratumHistoryId = row.stratumHistoryId ?: inserted.stratumHistoryId,
+      boundary: Geometry = row.boundary ?: lastStrataRow.boundary ?: point(1),
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            stratumHistoryId = stratumHistoryId,
+            boundary = boundary,
+        )
+
+    simplifiedStratumHistoriesDao.insert(rowWithDefaults)
+  }
+
+  fun insertSimplifiedSubstratum(
+      row: SimplifiedSubstrataRow = SimplifiedSubstrataRow(),
+      substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
+      boundary: Geometry = row.boundary ?: lastSubstrataRow.boundary ?: point(1),
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            substratumId = substratumId,
+            boundary = boundary,
+        )
+
+    simplifiedSubstrataDao.insert(rowWithDefaults)
+  }
+
+  fun insertSimplifiedSubstratumHistory(
+      row: SimplifiedSubstratumHistoriesRow = SimplifiedSubstratumHistoriesRow(),
+      substratumHistoryId: SubstratumHistoryId =
+          row.substratumHistoryId ?: inserted.substratumHistoryId,
+      boundary: Geometry = row.boundary ?: lastSubstrataRow.boundary ?: point(1),
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            substratumHistoryId = substratumHistoryId,
+            boundary = boundary,
+        )
+
+    simplifiedSubstratumHistoriesDao.insert(rowWithDefaults)
   }
 
   private var nextStratumNumber: Int = 1

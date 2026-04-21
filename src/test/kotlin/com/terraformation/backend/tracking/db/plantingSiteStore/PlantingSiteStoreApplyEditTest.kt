@@ -17,6 +17,7 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculator
 import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorTest
 import com.terraformation.backend.tracking.edit.StratumEdit
+import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
@@ -856,6 +857,14 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
             where = MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(editedSiteHistory.id),
         )
       }
+
+      eventPublisher.assertEventPublished(
+          PlantingSiteHistoryCreatedEvent(
+              plantingSiteId = existing.id,
+              plantingSiteHistoryId = editedSiteHistory.id!!,
+          ),
+          "Published new planting site history event",
+      )
     }
   }
 

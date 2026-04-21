@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.Geometry
 
 class GeometrySimplifierTest {
-  private val simplifier = GeometrySimplifier()
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
   private val parser = GeometryFileParser(objectMapper)
 
@@ -28,7 +27,7 @@ class GeometrySimplifierTest {
   private fun runGeoJson(path: String) {
     val original = parseGeoJson(path)
 
-    val simplified = simplifier.simplify(original)
+    val simplified = GeometrySimplifier.simplify(original)
     val jaccardSimilarity = jaccard(simplified, original)
     val reductionRate = reductionRatio(simplified, original)
 
