@@ -1,3 +1,4 @@
+1e420a81 Update dependency html-minifier-next to v6.1.2 (#4292)
 2160614c SW-8278 Used simplified geometry for planting site history (#4302)
 d810202a SW-8278 Used simplified planting sites for list planting sites endpoint (#4301)
 98fca8fb SW-8276 Added simplified sites and site histories table and upserts on creation and updates (#4299)
