@@ -1,3 +1,4 @@
+5ce50617 SW-8183 Added state option to filter observations in list result endpoint (#4300)
 8f1e0753 Update Node.js to v24.15.0 (#4296)
 61ac9d89 SW-8289 Added depth options to observation results (#4276)
 a2f50046 SW-8218 Add admin UI function to recalculate areas (#4288)
