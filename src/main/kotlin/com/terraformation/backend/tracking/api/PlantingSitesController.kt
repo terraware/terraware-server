@@ -87,13 +87,14 @@ class PlantingSitesController(
       )
       full: Boolean?,
       @RequestParam includeZones: Boolean? = true,
+      @RequestParam(defaultValue = "true") simplified: Boolean? = true,
   ): ListPlantingSitesResponsePayload {
     val depth = if (full == true) PlantingSiteDepth.Plot else PlantingSiteDepth.Site
     val models =
         if (projectId != null) {
-          plantingSiteStore.fetchSitesByProjectId(projectId, depth)
+          plantingSiteStore.fetchSitesByProjectId(projectId, depth, simplified ?: true)
         } else if (organizationId != null) {
-          plantingSiteStore.fetchSitesByOrganizationId(organizationId, depth)
+          plantingSiteStore.fetchSitesByOrganizationId(organizationId, depth, simplified ?: true)
         } else {
           throw BadRequestException("One of organizationId or projectId must be specified")
         }
@@ -109,8 +110,9 @@ class PlantingSitesController(
   fun getPlantingSite(
       @PathVariable id: PlantingSiteId,
       @RequestParam includeZones: Boolean? = true,
+      @RequestParam(defaultValue = "true") simplified: Boolean? = true,
   ): GetPlantingSiteResponsePayload {
-    val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot)
+    val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot, simplified ?: true)
     return GetPlantingSiteResponsePayload(PlantingSitePayload(model, includeZones ?: true))
   }
 

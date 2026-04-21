@@ -24,6 +24,7 @@ import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.jooq.Field
 import org.jooq.Record
+import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 
@@ -184,28 +185,30 @@ data class PlantingSiteModel<
 
     fun of(
         record: Record,
-        plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>?,
-        strataMultiset: Field<List<ExistingStratumModel>>? = null,
-        adHocPlotsField: Field<List<MonitoringPlotModel>>? = null,
-        exteriorPlotsMultiset: Field<List<MonitoringPlotModel>>? = null,
-        latestObservationIdField: Field<ObservationId?>? = null,
-        latestObservationTimeField: Field<Instant?>? = null,
+        adHocPlotsField: Field<List<MonitoringPlotModel>>?,
+        boundaryField: Field<Geometry?>,
+        exclusionField: Field<Geometry?>,
+        exteriorPlotsMultiset: Field<List<MonitoringPlotModel>>?,
+        latestObservationCompletedTimeField: Field<Instant?>,
+        latestObservationIdField: Field<ObservationId?>,
+        plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>,
+        strataMultiset: Field<List<ExistingStratumModel>>?,
     ) =
         ExistingPlantingSiteModel(
             adHocPlots = adHocPlotsField?.let { record[it] } ?: emptyList(),
             areaHa = record[PLANTING_SITES.AREA_HA],
-            boundary = record[PLANTING_SITES.BOUNDARY] as? MultiPolygon,
+            boundary = record[boundaryField] as? MultiPolygon,
             countryCode = record[PLANTING_SITES.COUNTRY_CODE],
             description = record[PLANTING_SITES.DESCRIPTION],
-            exclusion = record[PLANTING_SITES.EXCLUSION] as? MultiPolygon,
+            exclusion = record[exclusionField] as? MultiPolygon,
             exteriorPlots = exteriorPlotsMultiset?.let { record[it] } ?: emptyList(),
             gridOrigin = record[PLANTING_SITES.GRID_ORIGIN] as? Point,
-            latestObservationCompletedTime = latestObservationTimeField?.let { record[it] },
-            latestObservationId = latestObservationIdField?.let { record[it] },
+            latestObservationCompletedTime = record[latestObservationCompletedTimeField],
+            latestObservationId = record[latestObservationIdField],
             id = record[PLANTING_SITES.ID]!!,
             name = record[PLANTING_SITES.NAME]!!,
             organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
-            plantingSeasons = plantingSeasonsMultiset?.let { record[it] } ?: emptyList(),
+            plantingSeasons = record[plantingSeasonsMultiset],
             strata = strataMultiset?.let { record[it] } ?: emptyList(),
             projectId = record[PLANTING_SITES.PROJECT_ID],
             survivalRateIncludesTempPlots =

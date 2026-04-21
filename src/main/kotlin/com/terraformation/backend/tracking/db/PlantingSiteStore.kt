@@ -151,35 +151,40 @@ class PlantingSiteStore(
   private val log = perClassLogger()
 
   private val monitoringPlotBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
-  private val strataBoundaryField = STRATA.BOUNDARY.forMultiset()
-  private val substratumBoundaryField = SUBSTRATA.BOUNDARY.forMultiset()
 
   fun fetchSiteById(
       plantingSiteId: PlantingSiteId,
       depth: PlantingSiteDepth,
+      simplified: Boolean = false,
   ): ExistingPlantingSiteModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
-    return fetchSitesByCondition(PLANTING_SITES.ID.eq(plantingSiteId), depth).firstOrNull()
-        ?: throw PlantingSiteNotFoundException(plantingSiteId)
+    return fetchSitesByCondition(PLANTING_SITES.ID.eq(plantingSiteId), depth, simplified)
+        .firstOrNull() ?: throw PlantingSiteNotFoundException(plantingSiteId)
   }
 
   fun fetchSitesByOrganizationId(
       organizationId: OrganizationId,
       depth: PlantingSiteDepth = PlantingSiteDepth.Site,
+      simplified: Boolean = false,
   ): List<ExistingPlantingSiteModel> {
     requirePermissions { readOrganization(organizationId) }
 
-    return fetchSitesByCondition(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId), depth)
+    return fetchSitesByCondition(
+        PLANTING_SITES.ORGANIZATION_ID.eq(organizationId),
+        depth,
+        simplified,
+    )
   }
 
   fun fetchSitesByProjectId(
       projectId: ProjectId,
       depth: PlantingSiteDepth = PlantingSiteDepth.Site,
+      simplified: Boolean = false,
   ): List<ExistingPlantingSiteModel> {
     requirePermissions { readProject(projectId) }
 
-    return fetchSitesByCondition(PLANTING_SITES.PROJECT_ID.eq(projectId), depth)
+    return fetchSitesByCondition(PLANTING_SITES.PROJECT_ID.eq(projectId), depth, simplified)
   }
 
   fun fetchSiteHistoryById(
@@ -200,10 +205,25 @@ class PlantingSiteStore(
   private fun fetchSitesByCondition(
       condition: Condition,
       depth: PlantingSiteDepth,
+      simplified: Boolean,
   ): List<ExistingPlantingSiteModel> {
+    val boundaryField =
+        if (simplified) {
+          DSL.coalesce(SIMPLIFIED_PLANTING_SITES.BOUNDARY, PLANTING_SITES.BOUNDARY)
+        } else {
+          PLANTING_SITES.BOUNDARY
+        }
+
+    val exclusionField =
+        if (simplified) {
+          DSL.coalesce(SIMPLIFIED_PLANTING_SITES.EXCLUSION, PLANTING_SITES.EXCLUSION)
+        } else {
+          PLANTING_SITES.EXCLUSION
+        }
+
     val strataField =
         if (depth != PlantingSiteDepth.Site) {
-          strataMultiset(depth)
+          strataMultiset(depth, simplified)
         } else {
           null
         }
@@ -236,31 +256,41 @@ class PlantingSiteStore(
                 .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
         )
     val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
-    val latestObservationTimeField =
+    val latestObservationCompletedTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
 
     return dslContext
         .select(
             PLANTING_SITES.asterisk(),
+            adHocPlotsField,
+            boundaryField,
+            exclusionField,
+            exteriorPlotsField,
+            latestObservationCompletedTimeField,
+            latestObservationIdField,
             plantingSeasonsMultiset,
             strataField,
-            adHocPlotsField,
-            exteriorPlotsField,
-            latestObservationIdField,
-            latestObservationTimeField,
         )
         .from(PLANTING_SITES)
+        .apply {
+          if (simplified) {
+            this.leftJoin(SIMPLIFIED_PLANTING_SITES)
+                .on(PLANTING_SITES.ID.eq(SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID))
+          }
+        }
         .where(condition)
         .orderBy(PLANTING_SITES.ID)
         .fetch {
           PlantingSiteModel.of(
               it,
+              adHocPlotsField,
+              boundaryField,
+              exclusionField,
+              exteriorPlotsField,
+              latestObservationCompletedTimeField,
+              latestObservationIdField,
               plantingSeasonsMultiset,
               strataField,
-              adHocPlotsField,
-              exteriorPlotsField,
-              latestObservationIdField,
-              latestObservationTimeField,
           )
         }
   }
@@ -2376,8 +2406,18 @@ class PlantingSiteStore(
             }
           }
 
-  private fun substrataMultiset(depth: PlantingSiteDepth): Field<List<ExistingSubstratumModel>> {
-    val plotsField =
+  private fun substrataMultiset(
+      depth: PlantingSiteDepth,
+      simplified: Boolean,
+  ): Field<List<ExistingSubstratumModel>> {
+    val boundaryField =
+        if (simplified) {
+          DSL.coalesce(SIMPLIFIED_SUBSTRATA.BOUNDARY, SUBSTRATA.BOUNDARY).forMultiset()
+        } else {
+          SUBSTRATA.BOUNDARY.forMultiset()
+        }
+
+    val monitoringPlotsField =
         if (depth == PlantingSiteDepth.Plot)
             monitoringPlotsMultiset(
                 DSL.and(
@@ -2394,25 +2434,31 @@ class PlantingSiteStore(
                 .where(MONITORING_PLOTS.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
         )
 
-    val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
-    val latestObservationTimeField =
+    val latestObservationCompletedTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
+    val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
 
     return DSL.multiset(
             DSL.select(
                     SUBSTRATA.AREA_HA,
-                    SUBSTRATA.ID,
+                    boundaryField,
                     SUBSTRATA.FULL_NAME,
+                    SUBSTRATA.ID,
+                    latestObservationCompletedTimeField,
+                    latestObservationIdField,
+                    monitoringPlotsField,
                     SUBSTRATA.NAME,
                     SUBSTRATA.OBSERVED_TIME,
                     SUBSTRATA.PLANTING_COMPLETED_TIME,
                     SUBSTRATA.STABLE_ID,
-                    substratumBoundaryField,
-                    latestObservationIdField,
-                    latestObservationTimeField,
-                    plotsField,
                 )
                 .from(SUBSTRATA)
+                .apply {
+                  if (simplified) {
+                    this.leftJoin(SIMPLIFIED_SUBSTRATA)
+                        .on(SUBSTRATA.ID.eq(SIMPLIFIED_SUBSTRATA.SUBSTRATUM_ID))
+                  }
+                }
                 .where(STRATA.ID.eq(SUBSTRATA.STRATUM_ID))
                 .orderBy(SUBSTRATA.FULL_NAME)
         )
@@ -2420,12 +2466,12 @@ class PlantingSiteStore(
           result.map { record: Record ->
             ExistingSubstratumModel(
                 areaHa = record[SUBSTRATA.AREA_HA]!!,
-                boundary = record[substratumBoundaryField]!! as MultiPolygon,
-                id = record[SUBSTRATA.ID]!!,
+                boundary = record[boundaryField]!! as MultiPolygon,
                 fullName = record[SUBSTRATA.FULL_NAME]!!,
-                monitoringPlots = plotsField?.let { record[it] } ?: emptyList(),
-                latestObservationCompletedTime = record[latestObservationTimeField],
+                id = record[SUBSTRATA.ID]!!,
+                latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = record[latestObservationIdField],
+                monitoringPlots = monitoringPlotsField?.let { record[it] } ?: emptyList(),
                 name = record[SUBSTRATA.NAME]!!,
                 observedTime = record[SUBSTRATA.OBSERVED_TIME],
                 plantingCompletedTime = record[SUBSTRATA.PLANTING_COMPLETED_TIME],
@@ -2472,10 +2518,20 @@ class PlantingSiteStore(
         }
   }
 
-  private fun strataMultiset(depth: PlantingSiteDepth): Field<List<ExistingStratumModel>> {
+  private fun strataMultiset(
+      depth: PlantingSiteDepth,
+      simplified: Boolean,
+  ): Field<List<ExistingStratumModel>> {
+    val boundaryField =
+        if (simplified) {
+          DSL.coalesce(SIMPLIFIED_STRATA.BOUNDARY, STRATA.BOUNDARY).forMultiset()
+        } else {
+          STRATA.BOUNDARY.forMultiset()
+        }
+
     val substrataField =
         if (depth == PlantingSiteDepth.Substratum || depth == PlantingSiteDepth.Plot) {
-          substrataMultiset(depth)
+          substrataMultiset(depth, simplified)
         } else {
           null
         }
@@ -2489,28 +2545,33 @@ class PlantingSiteStore(
                 .where(SUBSTRATA.STRATUM_ID.eq(STRATA.ID))
         )
     val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
-    val latestObservationTimeField =
+    val latestObservationCompletedTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
 
     return DSL.multiset(
             DSL.select(
                     STRATA.AREA_HA,
+                    boundaryField,
                     STRATA.BOUNDARY_MODIFIED_TIME,
                     STRATA.ERROR_MARGIN,
                     STRATA.ID,
+                    latestObservationCompletedTimeField,
+                    latestObservationIdField,
                     STRATA.NAME,
                     STRATA.NUM_PERMANENT_PLOTS,
                     STRATA.NUM_TEMPORARY_PLOTS,
                     STRATA.STABLE_ID,
+                    substrataField,
                     STRATA.STUDENTS_T,
                     STRATA.TARGET_PLANTING_DENSITY,
                     STRATA.VARIANCE,
-                    strataBoundaryField,
-                    latestObservationIdField,
-                    latestObservationTimeField,
-                    substrataField,
                 )
                 .from(STRATA)
+                .apply {
+                  if (simplified) {
+                    this.leftJoin(SIMPLIFIED_STRATA).on(STRATA.ID.eq(SIMPLIFIED_STRATA.STRATUM_ID))
+                  }
+                }
                 .where(PLANTING_SITES.ID.eq(STRATA.PLANTING_SITE_ID))
                 .orderBy(STRATA.NAME)
         )
@@ -2518,18 +2579,18 @@ class PlantingSiteStore(
           result.map { record: Record ->
             ExistingStratumModel(
                 areaHa = record[STRATA.AREA_HA]!!,
-                boundary = record[strataBoundaryField]!! as MultiPolygon,
+                boundary = record[boundaryField]!! as MultiPolygon,
                 boundaryModifiedTime = record[STRATA.BOUNDARY_MODIFIED_TIME]!!,
                 errorMargin = record[STRATA.ERROR_MARGIN]!!,
                 id = record[STRATA.ID]!!,
-                latestObservationCompletedTime = record[latestObservationTimeField],
+                latestObservationCompletedTime = record[latestObservationCompletedTimeField],
                 latestObservationId = record[latestObservationIdField],
                 name = record[STRATA.NAME]!!,
                 numPermanentPlots = record[STRATA.NUM_PERMANENT_PLOTS]!!,
                 numTemporaryPlots = record[STRATA.NUM_TEMPORARY_PLOTS]!!,
-                substrata = substrataField?.let { record[it] } ?: emptyList(),
                 stableId = record[STRATA.STABLE_ID]!!,
                 studentsT = record[STRATA.STUDENTS_T]!!,
+                substrata = substrataField?.let { record[it] } ?: emptyList(),
                 targetPlantingDensity = record[STRATA.TARGET_PLANTING_DENSITY]!!,
                 variance = record[STRATA.VARIANCE]!!,
             )
