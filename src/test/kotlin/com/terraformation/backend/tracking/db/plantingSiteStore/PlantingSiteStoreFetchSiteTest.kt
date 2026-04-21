@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
@@ -214,6 +215,61 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       if (!allExpected.all { (depth, expected) -> allActual[depth]!!.equals(expected, 0.00001) }) {
         assertEquals(allExpected, allActual)
       }
+    }
+
+    @Test
+    fun `returns simplified site`() {
+      val siteBoundary = multiPolygon(20.0)
+      val exclusion = multiPolygon(10.0)
+      val stratumBoundary = multiPolygon(15.0)
+      val substratumBoundary = multiPolygon(12.0)
+
+      val simplifiedSiteBoundary = multiPolygon(2.0)
+      val simplifiedExclusion = multiPolygon(1.0)
+      val simplifiedStratumBoundary = multiPolygon(1.5)
+      val simplifiedSubstratumBoundary = multiPolygon(1.2)
+
+      val siteId = insertPlantingSite(boundary = siteBoundary, exclusion = exclusion)
+      insertSimplifiedPlantingSite(
+          boundary = simplifiedSiteBoundary,
+          exclusion = simplifiedExclusion,
+      )
+      insertStratum(boundary = stratumBoundary)
+      insertSimplifiedStratum(boundary = simplifiedStratumBoundary)
+      insertSubstratum(boundary = substratumBoundary)
+      insertSimplifiedSubstratum(boundary = simplifiedSubstratumBoundary)
+
+      val site = store.fetchSiteById(siteId, PlantingSiteDepth.Substratum, true)
+      assertGeometryEquals(simplifiedSiteBoundary, site.boundary, "Site Boundary")
+      assertGeometryEquals(simplifiedExclusion, site.exclusion, "Site Exclusion")
+      assertGeometryEquals(simplifiedStratumBoundary, site.strata[0].boundary, "Stratum Boundary")
+      assertGeometryEquals(
+          simplifiedSubstratumBoundary,
+          site.strata[0].substrata[0].boundary,
+          "Substratum Boundary",
+      )
+    }
+
+    @Test
+    fun `fall back to full site if simplified site does not exist`() {
+      val siteBoundary = multiPolygon(20.0)
+      val exclusion = multiPolygon(10.0)
+      val stratumBoundary = multiPolygon(15.0)
+      val substratumBoundary = multiPolygon(12.0)
+
+      val siteId = insertPlantingSite(boundary = siteBoundary, exclusion = exclusion)
+      insertStratum(boundary = stratumBoundary)
+      insertSubstratum(boundary = substratumBoundary)
+
+      val site = store.fetchSiteById(siteId, PlantingSiteDepth.Substratum, true)
+      assertGeometryEquals(siteBoundary, site.boundary, "Site Boundary")
+      assertGeometryEquals(exclusion, site.exclusion, "Site Exclusion")
+      assertGeometryEquals(stratumBoundary, site.strata[0].boundary, "Stratum Boundary")
+      assertGeometryEquals(
+          substratumBoundary,
+          site.strata[0].substrata[0].boundary,
+          "Substratum Boundary",
+      )
     }
 
     @Test
