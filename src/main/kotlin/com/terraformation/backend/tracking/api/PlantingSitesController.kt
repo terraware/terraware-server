@@ -121,8 +121,15 @@ class PlantingSitesController(
   fun getPlantingSiteHistory(
       @PathVariable("id") id: PlantingSiteId,
       @PathVariable("historyId") historyId: PlantingSiteHistoryId,
+      @RequestParam(defaultValue = "true") simplified: Boolean? = true,
   ): GetPlantingSiteHistoryResponsePayload {
-    val model = plantingSiteStore.fetchSiteHistoryById(id, historyId, PlantingSiteDepth.Plot)
+    val model =
+        plantingSiteStore.fetchSiteHistoryById(
+            id,
+            historyId,
+            PlantingSiteDepth.Plot,
+            simplified ?: true,
+        )
     return GetPlantingSiteHistoryResponsePayload(PlantingSiteHistoryPayload(model))
   }
 

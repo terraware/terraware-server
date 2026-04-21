@@ -191,6 +191,7 @@ class PlantingSiteStore(
       plantingSiteId: PlantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId,
       depth: PlantingSiteDepth,
+      simplified: Boolean = false,
   ): PlantingSiteHistoryModel {
     requirePermissions { readPlantingSite(plantingSiteId) }
 
@@ -198,6 +199,7 @@ class PlantingSiteStore(
             PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId)
                 .and(PLANTING_SITE_HISTORIES.ID.eq(plantingSiteHistoryId)),
             depth,
+            simplified,
         )
         .firstOrNull() ?: throw PlantingSiteHistoryNotFoundException(plantingSiteHistoryId)
   }
@@ -298,14 +300,33 @@ class PlantingSiteStore(
   private fun fetchSiteHistoriesByCondition(
       condition: Condition,
       depth: PlantingSiteDepth,
+      simplified: Boolean,
   ): List<PlantingSiteHistoryModel> {
-    val boundaryField = PLANTING_SITE_HISTORIES.BOUNDARY.forMultiset()
-    val exclusionField = PLANTING_SITE_HISTORIES.EXCLUSION.forMultiset()
-    val gridOriginField = PLANTING_SITE_HISTORIES.GRID_ORIGIN.forMultiset()
+    val boundaryField =
+        if (simplified) {
+          DSL.coalesce(
+              SIMPLIFIED_PLANTING_SITE_HISTORIES.BOUNDARY,
+              PLANTING_SITE_HISTORIES.BOUNDARY,
+          )
+        } else {
+          PLANTING_SITE_HISTORIES.BOUNDARY
+        }
+
+    val exclusionField =
+        if (simplified) {
+          DSL.coalesce(
+              SIMPLIFIED_PLANTING_SITE_HISTORIES.EXCLUSION,
+              PLANTING_SITE_HISTORIES.EXCLUSION,
+          )
+        } else {
+          PLANTING_SITE_HISTORIES.EXCLUSION
+        }
+
+    val gridOriginField = PLANTING_SITE_HISTORIES.GRID_ORIGIN
 
     val strataField =
         if (depth != PlantingSiteDepth.Site) {
-          stratumHistoriesMultiset(depth)
+          stratumHistoriesMultiset(depth, simplified)
         } else {
           null
         }
@@ -322,6 +343,16 @@ class PlantingSiteStore(
             strataField,
         )
         .from(PLANTING_SITE_HISTORIES)
+        .apply {
+          if (simplified) {
+            this.leftJoin(SIMPLIFIED_PLANTING_SITE_HISTORIES)
+                .on(
+                    PLANTING_SITE_HISTORIES.ID.eq(
+                        SIMPLIFIED_PLANTING_SITE_HISTORIES.PLANTING_SITE_HISTORY_ID
+                    )
+                )
+          }
+        }
         .where(condition)
         .orderBy(PLANTING_SITE_HISTORIES.ID.desc())
         .fetch { record ->
@@ -2482,10 +2513,17 @@ class PlantingSiteStore(
   }
 
   private fun substratumHistoriesMultiset(
-      depth: PlantingSiteDepth
+      depth: PlantingSiteDepth,
+      simplified: Boolean,
   ): Field<List<SubstratumHistoryModel>> {
     val plotsField = if (depth == PlantingSiteDepth.Plot) monitoringPlotHistoriesMultiset else null
-    val boundaryField = SUBSTRATUM_HISTORIES.BOUNDARY.forMultiset()
+    val boundaryField =
+        if (simplified) {
+          DSL.coalesce(SIMPLIFIED_SUBSTRATUM_HISTORIES.BOUNDARY, SUBSTRATUM_HISTORIES.BOUNDARY)
+              .forMultiset()
+        } else {
+          SUBSTRATUM_HISTORIES.BOUNDARY.forMultiset()
+        }
 
     return DSL.multiset(
             DSL.select(
@@ -2499,6 +2537,16 @@ class PlantingSiteStore(
                     plotsField,
                 )
                 .from(SUBSTRATUM_HISTORIES)
+                .apply {
+                  if (simplified) {
+                    this.leftJoin(SIMPLIFIED_SUBSTRATUM_HISTORIES)
+                        .on(
+                            SUBSTRATUM_HISTORIES.ID.eq(
+                                SIMPLIFIED_SUBSTRATUM_HISTORIES.SUBSTRATUM_HISTORY_ID
+                            )
+                        )
+                  }
+                }
                 .where(STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
                 .orderBy(SUBSTRATUM_HISTORIES.FULL_NAME)
         )
@@ -2598,11 +2646,21 @@ class PlantingSiteStore(
         }
   }
 
-  private fun stratumHistoriesMultiset(depth: PlantingSiteDepth): Field<List<StratumHistoryModel>> {
-    val boundaryField = STRATUM_HISTORIES.BOUNDARY.forMultiset()
+  private fun stratumHistoriesMultiset(
+      depth: PlantingSiteDepth,
+      simplified: Boolean,
+  ): Field<List<StratumHistoryModel>> {
+    val boundaryField =
+        if (simplified) {
+          DSL.coalesce(SIMPLIFIED_STRATUM_HISTORIES.BOUNDARY, STRATUM_HISTORIES.BOUNDARY)
+              .forMultiset()
+        } else {
+          STRATUM_HISTORIES.BOUNDARY.forMultiset()
+        }
+
     val substrataField =
         if (depth == PlantingSiteDepth.Substratum || depth == PlantingSiteDepth.Plot) {
-          substratumHistoriesMultiset(depth)
+          substratumHistoriesMultiset(depth, simplified)
         } else {
           null
         }
@@ -2618,6 +2676,14 @@ class PlantingSiteStore(
                     substrataField,
                 )
                 .from(STRATUM_HISTORIES)
+                .apply {
+                  if (simplified) {
+                    this.leftJoin(SIMPLIFIED_STRATUM_HISTORIES)
+                        .on(
+                            STRATUM_HISTORIES.ID.eq(SIMPLIFIED_STRATUM_HISTORIES.STRATUM_HISTORY_ID)
+                        )
+                  }
+                }
                 .where(PLANTING_SITE_HISTORIES.ID.eq(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID))
                 .orderBy(STRATUM_HISTORIES.NAME)
         )

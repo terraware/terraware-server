@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.TestSingletons
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -185,6 +186,69 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
     if (!expected.equals(actual, 0.00001)) {
       assertEquals(expected, actual)
     }
+  }
+
+  @Test
+  fun `returns simplified site`() {
+    val siteBoundary = multiPolygon(20.0)
+    val exclusion = multiPolygon(10.0)
+    val stratumBoundary = multiPolygon(15.0)
+    val substratumBoundary = multiPolygon(12.0)
+
+    val simplifiedSiteBoundary = multiPolygon(2.0)
+    val simplifiedExclusion = multiPolygon(1.0)
+    val simplifiedStratumBoundary = multiPolygon(1.5)
+    val simplifiedSubstratumBoundary = multiPolygon(1.2)
+
+    val siteId =
+        insertPlantingSite(boundary = siteBoundary, exclusion = exclusion, insertHistory = false)
+    val siteHistoryId = insertPlantingSiteHistory()
+    insertSimplifiedPlantingSiteHistory(
+        boundary = simplifiedSiteBoundary,
+        exclusion = simplifiedExclusion,
+    )
+    insertStratum(boundary = stratumBoundary)
+    insertSimplifiedStratumHistory(boundary = simplifiedStratumBoundary)
+    insertSubstratum(boundary = substratumBoundary)
+    insertSimplifiedSubstratumHistory(boundary = simplifiedSubstratumBoundary)
+
+    val site = store.fetchSiteHistoryById(siteId, siteHistoryId, PlantingSiteDepth.Substratum, true)
+    assertGeometryEquals(simplifiedSiteBoundary, site.boundary, "Site History Boundary")
+    assertGeometryEquals(simplifiedExclusion, site.exclusion, "Site History Exclusion")
+    assertGeometryEquals(
+        simplifiedStratumBoundary,
+        site.strata[0].boundary,
+        "Stratum History Boundary",
+    )
+    assertGeometryEquals(
+        simplifiedSubstratumBoundary,
+        site.strata[0].substrata[0].boundary,
+        "Substratum History Boundary",
+    )
+  }
+
+  @Test
+  fun `fall back to full site if simplified site does not exist`() {
+    val siteBoundary = multiPolygon(20.0)
+    val exclusion = multiPolygon(10.0)
+    val stratumBoundary = multiPolygon(15.0)
+    val substratumBoundary = multiPolygon(12.0)
+
+    val siteId =
+        insertPlantingSite(boundary = siteBoundary, exclusion = exclusion, insertHistory = false)
+    val siteHistoryId = insertPlantingSiteHistory()
+    insertStratum(boundary = stratumBoundary)
+    insertSubstratum(boundary = substratumBoundary)
+
+    val site = store.fetchSiteHistoryById(siteId, siteHistoryId, PlantingSiteDepth.Substratum, true)
+    assertGeometryEquals(siteBoundary, site.boundary, "Site History Boundary")
+    assertGeometryEquals(exclusion, site.exclusion, "Site History Exclusion")
+    assertGeometryEquals(stratumBoundary, site.strata[0].boundary, "Stratum History Boundary")
+    assertGeometryEquals(
+        substratumBoundary,
+        site.strata[0].substrata[0].boundary,
+        "Substratum History Boundary",
+    )
   }
 
   @Test
