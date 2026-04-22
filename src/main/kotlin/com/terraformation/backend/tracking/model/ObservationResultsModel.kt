@@ -228,6 +228,7 @@ data class ObservationResultsModel(
     val areaHa: BigDecimal?,
     val biomassDetails: ExistingBiomassDetailsModel?,
     val completedTime: Instant?,
+    val endDate: LocalDate,
     override val estimatedPlants: Int?,
     val isAdHoc: Boolean,
     val observationId: ObservationId,

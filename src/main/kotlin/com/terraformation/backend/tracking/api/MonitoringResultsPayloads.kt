@@ -360,6 +360,7 @@ data class ObservationResultsPayload(
     val areaHa: BigDecimal?,
     val biomassMeasurements: ExistingBiomassMeasurementPayload?,
     val completedTime: Instant?,
+    val endDate: LocalDate,
     @Schema(
         description =
             "Estimated total number of live plants at the site, based on the estimated planting " +
@@ -400,6 +401,7 @@ data class ObservationResultsPayload(
       areaHa = model.areaHa,
       biomassMeasurements = model.biomassDetails?.let { ExistingBiomassMeasurementPayload.of(it) },
       completedTime = model.completedTime,
+      endDate = model.endDate,
       estimatedPlants = model.estimatedPlants,
       isAdHoc = model.isAdHoc,
       observationId = model.observationId,
