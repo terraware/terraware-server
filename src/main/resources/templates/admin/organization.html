@@ -232,6 +232,8 @@
     </li>
 </ol>
 
+<a th:href="|/admin/organization/${organization.id}/simplifyPlantingSites|">Manage Simplified Planting Sites</a>
+
 <form method="POST" enctype="multipart/form-data" action="/admin/createPlantingSite"
       th:if="${canCreatePlantingSite}">
     <h4>Create Planting Site from Shapefiles</h4>

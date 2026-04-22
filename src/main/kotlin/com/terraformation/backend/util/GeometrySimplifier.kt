@@ -13,15 +13,16 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier
  */
 class GeometrySimplifier {
   companion object {
-    val TOLERANCE_M: Double = 0.5
+    const val DEFAULT_TOLERANCE_M: Double = 0.5
 
     /**
      * Simplifies geometry within a tolerance of 0.5 meter. The simplification will be performed in
      * the Web Mercator CRS. The results will be projected back to the original CRS
      */
-    fun simplify(geometry: Geometry): Geometry {
+    fun simplify(geometry: Geometry, tolerance: Double? = null): Geometry {
       val geometryMercator = project(geometry, geometry.srid, SRID.SPHERICAL_MERCATOR)
-      val simplifiedGeometry = TopologyPreservingSimplifier.simplify(geometryMercator, TOLERANCE_M)
+      val simplifiedGeometry =
+          TopologyPreservingSimplifier.simplify(geometryMercator, tolerance ?: DEFAULT_TOLERANCE_M)
       return project(simplifiedGeometry, SRID.SPHERICAL_MERCATOR, geometry.srid)
     }
 

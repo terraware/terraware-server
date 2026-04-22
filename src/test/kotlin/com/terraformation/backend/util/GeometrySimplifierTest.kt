@@ -1,6 +1,7 @@
 package com.terraformation.backend.util
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.gis.GeometryFileParser
@@ -8,7 +9,10 @@ import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.PrecisionModel
 
 class GeometrySimplifierTest {
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
@@ -22,6 +26,69 @@ class GeometrySimplifierTest {
   @Test
   fun `simplifies geometry for a multi-polygon`() {
     runGeoJson("/gis/simplification/multipolygon.geojson")
+  }
+
+  @Test
+  fun `smooths line by removing points according to distance tolerances`() {
+    val geometryFactory = GeometryFactory(PrecisionModel(), SRID.SPHERICAL_MERCATOR)
+    val originalPolygon =
+        geometryFactory.createPolygon(
+            arrayOf(
+                Coordinate(0.0, 0.0),
+                Coordinate(6.0, 0.6), // divot of 0.6m
+                Coordinate(12.0, 0.0),
+                Coordinate(12.0, 10.0),
+                Coordinate(6.0, 11.1), // divot of 1.1m
+                Coordinate(0.0, 10.0),
+                Coordinate(0.0, 0.0),
+            )
+        )
+
+    val expectedSimplifiedPolygon2 =
+        geometryFactory.createPolygon(
+            arrayOf(
+                Coordinate(0.0, 0.0),
+                // 0.6m divot removed
+                Coordinate(12.0, 0.0),
+                Coordinate(12.0, 10.0),
+                Coordinate(6.0, 11.1), // divot of 1.1m
+                Coordinate(0.0, 10.0),
+                Coordinate(0.0, 0.0),
+            )
+        )
+
+    val expectedSimplifiedPolygon3 =
+        geometryFactory.createPolygon(
+            arrayOf(
+                Coordinate(0.0, 0.0),
+                // 0.6m divot removed
+                Coordinate(12.0, 0.0),
+                Coordinate(12.0, 10.0),
+                // 1.1m divot removed
+                Coordinate(0.0, 10.0),
+                Coordinate(0.0, 0.0),
+            )
+        )
+
+    val actualSimplifiedPolygon1 = GeometrySimplifier.simplify(originalPolygon, 0.5)
+    val actualSimplifiedPolygon2 = GeometrySimplifier.simplify(originalPolygon, 1.0)
+    val actualSimplifiedPolygon3 = GeometrySimplifier.simplify(originalPolygon, 1.5)
+
+    assertGeometryEquals(
+        originalPolygon,
+        actualSimplifiedPolygon1,
+        "Simplified polygon with tolerance of 0.5m",
+    )
+    assertGeometryEquals(
+        expectedSimplifiedPolygon2,
+        actualSimplifiedPolygon2,
+        "Simplified polygon with tolerance of 1.0m",
+    )
+    assertGeometryEquals(
+        expectedSimplifiedPolygon3,
+        actualSimplifiedPolygon3,
+        "Simplified polygon with tolerance of 1.5m",
+    )
   }
 
   private fun runGeoJson(path: String) {

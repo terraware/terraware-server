@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<style>
+    table td, table th {
+        padding: 0.1em 1.2em;
+    }
+</style>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+-
+<a th:href="|/admin/organization/${organizationId}|">Organization <th:block th:text="${organizationId}"/></a>
+-
+<a th:href="|/admin/organization/${organizationId}/simplifyPlantingSites|">Simplify Planting Sites</a>
+
+<h2>Simplify Planting Site Histories</h2>
+
+<p>
+    Regenerate simplified geometry for planting site histories. An optional tolerance (in meters)
+    controls how aggressively the geometry is simplified; leave blank to use the default.
+</p>
+
+<h3>Histories for Planting Site <th:block th:text="${plantingSiteId}"/></h3>
+
+<p th:if="${histories.isEmpty()}">No histories found for this planting site.</p>
+
+<div th:if="${!histories.isEmpty()}">
+    <label for="sharedTolerance">Tolerance (meters)</label>
+    <input type="number" id="sharedTolerance" step="any" min="0" value="0.5"
+           oninput="document.querySelectorAll('.historyToleranceInput').forEach(i => i.value = this.value)"/>
+
+    <table>
+        <thead>
+        <tr>
+            <th>History ID</th>
+            <th>Created Time</th>
+            <th>Original Vertices</th>
+            <th>Simplified Vertices</th>
+            <th>Reduction Ratio</th>
+            <th>Jaccard Similarity</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="history : ${histories}" class="striped">
+            <td th:text="${history.id}">1</td>
+            <td th:text="${history.createdTime}">2024-01-01T00:00:00Z</td>
+            <td th:text="${history.numVerticesOriginal} ?: '-'">-</td>
+            <td th:text="${history.numVerticesSimplified} ?: '-'">-</td>
+            <td th:text="${history.reductionRatio != null} ? ${#numbers.formatDecimal(history.reductionRatio, 1, 4)} : '-'">-</td>
+            <td th:text="${history.jaccardSimilarity != null} ? ${#numbers.formatDecimal(history.jaccardSimilarity, 1, 4)} : '-'">-</td>
+            <td>
+                <form method="POST"
+                      th:action="|/admin/organization/${organizationId}/simplifyPlantingSites/${plantingSiteId}/histories/${history.id}|">
+                    <input type="hidden" name="tolerance" class="historyToleranceInput" value="0.5"/>
+                    <input type="submit" value="Simplify"/>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
