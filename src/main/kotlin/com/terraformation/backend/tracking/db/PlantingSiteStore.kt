@@ -731,25 +731,25 @@ class PlantingSiteStore(
     dslContext.transaction { _ ->
       if (site.boundary != null) {
         simplifyAndUpsertRow(
-            SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID,
-            plantingSiteId,
-            site.boundary,
-            site.exclusion,
-            tolerance,
+            idField = SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID,
+            id = plantingSiteId,
+            boundary = site.boundary,
+            exclusion = site.exclusion,
+            tolerance = tolerance,
         )
 
         site.strata.forEach { stratum ->
           simplifyAndUpsertRow(
-              SIMPLIFIED_STRATA.STRATUM_ID,
-              stratum.id,
-              stratum.boundary,
+              idField = SIMPLIFIED_STRATA.STRATUM_ID,
+              id = stratum.id,
+              boundary = stratum.boundary,
               tolerance = tolerance,
           )
           stratum.substrata.forEach { substratum ->
             simplifyAndUpsertRow(
-                SIMPLIFIED_SUBSTRATA.SUBSTRATUM_ID,
-                substratum.id,
-                substratum.boundary,
+                idField = SIMPLIFIED_SUBSTRATA.SUBSTRATUM_ID,
+                id = substratum.id,
+                boundary = substratum.boundary,
                 tolerance = tolerance,
             )
           }
@@ -770,25 +770,25 @@ class PlantingSiteStore(
 
     dslContext.transaction { _ ->
       simplifyAndUpsertRow(
-          SIMPLIFIED_PLANTING_SITE_HISTORIES.PLANTING_SITE_HISTORY_ID,
-          siteHistory.id,
-          siteHistory.boundary,
-          siteHistory.exclusion,
-          tolerance,
+          idField = SIMPLIFIED_PLANTING_SITE_HISTORIES.PLANTING_SITE_HISTORY_ID,
+          id = siteHistory.id,
+          boundary = siteHistory.boundary,
+          exclusion = siteHistory.exclusion,
+          tolerance = tolerance,
       )
 
       siteHistory.strata.forEach { stratumHistory ->
         simplifyAndUpsertRow(
-            SIMPLIFIED_STRATUM_HISTORIES.STRATUM_HISTORY_ID,
-            stratumHistory.id,
-            stratumHistory.boundary,
+            idField = SIMPLIFIED_STRATUM_HISTORIES.STRATUM_HISTORY_ID,
+            id = stratumHistory.id,
+            boundary = stratumHistory.boundary,
             tolerance = tolerance,
         )
         stratumHistory.substrata.forEach { substratumHistory ->
           simplifyAndUpsertRow(
-              SIMPLIFIED_SUBSTRATUM_HISTORIES.SUBSTRATUM_HISTORY_ID,
-              substratumHistory.id,
-              substratumHistory.boundary,
+              idField = SIMPLIFIED_SUBSTRATUM_HISTORIES.SUBSTRATUM_HISTORY_ID,
+              id = substratumHistory.id,
+              boundary = substratumHistory.boundary,
               tolerance = tolerance,
           )
         }
