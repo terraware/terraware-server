@@ -62,6 +62,7 @@ class AdminSimplifyPlantingSitesController(
             .leftJoin(SIMPLIFIED_PLANTING_SITES)
             .on(PLANTING_SITES.ID.eq(SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID))
             .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+            .orderBy(PLANTING_SITES.ID)
             .fetch { record ->
               PlantingSiteSimplificationModel(
                   id = record[PLANTING_SITES.ID]!!,
