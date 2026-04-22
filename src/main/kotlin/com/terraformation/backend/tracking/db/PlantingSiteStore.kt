@@ -720,7 +720,10 @@ class PlantingSiteStore(
     }
   }
 
-  fun upsertSimplifiedPlantingSite(plantingSiteId: PlantingSiteId) {
+  fun upsertSimplifiedPlantingSite(
+      plantingSiteId: PlantingSiteId,
+      tolerance: Double? = null,
+  ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
     val site = fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum)
@@ -732,15 +735,22 @@ class PlantingSiteStore(
             plantingSiteId,
             site.boundary,
             site.exclusion,
+            tolerance,
         )
 
         site.strata.forEach { stratum ->
-          simplifyAndUpsertRow(SIMPLIFIED_STRATA.STRATUM_ID, stratum.id, stratum.boundary)
+          simplifyAndUpsertRow(
+              SIMPLIFIED_STRATA.STRATUM_ID,
+              stratum.id,
+              stratum.boundary,
+              tolerance = tolerance,
+          )
           stratum.substrata.forEach { substratum ->
             simplifyAndUpsertRow(
                 SIMPLIFIED_SUBSTRATA.SUBSTRATUM_ID,
                 substratum.id,
                 substratum.boundary,
+                tolerance = tolerance,
             )
           }
         }
@@ -751,6 +761,7 @@ class PlantingSiteStore(
   fun upsertSimplifiedPlantingSiteHistory(
       plantingSiteId: PlantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId,
+      tolerance: Double? = null,
   ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
 
@@ -763,6 +774,7 @@ class PlantingSiteStore(
           siteHistory.id,
           siteHistory.boundary,
           siteHistory.exclusion,
+          tolerance,
       )
 
       siteHistory.strata.forEach { stratumHistory ->
@@ -770,12 +782,14 @@ class PlantingSiteStore(
             SIMPLIFIED_STRATUM_HISTORIES.STRATUM_HISTORY_ID,
             stratumHistory.id,
             stratumHistory.boundary,
+            tolerance = tolerance,
         )
         stratumHistory.substrata.forEach { substratumHistory ->
           simplifyAndUpsertRow(
               SIMPLIFIED_SUBSTRATUM_HISTORIES.SUBSTRATUM_HISTORY_ID,
               substratumHistory.id,
               substratumHistory.boundary,
+              tolerance = tolerance,
           )
         }
       }
@@ -3142,11 +3156,12 @@ class PlantingSiteStore(
       id: ID,
       boundary: Geometry,
       exclusion: Geometry? = null,
+      tolerance: Double? = null,
   ) {
     val table = idField.table!!
 
-    val simplifiedBoundary = GeometrySimplifier.simplify(boundary)
-    val simplifiedExclusion = exclusion?.let { GeometrySimplifier.simplify(it) }
+    val simplifiedBoundary = GeometrySimplifier.simplify(boundary, tolerance)
+    val simplifiedExclusion = exclusion?.let { GeometrySimplifier.simplify(it, tolerance) }
 
     val boundaryField = table.field("boundary", Geometry::class.java)!!
     val exclusionField = exclusion?.let { table.field("exclusion", Geometry::class.java)!! }

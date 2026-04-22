@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<style>
+    table td, table th {
+        padding: 0.1em 1.2em;
+    }
+</style>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+-
+<a th:href="|/admin/organization/${organizationId}|">Organization <th:block th:text="${organizationId}"/></a>
+
+<h2>Simplify Planting Sites</h2>
+
+<p>
+    Regenerate simplified geometry for planting sites. Simplified geometry is used by the API to
+    reduce data transfer sizes. An optional tolerance (in degrees) controls how aggressively the
+    geometry is simplified; leave blank to use the default.
+</p>
+
+<h3>Planting Sites</h3>
+
+<p th:if="${plantingSites.isEmpty()}">No planting sites found for this organization.</p>
+
+<div th:if="${!plantingSites.isEmpty()}">
+    <label for="sharedTolerance">Tolerance (meters)</label>
+    <input type="number" id="sharedTolerance" step="any" min="0" value="0.5"
+           oninput="document.querySelectorAll('.siteToleranceInput').forEach(i => i.value = this.value)"/>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Original Vertices</th>
+            <th>Simplified Vertices</th>
+            <th>Reduction Ratio</th>
+            <th>Jaccard Similarity</th>
+            <th>Action</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="site : ${plantingSites}" class="striped">
+            <td th:text="${site.id}">1</td>
+            <td th:text="${site.name}">Site Name</td>
+            <td th:text="${site.numVerticesOriginal} ?: '-'">-</td>
+            <td th:text="${site.numVerticesSimplified} ?: '-'">-</td>
+            <td th:text="${site.reductionRatio != null} ? ${#numbers.formatDecimal(site.reductionRatio, 1, 4)} : '-'">-</td>
+            <td th:text="${site.jaccardSimilarity != null} ? ${#numbers.formatDecimal(site.jaccardSimilarity, 1, 4)} : '-'">-</td>
+            <td style="display: flex; align-items: center; gap: 0.5em;">
+                <form method="POST"
+                      th:action="|/admin/organization/${organizationId}/simplifyPlantingSite/${site.id}|">
+                    <input type="hidden" name="tolerance" class="siteToleranceInput" value="0.5"/>
+                    <input type="submit" value="Simplify"/>
+                </form>
+            </td>
+            <td>
+                <a th:href="|/admin/organization/${organizationId}/simplifyPlantingSites/${site.id}/histories|">Site Histories</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
