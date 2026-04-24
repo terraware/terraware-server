@@ -107,5 +107,8 @@ typealias NewSplatAnnotationModel = SplatAnnotationModel<Nothing?>
 data class SplatGenerationParams(
     val abortAfter: String? = null,
     val restartAt: String? = null,
-    val stepArgs: Map<String, List<String>> = emptyMap(),
+    val stepArgs: Map<String, List<String>> = mapOf(
+        "extract" to listOf("--fps", "5"),
+        "feature-matcher" to listOf("--subcommand", "lightglue"),
+    ),
 )

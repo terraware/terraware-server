@@ -33,6 +33,12 @@ class AdminSplatsController(
     if (!model.containsAttribute("stepArgs")) {
       model.addAttribute("stepArgs", emptyMap<String, String>())
     }
+    if (!model.containsAttribute("featureMatcherSubcommand")) {
+      model.addAttribute("featureMatcherSubcommand", "lightglue")
+    }
+    if (!model.containsAttribute("fps")) {
+      model.addAttribute("fps", 5)
+    }
     return "/admin/splats"
   }
 
