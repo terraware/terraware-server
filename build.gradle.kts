@@ -24,7 +24,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "8.0.18"
   id("com.diffplug.spotless") version "8.4.0"
-  id("org.springframework.boot") version "3.5.13"
+  id("org.springframework.boot") version "4.0.6"
   id("io.spring.dependency-management") version "1.1.7"
 
   // Add the build target to generate Swagger docs
@@ -92,7 +92,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.session:spring-session-jdbc")
 
-  implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2"))
+  implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:4.0.1"))
   implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
   implementation(platform("org.springframework.ai:spring-ai-bom:1.1.4"))
@@ -114,7 +114,7 @@ dependencies {
   implementation("com.squarespace.cldr-engine:cldr-engine:1.12.0")
   implementation("commons-codec:commons-codec:1.21.0")
   implementation("commons-validator:commons-validator:1.10.1")
-  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:4.7.1")
+  implementation("dev.akkinoc.spring.boot:logback-access-spring-boot-starter:5.0.0")
   implementation("io.jsonwebtoken:jjwt-api:$jjwtVersion")
   implementation("io.ktor:ktor-client-auth:$ktorVersion")
   implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
