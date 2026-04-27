@@ -36,6 +36,7 @@ import java.time.InstantSource
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -142,6 +143,9 @@ class SplatService(
     val organizationId =
         parentStore.getOrganizationId(observationId)
             ?: throw ObservationNotFoundException(observationId)
+
+    // Ensure that an observation media file used for splats is also an organization media file
+    insertOrganizationMediaFileFromObservationFile(observationId, fileId)
 
     generateSplat(organizationId, fileId, force, params, runBirdnet)
   }
@@ -712,6 +716,41 @@ class SplatService(
 
     if (!associationExists) {
       throw FileNotFoundException(fileId)
+    }
+  }
+
+  private fun insertOrganizationMediaFileFromObservationFile(
+      observationId: ObservationId,
+      fileId: FileId,
+  ) {
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    requirePermissions {
+      readObservation(observationId)
+      createOrganizationMedia(organizationId)
+    }
+
+    ensureObservationFile(observationId, fileId)
+
+    with(ORGANIZATION_MEDIA_FILES) {
+      dslContext
+          .insertInto(ORGANIZATION_MEDIA_FILES, ORGANIZATION_ID, FILE_ID, CAPTION)
+          .select(
+              DSL.select(
+                      DSL.value(organizationId),
+                      OBSERVATION_MEDIA_FILES.FILE_ID,
+                      OBSERVATION_MEDIA_FILES.CAPTION,
+                  )
+                  .from(OBSERVATION_MEDIA_FILES)
+                  .where(
+                      OBSERVATION_MEDIA_FILES.OBSERVATION_ID.eq(observationId)
+                          .and(OBSERVATION_MEDIA_FILES.FILE_ID.eq(fileId))
+                  )
+          )
+          .onConflictDoNothing()
+          .execute()
     }
   }
 

@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.records.BirdnetResultsRecord
+import com.terraformation.backend.db.default_schema.tables.records.OrganizationMediaFilesRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatAnnotationsRecord
 import com.terraformation.backend.db.default_schema.tables.records.SplatsRecord
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
@@ -947,6 +948,14 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertTableEquals(
+          OrganizationMediaFilesRecord(
+              fileId = fileId,
+              organizationId = organizationId,
+          ),
+          "Organization media files table",
+      )
+
+      assertTableEquals(
           SplatsRecord(
               fileId = fileId,
               createdBy = user.userId,
@@ -955,7 +964,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               splatStorageUrl = URI("s3://bucket/video.sog"),
               organizationId = organizationId,
               needsAttention = false,
-          )
+          ),
+          "Splats table",
       )
     }
 
