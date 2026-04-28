@@ -25,6 +25,7 @@ import com.terraformation.backend.splat.SplatGenerationFailedException
 import com.terraformation.backend.splat.SplatInfoModel
 import com.terraformation.backend.splat.SplatNotReadyException
 import com.terraformation.backend.splat.SplatService
+import com.terraformation.backend.tracking.api.SetSplatNeedsAttentionRequestPayload
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import jakarta.ws.rs.ServiceUnavailableException
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -186,6 +188,21 @@ class SplatsController(
     val annotations = payload.annotations.map { it.toModel(fileId) }
     splatService.setObservationSplatAnnotations(observationId, fileId, annotations)
 
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponse200
+  @ApiResponse404(
+      "The plot observation does not exist, or does not have a splat for the requested file ID."
+  )
+  @PutMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/needsAttention")
+  @Operation(summary = "Flags a splat as needing administrator attention.")
+  fun setObservationSplatNeedsAttention(
+      @PathVariable observationId: ObservationId,
+      @PathVariable fileId: FileId,
+      @RequestBody payload: SetSplatNeedsAttentionRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    splatService.setObservationSplatNeedsAttention(observationId, fileId, payload.needsAttention)
     return SimpleSuccessResponsePayload()
   }
 }
