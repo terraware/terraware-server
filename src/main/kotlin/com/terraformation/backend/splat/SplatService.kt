@@ -184,6 +184,22 @@ class SplatService(
     setSplatAnnotations(fileId, annotations)
   }
 
+  fun setObservationSplatNeedsAttention(
+      observationId: ObservationId,
+      fileId: FileId,
+      needsAttention: Boolean,
+  ) {
+    requirePermissions { updateObservation(observationId) }
+    ensureObservationFile(observationId, fileId)
+    ensureSplat(fileId)
+
+    val organizationId =
+        parentStore.getOrganizationId(observationId)
+            ?: throw ObservationNotFoundException(observationId)
+
+    setSplatNeedsAttention(organizationId, fileId, needsAttention)
+  }
+
   fun setOrganizationSplatNeedsAttention(
       organizationId: OrganizationId,
       fileId: FileId,
@@ -193,26 +209,7 @@ class SplatService(
     ensureOrganizationMediaFile(organizationId, fileId)
     ensureSplat(fileId)
 
-    val rowsUpdated =
-        dslContext
-            .update(SPLATS)
-            .set(SPLATS.NEEDS_ATTENTION, needsAttention)
-            .where(SPLATS.FILE_ID.eq(fileId))
-            .and(SPLATS.NEEDS_ATTENTION.ne(needsAttention))
-            .execute()
-
-    if (needsAttention && rowsUpdated > 0) {
-      val splatRecord = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(fileId))
-      eventPublisher.publishEvent(
-          SplatMarkedNeedsAttentionEvent(
-              fileId = fileId,
-              markedByUserId = currentUser().userId,
-              organizationId = organizationId,
-              uploadedByUserId = splatRecord.createdBy!!,
-              videoUploadedTime = splatRecord.createdTime!!,
-          )
-      )
-    }
+    setSplatNeedsAttention(organizationId, fileId, needsAttention)
   }
 
   fun deleteObservationSplat(observationId: ObservationId, fileId: FileId) {
@@ -674,6 +671,33 @@ class SplatService(
           insertQuery.execute()
         }
       }
+    }
+  }
+
+  private fun setSplatNeedsAttention(
+      organizationId: OrganizationId,
+      fileId: FileId,
+      needsAttention: Boolean,
+  ) {
+    val rowsUpdated =
+        dslContext
+            .update(SPLATS)
+            .set(SPLATS.NEEDS_ATTENTION, needsAttention)
+            .where(SPLATS.FILE_ID.eq(fileId))
+            .and(SPLATS.NEEDS_ATTENTION.ne(needsAttention))
+            .execute()
+
+    if (needsAttention && rowsUpdated > 0) {
+      val splatRecord = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(fileId))
+      eventPublisher.publishEvent(
+          SplatMarkedNeedsAttentionEvent(
+              fileId = fileId,
+              markedByUserId = currentUser().userId,
+              organizationId = organizationId,
+              uploadedByUserId = splatRecord.createdBy!!,
+              videoUploadedTime = splatRecord.createdTime!!,
+          )
+      )
     }
   }
 

@@ -1433,6 +1433,91 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class SetObservationSplatNeedsAttention {
+    @BeforeEach
+    fun setUp() {
+      insertSplat(fileId = fileId)
+    }
+
+    @Test
+    fun `sets needs attention on splat`() {
+      service.setObservationSplatNeedsAttention(observationId, fileId, true)
+
+      val record = dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))!!
+      assertEquals(true, record.needsAttention)
+    }
+
+    @Test
+    fun `throws exception if file does not belong to organization`() {
+      val unassociatedFileId = insertFile()
+      insertSplat(fileId = unassociatedFileId)
+
+      assertThrows<FileNotFoundException> {
+        service.setObservationSplatNeedsAttention(observationId, unassociatedFileId, true)
+      }
+    }
+
+    @Test
+    fun `throws exception if splat does not exist`() {
+      val fileWithoutSplat = insertFile()
+      insertObservationMediaFile(fileId = fileWithoutSplat)
+
+      assertThrows<FileNotFoundException> {
+        service.setObservationSplatNeedsAttention(observationId, fileWithoutSplat, true)
+      }
+    }
+
+    @Test
+    fun `throws exception if user does not have permission`() {
+      insertOrganization()
+      insertPlantingSite()
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot()
+      val otherObservationId = insertObservation()
+      insertObservationPlot()
+      val otherFileId = insertFile()
+      insertObservationMediaFile(fileId = otherFileId)
+      insertSplat(fileId = otherFileId)
+
+      assertThrows<ObservationNotFoundException> {
+        service.setObservationSplatNeedsAttention(otherObservationId, otherFileId, true)
+      }
+    }
+
+    @Test
+    fun `publishes event when needs attention is set to true`() {
+      service.setObservationSplatNeedsAttention(observationId, fileId, true)
+
+      eventPublisher.assertEventPublished(
+          SplatMarkedNeedsAttentionEvent(
+              fileId = fileId,
+              markedByUserId = user.userId,
+              organizationId = organizationId,
+              uploadedByUserId = user.userId,
+              videoUploadedTime = Instant.EPOCH,
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish event when needs attention is set to false`() {
+      service.setObservationSplatNeedsAttention(observationId, fileId, false)
+
+      eventPublisher.assertEventNotPublished<SplatMarkedNeedsAttentionEvent>()
+    }
+
+    @Test
+    fun `does not publish redundant event when needs attention was already true`() {
+      service.setObservationSplatNeedsAttention(observationId, fileId, true)
+      eventPublisher.clear()
+
+      service.setObservationSplatNeedsAttention(observationId, fileId, true)
+      eventPublisher.assertEventNotPublished<SplatMarkedNeedsAttentionEvent>()
+    }
+  }
+
+  @Nested
   inner class SetOrganizationSplatNeedsAttention {
     private lateinit var orgFileId: FileId
 
