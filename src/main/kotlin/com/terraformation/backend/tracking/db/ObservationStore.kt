@@ -89,7 +89,6 @@ import com.terraformation.backend.tracking.util.ObservationSpeciesSite
 import com.terraformation.backend.tracking.util.ObservationSpeciesStratum
 import com.terraformation.backend.tracking.util.ObservationSpeciesSubstratum
 import com.terraformation.backend.util.HECTARES_PER_PLOT
-import com.terraformation.backend.util.SQUARE_METERS_PER_HECTARE
 import com.terraformation.backend.util.eqOrIsNull
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -2074,8 +2073,7 @@ class ObservationStore(
               .fetchOne()!!
               .value1()!!
 
-      val areaHa = sizeMeters * sizeMeters / SQUARE_METERS_PER_HECTARE
-      val plantingDensity = if (areaHa > 0.0) ((permanentLive ?: 0) / areaHa).toInt() else null
+      val plantingDensity = ((permanentLive ?: 0) / HECTARES_PER_PLOT).toInt()
 
       dslContext
           .insertInto(this)
