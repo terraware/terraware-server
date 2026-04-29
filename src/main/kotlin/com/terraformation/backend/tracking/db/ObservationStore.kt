@@ -2041,7 +2041,7 @@ class ObservationStore(
       plantingSite: PlantingSitesRow,
       stratumId: StratumId?,
       substratumId: SubstratumId?,
-      monitoringPlotId: MonitoringPlotId?,
+      monitoringPlotId: MonitoringPlotId,
       isAdHoc: Boolean,
   ) {
     val monitoringPlotHistoryId =
@@ -2052,52 +2052,50 @@ class ObservationStore(
             .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
             .fetchOne { it[OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID]!! }
 
-    if (monitoringPlotId != null) {
-      with(OBSERVATION_PLOT_RESULTS) {
-        val (totalLive, totalDead, totalExisting, permanentLive) =
-            dslContext
-                .select(
-                    rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE),
-                    rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD),
-                    rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_EXISTING),
-                    rollup(OBSERVED_PLOT_SPECIES_TOTALS.PERMANENT_LIVE),
-                )
-                .from(OBSERVED_PLOT_SPECIES_TOTALS)
-                .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-                .and(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-                .fetchOne()!!
+    with(OBSERVATION_PLOT_RESULTS) {
+      val (totalLive, totalDead, totalExisting, permanentLive) =
+          dslContext
+              .select(
+                  rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE),
+                  rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD),
+                  rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_EXISTING),
+                  rollup(OBSERVED_PLOT_SPECIES_TOTALS.PERMANENT_LIVE),
+              )
+              .from(OBSERVED_PLOT_SPECIES_TOTALS)
+              .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+              .and(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .fetchOne()!!
 
-        val sizeMeters =
-            dslContext
-                .select(MONITORING_PLOTS.SIZE_METERS)
-                .from(MONITORING_PLOTS)
-                .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
-                .fetchOne()!!
-                .value1()!!
+      val sizeMeters =
+          dslContext
+              .select(MONITORING_PLOTS.SIZE_METERS)
+              .from(MONITORING_PLOTS)
+              .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+              .fetchOne()!!
+              .value1()!!
 
-        val areaHa = sizeMeters * sizeMeters / SQUARE_METERS_PER_HECTARE
-        val plantingDensity = if (areaHa > 0.0) ((permanentLive ?: 0) / areaHa).toInt() else null
+      val areaHa = sizeMeters * sizeMeters / SQUARE_METERS_PER_HECTARE
+      val plantingDensity = if (areaHa > 0.0) ((permanentLive ?: 0) / areaHa).toInt() else null
 
-        dslContext
-            .insertInto(this)
-            .set(OBSERVATION_ID, observationId)
-            .set(MONITORING_PLOT_ID, monitoringPlotId)
-            .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
-            .set(TOTAL_LIVE, totalLive)
-            .set(TOTAL_DEAD, totalDead)
-            .set(TOTAL_EXISTING, totalExisting)
-            .set(PERMANENT_LIVE, permanentLive)
-            .set(PLANT_DENSITY, plantingDensity)
-            .onConflict(OBSERVATION_ID, MONITORING_PLOT_ID)
-            .doUpdate()
-            .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
-            .set(TOTAL_LIVE, totalLive)
-            .set(TOTAL_DEAD, totalDead)
-            .set(TOTAL_EXISTING, totalExisting)
-            .set(PERMANENT_LIVE, permanentLive)
-            .set(PLANT_DENSITY, plantingDensity)
-            .execute()
-      }
+      dslContext
+          .insertInto(this)
+          .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_ID, monitoringPlotId)
+          .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
+          .set(TOTAL_LIVE, totalLive)
+          .set(TOTAL_DEAD, totalDead)
+          .set(TOTAL_EXISTING, totalExisting)
+          .set(PERMANENT_LIVE, permanentLive)
+          .set(PLANT_DENSITY, plantingDensity)
+          .onConflict(OBSERVATION_ID, MONITORING_PLOT_ID)
+          .doUpdate()
+          .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
+          .set(TOTAL_LIVE, totalLive)
+          .set(TOTAL_DEAD, totalDead)
+          .set(TOTAL_EXISTING, totalExisting)
+          .set(PERMANENT_LIVE, permanentLive)
+          .set(PLANT_DENSITY, plantingDensity)
+          .execute()
     }
 
     if (!isAdHoc) {
