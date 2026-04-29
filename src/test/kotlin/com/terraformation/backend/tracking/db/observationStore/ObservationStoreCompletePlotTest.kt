@@ -1130,6 +1130,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         ObservationSiteResultsRecord(
             observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
             totalLive = 2,
             totalDead = 1,
             totalExisting = 1,
@@ -1217,6 +1219,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         ObservationSiteResultsRecord(
             observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
             totalLive = 1,
             totalDead = 0,
             totalExisting = 0,
@@ -1301,6 +1305,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     assertTableEquals(
         ObservationSiteResultsRecord(
             observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
             totalLive = 4,
             totalDead = 0,
             totalExisting = 0,

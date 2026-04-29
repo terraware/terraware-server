@@ -2231,6 +2231,14 @@ class ObservationStore(
       }
 
       with(OBSERVATION_SITE_RESULTS) {
+        val plantingSiteHistoryId =
+            dslContext
+                .select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+                .from(OBSERVATIONS)
+                .where(OBSERVATIONS.ID.eq(observationId))
+                .fetchOne()!!
+                .value1()!!
+
         val (totalLive, totalDead, totalExisting, permanentLive) =
             dslContext
                 .select(
@@ -2258,6 +2266,8 @@ class ObservationStore(
         dslContext
             .insertInto(this)
             .set(OBSERVATION_ID, observationId)
+            .set(PLANTING_SITE_ID, plantingSite.id)
+            .set(PLANTING_SITE_HISTORY_ID, plantingSiteHistoryId)
             .set(TOTAL_LIVE, totalLive)
             .set(TOTAL_DEAD, totalDead)
             .set(TOTAL_EXISTING, totalExisting)
