@@ -447,6 +447,8 @@ COMMENT ON TABLE tracking.observation_plot_conditions IS 'List of conditions obs
 
 COMMENT ON TABLE tracking.observation_plot_positions IS '(Enum) Positions in a monitoring plot where users can take photos or record coordinates.';
 
+COMMENT ON TABLE tracking.observation_plot_results IS 'Observation results for a monitoring plot.';
+
 COMMENT ON TABLE tracking.observation_plots IS 'Information about monitoring plots that are required to be surveyed as part of observations. This is not populated until the scheduled start time of the observation.';
 COMMENT ON COLUMN tracking.observation_plots.completed_time IS 'Server-generated completion date and time. This is the time the observation was submitted to the server, not the time it was performed in the field.';
 COMMENT ON COLUMN tracking.observation_plots.is_permanent IS 'If true, this plot was selected for observation as a permanent monitoring plot. If false, this plot was selected as a temporary monitoring plot.';
@@ -454,7 +456,13 @@ COMMENT ON COLUMN tracking.observation_plots.observed_time IS 'Client-supplied o
 
 COMMENT ON TABLE tracking.observation_requested_substrata IS 'If an observation should only cover a specific set of substrata, the substratum IDs are stored here. If an observation is of the entire site (the default), there will be no rows for that observation in this table.';
 
+COMMENT ON TABLE tracking.observation_site_results IS 'Observation results for a planting site.';
+
 COMMENT ON TABLE tracking.observation_states IS '(Enum) Where in the observation lifecycle a particular observation is.';
+
+COMMENT ON TABLE tracking.observation_stratum_results IS 'Observation results for a stratum.';
+
+COMMENT ON TABLE tracking.observation_substratum_results IS 'Observation results for a substratum.';
 
 COMMENT ON TABLE tracking.observation_types IS '(Enum) Type of observation, currently only used for ad hoc observations.';
 
