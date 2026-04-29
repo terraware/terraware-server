@@ -50,7 +50,9 @@ CREATE TABLE tracking.observation_stratum_results(
 CREATE INDEX ON tracking.observation_stratum_results(stratum_id);
 
 CREATE TABLE tracking.observation_site_results(
-    observation_id BIGINT NOT NULL REFERENCES tracking.observations ON DELETE CASCADE,
+    observation_id BIGINT PRIMARY KEY REFERENCES tracking.observations ON DELETE CASCADE,
+    planting_site_id BIGINT NOT NULL REFERENCES tracking.planting_sites ON DELETE CASCADE,
+    planting_site_history_id BIGINT NOT NULL REFERENCES tracking.planting_site_histories ON DELETE CASCADE,
     total_live INT NOT NULL,
     total_dead INT NOT NULL,
     total_existing INT NOT NULL,
@@ -60,3 +62,4 @@ CREATE TABLE tracking.observation_site_results(
     plant_density INT,
     plant_density_std_dev Int
 );
+CREATE INDEX ON tracking.observation_site_results(planting_site_id);
