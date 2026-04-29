@@ -19,6 +19,7 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.Instant
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -223,6 +224,7 @@ class FailureReportingServiceTest {
     fun setUp() {
       val orgModel: OrganizationModel = mockk()
       every { orgModel.name } returns orgName
+      every { orgModel.timeZone } returns ZoneOffset.UTC
       every { organizationStore.fetchOneById(organizationId) } returns orgModel
 
       val uploadedByUser: TerrawareUser = mockk()

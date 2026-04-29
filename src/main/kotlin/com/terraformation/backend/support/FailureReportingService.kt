@@ -13,7 +13,7 @@ import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import jakarta.inject.Named
-import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import org.springframework.context.event.EventListener
 
@@ -144,9 +144,7 @@ class FailureReportingService(
       val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
       val uploadDate =
-          event.videoUploadedTime
-              .atZone(ZoneId.systemDefault()) // convert to local timezone
-              .format(formatter)
+          event.videoUploadedTime.atZone(organization.timeZone ?: ZoneOffset.UTC).format(formatter)
 
       val description =
           """
