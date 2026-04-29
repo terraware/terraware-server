@@ -30,6 +30,7 @@ class SupportService(
       description: String,
       attachmentIds: List<String> = emptyList(),
       attachmentComment: String? = null,
+      skipReceiptEmail: Boolean = false,
   ): String {
     val user = userStore.fetchOneById(currentUser().userId) as IndividualUser
     val response =
@@ -39,17 +40,19 @@ class SupportService(
       atlassianHttpClient.createAttachments(response.issueId, attachmentIds, attachmentComment)
     }
 
-    emailService.sendUserNotification(
-        user,
-        SupportRequestSubmitted(
-            config,
-            messages.supportRequestTypeName(requestType),
-            response.issueKey,
-            summary,
-            description,
-        ),
-        false,
-    )
+    if (!skipReceiptEmail) {
+      emailService.sendUserNotification(
+          user,
+          SupportRequestSubmitted(
+              config,
+              messages.supportRequestTypeName(requestType),
+              response.issueKey,
+              summary,
+              description,
+          ),
+          false,
+      )
+    }
 
     return response.issueKey
   }
