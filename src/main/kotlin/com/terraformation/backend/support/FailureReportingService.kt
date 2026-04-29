@@ -9,9 +9,12 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.splat.event.SplatDeletedEvent
+import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import jakarta.inject.Named
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 import org.springframework.context.event.EventListener
 
 @Named
@@ -86,9 +89,10 @@ class FailureReportingService(
 
       if (config.atlassian.enabled) {
         supportService.submitServiceRequest(
-            SupportRequestType.BugReport,
-            "Virtual walkthrough marked as needs attention",
-            description,
+            requestType = SupportRequestType.BugReport,
+            summary = "Virtual walkthrough marked as needs attention",
+            description = description,
+            skipReceiptEmail = true,
         )
       } else {
         log.info("Atlassian integration disabled; would file support ticket:\n$description")
@@ -118,15 +122,56 @@ class FailureReportingService(
 
       if (config.atlassian.enabled) {
         supportService.submitServiceRequest(
-            SupportRequestType.BugReport,
-            "Virtual walkthrough removed by user",
-            description,
+            requestType = SupportRequestType.BugReport,
+            summary = "Virtual walkthrough removed by user",
+            description = description,
+            skipReceiptEmail = true,
         )
       } else {
         log.info("Atlassian integration disabled; would file support ticket:\n$description")
       }
     } catch (e: Exception) {
       log.error("Failed to file support ticket for deleted splat ${event.fileId}", e)
+    }
+  }
+
+  @EventListener
+  fun on(event: SplatGenerationFailedEvent) {
+    try {
+      val organization = organizationStore.fetchOneById(event.organizationId)
+      val userEmail = systemUser.run { userStore.fetchOneById(event.uploadedByUserId).email }
+
+      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+      val uploadDate =
+          event.videoUploadedTime.atZone(organization.timeZone ?: ZoneOffset.UTC).format(formatter)
+
+      val description =
+          """
+            Virtual walkthrough processing failed.
+             
+            Virtual walkthrough #${event.fileId}.
+
+            Org: ${organization.name} (ID: ${event.organizationId})
+            
+            User who uploaded: $userEmail
+            
+            Upload date: $uploadDate
+          """
+              .trimIndent()
+
+      if (config.atlassian.enabled) {
+        supportService.submitServiceRequest(
+            requestType = SupportRequestType.BugReport,
+            summary = "Virtual walkthrough processing failed",
+            description = description,
+            skipReceiptEmail = true,
+        )
+      } else {
+        log.info("Atlassian integration disabled; would file support ticket:\n$description")
+      }
+    } catch (e: Exception) {
+      log.error("Failed to file support ticket for splat generation failure ${event.fileId}", e)
     }
   }
 }
