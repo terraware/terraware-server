@@ -2033,6 +2033,9 @@ class ObservationStore(
     }
   }
 
+  private fun rollup(field: Field<Int?>): Field<Int> =
+      DSL.coalesce(DSL.sum(field).cast(SQLDataType.INTEGER), 0)
+
   private fun updateObservationResults(
       observationId: ObservationId,
       plantingSite: PlantingSitesRow,
@@ -2041,29 +2044,23 @@ class ObservationStore(
       monitoringPlotId: MonitoringPlotId?,
       isAdHoc: Boolean,
   ) {
+    val monitoringPlotHistoryId =
+        dslContext
+            .select(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID)
+            .from(OBSERVATION_PLOTS)
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+            .fetchOne { it[OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID]!! }
+
     if (monitoringPlotId != null) {
       with(OBSERVATION_PLOT_RESULTS) {
         val (totalLive, totalDead, totalExisting, permanentLive) =
             dslContext
                 .select(
-                    DSL.coalesce(
-                        DSL.sum(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE).cast(SQLDataType.INTEGER),
-                        0,
-                    ),
-                    DSL.coalesce(
-                        DSL.sum(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD).cast(SQLDataType.INTEGER),
-                        0,
-                    ),
-                    DSL.coalesce(
-                        DSL.sum(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_EXISTING)
-                            .cast(SQLDataType.INTEGER),
-                        0,
-                    ),
-                    DSL.coalesce(
-                        DSL.sum(OBSERVED_PLOT_SPECIES_TOTALS.PERMANENT_LIVE)
-                            .cast(SQLDataType.INTEGER),
-                        0,
-                    ),
+                    rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE),
+                    rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD),
+                    rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_EXISTING),
+                    rollup(OBSERVED_PLOT_SPECIES_TOTALS.PERMANENT_LIVE),
                 )
                 .from(OBSERVED_PLOT_SPECIES_TOTALS)
                 .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
@@ -2085,6 +2082,7 @@ class ObservationStore(
             .insertInto(this)
             .set(OBSERVATION_ID, observationId)
             .set(MONITORING_PLOT_ID, monitoringPlotId)
+            .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
             .set(TOTAL_LIVE, totalLive)
             .set(TOTAL_DEAD, totalDead)
             .set(TOTAL_EXISTING, totalExisting)
@@ -2092,6 +2090,7 @@ class ObservationStore(
             .set(PLANT_DENSITY, plantingDensity)
             .onConflict(OBSERVATION_ID, MONITORING_PLOT_ID)
             .doUpdate()
+            .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
             .set(TOTAL_LIVE, totalLive)
             .set(TOTAL_DEAD, totalDead)
             .set(TOTAL_EXISTING, totalExisting)
@@ -2102,31 +2101,28 @@ class ObservationStore(
     }
 
     if (!isAdHoc) {
+      val (substratumHistoryId, stratumHistoryId) =
+          dslContext
+              .select(
+                  MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
+                  SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID,
+              )
+              .from(MONITORING_PLOT_HISTORIES)
+              .leftJoin(SUBSTRATUM_HISTORIES)
+              .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+              .where(MONITORING_PLOT_HISTORIES.ID.eq(monitoringPlotHistoryId))
+              .fetchOne()!!
+              .let { Pair(it.value1(), it.value2()) }
+
       if (substratumId != null) {
         with(OBSERVATION_SUBSTRATUM_RESULTS) {
           val (totalLive, totalDead, totalExisting, permanentLive) =
               dslContext
                   .select(
-                      DSL.coalesce(
-                          DSL.sum(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_LIVE)
-                              .cast(SQLDataType.INTEGER),
-                          0,
-                      ),
-                      DSL.coalesce(
-                          DSL.sum(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_DEAD)
-                              .cast(SQLDataType.INTEGER),
-                          0,
-                      ),
-                      DSL.coalesce(
-                          DSL.sum(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_EXISTING)
-                              .cast(SQLDataType.INTEGER),
-                          0,
-                      ),
-                      DSL.coalesce(
-                          DSL.sum(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.PERMANENT_LIVE)
-                              .cast(SQLDataType.INTEGER),
-                          0,
-                      ),
+                      rollup(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_LIVE),
+                      rollup(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_DEAD),
+                      rollup(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_EXISTING),
+                      rollup(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.PERMANENT_LIVE),
                   )
                   .from(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
                   .where(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
@@ -2137,29 +2133,25 @@ class ObservationStore(
               dslContext
                   .select(
                       DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-                      DSL.stddevPop(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY)
+                      DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY)
                           .cast(SQLDataType.INTEGER),
                   )
                   .from(OBSERVATION_PLOT_RESULTS)
-                  .join(OBSERVATION_PLOTS)
-                  .on(
-                      OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID)
-                          .and(
-                              OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                                  OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID
-                              )
-                          )
-                  )
                   .join(MONITORING_PLOT_HISTORIES)
-                  .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
+                  .on(
+                      MONITORING_PLOT_HISTORIES.ID.eq(
+                          OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID
+                      )
+                  )
                   .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-                  .and(MONITORING_PLOT_HISTORIES.SUBSTRATUM_ID.eq(substratumId))
+                  .and(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(substratumHistoryId))
                   .fetchOne()!!
 
           dslContext
               .insertInto(this)
               .set(OBSERVATION_ID, observationId)
               .set(SUBSTRATUM_ID, substratumId)
+              .set(SUBSTRATUM_HISTORY_ID, substratumHistoryId)
               .set(TOTAL_LIVE, totalLive)
               .set(TOTAL_DEAD, totalDead)
               .set(TOTAL_EXISTING, totalExisting)
@@ -2168,6 +2160,7 @@ class ObservationStore(
               .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
               .onConflict(OBSERVATION_ID, SUBSTRATUM_ID)
               .doUpdate()
+              .set(SUBSTRATUM_HISTORY_ID, substratumHistoryId)
               .set(TOTAL_LIVE, totalLive)
               .set(TOTAL_DEAD, totalDead)
               .set(TOTAL_EXISTING, totalExisting)
@@ -2183,26 +2176,10 @@ class ObservationStore(
           val (totalLive, totalDead, totalExisting, permanentLive) =
               dslContext
                   .select(
-                      DSL.coalesce(
-                          DSL.sum(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_LIVE)
-                              .cast(SQLDataType.INTEGER),
-                          0,
-                      ),
-                      DSL.coalesce(
-                          DSL.sum(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_DEAD)
-                              .cast(SQLDataType.INTEGER),
-                          0,
-                      ),
-                      DSL.coalesce(
-                          DSL.sum(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_EXISTING)
-                              .cast(SQLDataType.INTEGER),
-                          0,
-                      ),
-                      DSL.coalesce(
-                          DSL.sum(OBSERVED_STRATUM_SPECIES_TOTALS.PERMANENT_LIVE)
-                              .cast(SQLDataType.INTEGER),
-                          0,
-                      ),
+                      rollup(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_LIVE),
+                      rollup(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_DEAD),
+                      rollup(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_EXISTING),
+                      rollup(OBSERVED_STRATUM_SPECIES_TOTALS.PERMANENT_LIVE),
                   )
                   .from(OBSERVED_STRATUM_SPECIES_TOTALS)
                   .where(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
@@ -2213,33 +2190,27 @@ class ObservationStore(
               dslContext
                   .select(
                       DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-                      DSL.stddevPop(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY)
+                      DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY)
                           .cast(SQLDataType.INTEGER),
                   )
                   .from(OBSERVATION_PLOT_RESULTS)
-                  .join(OBSERVATION_PLOTS)
-                  .on(
-                      OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID)
-                          .and(
-                              OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(
-                                  OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID
-                              )
-                          )
-                  )
                   .join(MONITORING_PLOT_HISTORIES)
-                  .on(MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID))
+                  .on(
+                      MONITORING_PLOT_HISTORIES.ID.eq(
+                          OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID
+                      )
+                  )
                   .join(SUBSTRATUM_HISTORIES)
                   .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
-                  .join(STRATUM_HISTORIES)
-                  .on(STRATUM_HISTORIES.ID.eq(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID))
                   .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-                  .and(STRATUM_HISTORIES.STRATUM_ID.eq(stratumId))
+                  .and(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(stratumHistoryId))
                   .fetchOne()!!
 
           dslContext
               .insertInto(this)
               .set(OBSERVATION_ID, observationId)
               .set(STRATUM_ID, stratumId)
+              .set(STRATUM_HISTORY_ID, stratumHistoryId)
               .set(TOTAL_LIVE, totalLive)
               .set(TOTAL_DEAD, totalDead)
               .set(TOTAL_EXISTING, totalExisting)
@@ -2248,6 +2219,7 @@ class ObservationStore(
               .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
               .onConflict(OBSERVATION_ID, STRATUM_ID)
               .doUpdate()
+              .set(STRATUM_HISTORY_ID, stratumHistoryId)
               .set(TOTAL_LIVE, totalLive)
               .set(TOTAL_DEAD, totalDead)
               .set(TOTAL_EXISTING, totalExisting)
@@ -2262,24 +2234,10 @@ class ObservationStore(
         val (totalLive, totalDead, totalExisting, permanentLive) =
             dslContext
                 .select(
-                    DSL.coalesce(
-                        DSL.sum(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_LIVE).cast(SQLDataType.INTEGER),
-                        0,
-                    ),
-                    DSL.coalesce(
-                        DSL.sum(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_DEAD).cast(SQLDataType.INTEGER),
-                        0,
-                    ),
-                    DSL.coalesce(
-                        DSL.sum(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_EXISTING)
-                            .cast(SQLDataType.INTEGER),
-                        0,
-                    ),
-                    DSL.coalesce(
-                        DSL.sum(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE)
-                            .cast(SQLDataType.INTEGER),
-                        0,
-                    ),
+                    rollup(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_LIVE),
+                    rollup(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_DEAD),
+                    rollup(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_EXISTING),
+                    rollup(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE),
                 )
                 .from(OBSERVED_SITE_SPECIES_TOTALS)
                 .where(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
@@ -2290,7 +2248,8 @@ class ObservationStore(
             dslContext
                 .select(
                     DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-                    DSL.stddevPop(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
+                    DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY)
+                        .cast(SQLDataType.INTEGER),
                 )
                 .from(OBSERVATION_PLOT_RESULTS)
                 .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
