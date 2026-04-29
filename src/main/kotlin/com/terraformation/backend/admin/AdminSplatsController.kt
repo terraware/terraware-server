@@ -50,9 +50,6 @@ class AdminSplatsController(
       @RequestParam maxSteps: Int?,
       @RequestParam restartAt: String?,
       @RequestParam runBirdNet: Boolean?,
-      @RequestParam sphereInit: Boolean?,
-      @RequestParam sphereInitNumPoints: Int?,
-      @RequestParam sphereInitRadiusScale: Int?,
       @RequestParam ssimLambda: Double?,
       @RequestParam tailPruning: Boolean?,
       payload: AdminProcessSplatRequestPayload,
@@ -74,16 +71,6 @@ class AdminSplatsController(
                   },
                   maxSize?.let { "extract" to listOf("--max-size", "$maxSize") },
                   maxSteps?.let { "gsplat" to listOf("--max_steps", "$maxSteps") },
-                  if (sphereInit == true)
-                      "sphere-init" to
-                          listOfNotNull(
-                              "--sphere-init",
-                              sphereInitNumPoints?.let { "--num-points" },
-                              sphereInitNumPoints?.let { "$it" },
-                              sphereInitRadiusScale?.let { "--radius-scale" },
-                              sphereInitRadiusScale?.let { "$it" },
-                          )
-                  else null,
                   ssimLambda?.let { "gsplat" to listOf("--ssim_lambda", "$ssimLambda") },
                   tailPruning?.let {
                     if (tailPruning) {
@@ -145,9 +132,6 @@ class AdminSplatsController(
     redirectAttributes.addFlashAttribute("maxSteps", maxSteps)
     redirectAttributes.addFlashAttribute("restartAt", restartAt)
     redirectAttributes.addFlashAttribute("runBirdNet", runBirdNet)
-    redirectAttributes.addFlashAttribute("sphereInit", sphereInit)
-    redirectAttributes.addFlashAttribute("sphereInitNumPoints", sphereInitNumPoints)
-    redirectAttributes.addFlashAttribute("sphereInitRadiusScale", sphereInitRadiusScale)
     redirectAttributes.addFlashAttribute("ssimLambda", ssimLambda)
     redirectAttributes.addFlashAttribute("tailPruning", tailPruning)
     redirectAttributes.addFlashAttribute("stepArgs", payload.stepArgs)
