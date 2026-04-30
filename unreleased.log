@@ -1,3 +1,1 @@
-abd0c5c7 SW-8322 Skip email and add support ticket for fail generation of splats (#4321)
-e294f995 SW-8321 Implemented observation splats needs attention endpoint (#4319)
-b370bfb8 Update placeholders for splats in admin view (#4311)
+74931b05 Remove sphere init from splats admin page (#4323)
