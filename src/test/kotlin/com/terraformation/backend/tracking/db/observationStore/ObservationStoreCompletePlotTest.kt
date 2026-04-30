@@ -1174,7 +1174,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             ),
         ),
     )
-    // plot1: permanentLive=1, density=(1/0.09).toInt()=11; stddev_samp of single value is null
+    // plot1: permanentLive=1, density=(1/0.09).toInt()=11; STDDEV_SAMP of single value is null
     assertTableEquals(
         ObservationPlotResultsRecord(
             observationId = observationId,
