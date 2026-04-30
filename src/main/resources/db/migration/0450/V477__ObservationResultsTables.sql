@@ -8,7 +8,6 @@ CREATE TABLE tracking.observation_plot_results(
     permanent_live INT NOT NULL,
     survival_rate INT,
     plant_density INT,
-    t0_density NUMERIC,
 
     PRIMARY KEY (observation_id, monitoring_plot_id),
     FOREIGN KEY (observation_id, monitoring_plot_id) REFERENCES tracking.observation_plots ON DELETE CASCADE
@@ -28,7 +27,6 @@ CREATE TABLE tracking.observation_substratum_results(
     survival_rate_std_dev INT,
     plant_density INT,
     plant_density_std_dev Int,
-    t0_density NUMERIC,
 
     PRIMARY KEY (observation_id, substratum_id)
 );
@@ -46,7 +44,6 @@ CREATE TABLE tracking.observation_stratum_results(
     survival_rate_std_dev INT,
     plant_density INT,
     plant_density_std_dev Int,
-    t0_density NUMERIC,
 
     PRIMARY KEY (observation_id, stratum_id)
 );
@@ -64,6 +61,5 @@ CREATE TABLE tracking.observation_site_results(
     survival_rate_std_dev INT,
     plant_density INT,
     plant_density_std_dev Int,
-    t0_density NUMERIC
 );
 CREATE INDEX ON tracking.observation_site_results(planting_site_id);
