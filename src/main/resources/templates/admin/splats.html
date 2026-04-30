@@ -357,41 +357,6 @@
 
         <tbody>
         <tr>
-            <td rowspan="3">sphere-init</td>
-            <td>Sphere Init</td>
-            <td><input type="checkbox" name="sphereInit" th:checked="${sphereInit}"/></td>
-            <td>
-                Enable sphere initialization to initialize the sparse point clouse with a sphere of
-                points.
-            </td>
-        </tr>
-        <tr>
-            <td>Num Points</td>
-            <td><input type="text" name="sphereInitNumPoints" placeholder="10000"
-                       th:value="${sphereInitNumPoints}"/></td>
-            <td>
-                Number of points to use when initializing the sphere.
-            </td>
-        </tr>
-        <tr>
-            <td>Radius Scale</td>
-            <td><input type="text" name="sphereInitRadiusScale" placeholder="10"
-                       th:value="${sphereInitRadiusScale}"/></td>
-            <td>
-                Scale factor for the sphere radius (this is multiplied by the average position of
-                all the points from SfM).
-            </td>
-        </tr>
-        </tbody>
-
-        <tr>
-            <td colspan="4">
-                <hr/>
-            </td>
-        </tr>
-
-        <tbody>
-        <tr>
             <td rowspan="5">gsplat</td>
             <td>Densification Strategy</td>
             <td>
