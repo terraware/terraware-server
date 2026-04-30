@@ -2065,14 +2065,6 @@ class ObservationStore(
               .and(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId))
               .fetchOne()!!
 
-      val sizeMeters =
-          dslContext
-              .select(MONITORING_PLOTS.SIZE_METERS)
-              .from(MONITORING_PLOTS)
-              .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
-              .fetchOne()!!
-              .value1()!!
-
       val plantingDensity = ((permanentLive ?: 0) / HECTARES_PER_PLOT).toInt()
 
       dslContext
@@ -2133,6 +2125,13 @@ class ObservationStore(
                           .cast(SQLDataType.INTEGER),
                   )
                   .from(OBSERVATION_PLOT_RESULTS)
+                  .join(OBSERVATION_PLOTS)
+                  .on(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                  .and(
+                      OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(
+                          OBSERVATION_PLOTS.MONITORING_PLOT_ID
+                      )
+                  )
                   .join(MONITORING_PLOT_HISTORIES)
                   .on(
                       MONITORING_PLOT_HISTORIES.ID.eq(
@@ -2141,6 +2140,7 @@ class ObservationStore(
                   )
                   .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
                   .and(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(substratumHistoryId))
+                  .and(OBSERVATION_PLOTS.IS_PERMANENT.isTrue)
                   .fetchOne()!!
 
           dslContext
@@ -2190,6 +2190,13 @@ class ObservationStore(
                           .cast(SQLDataType.INTEGER),
                   )
                   .from(OBSERVATION_PLOT_RESULTS)
+                  .join(OBSERVATION_PLOTS)
+                  .on(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                  .and(
+                      OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(
+                          OBSERVATION_PLOTS.MONITORING_PLOT_ID
+                      )
+                  )
                   .join(MONITORING_PLOT_HISTORIES)
                   .on(
                       MONITORING_PLOT_HISTORIES.ID.eq(
@@ -2200,6 +2207,7 @@ class ObservationStore(
                   .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
                   .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
                   .and(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(stratumHistoryId))
+                  .and(OBSERVATION_PLOTS.IS_PERMANENT.isTrue)
                   .fetchOne()!!
 
           dslContext
@@ -2256,7 +2264,15 @@ class ObservationStore(
                         .cast(SQLDataType.INTEGER),
                 )
                 .from(OBSERVATION_PLOT_RESULTS)
+                .join(OBSERVATION_PLOTS)
+                .on(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                .and(
+                    OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(
+                        OBSERVATION_PLOTS.MONITORING_PLOT_ID
+                    )
+                )
                 .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+                .and(OBSERVATION_PLOTS.IS_PERMANENT.isTrue)
                 .fetchOne()!!
 
         dslContext
