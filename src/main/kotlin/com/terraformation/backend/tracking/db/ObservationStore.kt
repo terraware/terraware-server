@@ -1943,6 +1943,7 @@ class ObservationStore(
             survivalRateTempDenominator,
         )
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
+    val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
     val latestLiveField = updateScope.latestLiveField
 
@@ -1980,12 +1981,18 @@ class ObservationStore(
             .not()
 
     if (allPlotsCompleted) {
+
       dslContext
           .update(table)
           .set(
               survivalRateField,
               survivalRateValue,
           )
+          .apply {
+            survivalRateStdDevField?.let {
+              this.set(it, getSurvivalRateWeightedStandardDeviation(updateScope))
+            }
+          }
           .where(updateScope.observedTotalsCondition)
           .and(observationIdField.eq(observationId))
           .execute()
@@ -2805,6 +2812,39 @@ class ObservationStore(
               )
       )
     }
+  }
+
+  /**
+   * Computes the variance of survival rates weighted by planting density
+   * https://en.wikipedia.org/wiki/Reduced_chi-squared_statistic
+   */
+  private fun <ID : Any> getSurvivalRateWeightedStandardDeviation(
+      updateScope: ObservationResultsScope<ID>,
+  ): Field<Int> {
+    val plotResults = OBSERVATION_PLOT_RESULTS.`as`("plotResults")
+    val survivalRate = plotResults.SURVIVAL_RATE.cast(SQLDataType.NUMERIC)
+    val weight = plotResults.PLANT_DENSITY.cast(SQLDataType.NUMERIC)
+    val weightedSumOfSquares = DSL.sum(weight * survivalRate * survivalRate)
+    val weightedSum = DSL.sum(weight * survivalRate)
+    val weightedSumSquared = weightedSum * weightedSum
+    val totalWeight = DSL.sum(weight)
+    val totalWeightSquared = totalWeight * totalWeight
+    val variance =
+        ((weightedSumOfSquares * totalWeight) - weightedSumSquared).div(totalWeightSquared)
+    val standardDeviation = DSL.cast(DSL.sqrt(variance), SQLDataType.INTEGER)
+
+    return DSL.field(
+        DSL.select(
+                DSL.if_(
+                    totalWeight.eq(BigDecimal.ZERO),
+                    DSL.castNull(SQLDataType.INTEGER),
+                    standardDeviation,
+                )
+            )
+            .from(plotResults)
+            .where(updateScope.observationPlotResultsCondition(plotResults))
+            .and(plotResults.SURVIVAL_RATE.isNotNull)
+    )
   }
 
   private fun getSurvivalRate(numerator: Field<Int>, denominator: Field<BigDecimal>) =
