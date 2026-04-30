@@ -60,6 +60,6 @@ CREATE TABLE tracking.observation_site_results(
     survival_rate INT,
     survival_rate_std_dev INT,
     plant_density INT,
-    plant_density_std_dev Int,
+    plant_density_std_dev Int
 );
 CREATE INDEX ON tracking.observation_site_results(planting_site_id);
