@@ -1981,7 +1981,6 @@ class ObservationStore(
             .not()
 
     if (allPlotsCompleted) {
-
       dslContext
           .update(table)
           .set(
@@ -1990,7 +1989,14 @@ class ObservationStore(
           )
           .apply {
             survivalRateStdDevField?.let {
-              this.set(it, getSurvivalRateWeightedStandardDeviation(updateScope))
+              this.set(
+                  it,
+                  DSL.if_(
+                      survivalRateValue.isNotNull,
+                      getSurvivalRateWeightedStandardDeviation(updateScope),
+                      DSL.castNull(SQLDataType.INTEGER),
+                  ),
+              )
             }
           }
           .where(updateScope.observedTotalsCondition)
