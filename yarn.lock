@@ -240,7 +240,7 @@ commander@^11.1.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-11.1.0.tgz#62fdce76006a68e5c1ab3314dc92e800eb83d906"
   integrity sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==
 
-commander@^14.0.2:
+commander@^14.0.3:
   version "14.0.3"
   resolved "https://registry.yarnpkg.com/commander/-/commander-14.0.3.tgz#425d79b48f9af82fcd9e4fc1ea8af6c5ec07bbc2"
   integrity sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==
@@ -538,15 +538,15 @@ he@^1.2.0:
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
 html-minifier-next@^6.0.0:
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-6.1.2.tgz#10e049370dd2dcfc7d63cc943209d80ecb31acfe"
-  integrity sha512-iDkgNERz1zgYJgkBz7Z4DboolPiKLioslKxKMh33gJ+QStkoDPp7kCb/3/oLfu5j9sYOUxxxvigCOdsG1chw6g==
+  version "6.2.3"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-6.2.3.tgz#8f166a2591ab23797d38d29f4a2697cd30332819"
+  integrity sha512-7LOgHopzgDkrNN8pQQuh+nLXSwD3JuMPR3pTYSUkhItxJ/G8nZ1ZSYIQdMEiasgj4BUUcyHObHBioIgl/0Yt+g==
   dependencies:
-    commander "^14.0.2"
+    commander "^14.0.3"
     entities "^8.0.0"
     lightningcss "^1.32.0"
     svgo "^4.0.1"
-    terser "^5.46.1"
+    terser "^5.46.2"
 
 html-minifier@^4.0.0:
   version "4.0.0"
@@ -1745,10 +1745,10 @@ svgo@^4.0.1:
     picocolors "^1.1.1"
     sax "^1.5.0"
 
-terser@^5.46.1:
-  version "5.46.1"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.46.1.tgz#40e4b1e35d5f13130f82793a8b3eeb7ec3a92eee"
-  integrity sha512-vzCjQO/rgUuK9sf8VJZvjqiqiHFaZLnOiimmUuOKODxWL8mm/xua7viT7aqX7dgPY60otQjUotzFMmCB4VdmqQ==
+terser@^5.46.2:
+  version "5.46.2"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.46.2.tgz#b9529672d5b0024c7959571c83b82f65077b2a4f"
+  integrity sha512-uxfo9fPcSgLDYob/w1FuL0c99MWiJDnv+5qXSQc5+Ki5NjVNsYi66INnMFBjf6uFz6OnX12piJQPF4IpjJTNTw==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.15.0"
