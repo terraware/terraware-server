@@ -36,6 +36,7 @@ import java.time.InstantSource
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import org.jooq.DSLContext
+import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -529,35 +530,13 @@ class SplatService(
     with(SPLATS) {
       val record =
           dslContext
-              .select(
-                  CAMERA_POSITION_X,
-                  CAMERA_POSITION_Y,
-                  CAMERA_POSITION_Z,
-                  ORIGIN_POSITION_X,
-                  ORIGIN_POSITION_Y,
-                  ORIGIN_POSITION_Z,
-              )
+              .select(CAMERA_POSITION, ORIGIN_POSITION)
               .from(SPLATS)
               .where(FILE_ID.eq(fileId))
               .fetchOne()
 
-      val cameraPosition =
-          record?.get(CAMERA_POSITION_X)?.let {
-            CoordinateModel(
-                it,
-                record[CAMERA_POSITION_Y]!!,
-                record[CAMERA_POSITION_Z]!!,
-            )
-          }
-
-      val originPosition =
-          record?.get(ORIGIN_POSITION_X)?.let {
-            CoordinateModel(
-                it,
-                record[ORIGIN_POSITION_Y]!!,
-                record[ORIGIN_POSITION_Z]!!,
-            )
-          }
+      val cameraPosition = (record?.get(CAMERA_POSITION) as Point?)?.let { CoordinateModel.of(it) }
+      val originPosition = (record?.get(ORIGIN_POSITION) as Point?)?.let { CoordinateModel.of(it) }
 
       return Pair(originPosition, cameraPosition)
     }
@@ -568,19 +547,7 @@ class SplatService(
   ): List<ExistingSplatAnnotationModel> {
     with(SPLAT_ANNOTATIONS) {
       return dslContext
-          .select(
-              ID,
-              FILE_ID,
-              TITLE,
-              BODY_TEXT,
-              LABEL,
-              POSITION_X,
-              POSITION_Y,
-              POSITION_Z,
-              CAMERA_POSITION_X,
-              CAMERA_POSITION_Y,
-              CAMERA_POSITION_Z,
-          )
+          .select(ID, FILE_ID, TITLE, BODY_TEXT, LABEL, POSITION, CAMERA_POSITION)
           .from(SPLAT_ANNOTATIONS)
           .where(FILE_ID.eq(fileId))
           .fetch { record -> SplatAnnotationModel.of(record) }
@@ -607,12 +574,8 @@ class SplatService(
               .set(TITLE, annotation.title)
               .set(BODY_TEXT, annotation.bodyText)
               .set(LABEL, annotation.label)
-              .set(POSITION_X, annotation.position.x)
-              .set(POSITION_Y, annotation.position.y)
-              .set(POSITION_Z, annotation.position.z)
-              .set(CAMERA_POSITION_X, annotation.cameraPosition?.x)
-              .set(CAMERA_POSITION_Y, annotation.cameraPosition?.y)
-              .set(CAMERA_POSITION_Z, annotation.cameraPosition?.z)
+              .set(POSITION, annotation.position.toPointZField())
+              .set(CAMERA_POSITION, annotation.cameraPosition.toPointZField())
               .where(ID.eq(id).and(FILE_ID.eq(fileId)))
               .execute()
         }
@@ -628,47 +591,21 @@ class SplatService(
         dslContext.deleteFrom(SPLAT_ANNOTATIONS).where(deleteCondition).execute()
       }
 
-      if (annotationsWithoutIds.isNotEmpty()) {
+      annotationsWithoutIds.forEach { annotation ->
         with(SPLAT_ANNOTATIONS) {
-          val insertQuery =
-              dslContext.insertInto(
-                  SPLAT_ANNOTATIONS,
-                  FILE_ID,
-                  CREATED_BY,
-                  CREATED_TIME,
-                  MODIFIED_BY,
-                  MODIFIED_TIME,
-                  TITLE,
-                  BODY_TEXT,
-                  LABEL,
-                  POSITION_X,
-                  POSITION_Y,
-                  POSITION_Z,
-                  CAMERA_POSITION_X,
-                  CAMERA_POSITION_Y,
-                  CAMERA_POSITION_Z,
-              )
-
-          annotationsWithoutIds.forEach { annotation ->
-            insertQuery.values(
-                fileId,
-                userId,
-                now,
-                userId,
-                now,
-                annotation.title,
-                annotation.bodyText,
-                annotation.label,
-                annotation.position.x,
-                annotation.position.y,
-                annotation.position.z,
-                annotation.cameraPosition?.x,
-                annotation.cameraPosition?.y,
-                annotation.cameraPosition?.z,
-            )
-          }
-
-          insertQuery.execute()
+          dslContext
+              .insertInto(SPLAT_ANNOTATIONS)
+              .set(FILE_ID, fileId)
+              .set(CREATED_BY, userId)
+              .set(CREATED_TIME, now)
+              .set(MODIFIED_BY, userId)
+              .set(MODIFIED_TIME, now)
+              .set(TITLE, annotation.title)
+              .set(BODY_TEXT, annotation.bodyText)
+              .set(LABEL, annotation.label)
+              .set(POSITION, annotation.position.toPointZField())
+              .set(CAMERA_POSITION, annotation.cameraPosition.toPointZField())
+              .execute()
         }
       }
     }

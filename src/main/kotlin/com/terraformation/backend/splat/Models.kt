@@ -11,7 +11,15 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import java.math.BigDecimal
 import java.net.URI
+import org.jooq.Field
 import org.jooq.Record
+import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.Point
+import org.locationtech.jts.geom.PrecisionModel
 
 data class ObservationSplatModel(
     val assetStatus: AssetStatus,
@@ -61,7 +69,30 @@ data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecim
       y: Double,
       z: Double,
   ) : this(BigDecimal.valueOf(x), BigDecimal.valueOf(y), BigDecimal.valueOf(z))
+
+  fun toPoint(): Point =
+      cartesianGeometryFactory.createPoint(Coordinate(x.toDouble(), y.toDouble(), z.toDouble()))
+
+  companion object {
+    fun of(point: Point): CoordinateModel = CoordinateModel(point.x, point.y, point.coordinate.z)
+  }
 }
+
+private val cartesianGeometryFactory = GeometryFactory(PrecisionModel(), 0)
+
+@Suppress("UNCHECKED_CAST")
+fun CoordinateModel?.toPointZField(): Field<Geometry?> =
+    if (this == null) {
+      DSL.castNull(SQLDataType.GEOMETRY) as Field<Geometry?>
+    } else {
+      DSL.field(
+          "ST_MakePoint({0}, {1}, {2})",
+          SQLDataType.GEOMETRY,
+          DSL.value(x),
+          DSL.value(y),
+          DSL.value(z),
+      ) as Field<Geometry?>
+    }
 
 data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
     val id: AnnotationId,
@@ -78,22 +109,10 @@ data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
           ExistingSplatAnnotationModel(
               id = record[ID]!!,
               bodyText = record[BODY_TEXT],
-              cameraPosition =
-                  record[CAMERA_POSITION_X]?.let {
-                    CoordinateModel(
-                        it,
-                        record[CAMERA_POSITION_Y]!!,
-                        record[CAMERA_POSITION_Z]!!,
-                    )
-                  },
+              cameraPosition = (record[CAMERA_POSITION] as Point?)?.let { CoordinateModel.of(it) },
               fileId = record[FILE_ID]!!,
               label = record[LABEL],
-              position =
-                  CoordinateModel(
-                      record[POSITION_X]!!,
-                      record[POSITION_Y]!!,
-                      record[POSITION_Z]!!,
-                  ),
+              position = CoordinateModel.of(record[POSITION] as Point),
               title = record[TITLE]!!,
           )
         }

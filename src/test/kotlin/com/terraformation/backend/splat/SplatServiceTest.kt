@@ -216,12 +216,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   title = "New Annotation 1",
                   bodyText = "Description 1",
                   label = "Label 1",
-                  positionX = position1.x,
-                  positionY = position1.y,
-                  positionZ = position1.z,
-                  cameraPositionX = cameraPosition1.x,
-                  cameraPositionY = cameraPosition1.y,
-                  cameraPositionZ = cameraPosition1.z,
+                  position = position1.toPoint(),
+                  cameraPosition = cameraPosition1.toPoint(),
               ),
               SplatAnnotationsRecord(
                   fileId = fileId,
@@ -230,9 +226,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant(),
                   title = "New Annotation 2",
-                  positionX = position2.x,
-                  positionY = position2.y,
-                  positionZ = position2.z,
+                  position = position2.toPoint(),
               ),
           )
       )
@@ -276,12 +270,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               title = "Updated Title",
               bodyText = "Updated Text",
               label = "Updated Label",
-              positionX = updatedPosition.x,
-              positionY = updatedPosition.y,
-              positionZ = updatedPosition.z,
-              cameraPositionX = updatedCameraPosition.x,
-              cameraPositionY = updatedCameraPosition.y,
-              cameraPositionZ = updatedCameraPosition.z,
+              position = updatedPosition.toPoint(),
+              cameraPosition = updatedCameraPosition.toPoint(),
           )
       )
     }
@@ -324,9 +314,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant(),
                   title = "Annotation 1",
-                  positionX = position1.x,
-                  positionY = position1.y,
-                  positionZ = position1.z,
+                  position = position1.toPoint(),
               ),
               SplatAnnotationsRecord(
                   id = id2,
@@ -336,9 +324,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant(),
                   title = "Annotation 2",
-                  positionX = position2.x,
-                  positionY = position2.y,
-                  positionZ = position2.z,
+                  position = position2.toPoint(),
               ),
           )
       )
@@ -380,9 +366,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant(),
                   title = "Updated Title",
-                  positionX = position1.x,
-                  positionY = position1.y,
-                  positionZ = position1.z,
+                  position = position1.toPoint(),
               ),
               SplatAnnotationsRecord(
                   fileId = fileId,
@@ -391,9 +375,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant(),
                   title = "New Annotation",
-                  positionX = position3.x,
-                  positionY = position3.y,
-                  positionZ = position3.z,
+                  position = position3.toPoint(),
               ),
           )
       )
@@ -452,9 +434,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant(),
                   title = "Updated Annotation 1",
-                  positionX = position1.x,
-                  positionY = position1.y,
-                  positionZ = position1.z,
+                  position = position1.toPoint(),
               ),
               SplatAnnotationsRecord(
                   id = id2,
@@ -464,9 +444,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant(),
                   title = "Annotation 2", // not updated
-                  positionX = position2.x,
-                  positionY = position2.y,
-                  positionZ = position2.z,
+                  position = position2.toPoint(),
               ),
           )
       )
@@ -1382,12 +1360,8 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   title = "Annotation 1",
                   bodyText = "Body",
                   label = "Label",
-                  positionX = position.x,
-                  positionY = position.y,
-                  positionZ = position.z,
-                  cameraPositionX = cameraPos.x,
-                  cameraPositionY = cameraPos.y,
-                  cameraPositionZ = cameraPos.z,
+                  position = position.toPoint(),
+                  cameraPosition = cameraPos.toPoint(),
               )
           )
       )
