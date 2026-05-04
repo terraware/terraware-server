@@ -75,6 +75,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     )
   }
   protected val resultsStore by lazy { ObservationResultsStore(dslContext) }
+  protected val resultsStoreV2 by lazy { ObservationResultsStoreV2(dslContext) }
 
   protected lateinit var plotIds: MutableMap<String, MonitoringPlotId>
   protected val plotHistoryIds = mutableMapOf<MonitoringPlotId, MonitoringPlotHistoryId>()
