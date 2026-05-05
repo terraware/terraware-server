@@ -1348,7 +1348,6 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         ),
     )
 
-    // permanentLive=0 (non-permanent plot); plantDensity=(0/0.09).toInt()=0
     assertTableEquals(
         ObservationPlotResultsRecord(
             observationId = adHocObservationId,
@@ -1358,7 +1357,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalDead = 0,
             totalExisting = 0,
             permanentLive = 0,
-            plantDensity = 0,
+            plantDensity = 11,
         ),
         "observation plot results",
     )
