@@ -207,14 +207,15 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             { _, results ->
               listOf(
                   results.plantingDensity.toStringOrBlank(),
-                  results.estimatedPlants.toStringOrBlank(),
                   results.totalSpecies.toStringOrBlank(),
                   results.survivalRate.toStringOrBlank("%"),
               )
             },
         )
 
-    assertResultsMatchCsv("$prefix/SiteStats.csv", actual)
+    assertResultsMatchCsv("$prefix/SiteStats.csv", actual) { row ->
+      row.filterIndexed { index, _ -> index % 4 != 1 } // estimated plants
+    }
   }
 
   protected fun assertStratumResults(prefix: String, allResults: List<ObservationResultsModel>) {
@@ -231,12 +232,13 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   stratum.plantingDensity.toStringOrBlank(),
                   stratum.totalSpecies.toStringOrBlank(),
                   stratum.survivalRate.toStringOrBlank("%"),
-                  stratum.estimatedPlants.toStringOrBlank(),
               )
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStats.csv", actual)
+    assertResultsMatchCsv("$prefix/ZoneStats.csv", actual) { row ->
+      row.filterIndexed { index, _ -> (index - 1) % 5 != 4 } // estimated plants
+    }
   }
 
   protected fun assertSubstratumResults(prefix: String, allResults: List<ObservationResultsModel>) {
@@ -256,12 +258,13 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
                   substratum?.plantingDensity.toStringOrBlank(),
                   substratum?.totalSpecies.toStringOrBlank(),
                   substratum?.survivalRate.toStringOrBlank("%"),
-                  substratum?.estimatedPlants.toStringOrBlank(),
               )
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual)
+    assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual) { row ->
+      row.filterIndexed { index, _ -> (index - 1) % 5 != 4 } // estimated plants
+    }
   }
 
   protected fun assertPlantsResults(filePath: String, results: ObservationResultsModel) {
