@@ -29,6 +29,7 @@ abstract class ExpectedObservationResult<
     val name: String,
     val scenario: ObservationScenario,
     val actualResult: T,
+    val actualResultV2: T,
     var survivalRate: Int? = null,
     val baseline: B? = null,
     val assertions: MutableList<() -> Unit>,
@@ -39,6 +40,9 @@ abstract class ExpectedObservationResult<
     survivalRate = expected
     survivalRateSet = true
     assertions.add { assertEquals(expected, actualResult.survivalRate, "$name survival rate") }
+    assertions.add {
+      assertEquals(expected, actualResultV2.survivalRate, "$name survival rate [V2]")
+    }
   }
 
   /** Returns the ratio between two integers as a percentage value with half-up rounding. */
@@ -88,6 +92,10 @@ abstract class ExpectedObservationResult<
                 actualResult.species.firstOrNull {
                   it.speciesId == speciesId && it.speciesName == speciesName
                 },
+            speciesResultV2 =
+                actualResultV2.species.firstOrNull {
+                  it.speciesId == speciesId && it.speciesName == speciesName
+                },
             survivalRate = survivalRate,
             totalDead = totalDead,
             totalExisting = totalExisting,
@@ -115,6 +123,7 @@ abstract class ExpectedObservationResult<
       val parentName: String,
       val number: Int,
       val speciesResult: ObservationSpeciesResultsModel?,
+      val speciesResultV2: ObservationSpeciesResultsModel?,
       val survivalRate: Int?,
       val totalDead: Int?,
       val totalExisting: Int?,
@@ -130,17 +139,33 @@ abstract class ExpectedObservationResult<
             "$prefix survival rate",
         )
       }
+      assertions.add {
+        assertEquals(
+            survivalRate,
+            speciesResultV2?.survivalRate,
+            "$prefix survival rate [V2]",
+        )
+      }
 
       if (totalDead != null) {
         assertions.add { assertEquals(totalDead, speciesResult?.totalDead, "$prefix total dead") }
+        assertions.add {
+          assertEquals(totalDead, speciesResultV2?.totalDead, "$prefix total dead [V2]")
+        }
       }
       if (totalExisting != null) {
         assertions.add {
           assertEquals(totalExisting, speciesResult?.totalExisting, "$prefix total existing")
         }
+        assertions.add {
+          assertEquals(totalExisting, speciesResultV2?.totalExisting, "$prefix total existing [V2]")
+        }
       }
       if (totalLive != null) {
         assertions.add { assertEquals(totalLive, speciesResult?.totalLive, "$prefix total live") }
+        assertions.add {
+          assertEquals(totalLive, speciesResultV2?.totalLive, "$prefix total live [V2]")
+        }
       }
     }
   }

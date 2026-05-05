@@ -1364,6 +1364,7 @@ class ObservationStore(
             isPermanent,
             plantCountAdjustments,
         )
+        recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
 
         // Aggregation from substratum to stratum (and then to site) works by adding up the most
         // recent data for each substratum at the time of the observation in question.
@@ -1452,6 +1453,7 @@ class ObservationStore(
               isPermanent = isPermanent,
               plantCountsBySpecies = plantCountAdjustments,
           )
+          recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
         }
 
         eventPublisher.publishEvent(
