@@ -873,6 +873,67 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       )
     }
+
+    @Test
+    fun `updates status to Ready and sets completed time`() {
+      service.recordSplatSuccess(fileId)
+
+      assertTableEquals(
+          SplatsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Ready,
+              completedTime = clock.instant(),
+              organizationId = organizationId,
+              needsAttention = false,
+              splatStorageUrl = URI("s3://bucket/splat"),
+          )
+      )
+    }
+
+    @Test
+    fun `saves sky and ground color when model metadata is provided`() {
+      service.recordSplatSuccess(
+          fileId,
+          ModelMetadataModel(skyColor = "#87CEEB", groundColor = "#8B4513"),
+      )
+
+      assertTableEquals(
+          SplatsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Ready,
+              completedTime = clock.instant(),
+              organizationId = organizationId,
+              needsAttention = false,
+              splatStorageUrl = URI("s3://bucket/splat"),
+              skyColor = "#87CEEB",
+              groundColor = "#8B4513",
+          )
+      )
+    }
+
+    @Test
+    fun `does not save sky and ground color when model metadata is null`() {
+      service.recordSplatSuccess(fileId, null)
+
+      assertTableEquals(
+          SplatsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Ready,
+              completedTime = clock.instant(),
+              organizationId = organizationId,
+              needsAttention = false,
+              splatStorageUrl = URI("s3://bucket/splat"),
+              skyColor = null,
+              groundColor = null,
+          )
+      )
+    }
   }
 
   @Nested

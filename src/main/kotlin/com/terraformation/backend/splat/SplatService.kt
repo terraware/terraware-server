@@ -278,7 +278,7 @@ class SplatService(
     )
   }
 
-  fun recordSplatSuccess(fileId: FileId) {
+  fun recordSplatSuccess(fileId: FileId, modelMetadata: ModelMetadataModel? = null) {
     log.info("Splat generation completed for file $fileId")
 
     val splatRecord = dslContext.fetchOne(SPLATS, SPLATS.FILE_ID.eq(fileId))
@@ -291,6 +291,10 @@ class SplatService(
 
     splatRecord.assetStatusId = AssetStatus.Ready
     splatRecord.completedTime = clock.instant()
+    if (modelMetadata != null) {
+      splatRecord.skyColor = modelMetadata.skyColor
+      splatRecord.groundColor = modelMetadata.groundColor
+    }
     splatRecord.update()
 
     eventPublisher.publishEvent(

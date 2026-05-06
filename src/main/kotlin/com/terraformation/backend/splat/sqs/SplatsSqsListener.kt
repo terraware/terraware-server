@@ -2,6 +2,7 @@ package com.terraformation.backend.splat.sqs
 
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.splat.ModelMetadataModel
 import com.terraformation.backend.splat.SplatService
 import io.awspring.cloud.sqs.annotation.SqsListener
 import jakarta.inject.Named
@@ -17,7 +18,7 @@ class SplatsSqsListener(private val splatService: SplatService) {
     log.info("Got response from Splatter service: $payload")
 
     if (payload.success) {
-      splatService.recordSplatSuccess(payload.jobId)
+      splatService.recordSplatSuccess(payload.jobId, payload.modelMetadata?.toModel())
     } else {
       splatService.recordSplatError(
           payload.jobId,
@@ -57,4 +58,10 @@ data class SplatterResponsePayload(
 data class SplatterResponseModelMetadataPayload(
     val skyColor: String?,
     val groundColor: String?,
-)
+) {
+  fun toModel() =
+      ModelMetadataModel(
+          skyColor = skyColor,
+          groundColor = groundColor,
+      )
+}
