@@ -36,7 +36,6 @@ import java.time.InstantSource
 import kotlin.io.path.Path
 import kotlin.io.path.pathString
 import org.jooq.DSLContext
-import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -535,8 +534,8 @@ class SplatService(
               .where(FILE_ID.eq(fileId))
               .fetchOne()
 
-      val cameraPosition = (record?.get(CAMERA_POSITION) as Point?)?.let { CoordinateModel.of(it) }
-      val originPosition = (record?.get(ORIGIN_POSITION) as Point?)?.let { CoordinateModel.of(it) }
+      val cameraPosition = CoordinateModel.of(record, CAMERA_POSITION)
+      val originPosition = CoordinateModel.of(record, ORIGIN_POSITION)
 
       return Pair(originPosition, cameraPosition)
     }

@@ -74,7 +74,8 @@ data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecim
       cartesianGeometryFactory.createPoint(Coordinate(x.toDouble(), y.toDouble(), z.toDouble()))
 
   companion object {
-    fun of(point: Point): CoordinateModel = CoordinateModel(point.x, point.y, point.coordinate.z)
+    fun of(record: Record?, pointField: Field<Geometry?>): CoordinateModel? =
+        (record?.get(pointField) as Point?)?.let { CoordinateModel(it.x, it.y, it.coordinate.z) }
   }
 }
 
@@ -109,10 +110,10 @@ data class SplatAnnotationModel<AnnotationId : SplatAnnotationId?>(
           ExistingSplatAnnotationModel(
               id = record[ID]!!,
               bodyText = record[BODY_TEXT],
-              cameraPosition = (record[CAMERA_POSITION] as Point?)?.let { CoordinateModel.of(it) },
+              cameraPosition = CoordinateModel.of(record, CAMERA_POSITION),
               fileId = record[FILE_ID]!!,
               label = record[LABEL],
-              position = CoordinateModel.of(record[POSITION] as Point),
+              position = CoordinateModel.of(record, POSITION)!!,
               title = record[TITLE]!!,
           )
         }
