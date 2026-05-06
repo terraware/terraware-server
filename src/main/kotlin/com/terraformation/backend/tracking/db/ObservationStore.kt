@@ -2132,7 +2132,6 @@ class ObservationStore(
           .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
           .onConflict(OBSERVATION_ID, SUBSTRATUM_ID)
           .doUpdate()
-          .set(SUBSTRATUM_HISTORY_ID, substratumHistoryId)
           .set(TOTAL_LIVE, totalLive)
           .set(TOTAL_DEAD, totalDead)
           .set(TOTAL_EXISTING, totalExisting)
@@ -2194,7 +2193,6 @@ class ObservationStore(
           .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
           .onConflict(OBSERVATION_ID, STRATUM_ID)
           .doUpdate()
-          .set(STRATUM_HISTORY_ID, stratumHistoryId)
           .set(TOTAL_LIVE, totalLive)
           .set(TOTAL_DEAD, totalDead)
           .set(TOTAL_EXISTING, totalExisting)
@@ -2267,18 +2265,16 @@ class ObservationStore(
   ) {
     val (monitoringPlotHistoryId, sizeMeters) =
         dslContext
-            .select(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID, MONITORING_PLOTS.SIZE_METERS)
+            .select(
+                OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.asNonNullable(),
+                MONITORING_PLOTS.SIZE_METERS.asNonNullable(),
+            )
             .from(OBSERVATION_PLOTS)
             .join(MONITORING_PLOTS)
             .on(MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
             .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
             .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-            .fetchOne {
-              Pair(
-                  it[OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID]!!,
-                  it[MONITORING_PLOTS.SIZE_METERS]!!,
-              )
-            }!!
+            .fetchOne()!!
 
     updatePlotObservationResults(
         observationId,
