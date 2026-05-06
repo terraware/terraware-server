@@ -292,8 +292,18 @@ class SplatService(
     splatRecord.assetStatusId = AssetStatus.Ready
     splatRecord.completedTime = clock.instant()
     if (modelMetadata != null) {
-      splatRecord.skyColor = modelMetadata.skyColor
-      splatRecord.groundColor = modelMetadata.groundColor
+      if (isValidHexColor(modelMetadata.skyColor)) {
+        splatRecord.skyColor = modelMetadata.skyColor
+      } else {
+        log.warn("Invalid sky color ${modelMetadata.skyColor} for file $fileId")
+        splatRecord.skyColor = null
+      }
+      if (isValidHexColor(modelMetadata.groundColor)) {
+        splatRecord.groundColor = modelMetadata.groundColor
+      } else {
+        log.warn("Invalid ground color ${modelMetadata.groundColor} for file $fileId")
+        splatRecord.groundColor = null
+      }
     }
     splatRecord.update()
 
@@ -306,6 +316,9 @@ class SplatService(
         )
     )
   }
+
+  private fun isValidHexColor(color: String?): Boolean =
+      color == null || color.matches(Regex("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"))
 
   fun getObservationSplatInfo(
       observationId: ObservationId,
