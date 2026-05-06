@@ -1,3 +1,4 @@
+33cb840f Update amazoncorretto Docker tag to v25.0.3-al2023-headless (#4314)
 0ef1a811 Update dependency commons-codec:commons-codec to v1.22.0 (#4317)
 715fdc94 Update dependency software.amazon.awssdk:bom to v2.43.2 (#4325)
 7b48acab Update dependency mypy to v1.20.2 (#4313)
