@@ -230,6 +230,7 @@ COMMENT ON COLUMN splats.ground_plane IS 'Ground plane of the splat in cartesian
 COMMENT ON COLUMN splats.origin_position IS 'Center point of the splat in cartesian coordinates.';
 COMMENT ON COLUMN splats.scene_bounds IS 'Bounding perimeter of the splat in cartesian coordinates, defined as a PointZM such that XYZ is the center of the circle, and M is the radius. The circle lies on the ground plane.';
 COMMENT ON COLUMN splats.sky_color IS 'Average color of the sky.';
+COMMENT ON COLUMN splats.sky_radius IS 'Size of the sky sphere.';
 
 COMMENT ON TABLE splat_annotations IS 'Annotations that should be displayed inside splat models.';
 COMMENT ON COLUMN splat_annotations.camera_position IS 'Starting location of the camera in cartesian coordinates.';
