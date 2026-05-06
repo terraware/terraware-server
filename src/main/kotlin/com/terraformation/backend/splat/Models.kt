@@ -63,6 +63,11 @@ data class ObservationBirdnetResultModel(
   }
 }
 
+data class ModelMetadataModel(
+    val skyColor: String?,
+    val groundColor: String?,
+)
+
 data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecimal) {
   constructor(
       x: Double,

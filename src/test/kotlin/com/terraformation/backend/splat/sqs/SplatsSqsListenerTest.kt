@@ -1,6 +1,7 @@
 package com.terraformation.backend.splat.sqs
 
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.splat.ModelMetadataModel
 import com.terraformation.backend.splat.SplatService
 import io.mockk.Runs
 import io.mockk.every
@@ -19,7 +20,7 @@ class SplatsSqsListenerTest {
 
   @BeforeEach
   fun setUp() {
-    every { splatService.recordSplatSuccess(any()) } just Runs
+    every { splatService.recordSplatSuccess(any(), any()) } just Runs
     every { splatService.recordSplatError(any(), any()) } just Runs
     every { splatService.recordBirdnetSuccess(any()) } just Runs
     every { splatService.recordBirdnetError(any(), any()) } just Runs
@@ -56,7 +57,7 @@ class SplatsSqsListenerTest {
       listener.receiveSplatterResponse(payload)
 
       verify { splatService.recordSplatError(fileId, "Test error") }
-      verify(exactly = 0) { splatService.recordSplatSuccess(any()) }
+      verify(exactly = 0) { splatService.recordSplatSuccess(any(), any()) }
     }
 
     @Test
@@ -72,6 +73,46 @@ class SplatsSqsListenerTest {
       listener.receiveSplatterResponse(payload)
 
       verify { splatService.recordSplatError(fileId, "No error message received") }
+    }
+
+    @Test
+    fun `passes model metadata to recordSplatSuccess when present`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      skyColor = "#AABBCC",
+                      groundColor = "#112233",
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify {
+        splatService.recordSplatSuccess(
+            fileId,
+            ModelMetadataModel(skyColor = "#AABBCC", groundColor = "#112233"),
+        )
+      }
+    }
+
+    @Test
+    fun `passes null metadata to recordSplatSuccess when absent`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify { splatService.recordSplatSuccess(fileId, null) }
     }
   }
 
