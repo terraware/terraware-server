@@ -29,6 +29,7 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import java.time.temporal.ChronoUnit
 import org.jooq.Configuration
@@ -112,6 +113,7 @@ class ObservationScenario(
     ): ObservationScenario {
       if (registerListeners) {
         eventPublisher.register<MonitoringSpeciesTotalsEditedEvent> { t0Store.on(it) }
+        eventPublisher.register<T0PlotDataAssignedEvent> { observationStore.on(it) }
       }
 
       return ObservationScenario(

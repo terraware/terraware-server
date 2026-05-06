@@ -54,6 +54,15 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
 
   val latestLiveField: Field<Int>
 
+  /**
+   * Condition that covers all result table rows that could be affected by a change to the scoped
+   * entity. For ID-based scopes this is the same as [observedTotalsCondition]. For plotId-based
+   * scopes it expands to include all observations for every substratum/stratum the plot has ever
+   * historically belonged to, ensuring that observations which reference the plot's data via
+   * [observationIdForPlot] are also updated.
+   */
+  val survivalRatesCondition: Condition
+
   fun anyChildHasNullSurvivalRateCondition(observationIdField: Field<ObservationId?>): Condition
 
   fun observationPlotsCondition(observationIdField: Field<ObservationId?>): Condition
@@ -92,6 +101,9 @@ class ObservationResultsPlot(
   override val latestLiveField = OBSERVATION_PLOT_RESULTS.TOTAL_LIVE.asNonNullable()
 
   override val observedTotalsCondition = OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(plotId)
+
+  override val survivalRatesCondition: Condition
+    get() = observedTotalsCondition
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVATION_PLOT_RESULTS.monitoringPlots.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
@@ -168,6 +180,9 @@ class ObservationResultsSubstratum(
 
   override val observedTotalsCondition =
       OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID.`in`(substratumHistorySelect)
+
+  override val survivalRatesCondition: Condition
+    get() = observedTotalsCondition
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVATION_SUBSTRATUM_RESULTS.substrata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(
@@ -303,6 +318,20 @@ class ObservationResultsStratum(
 
   override val observedTotalsCondition =
       OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(stratumHistorySelect)
+
+  override val survivalRatesCondition: Condition
+    get() =
+        if (plotId != null) {
+          OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(
+              DSL.selectDistinct(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
+                  .from(MONITORING_PLOT_HISTORIES)
+                  .join(SUBSTRATUM_HISTORIES)
+                  .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+                  .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId))
+          )
+        } else {
+          observedTotalsCondition
+        }
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVATION_STRATUM_RESULTS.strata.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true)
@@ -455,6 +484,9 @@ class ObservationResultsSite(
       }
 
   override val observedTotalsCondition = OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(siteSelect)
+
+  override val survivalRatesCondition: Condition
+    get() = observedTotalsCondition
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVATION_SITE_RESULTS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true)

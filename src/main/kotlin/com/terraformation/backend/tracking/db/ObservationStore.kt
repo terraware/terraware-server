@@ -1885,6 +1885,87 @@ class ObservationStore(
         .execute()
   }
 
+  private fun <ID : Any, HistoryId : Any> recalculateSurvivalRateResults(
+      updateScope: ObservationResultsScope<ID, HistoryId>,
+  ) {
+    val table = updateScope.observedTotalsTable
+    val observationIdField = table.field("observation_id", ObservationId::class.java)!!
+    val survivalRatePermanentDenominator =
+        getSurvivalRateDenominator(
+            updateScope,
+            DSL.trueCondition(),
+            observationIdField,
+        )
+    val survivalRateTempDenominator =
+        getSurvivalRateTempDenominator(
+            updateScope,
+            DSL.trueCondition(),
+            observationIdField,
+        )
+    val survivalRateDenominator =
+        DSL.coalesce(
+            survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
+            survivalRatePermanentDenominator,
+            survivalRateTempDenominator,
+        )
+    val survivalRateField = table.field("survival_rate", Int::class.java)!!
+    val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
+    val permanentLiveField = table.field("permanent_live", Int::class.java)!!
+    val latestLiveField = updateScope.latestLiveField
+
+    val survivalRateValue =
+        DSL.case_()
+            .`when`(
+                updateScope.anyChildHasNullSurvivalRateCondition(observationIdField),
+                DSL.castNull(SQLDataType.INTEGER),
+            )
+            .`when`(
+                survivalRateDenominator.eq(BigDecimal.ZERO),
+                DSL.castNull(SQLDataType.INTEGER),
+            )
+            .else_(
+                DSL.case_()
+                    .`when`(
+                        updateScope.observedTotalsPlantingSiteTempCondition,
+                        (latestLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator)),
+                    )
+                    .else_(
+                        (permanentLiveField
+                            .mul(BigDecimal.valueOf(100))
+                            .div(survivalRateDenominator)),
+                    )
+            )
+
+    dslContext
+        .update(table)
+        .set(
+            survivalRateField,
+            survivalRateValue,
+        )
+        .apply {
+          survivalRateStdDevField?.let {
+            this.set(
+                it,
+                DSL.if_(
+                    survivalRateValue.isNotNull,
+                    getSurvivalRateWeightedStandardDeviation(updateScope),
+                    DSL.castNull(SQLDataType.INTEGER),
+                ),
+            )
+          }
+        }
+        .where(updateScope.survivalRatesCondition)
+        .and(
+            DSL.notExists(
+                DSL.selectOne()
+                    .from(OBSERVATION_PLOTS)
+                    .where(updateScope.observationPlotsCondition(observationIdField))
+                    .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+            )
+        )
+        .execute()
+  }
+
   private fun recalculateSurvivalRateResults(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
