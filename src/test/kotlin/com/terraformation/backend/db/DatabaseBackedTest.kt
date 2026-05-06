@@ -245,6 +245,8 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES_EC
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_GROWTH_FORMS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_PLANT_MATERIAL_SOURCING_METHODS
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES_SUCCESSIONAL_GROUPS
+import com.terraformation.backend.db.default_schema.tables.references.SPLATS
+import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
 import com.terraformation.backend.db.default_schema.tables.references.SUB_LOCATIONS
 import com.terraformation.backend.db.default_schema.tables.references.TIMESERIES_VALUES
 import com.terraformation.backend.db.default_schema.tables.references.UPLOADS
@@ -518,6 +520,7 @@ import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.splat.CoordinateModel
+import com.terraformation.backend.splat.toPointZField
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
@@ -3235,38 +3238,30 @@ abstract class DatabaseBackedTest {
       row: SplatsRow = SplatsRow(),
       fileId: FileId = row.fileId ?: inserted.fileId,
       assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
-      originPosition: CoordinateModel? =
-          row.originPositionX?.let {
-            CoordinateModel(it, row.originPositionY!!, row.originPositionZ!!)
-          },
-      cameraPosition: CoordinateModel? =
-          row.cameraPositionX?.let {
-            CoordinateModel(it, row.cameraPositionY!!, row.cameraPositionZ!!)
-          },
+      originPosition: CoordinateModel? = null,
+      cameraPosition: CoordinateModel? = null,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
       needsAttention: Boolean = row.needsAttention ?: false,
   ) {
-    val rowWithDefaults =
-        row.copy(
-            assetStatusId = assetStatus,
-            cameraPositionX = cameraPosition?.x,
-            cameraPositionY = cameraPosition?.y,
-            cameraPositionZ = cameraPosition?.z,
-            createdBy = createdBy,
-            createdTime = createdTime,
-            fileId = fileId,
-            needsAttention = needsAttention,
-            organizationId = organizationId,
-            originPositionX = originPosition?.x,
-            originPositionY = originPosition?.y,
-            originPositionZ = originPosition?.z,
-            splatStorageUrl = splatStorageUrl,
-        )
-
-    splatsDao.insert(rowWithDefaults)
+    with(SPLATS) {
+      dslContext
+          .insertInto(SPLATS)
+          .set(FILE_ID, fileId)
+          .set(ASSET_STATUS_ID, assetStatus)
+          .set(CREATED_BY, createdBy)
+          .set(CREATED_TIME, createdTime)
+          .set(ORGANIZATION_ID, organizationId)
+          .set(SPLAT_STORAGE_URL, splatStorageUrl)
+          .set(NEEDS_ATTENTION, needsAttention)
+          .set(COMPLETED_TIME, row.completedTime)
+          .set(ERROR_MESSAGE, row.errorMessage)
+          .set(ORIGIN_POSITION, originPosition.toPointZField())
+          .set(CAMERA_POSITION, cameraPosition.toPointZField())
+          .execute()
+    }
   }
 
   fun insertBirdnetResult(
@@ -3301,41 +3296,34 @@ abstract class DatabaseBackedTest {
       title: String = row.title ?: "Annotation ${nextAnnotationNumber.getOrDefault(fileId, 1)}",
       bodyText: String? = row.bodyText,
       label: String? = row.label,
-      position: CoordinateModel =
-          row.positionX?.let { CoordinateModel(it, row.positionY!!, row.positionZ!!) }
-              ?: CoordinateModel(1.0, 2.0, 3.0),
-      cameraPosition: CoordinateModel? =
-          row.cameraPositionX?.let {
-            CoordinateModel(it, row.cameraPositionY!!, row.cameraPositionZ!!)
-          },
+      position: CoordinateModel = CoordinateModel(1.0, 2.0, 3.0),
+      cameraPosition: CoordinateModel? = null,
       createdBy: UserId = row.createdBy ?: currentUser().userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
   ): SplatAnnotationId {
-    val rowWithDefaults =
-        row.copy(
-            fileId = fileId,
-            title = title,
-            bodyText = bodyText,
-            label = label,
-            positionX = position.x,
-            positionY = position.y,
-            positionZ = position.z,
-            cameraPositionX = cameraPosition?.x,
-            cameraPositionY = cameraPosition?.y,
-            cameraPositionZ = cameraPosition?.z,
-            createdBy = createdBy,
-            createdTime = createdTime,
-            modifiedBy = modifiedBy,
-            modifiedTime = modifiedTime,
-        )
-
-    splatAnnotationsDao.insert(rowWithDefaults)
+    val id =
+        with(SPLAT_ANNOTATIONS) {
+          dslContext
+              .insertInto(SPLAT_ANNOTATIONS)
+              .set(FILE_ID, fileId)
+              .set(TITLE, title)
+              .set(BODY_TEXT, bodyText)
+              .set(LABEL, label)
+              .set(POSITION, position.toPointZField())
+              .set(CAMERA_POSITION, cameraPosition.toPointZField())
+              .set(CREATED_BY, createdBy)
+              .set(CREATED_TIME, createdTime)
+              .set(MODIFIED_BY, modifiedBy)
+              .set(MODIFIED_TIME, modifiedTime)
+              .returning(ID)
+              .fetchOne(ID)!!
+        }
 
     nextAnnotationNumber[fileId] = nextAnnotationNumber.getOrDefault(fileId, 1) + 1
 
-    return rowWithDefaults.id!!.also { inserted.splatAnnotationIds.add(it) }
+    return id.also { inserted.splatAnnotationIds.add(it) }
   }
 
   fun insertObservationPlot(
