@@ -26,7 +26,7 @@ CREATE TABLE tracking.observation_substratum_results(
     survival_rate INT,
     survival_rate_std_dev INT,
     plant_density INT,
-    plant_density_std_dev Int,
+    plant_density_std_dev INT,
 
     PRIMARY KEY (observation_id, substratum_id)
 );
@@ -43,7 +43,7 @@ CREATE TABLE tracking.observation_stratum_results(
     survival_rate INT,
     survival_rate_std_dev INT,
     plant_density INT,
-    plant_density_std_dev Int,
+    plant_density_std_dev INT,
 
     PRIMARY KEY (observation_id, stratum_id)
 );
