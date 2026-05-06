@@ -520,28 +520,27 @@ class SplatService(
     ensureSplat(fileId)
 
     val annotations = listSplatAnnotations(fileId)
-    val (originPosition, cameraPosition) = getSplatPositions(fileId)
 
-    return SplatInfoModel(
-        annotations = annotations,
-        cameraPosition = cameraPosition,
-        originPosition = originPosition,
-    )
-  }
-
-  private fun getSplatPositions(fileId: FileId): Pair<CoordinateModel?, CoordinateModel?> {
     with(SPLATS) {
       val record =
           dslContext
-              .select(CAMERA_POSITION, ORIGIN_POSITION)
+              .select(CAMERA_POSITION, GROUND_COLOR, ORIGIN_POSITION, SKY_COLOR)
               .from(SPLATS)
               .where(FILE_ID.eq(fileId))
-              .fetchOne()
+              .fetchOne()!!
 
       val cameraPosition = CoordinateModel.of(record, CAMERA_POSITION)
       val originPosition = CoordinateModel.of(record, ORIGIN_POSITION)
+      val skyColor = record[SKY_COLOR]
+      val groundColor = record[GROUND_COLOR]
 
-      return Pair(originPosition, cameraPosition)
+      return SplatInfoModel(
+          annotations = annotations,
+          cameraPosition = cameraPosition,
+          groundColor = groundColor,
+          originPosition = originPosition,
+          skyColor = skyColor,
+      )
     }
   }
 

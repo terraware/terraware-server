@@ -41,7 +41,9 @@ data class ObservationSplatModel(
 data class SplatInfoModel(
     val annotations: List<SplatAnnotationModel<SplatAnnotationId>>,
     val cameraPosition: CoordinateModel?,
+    val groundColor: String?,
     val originPosition: CoordinateModel?,
+    val skyColor: String?,
 )
 
 data class ObservationBirdnetResultModel(
@@ -79,8 +81,8 @@ data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecim
       cartesianGeometryFactory.createPoint(Coordinate(x.toDouble(), y.toDouble(), z.toDouble()))
 
   companion object {
-    fun of(record: Record?, pointField: Field<Geometry?>): CoordinateModel? =
-        (record?.get(pointField) as Point?)?.let { CoordinateModel(it.x, it.y, it.coordinate.z) }
+    fun of(record: Record, pointField: Field<Geometry?>): CoordinateModel? =
+        (record.get(pointField) as Point?)?.let { CoordinateModel(it.x, it.y, it.coordinate.z) }
   }
 }
 

@@ -3245,21 +3245,25 @@ abstract class DatabaseBackedTest {
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
       needsAttention: Boolean = row.needsAttention ?: false,
+      groundColor: String? = null,
+      skyColor: String? = null,
   ) {
     with(SPLATS) {
       dslContext
           .insertInto(SPLATS)
-          .set(FILE_ID, fileId)
           .set(ASSET_STATUS_ID, assetStatus)
+          .set(CAMERA_POSITION, cameraPosition.toPointZField())
+          .set(COMPLETED_TIME, row.completedTime)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
-          .set(ORGANIZATION_ID, organizationId)
-          .set(SPLAT_STORAGE_URL, splatStorageUrl)
-          .set(NEEDS_ATTENTION, needsAttention)
-          .set(COMPLETED_TIME, row.completedTime)
           .set(ERROR_MESSAGE, row.errorMessage)
+          .set(FILE_ID, fileId)
+          .set(GROUND_COLOR, groundColor)
+          .set(NEEDS_ATTENTION, needsAttention)
+          .set(ORGANIZATION_ID, organizationId)
           .set(ORIGIN_POSITION, originPosition.toPointZField())
-          .set(CAMERA_POSITION, cameraPosition.toPointZField())
+          .set(SKY_COLOR, skyColor)
+          .set(SPLAT_STORAGE_URL, splatStorageUrl)
           .execute()
     }
   }
