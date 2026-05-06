@@ -44,11 +44,17 @@ data class SplatterResponseOutputPayload(
 )
 
 data class SplatterResponsePayload(
+    val birdnetErrorMessage: String? = null,
+    val birdnetOutput: SplatterResponseOutputPayload? = null,
+    val birdnetSuccess: Boolean? = null,
     val errorMessage: String?,
     val jobId: FileId,
+    val modelMetadata: SplatterResponseModelMetadataPayload? = null,
     val output: SplatterResponseOutputPayload?,
     val success: Boolean,
-    val birdnetSuccess: Boolean? = null,
-    val birdnetOutput: SplatterResponseOutputPayload? = null,
-    val birdnetErrorMessage: String? = null,
+)
+
+data class SplatterResponseModelMetadataPayload(
+    val skyColor: String?,
+    val groundColor: String?,
 )
