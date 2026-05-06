@@ -1952,7 +1952,7 @@ class ObservationStore(
     val survivalRateValue =
         DSL.case_()
             .`when`(
-                updateScope.anyChildHasNullSurvivalRateCondition(observationId),
+                updateScope.anyChildHasNullSurvivalRateCondition(DSL.value(observationId)),
                 DSL.castNull(SQLDataType.INTEGER),
             )
             .`when`(
@@ -1977,7 +1977,7 @@ class ObservationStore(
             .fetchExists(
                 DSL.selectOne()
                     .from(OBSERVATION_PLOTS)
-                    .where(updateScope.observationPlotsCondition(observationId))
+                    .where(updateScope.observationPlotsCondition(DSL.value(observationId)))
                     .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
             )
             .not()

@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.ObservationPlotResults
 import com.terraformation.backend.db.tracking.tables.ObservationPlots
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -24,6 +25,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SP
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
@@ -52,9 +54,9 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
 
   val latestLiveField: Field<Int>
 
-  fun anyChildHasNullSurvivalRateCondition(observationId: ObservationId): Condition
+  fun anyChildHasNullSurvivalRateCondition(observationIdField: Field<ObservationId?>): Condition
 
-  fun observationPlotsCondition(observationId: ObservationId): Condition
+  fun observationPlotsCondition(observationIdField: Field<ObservationId?>): Condition
 
   fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults): Condition
 }
@@ -105,11 +107,11 @@ class ObservationResultsPlot(
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       plotField.eq(plotId)
 
-  override fun anyChildHasNullSurvivalRateCondition(observationId: ObservationId) =
+  override fun anyChildHasNullSurvivalRateCondition(observationIdField: Field<ObservationId?>) =
       DSL.falseCondition()
 
-  override fun observationPlotsCondition(observationId: ObservationId) =
-      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
+  override fun observationPlotsCondition(observationIdField: Field<ObservationId?>) =
+      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField)
           .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
 
   override fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults) =
@@ -125,11 +127,23 @@ class ObservationResultsPlot(
 class ObservationResultsSubstratum(
     val substratumHistorySelect: Select<Record1<SubstratumHistoryId?>>,
     val substratumId: SubstratumId? = null,
+    val plotId: MonitoringPlotId? = null,
 ) : ObservationResultsScope<SubstratumId, SubstratumHistoryId> {
   constructor(
       substratumHistoryId: SubstratumHistoryId,
       substratumId: SubstratumId? = null,
-  ) : this(DSL.select(DSL.inline(substratumHistoryId)), substratumId)
+      plotId: MonitoringPlotId? = null,
+  ) : this(DSL.select(DSL.inline(substratumHistoryId)), substratumId, plotId)
+
+  constructor(
+      plotId: MonitoringPlotId
+  ) : this(
+      DSL.select(OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID)
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
+          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID)),
+      plotId = plotId,
+  )
 
   override val scopeId: Select<Record1<SubstratumId?>> =
       if (substratumId != null) {
@@ -168,13 +182,15 @@ class ObservationResultsSubstratum(
   override val observedTotalsTable = OBSERVATION_SUBSTRATUM_RESULTS
 
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
-      DSL.falseCondition()
+      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
-  override fun anyChildHasNullSurvivalRateCondition(observationId: ObservationId): Condition =
+  override fun anyChildHasNullSurvivalRateCondition(
+      observationIdField: Field<ObservationId?>
+  ): Condition =
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_PLOT_RESULTS)
-              .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+              .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationIdField))
               .and(
                   OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID.`in`(
                       substratumHistorySelect
@@ -195,8 +211,8 @@ class ObservationResultsSubstratum(
               )
       )
 
-  override fun observationPlotsCondition(observationId: ObservationId) =
-      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
+  override fun observationPlotsCondition(observationIdField: Field<ObservationId?>) =
+      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField)
           .and(
               OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID.`in`(
                   substratumHistorySelect
@@ -225,11 +241,23 @@ class ObservationResultsSubstratum(
 class ObservationResultsStratum(
     val stratumHistorySelect: Select<Record1<StratumHistoryId?>>,
     val stratumId: StratumId? = null,
+    val plotId: MonitoringPlotId? = null,
 ) : ObservationResultsScope<StratumId, StratumHistoryId> {
   constructor(
       stratumHistoryId: StratumHistoryId,
       stratumId: StratumId? = null,
-  ) : this(DSL.select(DSL.inline(stratumHistoryId)), stratumId)
+      plotId: MonitoringPlotId? = null,
+  ) : this(DSL.select(DSL.inline(stratumHistoryId)), stratumId, plotId)
+
+  constructor(
+      plotId: MonitoringPlotId
+  ) : this(
+      DSL.select(OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID)
+          .from(OBSERVATION_PLOTS)
+          .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
+          .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID)),
+      plotId = plotId,
+  )
 
   override val scopeId: Select<Record1<StratumId?>> =
       if (stratumId != null) {
@@ -286,15 +314,17 @@ class ObservationResultsStratum(
   override val observedTotalsTable = OBSERVATION_STRATUM_RESULTS
 
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
-      DSL.falseCondition()
+      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
-  override fun anyChildHasNullSurvivalRateCondition(observationId: ObservationId): Condition =
+  override fun anyChildHasNullSurvivalRateCondition(
+      observationIdField: Field<ObservationId?>
+  ): Condition =
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_SUBSTRATUM_RESULTS)
               .join(SUBSTRATUM_HISTORIES)
               .on(SUBSTRATUM_HISTORIES.ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID))
-              .where(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(observationId))
+              .where(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
               .and(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.`in`(stratumHistorySelect))
               .and(OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE.isNull)
               .and(
@@ -303,7 +333,7 @@ class ObservationResultsStratum(
                       DSL.exists(
                           DSL.selectOne()
                               .from(OBSERVATION_PLOT_RESULTS)
-                              .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+                              .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationIdField))
                               .and(
                                   OBSERVATION_PLOT_RESULTS.monitoringPlotHistories
                                       .SUBSTRATUM_HISTORY_ID
@@ -315,8 +345,8 @@ class ObservationResultsStratum(
               )
       )
 
-  override fun observationPlotsCondition(observationId: ObservationId) =
-      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
+  override fun observationPlotsCondition(observationIdField: Field<ObservationId?>) =
+      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField)
           .and(
               OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID.`in`(
                   stratumHistorySelect
@@ -350,12 +380,14 @@ class ObservationResultsStratum(
 
 class ObservationResultsSite(
     val siteHistorySelect: Select<Record1<PlantingSiteHistoryId?>>,
-    val siteId: PlantingSiteId,
+    val siteSelect: Select<Record1<PlantingSiteId?>>,
+    val plotId: MonitoringPlotId? = null,
 ) : ObservationResultsScope<PlantingSiteId, PlantingSiteHistoryId> {
   constructor(
       siteHistoryId: PlantingSiteHistoryId,
       siteId: PlantingSiteId,
-  ) : this(DSL.select(DSL.inline(siteHistoryId)), siteId)
+      plotId: MonitoringPlotId? = null,
+  ) : this(DSL.select(DSL.inline(siteHistoryId)), DSL.select(DSL.inline(siteId)), plotId)
 
   constructor(
       siteId: PlantingSiteId
@@ -363,10 +395,31 @@ class ObservationResultsSite(
       DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
           .from(OBSERVATIONS)
           .where(OBSERVATIONS.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID)),
-      siteId,
+      DSL.select(DSL.inline(siteId)),
   )
 
-  override val scopeId: Select<Record1<PlantingSiteId?>> = DSL.select(DSL.inline(siteId))
+  constructor(
+      plotId: MonitoringPlotId
+  ) : this(
+      DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+          .from(OBSERVATIONS)
+          .where(OBSERVATIONS.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID)),
+      DSL.select(MONITORING_PLOTS.PLANTING_SITE_ID)
+          .from(MONITORING_PLOTS)
+          .where(MONITORING_PLOTS.ID.eq(plotId)),
+      plotId = plotId,
+  )
+
+  constructor(
+      stratumId: StratumId
+  ) : this(
+      DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+          .from(OBSERVATIONS)
+          .where(OBSERVATIONS.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID)),
+      DSL.select(STRATA.PLANTING_SITE_ID).from(STRATA).where(STRATA.ID.eq(stratumId)),
+  )
+
+  override val scopeId = siteSelect
 
   override val scopeHistoryId = siteHistorySelect
 
@@ -401,7 +454,7 @@ class ObservationResultsSite(
         )
       }
 
-  override val observedTotalsCondition = OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(siteId)
+  override val observedTotalsCondition = OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(siteSelect)
 
   override val observedTotalsPlantingSiteTempCondition =
       OBSERVATION_SITE_RESULTS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.eq(true)
@@ -413,22 +466,24 @@ class ObservationResultsSite(
   override val observedTotalsTable = OBSERVATION_SITE_RESULTS
 
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
-      DSL.falseCondition()
+      if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
-  override fun anyChildHasNullSurvivalRateCondition(observationId: ObservationId): Condition =
+  override fun anyChildHasNullSurvivalRateCondition(
+      observationIdField: Field<ObservationId?>
+  ): Condition =
       DSL.exists(
           DSL.selectOne()
               .from(OBSERVATION_STRATUM_RESULTS)
               .join(STRATUM_HISTORIES)
               .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
-              .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationId))
+              .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
               .and(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.`in`(siteHistorySelect))
               .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNull)
       )
 
-  override fun observationPlotsCondition(observationId: ObservationId) =
-      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId)
-          .and(OBSERVATION_PLOTS.monitoringPlots.PLANTING_SITE_ID.eq(siteId))
+  override fun observationPlotsCondition(observationIdField: Field<ObservationId?>) =
+      OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField)
+          .and(OBSERVATION_PLOTS.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect))
 
   override fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults) =
       DSL.and(
@@ -443,8 +498,8 @@ class ObservationResultsSite(
       )
 
   override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
-      STRATUM_T0_TEMP_DENSITIES.strata.PLANTING_SITE_ID.eq(siteId)
+      STRATUM_T0_TEMP_DENSITIES.strata.PLANTING_SITE_ID.eq(siteSelect)
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
-      PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteId)
+      PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect)
 }
