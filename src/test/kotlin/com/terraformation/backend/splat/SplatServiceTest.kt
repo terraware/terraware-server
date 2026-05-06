@@ -617,7 +617,9 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   ),
               cameraPosition = null,
+              groundColor = null,
               originPosition = originPosition,
+              skyColor = null,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -641,7 +643,9 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   ),
               cameraPosition = null,
+              groundColor = null,
               originPosition = null,
+              skyColor = null,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -666,7 +670,9 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   ),
               cameraPosition = null,
+              groundColor = null,
               originPosition = null,
+              skyColor = null,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -712,7 +718,9 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   ),
               cameraPosition = null,
+              groundColor = null,
               originPosition = originPosition,
+              skyColor = null,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -727,7 +735,9 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           SplatInfoModel(
               annotations = emptyList(),
               cameraPosition = null,
+              groundColor = null,
               originPosition = originPosition,
+              skyColor = null,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -742,7 +752,9 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           SplatInfoModel(
               annotations = emptyList(),
               cameraPosition = cameraPosition,
+              groundColor = null,
               originPosition = null,
+              skyColor = null,
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -758,7 +770,25 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           SplatInfoModel(
               annotations = emptyList(),
               cameraPosition = cameraPosition,
+              groundColor = null,
               originPosition = originPosition,
+              skyColor = null,
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
+    fun `returns both sky and ground colors when they exist`() {
+      insertSplat(groundColor = "#FF0000", skyColor = "#00FF00")
+
+      val expected =
+          SplatInfoModel(
+              annotations = emptyList(),
+              cameraPosition = null,
+              groundColor = "#FF0000",
+              originPosition = null,
+              skyColor = "#00FF00",
           )
 
       assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
@@ -1337,7 +1367,9 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   ),
               cameraPosition = cameraPosition,
+              groundColor = null,
               originPosition = originPosition,
+              skyColor = null,
           )
 
       assertEquals(expected, result)
@@ -1349,7 +1381,16 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val result = service.getOrganizationSplatInfo(organizationId, orgFileId)
 
-      assertEquals(SplatInfoModel(emptyList(), null, null), result)
+      assertEquals(
+          SplatInfoModel(
+              annotations = emptyList(),
+              cameraPosition = null,
+              groundColor = null,
+              originPosition = null,
+              skyColor = null,
+          ),
+          result,
+      )
     }
 
     @Test
