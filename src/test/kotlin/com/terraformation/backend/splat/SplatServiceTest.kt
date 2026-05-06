@@ -946,6 +946,36 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `invalid sky and ground colors are set to null`() {
+      dslContext.deleteFrom(SPLATS).where(SPLATS.FILE_ID.eq(fileId)).execute()
+      insertSplat(
+          fileId = fileId,
+          assetStatus = AssetStatus.Preparing,
+          skyColor = "#87CEEB",
+          groundColor = "#8B4513",
+      )
+      service.recordSplatSuccess(
+          fileId,
+          ModelMetadataModel(skyColor = "#FFFFFFFF", groundColor = "#0000"),
+      )
+
+      assertTableEquals(
+          SplatsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Ready,
+              completedTime = clock.instant(),
+              organizationId = organizationId,
+              needsAttention = false,
+              splatStorageUrl = URI("s3://bucket/splat"),
+              skyColor = null,
+              groundColor = null,
+          )
+      )
+    }
+
+    @Test
     fun `does not save sky and ground color when model metadata is null`() {
       service.recordSplatSuccess(fileId, null)
 
