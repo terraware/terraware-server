@@ -1,3 +1,6 @@
+6778d44c Expose sky and ground colors in splat info endpoint (#4335)
+cd234561 Receive and store model metadata colors (#4334)
+3fca07ee Convert all splat points to PostGIS points (#4327)
 33cb840f Update amazoncorretto Docker tag to v25.0.3-al2023-headless (#4314)
 0ef1a811 Update dependency commons-codec:commons-codec to v1.22.0 (#4317)
 715fdc94 Update dependency software.amazon.awssdk:bom to v2.43.2 (#4325)
