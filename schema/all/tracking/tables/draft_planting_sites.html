@@ -152,14 +152,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="draft_planting_sites.[organization_id, project_id] references public.projects.[organization_id, id] via draft_planting_sites_organization_id_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.organization_id</span></td>
-                                                <td class="constraint detail">draft_planting_sites_organization_id_project_id_fkey</td>
-                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="draft_planting_sites.organization_id references public.organizations.id via draft_planting_sites_organization_id_fkey"><a href='../../public/tables/organizations.html'>organizations</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">draft_planting_sites_organization_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="draft_planting_sites.[organization_id, project_id] references public.projects.[organization_id, id] via draft_planting_sites_organization_id_project_id_fkey"><a href='../../public/tables/projects.html'>projects</a><span class='relatedKey'>.organization_id</span></td>
+                                                <td class="constraint detail">draft_planting_sites_organization_id_project_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>

@@ -1,3 +1,4 @@
+22275a76 SW-8277 Added admin UI functionalities for bulk backfill of simplified sites (#4340)
 11629f3c Log warning and set colors to null for invalid hex strings (#4337)
 07c32556 Update Gradle to v9.5.0 (#4326)
 735b8017 Update ktor monorepo to v3.4.3 (#4315)
