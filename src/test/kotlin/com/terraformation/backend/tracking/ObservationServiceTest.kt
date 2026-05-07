@@ -87,6 +87,7 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventValues
+import com.terraformation.backend.tracking.event.ObservationCompletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
@@ -2708,6 +2709,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           "Totals after observation",
       )
+
+      eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
     }
 
     @Test
@@ -2815,6 +2818,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           "Biomass details table",
       )
+
+      eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
     }
 
     @Test
