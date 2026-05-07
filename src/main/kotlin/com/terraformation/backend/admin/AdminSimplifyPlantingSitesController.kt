@@ -1,8 +1,10 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
@@ -11,6 +13,8 @@ import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANT
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITE_HISTORIES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import java.math.BigDecimal
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.impl.DSL
@@ -32,11 +36,57 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminSimplifyPlantingSitesController(
     private val dslContext: DSLContext,
+    private val organizationsDao: OrganizationsDao,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
   private val log = perClassLogger()
 
-  @GetMapping("/organization/{organizationId}/simplifyPlantingSites")
+  @GetMapping("/simplifyPlantingSites")
+  fun getManagePlantingSitesSimplification(model: Model): String {
+    val organizations = organizationsDao.findAll().sortedBy { it.id }
+    val siteStatsByOrg = fetchOrganizationSiteStats()
+    val historyStatsByOrg = fetchOrganizationHistoryStats()
+
+    val rows = organizations.map { org ->
+      val siteStats = siteStatsByOrg[org.id!!] ?: SimplificationStats.EMPTY
+      val historyStats = historyStatsByOrg[org.id!!] ?: SimplificationStats.EMPTY
+      OrganizationSimplificationStats(
+          organizationId = org.id!!,
+          organizationName = org.name!!,
+          numPlantingSites = siteStats.total,
+          numSimplifiedPlantingSites = siteStats.numSimplified,
+          plantingSiteReductionRatio =
+              reductionRatio(siteStats.totalOriginalPts, siteStats.totalSimplifiedPts),
+          numHistories = historyStats.total,
+          numSimplifiedHistories = historyStats.numSimplified,
+          historyReductionRatio =
+              reductionRatio(historyStats.totalOriginalPts, historyStats.totalSimplifiedPts),
+      )
+    }
+
+    val totalSitesOriginalPts = siteStatsByOrg.values.sumOf { it.totalOriginalPts }
+    val totalSitesSimplifiedPts = siteStatsByOrg.values.sumOf { it.totalSimplifiedPts }
+    val totalHistoriesOriginalPts = historyStatsByOrg.values.sumOf { it.totalOriginalPts }
+    val totalHistoriesSimplifiedPts = historyStatsByOrg.values.sumOf { it.totalSimplifiedPts }
+    val totals =
+        SimplificationTotals(
+            numPlantingSites = rows.sumOf { it.numPlantingSites },
+            numSimplifiedPlantingSites = rows.sumOf { it.numSimplifiedPlantingSites },
+            plantingSiteReductionRatio =
+                reductionRatio(totalSitesOriginalPts, totalSitesSimplifiedPts),
+            numHistories = rows.sumOf { it.numHistories },
+            numSimplifiedHistories = rows.sumOf { it.numSimplifiedHistories },
+            historyReductionRatio =
+                reductionRatio(totalHistoriesOriginalPts, totalHistoriesSimplifiedPts),
+        )
+
+    model.addAttribute("organizations", rows)
+    model.addAttribute("totals", totals)
+
+    return "/admin/managePlantingSitesSimplification"
+  }
+
+  @GetMapping("/simplifyPlantingSites/{organizationId}")
   fun getSimplifyPlantingSites(
       @PathVariable organizationId: OrganizationId,
       model: Model,
@@ -62,6 +112,7 @@ class AdminSimplifyPlantingSitesController(
             .leftJoin(SIMPLIFIED_PLANTING_SITES)
             .on(PLANTING_SITES.ID.eq(SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID))
             .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+            .and(PLANTING_SITES.BOUNDARY.isNotNull)
             .orderBy(PLANTING_SITES.ID)
             .fetch { record ->
               PlantingSiteSimplificationModel(
@@ -80,7 +131,7 @@ class AdminSimplifyPlantingSitesController(
     return "/admin/simplifyPlantingSites"
   }
 
-  @GetMapping("/organization/{organizationId}/simplifyPlantingSites/{plantingSiteId}/histories")
+  @GetMapping("/simplifyPlantingSites/{organizationId}/{plantingSiteId}/histories")
   fun getSimplifyPlantingSiteHistories(
       @PathVariable organizationId: OrganizationId,
       @PathVariable plantingSiteId: PlantingSiteId,
@@ -136,7 +187,7 @@ class AdminSimplifyPlantingSitesController(
     return "/admin/simplifyPlantingSiteHistories"
   }
 
-  @PostMapping("/organization/{organizationId}/simplifyPlantingSite/{plantingSiteId}")
+  @PostMapping("/simplifyPlantingSites/{organizationId}/{plantingSiteId}")
   fun simplifyPlantingSite(
       @PathVariable organizationId: OrganizationId,
       @PathVariable plantingSiteId: PlantingSiteId,
@@ -154,9 +205,46 @@ class AdminSimplifyPlantingSitesController(
     return redirectToSimplifyPlantingSites(organizationId)
   }
 
-  @PostMapping(
-      "/organization/{organizationId}/simplifyPlantingSites/{plantingSiteId}/histories/{historyId}"
-  )
+  @PostMapping("/simplifyPlantingSites/{organizationId}")
+  fun simplifyAllPlantingSites(
+      @PathVariable organizationId: OrganizationId,
+      @RequestParam(required = false) tolerance: Double?,
+      @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val plantingSiteIds =
+        dslContext
+            .select(PLANTING_SITES.ID)
+            .from(PLANTING_SITES)
+            .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+            .and(PLANTING_SITES.BOUNDARY.isNotNull)
+            .and(unsimplifiedSiteCondition(unsimplifiedOnly))
+            .orderBy(PLANTING_SITES.ID)
+            .fetch(PLANTING_SITES.ID.asNonNullable())
+
+    val failures = mutableListOf<PlantingSiteId>()
+    plantingSiteIds.forEach { plantingSiteId ->
+      try {
+        plantingSiteStore.upsertSimplifiedPlantingSite(plantingSiteId, tolerance)
+      } catch (e: Exception) {
+        log.warn("Failed to simplify planting site $plantingSiteId", e)
+        failures.add(plantingSiteId)
+      }
+    }
+
+    val successCount = plantingSiteIds.size - failures.size
+    if (failures.isEmpty()) {
+      redirectAttributes.successMessage = "Simplified $successCount planting site(s)."
+    } else {
+      redirectAttributes.failureMessage =
+          "Simplified $successCount of ${plantingSiteIds.size} planting site(s). " +
+              "Failed: ${failures.joinToString(", ")}"
+    }
+
+    return redirectToSimplifyPlantingSites(organizationId)
+  }
+
+  @PostMapping("/simplifyPlantingSites/{organizationId}/{plantingSiteId}/histories/{historyId}")
   fun simplifyPlantingSiteHistory(
       @PathVariable organizationId: OrganizationId,
       @PathVariable plantingSiteId: PlantingSiteId,
@@ -174,6 +262,293 @@ class AdminSimplifyPlantingSitesController(
 
     return redirectToSimplifyPlantingSiteHistories(organizationId, plantingSiteId)
   }
+
+  @PostMapping("/simplifyPlantingSites/{organizationId}/{plantingSiteId}/histories")
+  fun simplifyAllPlantingSiteHistories(
+      @PathVariable organizationId: OrganizationId,
+      @PathVariable plantingSiteId: PlantingSiteId,
+      @RequestParam(required = false) tolerance: Double?,
+      @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val historyIds =
+        dslContext
+            .select(PLANTING_SITE_HISTORIES.ID)
+            .from(PLANTING_SITE_HISTORIES)
+            .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(unsimplifiedHistoryCondition(unsimplifiedOnly))
+            .orderBy(PLANTING_SITE_HISTORIES.ID.desc())
+            .fetch(PLANTING_SITE_HISTORIES.ID.asNonNullable())
+
+    val failures = mutableListOf<PlantingSiteHistoryId>()
+    historyIds.forEach { historyId ->
+      try {
+        plantingSiteStore.upsertSimplifiedPlantingSiteHistory(plantingSiteId, historyId, tolerance)
+      } catch (e: Exception) {
+        log.warn("Failed to simplify planting site history $historyId", e)
+        failures.add(historyId)
+      }
+    }
+
+    val successCount = historyIds.size - failures.size
+    if (failures.isEmpty()) {
+      redirectAttributes.successMessage =
+          "Simplified $successCount planting site history(ies) for site $plantingSiteId."
+    } else {
+      redirectAttributes.failureMessage =
+          "Simplified $successCount of ${historyIds.size} planting site history(ies). " +
+              "Failed: ${failures.joinToString(", ")}"
+    }
+
+    return redirectToSimplifyPlantingSiteHistories(organizationId, plantingSiteId)
+  }
+
+  @PostMapping("/simplifyPlantingSites/{organizationId}/histories")
+  fun simplifyAllOrganizationPlantingSiteHistories(
+      @PathVariable organizationId: OrganizationId,
+      @RequestParam(required = false) tolerance: Double?,
+      @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val histories =
+        dslContext
+            .select(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID)
+            .from(PLANTING_SITE_HISTORIES)
+            .join(PLANTING_SITES)
+            .on(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+            .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+            .and(unsimplifiedHistoryCondition(unsimplifiedOnly))
+            .orderBy(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID.desc())
+            .fetch { record ->
+              record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.asNonNullable()] to
+                  record[PLANTING_SITE_HISTORIES.ID.asNonNullable()]
+            }
+
+    val failures = mutableListOf<PlantingSiteHistoryId>()
+    histories.forEach { (plantingSiteId, historyId) ->
+      try {
+        plantingSiteStore.upsertSimplifiedPlantingSiteHistory(plantingSiteId, historyId, tolerance)
+      } catch (e: Exception) {
+        log.warn("Failed to simplify planting site history $historyId", e)
+        failures.add(historyId)
+      }
+    }
+
+    val successCount = histories.size - failures.size
+    if (failures.isEmpty()) {
+      redirectAttributes.successMessage =
+          "Simplified $successCount planting site history(ies) across the organization."
+    } else {
+      redirectAttributes.failureMessage =
+          "Simplified $successCount of ${histories.size} planting site history(ies). " +
+              "Failed: ${failures.joinToString(", ")}"
+    }
+
+    return redirectToSimplifyPlantingSites(organizationId)
+  }
+
+  @PostMapping("/simplifyPlantingSites")
+  fun simplifyAllPlantingSitesGlobally(
+      @RequestParam(required = false) tolerance: Double?,
+      @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val plantingSiteIds =
+        dslContext
+            .select(PLANTING_SITES.ID)
+            .from(PLANTING_SITES)
+            .where(PLANTING_SITES.BOUNDARY.isNotNull)
+            .and(unsimplifiedSiteCondition(unsimplifiedOnly))
+            .orderBy(PLANTING_SITES.ID)
+            .fetch(PLANTING_SITES.ID.asNonNullable())
+
+    val failures = mutableListOf<PlantingSiteId>()
+    plantingSiteIds.forEach { plantingSiteId ->
+      try {
+        plantingSiteStore.upsertSimplifiedPlantingSite(plantingSiteId, tolerance)
+      } catch (e: Exception) {
+        log.warn("Failed to simplify planting site $plantingSiteId", e)
+        failures.add(plantingSiteId)
+      }
+    }
+
+    val successCount = plantingSiteIds.size - failures.size
+    if (failures.isEmpty()) {
+      redirectAttributes.successMessage =
+          "Simplified $successCount planting site(s) across all organizations."
+    } else {
+      redirectAttributes.failureMessage =
+          "Simplified $successCount of ${plantingSiteIds.size} planting site(s). " +
+              "Failed: ${failures.joinToString(", ")}"
+    }
+
+    return redirectToManagePlantingSitesSimplification()
+  }
+
+  @PostMapping("/simplifyPlantingSites/histories")
+  fun simplifyAllPlantingSiteHistoriesGlobally(
+      @RequestParam(required = false) tolerance: Double?,
+      @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val histories =
+        dslContext
+            .select(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID)
+            .from(PLANTING_SITE_HISTORIES)
+            .where(unsimplifiedHistoryCondition(unsimplifiedOnly))
+            .orderBy(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID.desc())
+            .fetch { record ->
+              record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.asNonNullable()] to
+                  record[PLANTING_SITE_HISTORIES.ID.asNonNullable()]
+            }
+
+    val failures = mutableListOf<PlantingSiteHistoryId>()
+    histories.forEach { (plantingSiteId, historyId) ->
+      try {
+        plantingSiteStore.upsertSimplifiedPlantingSiteHistory(plantingSiteId, historyId, tolerance)
+      } catch (e: Exception) {
+        log.warn("Failed to simplify planting site history $historyId", e)
+        failures.add(historyId)
+      }
+    }
+
+    val successCount = histories.size - failures.size
+    if (failures.isEmpty()) {
+      redirectAttributes.successMessage =
+          "Simplified $successCount planting site history(ies) across all organizations."
+    } else {
+      redirectAttributes.failureMessage =
+          "Simplified $successCount of ${histories.size} planting site history(ies). " +
+              "Failed: ${failures.joinToString(", ")}"
+    }
+
+    return redirectToManagePlantingSitesSimplification()
+  }
+
+  private fun fetchOrganizationSiteStats(): Map<OrganizationId, SimplificationStats> {
+    val total = DSL.count()
+    val numSimplified = DSL.count(SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID)
+    val totalOriginalPts =
+        DSL.coalesce(
+            DSL.sum(
+                DSL.`when`(
+                        SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID.isNotNull,
+                        numVerticesField(PLANTING_SITES.BOUNDARY),
+                    )
+                    .otherwise(0)
+            ),
+            BigDecimal.ZERO,
+        )
+    val totalSimplifiedPts =
+        DSL.coalesce(
+            DSL.sum(numVerticesField(SIMPLIFIED_PLANTING_SITES.BOUNDARY)),
+            BigDecimal.ZERO,
+        )
+
+    return dslContext
+        .select(
+            PLANTING_SITES.ORGANIZATION_ID,
+            total,
+            numSimplified,
+            totalOriginalPts,
+            totalSimplifiedPts,
+        )
+        .from(PLANTING_SITES)
+        .leftJoin(SIMPLIFIED_PLANTING_SITES)
+        .on(PLANTING_SITES.ID.eq(SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID))
+        .where(PLANTING_SITES.BOUNDARY.isNotNull)
+        .groupBy(PLANTING_SITES.ORGANIZATION_ID)
+        .fetch { record ->
+          record[PLANTING_SITES.ORGANIZATION_ID.asNonNullable()] to
+              SimplificationStats(
+                  total = record[total],
+                  numSimplified = record[numSimplified],
+                  totalOriginalPts = record[totalOriginalPts] ?: BigDecimal.ZERO,
+                  totalSimplifiedPts = record[totalSimplifiedPts] ?: BigDecimal.ZERO,
+              )
+        }
+        .toMap()
+  }
+
+  private fun fetchOrganizationHistoryStats(): Map<OrganizationId, SimplificationStats> {
+    val total = DSL.count()
+    val numSimplified = DSL.count(SIMPLIFIED_PLANTING_SITE_HISTORIES.PLANTING_SITE_HISTORY_ID)
+    val totalOriginalPts =
+        DSL.coalesce(
+            DSL.sum(
+                DSL.`when`(
+                        SIMPLIFIED_PLANTING_SITE_HISTORIES.PLANTING_SITE_HISTORY_ID.isNotNull,
+                        numVerticesField(PLANTING_SITE_HISTORIES.BOUNDARY),
+                    )
+                    .otherwise(0)
+            ),
+            BigDecimal.ZERO,
+        )
+    val totalSimplifiedPts =
+        DSL.coalesce(
+            DSL.sum(numVerticesField(SIMPLIFIED_PLANTING_SITE_HISTORIES.BOUNDARY)),
+            BigDecimal.ZERO,
+        )
+
+    return dslContext
+        .select(
+            PLANTING_SITES.ORGANIZATION_ID,
+            total,
+            numSimplified,
+            totalOriginalPts,
+            totalSimplifiedPts,
+        )
+        .from(PLANTING_SITE_HISTORIES)
+        .join(PLANTING_SITES)
+        .on(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+        .leftJoin(SIMPLIFIED_PLANTING_SITE_HISTORIES)
+        .on(
+            PLANTING_SITE_HISTORIES.ID.eq(
+                SIMPLIFIED_PLANTING_SITE_HISTORIES.PLANTING_SITE_HISTORY_ID
+            )
+        )
+        .groupBy(PLANTING_SITES.ORGANIZATION_ID)
+        .fetch { record ->
+          record[PLANTING_SITES.ORGANIZATION_ID.asNonNullable()] to
+              SimplificationStats(
+                  total = record[total],
+                  numSimplified = record[numSimplified],
+                  totalOriginalPts = record[totalOriginalPts] ?: BigDecimal.ZERO,
+                  totalSimplifiedPts = record[totalSimplifiedPts] ?: BigDecimal.ZERO,
+              )
+        }
+        .toMap()
+  }
+
+  private fun reductionRatio(originalPts: BigDecimal, simplifiedPts: BigDecimal): Double? =
+      if (originalPts.signum() > 0) 1.0 - simplifiedPts.toDouble() / originalPts.toDouble()
+      else null
+
+  private fun unsimplifiedSiteCondition(unsimplifiedOnly: Boolean): Condition =
+      if (unsimplifiedOnly) {
+        DSL.notExists(
+            DSL.selectOne()
+                .from(SIMPLIFIED_PLANTING_SITES)
+                .where(SIMPLIFIED_PLANTING_SITES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+        )
+      } else {
+        DSL.noCondition()
+      }
+
+  private fun unsimplifiedHistoryCondition(unsimplifiedOnly: Boolean): Condition =
+      if (unsimplifiedOnly) {
+        DSL.notExists(
+            DSL.selectOne()
+                .from(SIMPLIFIED_PLANTING_SITE_HISTORIES)
+                .where(
+                    SIMPLIFIED_PLANTING_SITE_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                        PLANTING_SITE_HISTORIES.ID
+                    )
+                )
+        )
+      } else {
+        DSL.noCondition()
+      }
 
   private fun numVerticesField(boundary: Field<Geometry?>): Field<Int> =
       DSL.field("ST_NPoints({0})", SQLDataType.INTEGER, boundary)
@@ -205,13 +580,16 @@ class AdminSimplifyPlantingSitesController(
           simplified,
       )
 
+  private fun redirectToManagePlantingSitesSimplification() =
+      "redirect:/admin/simplifyPlantingSites"
+
   private fun redirectToSimplifyPlantingSites(organizationId: OrganizationId) =
-      "redirect:/admin/organization/$organizationId/simplifyPlantingSites"
+      "redirect:/admin/simplifyPlantingSites/$organizationId"
 
   private fun redirectToSimplifyPlantingSiteHistories(
       organizationId: OrganizationId,
       plantingSiteId: PlantingSiteId,
-  ) = "redirect:/admin/organization/$organizationId/simplifyPlantingSites/$plantingSiteId/histories"
+  ) = "redirect:/admin/simplifyPlantingSites/$organizationId/$plantingSiteId/histories"
 }
 
 data class PlantingSiteSimplificationModel(
@@ -231,3 +609,34 @@ data class PlantingSiteHistorySimplificationModel(
     val reductionRatio: Double?,
     val jaccardSimilarity: Double?,
 )
+
+data class OrganizationSimplificationStats(
+    val organizationId: OrganizationId,
+    val organizationName: String,
+    val numPlantingSites: Int,
+    val numSimplifiedPlantingSites: Int,
+    val plantingSiteReductionRatio: Double?,
+    val numHistories: Int,
+    val numSimplifiedHistories: Int,
+    val historyReductionRatio: Double?,
+)
+
+data class SimplificationTotals(
+    val numPlantingSites: Int,
+    val numSimplifiedPlantingSites: Int,
+    val plantingSiteReductionRatio: Double?,
+    val numHistories: Int,
+    val numSimplifiedHistories: Int,
+    val historyReductionRatio: Double?,
+)
+
+private data class SimplificationStats(
+    val total: Int,
+    val numSimplified: Int,
+    val totalOriginalPts: BigDecimal,
+    val totalSimplifiedPts: BigDecimal,
+) {
+  companion object {
+    val EMPTY = SimplificationStats(0, 0, BigDecimal.ZERO, BigDecimal.ZERO)
+  }
+}

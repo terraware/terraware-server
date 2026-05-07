@@ -12,9 +12,9 @@
 
 <a href="/admin/">Home</a>
 -
-<a th:href="|/admin/organization/${organizationId}|">Organization <th:block th:text="${organizationId}"/></a>
+<a href="/admin/simplifyPlantingSites">Manage Planting Sites Simplification</a>
 -
-<a th:href="|/admin/organization/${organizationId}/simplifyPlantingSites|">Simplify Planting Sites</a>
+<a th:href="|/admin/simplifyPlantingSites/${organizationId}|">Organization <th:block th:text="${organizationId}"/></a>
 
 <h2>Simplify Planting Site Histories</h2>
 
@@ -31,6 +31,17 @@
     <label for="sharedTolerance">Tolerance (meters)</label>
     <input type="number" id="sharedTolerance" step="any" min="0" value="0.5"
            oninput="document.querySelectorAll('.historyToleranceInput').forEach(i => i.value = this.value)"/>
+
+    <form method="POST" style="display: inline-block; margin-left: 1em;"
+          th:action="|/admin/simplifyPlantingSites/${organizationId}/${plantingSiteId}/histories|"
+          onsubmit="return confirm('Simplify all histories for this planting site?');">
+        <input type="hidden" name="tolerance" class="historyToleranceInput" value="0.5"/>
+        <label>
+            <input type="checkbox" name="unsimplifiedOnly" value="true"/>
+            Unsimplified only
+        </label>
+        <input type="submit" value="Simplify All Histories"/>
+    </form>
 
     <table>
         <thead>
@@ -54,7 +65,7 @@
             <td th:text="${history.jaccardSimilarity != null} ? ${#numbers.formatDecimal(history.jaccardSimilarity, 1, 4)} : '-'">-</td>
             <td>
                 <form method="POST"
-                      th:action="|/admin/organization/${organizationId}/simplifyPlantingSites/${plantingSiteId}/histories/${history.id}|">
+                      th:action="|/admin/simplifyPlantingSites/${organizationId}/${plantingSiteId}/histories/${history.id}|">
                     <input type="hidden" name="tolerance" class="historyToleranceInput" value="0.5"/>
                     <input type="submit" value="Simplify"/>
                 </form>

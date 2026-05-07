@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<style>
+    table td, table th {
+        padding: 0.1em 1.2em;
+    }
+    table tfoot td {
+        font-weight: bold;
+        border-top: 1px solid #999;
+    }
+</style>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a href="/admin/">Home</a>
+</p>
+
+<h2>Manage Planting Sites Simplification</h2>
+
+<p>
+    Regenerate simplified geometry for planting sites and their histories. Pick an organization to
+    view its planting sites.
+</p>
+
+<h3>Organizations</h3>
+
+<p th:if="${organizations.isEmpty()}">No organizations found.</p>
+
+<div th:if="${!organizations.isEmpty()}" style="margin-bottom: 0.5em;">
+    <form method="POST" style="display: inline-block;"
+          action="/admin/simplifyPlantingSites"
+          onsubmit="return confirm('Simplify all planting sites across all organizations?');">
+        <label>
+            Tolerance (meters)
+            <input type="number" name="tolerance" step="any" min="0" value="0.5"/>
+        </label>
+        <label>
+            <input type="checkbox" name="unsimplifiedOnly" value="true"/>
+            Unsimplified only
+        </label>
+        <input type="submit" value="Simplify All Sites"/>
+    </form>
+
+    <form method="POST" style="display: inline-block; margin-left: 0.5em;"
+          action="/admin/simplifyPlantingSites/histories"
+          onsubmit="return confirm('Simplify all planting site histories across all organizations?');">
+        <label>
+            Tolerance (meters)
+            <input type="number" name="tolerance" step="any" min="0" value="0.5"/>
+        </label>
+        <label>
+            <input type="checkbox" name="unsimplifiedOnly" value="true"/>
+            Unsimplified only
+        </label>
+        <input type="submit" value="Simplify All Site Histories"/>
+    </form>
+</div>
+
+<table th:if="${!organizations.isEmpty()}">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Planting Sites</th>
+        <th>Simplified Sites</th>
+        <th>Site Reduction Ratio</th>
+        <th>Histories</th>
+        <th>Simplified Histories</th>
+        <th>History Reduction Ratio</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="org : ${organizations}" class="striped">
+        <td th:text="${org.organizationId}">1</td>
+        <td>
+            <a th:href="|/admin/simplifyPlantingSites/${org.organizationId}|"
+               th:text="${org.organizationName}">Org name</a>
+        </td>
+        <td th:text="${org.numPlantingSites}">0</td>
+        <td th:text="${org.numSimplifiedPlantingSites}">0</td>
+        <td th:text="${org.plantingSiteReductionRatio != null} ? ${#numbers.formatDecimal(org.plantingSiteReductionRatio, 1, 4)} : '-'">-</td>
+        <td th:text="${org.numHistories}">0</td>
+        <td th:text="${org.numSimplifiedHistories}">0</td>
+        <td th:text="${org.historyReductionRatio != null} ? ${#numbers.formatDecimal(org.historyReductionRatio, 1, 4)} : '-'">-</td>
+    </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+        <td colspan="2">Total</td>
+        <td th:text="${totals.numPlantingSites}">0</td>
+        <td th:text="${totals.numSimplifiedPlantingSites}">0</td>
+        <td th:text="${totals.plantingSiteReductionRatio != null} ? ${#numbers.formatDecimal(totals.plantingSiteReductionRatio, 1, 4)} : '-'">-</td>
+        <td th:text="${totals.numHistories}">0</td>
+        <td th:text="${totals.numSimplifiedHistories}">0</td>
+        <td th:text="${totals.historyReductionRatio != null} ? ${#numbers.formatDecimal(totals.historyReductionRatio, 1, 4)} : '-'">-</td>
+    </tr>
+    </tfoot>
+</table>
+
+</body>
+</html>
