@@ -544,7 +544,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     val commonValues =
         NotificationsRow(
             body = "Your video for a 3D virtual walkthrough has finished processing.",
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(FileId(1)),
             notificationTypeId = NotificationType.SplatGenerationCompleted,
             organizationId = organizationId,
             title = "Virtual walkthrough processing complete",
@@ -576,7 +576,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     val commonValues =
         NotificationsRow(
             body = "Your video for a 3D virtual walkthrough has finished processing.",
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(FileId(1)),
             notificationTypeId = NotificationType.SplatGenerationCompleted,
             organizationId = organizationId,
             title = "Virtual walkthrough processing complete",
@@ -613,7 +613,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
                     "Video upload date: 1970-01-01\n\n" +
                     "For tips to improve your video, see the Knowledge Base: " +
                     "https://knowledge.terraformation.com/hc/en-us/articles/48235134762004",
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(FileId(1)),
             notificationTypeId = NotificationType.SplatGenerationFailed,
             organizationId = organizationId,
             title = "Virtual walkthrough processing failed",
@@ -654,7 +654,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
                 "A virtual walkthrough was marked as needing attention by a user in your organization.\n\n" +
                     "Video upload date: 1970-01-01\n\n" +
                     "User who updated the status: marker@test.com",
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(FileId(1)),
             notificationTypeId = NotificationType.SplatMarkedNeedsAttention,
             organizationId = organizationId,
             title = "Virtual walkthrough needs attention",
@@ -693,7 +693,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
                 "A virtual walkthrough was marked as needing attention by a user in your organization.\n\n" +
                     "Video upload date: 1970-01-01\n\n" +
                     "User who updated the status: marker@test.com",
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(FileId(1)),
             notificationTypeId = NotificationType.SplatMarkedNeedsAttention,
             organizationId = organizationId,
             title = "Virtual walkthrough needs attention",
@@ -731,7 +731,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
                 "A virtual walkthrough was marked as needing attention by a user in your organization.\n\n" +
                     "Video upload date: 1970-01-01\n\n" +
                     "User who updated the status: marker@test.com",
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(FileId(1)),
             notificationTypeId = NotificationType.SplatMarkedNeedsAttention,
             organizationId = organizationId,
             title = "Virtual walkthrough needs attention",
