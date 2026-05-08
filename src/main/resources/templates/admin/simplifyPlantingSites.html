@@ -32,8 +32,9 @@
            oninput="document.querySelectorAll('.siteToleranceInput').forEach(i => i.value = this.value)"/>
 
     <form method="POST" style="display: inline-block; margin-left: 1em;"
-          th:action="|/admin/simplifyPlantingSites/${organizationId}|"
+          action="/admin/simplifyPlantingSites"
           onsubmit="return confirm('Simplify all planting sites in this organization?');">
+        <input type="hidden" name="organizationId" th:value="${organizationId}"/>
         <input type="hidden" name="tolerance" class="siteToleranceInput" value="0.5"/>
         <label>
             <input type="checkbox" name="unsimplifiedOnly" value="true"/>
@@ -43,8 +44,9 @@
     </form>
 
     <form method="POST" style="display: inline-block; margin-left: 0.5em;"
-          th:action="|/admin/simplifyPlantingSites/${organizationId}/histories|"
+          action="/admin/simplifyPlantingSites/histories"
           onsubmit="return confirm('Simplify all histories for every planting site in this organization?');">
+        <input type="hidden" name="organizationId" th:value="${organizationId}"/>
         <input type="hidden" name="tolerance" class="siteToleranceInput" value="0.5"/>
         <label>
             <input type="checkbox" name="unsimplifiedOnly" value="true"/>
@@ -75,8 +77,9 @@
             <td th:text="${site.reductionRatio != null} ? ${#numbers.formatDecimal(site.reductionRatio, 1, 4)} : '-'">-</td>
             <td th:text="${site.jaccardSimilarity != null} ? ${#numbers.formatDecimal(site.jaccardSimilarity, 1, 4)} : '-'">-</td>
             <td style="display: flex; align-items: center; gap: 0.5em;">
-                <form method="POST"
-                      th:action="|/admin/simplifyPlantingSites/${organizationId}/${site.id}|">
+                <form method="POST" action="/admin/simplifyPlantingSites">
+                    <input type="hidden" name="organizationId" th:value="${organizationId}"/>
+                    <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
                     <input type="hidden" name="tolerance" class="siteToleranceInput" value="0.5"/>
                     <input type="submit" value="Simplify"/>
                 </form>
