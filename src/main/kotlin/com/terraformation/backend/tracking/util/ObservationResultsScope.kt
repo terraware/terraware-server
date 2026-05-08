@@ -61,7 +61,7 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
    * historically belonged to, ensuring that observations which reference the plot's data via
    * [observationIdForPlot] are also updated.
    */
-  val survivalRatesCondition: Condition
+  val survivalRateRecalculationCondition: Condition
 
   fun anyChildHasNullSurvivalRateCondition(observationIdField: Field<ObservationId?>): Condition
 
@@ -102,7 +102,7 @@ class ObservationResultsPlot(
 
   override val observedTotalsCondition = OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.eq(plotId)
 
-  override val survivalRatesCondition: Condition
+  override val survivalRateRecalculationCondition: Condition
     get() = observedTotalsCondition
 
   override val observedTotalsPlantingSiteTempCondition =
@@ -181,7 +181,7 @@ class ObservationResultsSubstratum(
   override val observedTotalsCondition =
       OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID.`in`(substratumHistorySelect)
 
-  override val survivalRatesCondition: Condition
+  override val survivalRateRecalculationCondition: Condition
     get() = observedTotalsCondition
 
   override val observedTotalsPlantingSiteTempCondition =
@@ -328,7 +328,7 @@ class ObservationResultsStratum(
   override val observedTotalsCondition =
       OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(stratumHistorySelect)
 
-  override val survivalRatesCondition: Condition
+  override val survivalRateRecalculationCondition: Condition
     get() =
         if (plotId != null) {
           OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(
@@ -500,7 +500,7 @@ class ObservationResultsSite(
 
   override val observedTotalsCondition = OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(siteSelect)
 
-  override val survivalRatesCondition: Condition
+  override val survivalRateRecalculationCondition: Condition
     get() = observedTotalsCondition
 
   override val observedTotalsPlantingSiteTempCondition =

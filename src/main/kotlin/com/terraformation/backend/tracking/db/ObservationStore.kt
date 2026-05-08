@@ -1962,7 +1962,7 @@ class ObservationStore(
             )
           }
         }
-        .where(updateScope.survivalRatesCondition)
+        .where(updateScope.survivalRateRecalculationCondition)
         .and(
             DSL.notExists(
                 DSL.selectOne()
