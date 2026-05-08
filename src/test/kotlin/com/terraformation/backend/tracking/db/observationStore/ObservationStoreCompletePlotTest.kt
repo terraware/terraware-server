@@ -1051,7 +1051,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
   }
 
   @Test
-  fun `updates observation results for plot substratum stratum and site`() {
+  fun `updates observation results for plot, substratum, stratum, and site`() {
     val speciesId = insertSpecies()
     insertObservationPlot(isPermanent = true, claimedBy = user.userId, claimedTime = Instant.EPOCH)
 
