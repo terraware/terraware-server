@@ -17,7 +17,7 @@ CREATE INDEX ON tracking.observation_plot_results(observation_id, monitoring_plo
 
 CREATE TABLE tracking.observation_substratum_results(
     observation_id BIGINT NOT NULL REFERENCES tracking.observations ON DELETE CASCADE,
-    substratum_id BIGINT NOT NULL REFERENCES tracking.substrata ON DELETE SET NULL,
+    substratum_id BIGINT REFERENCES tracking.substrata ON DELETE SET NULL,
     substratum_history_id BIGINT NOT NULL REFERENCES tracking.substratum_histories ON DELETE CASCADE,
     total_live INT NOT NULL,
     total_dead INT NOT NULL,
@@ -34,7 +34,7 @@ CREATE INDEX ON tracking.observation_substratum_results(substratum_id);
 
 CREATE TABLE tracking.observation_stratum_results(
     observation_id BIGINT NOT NULL REFERENCES tracking.observations ON DELETE CASCADE,
-    stratum_id BIGINT NOT NULL REFERENCES tracking.strata ON DELETE SET NULL,
+    stratum_id BIGINT REFERENCES tracking.strata ON DELETE SET NULL,
     stratum_history_id BIGINT REFERENCES tracking.stratum_histories ON DELETE CASCADE,
     total_live INT NOT NULL,
     total_dead INT NOT NULL,
