@@ -49,15 +49,15 @@ class FailureReportingServiceTest {
 
   private val fileId = FileId(100)
 
-  val orgModel: OrganizationModel = mockk()
+  private val orgModel: OrganizationModel = mockk()
   private val organizationId = OrganizationId(200)
   private val orgName = "Test Organization"
 
-  val uploadedByUser: TerrawareUser = mockk()
+  private val uploadedByUser: TerrawareUser = mockk()
   private val uploadedByUserId = UserId(300)
   private val uploadedByUserEmail = "uploaded@example.com"
 
-  val currentUser: TerrawareUser = mockk()
+  private val currentUser: TerrawareUser = mockk()
   private val currentUserId = UserId(301)
   private val currentUserEmail = "current@example.com"
 
@@ -78,6 +78,7 @@ class FailureReportingServiceTest {
     every { currentUser.userId } returns currentUserId
 
     CurrentUserHolder.setCurrentUser(currentUser)
+
     every {
       supportService.submitServiceRequest(any(), any(), any(), any(), any(), any(), any())
     } returns "TEST-123"
