@@ -18,13 +18,11 @@ import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
 import com.terraformation.backend.support.atlassian.model.SupportRequestType
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkObject
-import io.mockk.unmockkObject
 import io.mockk.verify
 import java.time.Instant
 import java.time.ZoneId
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -79,7 +77,7 @@ class FailureReportingServiceTest {
     every { currentUser.email } returns currentUserEmail
     every { currentUser.userId } returns currentUserId
 
-    every { CurrentUserHolder.getCurrentUser() } returns currentUser
+    CurrentUserHolder.setCurrentUser(currentUser)
     every {
       supportService.submitServiceRequest(any(), any(), any(), any(), any(), any(), any())
     } returns "TEST-123"
@@ -92,6 +90,11 @@ class FailureReportingServiceTest {
             apiToken = "test-token",
             serviceDeskKey = "TEST",
         )
+  }
+
+  @AfterEach
+  fun cleanup() {
+    CurrentUserHolder.clearCurrentUser()
   }
 
   @Nested
@@ -260,20 +263,6 @@ class FailureReportingServiceTest {
   private fun assertSupportRequestNotSubmitted() {
     verify(exactly = 0) {
       supportService.submitServiceRequest(any(), any(), any(), any(), any(), any(), any())
-    }
-  }
-
-  companion object {
-    @JvmStatic
-    @BeforeAll
-    fun setupMock() {
-      mockkObject(CurrentUserHolder)
-    }
-
-    @JvmStatic
-    @BeforeAll
-    fun teardownMock() {
-      unmockkObject(CurrentUserHolder)
     }
   }
 }
