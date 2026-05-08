@@ -521,7 +521,7 @@ import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.splat.CoordinateModel
-import com.terraformation.backend.splat.toPointZField
+import com.terraformation.backend.splat.toPointField
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
@@ -3261,13 +3261,14 @@ abstract class DatabaseBackedTest {
       splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
       needsAttention: Boolean = row.needsAttention ?: false,
       groundColor: String? = null,
+      sceneBounds: CoordinateModel? = null,
       skyColor: String? = null,
   ) {
     with(SPLATS) {
       dslContext
           .insertInto(SPLATS)
           .set(ASSET_STATUS_ID, assetStatus)
-          .set(CAMERA_POSITION, cameraPosition.toPointZField())
+          .set(CAMERA_POSITION, cameraPosition.toPointField())
           .set(COMPLETED_TIME, row.completedTime)
           .set(CREATED_BY, createdBy)
           .set(CREATED_TIME, createdTime)
@@ -3276,7 +3277,8 @@ abstract class DatabaseBackedTest {
           .set(GROUND_COLOR, groundColor)
           .set(NEEDS_ATTENTION, needsAttention)
           .set(ORGANIZATION_ID, organizationId)
-          .set(ORIGIN_POSITION, originPosition.toPointZField())
+          .set(ORIGIN_POSITION, originPosition.toPointField())
+          .set(SCENE_BOUNDS, sceneBounds.toPointField())
           .set(SKY_COLOR, skyColor)
           .set(SPLAT_STORAGE_URL, splatStorageUrl)
           .execute()
@@ -3330,8 +3332,8 @@ abstract class DatabaseBackedTest {
               .set(TITLE, title)
               .set(BODY_TEXT, bodyText)
               .set(LABEL, label)
-              .set(POSITION, position.toPointZField())
-              .set(CAMERA_POSITION, cameraPosition.toPointZField())
+              .set(POSITION, position.toPointField())
+              .set(CAMERA_POSITION, cameraPosition.toPointField())
               .set(CREATED_BY, createdBy)
               .set(CREATED_TIME, createdTime)
               .set(MODIFIED_BY, modifiedBy)
