@@ -1453,7 +1453,7 @@ class ObservationStore(
               isPermanent = isPermanent,
               plantCountsBySpecies = plantCountAdjustments,
           )
-          recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
+          recalculateSurvivalRateResults(laterObservationId, observation.plantingSiteId)
         }
 
         eventPublisher.publishEvent(
@@ -1985,6 +1985,14 @@ class ObservationStore(
     // Update tables with latest total values
     updateObservationResults(observationId, plantingSiteId)
 
+    val plotIds =
+        dslContext
+            .selectDistinct(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID)
+            .from(OBSERVATION_PLOT_RESULTS)
+            .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+            .fetch { it.value1() }
+            .filterNotNull()
+
     val substratumHistoryIds =
         dslContext
             .selectDistinct(OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID)
@@ -2004,6 +2012,7 @@ class ObservationStore(
             .fetch { it.value1() }
             .filterNotNull()
 
+    plotIds.forEach { recalculateSurvivalRateResults(ObservationResultsPlot(it), observationId) }
     substratumHistoryIds.forEach {
       recalculateSurvivalRateResults(ObservationResultsSubstratum(it), observationId)
     }
