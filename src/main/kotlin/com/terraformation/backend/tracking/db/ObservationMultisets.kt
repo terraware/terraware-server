@@ -42,7 +42,8 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.Point
 
-internal val observationPlotCoordinatesGpsField = OBSERVED_PLOT_COORDINATES.GPS_COORDINATES.forMultiset()
+internal val observationPlotCoordinatesGpsField =
+    OBSERVED_PLOT_COORDINATES.GPS_COORDINATES.forMultiset()
 
 internal val observationPlotCoordinatesMultiset =
     DSL.multiset(
@@ -60,7 +61,8 @@ internal val observationPlotCoordinatesMultiset =
           result.map { record ->
             ObservedPlotCoordinatesModel(
                 id = record[OBSERVED_PLOT_COORDINATES.ID.asNonNullable()],
-                gpsCoordinates = record[observationPlotCoordinatesGpsField.asNonNullable()].centroid,
+                gpsCoordinates =
+                    record[observationPlotCoordinatesGpsField.asNonNullable()].centroid,
                 position = record[OBSERVED_PLOT_COORDINATES.POSITION_ID.asNonNullable()],
             )
           }
