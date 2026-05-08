@@ -2109,7 +2109,7 @@ class ObservationStore(
               DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
                   .from(OBSERVATION_PLOT_RESULTS)
                   .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-                  .and(scope.observationPlotsCondition)
+                  .and(scope.plotResultsCondition)
           )
         }
 
@@ -2122,7 +2122,7 @@ class ObservationStore(
                   )
                   .from(OBSERVATION_PLOT_RESULTS)
                   .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-                  .and(scope.observationPlotsCondition)
+                  .and(scope.plotResultsCondition)
           )
         } else {
           null
