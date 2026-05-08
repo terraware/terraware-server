@@ -289,23 +289,41 @@ class SplatService(
       return
     }
 
-    splatRecord.assetStatusId = AssetStatus.Ready
-    splatRecord.completedTime = clock.instant()
-    if (modelMetadata != null) {
-      if (isValidHexColor(modelMetadata.skyColor)) {
-        splatRecord.skyColor = modelMetadata.skyColor
-      } else {
-        log.warn("Invalid sky color ${modelMetadata.skyColor} for file $fileId")
-        splatRecord.skyColor = null
-      }
-      if (isValidHexColor(modelMetadata.groundColor)) {
-        splatRecord.groundColor = modelMetadata.groundColor
-      } else {
-        log.warn("Invalid ground color ${modelMetadata.groundColor} for file $fileId")
-        splatRecord.groundColor = null
-      }
+    with(SPLATS) {
+      val skyColor =
+          modelMetadata?.skyColor?.let {
+            if (isValidHexColor(it)) it
+            else {
+              log.warn("Invalid sky color $it for file $fileId")
+              null
+            }
+          }
+
+      val groundColor =
+          modelMetadata?.groundColor?.let {
+            if (isValidHexColor(it)) it
+            else {
+              log.warn("Invalid ground color $it for file $fileId")
+              null
+            }
+          }
+
+      dslContext
+          .update(SPLATS)
+          .set(ASSET_STATUS_ID, AssetStatus.Ready)
+          .set(COMPLETED_TIME, clock.instant())
+          .let { step ->
+            if (modelMetadata != null) step.set(SKY_COLOR, skyColor).set(GROUND_COLOR, groundColor)
+            else step
+          }
+          .let { step ->
+            if (modelMetadata?.sceneBounds != null)
+                step.set(SCENE_BOUNDS, modelMetadata.sceneBounds.toPointField())
+            else step
+          }
+          .where(FILE_ID.eq(fileId))
+          .execute()
     }
-    splatRecord.update()
 
     eventPublisher.publishEvent(
         SplatGenerationCompletedEvent(
@@ -537,13 +555,14 @@ class SplatService(
     with(SPLATS) {
       val record =
           dslContext
-              .select(CAMERA_POSITION, GROUND_COLOR, ORIGIN_POSITION, SKY_COLOR)
+              .select(CAMERA_POSITION, GROUND_COLOR, ORIGIN_POSITION, SCENE_BOUNDS, SKY_COLOR)
               .from(SPLATS)
               .where(FILE_ID.eq(fileId))
               .fetchOne()!!
 
       val cameraPosition = CoordinateModel.of(record, CAMERA_POSITION)
       val originPosition = CoordinateModel.of(record, ORIGIN_POSITION)
+      val sceneBounds = CoordinateModel.of(record, SCENE_BOUNDS)
       val skyColor = record[SKY_COLOR]
       val groundColor = record[GROUND_COLOR]
 
@@ -552,6 +571,7 @@ class SplatService(
           cameraPosition = cameraPosition,
           groundColor = groundColor,
           originPosition = originPosition,
+          sceneBounds = sceneBounds,
           skyColor = skyColor,
       )
     }
@@ -589,8 +609,8 @@ class SplatService(
               .set(TITLE, annotation.title)
               .set(BODY_TEXT, annotation.bodyText)
               .set(LABEL, annotation.label)
-              .set(POSITION, annotation.position.toPointZField())
-              .set(CAMERA_POSITION, annotation.cameraPosition.toPointZField())
+              .set(POSITION, annotation.position.toPointField())
+              .set(CAMERA_POSITION, annotation.cameraPosition.toPointField())
               .where(ID.eq(id).and(FILE_ID.eq(fileId)))
               .execute()
         }
@@ -618,8 +638,8 @@ class SplatService(
               .set(TITLE, annotation.title)
               .set(BODY_TEXT, annotation.bodyText)
               .set(LABEL, annotation.label)
-              .set(POSITION, annotation.position.toPointZField())
-              .set(CAMERA_POSITION, annotation.cameraPosition.toPointZField())
+              .set(POSITION, annotation.position.toPointField())
+              .set(CAMERA_POSITION, annotation.cameraPosition.toPointField())
               .execute()
         }
       }

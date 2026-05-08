@@ -1,6 +1,7 @@
 package com.terraformation.backend.splat.sqs
 
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.splat.CoordinateModel
 import com.terraformation.backend.splat.ModelMetadataModel
 import com.terraformation.backend.splat.SplatService
 import io.mockk.Runs
@@ -98,6 +99,63 @@ class SplatsSqsListenerTest {
             ModelMetadataModel(skyColor = "#AABBCC", groundColor = "#112233"),
         )
       }
+    }
+
+    @Test
+    fun `passes scene bounds to recordSplatSuccess when present`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      groundColor = null,
+                      sceneBounds =
+                          GeoJsonPointPayload(
+                              type = "Point",
+                              coordinates = listOf(1.0, 2.0, 3.0, 4.0),
+                          ),
+                      skyColor = null,
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify {
+        splatService.recordSplatSuccess(
+            fileId,
+            ModelMetadataModel(
+                sceneBounds = CoordinateModel(1.0, 2.0, 3.0, 4.0),
+            ),
+        )
+      }
+    }
+
+    @Test
+    fun `skips scene bounds when fewer than 4 coordinates`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      groundColor = null,
+                      sceneBounds =
+                          GeoJsonPointPayload(
+                              type = "Point",
+                              coordinates = listOf(1.0, 2.0, 3.0),
+                          ),
+                      skyColor = null,
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify { splatService.recordSplatSuccess(fileId, ModelMetadataModel(sceneBounds = null)) }
     }
 
     @Test

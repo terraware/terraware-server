@@ -43,6 +43,7 @@ import java.net.URI
 import java.nio.file.NoSuchFileException
 import java.time.Instant
 import kotlin.io.path.Path
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -795,6 +796,24 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `returns scene bounds when present`() {
+      val sceneBounds = CoordinateModel(1.0, 2.0, 3.0, 4.0)
+      insertSplat(sceneBounds = sceneBounds)
+
+      val expected =
+          SplatInfoModel(
+              annotations = emptyList(),
+              cameraPosition = null,
+              groundColor = null,
+              originPosition = null,
+              sceneBounds = sceneBounds,
+              skyColor = null,
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
     fun `throws exception if file is not associated with observation`() {
       val otherFileId = insertFile()
 
@@ -993,6 +1012,25 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               groundColor = null,
           )
       )
+    }
+
+    @Test
+    fun `saves scene bounds when model metadata includes them`() {
+      service.recordSplatSuccess(
+          fileId,
+          ModelMetadataModel(
+              sceneBounds = CoordinateModel(1.0, 2.0, 3.0, 4.0),
+          ),
+      )
+
+      val geoJson =
+          dslContext
+              .select(DSL.field("ST_AsGeoJSON(scene_bounds)", String::class.java))
+              .from(SPLATS)
+              .where(SPLATS.FILE_ID.eq(fileId))
+              .fetchOne()!!
+              .value1()
+      assertEquals("{\"type\":\"Point\",\"coordinates\":[1,2,3]}", geoJson)
     }
   }
 

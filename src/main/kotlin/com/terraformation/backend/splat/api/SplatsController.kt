@@ -230,9 +230,15 @@ data class ListObservationSplatsResponsePayload(
     val splats: List<ObservationSplatPayload>,
 ) : SuccessResponsePayload
 
-data class CoordinatePayload(val x: BigDecimal, val y: BigDecimal, val z: BigDecimal) {
+data class CoordinatePayload(
+    val m: BigDecimal? = null,
+    val x: BigDecimal,
+    val y: BigDecimal,
+    val z: BigDecimal,
+) {
   companion object {
-    fun of(model: CoordinateModel) = CoordinatePayload(model.x, model.y, model.z)
+    fun of(model: CoordinateModel) =
+        CoordinatePayload(m = model.m, x = model.x, y = model.y, z = model.z)
   }
 }
 
@@ -264,6 +270,7 @@ data class GetObservationSplatInfoResponsePayload(
     val cameraPosition: CoordinatePayload?,
     val groundColor: String?,
     val originPosition: CoordinatePayload?,
+    val sceneBounds: CoordinatePayload?,
     val skyColor: String?,
 ) : SuccessResponsePayload {
   constructor(
@@ -273,6 +280,7 @@ data class GetObservationSplatInfoResponsePayload(
       cameraPosition = model.cameraPosition?.let { CoordinatePayload.of(it) },
       groundColor = model.groundColor,
       originPosition = model.originPosition?.let { CoordinatePayload.of(it) },
+      sceneBounds = model.sceneBounds?.let { CoordinatePayload.of(it) },
       skyColor = model.skyColor,
   )
 }
