@@ -83,7 +83,12 @@ data class CoordinateModel(
       y: Double,
       z: Double,
       m: Double? = null,
-  ) : this(BigDecimal.valueOf(x), BigDecimal.valueOf(y), BigDecimal.valueOf(z), m?.let { BigDecimal.valueOf(it) })
+  ) : this(
+      BigDecimal.valueOf(x),
+      BigDecimal.valueOf(y),
+      BigDecimal.valueOf(z),
+      m?.let { BigDecimal.valueOf(it) },
+  )
 
   fun toPoint(): Point =
       cartesianGeometryFactory.createPoint(Coordinate(x.toDouble(), y.toDouble(), z.toDouble()))
