@@ -33,8 +33,10 @@
            oninput="document.querySelectorAll('.historyToleranceInput').forEach(i => i.value = this.value)"/>
 
     <form method="POST" style="display: inline-block; margin-left: 1em;"
-          th:action="|/admin/simplifyPlantingSites/${organizationId}/${plantingSiteId}/histories|"
+          action="/admin/simplifyPlantingSites/histories"
           onsubmit="return confirm('Simplify all histories for this planting site?');">
+        <input type="hidden" name="organizationId" th:value="${organizationId}"/>
+        <input type="hidden" name="plantingSiteId" th:value="${plantingSiteId}"/>
         <input type="hidden" name="tolerance" class="historyToleranceInput" value="0.5"/>
         <label>
             <input type="checkbox" name="unsimplifiedOnly" value="true"/>
@@ -64,8 +66,10 @@
             <td th:text="${history.reductionRatio != null} ? ${#numbers.formatDecimal(history.reductionRatio, 1, 4)} : '-'">-</td>
             <td th:text="${history.jaccardSimilarity != null} ? ${#numbers.formatDecimal(history.jaccardSimilarity, 1, 4)} : '-'">-</td>
             <td>
-                <form method="POST"
-                      th:action="|/admin/simplifyPlantingSites/${organizationId}/${plantingSiteId}/histories/${history.id}|">
+                <form method="POST" action="/admin/simplifyPlantingSites/histories">
+                    <input type="hidden" name="organizationId" th:value="${organizationId}"/>
+                    <input type="hidden" name="plantingSiteId" th:value="${plantingSiteId}"/>
+                    <input type="hidden" name="historyId" th:value="${history.id}"/>
                     <input type="hidden" name="tolerance" class="historyToleranceInput" value="0.5"/>
                     <input type="submit" value="Simplify"/>
                 </form>

@@ -1,6 +1,7 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -38,6 +39,7 @@ class AdminSimplifyPlantingSitesController(
     private val dslContext: DSLContext,
     private val organizationsDao: OrganizationsDao,
     private val plantingSiteStore: PlantingSiteStore,
+    private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
 
@@ -187,242 +189,151 @@ class AdminSimplifyPlantingSitesController(
     return "/admin/simplifyPlantingSiteHistories"
   }
 
-  @PostMapping("/simplifyPlantingSites/{organizationId}/{plantingSiteId}")
-  fun simplifyPlantingSite(
-      @PathVariable organizationId: OrganizationId,
-      @PathVariable plantingSiteId: PlantingSiteId,
-      @RequestParam(required = false) tolerance: Double?,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      plantingSiteStore.upsertSimplifiedPlantingSite(plantingSiteId, tolerance)
-      redirectAttributes.successMessage = "Simplified planting site $plantingSiteId."
-    } catch (e: Exception) {
-      log.warn("Failed to simplify planting site $plantingSiteId", e)
-      redirectAttributes.failureMessage = "Failed to simplify planting site: ${e.message}"
-    }
-
-    return redirectToSimplifyPlantingSites(organizationId)
-  }
-
-  @PostMapping("/simplifyPlantingSites/{organizationId}")
-  fun simplifyAllPlantingSites(
-      @PathVariable organizationId: OrganizationId,
-      @RequestParam(required = false) tolerance: Double?,
-      @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val plantingSiteIds =
-        dslContext
-            .select(PLANTING_SITES.ID)
-            .from(PLANTING_SITES)
-            .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
-            .and(PLANTING_SITES.BOUNDARY.isNotNull)
-            .and(unsimplifiedSiteCondition(unsimplifiedOnly))
-            .orderBy(PLANTING_SITES.ID)
-            .fetch(PLANTING_SITES.ID.asNonNullable())
-
-    val failures = mutableListOf<PlantingSiteId>()
-    plantingSiteIds.forEach { plantingSiteId ->
-      try {
-        plantingSiteStore.upsertSimplifiedPlantingSite(plantingSiteId, tolerance)
-      } catch (e: Exception) {
-        log.warn("Failed to simplify planting site $plantingSiteId", e)
-        failures.add(plantingSiteId)
-      }
-    }
-
-    val successCount = plantingSiteIds.size - failures.size
-    if (failures.isEmpty()) {
-      redirectAttributes.successMessage = "Simplified $successCount planting site(s)."
-    } else {
-      redirectAttributes.failureMessage =
-          "Simplified $successCount of ${plantingSiteIds.size} planting site(s). " +
-              "Failed: ${failures.joinToString(", ")}"
-    }
-
-    return redirectToSimplifyPlantingSites(organizationId)
-  }
-
-  @PostMapping("/simplifyPlantingSites/{organizationId}/{plantingSiteId}/histories/{historyId}")
-  fun simplifyPlantingSiteHistory(
-      @PathVariable organizationId: OrganizationId,
-      @PathVariable plantingSiteId: PlantingSiteId,
-      @PathVariable historyId: PlantingSiteHistoryId,
-      @RequestParam(required = false) tolerance: Double?,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      plantingSiteStore.upsertSimplifiedPlantingSiteHistory(plantingSiteId, historyId, tolerance)
-      redirectAttributes.successMessage = "Simplified planting site history $historyId."
-    } catch (e: Exception) {
-      log.warn("Failed to simplify planting site history $historyId", e)
-      redirectAttributes.failureMessage = "Failed to simplify planting site history: ${e.message}"
-    }
-
-    return redirectToSimplifyPlantingSiteHistories(organizationId, plantingSiteId)
-  }
-
-  @PostMapping("/simplifyPlantingSites/{organizationId}/{plantingSiteId}/histories")
-  fun simplifyAllPlantingSiteHistories(
-      @PathVariable organizationId: OrganizationId,
-      @PathVariable plantingSiteId: PlantingSiteId,
-      @RequestParam(required = false) tolerance: Double?,
-      @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val historyIds =
-        dslContext
-            .select(PLANTING_SITE_HISTORIES.ID)
-            .from(PLANTING_SITE_HISTORIES)
-            .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId))
-            .and(unsimplifiedHistoryCondition(unsimplifiedOnly))
-            .orderBy(PLANTING_SITE_HISTORIES.ID.desc())
-            .fetch(PLANTING_SITE_HISTORIES.ID.asNonNullable())
-
-    val failures = mutableListOf<PlantingSiteHistoryId>()
-    historyIds.forEach { historyId ->
-      try {
-        plantingSiteStore.upsertSimplifiedPlantingSiteHistory(plantingSiteId, historyId, tolerance)
-      } catch (e: Exception) {
-        log.warn("Failed to simplify planting site history $historyId", e)
-        failures.add(historyId)
-      }
-    }
-
-    val successCount = historyIds.size - failures.size
-    if (failures.isEmpty()) {
-      redirectAttributes.successMessage =
-          "Simplified $successCount planting site history(ies) for site $plantingSiteId."
-    } else {
-      redirectAttributes.failureMessage =
-          "Simplified $successCount of ${historyIds.size} planting site history(ies). " +
-              "Failed: ${failures.joinToString(", ")}"
-    }
-
-    return redirectToSimplifyPlantingSiteHistories(organizationId, plantingSiteId)
-  }
-
-  @PostMapping("/simplifyPlantingSites/{organizationId}/histories")
-  fun simplifyAllOrganizationPlantingSiteHistories(
-      @PathVariable organizationId: OrganizationId,
-      @RequestParam(required = false) tolerance: Double?,
-      @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    val histories =
-        dslContext
-            .select(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID)
-            .from(PLANTING_SITE_HISTORIES)
-            .join(PLANTING_SITES)
-            .on(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-            .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
-            .and(unsimplifiedHistoryCondition(unsimplifiedOnly))
-            .orderBy(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID.desc())
-            .fetch { record ->
-              record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.asNonNullable()] to
-                  record[PLANTING_SITE_HISTORIES.ID.asNonNullable()]
-            }
-
-    val failures = mutableListOf<PlantingSiteHistoryId>()
-    histories.forEach { (plantingSiteId, historyId) ->
-      try {
-        plantingSiteStore.upsertSimplifiedPlantingSiteHistory(plantingSiteId, historyId, tolerance)
-      } catch (e: Exception) {
-        log.warn("Failed to simplify planting site history $historyId", e)
-        failures.add(historyId)
-      }
-    }
-
-    val successCount = histories.size - failures.size
-    if (failures.isEmpty()) {
-      redirectAttributes.successMessage =
-          "Simplified $successCount planting site history(ies) across the organization."
-    } else {
-      redirectAttributes.failureMessage =
-          "Simplified $successCount of ${histories.size} planting site history(ies). " +
-              "Failed: ${failures.joinToString(", ")}"
-    }
-
-    return redirectToSimplifyPlantingSites(organizationId)
-  }
-
   @PostMapping("/simplifyPlantingSites")
-  fun simplifyAllPlantingSitesGlobally(
+  fun simplifyPlantingSites(
+      @RequestParam(required = false) organizationId: OrganizationId?,
+      @RequestParam(required = false) plantingSiteId: PlantingSiteId?,
       @RequestParam(required = false) tolerance: Double?,
       @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
       redirectAttributes: RedirectAttributes,
   ): String {
     val plantingSiteIds =
-        dslContext
-            .select(PLANTING_SITES.ID)
-            .from(PLANTING_SITES)
-            .where(PLANTING_SITES.BOUNDARY.isNotNull)
-            .and(unsimplifiedSiteCondition(unsimplifiedOnly))
-            .orderBy(PLANTING_SITES.ID)
-            .fetch(PLANTING_SITES.ID.asNonNullable())
+        if (plantingSiteId != null) {
+          listOf(plantingSiteId)
+        } else {
+          dslContext
+              .select(PLANTING_SITES.ID)
+              .from(PLANTING_SITES)
+              .where(PLANTING_SITES.BOUNDARY.isNotNull)
+              .and(organizationId?.let(PLANTING_SITES.ORGANIZATION_ID::eq) ?: DSL.noCondition())
+              .and(unsimplifiedSiteCondition(unsimplifiedOnly))
+              .orderBy(PLANTING_SITES.ID)
+              .fetch(PLANTING_SITES.ID.asNonNullable())
+        }
 
-    val failures = mutableListOf<PlantingSiteId>()
-    plantingSiteIds.forEach { plantingSiteId ->
-      try {
-        plantingSiteStore.upsertSimplifiedPlantingSite(plantingSiteId, tolerance)
-      } catch (e: Exception) {
-        log.warn("Failed to simplify planting site $plantingSiteId", e)
-        failures.add(plantingSiteId)
+    val failures = mutableMapOf<PlantingSiteId, String?>()
+
+    systemUser.run {
+      plantingSiteIds.forEach { id ->
+        try {
+          plantingSiteStore.upsertSimplifiedPlantingSite(id, tolerance)
+        } catch (e: Exception) {
+          log.warn("Failed to simplify planting site $id", e)
+          failures[id] = e.message
+        }
       }
     }
 
     val successCount = plantingSiteIds.size - failures.size
-    if (failures.isEmpty()) {
-      redirectAttributes.successMessage =
-          "Simplified $successCount planting site(s) across all organizations."
+    if (plantingSiteId != null) {
+      if (failures.isEmpty()) {
+        redirectAttributes.successMessage = "Simplified planting site $plantingSiteId."
+      } else {
+        redirectAttributes.failureMessage = "Failed to simplify planting site:"
+      }
     } else {
-      redirectAttributes.failureMessage =
-          "Simplified $successCount of ${plantingSiteIds.size} planting site(s). " +
-              "Failed: ${failures.joinToString(", ")}"
+      if (failures.isEmpty()) {
+        redirectAttributes.successMessage = "Simplified $successCount planting site(s)."
+      } else {
+        redirectAttributes.failureMessage =
+            "Simplified $successCount of ${plantingSiteIds.size} planting site(s). Failed:"
+      }
     }
 
-    return redirectToManagePlantingSitesSimplification()
+    if (failures.isNotEmpty()) {
+      redirectAttributes.failureDetails = failures.map { (id, message) -> "$id: $message" }
+    }
+
+    return if (organizationId != null) {
+      redirectToSimplifyPlantingSites(organizationId)
+    } else {
+      redirectToManagePlantingSitesSimplification()
+    }
   }
 
   @PostMapping("/simplifyPlantingSites/histories")
-  fun simplifyAllPlantingSiteHistoriesGlobally(
+  fun simplifyPlantingSiteHistories(
+      @RequestParam(required = false) organizationId: OrganizationId?,
+      @RequestParam(required = false) plantingSiteId: PlantingSiteId?,
+      @RequestParam(required = false) historyId: PlantingSiteHistoryId?,
       @RequestParam(required = false) tolerance: Double?,
       @RequestParam(required = false) unsimplifiedOnly: Boolean = false,
       redirectAttributes: RedirectAttributes,
   ): String {
-    val histories =
-        dslContext
-            .select(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID)
-            .from(PLANTING_SITE_HISTORIES)
-            .where(unsimplifiedHistoryCondition(unsimplifiedOnly))
-            .orderBy(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID.desc())
-            .fetch { record ->
-              record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.asNonNullable()] to
-                  record[PLANTING_SITE_HISTORIES.ID.asNonNullable()]
-            }
+    val historyPairs: List<Pair<PlantingSiteId, PlantingSiteHistoryId>> =
+        if (historyId != null) {
+          requireNotNull(plantingSiteId) { "plantingSiteId is required when historyId is provided" }
+          listOf(plantingSiteId to historyId)
+        } else {
+          dslContext
+              .select(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID)
+              .from(PLANTING_SITE_HISTORIES)
+              .join(PLANTING_SITES)
+              .on(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+              .where(
+                  plantingSiteId?.let(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID::eq)
+                      ?: DSL.noCondition()
+              )
+              .and(organizationId?.let(PLANTING_SITES.ORGANIZATION_ID::eq) ?: DSL.noCondition())
+              .and(unsimplifiedHistoryCondition(unsimplifiedOnly))
+              .orderBy(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID, PLANTING_SITE_HISTORIES.ID.desc())
+              .fetch { record ->
+                record[PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.asNonNullable()] to
+                    record[PLANTING_SITE_HISTORIES.ID.asNonNullable()]
+              }
+        }
 
-    val failures = mutableListOf<PlantingSiteHistoryId>()
-    histories.forEach { (plantingSiteId, historyId) ->
-      try {
-        plantingSiteStore.upsertSimplifiedPlantingSiteHistory(plantingSiteId, historyId, tolerance)
-      } catch (e: Exception) {
-        log.warn("Failed to simplify planting site history $historyId", e)
-        failures.add(historyId)
+    val failures = mutableMapOf<PlantingSiteHistoryId, String?>()
+
+    systemUser.run {
+      historyPairs.forEach { (siteId, history) ->
+        try {
+          plantingSiteStore.upsertSimplifiedPlantingSiteHistory(siteId, history, tolerance)
+        } catch (e: Exception) {
+          log.warn("Failed to simplify planting site history $history", e)
+          failures[history] = e.message
+        }
       }
     }
 
-    val successCount = histories.size - failures.size
-    if (failures.isEmpty()) {
-      redirectAttributes.successMessage =
-          "Simplified $successCount planting site history(ies) across all organizations."
-    } else {
-      redirectAttributes.failureMessage =
-          "Simplified $successCount of ${histories.size} planting site history(ies). " +
-              "Failed: ${failures.joinToString(", ")}"
+    val successCount = historyPairs.size - failures.size
+    when {
+      historyId != null -> {
+        if (failures.isEmpty()) {
+          redirectAttributes.successMessage = "Simplified planting site history $historyId."
+        } else {
+          redirectAttributes.failureMessage = "Failed to simplify planting site history:"
+        }
+      }
+      plantingSiteId != null -> {
+        if (failures.isEmpty()) {
+          redirectAttributes.successMessage =
+              "Simplified $successCount planting site history(ies) for site $plantingSiteId."
+        } else {
+          redirectAttributes.failureMessage =
+              "Simplified $successCount of ${historyPairs.size} planting site history(ies). Failed:"
+        }
+      }
+      else -> {
+        if (failures.isEmpty()) {
+          redirectAttributes.successMessage = "Simplified $successCount planting site history(ies)."
+        } else {
+          redirectAttributes.failureMessage =
+              "Simplified $successCount of ${historyPairs.size} planting site history(ies). Failed:"
+        }
+      }
     }
 
-    return redirectToManagePlantingSitesSimplification()
+    if (failures.isNotEmpty()) {
+      redirectAttributes.failureDetails = failures.map { (id, message) -> "$id: $message" }
+    }
+
+    return when {
+      organizationId != null && plantingSiteId != null ->
+          redirectToSimplifyPlantingSiteHistories(organizationId, plantingSiteId)
+      organizationId != null -> redirectToSimplifyPlantingSites(organizationId)
+      else -> redirectToManagePlantingSitesSimplification()
+    }
   }
 
   private fun fetchOrganizationSiteStats(): Map<OrganizationId, SimplificationStats> {
