@@ -5,6 +5,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.daos.WithdrawalPhotosDao
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
@@ -15,6 +16,7 @@ import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.NewFileMetadata
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.nursery.model.NurseryWithdrawalPhotoModel
 import jakarta.inject.Named
 import java.io.InputStream
 import org.jooq.Condition
@@ -68,14 +70,22 @@ class WithdrawalPhotoService(
     return thumbnailService.readFile(fileId, maxWidth, maxHeight)
   }
 
-  fun listPhotos(withdrawalId: WithdrawalId): List<FileId> {
+  fun listPhotos(withdrawalId: WithdrawalId): List<NurseryWithdrawalPhotoModel> {
     requirePermissions { readWithdrawal(withdrawalId) }
 
     return dslContext
-        .select(WITHDRAWAL_PHOTOS.FILE_ID)
+        .select(FILES.ID, FILES.CAPTURED_LOCAL_TIME, FILES.GEOLOCATION)
         .from(WITHDRAWAL_PHOTOS)
+        .join(FILES)
+        .on(WITHDRAWAL_PHOTOS.FILE_ID.eq(FILES.ID))
         .where(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID.eq(withdrawalId))
-        .fetch(WITHDRAWAL_PHOTOS.FILE_ID.asNonNullable())
+        .fetch { record ->
+          NurseryWithdrawalPhotoModel(
+              capturedTime = record[FILES.CAPTURED_LOCAL_TIME],
+              fileId = record[FILES.ID]!!,
+              gpsCoordinates = record[FILES.GEOLOCATION]?.centroid,
+          )
+        }
   }
 
   /** Deletes all the photos from all the withdrawals owned by an organization. */

@@ -36,6 +36,7 @@ import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
+import com.terraformation.backend.nursery.model.NurseryWithdrawalPhotoModel
 import com.terraformation.backend.tracking.api.DeliveryPayload
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.model.DeliveryModel
@@ -46,6 +47,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.validation.constraints.Min
 import jakarta.ws.rs.QueryParam
 import java.time.LocalDate
+import java.time.LocalDateTime
+import org.locationtech.jts.geom.Point
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -345,7 +348,19 @@ data class GetNurseryWithdrawalResponsePayload(
 
 data class CreateNurseryWithdrawalPhotoResponsePayload(val id: FileId) : SuccessResponsePayload
 
-data class NurseryWithdrawalPhotoPayload(val id: FileId)
+data class NurseryWithdrawalPhotoPayload(
+    val capturedTime: LocalDateTime?,
+    val id: FileId,
+    val gpsCoordinates: Point?,
+) {
+  constructor(
+      model: NurseryWithdrawalPhotoModel
+  ) : this(
+      capturedTime = model.capturedTime,
+      id = model.fileId,
+      gpsCoordinates = model.gpsCoordinates,
+  )
+}
 
 data class ListWithdrawalPhotosResponsePayload(val photos: List<NurseryWithdrawalPhotoPayload>) :
     SuccessResponsePayload
