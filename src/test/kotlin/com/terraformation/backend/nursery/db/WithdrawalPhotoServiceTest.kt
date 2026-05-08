@@ -18,11 +18,16 @@ import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.nursery.model.NurseryWithdrawalPhotoModel
 import com.terraformation.backend.onePixelPng
+import com.terraformation.backend.point
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneOffset
 import kotlin.random.Random
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -122,11 +127,49 @@ internal class WithdrawalPhotoServiceTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `listPhotos returns list of withdrawal photo IDs for correct withdrawal`() {
-    val fileIds = setOf(storePhoto(), storePhoto())
     val otherWithdrawalId = insertNurseryWithdrawal()
     storePhoto(otherWithdrawalId)
 
-    assertEquals(fileIds, service.listPhotos(withdrawalId).toSet())
+    val localDateTime1 = LocalDateTime.of(LocalDate.of(2026, 5, 7), LocalTime.MIDNIGHT)
+    val gpsCoordinate1 = point(1)
+    val fileId1 = insertFile(capturedLocalTime = localDateTime1, geolocation = gpsCoordinate1)
+    insertNurseryWithdrawalPhoto(fileId = fileId1, withdrawalId = withdrawalId)
+
+    val localDateTime2 = LocalDateTime.of(LocalDate.of(2026, 5, 8), LocalTime.NOON)
+    val gpsCoordinate2 = point(2)
+    val fileId2 =
+        insertFile(
+            capturedLocalTime = localDateTime2,
+            geolocation = gpsCoordinate2,
+        )
+    insertNurseryWithdrawalPhoto(fileId = fileId2, withdrawalId = withdrawalId)
+
+    val fileId3 = insertFile(fileName = "missing metadata")
+    insertNurseryWithdrawalPhoto(fileId = fileId3, withdrawalId = withdrawalId)
+
+    val otherFileId = insertFile()
+    insertNurseryWithdrawalPhoto(fileId = otherFileId, withdrawalId = otherWithdrawalId)
+
+    assertEquals(
+        setOf(
+            NurseryWithdrawalPhotoModel(
+                capturedTime = localDateTime1,
+                fileId = fileId1,
+                gpsCoordinates = gpsCoordinate1,
+            ),
+            NurseryWithdrawalPhotoModel(
+                capturedTime = localDateTime2,
+                fileId = fileId2,
+                gpsCoordinates = gpsCoordinate2,
+            ),
+            NurseryWithdrawalPhotoModel(
+                capturedTime = null,
+                fileId = fileId3,
+                gpsCoordinates = null,
+            ),
+        ),
+        service.listPhotos(withdrawalId).toSet(),
+    )
   }
 
   @Test

@@ -373,6 +373,7 @@ import com.terraformation.backend.db.nursery.tables.daos.WithdrawalPhotosDao
 import com.terraformation.backend.db.nursery.tables.pojos.BatchSubLocationsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalPhotosRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.AccessionState
@@ -2155,6 +2156,20 @@ abstract class DatabaseBackedTest {
     nurseryWithdrawalsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.withdrawalIds.add(it) }
+  }
+
+  fun insertNurseryWithdrawalPhoto(
+      row: WithdrawalPhotosRow = WithdrawalPhotosRow(),
+      fileId: FileId = inserted.fileId,
+      withdrawalId: WithdrawalId = inserted.withdrawalId,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            fileId = fileId,
+            withdrawalId = withdrawalId,
+        )
+
+    withdrawalPhotosDao.insert(rowWithDefaults)
   }
 
   fun insertSeedbankWithdrawal(
