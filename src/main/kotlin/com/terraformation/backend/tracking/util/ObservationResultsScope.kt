@@ -274,6 +274,15 @@ class ObservationResultsStratum(
       plotId = plotId,
   )
 
+  constructor(
+      stratumId: StratumId
+  ) : this(
+      DSL.select(STRATUM_HISTORIES.ID)
+          .from(STRATUM_HISTORIES)
+          .where(STRATUM_HISTORIES.STRATUM_ID.eq(stratumId)),
+      stratumId,
+  )
+
   override val scopeId: Select<Record1<StratumId?>> =
       if (stratumId != null) {
         DSL.select(DSL.inline(stratumId))
@@ -402,8 +411,10 @@ class ObservationResultsStratum(
       )
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
-      permPlotsTable.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID.`in`(
-          stratumHistorySelect
+      permPlotsTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.`in`(
+          DSL.select(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID)
+              .from(SUBSTRATUM_HISTORIES)
+              .where(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.`in`(stratumHistorySelect))
       )
 }
 
