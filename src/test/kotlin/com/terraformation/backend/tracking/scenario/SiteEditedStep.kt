@@ -6,6 +6,8 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
@@ -18,6 +20,7 @@ import com.terraformation.backend.tracking.model.NewSubstratumModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteModel
 import com.terraformation.backend.util.toMultiPolygon
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.locationtech.jts.geom.MultiPolygon
 
 class SiteEditedStep(
@@ -26,10 +29,29 @@ class SiteEditedStep(
 ) : NodeWithChildren<SiteEditedStep.Stratum>() {
   var boundary: MultiPolygon = rectangle(0)
 
+  /**
+   * Numbers of strata that should be deleted by this edit. Declaring a stratum here is purely
+   * documentation — the actual deletion is driven by the planting site edit calculator: any stratum
+   * that is not redeclared in this [siteEdited] block is deleted. After the edit applies, we verify
+   * that each declared stratum has indeed been removed from the database.
+   */
+  private val deletedStratumNumbers = mutableSetOf<Int>()
+
+  /** See [deletedStratumNumbers]. */
+  private val deletedSubstratumNumbers = mutableSetOf<Int>()
+
   private val test: DatabaseBackedTest
     get() = scenario.test
 
   fun stratum(number: Int, init: Stratum.() -> Unit) = initChild(Stratum(number), init)
+
+  fun stratumDeleted(number: Int) {
+    deletedStratumNumbers.add(number)
+  }
+
+  fun substratumDeleted(number: Int) {
+    deletedSubstratumNumbers.add(number)
+  }
 
   override fun finish() {
     children.forEach { boundary = boundary.union(it.boundary).toMultiPolygon() }
@@ -66,6 +88,30 @@ class SiteEditedStep(
               scenario.monitoringPlotSubstratumIds[monitoringPlotId] = substratumId
             }
           }
+    }
+
+    deletedStratumNumbers.forEach { number ->
+      val stratumId =
+          scenario.stratumIds[number]
+              ?: throw IllegalArgumentException(
+                  "Stratum $number was not declared before being deleted"
+              )
+      assertFalse(
+          test.dslContext.fetchExists(STRATA, STRATA.ID.eq(stratumId)),
+          "Stratum $number ($stratumId) should have been deleted",
+      )
+    }
+
+    deletedSubstratumNumbers.forEach { number ->
+      val substratumId =
+          scenario.substratumIds[number]
+              ?: throw IllegalArgumentException(
+                  "Substratum $number was not declared before being deleted"
+              )
+      assertFalse(
+          test.dslContext.fetchExists(SUBSTRATA, SUBSTRATA.ID.eq(substratumId)),
+          "Substratum $number ($substratumId) should have been deleted",
+      )
     }
   }
 

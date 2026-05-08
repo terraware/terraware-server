@@ -133,6 +133,7 @@ class ObservationScenario(
   val observationIds = mutableMapOf<Int, ObservationId>()
   val speciesIds = mutableMapOf<Int, SpeciesId>()
   val stratumIds = mutableMapOf<Int, StratumId>()
+  val substratumIds = mutableMapOf<Int, SubstratumId>()
   lateinit var plantingSiteId: PlantingSiteId
 
   fun expectResults(
