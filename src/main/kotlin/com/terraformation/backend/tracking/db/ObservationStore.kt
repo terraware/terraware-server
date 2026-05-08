@@ -2824,8 +2824,8 @@ class ObservationStore(
    * Computes the variance of survival rates weighted by planting density
    * https://en.wikipedia.org/wiki/Reduced_chi-squared_statistic
    */
-  private fun <ID : Any> getSurvivalRateWeightedStandardDeviation(
-      updateScope: ObservationResultsScope<ID>,
+  private fun <ID : Any, HistoryId : Any> getSurvivalRateWeightedStandardDeviation(
+      updateScope: ObservationResultsScope<ID, HistoryId>,
   ): Field<Int> {
     val plotResults = OBSERVATION_PLOT_RESULTS.`as`("plotResults")
     val survivalRate = plotResults.SURVIVAL_RATE.cast(SQLDataType.NUMERIC)
