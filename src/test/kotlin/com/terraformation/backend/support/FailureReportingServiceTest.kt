@@ -1,5 +1,6 @@
 package com.terraformation.backend.support
 
+import com.terraformation.backend.auth.CurrentUserHolder
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.db.ProjectStore
@@ -19,7 +20,8 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.Instant
-import java.time.ZoneOffset
+import java.time.ZoneId
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -45,43 +47,65 @@ class FailureReportingServiceTest {
           userStore,
       )
 
+  private val fileId = FileId(100)
+
+  private val orgModel: OrganizationModel = mockk()
+  private val organizationId = OrganizationId(200)
+  private val orgName = "Test Organization"
+
+  private val uploadedByUser: TerrawareUser = mockk()
+  private val uploadedByUserId = UserId(300)
+  private val uploadedByUserEmail = "uploaded@example.com"
+
+  private val currentUser: TerrawareUser = mockk()
+  private val currentUserId = UserId(301)
+  private val currentUserEmail = "current@example.com"
+
+  private val videoUploadedTime = Instant.parse("2026-04-16T10:00:00Z")
+
+  @BeforeEach
+  fun setup() {
+    every { organizationStore.fetchOneById(organizationId) } returns orgModel
+    every { orgModel.name } returns orgName
+    every { orgModel.timeZone } returns ZoneId.of("UTC")
+
+    every { userStore.fetchOneById(uploadedByUserId) } returns uploadedByUser
+    every { uploadedByUser.email } returns uploadedByUserEmail
+    every { uploadedByUser.userId } returns uploadedByUserId
+
+    every { userStore.fetchOneById(currentUserId) } returns currentUser
+    every { currentUser.email } returns currentUserEmail
+    every { currentUser.userId } returns currentUserId
+
+    CurrentUserHolder.setCurrentUser(currentUser)
+
+    every {
+      supportService.submitServiceRequest(any(), any(), any(), any(), any(), any(), any())
+    } returns "TEST-123"
+
+    every { config.atlassian } returns
+        TerrawareServerConfig.AtlassianConfig(
+            enabled = true,
+            account = "test-account",
+            apiHost = "https://test.atlassian.net",
+            apiToken = "test-token",
+            serviceDeskKey = "TEST",
+        )
+  }
+
+  @AfterEach
+  fun cleanup() {
+    CurrentUserHolder.clearCurrentUser()
+  }
+
   @Nested
   inner class OnSplatMarkedNeedsAttention {
-    private val fileId = FileId(100)
-    private val organizationId = OrganizationId(200)
-    private val orgName = "Test Organization"
-    private val userEmail = "user@example.com"
-    private val uploadedByUserId = UserId(300)
-    private val markedByUserId = UserId(301)
-    private val videoUploadedTime = Instant.parse("2026-04-16T10:00:00Z")
-
-    @BeforeEach
-    fun setUp() {
-      val orgModel: OrganizationModel = mockk()
-      every { orgModel.name } returns orgName
-      every { organizationStore.fetchOneById(organizationId) } returns orgModel
-
-      val markedByUser: TerrawareUser = mockk()
-      every { markedByUser.email } returns userEmail
-      every { userStore.fetchOneById(markedByUserId) } returns markedByUser
-    }
-
     @Test
     fun `creates Jira ticket with correct content`() {
-      every { config.atlassian } returns
-          TerrawareServerConfig.AtlassianConfig(
-              enabled = true,
-              account = "test-account",
-              apiHost = "https://test.atlassian.net",
-              apiToken = "test-token",
-              serviceDeskKey = "TEST",
-          )
-      every { supportService.submitServiceRequest(any(), any(), any()) } returns "TEST-123"
-
       service.on(
           SplatMarkedNeedsAttentionEvent(
               fileId = fileId,
-              markedByUserId = markedByUserId,
+              markedByUserId = currentUserId,
               organizationId = organizationId,
               uploadedByUserId = uploadedByUserId,
               videoUploadedTime = videoUploadedTime,
@@ -103,11 +127,12 @@ class FailureReportingServiceTest {
                   assertTrue(description.contains("$organizationId")) {
                     "Description should contain org ID: $description"
                   }
-                  assertTrue(description.contains(userEmail)) {
+                  assertTrue(description.contains(currentUserEmail)) {
                     "Description should contain user email: $description"
                   }
                 },
             skipReceiptEmail = true,
+            userId = currentUserId,
         )
       }
     }
@@ -119,53 +144,24 @@ class FailureReportingServiceTest {
       service.on(
           SplatMarkedNeedsAttentionEvent(
               fileId = fileId,
-              markedByUserId = markedByUserId,
+              markedByUserId = currentUserId,
               organizationId = organizationId,
               uploadedByUserId = uploadedByUserId,
               videoUploadedTime = videoUploadedTime,
           )
       )
 
-      verify(exactly = 0) { supportService.submitServiceRequest(any(), any(), any()) }
+      assertSupportRequestNotSubmitted()
     }
   }
 
   @Nested
   inner class OnSplatDeleted {
-    private val fileId = FileId(100)
-    private val organizationId = OrganizationId(200)
-    private val orgName = "Test Organization"
-    private val userEmail = "user@example.com"
-    private val uploadedByUserId = UserId(300)
-    private val deletedByUserId = UserId(301)
-    private val videoUploadedTime = Instant.parse("2026-04-16T10:00:00Z")
-
-    @BeforeEach
-    fun setUp() {
-      val orgModel: OrganizationModel = mockk()
-      every { orgModel.name } returns orgName
-      every { organizationStore.fetchOneById(organizationId) } returns orgModel
-
-      val deletedByUser: TerrawareUser = mockk()
-      every { deletedByUser.email } returns userEmail
-      every { userStore.fetchOneById(deletedByUserId) } returns deletedByUser
-    }
-
     @Test
     fun `creates Jira ticket with correct content`() {
-      every { config.atlassian } returns
-          TerrawareServerConfig.AtlassianConfig(
-              enabled = true,
-              account = "test-account",
-              apiHost = "https://test.atlassian.net",
-              apiToken = "test-token",
-              serviceDeskKey = "TEST",
-          )
-      every { supportService.submitServiceRequest(any(), any(), any()) } returns "TEST-123"
-
       service.on(
           SplatDeletedEvent(
-              deletedByUserId = deletedByUserId,
+              deletedByUserId = currentUserId,
               fileId = fileId,
               organizationId = organizationId,
               uploadedByUserId = uploadedByUserId,
@@ -185,10 +181,11 @@ class FailureReportingServiceTest {
 
             Org: $orgName (ID: $organizationId)
 
-            User who removed walkthrough: $userEmail
+            User who removed walkthrough: $currentUserEmail
             """
                     .trimIndent(),
             skipReceiptEmail = true,
+            userId = currentUserId,
         )
       }
     }
@@ -199,7 +196,7 @@ class FailureReportingServiceTest {
 
       service.on(
           SplatDeletedEvent(
-              deletedByUserId = deletedByUserId,
+              deletedByUserId = currentUserId,
               fileId = fileId,
               organizationId = organizationId,
               uploadedByUserId = uploadedByUserId,
@@ -207,43 +204,14 @@ class FailureReportingServiceTest {
           )
       )
 
-      verify(exactly = 0) { supportService.submitServiceRequest(any(), any(), any()) }
+      assertSupportRequestNotSubmitted()
     }
   }
 
   @Nested
   inner class OnSplatGenerationFailed {
-    private val fileId = FileId(100)
-    private val organizationId = OrganizationId(200)
-    private val orgName = "Test Organization"
-    private val userEmail = "user@example.com"
-    private val uploadedByUserId = UserId(300)
-    private val videoUploadedTime = Instant.parse("2026-04-16T10:00:00Z")
-
-    @BeforeEach
-    fun setUp() {
-      val orgModel: OrganizationModel = mockk()
-      every { orgModel.name } returns orgName
-      every { orgModel.timeZone } returns ZoneOffset.UTC
-      every { organizationStore.fetchOneById(organizationId) } returns orgModel
-
-      val uploadedByUser: TerrawareUser = mockk()
-      every { uploadedByUser.email } returns userEmail
-      every { userStore.fetchOneById(uploadedByUserId) } returns uploadedByUser
-    }
-
     @Test
     fun `creates Jira ticket with correct content`() {
-      every { config.atlassian } returns
-          TerrawareServerConfig.AtlassianConfig(
-              enabled = true,
-              account = "test-account",
-              apiHost = "https://test.atlassian.net",
-              apiToken = "test-token",
-              serviceDeskKey = "TEST",
-          )
-      every { supportService.submitServiceRequest(any(), any(), any()) } returns "TEST-123"
-
       service.on(
           SplatGenerationFailedEvent(
               fileId = fileId,
@@ -265,12 +233,13 @@ class FailureReportingServiceTest {
 
             Org: ${orgName} (ID: ${organizationId})
             
-            User who uploaded: $userEmail
+            User who uploaded: $uploadedByUserEmail
             
             Upload date: 2026-04-16
             """
                     .trimIndent(),
             skipReceiptEmail = true,
+            userId = uploadedByUserId,
         )
       }
     }
@@ -288,7 +257,13 @@ class FailureReportingServiceTest {
           )
       )
 
-      verify(exactly = 0) { supportService.submitServiceRequest(any(), any(), any()) }
+      assertSupportRequestNotSubmitted()
+    }
+  }
+
+  private fun assertSupportRequestNotSubmitted() {
+    verify(exactly = 0) {
+      supportService.submitServiceRequest(any(), any(), any(), any(), any(), any(), any())
     }
   }
 }

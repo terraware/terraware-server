@@ -139,7 +139,7 @@ class FailureReportingService(
   fun on(event: SplatGenerationFailedEvent) {
     try {
       val organization = organizationStore.fetchOneById(event.organizationId)
-      val userEmail = systemUser.run { userStore.fetchOneById(event.uploadedByUserId).email }
+      val user = systemUser.run { userStore.fetchOneById(event.uploadedByUserId) }
 
       val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
@@ -154,7 +154,7 @@ class FailureReportingService(
 
             Org: ${organization.name} (ID: ${event.organizationId})
             
-            User who uploaded: $userEmail
+            User who uploaded: ${user.email}
             
             Upload date: $uploadDate
           """
@@ -166,6 +166,7 @@ class FailureReportingService(
             summary = "Virtual walkthrough processing failed",
             description = description,
             skipReceiptEmail = true,
+            userId = user.userId,
         )
       } else {
         log.info("Atlassian integration disabled; would file support ticket:\n$description")
