@@ -969,7 +969,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .where(
-                  SUBSTRATUM_ID.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID)
+                  SUBSTRATUM_HISTORY_ID.eq(SUBSTRATUM_HISTORIES.ID)
                       .or(permSubstratumCol.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
                       .or(tempSubstratumCol.eq(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID))
               )
@@ -1252,7 +1252,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .where(
-                  STRATUM_ID.eq(STRATUM_HISTORIES.STRATUM_ID)
+                  STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID)
                       .or(permStratumCol.eq(STRATUM_HISTORIES.STRATUM_ID))
                       .or(tempStratumCol.eq(STRATUM_HISTORIES.STRATUM_ID))
               )
@@ -1566,7 +1566,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                       .and(OBSERVATION_ID.eq(OBSERVATIONS.ID))
               )
               .where(
-                  PLANTING_SITE_ID.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID)
+                  PLANTING_SITE_HISTORY_ID.eq(PLANTING_SITE_HISTORIES.ID)
                       .or(permSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
                       .or(tempSiteCol.eq(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID))
               )

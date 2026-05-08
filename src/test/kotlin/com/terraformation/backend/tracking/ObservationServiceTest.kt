@@ -2520,64 +2520,69 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val plotSpecies1Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId,
-              plotId,
-              speciesId1,
-              null,
-              Known,
-              2,
-              1,
-              1,
-              0,
-          )
+                  observationId,
+                  plotId,
+                  speciesId1,
+                  null,
+                  Known,
+                  2,
+                  1,
+                  1,
+                  0,
+              )
+              .copy(monitoringPlotHistoryId = latestPlotHistoryId)
       val plotSpecies2Totals =
           ObservedPlotSpeciesTotalsRow(
-              observationId,
-              plotId,
-              speciesId2,
-              null,
-              Known,
-              0,
-              0,
-              1,
-              0,
-          )
+                  observationId,
+                  plotId,
+                  speciesId2,
+                  null,
+                  Known,
+                  0,
+                  0,
+                  1,
+                  0,
+              )
+              .copy(monitoringPlotHistoryId = latestPlotHistoryId)
       val plotOther1Total =
           ObservedPlotSpeciesTotalsRow(
-              observationId,
-              plotId,
-              null,
-              "Other 1",
-              Other,
-              0,
-              0,
-              1,
-              0,
-          )
+                  observationId,
+                  plotId,
+                  null,
+                  "Other 1",
+                  Other,
+                  0,
+                  0,
+                  1,
+                  0,
+              )
+              .copy(monitoringPlotHistoryId = latestPlotHistoryId)
       val plotOther2Total =
           ObservedPlotSpeciesTotalsRow(
-              observationId,
-              plotId,
-              null,
-              "Other 2",
-              Other,
-              0,
-              1,
-              0,
-              0,
-          )
+                  observationId,
+                  plotId,
+                  null,
+                  "Other 2",
+                  Other,
+                  0,
+                  1,
+                  0,
+                  0,
+              )
+              .copy(monitoringPlotHistoryId = latestPlotHistoryId)
       val plotUnknownTotal =
           ObservedPlotSpeciesTotalsRow(
-              observationId,
-              plotId,
-              null,
-              null,
-              Unknown,
-              1,
-              0,
-              0,
-              0,
-          )
+                  observationId,
+                  plotId,
+                  null,
+                  null,
+                  Unknown,
+                  1,
+                  0,
+                  0,
+                  0,
+              )
+              .copy(monitoringPlotHistoryId = latestPlotHistoryId)
 
       helper.assertTotals(
           setOf(

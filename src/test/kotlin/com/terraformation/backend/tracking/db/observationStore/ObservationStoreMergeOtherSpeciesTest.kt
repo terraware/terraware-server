@@ -164,11 +164,13 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
         ),
     )
 
+    val monitoringPlotHistoryId = inserted.monitoringPlotHistoryId
     val expectedPlotsBeforeMerge =
         listOf(
             ObservedPlotSpeciesTotalsRecord(
                 observationId = observationId1,
                 monitoringPlotId = monitoringPlotId,
+                monitoringPlotHistoryId = monitoringPlotHistoryId,
                 speciesId = speciesId,
                 speciesName = null,
                 certaintyId = RecordedSpeciesCertainty.Known,
@@ -181,6 +183,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             ObservedPlotSpeciesTotalsRecord(
                 observationId = observationId1,
                 monitoringPlotId = monitoringPlotId,
+                monitoringPlotHistoryId = monitoringPlotHistoryId,
                 speciesId = null,
                 speciesName = "Merge",
                 certaintyId = RecordedSpeciesCertainty.Other,
@@ -192,6 +195,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             ObservedPlotSpeciesTotalsRecord(
                 observationId = observationId2,
                 monitoringPlotId = monitoringPlotId,
+                monitoringPlotHistoryId = monitoringPlotHistoryId,
                 speciesId = speciesId,
                 speciesName = null,
                 certaintyId = RecordedSpeciesCertainty.Known,
@@ -204,6 +208,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             ObservedPlotSpeciesTotalsRecord(
                 observationId = observationId2,
                 monitoringPlotId = monitoringPlotId,
+                monitoringPlotHistoryId = monitoringPlotHistoryId,
                 speciesId = null,
                 speciesName = "Merge",
                 certaintyId = RecordedSpeciesCertainty.Other,
@@ -285,6 +290,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             ObservedPlotSpeciesTotalsRecord(
                 observationId = observationId1,
                 monitoringPlotId = monitoringPlotId,
+                monitoringPlotHistoryId = inserted.monitoringPlotHistoryId,
                 speciesId = speciesId,
                 speciesName = null,
                 certaintyId = RecordedSpeciesCertainty.Known,
@@ -296,6 +302,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
             ObservedPlotSpeciesTotalsRecord(
                 observationId = observationId1,
                 monitoringPlotId = monitoringPlotId,
+                monitoringPlotHistoryId = inserted.monitoringPlotHistoryId,
                 speciesId = null,
                 speciesName = "Merge",
                 certaintyId = RecordedSpeciesCertainty.Other,
@@ -334,6 +341,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
       ObservedSubstratumSpeciesTotalsRecord(
           observationId = observationId,
           substratumId = substratumId,
+          substratumHistoryId = inserted.substratumHistoryId,
           speciesId = speciesId,
           speciesName = speciesName,
           certaintyId = certaintyId,
@@ -348,6 +356,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
       ObservedStratumSpeciesTotalsRecord(
           observationId = observationId,
           stratumId = stratumId,
+          stratumHistoryId = inserted.stratumHistoryId,
           speciesId = speciesId,
           speciesName = speciesName,
           certaintyId = certaintyId,
@@ -364,6 +373,7 @@ class ObservationStoreMergeOtherSpeciesTest : BaseObservationStoreTest() {
       ObservedSiteSpeciesTotalsRecord(
           observationId = observationId,
           plantingSiteId = plantingSiteId,
+          plantingSiteHistoryId = inserted.plantingSiteHistoryId,
           speciesId = speciesId,
           speciesName = speciesName,
           certaintyId = certaintyId,

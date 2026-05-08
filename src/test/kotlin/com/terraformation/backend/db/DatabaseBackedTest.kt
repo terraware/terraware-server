@@ -507,6 +507,8 @@ import com.terraformation.backend.db.tracking.tables.pojos.StratumT0TempDensitie
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
@@ -515,7 +517,9 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRA
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
@@ -549,6 +553,7 @@ import org.jooq.Table
 import org.jooq.TableRecord
 import org.jooq.UpdatableRecord
 import org.jooq.impl.DAOImpl
+import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
@@ -2335,7 +2340,12 @@ abstract class DatabaseBackedTest {
 
     plantingSiteHistoriesDao.insert(row)
 
-    return row.id!!.also { inserted.plantingSiteHistoryIds.add(it) }
+    return row.id!!.also {
+      inserted.plantingSiteHistoryIds.add(it)
+      inserted.plantingSiteHistoryIdsByPlantingSiteId
+          .getOrPut(plantingSiteId) { mutableListOf() }
+          .add(it)
+    }
   }
 
   fun insertPlantingSeason(
@@ -2561,7 +2571,10 @@ abstract class DatabaseBackedTest {
 
     stratumHistoriesDao.insert(row)
 
-    return row.id!!.also { inserted.stratumHistoryIds.add(it) }
+    return row.id!!.also {
+      inserted.stratumHistoryIds.add(it)
+      inserted.stratumHistoryIdsByStratumId.getOrPut(stratumId) { mutableListOf() }.add(it)
+    }
   }
 
   private var nextSubstratumNumber: Int = 1
@@ -2647,7 +2660,14 @@ abstract class DatabaseBackedTest {
 
     substratumHistoriesDao.insert(row)
 
-    return row.id!!.also { inserted.substratumHistoryIds.add(it) }
+    return row.id!!.also {
+      inserted.substratumHistoryIds.add(it)
+      if (substratumId != null) {
+        inserted.substratumHistoryIdsBySubstratumId
+            .getOrPut(substratumId) { mutableListOf() }
+            .add(it)
+      }
+    }
   }
 
   private var nextModuleNumber: Int = 1
@@ -2777,7 +2797,12 @@ abstract class DatabaseBackedTest {
 
     monitoringPlotHistoriesDao.insert(row)
 
-    return row.id!!.also { inserted.monitoringPlotHistoryIds.add(it) }
+    return row.id!!.also {
+      inserted.monitoringPlotHistoryIds.add(it)
+      inserted.monitoringPlotHistoryIdsByMonitoringPlotId
+          .getOrPut(monitoringPlotId) { mutableListOf() }
+          .add(it)
+    }
   }
 
   fun insertMonitoringPlotOverlap(
@@ -3435,6 +3460,19 @@ abstract class DatabaseBackedTest {
   fun insertObservedPlotSpeciesTotals(
       observationId: ObservationId = inserted.observationId,
       monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      monitoringPlotHistoryId: MonitoringPlotHistoryId =
+          dslContext
+              .select(MONITORING_PLOT_HISTORIES.ID)
+              .from(MONITORING_PLOT_HISTORIES)
+              .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
+              .and(
+                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                      DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+                          .from(OBSERVATIONS)
+                          .where(OBSERVATIONS.ID.eq(observationId))
+                  )
+              )
+              .fetchOne(MONITORING_PLOT_HISTORIES.ID) ?: inserted.monitoringPlotHistoryId,
       certainty: RecordedSpeciesCertainty = RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
           if (certainty == RecordedSpeciesCertainty.Known) {
@@ -3458,6 +3496,7 @@ abstract class DatabaseBackedTest {
       dslContext
           .insertInto(this)
           .set(OBSERVATION_ID, observationId)
+          .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
           .set(MONITORING_PLOT_ID, monitoringPlotId)
           .set(CERTAINTY_ID, certainty)
           .set(SPECIES_ID, speciesId)
@@ -3474,7 +3513,26 @@ abstract class DatabaseBackedTest {
   fun insertObservedSubstratumSpeciesTotals(
       row: ObservedSubstratumSpeciesTotalsRow = ObservedSubstratumSpeciesTotalsRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
-      substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
+      substratumId: SubstratumId? = row.substratumId ?: inserted.substratumId,
+      substratumHistoryId: SubstratumHistoryId =
+          row.substratumHistoryId
+              ?: substratumId?.let { sId ->
+                dslContext
+                    .select(SUBSTRATUM_HISTORIES.ID)
+                    .from(SUBSTRATUM_HISTORIES)
+                    .join(STRATUM_HISTORIES)
+                    .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+                    .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(sId))
+                    .and(
+                        STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                            DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+                                .from(OBSERVATIONS)
+                                .where(OBSERVATIONS.ID.eq(observationId))
+                        )
+                    )
+                    .fetchOne(SUBSTRATUM_HISTORIES.ID)
+              }
+              ?: inserted.substratumHistoryId,
       certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
           row.speciesId
@@ -3499,6 +3557,7 @@ abstract class DatabaseBackedTest {
       dslContext
           .insertInto(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
           .set(OBSERVATION_ID, observationId)
+          .set(SUBSTRATUM_HISTORY_ID, substratumHistoryId)
           .set(SUBSTRATUM_ID, substratumId)
           .set(CERTAINTY_ID, certainty)
           .set(SPECIES_ID, speciesId)
@@ -3514,6 +3573,14 @@ abstract class DatabaseBackedTest {
   fun insertObservedSiteSpeciesTotals(
       row: ObservedSiteSpeciesTotalsRow = ObservedSiteSpeciesTotalsRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
+      plantingSiteHistoryId: PlantingSiteHistoryId =
+          row.plantingSiteHistoryId
+              ?: dslContext
+                  .select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+                  .from(OBSERVATIONS)
+                  .where(OBSERVATIONS.ID.eq(observationId))
+                  .fetchOne(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+              ?: inserted.plantingSiteHistoryId,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
@@ -3539,6 +3606,7 @@ abstract class DatabaseBackedTest {
       dslContext
           .insertInto(OBSERVED_SITE_SPECIES_TOTALS)
           .set(OBSERVATION_ID, observationId)
+          .set(PLANTING_SITE_HISTORY_ID, plantingSiteHistoryId)
           .set(PLANTING_SITE_ID, plantingSiteId)
           .set(CERTAINTY_ID, certainty)
           .set(SPECIES_ID, speciesId)
@@ -5530,6 +5598,8 @@ abstract class DatabaseBackedTest {
     val internalTagIds = mutableListOf<InternalTagId>()
     val moduleIds = mutableListOf<ModuleId>()
     val monitoringPlotHistoryIds = mutableListOf<MonitoringPlotHistoryId>()
+    val monitoringPlotHistoryIdsByMonitoringPlotId =
+        mutableMapOf<MonitoringPlotId, MutableList<MonitoringPlotHistoryId>>()
     val monitoringPlotIds = mutableListOf<MonitoringPlotId>()
     val notificationIds = mutableListOf<NotificationId>()
     val observationIds = mutableListOf<ObservationId>()
@@ -5538,6 +5608,8 @@ abstract class DatabaseBackedTest {
     val plantingIds = mutableListOf<PlantingId>()
     val plantingSeasonIds = mutableListOf<PlantingSeasonId>()
     val plantingSiteHistoryIds = mutableListOf<PlantingSiteHistoryId>()
+    val plantingSiteHistoryIdsByPlantingSiteId =
+        mutableMapOf<PlantingSiteId, MutableList<PlantingSiteHistoryId>>()
     val plantingSiteIds = mutableListOf<PlantingSiteId>()
     val plantingSiteNotificationIds = mutableListOf<PlantingSiteNotificationId>()
     val projectIds = mutableListOf<ProjectId>()
@@ -5550,12 +5622,15 @@ abstract class DatabaseBackedTest {
     val speciesIds = mutableListOf<SpeciesId>()
     val splatAnnotationIds = mutableListOf<SplatAnnotationId>()
     val stratumHistoryIds = mutableListOf<StratumHistoryId>()
+    val stratumHistoryIdsByStratumId = mutableMapOf<StratumId, MutableList<StratumHistoryId>>()
     val stratumIds = mutableListOf<StratumId>()
     val subLocationIds = mutableListOf<SubLocationId>()
     val submissionDocumentIds = mutableListOf<SubmissionDocumentId>()
     val submissionIds = mutableListOf<SubmissionId>()
     val submissionSnapshotIds = mutableListOf<SubmissionSnapshotId>()
     val substratumHistoryIds = mutableListOf<SubstratumHistoryId>()
+    val substratumHistoryIdsBySubstratumId =
+        mutableMapOf<SubstratumId, MutableList<SubstratumHistoryId>>()
     val substratumIds = mutableListOf<SubstratumId>()
     val timeseriesIds = mutableListOf<TimeseriesId>()
     val uploadIds = mutableListOf<UploadId>()

@@ -71,6 +71,8 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var substratumId: SubstratumId
   private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var tempPlotId: MonitoringPlotId
+  private lateinit var tempPlotHistoryId:
+      com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
   private lateinit var observationId: ObservationId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
@@ -94,6 +96,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
 
     tempPlotId = insertMonitoringPlot(plotNumber = 10)
+    tempPlotHistoryId = inserted.monitoringPlotHistoryId
     insertObservationPlot(
         claimedTime = observationTime,
         claimedBy = user.userId,
@@ -487,6 +490,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(
           speciesId = speciesId1,
           monitoringPlotId = tempPlotId,
+          monitoringPlotHistoryId = tempPlotHistoryId,
           totalLive = 4,
       )
 
@@ -558,6 +562,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertObservedPlotSpeciesTotals(speciesId = speciesId2, totalLive = 1)
       insertObservedPlotSpeciesTotals(
           monitoringPlotId = tempPlotId,
+          monitoringPlotHistoryId = tempPlotHistoryId,
           speciesId = speciesId1,
           totalLive = 1,
       )
@@ -598,7 +603,9 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertStratum()
       val substratum1 = insertSubstratum(areaHa = BigDecimal.ONE)
       val plot1 = insertMonitoringPlot(plotNumber = 3)
+      val plotHistory1 = inserted.monitoringPlotHistoryId
       val plot2 = insertMonitoringPlot(plotNumber = 4)
+      val plotHistory2 = inserted.monitoringPlotHistoryId
       val substratum2 = insertSubstratum(areaHa = BigDecimal.TEN)
       val plot3 = insertMonitoringPlot(plotNumber = 5)
       val plot4 = insertMonitoringPlot(plotNumber = 6)
@@ -620,16 +627,19 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // ignored because already in withdrawn
       insertObservedPlotSpeciesTotals(
           monitoringPlotId = plot1,
+          monitoringPlotHistoryId = plotHistory1,
           speciesId = speciesId1,
           totalLive = 1,
       )
       insertObservedPlotSpeciesTotals(
           monitoringPlotId = plot1,
+          monitoringPlotHistoryId = plotHistory1,
           speciesId = speciesId4,
           totalDead = 1,
       )
       insertObservedPlotSpeciesTotals(
           monitoringPlotId = plot2,
+          monitoringPlotHistoryId = plotHistory2,
           speciesId = speciesId4,
           totalDead = 1,
       )
