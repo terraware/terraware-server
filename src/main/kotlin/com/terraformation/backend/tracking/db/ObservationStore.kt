@@ -1791,11 +1791,8 @@ class ObservationStore(
 
   fun recalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
     recalculateSurvivalRate(ObservationSpeciesPlot(monitoringPlotId))
-
     recalculateSurvivalRate(ObservationSpeciesSubstratum(monitoringPlotId))
-
     recalculateSurvivalRate(ObservationSpeciesStratum(monitoringPlotId))
-
     recalculateSurvivalRate(ObservationSpeciesSite(monitoringPlotId))
 
     recalculateSurvivalRateResults(ObservationResultsPlot(monitoringPlotId))
@@ -1825,15 +1822,14 @@ class ObservationStore(
     substratumGroups.values.flatten().forEach {
       recalculateSurvivalRate(ObservationSpeciesPlot(it))
     }
-
     substratumGroups.keys.forEach { recalculateSurvivalRate(ObservationSpeciesSubstratum(it)) }
-
     recalculateSurvivalRate(ObservationSpeciesStratum(stratumId))
-
     recalculateSurvivalRate(ObservationSpeciesSite(stratumId))
 
     substratumGroups.values.flatten().forEach {
       recalculateSurvivalRateResults(ObservationResultsPlot(it))
+    }
+    substratumGroups.keys.forEach {
       recalculateSurvivalRateResults(ObservationResultsSubstratum(it))
     }
     recalculateSurvivalRateResults(ObservationResultsStratum(stratumId))

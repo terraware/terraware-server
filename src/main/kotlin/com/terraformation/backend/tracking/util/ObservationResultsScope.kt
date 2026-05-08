@@ -407,14 +407,18 @@ class ObservationResultsStratum(
       STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.`in`(
           DSL.select(STRATUM_HISTORIES.STRATUM_ID)
               .from(STRATUM_HISTORIES)
-              .where(STRATUM_HISTORIES.ID.`in`(stratumHistorySelect))
+              .where(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
       )
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
       permPlotsTable.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID.`in`(
           DSL.select(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID)
               .from(SUBSTRATUM_HISTORIES)
-              .where(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.`in`(stratumHistorySelect))
+              .where(
+                  SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(
+                      OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
+                  )
+              )
       )
 }
 
@@ -465,7 +469,7 @@ class ObservationResultsSite(
 
   override val rollupSpeciesTable = OBSERVED_SITE_SPECIES_TOTALS
 
-  override val rollupSpeciesCondition = OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(siteId)
+  override val rollupSpeciesCondition = OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(siteSelect)
 
   override val plotResultsCondition = DSL.trueCondition()
 
