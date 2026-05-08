@@ -83,6 +83,11 @@ import com.terraformation.backend.tracking.model.NewObservedPlotCoordinatesModel
 import com.terraformation.backend.tracking.model.ObservationModel
 import com.terraformation.backend.tracking.model.ObservationPlotCounts
 import com.terraformation.backend.tracking.model.ObservationPlotModel
+import com.terraformation.backend.tracking.util.ObservationResultsPlot
+import com.terraformation.backend.tracking.util.ObservationResultsScope
+import com.terraformation.backend.tracking.util.ObservationResultsSite
+import com.terraformation.backend.tracking.util.ObservationResultsStratum
+import com.terraformation.backend.tracking.util.ObservationResultsSubstratum
 import com.terraformation.backend.tracking.util.ObservationSpeciesPlot
 import com.terraformation.backend.tracking.util.ObservationSpeciesScope
 import com.terraformation.backend.tracking.util.ObservationSpeciesSite
@@ -97,7 +102,6 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
-import kotlin.math.roundToInt
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -2039,222 +2043,119 @@ class ObservationStore(
   private fun rollup(field: Field<Int?>): Field<Int> =
       DSL.coalesce(DSL.sum(field).cast(SQLDataType.INTEGER), 0)
 
-  private fun updatePlotObservationResults(
+  /**
+   * Rolls up the per-species totals for the given scope (plot, substratum, stratum, or site) into
+   * the corresponding `observation_*_results` aggregate row, computing the plant density (and
+   * std-dev where applicable) from the per-plot results table.
+   */
+  private fun <ID : Any, HistoryId : Any> updatePlotObservationResults(
+      scope: ObservationResultsScope<ID, HistoryId>,
       observationId: ObservationId,
-      monitoringPlotId: MonitoringPlotId,
-      monitoringPlotHistoryId: MonitoringPlotHistoryId,
-      sizeMeters: Int,
   ) {
-    with(OBSERVATION_PLOT_RESULTS) {
-      val (totalLive, totalDead, totalExisting, permanentLive) =
-          dslContext
-              .select(
-                  rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_LIVE),
-                  rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD),
-                  rollup(OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_EXISTING),
-                  rollup(OBSERVED_PLOT_SPECIES_TOTALS.PERMANENT_LIVE),
-              )
-              .from(OBSERVED_PLOT_SPECIES_TOTALS)
-              .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-              .and(OBSERVED_PLOT_SPECIES_TOTALS.MONITORING_PLOT_ID.eq(monitoringPlotId))
-              .fetchOne()!!
+    val resultsTable = scope.observedTotalsTable
+    val rollupTable = scope.rollupSpeciesTable
 
-      val areaSquareMeters = sizeMeters * sizeMeters
-      val plantingDensity =
-          ((totalLive ?: 0) * SQUARE_METERS_PER_HECTARE / areaSquareMeters).roundToInt()
+    val resultsObservationIdField =
+        resultsTable.field("observation_id", ObservationId::class.java)!!
+    val resultsTotalLiveField = resultsTable.field("total_live", Int::class.java)!!
+    val resultsTotalDeadField = resultsTable.field("total_dead", Int::class.java)!!
+    val resultsTotalExistingField = resultsTable.field("total_existing", Int::class.java)!!
+    val resultsPermanentLiveField = resultsTable.field("permanent_live", Int::class.java)!!
+    val resultsPlantDensityField = resultsTable.field("plant_density", Int::class.java)!!
+    val resultsPlantDensityStdDevField =
+        resultsTable.field("plant_density_std_dev", Int::class.java)
 
-      dslContext
-          .insertInto(this)
-          .set(OBSERVATION_ID, observationId)
-          .set(MONITORING_PLOT_ID, monitoringPlotId)
-          .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
-          .set(TOTAL_LIVE, totalLive)
-          .set(TOTAL_DEAD, totalDead)
-          .set(TOTAL_EXISTING, totalExisting)
-          .set(PERMANENT_LIVE, permanentLive)
-          .set(PLANT_DENSITY, plantingDensity)
-          .onConflict(OBSERVATION_ID, MONITORING_PLOT_ID)
-          .doUpdate()
-          .set(MONITORING_PLOT_HISTORY_ID, monitoringPlotHistoryId)
-          .set(TOTAL_LIVE, totalLive)
-          .set(TOTAL_DEAD, totalDead)
-          .set(TOTAL_EXISTING, totalExisting)
-          .set(PERMANENT_LIVE, permanentLive)
-          .set(PLANT_DENSITY, plantingDensity)
-          .execute()
-    }
-  }
+    val rollupObservationIdField = rollupTable.field("observation_id", ObservationId::class.java)!!
+    val rollupTotalLiveField = rollupTable.field("total_live", Int::class.java)!!
+    val rollupTotalDeadField = rollupTable.field("total_dead", Int::class.java)!!
+    val rollupTotalExistingField = rollupTable.field("total_existing", Int::class.java)!!
+    val rollupPermanentLiveField = rollupTable.field("permanent_live", Int::class.java)!!
 
-  private fun updateSubstratumObservationResults(
-      observationId: ObservationId,
-      substratumId: SubstratumId?,
-      substratumHistoryId: SubstratumHistoryId,
-  ) {
-    with(OBSERVATION_SUBSTRATUM_RESULTS) {
-      val (totalLive, totalDead, totalExisting, permanentLive) =
-          dslContext
-              .select(
-                  rollup(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_LIVE),
-                  rollup(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_DEAD),
-                  rollup(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_EXISTING),
-                  rollup(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.PERMANENT_LIVE),
-              )
-              .from(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
-              .where(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-              .and(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_HISTORY_ID.eq(substratumHistoryId))
-              .fetchOne()!!
+    val (totalLive, totalDead, totalExisting, permanentLive) =
+        dslContext
+            .select(
+                rollup(rollupTotalLiveField),
+                rollup(rollupTotalDeadField),
+                rollup(rollupTotalExistingField),
+                rollup(rollupPermanentLiveField),
+            )
+            .from(rollupTable)
+            .where(rollupObservationIdField.eq(observationId))
+            .and(scope.rollupSpeciesCondition)
+            .fetchOne()!!
 
-      val (plantingDensity, plantingDensityStdDev) =
-          dslContext
-              .select(
-                  DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-                  DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-              )
-              .from(OBSERVATION_PLOT_RESULTS)
-              .join(MONITORING_PLOT_HISTORIES)
-              .on(
-                  MONITORING_PLOT_HISTORIES.ID.eq(
-                      OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID
+    val plantDensityField: Field<Int?> =
+        if (scope is ObservationResultsPlot) {
+          DSL.field(
+              DSL.select(
+                      DSL.round(
+                              DSL.value(totalLive)
+                                  .cast(SQLDataType.NUMERIC)
+                                  .times(DSL.inline(SQUARE_METERS_PER_HECTARE))
+                                  .div(
+                                      MONITORING_PLOTS.SIZE_METERS.times(
+                                              MONITORING_PLOTS.SIZE_METERS
+                                          )
+                                          .cast(SQLDataType.NUMERIC)
+                                  )
+                          )
+                          .cast(SQLDataType.INTEGER)
                   )
-              )
-              .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-              .and(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID.eq(substratumHistoryId))
-              .fetchOne()!!
+                  .from(MONITORING_PLOTS)
+                  .where(MONITORING_PLOTS.ID.eq(scope.plotId))
+          )
+        } else {
+          DSL.field(
+              DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
+                  .from(OBSERVATION_PLOT_RESULTS)
+                  .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+                  .and(scope.observationPlotsCondition)
+          )
+        }
 
-      dslContext
-          .insertInto(this)
-          .set(OBSERVATION_ID, observationId)
-          .set(SUBSTRATUM_ID, substratumId)
-          .set(SUBSTRATUM_HISTORY_ID, substratumHistoryId)
-          .set(TOTAL_LIVE, totalLive)
-          .set(TOTAL_DEAD, totalDead)
-          .set(TOTAL_EXISTING, totalExisting)
-          .set(PERMANENT_LIVE, permanentLive)
-          .set(PLANT_DENSITY, plantingDensity)
-          .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
-          .onConflict(OBSERVATION_ID, SUBSTRATUM_HISTORY_ID)
-          .doUpdate()
-          .set(TOTAL_LIVE, totalLive)
-          .set(TOTAL_DEAD, totalDead)
-          .set(TOTAL_EXISTING, totalExisting)
-          .set(PERMANENT_LIVE, permanentLive)
-          .set(PLANT_DENSITY, plantingDensity)
-          .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
-          .execute()
-    }
-  }
-
-  private fun updateStratumObservationResults(
-      observationId: ObservationId,
-      stratumId: StratumId?,
-      stratumHistoryId: StratumHistoryId,
-  ) {
-    with(OBSERVATION_STRATUM_RESULTS) {
-      val (totalLive, totalDead, totalExisting, permanentLive) =
-          dslContext
-              .select(
-                  rollup(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_LIVE),
-                  rollup(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_DEAD),
-                  rollup(OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_EXISTING),
-                  rollup(OBSERVED_STRATUM_SPECIES_TOTALS.PERMANENT_LIVE),
-              )
-              .from(OBSERVED_STRATUM_SPECIES_TOTALS)
-              .where(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-              .and(OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_HISTORY_ID.eq(stratumHistoryId))
-              .fetchOne()!!
-
-      val (plantingDensity, plantingDensityStdDev) =
-          dslContext
-              .select(
-                  DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-                  DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-              )
-              .from(OBSERVATION_PLOT_RESULTS)
-              .join(MONITORING_PLOT_HISTORIES)
-              .on(
-                  MONITORING_PLOT_HISTORIES.ID.eq(
-                      OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID
+    val plantDensityStdDevField: Field<Int?>? =
+        if (resultsPlantDensityStdDevField != null) {
+          DSL.field(
+              DSL.select(
+                      DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY)
+                          .cast(SQLDataType.INTEGER)
                   )
-              )
-              .join(SUBSTRATUM_HISTORIES)
-              .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
-              .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-              .and(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(stratumHistoryId))
-              .fetchOne()!!
+                  .from(OBSERVATION_PLOT_RESULTS)
+                  .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+                  .and(scope.observationPlotsCondition)
+          )
+        } else {
+          null
+        }
 
-      dslContext
-          .insertInto(this)
-          .set(OBSERVATION_ID, observationId)
-          .set(STRATUM_ID, stratumId)
-          .set(STRATUM_HISTORY_ID, stratumHistoryId)
-          .set(TOTAL_LIVE, totalLive)
-          .set(TOTAL_DEAD, totalDead)
-          .set(TOTAL_EXISTING, totalExisting)
-          .set(PERMANENT_LIVE, permanentLive)
-          .set(PLANT_DENSITY, plantingDensity)
-          .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
-          .onConflict(OBSERVATION_ID, STRATUM_HISTORY_ID)
-          .doUpdate()
-          .set(TOTAL_LIVE, totalLive)
-          .set(TOTAL_DEAD, totalDead)
-          .set(TOTAL_EXISTING, totalExisting)
-          .set(PERMANENT_LIVE, permanentLive)
-          .set(PLANT_DENSITY, plantingDensity)
-          .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
-          .execute()
-    }
-  }
-
-  private fun updateSiteObservationResults(
-      observationId: ObservationId,
-      plantingSiteId: PlantingSiteId,
-      plantingSiteHistoryId: PlantingSiteHistoryId,
-  ) {
-    with(OBSERVATION_SITE_RESULTS) {
-      val (totalLive, totalDead, totalExisting, permanentLive) =
-          dslContext
-              .select(
-                  rollup(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_LIVE),
-                  rollup(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_DEAD),
-                  rollup(OBSERVED_SITE_SPECIES_TOTALS.TOTAL_EXISTING),
-                  rollup(OBSERVED_SITE_SPECIES_TOTALS.PERMANENT_LIVE),
-              )
-              .from(OBSERVED_SITE_SPECIES_TOTALS)
-              .where(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-              .and(OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(plantingSiteId))
-              .fetchOne()!!
-
-      val (plantingDensity, plantingDensityStdDev) =
-          dslContext
-              .select(
-                  DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-                  DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER),
-              )
-              .from(OBSERVATION_PLOT_RESULTS)
-              .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-              .fetchOne()!!
-
-      dslContext
-          .insertInto(this)
-          .set(OBSERVATION_ID, observationId)
-          .set(PLANTING_SITE_ID, plantingSiteId)
-          .set(PLANTING_SITE_HISTORY_ID, plantingSiteHistoryId)
-          .set(TOTAL_LIVE, totalLive)
-          .set(TOTAL_DEAD, totalDead)
-          .set(TOTAL_EXISTING, totalExisting)
-          .set(PERMANENT_LIVE, permanentLive)
-          .set(PLANT_DENSITY, plantingDensity)
-          .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
-          .onConflict(OBSERVATION_ID)
-          .doUpdate()
-          .set(TOTAL_LIVE, totalLive)
-          .set(TOTAL_DEAD, totalDead)
-          .set(TOTAL_EXISTING, totalExisting)
-          .set(PERMANENT_LIVE, permanentLive)
-          .set(PLANT_DENSITY, plantingDensity)
-          .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
-          .execute()
-    }
+    dslContext
+        .insertInto(resultsTable)
+        .set(resultsObservationIdField, observationId)
+        .set(scope.observedTotalsScopeField, scope.scopeId)
+        .set(scope.observedTotalsScopeHistoryField, scope.scopeHistoryId)
+        .set(resultsTotalLiveField, totalLive)
+        .set(resultsTotalDeadField, totalDead)
+        .set(resultsTotalExistingField, totalExisting)
+        .set(resultsPermanentLiveField, permanentLive)
+        .set(resultsPlantDensityField, plantDensityField)
+        .apply {
+          if (resultsPlantDensityStdDevField != null && plantDensityStdDevField != null) {
+            set(resultsPlantDensityStdDevField, plantDensityStdDevField)
+          }
+        }
+        .onDuplicateKeyUpdate()
+        .set(scope.observedTotalsScopeHistoryField, scope.scopeHistoryId)
+        .set(resultsTotalLiveField, totalLive)
+        .set(resultsTotalDeadField, totalDead)
+        .set(resultsTotalExistingField, totalExisting)
+        .set(resultsPermanentLiveField, permanentLive)
+        .set(resultsPlantDensityField, plantDensityField)
+        .apply {
+          if (resultsPlantDensityStdDevField != null && plantDensityStdDevField != null) {
+            set(resultsPlantDensityStdDevField, plantDensityStdDevField)
+          }
+        }
+        .execute()
   }
 
   private fun updateObservationResults(
@@ -2267,33 +2168,33 @@ class ObservationStore(
       monitoringPlotId: MonitoringPlotId,
       isAdHoc: Boolean,
   ) {
-    val (monitoringPlotHistoryId, sizeMeters) =
+    val monitoringPlotHistoryId =
         dslContext
-            .select(
-                OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.asNonNullable(),
-                MONITORING_PLOTS.SIZE_METERS.asNonNullable(),
-            )
+            .select(OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.asNonNullable())
             .from(OBSERVATION_PLOTS)
-            .join(MONITORING_PLOTS)
-            .on(MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
             .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
             .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
             .fetchOne()!!
+            .value1()
 
     updatePlotObservationResults(
+        ObservationResultsPlot(monitoringPlotHistoryId, monitoringPlotId),
         observationId,
-        monitoringPlotId,
-        monitoringPlotHistoryId,
-        sizeMeters,
     )
 
     if (!isAdHoc) {
       if (substratumHistoryId != null) {
-        updateSubstratumObservationResults(observationId, substratumId, substratumHistoryId)
+        updatePlotObservationResults(
+            ObservationResultsSubstratum(substratumHistoryId, substratumId),
+            observationId,
+        )
       }
 
       if (stratumHistoryId != null) {
-        updateStratumObservationResults(observationId, stratumId, stratumHistoryId)
+        updatePlotObservationResults(
+            ObservationResultsStratum(stratumHistoryId, stratumId),
+            observationId,
+        )
       }
 
       val plantingSiteHistoryId =
@@ -2304,7 +2205,10 @@ class ObservationStore(
               .fetchOne()!!
               .value1()!!
 
-      updateSiteObservationResults(observationId, plantingSite.id!!, plantingSiteHistoryId)
+      updatePlotObservationResults(
+          ObservationResultsSite(plantingSiteHistoryId, plantingSite.id!!),
+          observationId,
+      )
     }
   }
 
