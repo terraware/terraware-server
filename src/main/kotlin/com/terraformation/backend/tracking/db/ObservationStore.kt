@@ -960,6 +960,29 @@ class ObservationStore(
       if (allPlotsCompleted) {
         completeObservation(observationId, plantingSiteId, isAdHoc)
       }
+
+      if (!isAdHoc) {
+        recalculateSurvivalRateResults(
+            ObservationResultsPlot(monitoringPlotHistoryId, monitoringPlotId),
+            observationId,
+        )
+        if (substratumHistoryId != null) {
+          recalculateSurvivalRateResults(
+              ObservationResultsSubstratum(substratumHistoryId, substratumId),
+              observationId,
+          )
+        }
+        if (stratumHistoryId != null) {
+          recalculateSurvivalRateResults(
+              ObservationResultsStratum(stratumHistoryId, stratumId),
+              observationId,
+          )
+        }
+        recalculateSurvivalRateResults(
+            ObservationResultsSite(plantingSiteHistoryId, plantingSite.id!!),
+            observationId,
+        )
+      }
     }
   }
 
@@ -1529,6 +1552,7 @@ class ObservationStore(
         abandonPlots(observationId)
         updateObservationState(observationId, ObservationState.Abandoned)
         resetPlantPopulationSinceLastObservation(observation.plantingSiteId)
+        recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
       }
     } else {
       log.info("Deleting abandoned observation $observationId since it has no completed plots")
@@ -1546,6 +1570,7 @@ class ObservationStore(
       // Ad-hoc observations do not reset unobserved populations
       resetPlantPopulationSinceLastObservation(plantingSiteId)
       recalculateSurvivalRates(observationId, plantingSiteId)
+      recalculateSurvivalRateResults(observationId, plantingSiteId)
     }
   }
 
@@ -1603,7 +1628,12 @@ class ObservationStore(
               .where(PLANTING_SITE_HISTORIES.PLANTING_SITE_ID.eq(plantingSiteId))
               .and(PLANTING_SITE_HISTORIES.ID.eq(plantingSiteHistoryId))
               .and(
-                  OBSERVATION_ID.eq(latestObservationForSubstratumField(DSL.inline(observationId)))
+                  OBSERVATION_ID.eq(
+                      latestObservationForSubstratumField(
+                          DSL.inline(observationId),
+                          OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID,
+                      )
+                  )
               )
               .fetch { record ->
                 SubstratumSpeciesRecord(
@@ -1851,6 +1881,115 @@ class ObservationStore(
         )
         .where(updateScope.observedTotalsCondition)
         .execute()
+  }
+
+  private fun recalculateSurvivalRateResults(
+      observationId: ObservationId,
+      plantingSiteId: PlantingSiteId,
+  ) {
+    // Update tables with latest total values
+    updateObservationResults(observationId, plantingSiteId)
+
+    val substratumHistoryIds =
+        dslContext
+            .selectDistinct(OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID)
+            .from(OBSERVATION_PLOT_RESULTS)
+            .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+            .fetch { it.value1() }
+            .filterNotNull()
+
+    val stratumHistoryIds =
+        dslContext
+            .selectDistinct(
+                OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
+                    .STRATUM_HISTORY_ID
+            )
+            .from(OBSERVATION_PLOT_RESULTS)
+            .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+            .fetch { it.value1() }
+            .filterNotNull()
+
+    substratumHistoryIds.forEach {
+      recalculateSurvivalRateResults(ObservationResultsSubstratum(it), observationId)
+    }
+    stratumHistoryIds.forEach {
+      recalculateSurvivalRateResults(ObservationResultsStratum(it), observationId)
+    }
+    recalculateSurvivalRateResults(ObservationResultsSite(plantingSiteId), observationId)
+  }
+
+  private fun <ID : Any, HistoryId : Any> recalculateSurvivalRateResults(
+      updateScope: ObservationResultsScope<ID, HistoryId>,
+      observationId: ObservationId,
+  ) {
+    val table = updateScope.observedTotalsTable
+    val observationIdField = table.field("observation_id", ObservationId::class.java)!!
+    val survivalRatePermanentDenominator =
+        getSurvivalRateDenominator(
+            updateScope,
+            DSL.trueCondition(),
+            DSL.value(observationId),
+        )
+    val survivalRateTempDenominator =
+        getSurvivalRateTempDenominator(
+            updateScope,
+            DSL.trueCondition(),
+            DSL.value(observationId),
+        )
+    val survivalRateDenominator =
+        DSL.coalesce(
+            survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
+            survivalRatePermanentDenominator,
+            survivalRateTempDenominator,
+        )
+    val survivalRateField = table.field("survival_rate", Int::class.java)!!
+    val permanentLiveField = table.field("permanent_live", Int::class.java)!!
+    val latestLiveField = updateScope.latestLiveField
+
+    val survivalRateValue =
+        DSL.case_()
+            .`when`(
+                updateScope.anyChildHasNullSurvivalRateCondition(observationId),
+                DSL.castNull(SQLDataType.INTEGER),
+            )
+            .`when`(
+                survivalRateDenominator.eq(BigDecimal.ZERO),
+                DSL.castNull(SQLDataType.INTEGER),
+            )
+            .else_(
+                DSL.case_()
+                    .`when`(
+                        updateScope.observedTotalsPlantingSiteTempCondition,
+                        (latestLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator)),
+                    )
+                    .else_(
+                        (permanentLiveField
+                            .mul(BigDecimal.valueOf(100))
+                            .div(survivalRateDenominator)),
+                    )
+            )
+
+    val allPlotsCompleted =
+        dslContext
+            .fetchExists(
+                DSL.selectOne()
+                    .from(OBSERVATION_PLOTS)
+                    .where(updateScope.observationPlotsCondition(observationId))
+                    .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+            )
+            .not()
+
+    if (allPlotsCompleted) {
+      dslContext
+          .update(table)
+          .set(
+              survivalRateField,
+              survivalRateValue,
+          )
+          .where(updateScope.observedTotalsCondition)
+          .and(observationIdField.eq(observationId))
+          .execute()
+    }
   }
 
   @EventListener

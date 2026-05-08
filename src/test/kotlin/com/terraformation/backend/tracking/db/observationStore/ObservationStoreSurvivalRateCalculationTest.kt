@@ -1681,8 +1681,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       expected: SurvivalRates,
       message: String,
   ) {
-    val actual = fetchSurvivalRates(inserted.plantingSiteId)
+    val siteResults = resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 1)[0]
+    val actual = ratesObjectFromResults(siteResults, inserted.plantingSiteId)
     assertSurvivalRates(expected, actual, message)
+    assertResultTablesSurvivalRates(expected, siteResults.observationId, message)
   }
 
   private fun assertSurvivalRates(
@@ -1741,11 +1743,92 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     }
   }
 
-  private fun fetchSurvivalRates(plantingSiteId: PlantingSiteId): SurvivalRates {
-    val siteResults = resultsStore.fetchByPlantingSiteId(plantingSiteId, limit = 1)[0]
+  private fun assertResultTablesSurvivalRates(
+      expected: SurvivalRates,
+      obsId: ObservationId,
+      message: String,
+  ) {
+    val completedPlotIds =
+        observationPlotsDao
+            .fetchByObservationId(obsId)
+            .filter { it.completedTime != null }
+            .mapNotNull { it.monitoringPlotId }
+            .toSet()
+    val plotResults =
+        observationPlotResultsDao.fetchByObservationId(obsId).associateBy { it.monitoringPlotId!! }
+    val substratumResults =
+        observationSubstratumResultsDao.fetchByObservationId(obsId).associateBy {
+          it.substratumId!!
+        }
+    val stratumResults =
+        observationStratumResultsDao.fetchByObservationId(obsId).associateBy { it.stratumId!! }
+    val siteResult = observationSiteResultsDao.fetchOneByObservationId(obsId)
 
-    return ratesObjectFromResults(siteResults, plantingSiteId)
+    val expectedPlotRates =
+        completedPlotIds
+            .mapNotNull { plotId ->
+              val speciesMap = expected.plotRates[plotId] ?: return@mapNotNull null
+              if (!speciesMap.containsKey(null)) return@mapNotNull null
+              plotId to speciesMap[null]?.toRoundedInt()
+            }
+            .toMap()
+    val expectedSubstratumRates =
+        expected.substratumRates
+            .filterKeys { it in substratumResults }
+            .filterValues { it.containsKey(null) }
+            .mapKeys { it.key as SubstratumId }
+            .mapValues { it.value[null]?.toRoundedInt() }
+    val expectedStratumRates =
+        expected.stratumRates
+            .filterKeys { it in stratumResults }
+            .filterValues { it.containsKey(null) }
+            .mapKeys { it.key as StratumId }
+            .mapValues { it.value[null]?.toRoundedInt() }
+    val expectedSiteRates =
+        expected.siteRates
+            .filterValues { it.containsKey(null) }
+            .mapKeys { it.key as PlantingSiteId }
+            .mapValues { it.value[null]?.toRoundedInt() }
+
+    assertAll(
+        {
+          assertEquals(
+              expectedPlotRates,
+              plotResults
+                  .filterKeys { it in expectedPlotRates }
+                  .mapValues { it.value.survivalRate },
+              "$message - Raw Plot survival rates",
+          )
+        },
+        {
+          assertEquals(
+              expectedSubstratumRates,
+              substratumResults
+                  .filterKeys { it in expectedSubstratumRates }
+                  .mapValues { it.value.survivalRate },
+              "$message - Raw Substratum survival rates",
+          )
+        },
+        {
+          assertEquals(
+              expectedStratumRates,
+              stratumResults
+                  .filterKeys { it in expectedStratumRates }
+                  .mapValues { it.value.survivalRate },
+              "$message - Raw Stratum survival rates",
+          )
+        },
+        {
+          assertEquals(
+              expectedSiteRates,
+              expectedSiteRates.keys.associateWith { siteResult?.survivalRate },
+              "$message - Raw Site survival rates",
+          )
+        },
+    )
   }
+
+  private fun Number.toRoundedInt(): Int = if (this is Double) roundToInt() else toInt()
 
   private fun ratesObjectFromResults(
       siteResults: ObservationResultsModel,

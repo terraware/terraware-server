@@ -1191,12 +1191,9 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     val latestLiveField =
         with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
           DSL.field(
-              DSL.select(
-                      DSL.sum(DSL.coalesce(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.TOTAL_LIVE, 0))
-                          .cast(SQLDataType.INTEGER)
-                  )
+              DSL.select(DSL.sum(DSL.coalesce(TOTAL_LIVE, 0)).cast(SQLDataType.INTEGER))
                   .from(SUBSTRATA)
-                  .join(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+                  .join(this)
                   .on(SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                   .where(
                       SUBSTRATA.STRATUM_ID.eq(OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID)
@@ -1205,7 +1202,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .and(
                       OBSERVATION_ID.eq(
                           latestObservationForSubstratumField(
-                              OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID
+                              OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID,
+                              SUBSTRATUM_ID,
                           )
                       )
                   )
@@ -1498,7 +1496,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           DSL.field(
               DSL.select(DSL.sum(DSL.coalesce(TOTAL_LIVE, 0)).cast(SQLDataType.INTEGER))
                   .from(SUBSTRATA)
-                  .join(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+                  .join(this)
                   .on(SUBSTRATUM_ID.eq(SUBSTRATA.ID))
                   .where(
                       SUBSTRATA.PLANTING_SITE_ID.eq(OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID)
@@ -1519,7 +1517,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   .and(
                       OBSERVATION_ID.eq(
                           latestObservationForSubstratumField(
-                              OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID
+                              OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID,
+                              SUBSTRATUM_ID,
                           )
                       )
                   )
