@@ -42,13 +42,13 @@ import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.Point
 
-internal val coordinatesGpsField = OBSERVED_PLOT_COORDINATES.GPS_COORDINATES.forMultiset()
+internal val observationPlotCoordinatesGpsField = OBSERVED_PLOT_COORDINATES.GPS_COORDINATES.forMultiset()
 
-internal val coordinatesMultiset =
+internal val observationPlotCoordinatesMultiset =
     DSL.multiset(
             DSL.select(
                     OBSERVED_PLOT_COORDINATES.ID,
-                    coordinatesGpsField,
+                    observationPlotCoordinatesGpsField,
                     OBSERVED_PLOT_COORDINATES.POSITION_ID,
                 )
                 .from(OBSERVED_PLOT_COORDINATES)
@@ -60,7 +60,7 @@ internal val coordinatesMultiset =
           result.map { record ->
             ObservedPlotCoordinatesModel(
                 id = record[OBSERVED_PLOT_COORDINATES.ID.asNonNullable()],
-                gpsCoordinates = record[coordinatesGpsField.asNonNullable()].centroid,
+                gpsCoordinates = record[observationPlotCoordinatesGpsField.asNonNullable()].centroid,
                 position = record[OBSERVED_PLOT_COORDINATES.POSITION_ID.asNonNullable()],
             )
           }
@@ -68,7 +68,7 @@ internal val coordinatesMultiset =
 
 internal val filesGeolocationField = FILES.GEOLOCATION.forMultiset()
 
-internal val mediaMultiset =
+internal val observationMediaMultiset =
     DSL.multiset(
             DSL.select(
                     FILES.CONTENT_TYPE,
@@ -141,7 +141,7 @@ internal fun plotHasCompletedObservations(
  *     10. Latest Live from latest observation (or across multiple observations if not all substrata
  *         are in the latest observation) (non-nullable)
  */
-internal fun speciesMultiset(
+internal fun observationSpeciesTotalsMultiset(
     query:
         Select<
             Record10<
@@ -229,7 +229,7 @@ internal val monitoringPlotOverlapsMultiset =
 
 internal val monitoringPlotSpeciesMultiset =
     with(OBSERVED_PLOT_SPECIES_TOTALS) {
-      speciesMultiset(
+      observationSpeciesTotalsMultiset(
           DSL.select(
                   DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
                   DSL.coalesce(
@@ -406,7 +406,7 @@ internal fun substratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsMo
   val tempDensityCol = tempSubstratumT0.field("plot_density", BigDecimal::class.java)!!
 
   return with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
-    speciesMultiset(
+    observationSpeciesTotalsMultiset(
         DSL.select(
                 DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
                 DSL.coalesce(SPECIES_ID, permSpeciesCol, tempSpeciesCol),
@@ -552,7 +552,7 @@ internal fun stratumSpeciesMultiset(): Field<List<ObservationSpeciesResultsModel
       }
 
   return with(OBSERVED_STRATUM_SPECIES_TOTALS) {
-    speciesMultiset(
+    observationSpeciesTotalsMultiset(
         DSL.select(
                 DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
                 DSL.coalesce(SPECIES_ID, permSpeciesCol, tempSpeciesCol),
@@ -716,7 +716,7 @@ internal fun plantingSiteSpeciesMultiset(): Field<List<ObservationSpeciesResults
       }
 
   return with(OBSERVED_SITE_SPECIES_TOTALS) {
-    speciesMultiset(
+    observationSpeciesTotalsMultiset(
         DSL.select(
                 DSL.coalesce(CERTAINTY_ID, RecordedSpeciesCertainty.Known),
                 DSL.coalesce(SPECIES_ID, permSpeciesCol, tempSpeciesCol),
