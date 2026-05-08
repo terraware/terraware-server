@@ -4,6 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.UserStore
 import com.terraformation.backend.customer.model.IndividualUser
+import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.model.SupportRequestSubmitted
 import com.terraformation.backend.file.SizedInputStream
@@ -31,8 +32,9 @@ class SupportService(
       attachmentIds: List<String> = emptyList(),
       attachmentComment: String? = null,
       skipReceiptEmail: Boolean = false,
+      userId: UserId = currentUser().userId,
   ): String {
-    val user = userStore.fetchOneById(currentUser().userId) as IndividualUser
+    val user = userStore.fetchOneById(userId) as IndividualUser
     val response =
         atlassianHttpClient.createServiceDeskRequest(description, summary, requestType, user.email)
 
