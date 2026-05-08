@@ -1983,11 +1983,10 @@ class ObservationStore(
 
     val plotIds =
         dslContext
-            .selectDistinct(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID)
+            .select(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.asNonNullable())
             .from(OBSERVATION_PLOT_RESULTS)
             .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
             .fetch { it.value1() }
-            .filterNotNull()
 
     val substratumHistoryIds =
         dslContext
