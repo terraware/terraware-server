@@ -507,7 +507,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.StratumT0TempDensitie
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
-import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
@@ -3461,18 +3460,7 @@ abstract class DatabaseBackedTest {
       observationId: ObservationId = inserted.observationId,
       monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
       monitoringPlotHistoryId: MonitoringPlotHistoryId =
-          dslContext
-              .select(MONITORING_PLOT_HISTORIES.ID)
-              .from(MONITORING_PLOT_HISTORIES)
-              .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(monitoringPlotId))
-              .and(
-                  MONITORING_PLOT_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                      DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
-                          .from(OBSERVATIONS)
-                          .where(OBSERVATIONS.ID.eq(observationId))
-                  )
-              )
-              .fetchOne(MONITORING_PLOT_HISTORIES.ID) ?: inserted.monitoringPlotHistoryId,
+          inserted.monitoringPlotHistoryIdsByMonitoringPlotId[monitoringPlotId]!!.last(),
       certainty: RecordedSpeciesCertainty = RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
           if (certainty == RecordedSpeciesCertainty.Known) {

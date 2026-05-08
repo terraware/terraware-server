@@ -9,6 +9,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
@@ -71,8 +72,7 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var substratumId: SubstratumId
   private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var tempPlotId: MonitoringPlotId
-  private lateinit var tempPlotHistoryId:
-      com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
+  private lateinit var tempPlotHistoryId: MonitoringPlotHistoryId
   private lateinit var observationId: ObservationId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
