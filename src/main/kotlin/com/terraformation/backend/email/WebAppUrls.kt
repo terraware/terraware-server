@@ -9,6 +9,7 @@ import com.terraformation.backend.db.accelerator.EventId
 import com.terraformation.backend.db.accelerator.ModuleId
 import com.terraformation.backend.db.accelerator.ReportId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SeedFundReportId
@@ -305,15 +306,18 @@ class WebAppUrls(
     return UriBuilder.fromUri(config.webAppUrl).path("/help-support/contact-us").build()
   }
 
-  fun fullVirtualWalkthroughs(organizationId: OrganizationId): URI {
+  fun fullVirtualWalkthroughs(organizationId: OrganizationId, fileId: FileId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/virtual-walkthroughs")
         .queryParam("organizationId", organizationId)
+        .queryParam("virtualWalkthrough", fileId)
         .build()
   }
 
-  fun virtualWalkthroughs(): URI {
-    return URI("/virtual-walkthroughs")
+  fun virtualWalkthroughs(fileId: FileId): URI {
+    return UriBuilder.fromUri("/virtual-walkthroughs")
+        .queryParam("virtualWalkthrough", fileId)
+        .build()
   }
 
   /** URL of the mobile app's page in the App Store. */

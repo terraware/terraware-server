@@ -1984,7 +1984,10 @@ internal class NotificationServiceEmailTest {
     assertRecipientsEqual(organizationRecipients + uploaderEmail)
     assertSubjectContains("Virtual walkthrough processing complete")
     assertBodyContains("finished processing")
-    assertBodyContains("https://test.terraware.io/virtual-walkthroughs", "Walkthrough URL")
+    assertBodyContains(
+        "https://test.terraware.io/virtual-walkthroughs?organizationId=${organization.id}&virtualWalkthrough=1",
+        "Walkthrough URL",
+    )
 
     assertIsEventListener<SplatGenerationCompletedEvent>(service)
   }
@@ -2040,7 +2043,10 @@ internal class NotificationServiceEmailTest {
     assertBodyContains("unable to render the model")
     assertBodyContains("1970-01-01", "Upload date")
     assertBodyContains("knowledge.terraformation.com", "Knowledge base link")
-    assertBodyContains("https://test.terraware.io/virtual-walkthroughs", "Walkthrough URL")
+    assertBodyContains(
+        "https://test.terraware.io/virtual-walkthroughs?organizationId=${organization.id}&virtualWalkthrough=1",
+        "Walkthrough URL",
+    )
 
     assertIsEventListener<SplatGenerationFailedEvent>(service)
   }
@@ -2079,7 +2085,10 @@ internal class NotificationServiceEmailTest {
     assertBodyContains("marked as needing attention")
     assertBodyContains("1970-01-01", "Upload date")
     assertBodyContains(markerEmail, "Marker email")
-    assertBodyContains("https://test.terraware.io/virtual-walkthroughs", "Walkthrough URL")
+    assertBodyContains(
+        "https://test.terraware.io/virtual-walkthroughs?organizationId=${organization.id}&virtualWalkthrough=1",
+        "Walkthrough URL",
+    )
 
     assertIsEventListener<SplatMarkedNeedsAttentionEvent>(service)
   }

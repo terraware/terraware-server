@@ -1264,14 +1264,14 @@ class NotificationService(
     val appContent =
         AppContent(
             notificationType = NotificationType.SplatGenerationCompleted,
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(event.fileId),
             renderMessage = { messages.splatGenerationCompleted() },
         )
 
     val emailContent =
         SplatGenerationCompleted(
             config,
-            webAppUrls.fullVirtualWalkthroughs(event.organizationId).toString(),
+            webAppUrls.fullVirtualWalkthroughs(event.organizationId, event.fileId).toString(),
         )
 
     sendToOrganization(
@@ -1292,7 +1292,7 @@ class NotificationService(
     val appContent =
         AppContent(
             notificationType = NotificationType.SplatGenerationFailed,
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(event.fileId),
             renderMessage = { messages.splatGenerationFailed(uploadDate.toString()) },
         )
 
@@ -1300,7 +1300,7 @@ class NotificationService(
         SplatGenerationFailed(
             config,
             uploadDate,
-            webAppUrls.fullVirtualWalkthroughs(event.organizationId).toString(),
+            webAppUrls.fullVirtualWalkthroughs(event.organizationId, event.fileId).toString(),
         )
 
     sendToOrganization(
@@ -1322,7 +1322,7 @@ class NotificationService(
     val appContent =
         AppContent(
             notificationType = NotificationType.SplatMarkedNeedsAttention,
-            localUrl = webAppUrls.virtualWalkthroughs(),
+            localUrl = webAppUrls.virtualWalkthroughs(event.fileId),
             renderMessage = {
               messages.splatMarkedNeedsAttention(uploadDate.toString(), markedByEmail)
             },
@@ -1333,7 +1333,7 @@ class NotificationService(
             config,
             uploadDate,
             markedByEmail,
-            webAppUrls.fullVirtualWalkthroughs(event.organizationId).toString(),
+            webAppUrls.fullVirtualWalkthroughs(event.organizationId, event.fileId).toString(),
         )
 
     sendToOrganization(
