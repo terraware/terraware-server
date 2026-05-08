@@ -922,7 +922,9 @@ class ObservationStore(
           observationId,
           plantingSite,
           stratumId,
+          stratumHistoryId,
           substratumId,
+          substratumHistoryId,
           monitoringPlotId,
           isAdHoc,
       )
@@ -2085,7 +2087,7 @@ class ObservationStore(
 
   private fun updateSubstratumObservationResults(
       observationId: ObservationId,
-      substratumId: SubstratumId,
+      substratumId: SubstratumId?,
       substratumHistoryId: SubstratumHistoryId,
   ) {
     with(OBSERVATION_SUBSTRATUM_RESULTS) {
@@ -2099,7 +2101,7 @@ class ObservationStore(
               )
               .from(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
               .where(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-              .and(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID.eq(substratumId))
+              .and(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_HISTORY_ID.eq(substratumHistoryId))
               .fetchOne()!!
 
       val (plantingDensity, plantingDensityStdDev) =
@@ -2130,7 +2132,7 @@ class ObservationStore(
           .set(PERMANENT_LIVE, permanentLive)
           .set(PLANT_DENSITY, plantingDensity)
           .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
-          .onConflict(OBSERVATION_ID, SUBSTRATUM_ID)
+          .onConflict(OBSERVATION_ID, SUBSTRATUM_HISTORY_ID)
           .doUpdate()
           .set(TOTAL_LIVE, totalLive)
           .set(TOTAL_DEAD, totalDead)
@@ -2144,7 +2146,7 @@ class ObservationStore(
 
   private fun updateStratumObservationResults(
       observationId: ObservationId,
-      stratumId: StratumId,
+      stratumId: StratumId?,
       stratumHistoryId: StratumHistoryId,
   ) {
     with(OBSERVATION_STRATUM_RESULTS) {
@@ -2158,7 +2160,7 @@ class ObservationStore(
               )
               .from(OBSERVED_STRATUM_SPECIES_TOTALS)
               .where(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
-              .and(OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_ID.eq(stratumId))
+              .and(OBSERVED_STRATUM_SPECIES_TOTALS.STRATUM_HISTORY_ID.eq(stratumHistoryId))
               .fetchOne()!!
 
       val (plantingDensity, plantingDensityStdDev) =
@@ -2191,7 +2193,7 @@ class ObservationStore(
           .set(PERMANENT_LIVE, permanentLive)
           .set(PLANT_DENSITY, plantingDensity)
           .set(PLANT_DENSITY_STD_DEV, plantingDensityStdDev)
-          .onConflict(OBSERVATION_ID, STRATUM_ID)
+          .onConflict(OBSERVATION_ID, STRATUM_HISTORY_ID)
           .doUpdate()
           .set(TOTAL_LIVE, totalLive)
           .set(TOTAL_DEAD, totalDead)
@@ -2259,7 +2261,9 @@ class ObservationStore(
       observationId: ObservationId,
       plantingSite: PlantingSitesRow,
       stratumId: StratumId?,
+      stratumHistoryId: StratumHistoryId?,
       substratumId: SubstratumId?,
+      substratumHistoryId: SubstratumHistoryId?,
       monitoringPlotId: MonitoringPlotId,
       isAdHoc: Boolean,
   ) {
@@ -2284,24 +2288,12 @@ class ObservationStore(
     )
 
     if (!isAdHoc) {
-      val (substratumHistoryId, stratumHistoryId) =
-          dslContext
-              .select(
-                  MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID,
-                  SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID,
-              )
-              .from(MONITORING_PLOT_HISTORIES)
-              .leftJoin(SUBSTRATUM_HISTORIES)
-              .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
-              .where(MONITORING_PLOT_HISTORIES.ID.eq(monitoringPlotHistoryId))
-              .fetchOne()!!
-
-      if (substratumId != null) {
-        updateSubstratumObservationResults(observationId, substratumId, substratumHistoryId!!)
+      if (substratumHistoryId != null) {
+        updateSubstratumObservationResults(observationId, substratumId, substratumHistoryId)
       }
 
-      if (stratumId != null) {
-        updateStratumObservationResults(observationId, stratumId, stratumHistoryId!!)
+      if (stratumHistoryId != null) {
+        updateStratumObservationResults(observationId, stratumId, stratumHistoryId)
       }
 
       val plantingSiteHistoryId =
