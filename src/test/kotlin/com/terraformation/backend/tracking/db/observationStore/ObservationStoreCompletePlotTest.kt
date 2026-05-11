@@ -1404,6 +1404,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 1,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
         ),
@@ -1419,6 +1420,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 1,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
         ),
@@ -1434,6 +1436,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 1,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
         ),
@@ -1493,6 +1496,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
         ),
@@ -1508,6 +1512,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
         ),
@@ -1523,6 +1528,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
         ),
@@ -1583,6 +1589,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         ),
         "plot results after third plot completion",
     )
+    // plot3 has null survival_rate (no plot T0 density), so it is excluded from std dev;
+    // std dev remains the same as after second plot completion.
     assertTableEquals(
         ObservationSubstratumResultsRecord(
             observationId = observationId,
@@ -1593,6 +1601,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = 50,
+            survivalRateStdDev = 22,
             plantDensity = 37,
             plantDensityStdDev = 28,
         ),
@@ -1608,6 +1617,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = 50,
+            survivalRateStdDev = 22,
             plantDensity = 37,
             plantDensityStdDev = 28,
         ),
@@ -1623,10 +1633,11 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = 50,
+            survivalRateStdDev = 22,
             plantDensity = 37,
             plantDensityStdDev = 28,
         ),
-        "site results after second plot completion",
+        "site results after third plot completion",
     )
   }
 
@@ -1727,6 +1738,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 1,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
         ),
@@ -1742,6 +1754,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 1,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
         ),
@@ -1757,6 +1770,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 1,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
         ),
@@ -1816,6 +1830,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
         ),
@@ -1831,6 +1846,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
         ),
@@ -1846,6 +1862,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = null,
+            survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
         ),
@@ -1906,6 +1923,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         ),
         "plot results after third plot completion",
     )
+    // plot3 has plantDensity=0, so weight=0, and it does not affect the std dev formula.
     assertTableEquals(
         ObservationSubstratumResultsRecord(
             observationId = inserted.observationId,
@@ -1916,6 +1934,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = 83,
+            survivalRateStdDev = 45,
             plantDensity = 37,
             plantDensityStdDev = 28,
         ),
@@ -1931,6 +1950,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = 83,
+            survivalRateStdDev = 45,
             plantDensity = 37,
             plantDensityStdDev = 28,
         ),
@@ -1946,10 +1966,531 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 0,
             permanentLive = 4,
             survivalRate = 83,
+            survivalRateStdDev = 45,
             plantDensity = 37,
             plantDensityStdDev = 28,
         ),
-        "site results after second plot completion",
+        "site results after third plot completion",
+    )
+  }
+
+  @Test
+  fun `survival rate std dev is null when no plots have T0 densities`() {
+    val speciesId = insertSpecies()
+    val plot1HistoryId = inserted.monitoringPlotHistoryId
+    val plot2Id = insertMonitoringPlot()
+    val plot2HistoryId = inserted.monitoringPlotHistoryId
+
+    // No T0 densities inserted for either plot.
+
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plotId,
+        monitoringPlotHistoryId = plot1HistoryId,
+    )
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plot2Id,
+        monitoringPlotHistoryId = plot2HistoryId,
+    )
+
+    store.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+        ),
+    )
+    store.completePlot(
+        observationId,
+        plot2Id,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        List(2) {
+          RecordedPlantsRow(
+              certaintyId = RecordedSpeciesCertainty.Known,
+              gpsCoordinates = point(0),
+              speciesId = speciesId,
+              statusId = RecordedPlantStatus.Live,
+          )
+        },
+    )
+
+    // No T0 denominator means survivalRate=null on every plot result row.
+    // The SURVIVAL_RATE.isNotNull filter removes all rows, so all SUM aggregates
+    // return NULL and survivalRateStdDev is null.
+    // plantDensity: AVG(1/0.09, 2/0.09) = 16.67 → 17; plantDensityStdDev: STDDEV_SAMP ≈ 7.86 → 8
+    assertTableEquals(
+        ObservationSubstratumResultsRecord(
+            observationId = observationId,
+            substratumId = inserted.substratumId,
+            substratumHistoryId = inserted.substratumHistoryId,
+            totalLive = 3,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 3,
+            survivalRate = null,
+            survivalRateStdDev = null,
+            plantDensity = 17,
+            plantDensityStdDev = 8,
+        ),
+        "substratum results - survival rate std dev is null with no T0 densities",
+    )
+    assertTableEquals(
+        ObservationStratumResultsRecord(
+            observationId = observationId,
+            stratumId = inserted.stratumId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            totalLive = 3,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 3,
+            survivalRate = null,
+            survivalRateStdDev = null,
+            plantDensity = 17,
+            plantDensityStdDev = 8,
+        ),
+        "stratum results - survival rate std dev is null with no T0 densities",
+    )
+    assertTableEquals(
+        ObservationSiteResultsRecord(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+            totalLive = 3,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 3,
+            survivalRate = null,
+            survivalRateStdDev = null,
+            plantDensity = 17,
+            plantDensityStdDev = 8,
+        ),
+        "site results - survival rate std dev is null with no T0 densities",
+    )
+  }
+
+  @Test
+  fun `excludes plots without survival rate from std dev calculation`() {
+    val speciesId = insertSpecies()
+    val plot1HistoryId = inserted.monitoringPlotHistoryId
+
+    // Only plot1 has a T0 density; plot2 does not.
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(4).toPlantsPerHectare(),
+    )
+
+    val plot2Id = insertMonitoringPlot()
+    val plot2HistoryId = inserted.monitoringPlotHistoryId
+
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plotId,
+        monitoringPlotHistoryId = plot1HistoryId,
+    )
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plot2Id,
+        monitoringPlotHistoryId = plot2HistoryId,
+    )
+
+    // plot1: 1 live, T0=4 → survivalRate=25, plantDensity=11
+    store.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+        ),
+    )
+    // plot2: 2 live, no T0 → survivalRate=null, plantDensity=22
+    store.completePlot(
+        observationId,
+        plot2Id,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        List(2) {
+          RecordedPlantsRow(
+              certaintyId = RecordedSpeciesCertainty.Known,
+              gpsCoordinates = point(0),
+              speciesId = speciesId,
+              statusId = RecordedPlantStatus.Live,
+          )
+        },
+    )
+
+    assertTableEquals(
+        listOf(
+            ObservationPlotResultsRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                monitoringPlotHistoryId = plot1HistoryId,
+                totalLive = 1,
+                totalDead = 0,
+                totalExisting = 0,
+                permanentLive = 1,
+                survivalRate = 25,
+                plantDensity = 11,
+            ),
+            ObservationPlotResultsRecord(
+                observationId = observationId,
+                monitoringPlotId = plot2Id,
+                monitoringPlotHistoryId = plot2HistoryId,
+                totalLive = 2,
+                totalDead = 0,
+                totalExisting = 0,
+                permanentLive = 2,
+                survivalRate = null,
+                plantDensity = 22,
+            ),
+        ),
+        "plot results",
+    )
+
+    // Aggregate survival rate uses permanentLive from both plots but T0 from plot1 only:
+    // (1+2)*100/4 = 75. Std dev: only plot1 (survivalRate=25) contributes because plot2 has
+    // null survivalRate; single contributing point → variance=0, std dev=0.
+    // plantDensity: AVG(1/0.09, 2/0.09) = 16.67 → 17; plantDensityStdDev: STDDEV_SAMP ≈ 7.86 → 8
+    assertTableEquals(
+        ObservationSubstratumResultsRecord(
+            observationId = observationId,
+            substratumId = inserted.substratumId,
+            substratumHistoryId = inserted.substratumHistoryId,
+            totalLive = 3,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 3,
+            survivalRate = null,
+            survivalRateStdDev = null,
+            plantDensity = 17,
+            plantDensityStdDev = 8,
+        ),
+        "substratum results - plot2 excluded from std dev due to null survival rate",
+    )
+    assertTableEquals(
+        ObservationStratumResultsRecord(
+            observationId = observationId,
+            stratumId = inserted.stratumId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            totalLive = 3,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 3,
+            survivalRate = null,
+            survivalRateStdDev = null,
+            plantDensity = 17,
+            plantDensityStdDev = 8,
+        ),
+        "stratum results - plot2 excluded from std dev due to null survival rate",
+    )
+    assertTableEquals(
+        ObservationSiteResultsRecord(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+            totalLive = 3,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 3,
+            survivalRate = null,
+            survivalRateStdDev = null,
+            plantDensity = 17,
+            plantDensityStdDev = 8,
+        ),
+        "site results - plot2 excluded from std dev due to null survival rate",
+    )
+  }
+
+  @Test
+  fun `treats plots with zero plant density as non-existent in std dev calculation`() {
+    val speciesId = insertSpecies()
+    val plot1HistoryId = inserted.monitoringPlotHistoryId
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(4).toPlantsPerHectare(),
+    )
+
+    val plot2Id = insertMonitoringPlot()
+    val plot2HistoryId = inserted.monitoringPlotHistoryId
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(4).toPlantsPerHectare(),
+    )
+
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plotId,
+        monitoringPlotHistoryId = plot1HistoryId,
+    )
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plot2Id,
+        monitoringPlotHistoryId = plot2HistoryId,
+    )
+
+    // plot1: 1 live → survivalRate=25, plantDensity=11 (weight=11)
+    store.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+        ),
+    )
+    // plot2: 0 plants → survivalRate=0, plantDensity=0 (weight=0, non-existent in std dev)
+    store.completePlot(
+        observationId,
+        plot2Id,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        emptyList(),
+    )
+
+    assertTableEquals(
+        listOf(
+            ObservationPlotResultsRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                monitoringPlotHistoryId = plot1HistoryId,
+                totalLive = 1,
+                totalDead = 0,
+                totalExisting = 0,
+                permanentLive = 1,
+                survivalRate = 25,
+                plantDensity = 11,
+            ),
+            ObservationPlotResultsRecord(
+                observationId = observationId,
+                monitoringPlotId = plot2Id,
+                monitoringPlotHistoryId = plot2HistoryId,
+                totalLive = 0,
+                totalDead = 0,
+                totalExisting = 0,
+                permanentLive = 0,
+                survivalRate = 0,
+                plantDensity = 0,
+            ),
+        ),
+        "plot results",
+    )
+
+    // Both plots have T0 so denominator=8; permanentLive=1; survivalRate=1*100/8=13.
+    // Std dev: plot1 (weight=11) contributes; plot2 (weight=0) does not → single point → 0.
+    // plantDensity: AVG(1/0.09, 0/0.09) = 5.56 → 6; plantDensityStdDev: STDDEV_SAMP ≈ 7.86 → 8.
+    assertTableEquals(
+        ObservationSubstratumResultsRecord(
+            observationId = observationId,
+            substratumId = inserted.substratumId,
+            substratumHistoryId = inserted.substratumHistoryId,
+            totalLive = 1,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 1,
+            survivalRate = 13,
+            survivalRateStdDev = 0,
+            plantDensity = 6,
+            plantDensityStdDev = 8,
+        ),
+        "substratum results - zero-density plot is non-existent in std dev",
+    )
+    assertTableEquals(
+        ObservationStratumResultsRecord(
+            observationId = observationId,
+            stratumId = inserted.stratumId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            totalLive = 1,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 1,
+            survivalRate = 13,
+            survivalRateStdDev = 0,
+            plantDensity = 6,
+            plantDensityStdDev = 8,
+        ),
+        "stratum results - zero-density plot is non-existent in std dev",
+    )
+    assertTableEquals(
+        ObservationSiteResultsRecord(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+            totalLive = 1,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 1,
+            survivalRate = 13,
+            survivalRateStdDev = 0,
+            plantDensity = 6,
+            plantDensityStdDev = 8,
+        ),
+        "site results - zero-density plot is non-existent in std dev",
+    )
+  }
+
+  @Test
+  fun `survival rate std dev is null when all plots have zero plant density`() {
+    val speciesId = insertSpecies()
+    val plot1HistoryId = inserted.monitoringPlotHistoryId
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(4).toPlantsPerHectare(),
+    )
+
+    val plot2Id = insertMonitoringPlot()
+    val plot2HistoryId = inserted.monitoringPlotHistoryId
+    insertPlotT0Density(
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(4).toPlantsPerHectare(),
+    )
+
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plotId,
+        monitoringPlotHistoryId = plot1HistoryId,
+    )
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plot2Id,
+        monitoringPlotHistoryId = plot2HistoryId,
+    )
+
+    // Both plots have 0 plants → survivalRate=0, plantDensity=0 for each.
+    store.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        emptyList(),
+    )
+    store.completePlot(
+        observationId,
+        plot2Id,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        emptyList(),
+    )
+
+    assertTableEquals(
+        listOf(
+            ObservationPlotResultsRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                monitoringPlotHistoryId = plot1HistoryId,
+                totalLive = 0,
+                totalDead = 0,
+                totalExisting = 0,
+                permanentLive = 0,
+                survivalRate = 0,
+                plantDensity = 0,
+            ),
+            ObservationPlotResultsRecord(
+                observationId = observationId,
+                monitoringPlotId = plot2Id,
+                monitoringPlotHistoryId = plot2HistoryId,
+                totalLive = 0,
+                totalDead = 0,
+                totalExisting = 0,
+                permanentLive = 0,
+                survivalRate = 0,
+                plantDensity = 0,
+            ),
+        ),
+        "plot results",
+    )
+
+    // All plot densities are 0 so totalWeight=0; the zero-weight guard returns null for std dev.
+    // survivalRate=0*100/8=0; plantDensity=AVG(0,0)=0; plantDensityStdDev=STDDEV_SAMP(0,0)=0.
+    assertTableEquals(
+        ObservationSubstratumResultsRecord(
+            observationId = observationId,
+            substratumId = inserted.substratumId,
+            substratumHistoryId = inserted.substratumHistoryId,
+            totalLive = 0,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 0,
+            survivalRate = 0,
+            survivalRateStdDev = null,
+            plantDensity = 0,
+            plantDensityStdDev = 0,
+        ),
+        "substratum results - std dev is null when all plots have zero density",
+    )
+    assertTableEquals(
+        ObservationStratumResultsRecord(
+            observationId = observationId,
+            stratumId = inserted.stratumId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            totalLive = 0,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 0,
+            survivalRate = 0,
+            survivalRateStdDev = null,
+            plantDensity = 0,
+            plantDensityStdDev = 0,
+        ),
+        "stratum results - std dev is null when all plots have zero density",
+    )
+    assertTableEquals(
+        ObservationSiteResultsRecord(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+            totalLive = 0,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 0,
+            survivalRate = 0,
+            survivalRateStdDev = null,
+            plantDensity = 0,
+            plantDensityStdDev = 0,
+        ),
+        "site results - std dev is null when all plots have zero density",
     )
   }
 
