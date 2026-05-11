@@ -13,7 +13,7 @@ import org.jooq.Record
 data class PublishedActivityModel(
     val activityDate: LocalDate,
     val activityType: ActivityType,
-    val description: String,
+    val description: String?,
     val id: ActivityId,
     val isHighlight: Boolean,
     val media: List<PublishedActivityMediaModel> = emptyList(),
@@ -30,7 +30,7 @@ data class PublishedActivityModel(
         PublishedActivityModel(
             activityDate = record[ACTIVITY_DATE]!!,
             activityType = record[ACTIVITY_TYPE_ID]!!,
-            description = record[DESCRIPTION]!!,
+            description = record[DESCRIPTION],
             id = record[ACTIVITY_ID]!!,
             isHighlight = record[IS_HIGHLIGHT]!!,
             media = mediaField?.let { record[it] } ?: emptyList(),

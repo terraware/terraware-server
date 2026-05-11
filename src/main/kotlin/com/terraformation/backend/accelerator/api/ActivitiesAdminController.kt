@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.funder.db.PublishedActivityStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.QueryParam
 import java.time.Instant
 import java.time.LocalDate
@@ -195,7 +196,10 @@ data class AdminCreateActivityRequestPayload(
 
 data class AdminUpdateActivityRequestPayload(
     val date: LocalDate,
-    val description: String,
+    @Schema(
+        description = "Required for user-created activities; optional for system-generated ones."
+    )
+    val description: String?,
     val isHighlight: Boolean,
     val status: ActivityStatus,
     val type: ActivityType,
