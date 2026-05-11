@@ -2390,16 +2390,18 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `processes Completed and Abandoned observations only`() {
-      insertObservation(state = ObservationState.Upcoming)
-      insertObservation(state = ObservationState.InProgress)
-      insertObservation(state = ObservationState.Overdue)
+      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.Upcoming)
+      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.InProgress)
+      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.Overdue)
       val completedId =
           insertObservation(
+              plantingSiteId = plantingSiteId,
               state = ObservationState.Completed,
               completedTime = Instant.ofEpochSecond(100),
           )
       val abandonedId =
           insertObservation(
+              plantingSiteId = plantingSiteId,
               state = ObservationState.Abandoned,
               completedTime = Instant.ofEpochSecond(200),
           )
