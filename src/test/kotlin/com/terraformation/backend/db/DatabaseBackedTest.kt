@@ -3301,6 +3301,7 @@ abstract class DatabaseBackedTest {
       groundPlane: List<CoordinateModel>? = null,
       sceneBounds: CoordinateModel? = null,
       skyColor: String? = null,
+      averageCameraHeight: BigDecimal? = null,
   ) {
     with(SPLATS) {
       dslContext
@@ -3319,6 +3320,7 @@ abstract class DatabaseBackedTest {
           .set(ORIGIN_POSITION, originPosition.toPointField())
           .set(SCENE_BOUNDS, sceneBounds.toPointField())
           .set(SKY_COLOR, skyColor)
+          .set(AVERAGE_CAMERA_HEIGHT, averageCameraHeight)
           .set(SPLAT_STORAGE_URL, splatStorageUrl)
           .execute()
     }

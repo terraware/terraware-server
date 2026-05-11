@@ -313,7 +313,11 @@ class SplatService(
           .set(ASSET_STATUS_ID, AssetStatus.Ready)
           .set(COMPLETED_TIME, clock.instant())
           .let { step ->
-            if (modelMetadata != null) step.set(SKY_COLOR, skyColor).set(GROUND_COLOR, groundColor)
+            if (modelMetadata != null)
+                step
+                    .set(AVERAGE_CAMERA_HEIGHT, modelMetadata.averageCameraHeight)
+                    .set(SKY_COLOR, skyColor)
+                    .set(GROUND_COLOR, groundColor)
             else step
           }
           .let { step ->
@@ -561,6 +565,7 @@ class SplatService(
       val record =
           dslContext
               .select(
+                  AVERAGE_CAMERA_HEIGHT,
                   CAMERA_POSITION,
                   GROUND_COLOR,
                   GROUND_PLANE,
@@ -578,9 +583,11 @@ class SplatService(
       val groundPlane = CoordinateModel.ofList(record, GROUND_PLANE)
       val skyColor = record[SKY_COLOR]
       val groundColor = record[GROUND_COLOR]
+      val averageCameraHeight = record[AVERAGE_CAMERA_HEIGHT]
 
       return SplatInfoModel(
           annotations = annotations,
+          averageCameraHeight = averageCameraHeight,
           cameraPosition = cameraPosition,
           groundColor = groundColor,
           groundPlane = groundPlane,

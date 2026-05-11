@@ -39,6 +39,7 @@ import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
 import java.io.ByteArrayInputStream
+import java.math.BigDecimal
 import java.net.URI
 import java.nio.file.NoSuchFileException
 import java.time.Instant
@@ -836,6 +837,23 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `returns average camera height when present`() {
+      insertSplat(averageCameraHeight = BigDecimal("7.25"))
+
+      val expected =
+          SplatInfoModel(
+              annotations = emptyList(),
+              averageCameraHeight = BigDecimal("7.25"),
+              cameraPosition = null,
+              groundColor = null,
+              originPosition = null,
+              skyColor = null,
+          )
+
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
     fun `throws exception if file is not associated with observation`() {
       val otherFileId = insertFile()
 
@@ -982,6 +1000,54 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               splatStorageUrl = URI("s3://bucket/splat"),
               skyColor = "#87CEEB",
               groundColor = "#8B4513",
+          )
+      )
+    }
+
+    @Test
+    fun `saves average camera height when model metadata is provided`() {
+      service.recordSplatSuccess(
+          fileId,
+          ModelMetadataModel(averageCameraHeight = BigDecimal("5.75")),
+      )
+
+      assertTableEquals(
+          SplatsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Ready,
+              completedTime = clock.instant(),
+              organizationId = organizationId,
+              needsAttention = false,
+              splatStorageUrl = URI("s3://bucket/splat"),
+              averageCameraHeight = BigDecimal("5.75"),
+          )
+      )
+    }
+
+    @Test
+    fun `does not overwrite average camera height when modelMetadata is null`() {
+      dslContext.deleteFrom(SPLATS).where(SPLATS.FILE_ID.eq(fileId)).execute()
+      insertSplat(
+          fileId = fileId,
+          assetStatus = AssetStatus.Preparing,
+          averageCameraHeight = BigDecimal("3.0"),
+      )
+
+      service.recordSplatSuccess(fileId, null)
+
+      assertTableEquals(
+          SplatsRecord(
+              fileId = fileId,
+              createdBy = user.userId,
+              createdTime = clock.instant(),
+              assetStatusId = AssetStatus.Ready,
+              completedTime = clock.instant(),
+              organizationId = organizationId,
+              needsAttention = false,
+              splatStorageUrl = URI("s3://bucket/splat"),
+              averageCameraHeight = BigDecimal("3.0"),
           )
       )
     }

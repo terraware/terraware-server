@@ -267,6 +267,7 @@ data class SplatAnnotationPayload(
 
 data class GetObservationSplatInfoResponsePayload(
     val annotations: List<SplatAnnotationPayload>,
+    val averageCameraHeight: BigDecimal?,
     val cameraPosition: CoordinatePayload?,
     val groundColor: String?,
     val groundPlane: List<CoordinatePayload>?,
@@ -278,6 +279,7 @@ data class GetObservationSplatInfoResponsePayload(
       model: SplatInfoModel
   ) : this(
       annotations = model.annotations.map { SplatAnnotationPayload.of(it) },
+      averageCameraHeight = model.averageCameraHeight,
       cameraPosition = model.cameraPosition?.let { CoordinatePayload.of(it) },
       groundColor = model.groundColor,
       groundPlane = model.groundPlane?.map { CoordinatePayload.of(it) },
