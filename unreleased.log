@@ -1,3 +1,4 @@
+8ac82be4 Update dependency com.google.apis:google-api-services-drive to v3-rev20260428-2.0.0 (#4353)
 ba60e7f1 Update dependency html-minifier-next to v6.2.4 (#4354)
 2d1b6e7e Update dependency types-requests to v2.33.0.20260508 (#4356)
 cd56d0c0 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.47.0 (#4357)
