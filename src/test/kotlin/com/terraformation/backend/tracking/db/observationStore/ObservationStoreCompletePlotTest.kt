@@ -19,10 +19,17 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumPopulationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotConditionsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationPlotResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationSiteResultsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationStratumResultsRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationSubstratumResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingSitePopulationsRecord
 import com.terraformation.backend.db.tracking.tables.records.StratumPopulationsRecord
 import com.terraformation.backend.db.tracking.tables.records.SubstratumPopulationsRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
@@ -1041,6 +1048,322 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         substratumPopulationsDao.findAll(),
         "Substratum plants since last observation should have been reset",
     )
+  }
+
+  @Test
+  fun `updates observation results for plot, substratum, stratum, and site`() {
+    val speciesId = insertSpecies()
+    insertObservationPlot(isPermanent = true, claimedBy = user.userId, claimedTime = Instant.EPOCH)
+
+    val plants =
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Dead,
+            ),
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Existing,
+            ),
+        )
+
+    store.completePlot(observationId, plotId, emptySet(), null, Instant.EPOCH, plants)
+
+    // areaHa = 30 * 30 / 10000.0 = 0.09; permanentLive = 2; plantDensity = (2 / 0.09).toInt() = 22
+    assertTableEquals(
+        ObservationPlotResultsRecord(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            monitoringPlotHistoryId = inserted.monitoringPlotHistoryId,
+            totalLive = 2,
+            totalDead = 1,
+            totalExisting = 1,
+            permanentLive = 2,
+            plantDensity = 22,
+        ),
+        "observation plot results",
+    )
+    assertTableEquals(
+        ObservationSubstratumResultsRecord(
+            observationId = observationId,
+            substratumId = inserted.substratumId,
+            substratumHistoryId = inserted.substratumHistoryId,
+            totalLive = 2,
+            totalDead = 1,
+            totalExisting = 1,
+            permanentLive = 2,
+            plantDensity = 22,
+            plantDensityStdDev = null,
+        ),
+        "observation substratum results",
+    )
+    assertTableEquals(
+        ObservationStratumResultsRecord(
+            observationId = observationId,
+            stratumId = inserted.stratumId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            totalLive = 2,
+            totalDead = 1,
+            totalExisting = 1,
+            permanentLive = 2,
+            plantDensity = 22,
+            plantDensityStdDev = null,
+        ),
+        "observation stratum results",
+    )
+    assertTableEquals(
+        ObservationSiteResultsRecord(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+            totalLive = 2,
+            totalDead = 1,
+            totalExisting = 1,
+            permanentLive = 2,
+            plantDensity = 22,
+            plantDensityStdDev = null,
+        ),
+        "observation site results",
+    )
+  }
+
+  @Test
+  fun `aggregates results across multiple plot completions`() {
+    val speciesId = insertSpecies()
+    val plot1HistoryId = inserted.monitoringPlotHistoryId
+    val plot2Id = insertMonitoringPlot()
+    val plot2HistoryId = inserted.monitoringPlotHistoryId
+
+    insertObservationPlot(
+        isPermanent = true,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = plotId,
+        monitoringPlotHistoryId = plot1HistoryId,
+    )
+    insertObservationPlot(isPermanent = true, claimedBy = user.userId, claimedTime = Instant.EPOCH)
+
+    store.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+        ),
+    )
+    // plot1: permanentLive=1, density=(1/0.09).toInt()=11; STDDEV_SAMP of single value is null
+    assertTableEquals(
+        ObservationPlotResultsRecord(
+            observationId = observationId,
+            monitoringPlotId = plotId,
+            monitoringPlotHistoryId = plot1HistoryId,
+            totalLive = 1,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 1,
+            plantDensity = 11,
+        ),
+        "observation plot results after first plot completion",
+    )
+    assertTableEquals(
+        ObservationSubstratumResultsRecord(
+            observationId = observationId,
+            substratumId = inserted.substratumId,
+            substratumHistoryId = inserted.substratumHistoryId,
+            totalLive = 1,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 1,
+            plantDensity = 11,
+            plantDensityStdDev = null,
+        ),
+        "observation substratum results after first plot completion",
+    )
+    assertTableEquals(
+        ObservationStratumResultsRecord(
+            observationId = observationId,
+            stratumId = inserted.stratumId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            totalLive = 1,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 1,
+            plantDensity = 11,
+            plantDensityStdDev = null,
+        ),
+        "observation stratum results after first plot completion",
+    )
+    assertTableEquals(
+        ObservationSiteResultsRecord(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+            totalLive = 1,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 1,
+            plantDensity = 11,
+            plantDensityStdDev = null,
+        ),
+        "observation site results after first plot completion",
+    )
+
+    store.completePlot(
+        observationId,
+        plot2Id,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        List(3) {
+          RecordedPlantsRow(
+              certaintyId = RecordedSpeciesCertainty.Known,
+              gpsCoordinates = point(0),
+              speciesId = speciesId,
+              statusId = RecordedPlantStatus.Live,
+          )
+        },
+    )
+
+    // plot2: permanentLive=3, density=(3/0.09).toInt()=33
+    // avg(11, 33)=22; stddev_samp(11, 33)=sqrt(242)≈15.56, rounds to 16 on cast to integer
+    assertTableEquals(
+        listOf(
+            ObservationPlotResultsRecord(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                monitoringPlotHistoryId = plot1HistoryId,
+                totalLive = 1,
+                totalDead = 0,
+                totalExisting = 0,
+                permanentLive = 1,
+                plantDensity = 11,
+            ),
+            ObservationPlotResultsRecord(
+                observationId = observationId,
+                monitoringPlotId = plot2Id,
+                monitoringPlotHistoryId = plot2HistoryId,
+                totalLive = 3,
+                totalDead = 0,
+                totalExisting = 0,
+                permanentLive = 3,
+                plantDensity = 33,
+            ),
+        ),
+        "observation plot results after second plot completion",
+    )
+    assertTableEquals(
+        ObservationSubstratumResultsRecord(
+            observationId = observationId,
+            substratumId = inserted.substratumId,
+            substratumHistoryId = inserted.substratumHistoryId,
+            totalLive = 4,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 4,
+            plantDensity = 22,
+            plantDensityStdDev = 16,
+        ),
+        "observation substratum results after second plot completion",
+    )
+    assertTableEquals(
+        ObservationStratumResultsRecord(
+            observationId = observationId,
+            stratumId = inserted.stratumId,
+            stratumHistoryId = inserted.stratumHistoryId,
+            totalLive = 4,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 4,
+            plantDensity = 22,
+            plantDensityStdDev = 16,
+        ),
+        "observation stratum results after second plot completion",
+    )
+    assertTableEquals(
+        ObservationSiteResultsRecord(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = inserted.plantingSiteHistoryId,
+            totalLive = 4,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 4,
+            plantDensity = 22,
+            plantDensityStdDev = 16,
+        ),
+        "observation site results after second plot completion",
+    )
+  }
+
+  @Test
+  fun `skips aggregate results for ad-hoc observations`() {
+    val speciesId = insertSpecies()
+    val adHocPlotId = insertMonitoringPlot(isAdHoc = true, substratumId = null)
+    val adHocPlotHistoryId = inserted.monitoringPlotHistoryId
+    val adHocObservationId = insertObservation(isAdHoc = true)
+    insertObservationPlot(
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+        monitoringPlotId = adHocPlotId,
+        monitoringPlotHistoryId = adHocPlotHistoryId,
+        observationId = adHocObservationId,
+    )
+
+    store.completePlot(
+        adHocObservationId,
+        adHocPlotId,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(0),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+        ),
+    )
+
+    assertTableEquals(
+        ObservationPlotResultsRecord(
+            observationId = adHocObservationId,
+            monitoringPlotId = adHocPlotId,
+            monitoringPlotHistoryId = adHocPlotHistoryId,
+            totalLive = 1,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 0,
+            plantDensity = 11,
+        ),
+        "observation plot results",
+    )
+    assertTableEmpty(OBSERVATION_SUBSTRATUM_RESULTS)
+    assertTableEmpty(OBSERVATION_STRATUM_RESULTS)
+    assertTableEmpty(OBSERVATION_SITE_RESULTS)
   }
 
   @Test
