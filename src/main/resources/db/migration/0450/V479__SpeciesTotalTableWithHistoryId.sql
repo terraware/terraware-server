@@ -98,6 +98,32 @@ UPDATE tracking.observed_substratum_species_totals as totals
     WHERE obs.id = totals.observation_id
         AND ssh.substratum_id = totals.substratum_id;
 
+-- There are some monitoring plots with missing history for some reason. Identify them and fix.
+INSERT INTO tracking.monitoring_plot_histories (
+    monitoring_plot_id, substratum_id, planting_site_id, substratum_history_id,
+    planting_site_history_id, created_by, created_time
+)
+SELECT DISTINCT plots.id,
+                plots.substratum_id,
+                obs.planting_site_id,
+                (SELECT shist.id
+                 FROM tracking.substratum_histories shist
+                     JOIN tracking.stratum_histories strh ON strh.id = shist.stratum_history_id
+                 WHERE strh.planting_site_history_id = obs.planting_site_history_id
+                     AND shist.substratum_id = plots.substratum_id),
+                obs.planting_site_history_id,
+                psh.created_by,
+                psh.created_time
+FROM tracking.observed_plot_species_totals totals
+    JOIN tracking.observations obs ON obs.id = totals.observation_id
+    JOIN tracking.monitoring_plots plots ON plots.id = totals.monitoring_plot_id
+    JOIN tracking.planting_site_histories psh ON psh.id = obs.planting_site_history_id
+WHERE NOT EXISTS (
+    SELECT 1 FROM tracking.monitoring_plot_histories h
+    WHERE h.planting_site_history_id = obs.planting_site_history_id
+        AND h.monitoring_plot_id = plots.id
+);
+
 UPDATE tracking.observed_plot_species_totals as totals
     SET monitoring_plot_history_id = ph.id
     FROM tracking.observations as obs
