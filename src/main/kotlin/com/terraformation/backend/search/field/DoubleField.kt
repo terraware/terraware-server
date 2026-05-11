@@ -13,7 +13,8 @@ class DoubleField(
     localize: Boolean = true,
     exportable: Boolean = true,
 ) : NumericSearchField<Double>(fieldName, databaseField, table, localize, exportable) {
-  override fun fromString(value: String) = numberFormat.parse(value).toDouble()
+  override fun fromString(value: String) =
+      if (localize) numberFormat.parse(value).toDouble() else value.toDouble()
 
   override fun makeNumberFormat(): NumberFormat {
     return NumberFormat.getNumberInstance(currentLocale()).apply {

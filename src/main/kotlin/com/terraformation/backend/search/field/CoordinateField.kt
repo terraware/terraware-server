@@ -42,7 +42,8 @@ class CoordinateField(
     throw IllegalArgumentException("Filters not supported for geometry fields")
   }
 
-  override fun fromString(value: String) = numberFormat.parseObject(value) as BigDecimal
+  override fun fromString(value: String) =
+      if (localize) numberFormat.parseObject(value) as BigDecimal else BigDecimal(value)
 
   override fun makeNumberFormat(): NumberFormat {
     return (NumberFormat.getNumberInstance(currentLocale()) as DecimalFormat).apply {
