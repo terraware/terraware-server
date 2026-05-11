@@ -736,6 +736,21 @@ class AdminPlantingSitesController(
     return redirectToAdminHome()
   }
 
+  @PostMapping("/backfillObservationResults")
+  @RequireGlobalRole([GlobalRole.SuperAdmin])
+  fun backfillObservationResults(redirectAttributes: RedirectAttributes): String {
+    try {
+      val count = observationService.backfillObservationResults()
+      redirectAttributes.successMessage =
+          "Backfilled observation_*_results rows for $count completed observations."
+    } catch (e: Exception) {
+      log.error("Observation results backfill failed", e)
+      redirectAttributes.failureMessage = "Failed to backfill observation results: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
   @PostMapping("/recalculatePopulations")
   @RequireGlobalRole([GlobalRole.SuperAdmin])
   fun recalculatePopulations(

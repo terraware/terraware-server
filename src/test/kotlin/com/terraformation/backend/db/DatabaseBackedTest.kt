@@ -491,6 +491,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratum
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
@@ -515,18 +516,16 @@ import com.terraformation.backend.db.tracking.tables.pojos.StratumT0TempDensitie
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstratumPopulationsRow
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
-import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
-import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.documentproducer.model.StableIds
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
@@ -560,7 +559,6 @@ import org.jooq.Table
 import org.jooq.TableRecord
 import org.jooq.UpdatableRecord
 import org.jooq.impl.DAOImpl
-import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.Point
@@ -3640,22 +3638,7 @@ abstract class DatabaseBackedTest {
       substratumId: SubstratumId? = row.substratumId ?: inserted.substratumId,
       substratumHistoryId: SubstratumHistoryId =
           row.substratumHistoryId
-              ?: substratumId?.let { sId ->
-                dslContext
-                    .select(SUBSTRATUM_HISTORIES.ID)
-                    .from(SUBSTRATUM_HISTORIES)
-                    .join(STRATUM_HISTORIES)
-                    .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
-                    .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(sId))
-                    .and(
-                        STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                            DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
-                                .from(OBSERVATIONS)
-                                .where(OBSERVATIONS.ID.eq(observationId))
-                        )
-                    )
-                    .fetchOne(SUBSTRATUM_HISTORIES.ID)
-              }
+              ?: substratumId?.let { inserted.substratumHistoryIdsBySubstratumId[it]?.last() }
               ?: inserted.substratumHistoryId,
       certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
@@ -3694,18 +3677,59 @@ abstract class DatabaseBackedTest {
     }
   }
 
+  fun insertObservedStratumSpeciesTotals(
+      row: ObservedStratumSpeciesTotalsRow = ObservedStratumSpeciesTotalsRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      stratumId: StratumId? = row.stratumId ?: inserted.stratumId,
+      stratumHistoryId: StratumHistoryId =
+          row.stratumHistoryId
+              ?: stratumId?.let { inserted.stratumHistoryIdsByStratumId[it]?.last() }
+              ?: inserted.stratumHistoryId,
+      certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
+      speciesId: SpeciesId? =
+          row.speciesId
+              ?: if (certainty == RecordedSpeciesCertainty.Known) {
+                inserted.speciesId
+              } else {
+                null
+              },
+      speciesName: String? =
+          row.speciesName
+              ?: if (certainty == RecordedSpeciesCertainty.Other) {
+                "Other species"
+              } else {
+                null
+              },
+      totalLive: Int = row.totalLive ?: 0,
+      totalDead: Int = row.totalDead ?: 0,
+      totalExisting: Int = row.totalExisting ?: 0,
+      permanentLive: Int = row.permanentLive ?: 0,
+  ) {
+    with(OBSERVED_STRATUM_SPECIES_TOTALS) {
+      dslContext
+          .insertInto(OBSERVED_STRATUM_SPECIES_TOTALS)
+          .set(OBSERVATION_ID, observationId)
+          .set(STRATUM_HISTORY_ID, stratumHistoryId)
+          .set(STRATUM_ID, stratumId)
+          .set(CERTAINTY_ID, certainty)
+          .set(SPECIES_ID, speciesId)
+          .set(SPECIES_NAME, speciesName)
+          .set(TOTAL_LIVE, totalLive)
+          .set(TOTAL_DEAD, totalDead)
+          .set(TOTAL_EXISTING, totalExisting)
+          .set(PERMANENT_LIVE, permanentLive)
+          .execute()
+    }
+  }
+
   fun insertObservedSiteSpeciesTotals(
       row: ObservedSiteSpeciesTotalsRow = ObservedSiteSpeciesTotalsRow(),
       observationId: ObservationId = row.observationId ?: inserted.observationId,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       plantingSiteHistoryId: PlantingSiteHistoryId =
           row.plantingSiteHistoryId
-              ?: dslContext
-                  .select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
-                  .from(OBSERVATIONS)
-                  .where(OBSERVATIONS.ID.eq(observationId))
-                  .fetchOne(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+              ?: inserted.plantingSiteHistoryIdsByPlantingSiteId[plantingSiteId]?.last()
               ?: inserted.plantingSiteHistoryId,
-      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
       certainty: RecordedSpeciesCertainty = row.certaintyId ?: RecordedSpeciesCertainty.Known,
       speciesId: SpeciesId? =
           row.speciesId
