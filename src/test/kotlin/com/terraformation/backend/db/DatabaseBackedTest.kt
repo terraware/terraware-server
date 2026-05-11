@@ -482,8 +482,12 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQua
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotResultsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationRequestedSubstrataRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationStratumResultsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratumResultsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
@@ -3435,12 +3439,136 @@ abstract class DatabaseBackedTest {
     observationPlotConditionsDao.insert(rowWithDefaults)
   }
 
+  fun insertObservationPlotResult(
+      row: ObservationPlotResultsRow = ObservationPlotResultsRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      monitoringPlotHistoryId: MonitoringPlotHistoryId =
+          row.monitoringPlotHistoryId
+              ?: inserted.monitoringPlotHistoryIdsByMonitoringPlotId[monitoringPlotId]!!.last(),
+      totalLive: Int = row.totalLive ?: 0,
+      totalDead: Int = row.totalDead ?: 0,
+      totalExisting: Int = row.totalExisting ?: 0,
+      permanentLive: Int = row.permanentLive ?: 0,
+      survivalRate: Int? = row.survivalRate,
+      plantDensity: Int? = row.plantDensity,
+  ) {
+    observationPlotResultsDao.insert(
+        row.copy(
+            observationId = observationId,
+            monitoringPlotId = monitoringPlotId,
+            monitoringPlotHistoryId = monitoringPlotHistoryId,
+            totalLive = totalLive,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            permanentLive = permanentLive,
+            survivalRate = survivalRate,
+            plantDensity = plantDensity,
+        )
+    )
+  }
+
   fun insertObservationRequestedSubstratum(
       observationId: ObservationId = inserted.observationId,
       substratumId: SubstratumId = inserted.substratumId,
   ) {
     observationRequestedSubstrataDao.insert(
         ObservationRequestedSubstrataRow(observationId, substratumId)
+    )
+  }
+
+  fun insertObservationSiteResult(
+      row: ObservationSiteResultsRow = ObservationSiteResultsRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
+      plantingSiteHistoryId: PlantingSiteHistoryId =
+          row.plantingSiteHistoryId ?: inserted.plantingSiteHistoryId,
+      totalLive: Int = row.totalLive ?: 0,
+      totalDead: Int = row.totalDead ?: 0,
+      totalExisting: Int = row.totalExisting ?: 0,
+      permanentLive: Int = row.permanentLive ?: 0,
+      survivalRate: Int? = row.survivalRate,
+      survivalRateStdDev: Int? = row.survivalRateStdDev,
+      plantDensity: Int? = row.plantDensity,
+      plantDensityStdDev: Int? = row.plantDensityStdDev,
+  ) {
+    observationSiteResultsDao.insert(
+        row.copy(
+            observationId = observationId,
+            plantingSiteId = plantingSiteId,
+            plantingSiteHistoryId = plantingSiteHistoryId,
+            totalLive = totalLive,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            permanentLive = permanentLive,
+            survivalRate = survivalRate,
+            survivalRateStdDev = survivalRateStdDev,
+            plantDensity = plantDensity,
+            plantDensityStdDev = plantDensityStdDev,
+        )
+    )
+  }
+
+  fun insertObservationStratumResult(
+      row: ObservationStratumResultsRow = ObservationStratumResultsRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      stratumId: StratumId? = row.stratumId ?: inserted.stratumId,
+      stratumHistoryId: StratumHistoryId = row.stratumHistoryId ?: inserted.stratumHistoryId,
+      totalLive: Int = row.totalLive ?: 0,
+      totalDead: Int = row.totalDead ?: 0,
+      totalExisting: Int = row.totalExisting ?: 0,
+      permanentLive: Int = row.permanentLive ?: 0,
+      survivalRate: Int? = row.survivalRate,
+      survivalRateStdDev: Int? = row.survivalRateStdDev,
+      plantDensity: Int? = row.plantDensity,
+      plantDensityStdDev: Int? = row.plantDensityStdDev,
+  ) {
+    observationStratumResultsDao.insert(
+        row.copy(
+            observationId = observationId,
+            stratumId = stratumId,
+            stratumHistoryId = stratumHistoryId,
+            totalLive = totalLive,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            permanentLive = permanentLive,
+            survivalRate = survivalRate,
+            survivalRateStdDev = survivalRateStdDev,
+            plantDensity = plantDensity,
+            plantDensityStdDev = plantDensityStdDev,
+        )
+    )
+  }
+
+  fun insertObservationSubstratumResult(
+      row: ObservationSubstratumResultsRow = ObservationSubstratumResultsRow(),
+      observationId: ObservationId = row.observationId ?: inserted.observationId,
+      substratumId: SubstratumId? = row.substratumId ?: inserted.substratumId,
+      substratumHistoryId: SubstratumHistoryId =
+          row.substratumHistoryId ?: inserted.substratumHistoryId,
+      totalLive: Int = row.totalLive ?: 0,
+      totalDead: Int = row.totalDead ?: 0,
+      totalExisting: Int = row.totalExisting ?: 0,
+      permanentLive: Int = row.permanentLive ?: 0,
+      survivalRate: Int? = row.survivalRate,
+      survivalRateStdDev: Int? = row.survivalRateStdDev,
+      plantDensity: Int? = row.plantDensity,
+      plantDensityStdDev: Int? = row.plantDensityStdDev,
+  ) {
+    observationSubstratumResultsDao.insert(
+        row.copy(
+            observationId = observationId,
+            substratumId = substratumId,
+            substratumHistoryId = substratumHistoryId,
+            totalLive = totalLive,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            permanentLive = permanentLive,
+            survivalRate = survivalRate,
+            survivalRateStdDev = survivalRateStdDev,
+            plantDensity = plantDensity,
+            plantDensityStdDev = plantDensityStdDev,
+        )
     )
   }
 
