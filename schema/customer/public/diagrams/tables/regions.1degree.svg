@@ -33,14 +33,14 @@
 <text text-anchor="start" x="243" y="-81.2" font-family="Helvetica,sans-Serif" font-size="11.00">code_alpha3</text>
 <polygon fill="none" stroke="black" points="220,-55 220,-73 320,-73 320,-55 220,-55"/>
 <text text-anchor="start" x="223" y="-61.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="220,-37 220,-55 263,-55 263,-37 220,-37"/>
-<polygon fill="none" stroke="black" points="220,-37 220,-55 263,-55 263,-37 220,-37"/>
+<polygon fill="#ffffff" stroke="transparent" points="220,-37 220,-55 244,-55 244,-37 220,-37"/>
+<polygon fill="none" stroke="black" points="220,-37 220,-55 244,-55 244,-37 220,-37"/>
 <text text-anchor="start" x="223" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="263,-37 263,-55 287,-55 287,-37 263,-37"/>
-<polygon fill="none" stroke="black" points="263,-37 263,-55 287,-55 287,-37 263,-37"/>
-<text text-anchor="start" x="277" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="287,-37 287,-55 320,-55 320,-37 287,-37"/>
-<polygon fill="none" stroke="black" points="287,-37 287,-55 320,-55 320,-37 287,-37"/>
+<polygon fill="#ffffff" stroke="transparent" points="244,-37 244,-55 297,-55 297,-37 244,-37"/>
+<polygon fill="none" stroke="black" points="244,-37 244,-55 297,-55 297,-37 244,-37"/>
+<text text-anchor="start" x="248" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="297,-37 297,-55 320,-55 320,-37 297,-37"/>
+<polygon fill="none" stroke="black" points="297,-37 297,-55 320,-55 320,-37 297,-37"/>
 <text text-anchor="start" x="301" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>
