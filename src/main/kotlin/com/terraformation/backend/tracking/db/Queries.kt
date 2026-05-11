@@ -7,7 +7,6 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
-import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import org.jooq.Field
@@ -19,31 +18,32 @@ import org.jooq.impl.DSL
  *
  * The substratum in question is assumed to be OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID.
  */
-fun latestObservationForSubstratumField(observationIdField: Field<ObservationId?>) =
-    with(OBSERVED_SUBSTRATUM_SPECIES_TOTALS) {
-      DSL.select(OBSERVATIONS.ID)
-          .from(OBSERVATIONS)
-          .join(OBSERVATION_REQUESTED_SUBSTRATA)
-          .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID))
-          .where(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(SUBSTRATUM_ID))
-          .and(
-              OBSERVATIONS.COMPLETED_TIME.le(
-                  DSL.select(OBSERVATIONS.COMPLETED_TIME)
-                      .from(OBSERVATIONS)
-                      .where(OBSERVATIONS.ID.eq(observationIdField))
-              )
-          )
-          .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-          .orderBy(
-              // Prefer results from the same observation as the `observationId` if it exists.
-              // True is considered greater than false, so sorting by an "=" expression in
-              // descending order means the matches come first.
-              OBSERVATIONS.ID.eq(observationIdField).desc(),
-              // Otherwise take the results from the next latest observation for that area.
-              OBSERVATIONS.COMPLETED_TIME.desc(),
-          )
-          .limit(1)
-    }
+fun latestObservationForSubstratumField(
+    observationIdField: Field<ObservationId?>,
+    substratumIdField: Field<SubstratumId?>,
+) =
+    DSL.select(OBSERVATIONS.ID)
+        .from(OBSERVATIONS)
+        .join(OBSERVATION_REQUESTED_SUBSTRATA)
+        .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID))
+        .where(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(substratumIdField))
+        .and(
+            OBSERVATIONS.COMPLETED_TIME.le(
+                DSL.select(OBSERVATIONS.COMPLETED_TIME)
+                    .from(OBSERVATIONS)
+                    .where(OBSERVATIONS.ID.eq(observationIdField))
+            )
+        )
+        .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+        .orderBy(
+            // Prefer results from the same observation as the `observationId` if it exists.
+            // True is considered greater than false, so sorting by an "=" expression in
+            // descending order means the matches come first.
+            OBSERVATIONS.ID.eq(observationIdField).desc(),
+            // Otherwise take the results from the next latest observation for that area.
+            OBSERVATIONS.COMPLETED_TIME.desc(),
+        )
+        .limit(1)
 
 /**
  * Returns an observationId if the given monitoring plot is used in the observation results from

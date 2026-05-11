@@ -443,8 +443,12 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassQuad
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassSpeciesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationMediaFilesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotResultsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubstrataDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationSiteResultsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationStratumResultsDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationSubstratumResultsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
@@ -703,9 +707,13 @@ abstract class DatabaseBackedTest {
       lazyDao()
   protected val observationMediaFilesDao: ObservationMediaFilesDao by lazyDao()
   protected val observationPlotConditionsDao: ObservationPlotConditionsDao by lazyDao()
+  protected val observationPlotResultsDao: ObservationPlotResultsDao by lazyDao()
   protected val observationPlotsDao: ObservationPlotsDao by lazyDao()
   protected val observationRequestedSubstrataDao: ObservationRequestedSubstrataDao by lazyDao()
   protected val observationsDao: ObservationsDao by lazyDao()
+  protected val observationSiteResultsDao: ObservationSiteResultsDao by lazyDao()
+  protected val observationStratumResultsDao: ObservationStratumResultsDao by lazyDao()
+  protected val observationSubstratumResultsDao: ObservationSubstratumResultsDao by lazyDao()
   protected val observedPlotCoordinatesDao: ObservedPlotCoordinatesDao by lazyDao()
   protected val organizationInternalTagsDao: OrganizationInternalTagsDao by lazyDao()
   protected val organizationManagedLocationTypesDao: OrganizationManagedLocationTypesDao by
