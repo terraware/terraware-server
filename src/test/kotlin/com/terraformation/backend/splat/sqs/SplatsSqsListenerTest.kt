@@ -12,6 +12,9 @@ import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.locationtech.jts.geom.Coordinate
+import org.locationtech.jts.geom.CoordinateXYZM
+import org.locationtech.jts.geom.GeometryFactory
 
 class SplatsSqsListenerTest {
   private val splatService: SplatService = mockk()
@@ -113,10 +116,7 @@ class SplatsSqsListenerTest {
                   SplatterResponseModelMetadataPayload(
                       groundColor = null,
                       sceneBounds =
-                          GeoJsonPointPayload(
-                              type = "Point",
-                              coordinates = listOf(1.0, 2.0, 3.0, 4.0),
-                          ),
+                          GeometryFactory().createPoint(CoordinateXYZM(1.0, 2.0, 3.0, 4.0)),
                       skyColor = null,
                   ),
           )
@@ -144,11 +144,7 @@ class SplatsSqsListenerTest {
               modelMetadata =
                   SplatterResponseModelMetadataPayload(
                       groundColor = null,
-                      sceneBounds =
-                          GeoJsonPointPayload(
-                              type = "Point",
-                              coordinates = listOf(1.0, 2.0, 3.0),
-                          ),
+                      sceneBounds = GeometryFactory().createPoint(Coordinate(1.0, 2.0, 3.0)),
                       skyColor = null,
                   ),
           )
