@@ -161,6 +161,11 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="observation_plot_results.observation_id references observations.id via observation_plot_results_observation_id_fkey"><a href='observation_plot_results.html'>observation_plot_results</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_plot_results_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="observation_plots.observation_id references observations.id via observation_plots_observation_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observation_plots_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -168,6 +173,21 @@
                                             <tr>
                                                 <td title="observation_requested_substrata.observation_id references observations.id via observation_requested_substrata_observation_id_fkey"><a href='observation_requested_substrata.html'>observation_requested_substrata</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observation_requested_substrata_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observation_site_results.observation_id references observations.id via observation_site_results_observation_id_fkey"><a href='observation_site_results.html'>observation_site_results</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_site_results_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observation_stratum_results.observation_id references observations.id via observation_stratum_results_observation_id_fkey"><a href='observation_stratum_results.html'>observation_stratum_results</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_stratum_results_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observation_substratum_results.observation_id references observations.id via observation_substratum_results_observation_id_fkey"><a href='observation_substratum_results.html'>observation_substratum_results</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_substratum_results_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -485,16 +505,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>end_after_start</td>
+                                    <td>(start_date &lt;&#61; end_date)</td>
+                                </tr>
+                                <tr>
                                     <td>history_id_required_at_start</td>
                                     <td>(((state_id &#61; 1) AND (planting_site_history_id IS NULL)) OR ((state_id &lt;&gt; 1) AND (planting_site_history_id IS NOT NULL)))</td>
                                 </tr>
                                 <tr>
                                     <td>completed_time_and_state</td>
                                     <td>(((completed_time IS NULL) AND (state_id &lt;&gt; ALL (ARRAY[3, 5]))) OR ((completed_time IS NOT NULL) AND (state_id &#61; ANY (ARRAY[3, 5]))))</td>
-                                </tr>
-                                <tr>
-                                    <td>end_after_start</td>
-                                    <td>(start_date &lt;&#61; end_date)</td>
                                 </tr>
                                 </tbody>
                             </table>

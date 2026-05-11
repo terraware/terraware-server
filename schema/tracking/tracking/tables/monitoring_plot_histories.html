@@ -131,8 +131,18 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="observation_plot_results.monitoring_plot_history_id references monitoring_plot_histories.id via observation_plot_results_monitoring_plot_history_id_fkey"><a href='observation_plot_results.html'>observation_plot_results</a><span class='relatedKey'>.monitoring_plot_history_id</span></td>
+                                                <td class="constraint detail">observation_plot_results_monitoring_plot_history_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="observation_plots.monitoring_plot_history_id references monitoring_plot_histories.id via observation_plots_monitoring_plot_history_id_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.monitoring_plot_history_id</span></td>
                                                 <td class="constraint detail">observation_plots_monitoring_plot_history_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observed_plot_species_totals.monitoring_plot_history_id references monitoring_plot_histories.id via observed_plot_species_totals_monitoring_plot_history_id_fkey"><a href='observed_plot_species_totals.html'>observed_plot_species_totals</a><span class='relatedKey'>.monitoring_plot_history_id</span></td>
+                                                <td class="constraint detail">observed_plot_species_totals_monitoring_plot_history_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>

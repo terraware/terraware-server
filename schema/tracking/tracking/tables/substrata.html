@@ -146,9 +146,14 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="observation_substratum_results.substratum_id references substrata.id via observation_substratum_results_substratum_id_fkey"><a href='observation_substratum_results.html'>observation_substratum_results</a><span class='relatedKey'>.substratum_id</span></td>
+                                                <td class="constraint detail">observation_substratum_results_substratum_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="observed_substratum_species_totals.substratum_id references substrata.id via observed_substratum_species_totals_substratum_id_fkey"><a href='observed_substratum_species_totals.html'>observed_substratum_species_totals</a><span class='relatedKey'>.substratum_id</span></td>
                                                 <td class="constraint detail">observed_substratum_species_totals_substratum_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="plantings.substratum_id references substrata.id via plantings_substratum_id_fkey"><a href='plantings.html'>plantings</a><span class='relatedKey'>.substratum_id</span></td>
@@ -338,14 +343,14 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="substrata.planting_site_id references planting_sites.id via substrata_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">substrata_planting_site_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="substrata.[planting_site_id, stratum_id] references strata.[planting_site_id, id] via substrata_planting_site_id_stratum_id_fkey"><a href='strata.html'>strata</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">substrata_planting_site_id_stratum_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="substrata.planting_site_id references planting_sites.id via substrata_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">substrata_planting_site_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>

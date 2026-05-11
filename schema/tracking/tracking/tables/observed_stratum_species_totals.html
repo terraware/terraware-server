@@ -147,7 +147,7 @@
                                     <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="stratum_id">stratum_id</span></td>
                                     <td>int8</td>
                                     <td>19</td>
-                                    <td title=''></td>
+                                    <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -159,7 +159,7 @@
                                             <tr>
                                                 <td title="observed_stratum_species_totals.stratum_id references strata.id via observed_stratum_species_totals_stratum_id_fkey"><a href='strata.html'>strata</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observed_stratum_species_totals_stratum_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -306,6 +306,28 @@
                                     </td>
                                     <td><p>Percentage of plants of the species observed in permanent monitoring plots in the stratum, in either the current observation or in previous ones, that have survived since the t0 point.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="stratum_history_id">stratum_history_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="observed_stratum_species_totals.stratum_history_id references stratum_histories.id via observed_stratum_species_totals_stratum_history_id_fkey"><a href='stratum_histories.html'>stratum_histories</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">observed_stratum_species_totals_stratum_history_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -337,22 +359,22 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observed_stratum_sp_totals_observation_id_stratum_idx</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observed_stratum_species_tota_observation_id_stratum_histo_idx1</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>observation_id + stratum_id + species_id</td>
+                                    <td>observation_id + stratum_history_id + species_name</td>
                                 </tr>
                                 <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observed_stratum_sp_totals_observation_id_stratum_idx1</td>
-                                    <td>Must be unique</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>observation_id + stratum_id + species_name</td>
-                                </tr>
-                                <tr>
-                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observed_stratum_sp_totals_observation_id_stratum_idx2</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observed_stratum_species_tota_observation_id_stratum_histo_idx2</td>
                                     <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>observation_id + stratum_id</td>
+                                    <td>observation_id + stratum_history_id</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> observed_stratum_species_tota_observation_id_stratum_histor_idx</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>observation_id + stratum_history_id + species_id</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>observed_stratum_species_totals_observation_id_idx</td>

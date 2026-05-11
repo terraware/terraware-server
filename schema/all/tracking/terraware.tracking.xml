@@ -99,7 +99,9 @@
       </table>
       <table name="monitoring_plot_histories" remarks="Versions of monitoring plots over time. Each time a planting site changes, its monitoring plots are added to this table." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="monitoring_plot_history_id" foreignKey="observation_plot_results_monitoring_plot_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_results"/>
             <child column="monitoring_plot_history_id" foreignKey="observation_plots_monitoring_plot_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
+            <child column="monitoring_plot_history_id" foreignKey="observed_plot_species_totals_monitoring_plot_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_plot_species_totals"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="monitoring_plot_histories_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
@@ -172,6 +174,7 @@
             <child column="monitoring_plot_id" foreignKey="observation_biomass_species_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
             <child column="monitoring_plot_id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
             <child column="monitoring_plot_id" foreignKey="observation_plot_conditions_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_conditions"/>
+            <child column="monitoring_plot_id" foreignKey="observation_plot_results_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_results"/>
             <child column="monitoring_plot_id" foreignKey="observation_plots_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <child column="monitoring_plot_id" foreignKey="observed_plot_coordinates_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_plot_coordinates"/>
             <child column="monitoring_plot_id" foreignKey="observed_plot_species_totals_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_plot_species_totals"/>
@@ -242,8 +245,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_d_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
             <child column="monitoring_plot_id" foreignKey="observation_biomass_species_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
-            <parent column="id" foreignKey="observation_biomass_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <parent column="monitoring_plot_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="observation_biomass_details_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="description" nullable="true" remarks="" size="50" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="forest_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
@@ -308,17 +311,17 @@
       <table name="observation_biomass_quadrat_species" remarks="Herbaceous species at each quadrat of a monitoring plot of a biomass observation" schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observation_biomass_quadrat_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
-            <parent column="observation_id" foreignKey="quadrat_species_requires_quadrat_details" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
             <parent column="observation_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
+            <parent column="observation_id" foreignKey="quadrat_species_requires_quadrat_details" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
             <parent column="id" foreignKey="observation_biomass_quadrat_species_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <parent column="monitoring_plot_id" foreignKey="quadrat_species_requires_quadrat_details" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
-            <parent column="monitoring_plot_id" foreignKey="observation_biomass_quadrat_s_observation_id_monitoring_pl_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="position_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="position_id" foreignKey="quadrat_species_requires_quadrat_details" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
             <parent column="id" foreignKey="observation_biomass_quadrat_species_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plot_positions"/>
+            <parent column="position_id" foreignKey="quadrat_species_requires_quadrat_details" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_quadrat_details"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="biomass_species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observation_biomass_quadrat_species_biomass_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
@@ -399,8 +402,8 @@
             <parent column="observation_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
             <parent column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="observation_photos_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="observation_photos_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plot_positions"/>
@@ -472,6 +475,38 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="observation_plot_results" remarks="Observation results for a monitoring plot." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_plot_results_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+            <parent column="observation_id" foreignKey="observation_plot_results_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="monitoring_plot_id" foreignKey="observation_plot_results_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="observation_plot_results_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_plot_results_monitoring_plot_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plot_histories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="permanent_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="survival_rate" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="plant_density" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
+         <primaryKey column="monitoring_plot_id" sequenceNumberInPK="2"/>
+         <index name="observation_plot_results_pkey" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <index name="observation_plot_results_monitoring_plot_history_id_idx" unique="false">
+            <column ascending="true" name="monitoring_plot_history_id"/>
+         </index>
+         <index name="observation_plot_results_observation_id_monitoring_plot_his_idx" unique="false">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_history_id"/>
+         </index>
+      </table>
       <table name="observation_plot_statuses" remarks="(Enum) The status of an observation plot." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="status_id" foreignKey="observation_plots_status_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
@@ -489,6 +524,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="observation_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_details"/>
             <child column="observation_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
+            <child column="observation_id" foreignKey="observation_plot_results_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_results"/>
             <child column="observation_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_coordinates"/>
             <child column="observation_id" foreignKey="plot_t0_observations_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_observations"/>
             <child column="observation_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_plants"/>
@@ -497,6 +533,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="monitoring_plot_id" foreignKey="observation_biomass_details_observation_id_monitoring_plot_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_biomass_details"/>
             <child column="monitoring_plot_id" foreignKey="observation_photos_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
+            <child column="monitoring_plot_id" foreignKey="observation_plot_results_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_results"/>
             <child column="monitoring_plot_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_plot_coordinates"/>
             <child column="monitoring_plot_id" foreignKey="plot_t0_observations_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_observations"/>
             <child column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="recorded_plants"/>
@@ -558,6 +595,32 @@
             <column ascending="true" name="substratum_id"/>
          </index>
       </table>
+      <table name="observation_site_results" remarks="Observation results for a planting site." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_site_results_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="planting_site_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_site_results_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_sites"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="planting_site_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_site_results_planting_site_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_histories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="permanent_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="survival_rate" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="survival_rate_std_dev" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="plant_density" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="plant_density_std_dev" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
+         <index name="observation_site_results_pkey" unique="true">
+            <column ascending="true" name="observation_id"/>
+         </index>
+         <index name="observation_site_results_planting_site_id_idx" unique="false">
+            <column ascending="true" name="planting_site_id"/>
+         </index>
+      </table>
       <table name="observation_states" remarks="(Enum) Where in the observation lifecycle a particular observation is." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="state_id" foreignKey="observations_state_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observations"/>
@@ -569,6 +632,62 @@
          </index>
          <index name="observation_states_name_key" unique="true">
             <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="observation_stratum_results" remarks="Observation results for a stratum." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_stratum_results_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="stratum_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_stratum_results_stratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="stratum_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_stratum_results_stratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_histories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="permanent_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="survival_rate" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="survival_rate_std_dev" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="plant_density" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="plant_density_std_dev" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
+         <primaryKey column="stratum_history_id" sequenceNumberInPK="2"/>
+         <index name="observation_stratum_results_pkey" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="stratum_history_id"/>
+         </index>
+         <index name="observation_stratum_results_stratum_id_idx" unique="false">
+            <column ascending="true" name="stratum_id"/>
+         </index>
+      </table>
+      <table name="observation_substratum_results" remarks="Observation results for a substratum." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_substratum_results_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="substratum_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_substratum_results_substratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="substrata"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="substratum_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observation_substratum_results_substratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_histories"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="total_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="total_dead" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="permanent_live" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="survival_rate" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="survival_rate_std_dev" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="plant_density" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="plant_density_std_dev" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
+         <primaryKey column="observation_id" sequenceNumberInPK="1"/>
+         <primaryKey column="substratum_history_id" sequenceNumberInPK="2"/>
+         <index name="observation_substratum_results_pkey" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="substratum_history_id"/>
+         </index>
+         <index name="observation_substratum_results_substratum_id_idx" unique="false">
+            <column ascending="true" name="substratum_id"/>
          </index>
       </table>
       <table name="observation_types" remarks="(Enum) Type of observation, currently only used for ad hoc observations." schema="tracking" type="TABLE">
@@ -592,8 +711,12 @@
             <child column="observation_id" foreignKey="observation_biomass_species_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
             <child column="observation_id" foreignKey="observation_photos_observation_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_media_files"/>
             <child column="observation_id" foreignKey="observation_plot_conditions_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_conditions"/>
+            <child column="observation_id" foreignKey="observation_plot_results_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plot_results"/>
             <child column="observation_id" foreignKey="observation_plots_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
             <child column="observation_id" foreignKey="observation_requested_substrata_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_requested_substrata"/>
+            <child column="observation_id" foreignKey="observation_site_results_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_site_results"/>
+            <child column="observation_id" foreignKey="observation_stratum_results_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_stratum_results"/>
+            <child column="observation_id" foreignKey="observation_substratum_results_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_substratum_results"/>
             <child column="observation_id" foreignKey="observed_plot_coordinates_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_plot_coordinates"/>
             <child column="observation_id" foreignKey="observed_plot_species_totals_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_plot_species_totals"/>
             <child column="observation_id" foreignKey="observed_site_species_totals_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_site_species_totals"/>
@@ -642,8 +765,8 @@
             <parent column="observation_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="observed_plot_coordinates_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <parent column="monitoring_plot_id" foreignKey="observed_plot_coordinates_observation_id_monitoring_plot_i_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="observed_plot_coordinates_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="position_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="observed_plot_coordinates_position_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plot_positions"/>
@@ -678,6 +801,9 @@
          <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="permanent_live" nullable="false" remarks="If this is a permanent monitoring plot, the number of live and existing plants observed. 0 otherwise." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="survival_rate" nullable="true" remarks="If this is a permanent monitoring plot, percentage of plants of the species observed in this plot, in either this observation or in previous ones, that have survived since the t0 point. Null if this is not a permanent monitoring plot in the current observation." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="monitoring_plot_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observed_plot_species_totals_monitoring_plot_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plot_histories"/>
+         </column>
          <index name="observed_plot_species_totals_monitoring_plot_id_idx" unique="false">
             <column ascending="true" name="monitoring_plot_id"/>
          </index>
@@ -692,6 +818,20 @@
          <index name="observed_plot_species_totals_observation_id_monitoring_plo_idx2" unique="true">
             <column ascending="true" name="observation_id"/>
             <column ascending="true" name="monitoring_plot_id"/>
+         </index>
+         <index name="observed_plot_species_totals_observation_id_monitoring_plo_idx3" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_history_id"/>
+            <column ascending="true" name="species_id"/>
+         </index>
+         <index name="observed_plot_species_totals_observation_id_monitoring_plo_idx4" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_history_id"/>
+            <column ascending="true" name="species_name"/>
+         </index>
+         <index name="observed_plot_species_totals_observation_id_monitoring_plo_idx5" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="monitoring_plot_history_id"/>
          </index>
          <index name="observed_plot_species_totals_observation_id_monitoring_plot_idx" unique="true">
             <column ascending="true" name="observation_id"/>
@@ -722,6 +862,9 @@
          <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="permanent_live" nullable="false" remarks="The number of live and existing plants observed in permanent monitoring plots." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="survival_rate" nullable="true" remarks="Percentage of plants of the species observed in permanent monitoring plots in the planting site, in either this observation or in previous ones, that have survived since the t0 point." size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="planting_site_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observed_site_species_totals_planting_site_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_histories"/>
+         </column>
          <index name="observed_site_species_totals_observation_id_idx" unique="false">
             <column ascending="true" name="observation_id"/>
          </index>
@@ -733,6 +876,20 @@
          <index name="observed_site_species_totals_observation_id_planting_site__idx2" unique="true">
             <column ascending="true" name="observation_id"/>
             <column ascending="true" name="planting_site_id"/>
+         </index>
+         <index name="observed_site_species_totals_observation_id_planting_site__idx3" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="planting_site_history_id"/>
+            <column ascending="true" name="species_name"/>
+         </index>
+         <index name="observed_site_species_totals_observation_id_planting_site__idx4" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="planting_site_history_id"/>
+         </index>
+         <index name="observed_site_species_totals_observation_id_planting_site_h_idx" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="planting_site_history_id"/>
+            <column ascending="true" name="species_id"/>
          </index>
          <index name="observed_site_species_totals_observation_id_planting_site_i_idx" unique="true">
             <column ascending="true" name="observation_id"/>
@@ -751,8 +908,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_stratum_species_totals_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="stratum_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="observed_stratum_species_totals_stratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="strata"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="stratum_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observed_stratum_species_totals_stratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_stratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -766,19 +923,22 @@
          <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="permanent_live" nullable="false" remarks="The number of live and existing plants observed in permanent monitoring plots." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="survival_rate" nullable="true" remarks="Percentage of plants of the species observed in permanent monitoring plots in the stratum, in either the current observation or in previous ones, that have survived since the t0 point." size="10" type="int4" typeCode="4"/>
-         <index name="observed_stratum_sp_totals_observation_id_stratum_idx" unique="true">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="stratum_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observed_stratum_species_totals_stratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_histories"/>
+         </column>
+         <index name="observed_stratum_species_tota_observation_id_stratum_histo_idx1" unique="true">
             <column ascending="true" name="observation_id"/>
-            <column ascending="true" name="stratum_id"/>
-            <column ascending="true" name="species_id"/>
-         </index>
-         <index name="observed_stratum_sp_totals_observation_id_stratum_idx1" unique="true">
-            <column ascending="true" name="observation_id"/>
-            <column ascending="true" name="stratum_id"/>
+            <column ascending="true" name="stratum_history_id"/>
             <column ascending="true" name="species_name"/>
          </index>
-         <index name="observed_stratum_sp_totals_observation_id_stratum_idx2" unique="true">
+         <index name="observed_stratum_species_tota_observation_id_stratum_histo_idx2" unique="true">
             <column ascending="true" name="observation_id"/>
-            <column ascending="true" name="stratum_id"/>
+            <column ascending="true" name="stratum_history_id"/>
+         </index>
+         <index name="observed_stratum_species_tota_observation_id_stratum_histor_idx" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="stratum_history_id"/>
+            <column ascending="true" name="species_id"/>
          </index>
          <index name="observed_stratum_species_totals_observation_id_idx" unique="false">
             <column ascending="true" name="observation_id"/>
@@ -795,8 +955,8 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_substratum_species_totals_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="substratum_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="observed_substratum_species_totals_substratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substrata"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="substratum_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observed_substratum_species_totals_substratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="substrata"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="species_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="observed_substratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species"/>
@@ -810,19 +970,22 @@
          <column autoUpdated="false" defaultValue="0" digits="0" id="7" name="total_existing" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="0" digits="0" id="8" name="permanent_live" nullable="false" remarks="The number of live and existing plants observed in permanent monitoring plots." size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="survival_rate" nullable="true" remarks="Percentage of plants of the species observed in permanent monitoring plots in the substratum, in either the current observation or in previous ones, that have survived since the t0 point." size="10" type="int4" typeCode="4"/>
-         <index name="observed_substratum_sp_totals_observation_id_substr_idx" unique="true">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="substratum_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="observed_substratum_species_totals_substratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_histories"/>
+         </column>
+         <index name="observed_substratum_species_t_observation_id_substratum_hi_idx1" unique="true">
             <column ascending="true" name="observation_id"/>
-            <column ascending="true" name="substratum_id"/>
-            <column ascending="true" name="species_id"/>
-         </index>
-         <index name="observed_substratum_sp_totals_observation_id_substr_idx1" unique="true">
-            <column ascending="true" name="observation_id"/>
-            <column ascending="true" name="substratum_id"/>
+            <column ascending="true" name="substratum_history_id"/>
             <column ascending="true" name="species_name"/>
          </index>
-         <index name="observed_substratum_sp_totals_observation_id_substr_idx2" unique="true">
+         <index name="observed_substratum_species_t_observation_id_substratum_hi_idx2" unique="true">
             <column ascending="true" name="observation_id"/>
-            <column ascending="true" name="substratum_id"/>
+            <column ascending="true" name="substratum_history_id"/>
+         </index>
+         <index name="observed_substratum_species_t_observation_id_substratum_his_idx" unique="true">
+            <column ascending="true" name="observation_id"/>
+            <column ascending="true" name="substratum_history_id"/>
+            <column ascending="true" name="species_id"/>
          </index>
          <index name="observed_substratum_species_totals_observation_id_idx" unique="false">
             <column ascending="true" name="observation_id"/>
@@ -870,7 +1033,9 @@
       <table name="planting_site_histories" remarks="Versions of planting site maps over time. Each time a planting site map changes, the new map is inserted into this table and its child tables." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="planting_site_history_id" foreignKey="monitoring_plot_histories_planting_site_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plot_histories"/>
+            <child column="planting_site_history_id" foreignKey="observation_site_results_planting_site_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_site_results"/>
             <child column="planting_site_history_id" foreignKey="observations_planting_site_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
+            <child column="planting_site_history_id" foreignKey="observed_site_species_totals_planting_site_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_site_species_totals"/>
             <child column="planting_site_history_id" foreignKey="simplified_planting_site_historie_planting_site_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="simplified_planting_site_histories"/>
             <child column="planting_site_history_id" foreignKey="stratum_histories_planting_site_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_histories"/>
          </column>
@@ -934,6 +1099,7 @@
             <child column="planting_site_id" foreignKey="deliveries_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="deliveries"/>
             <child column="planting_site_id" foreignKey="monitoring_plot_histories_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plot_histories"/>
             <child column="planting_site_id" foreignKey="monitoring_plots_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
+            <child column="planting_site_id" foreignKey="observation_site_results_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_site_results"/>
             <child column="planting_site_id" foreignKey="observations_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
             <child column="planting_site_id" foreignKey="observed_site_species_totals_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_site_species_totals"/>
             <child column="planting_site_id" foreignKey="planting_seasons_planting_site_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_seasons"/>
@@ -1067,8 +1233,8 @@
       </table>
       <table name="plot_t0_observations" remarks="Which observation to use to determine t0 plot density." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="plot_t0_observations_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <parent column="monitoring_plot_id" foreignKey="plot_t0_observations_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="plot_t0_observations_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="observation_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="plot_t0_observations_observation_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observations"/>
@@ -1107,8 +1273,8 @@
             <parent column="observation_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="recorded_plants_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <parent column="monitoring_plot_id" foreignKey="recorded_plants_observation_id_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_plots"/>
+            <parent column="id" foreignKey="recorded_plants_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="certainty_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="recorded_plants_certainty_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_species_certainties"/>
@@ -1161,8 +1327,8 @@
             <parent column="observation_id" foreignKey="recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="monitoring_plot_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="recorded_trees_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
             <parent column="monitoring_plot_id" foreignKey="recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
+            <parent column="id" foreignKey="recorded_trees_monitoring_plot_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plots"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="biomass_species_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="recorded_trees_observation_id_monitoring_plot_id_biomass_s_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_biomass_species"/>
@@ -1260,7 +1426,8 @@
       </table>
       <table name="strata" remarks="Regions within planting sites that have a consistent set of conditions such that survey results from any part of the stratum can be extrapolated to the entire stratum. strata are subdivided into plots. Every stratum has at least one plot." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="stratum_id" foreignKey="observed_stratum_species_totals_stratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_stratum_species_totals"/>
+            <child column="stratum_id" foreignKey="observation_stratum_results_stratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_stratum_results"/>
+            <child column="stratum_id" foreignKey="observed_stratum_species_totals_stratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_stratum_species_totals"/>
             <child column="stratum_id" foreignKey="simplified_strata_stratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="simplified_strata"/>
             <child column="stratum_id" foreignKey="stratum_histories_stratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="stratum_histories"/>
             <child column="stratum_id" foreignKey="stratum_populations_stratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_populations"/>
@@ -1316,6 +1483,8 @@
       </table>
       <table name="stratum_histories" remarks="Versions of stratum maps over time. Each time a planting site map changes, its strata' maps are inserted into this table." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="stratum_history_id" foreignKey="observation_stratum_results_stratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_stratum_results"/>
+            <child column="stratum_history_id" foreignKey="observed_stratum_species_totals_stratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_stratum_species_totals"/>
             <child column="stratum_history_id" foreignKey="simplified_stratum_histories_stratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="simplified_stratum_histories"/>
             <child column="stratum_history_id" foreignKey="substratum_histories_stratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_histories"/>
          </column>
@@ -1384,7 +1553,8 @@
             <child column="substratum_id" foreignKey="monitoring_plot_histories_substratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plot_histories"/>
             <child column="substratum_id" foreignKey="monitoring_plots_substratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="monitoring_plots"/>
             <child column="substratum_id" foreignKey="observation_requested_substrata_substratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_requested_substrata"/>
-            <child column="substratum_id" foreignKey="observed_substratum_species_totals_substratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_substratum_species_totals"/>
+            <child column="substratum_id" foreignKey="observation_substratum_results_substratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_substratum_results"/>
+            <child column="substratum_id" foreignKey="observed_substratum_species_totals_substratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_substratum_species_totals"/>
             <child column="substratum_id" foreignKey="plantings_substratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plantings"/>
             <child column="substratum_id" foreignKey="simplified_substrata_substratum_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="simplified_substrata"/>
             <child column="substratum_id" foreignKey="substratum_histories_substratum_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="substratum_histories"/>
@@ -1434,6 +1604,8 @@
       <table name="substratum_histories" remarks="Versions of substratum maps over time. Each time a planting site map changes, its substrata' maps are inserted into this table." schema="tracking" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="substratum_history_id" foreignKey="monitoring_plot_histories_substratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="monitoring_plot_histories"/>
+            <child column="substratum_history_id" foreignKey="observation_substratum_results_substratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observation_substratum_results"/>
+            <child column="substratum_history_id" foreignKey="observed_substratum_species_totals_substratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="observed_substratum_species_totals"/>
             <child column="substratum_history_id" foreignKey="simplified_substratum_histories_substratum_history_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="simplified_substratum_histories"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="stratum_history_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
