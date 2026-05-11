@@ -44,6 +44,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationResultsStore
+import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.AssignedPlotDetails
@@ -98,6 +99,7 @@ class ObservationsController(
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
     private val observationResultsStore: ObservationResultsStore,
+    private val observationResultsStoreV2: ObservationResultsStoreV2,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
   @GetMapping
@@ -170,23 +172,48 @@ class ObservationsController(
                   "of the most recently completed observation."
       )
       limit: Int? = null,
+      @RequestParam(defaultValue = "false")
+      @Parameter(
+          description =
+              "If true, read aggregated metrics from the new observation results tables instead " +
+                  "of computing them from species totals."
+      )
+      useNewTables: Boolean = false,
   ): ListObservationResultsResponsePayload {
     val results =
         when {
           plantingSiteId != null ->
-              observationResultsStore.fetchByPlantingSiteId(
-                  plantingSiteId,
-                  depth,
-                  limit,
-                  states = states,
-              )
+              if (useNewTables) {
+                observationResultsStoreV2.fetchByPlantingSiteId(
+                    plantingSiteId,
+                    depth,
+                    limit,
+                    states = states,
+                )
+              } else {
+                observationResultsStore.fetchByPlantingSiteId(
+                    plantingSiteId,
+                    depth,
+                    limit,
+                    states = states,
+                )
+              }
           organizationId != null ->
-              observationResultsStore.fetchByOrganizationId(
-                  organizationId,
-                  depth,
-                  limit,
-                  states = states,
-              )
+              if (useNewTables) {
+                observationResultsStoreV2.fetchByOrganizationId(
+                    organizationId,
+                    depth,
+                    limit,
+                    states = states,
+                )
+              } else {
+                observationResultsStore.fetchByOrganizationId(
+                    organizationId,
+                    depth,
+                    limit,
+                    states = states,
+                )
+              }
           else -> throw BadRequestException("Must specify a search criterion")
         }
 
@@ -283,8 +310,20 @@ class ObservationsController(
       @PathVariable observationId: ObservationId,
       @RequestParam(defaultValue = "Plot")
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
+      @RequestParam(defaultValue = "false")
+      @Parameter(
+          description =
+              "If true, read aggregated metrics from the new observation results tables instead " +
+                  "of computing them from species totals."
+      )
+      useNewTables: Boolean = false,
   ): GetObservationResultsResponsePayload {
-    val results = observationResultsStore.fetchOneById(observationId, depth)
+    val results =
+        if (useNewTables) {
+          observationResultsStoreV2.fetchOneById(observationId, depth)
+        } else {
+          observationResultsStore.fetchOneById(observationId, depth)
+        }
 
     return GetObservationResultsResponsePayload(ObservationResultsPayload(results))
   }
