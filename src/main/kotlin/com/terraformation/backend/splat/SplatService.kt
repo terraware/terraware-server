@@ -321,6 +321,11 @@ class SplatService(
                 step.set(SCENE_BOUNDS, modelMetadata.sceneBounds.toPointField())
             else step
           }
+          .let { step ->
+            if (modelMetadata?.groundPlane != null)
+                step.set(GROUND_PLANE, modelMetadata.groundPlane.toMultiPointField())
+            else step
+          }
           .where(FILE_ID.eq(fileId))
           .execute()
     }
@@ -555,7 +560,14 @@ class SplatService(
     with(SPLATS) {
       val record =
           dslContext
-              .select(CAMERA_POSITION, GROUND_COLOR, ORIGIN_POSITION, SCENE_BOUNDS, SKY_COLOR)
+              .select(
+                  CAMERA_POSITION,
+                  GROUND_COLOR,
+                  GROUND_PLANE,
+                  ORIGIN_POSITION,
+                  SCENE_BOUNDS,
+                  SKY_COLOR,
+              )
               .from(SPLATS)
               .where(FILE_ID.eq(fileId))
               .fetchOne()!!
@@ -563,6 +575,7 @@ class SplatService(
       val cameraPosition = CoordinateModel.of(record, CAMERA_POSITION)
       val originPosition = CoordinateModel.of(record, ORIGIN_POSITION)
       val sceneBounds = CoordinateModel.of(record, SCENE_BOUNDS)
+      val groundPlane = CoordinateModel.ofList(record, GROUND_PLANE)
       val skyColor = record[SKY_COLOR]
       val groundColor = record[GROUND_COLOR]
 
@@ -570,6 +583,7 @@ class SplatService(
           annotations = annotations,
           cameraPosition = cameraPosition,
           groundColor = groundColor,
+          groundPlane = groundPlane,
           originPosition = originPosition,
           sceneBounds = sceneBounds,
           skyColor = skyColor,

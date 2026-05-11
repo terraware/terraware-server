@@ -532,6 +532,7 @@ import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
 import com.terraformation.backend.splat.CoordinateModel
+import com.terraformation.backend.splat.toMultiPointField
 import com.terraformation.backend.splat.toPointField
 import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
@@ -3297,6 +3298,7 @@ abstract class DatabaseBackedTest {
       splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
       needsAttention: Boolean = row.needsAttention ?: false,
       groundColor: String? = null,
+      groundPlane: List<CoordinateModel>? = null,
       sceneBounds: CoordinateModel? = null,
       skyColor: String? = null,
   ) {
@@ -3311,6 +3313,7 @@ abstract class DatabaseBackedTest {
           .set(ERROR_MESSAGE, row.errorMessage)
           .set(FILE_ID, fileId)
           .set(GROUND_COLOR, groundColor)
+          .set(GROUND_PLANE, groundPlane.toMultiPointField())
           .set(NEEDS_ATTENTION, needsAttention)
           .set(ORGANIZATION_ID, organizationId)
           .set(ORIGIN_POSITION, originPosition.toPointField())
