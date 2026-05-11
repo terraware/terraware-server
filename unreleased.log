@@ -1,3 +1,6 @@
+ba60e7f1 Update dependency html-minifier-next to v6.2.4 (#4354)
+2d1b6e7e Update dependency types-requests to v2.33.0.20260508 (#4356)
+cd56d0c0 Update dependency com.google.auth:google-auth-library-oauth2-http to v1.47.0 (#4357)
 5ea37ec7 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.49 (#4355)
 1e92bcfe SW-8332 Submit failure to generate splat tickets using user ID (#4345)
 f0e7a38d Update walkthrough notifications to include file id (#4349)
