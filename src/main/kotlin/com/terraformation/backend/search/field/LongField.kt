@@ -13,7 +13,8 @@ class LongField(
     localize: Boolean = true,
     exportable: Boolean = true,
 ) : NumericSearchField<Long>(fieldName, databaseField, table, localize, exportable) {
-  override fun fromString(value: String) = numberFormat.parse(value).toLong()
+  override fun fromString(value: String) =
+      if (localize) numberFormat.parse(value).toLong() else value.toLong()
 
   override fun makeNumberFormat(): NumberFormat = NumberFormat.getIntegerInstance(currentLocale())
 
