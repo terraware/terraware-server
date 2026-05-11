@@ -1364,6 +1364,7 @@ class ObservationStore(
             isPermanent,
             plantCountAdjustments,
         )
+        recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
 
         // Aggregation from substratum to stratum (and then to site) works by adding up the most
         // recent data for each substratum at the time of the observation in question.
@@ -1452,6 +1453,7 @@ class ObservationStore(
               isPermanent = isPermanent,
               plantCountsBySpecies = plantCountAdjustments,
           )
+          recalculateSurvivalRateResults(laterObservationId, observation.plantingSiteId)
         }
 
         eventPublisher.publishEvent(
@@ -1789,12 +1791,14 @@ class ObservationStore(
 
   fun recalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
     recalculateSurvivalRate(ObservationSpeciesPlot(monitoringPlotId))
-
     recalculateSurvivalRate(ObservationSpeciesSubstratum(monitoringPlotId))
-
     recalculateSurvivalRate(ObservationSpeciesStratum(monitoringPlotId))
-
     recalculateSurvivalRate(ObservationSpeciesSite(monitoringPlotId))
+
+    recalculateSurvivalRateResults(ObservationResultsPlot(monitoringPlotId))
+    recalculateSurvivalRateResults(ObservationResultsSubstratum(monitoringPlotId))
+    recalculateSurvivalRateResults(ObservationResultsStratum(monitoringPlotId))
+    recalculateSurvivalRateResults(ObservationResultsSite(monitoringPlotId))
   }
 
   fun recalculateSurvivalRates(stratumId: StratumId) {
@@ -1818,12 +1822,18 @@ class ObservationStore(
     substratumGroups.values.flatten().forEach {
       recalculateSurvivalRate(ObservationSpeciesPlot(it))
     }
-
     substratumGroups.keys.forEach { recalculateSurvivalRate(ObservationSpeciesSubstratum(it)) }
-
     recalculateSurvivalRate(ObservationSpeciesStratum(stratumId))
-
     recalculateSurvivalRate(ObservationSpeciesSite(stratumId))
+
+    substratumGroups.values.flatten().forEach {
+      recalculateSurvivalRateResults(ObservationResultsPlot(it))
+    }
+    substratumGroups.keys.forEach {
+      recalculateSurvivalRateResults(ObservationResultsSubstratum(it))
+    }
+    recalculateSurvivalRateResults(ObservationResultsStratum(stratumId))
+    recalculateSurvivalRateResults(ObservationResultsSite(stratumId))
   }
 
   private fun <ID : Any, HistoryId : Any> recalculateSurvivalRate(
@@ -1883,12 +1893,100 @@ class ObservationStore(
         .execute()
   }
 
+  private fun <ID : Any, HistoryId : Any> recalculateSurvivalRateResults(
+      updateScope: ObservationResultsScope<ID, HistoryId>,
+  ) {
+    val table = updateScope.observedTotalsTable
+    val observationIdField = table.field("observation_id", ObservationId::class.java)!!
+    val survivalRatePermanentDenominator =
+        getSurvivalRateDenominator(
+            updateScope,
+            DSL.trueCondition(),
+            observationIdField,
+        )
+    val survivalRateTempDenominator =
+        getSurvivalRateTempDenominator(
+            updateScope,
+            DSL.trueCondition(),
+            observationIdField,
+        )
+    val survivalRateDenominator =
+        DSL.coalesce(
+            survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
+            survivalRatePermanentDenominator,
+            survivalRateTempDenominator,
+        )
+    val survivalRateField = table.field("survival_rate", Int::class.java)!!
+    val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
+    val permanentLiveField = table.field("permanent_live", Int::class.java)!!
+    val latestLiveField = updateScope.latestLiveField
+
+    val survivalRateValue =
+        DSL.case_()
+            .`when`(
+                updateScope.anyChildHasNullSurvivalRateCondition(observationIdField),
+                DSL.castNull(SQLDataType.INTEGER),
+            )
+            .`when`(
+                survivalRateDenominator.eq(BigDecimal.ZERO),
+                DSL.castNull(SQLDataType.INTEGER),
+            )
+            .else_(
+                DSL.case_()
+                    .`when`(
+                        updateScope.observedTotalsPlantingSiteTempCondition,
+                        (latestLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator)),
+                    )
+                    .else_(
+                        (permanentLiveField
+                            .mul(BigDecimal.valueOf(100))
+                            .div(survivalRateDenominator)),
+                    )
+            )
+
+    dslContext
+        .update(table)
+        .set(
+            survivalRateField,
+            survivalRateValue,
+        )
+        .apply {
+          survivalRateStdDevField?.let {
+            this.set(
+                it,
+                DSL.if_(
+                    survivalRateValue.isNotNull,
+                    getSurvivalRateWeightedStandardDeviation(updateScope),
+                    DSL.castNull(SQLDataType.INTEGER),
+                ),
+            )
+          }
+        }
+        .where(updateScope.survivalRateRecalculationCondition)
+        .and(
+            DSL.notExists(
+                DSL.selectOne()
+                    .from(OBSERVATION_PLOTS)
+                    .where(updateScope.observationPlotsCondition(observationIdField))
+                    .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+            )
+        )
+        .execute()
+  }
+
   private fun recalculateSurvivalRateResults(
       observationId: ObservationId,
       plantingSiteId: PlantingSiteId,
   ) {
     // Update tables with latest total values
     updateObservationResults(observationId, plantingSiteId)
+
+    val plotIds =
+        dslContext
+            .select(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID.asNonNullable())
+            .from(OBSERVATION_PLOT_RESULTS)
+            .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+            .fetch { it.value1() }
 
     val substratumHistoryIds =
         dslContext
@@ -1909,6 +2007,7 @@ class ObservationStore(
             .fetch { it.value1() }
             .filterNotNull()
 
+    plotIds.forEach { recalculateSurvivalRateResults(ObservationResultsPlot(it), observationId) }
     substratumHistoryIds.forEach {
       recalculateSurvivalRateResults(ObservationResultsSubstratum(it), observationId)
     }
@@ -1950,7 +2049,7 @@ class ObservationStore(
     val survivalRateValue =
         DSL.case_()
             .`when`(
-                updateScope.anyChildHasNullSurvivalRateCondition(observationId),
+                updateScope.anyChildHasNullSurvivalRateCondition(DSL.value(observationId)),
                 DSL.castNull(SQLDataType.INTEGER),
             )
             .`when`(
@@ -1975,7 +2074,7 @@ class ObservationStore(
             .fetchExists(
                 DSL.selectOne()
                     .from(OBSERVATION_PLOTS)
-                    .where(updateScope.observationPlotsCondition(observationId))
+                    .where(updateScope.observationPlotsCondition(DSL.value(observationId)))
                     .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
             )
             .not()

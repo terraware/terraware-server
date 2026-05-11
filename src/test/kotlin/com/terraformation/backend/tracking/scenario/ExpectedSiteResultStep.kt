@@ -11,6 +11,7 @@ class ExpectedSiteResultStep(
     scenario: ObservationScenario,
     val observation: Int,
     actualResult: ObservationResultsModel,
+    actualResultV2: ObservationResultsModel,
     survivalRate: Int? = null,
     baseline: ExpectedSiteResultStep? = null,
 ) :
@@ -18,6 +19,7 @@ class ExpectedSiteResultStep(
         "Site",
         scenario,
         actualResult,
+        actualResultV2,
         survivalRate,
         baseline,
         mutableListOf(),
@@ -42,6 +44,12 @@ class ExpectedSiteResultStep(
           "Result for stratum $number",
       )
     }
+    assertions.add {
+      assertNull(
+          actualResultV2.strata.firstOrNull { it.name == "$number" },
+          "Result for stratum $number [V2]",
+      )
+    }
   }
 
   override fun finish() {
@@ -60,6 +68,7 @@ class ExpectedSiteResultStep(
           "Stratum $number",
           scenario,
           actualResult.strata.first { it.name == "$number" },
+          actualResultV2.strata.first { it.name == "$number" },
           survivalRate,
           baseline,
           assertions,
@@ -84,6 +93,12 @@ class ExpectedSiteResultStep(
             "Result for $name substratum $number",
         )
       }
+      assertions.add {
+        assertNull(
+            actualResultV2.substrata.firstOrNull { it.name == "$number" },
+            "Result for $name substratum $number [V2]",
+        )
+      }
     }
 
     override fun finish() {
@@ -102,6 +117,7 @@ class ExpectedSiteResultStep(
             "$name substratum $number",
             scenario,
             actualResult.substrata.first { it.name == "$number" },
+            actualResultV2.substrata.first { it.name == "$number" },
             survivalRate,
             baseline,
             assertions,
@@ -113,6 +129,7 @@ class ExpectedSiteResultStep(
               Plot(
                   number,
                   resultForPlot(number),
+                  resultForPlotV2(number),
                   survivalRate,
                   baseline?.plots?.firstOrNull { it.number == number },
               ),
@@ -141,9 +158,16 @@ class ExpectedSiteResultStep(
                   "No result for $name plot $number in observation $observation"
               )
 
+      private fun resultForPlotV2(number: Long): ObservationMonitoringPlotResultsModel =
+          actualResultV2.monitoringPlots.firstOrNull { it.monitoringPlotNumber == number }
+              ?: throw IllegalArgumentException(
+                  "No V2 result for $name plot $number in observation $observation"
+              )
+
       inner class Plot(
           val number: Long,
           actualResult: ObservationMonitoringPlotResultsModel,
+          actualResultV2: ObservationMonitoringPlotResultsModel,
           survivalRate: Int?,
           baseline: Plot?,
       ) :
@@ -151,6 +175,7 @@ class ExpectedSiteResultStep(
               "$name plot $number",
               scenario,
               actualResult,
+              actualResultV2,
               survivalRate,
               baseline,
               assertions,

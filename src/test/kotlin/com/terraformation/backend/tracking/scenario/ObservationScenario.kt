@@ -24,10 +24,12 @@ import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationResultsStore
+import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import java.time.temporal.ChronoUnit
 import org.jooq.Configuration
@@ -61,6 +63,7 @@ class ObservationScenario(
     val clock: TestClock,
     val eventPublisher: TestEventPublisher,
     val observationResultsStore: ObservationResultsStore,
+    val observationResultsStoreV2: ObservationResultsStoreV2,
     val observationStore: ObservationStore,
     val plantingSiteStore: PlantingSiteStore,
     val t0Store: T0Store,
@@ -74,6 +77,8 @@ class ObservationScenario(
         eventPublisher: TestEventPublisher = TestEventPublisher(),
         identifierGenerator: IdentifierGenerator = IdentifierGenerator(clock, test.dslContext),
         observationResultsStore: ObservationResultsStore = ObservationResultsStore(test.dslContext),
+        observationResultsStoreV2: ObservationResultsStoreV2 =
+            ObservationResultsStoreV2(test.dslContext),
         observationLocker: ObservationLocker = ObservationLocker(test.dslContext),
         parentStore: ParentStore = ParentStore(test.dslContext),
         configuration: Configuration = test.dslContext.configuration(),
@@ -108,12 +113,14 @@ class ObservationScenario(
     ): ObservationScenario {
       if (registerListeners) {
         eventPublisher.register<MonitoringSpeciesTotalsEditedEvent> { t0Store.on(it) }
+        eventPublisher.register<T0PlotDataAssignedEvent> { observationStore.on(it) }
       }
 
       return ObservationScenario(
           clock,
           eventPublisher,
           observationResultsStore,
+          observationResultsStoreV2,
           observationStore,
           plantingSiteStore,
           t0Store,
@@ -151,6 +158,7 @@ class ObservationScenario(
             this,
             observation,
             observationResultsStore.fetchOneById(observationId, ObservationResultsDepth.Plant),
+            observationResultsStoreV2.fetchOneById(observationId, ObservationResultsDepth.Plant),
             baseline = baseline,
         ),
         init,
