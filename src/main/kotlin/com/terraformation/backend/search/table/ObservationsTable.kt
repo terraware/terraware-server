@@ -5,6 +5,10 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -24,9 +28,26 @@ class ObservationsTable(private val tables: SearchTables) : SearchTable() {
               "biomassDetails",
               OBSERVATIONS.ID.eq(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID),
           ),
+          observationPlotResult.asMultiValueSublist(
+              "plotResults",
+              OBSERVATIONS.ID.eq(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID),
+          ),
           observationPlots.asMultiValueSublist(
               "observationPlots",
               OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID),
+          ),
+          observationSiteResult.asSingleValueSublist(
+              "siteResult",
+              OBSERVATIONS.ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID),
+              isRequired = false,
+          ),
+          observationStratumResult.asMultiValueSublist(
+              "stratumResults",
+              OBSERVATIONS.ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID),
+          ),
+          observationSubstratumResult.asMultiValueSublist(
+              "substratumResults",
+              OBSERVATIONS.ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID),
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",
