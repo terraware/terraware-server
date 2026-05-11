@@ -33,6 +33,33 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `Exact search returns every result that contains the string`() {
       val speciesKoa = insertSpecies(scientificName = "Koa")
+      insertSpecies(scientificName = "Koaia")
+      insertSpecies(scientificName = "Koa Acacia")
+      insertSpecies(scientificName = "Monstera Deliciosa")
+
+      val prefix = SearchFieldPrefix(searchTables.species)
+
+      val fields = listOf("id", "scientificName").map { prefix.resolve(it) }
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "$speciesKoa",
+                      "scientificName" to "Koa",
+                  ),
+              )
+          )
+
+      val conditions =
+          FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.Exact)
+
+      assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
+    }
+
+    @Test
+    fun `Partial search returns every result that contains the string`() {
+      val speciesKoa = insertSpecies(scientificName = "Koa")
       val speciesKoaia = insertSpecies(scientificName = "Koaia")
       val speciesKoaAcacia = insertSpecies(scientificName = "Koa Acacia")
       insertSpecies(scientificName = "Monstera Deliciosa")
@@ -60,7 +87,7 @@ class SearchServiceTest : DatabaseTest(), RunsAsUser {
           )
 
       val conditions =
-          FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.Exact)
+          FieldNode(prefix.resolve("scientificName"), listOf("Koa"), SearchFilterType.Partial)
 
       assertJsonEquals(expected, searchService.search(prefix, fields, mapOf(prefix to conditions)))
     }

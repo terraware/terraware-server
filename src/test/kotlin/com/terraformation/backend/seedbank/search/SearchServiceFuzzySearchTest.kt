@@ -54,7 +54,7 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
 
     val fields = listOf(accessionNumberField)
     val searchNode =
-        FieldNode(accessionNumberField, listOf("22-1-100"), SearchFilterType.ExactOrFuzzy)
+        FieldNode(accessionNumberField, listOf("22-1-100"), SearchFilterType.PartialOrFuzzy)
 
     assertEquals(
         SearchResults(listOf(mapOf("id" to "$accessionId1", "accessionNumber" to "22-1-100"))),
@@ -101,7 +101,7 @@ internal class SearchServiceFuzzySearchTest : SearchServiceTest() {
 
     val fields = listOf(processingNotesField)
     val searchNode =
-        FieldNode(processingNotesField, listOf("Notes", null), SearchFilterType.ExactOrFuzzy)
+        FieldNode(processingNotesField, listOf("Notes", null), SearchFilterType.PartialOrFuzzy)
 
     assertEquals(
         SearchResults(

@@ -34,12 +34,17 @@ class TextField(
     val nonNullValues = normalizedValues.filterNotNull()
 
     return when (fieldNode.type) {
+      SearchFilterType.Partial ->
+          DSL.or(
+              listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
+                  .plus(nonNullValues.map { DSL.lower(databaseField).contains(it) })
+          )
       SearchFilterType.Exact ->
           DSL.or(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(nonNullValues.map { DSL.lower(databaseField).unaccent().contains(it) })
+                  .plus(nonNullValues.map { DSL.lower(databaseField).unaccent().eq(it) })
           )
-      SearchFilterType.ExactOrFuzzy,
+      SearchFilterType.PartialOrFuzzy,
       SearchFilterType.Fuzzy ->
           DSL.or(
               normalizedValues.map { value ->

@@ -100,7 +100,9 @@ class WeightField(
               gramsField.le(gramsQuantities[1])
             }
           }
-          SearchFilterType.ExactOrFuzzy,
+          SearchFilterType.Partial ->
+              throw IllegalArgumentException("Partial search is not supported for weights")
+          SearchFilterType.PartialOrFuzzy,
           SearchFilterType.Fuzzy -> {
             val nullCondition = if (hasNull) gramsField.isNull else null
 

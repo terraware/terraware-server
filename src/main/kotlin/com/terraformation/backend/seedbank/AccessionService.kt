@@ -175,7 +175,7 @@ class AccessionService(
    * search results.
    */
   fun getSearchSummaryStatistics(originalCriteria: SearchNode): AccessionSummaryStatistics {
-    val exactCriteria = originalCriteria.toExactSearch()
+    val exactCriteria = originalCriteria.toPartialSearch()
     val exactSummary = querySummary(exactCriteria)
 
     return if (exactSummary.isNonZero() || exactCriteria == originalCriteria) {
