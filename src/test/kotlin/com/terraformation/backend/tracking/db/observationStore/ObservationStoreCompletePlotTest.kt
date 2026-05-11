@@ -149,6 +149,10 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
     val speciesId3 = insertSpecies()
+    val plot1HistoryId = inserted.monitoringPlotHistoryId
+    val stratum1HistoryId = inserted.stratumHistoryId
+    val stratum1Substratum1HistoryId = inserted.substratumHistoryId
+    val plantingSiteHistoryId = inserted.plantingSiteHistoryId
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
     insertPlotT0Density(
         speciesId = speciesId1,
@@ -165,6 +169,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
     val stratumId1 = inserted.stratumId
     val stratum1SubstratumId1 = inserted.substratumId
     val stratum1PlotId2 = insertMonitoringPlot()
+    val stratum1Plot2HistoryId = inserted.monitoringPlotHistoryId
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = false)
     // excluded densities because not permanent
     insertPlotT0Density(
@@ -180,9 +185,12 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         plotDensity = BigDecimal.valueOf(6).toPlantsPerHectare(),
     )
     val stratumId2 = insertStratum()
+    val stratum2HistoryId = inserted.stratumHistoryId
     val stratum2SubstratumId1 = insertSubstratum()
+    val stratum2Substratum1HistoryId = inserted.substratumHistoryId
     insertObservationRequestedSubstratum()
     val stratum2PlotId1 = insertMonitoringPlot()
+    val stratum2Plot1HistoryId = inserted.monitoringPlotHistoryId
     insertObservationPlot(claimedBy = user.userId, claimedTime = Instant.EPOCH, isPermanent = true)
     insertPlotT0Density(
         speciesId = speciesId1,
@@ -301,6 +309,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             totalExisting = 1,
             permanentLive = 2,
             survivalRate = 2 * 100 / 1,
+            monitoringPlotHistoryId = plot1HistoryId,
         )
     // Parameter names omitted after this to keep the test method size manageable.
     val stratum1Plot1Species2Totals =
@@ -315,6 +324,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             0,
+            monitoringPlotHistoryId = plot1HistoryId,
         )
     val stratum1Plot1Species3Totals =
         ObservedPlotSpeciesTotalsRow(
@@ -328,6 +338,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
+            monitoringPlotHistoryId = plot1HistoryId,
         )
     val stratum1Plot1Other1Totals =
         ObservedPlotSpeciesTotalsRow(
@@ -340,6 +351,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             1,
+            monitoringPlotHistoryId = plot1HistoryId,
         )
     val stratum1Plot1Other2Totals =
         ObservedPlotSpeciesTotalsRow(
@@ -352,6 +364,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            monitoringPlotHistoryId = plot1HistoryId,
         )
     val stratum1Plot1UnknownTotals =
         ObservedPlotSpeciesTotalsRow(
@@ -364,6 +377,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            monitoringPlotHistoryId = plot1HistoryId,
         )
     var siteSpecies1Totals =
         ObservedSiteSpeciesTotalsRow(
@@ -377,6 +391,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             2,
             2 * 100 / 1,
+            plantingSiteHistoryId = plantingSiteHistoryId,
         )
     val siteSpecies2Totals =
         ObservedSiteSpeciesTotalsRow(
@@ -390,6 +405,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             0,
+            plantingSiteHistoryId = plantingSiteHistoryId,
         )
     var siteSpecies3Totals =
         ObservedSiteSpeciesTotalsRow(
@@ -403,6 +419,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
+            plantingSiteHistoryId = plantingSiteHistoryId,
         )
     var siteOther1Totals =
         ObservedSiteSpeciesTotalsRow(
@@ -415,6 +432,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             1,
+            plantingSiteHistoryId = plantingSiteHistoryId,
         )
     val siteOther2Totals =
         ObservedSiteSpeciesTotalsRow(
@@ -427,6 +445,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            plantingSiteHistoryId = plantingSiteHistoryId,
         )
     var siteUnknownTotals =
         ObservedSiteSpeciesTotalsRow(
@@ -439,6 +458,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            plantingSiteHistoryId = plantingSiteHistoryId,
         )
     var stratum1Species1Totals =
         ObservedStratumSpeciesTotalsRow(
@@ -452,6 +472,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             2,
             2 * 100 / 1,
+            stratumHistoryId = stratum1HistoryId,
         )
     val stratum1Species2Totals =
         ObservedStratumSpeciesTotalsRow(
@@ -465,6 +486,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             0,
+            stratumHistoryId = stratum1HistoryId,
         )
     var stratum1Species3Totals =
         ObservedStratumSpeciesTotalsRow(
@@ -478,6 +500,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
+            stratumHistoryId = stratum1HistoryId,
         )
     val stratum1Other1Totals =
         ObservedStratumSpeciesTotalsRow(
@@ -490,6 +513,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             1,
+            stratumHistoryId = stratum1HistoryId,
         )
     val stratum1Other2Totals =
         ObservedStratumSpeciesTotalsRow(
@@ -502,6 +526,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            stratumHistoryId = stratum1HistoryId,
         )
     var stratum1UnknownTotals =
         ObservedStratumSpeciesTotalsRow(
@@ -514,6 +539,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            stratumHistoryId = stratum1HistoryId,
         )
     var stratum1Substratum1Species1Totals =
         ObservedSubstratumSpeciesTotalsRow(
@@ -527,6 +553,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             2,
             2 * 100 / 1,
+            substratumHistoryId = stratum1Substratum1HistoryId,
         )
     val stratum1Substratum1Species2Totals =
         ObservedSubstratumSpeciesTotalsRow(
@@ -540,6 +567,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             0,
+            substratumHistoryId = stratum1Substratum1HistoryId,
         )
     var stratum1Substratum1Species3Totals =
         ObservedSubstratumSpeciesTotalsRow(
@@ -553,6 +581,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
+            substratumHistoryId = stratum1Substratum1HistoryId,
         )
     val stratum1Substratum1Other1Totals =
         ObservedSubstratumSpeciesTotalsRow(
@@ -565,6 +594,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             1,
+            substratumHistoryId = stratum1Substratum1HistoryId,
         )
     val stratum1Substratum1Other2Totals =
         ObservedSubstratumSpeciesTotalsRow(
@@ -577,6 +607,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            substratumHistoryId = stratum1Substratum1HistoryId,
         )
     var stratum1Substratum1UnknownTotals =
         ObservedSubstratumSpeciesTotalsRow(
@@ -589,6 +620,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            substratumHistoryId = stratum1Substratum1HistoryId,
         )
 
     helper.assertTotals(
@@ -660,6 +692,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             0,
+            monitoringPlotHistoryId = stratum1Plot2HistoryId,
         )
     val stratum1Plot2Species3Totals =
         ObservedPlotSpeciesTotalsRow(
@@ -672,6 +705,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             1,
             0,
+            monitoringPlotHistoryId = stratum1Plot2HistoryId,
         )
     val stratum1Plot2UnknownTotals =
         ObservedPlotSpeciesTotalsRow(
@@ -684,6 +718,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             0,
+            monitoringPlotHistoryId = stratum1Plot2HistoryId,
         )
     siteSpecies1Totals = siteSpecies1Totals.copy(totalLive = 3)
     siteSpecies3Totals = siteSpecies3Totals.copy(totalExisting = 2)
@@ -768,6 +803,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
+            monitoringPlotHistoryId = stratum2Plot1HistoryId,
         )
     val stratum2Plot1Other1Totals =
         ObservedPlotSpeciesTotalsRow(
@@ -780,6 +816,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            monitoringPlotHistoryId = stratum2Plot1HistoryId,
         )
     val stratum2Substratum1Species1Totals =
         ObservedSubstratumSpeciesTotalsRow(
@@ -793,6 +830,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
+            substratumHistoryId = stratum2Substratum1HistoryId,
         )
     val stratum2Substratum1Other1Totals =
         ObservedSubstratumSpeciesTotalsRow(
@@ -805,6 +843,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            substratumHistoryId = stratum2Substratum1HistoryId,
         )
     val stratum2Species1Totals =
         ObservedStratumSpeciesTotalsRow(
@@ -818,6 +857,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             1,
             0,
             0,
+            stratumHistoryId = stratum2HistoryId,
         )
     val stratum2Other1Totals =
         ObservedStratumSpeciesTotalsRow(
@@ -830,6 +870,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             0,
             0,
             1,
+            stratumHistoryId = stratum2HistoryId,
         )
     siteSpecies1Totals =
         siteSpecies1Totals.copy(

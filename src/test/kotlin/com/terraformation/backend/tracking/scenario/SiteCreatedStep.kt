@@ -87,6 +87,7 @@ class SiteCreatedStep(
                 plantingCompletedTime = Instant.EPOCH,
                 stableId = "$number",
             )
+        scenario.substratumIds[number] = substratumId
       }
 
       override fun finish() {

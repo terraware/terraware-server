@@ -634,6 +634,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
                 certaintyId = RecordedSpeciesCertainty.Known,
                 observationId = inserted.observationId,
                 plantingSiteId = inserted.plantingSiteId,
+                plantingSiteHistoryId = inserted.plantingSiteHistoryId,
                 speciesId = observedSpeciesId,
                 totalLive = 1,
             )

@@ -6299,7 +6299,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val species2 = insertSpecies()
 
     val plantingSite1 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
-    val plantingSite1Hist = inserted.plantingSiteHistoryId
+    val plantingSiteHistory1 = inserted.plantingSiteHistoryId
     insertStratum()
     insertStratumT0TempDensity(
         speciesId = species1,
@@ -6310,6 +6310,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         stratumDensity = BigDecimal.valueOf(21).toPlantsPerHectare(),
     )
     val site1substratum = insertSubstratum()
+    val site1SubstratumHistory = inserted.substratumHistoryId
     val site1permPlot = insertMonitoringPlot(permanentIndex = 1)
     val site1permPlotHist = inserted.monitoringPlotHistoryId
     insertPlotT0Density(
@@ -6325,7 +6326,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val site1Plots = mapOf(site1permPlot to site1permPlotHist, site1tempPlot to site1tempPlotHist)
 
     val plantingSite2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
-    val plantingSite2Hist = inserted.plantingSiteHistoryId
+    val plantingSiteHistory2 = inserted.plantingSiteHistoryId
     insertStratum()
     insertStratumT0TempDensity(
         speciesId = species1,
@@ -6336,6 +6337,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         stratumDensity = BigDecimal.valueOf(23).toPlantsPerHectare(),
     )
     val site2substratum = insertSubstratum()
+    val site2SubstratumHistory = inserted.substratumHistoryId
     val site2permPlot = insertMonitoringPlot(permanentIndex = 1)
     val site2permPlotHist = inserted.monitoringPlotHistoryId
     insertPlotT0Density(
@@ -6353,9 +6355,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     // this site doesn't have a survival rate so its values are excluded from the project-level
     // calculations
     val plantingSite3 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
-    val plantingSite3Hist = inserted.plantingSiteHistoryId
+    val plantingSiteHistory3 = inserted.plantingSiteHistoryId
     insertStratum()
     val site3substratum1 = insertSubstratum()
+    val site3Substratum1History = inserted.substratumHistoryId
     val site3perm1 = insertMonitoringPlot(permanentIndex = 1) // missing plot t0
     val site3perm1Hist = inserted.monitoringPlotHistoryId
     val site3temp1 = insertMonitoringPlot(permanentIndex = null) // missing zone t0
@@ -6363,6 +6366,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertStratum()
     insertStratumT0TempDensity(stratumDensity = BigDecimal.valueOf(100).toPlantsPerHectare())
     val site3substratum2 = insertSubstratum()
+    val site3Substratum2History = inserted.substratumHistoryId
     val site3perm2 = insertMonitoringPlot(permanentIndex = 2)
     val site3perm2Hist = inserted.monitoringPlotHistoryId
     insertPlotT0Density(plotDensity = BigDecimal.valueOf(200).toPlantsPerHectare())
@@ -6380,7 +6384,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val observationTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC)
     insertObservation(
         plantingSiteId = plantingSite1,
-        plantingSiteHistoryId = plantingSite1Hist,
+        plantingSiteHistoryId = plantingSiteHistory1,
         state = ObservationState.Completed,
         completedTime = observationTime,
     )
@@ -6396,21 +6400,25 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertObservedSubstratumSpeciesTotals(
         speciesId = species1,
         substratumId = site1substratum,
+        substratumHistoryId = site1SubstratumHistory,
         totalLive = 11,
     )
     insertObservedSubstratumSpeciesTotals(
         speciesId = species2,
         substratumId = site1substratum,
+        substratumHistoryId = site1SubstratumHistory,
         totalLive = 12,
     )
     insertObservedSiteSpeciesTotals(
         speciesId = species1,
         plantingSiteId = plantingSite1,
+        plantingSiteHistoryId = plantingSiteHistory1,
         permanentLive = 5,
     )
     insertObservedSiteSpeciesTotals(
         speciesId = species2,
         plantingSiteId = plantingSite1,
+        plantingSiteHistoryId = plantingSiteHistory1,
         permanentLive = 6,
     )
 
@@ -6418,7 +6426,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val futureTime = reportEndDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
     insertObservation(
         plantingSiteId = plantingSite1,
-        plantingSiteHistoryId = plantingSite1Hist,
+        plantingSiteHistoryId = plantingSiteHistory1,
         state = ObservationState.Completed,
         completedTime = futureTime,
     )
@@ -6434,7 +6442,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     insertObservation(
         plantingSiteId = plantingSite2,
-        plantingSiteHistoryId = plantingSite2Hist,
+        plantingSiteHistoryId = plantingSiteHistory2,
         state = ObservationState.Completed,
         completedTime = observationTime,
     )
@@ -6450,27 +6458,31 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertObservedSubstratumSpeciesTotals(
         speciesId = species1,
         substratumId = site2substratum,
+        substratumHistoryId = site2SubstratumHistory,
         totalLive = 13,
     )
     insertObservedSubstratumSpeciesTotals(
         speciesId = species2,
         substratumId = site2substratum,
+        substratumHistoryId = site2SubstratumHistory,
         totalLive = 14,
     )
     insertObservedSiteSpeciesTotals(
         speciesId = species1,
         plantingSiteId = plantingSite2,
+        plantingSiteHistoryId = plantingSiteHistory2,
         permanentLive = 7,
     )
     insertObservedSiteSpeciesTotals(
         speciesId = species2,
         plantingSiteId = plantingSite2,
+        plantingSiteHistoryId = plantingSiteHistory2,
         permanentLive = 8,
     )
 
     insertObservation(
         plantingSiteId = plantingSite3,
-        plantingSiteHistoryId = plantingSite3Hist,
+        plantingSiteHistoryId = plantingSiteHistory3,
         state = ObservationState.Completed,
         completedTime = observationTime.plusSeconds(86400),
     )
@@ -6487,31 +6499,37 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertObservedSubstratumSpeciesTotals(
         speciesId = species1,
         substratumId = site3substratum1,
+        substratumHistoryId = site3Substratum1History,
         totalLive = 20,
     )
     insertObservedSubstratumSpeciesTotals(
         speciesId = species2,
         substratumId = site3substratum1,
+        substratumHistoryId = site3Substratum1History,
         totalLive = 21,
     )
     insertObservedSubstratumSpeciesTotals(
         speciesId = species1,
         substratumId = site3substratum2,
+        substratumHistoryId = site3Substratum2History,
         totalLive = 30,
     )
     insertObservedSubstratumSpeciesTotals(
         speciesId = species2,
         substratumId = site3substratum2,
+        substratumHistoryId = site3Substratum2History,
         totalLive = 31,
     )
     insertObservedSiteSpeciesTotals(
         speciesId = species1,
         plantingSiteId = plantingSite3,
+        plantingSiteHistoryId = plantingSiteHistory3,
         permanentLive = 50,
     )
     insertObservedSiteSpeciesTotals(
         speciesId = species2,
         plantingSiteId = plantingSite3,
+        plantingSiteHistoryId = plantingSiteHistory3,
         permanentLive = 51,
     )
   }
