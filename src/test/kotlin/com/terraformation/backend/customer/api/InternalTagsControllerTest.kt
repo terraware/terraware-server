@@ -39,6 +39,11 @@ class InternalTagsControllerTest : ControllerIntegrationTest() {
                       "name": "Testing"
                     },
                     {
+                      "id": ${InternalTagIds.VirtualWalkthrough},
+                      "isSystem": true,
+                      "name": "Virtual Walkthrough"
+                    },
+                    {
                       "id": $newTagId,
                       "isSystem": false,
                       "name": "Random Tag"
