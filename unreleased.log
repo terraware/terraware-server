@@ -1,3 +1,6 @@
+30c7485f Receive and store average camera height from sqs, expose it in splat info (#4369)
+7b1e5ac0 Receive and store ground plane from sqs, expose it in splat info (#4361)
+841d1d93 Receive and store scene bounds from sqs, expose them in splat info (#4352)
 90e0e5ad Remove `+` typo in openapi description (#4371)
 733a3aa9 Fill missing plot histories before plot species totals migrations (#4368)
 0cd8d79b SW-8294 Added option in observation results API to fetch from new tables (#4363)

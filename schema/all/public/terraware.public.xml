@@ -1416,9 +1416,10 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="camera_position" nullable="true" remarks="Starting location of the camera in cartesian coordinates." size="2147483647" type="geometry" typeCode="1111"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="sky_color" nullable="true" remarks="Average color of the sky." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="ground_color" nullable="true" remarks="Average color of the ground." size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="ground_plane" nullable="true" remarks="Ground plane of the splat in cartesian coordinates." size="2147483647" type="geometry" typeCode="1111"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="ground_plane" nullable="true" remarks="Ground plane of the splat in cartesian coordinates represented by 3 points in a MULTIPOINTZ." size="2147483647" type="geometry" typeCode="1111"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="scene_bounds" nullable="true" remarks="Bounding perimeter of the splat in cartesian coordinates, defined as a PointZM such that XYZ is the center of the circle, and M is the radius. The circle lies on the ground plane." size="2147483647" type="geometry" typeCode="1111"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="15" name="sky_radius" nullable="true" remarks="Size of the sky sphere." size="0" type="numeric" typeCode="2"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="16" name="average_camera_height" nullable="true" remarks="" size="0" type="numeric" typeCode="2"/>
          <primaryKey column="file_id" sequenceNumberInPK="1"/>
          <index name="splats_pkey" unique="true">
             <column ascending="true" name="file_id"/>
