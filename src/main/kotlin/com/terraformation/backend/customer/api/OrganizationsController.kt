@@ -409,7 +409,7 @@ data class OrganizationPayload(
 
 data class OrganizationFeaturePayload(
     val enabled: Boolean,
-    val projectIds: List<ProjectId>?,
+    val projectIds: List<ProjectId>,
 ) {
   constructor(
       model: OrganizationFeatureModel?,
