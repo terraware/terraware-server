@@ -57,7 +57,7 @@ class SearchService(private val dslContext: DSLContext) {
     //       and pass them to skip(). For now, just treat the cursor as an offset.
     val offset = cursor?.toIntOrNull() ?: 0
 
-    val exactCriteria = criteria.mapValues { it.value.toExactSearch() }
+    val exactCriteria = criteria.mapValues { it.value.toPartialSearch() }
     if (exactCriteria != criteria) {
       val exactResults =
           search(rootPrefix, fields, exactCriteria, sortOrder, cursor, limit, distinct)
@@ -147,13 +147,13 @@ class SearchService(private val dslContext: DSLContext) {
     }
 
     val offset = cursor?.toIntOrNull() ?: 0
-    val exactCriteria = criteria.mapValues { it.value.toExactSearch() }
+    val partialCriteria = criteria.mapValues { it.value.toPartialSearch() }
 
-    val exactResults =
+    val partialResults =
         runQuery(
             rootPrefix,
             listOf(fieldPath),
-            exactCriteria,
+            partialCriteria,
             listOf(SearchSortField(fieldPath)),
             limit = limit,
             offset = offset,
@@ -161,8 +161,8 @@ class SearchService(private val dslContext: DSLContext) {
         )
 
     val searchResults =
-        if (exactResults.isNotEmpty() || exactCriteria == criteria) {
-          exactResults
+        if (partialResults.isNotEmpty() || partialCriteria == criteria) {
+          partialResults
         } else {
           runQuery(
               rootPrefix,
@@ -187,7 +187,7 @@ class SearchService(private val dslContext: DSLContext) {
       rootPrefix: SearchFieldPrefix,
       criteria: Map<SearchFieldPrefix, SearchNode>,
   ): Long {
-    val exactCriteria = criteria.mapValues { it.value.toExactSearch() }
+    val exactCriteria = criteria.mapValues { it.value.toPartialSearch() }
     if (exactCriteria != criteria) {
       val exactResults = searchCount(rootPrefix, exactCriteria)
       if (exactResults > 0) {

@@ -92,9 +92,9 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
     val accessionNumberField =
         SearchFieldPrefix(root = searchTables.accessions).resolve("accessionNumber")
     val criteriaWithExactMatch =
-        FieldNode(accessionNumberField, listOf("22-1-001"), SearchFilterType.ExactOrFuzzy)
+        FieldNode(accessionNumberField, listOf("22-1-001"), SearchFilterType.PartialOrFuzzy)
     val criteriaWithoutExactMatch =
-        FieldNode(accessionNumberField, listOf("22-1-000"), SearchFilterType.ExactOrFuzzy)
+        FieldNode(accessionNumberField, listOf("22-1-000"), SearchFilterType.PartialOrFuzzy)
 
     assertAll(
         {

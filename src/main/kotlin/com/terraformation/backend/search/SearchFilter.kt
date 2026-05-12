@@ -6,8 +6,9 @@ import org.jooq.impl.DSL
 
 enum class SearchFilterType {
   Exact,
-  ExactOrFuzzy,
   Fuzzy,
+  Partial,
+  PartialOrFuzzy,
   PhraseMatch,
   Range,
 }
@@ -16,11 +17,11 @@ interface SearchNode {
   fun toCondition(): Condition
 
   /**
-   * Converts this node and all its descendents from exact-or-fuzzy to exact filtering. If this node
-   * does not currently contain any exact-or-fuzzy filter criteria, this method _must_ return an
-   * object that tests equal to `this` (e.g., by just returning `this`).
+   * Converts this node and all its descendents from partial-or-fuzzy to partial filtering. If this
+   * node does not currently contain any partial-or-fuzzy filter criteria, this method _must_ return
+   * an object that tests equal to `this` (e.g., by just returning `this`).
    */
-  fun toExactSearch(): SearchNode
+  fun toPartialSearch(): SearchNode
 
   fun referencedSublists(): Set<SublistField>
 }
@@ -31,11 +32,11 @@ data class OrNode(private val children: List<SearchNode>) : SearchNode {
     return if (conditions.size == 1) conditions[0] else DSL.or(conditions)
   }
 
-  override fun toExactSearch(): OrNode {
-    val exactChildren = children.map { it.toExactSearch() }
+  override fun toPartialSearch(): OrNode {
+    val partialChildren = children.map { it.toPartialSearch() }
 
-    return if (exactChildren != children) {
-      OrNode(exactChildren)
+    return if (partialChildren != children) {
+      OrNode(partialChildren)
     } else {
       this
     }
@@ -56,11 +57,11 @@ data class AndNode(private val children: List<SearchNode>) : SearchNode {
     return if (conditions.size == 1) conditions[0] else DSL.and(conditions)
   }
 
-  override fun toExactSearch(): AndNode {
-    val exactChildren = children.map { it.toExactSearch() }
+  override fun toPartialSearch(): AndNode {
+    val partialChildren = children.map { it.toPartialSearch() }
 
-    return if (exactChildren != children) {
-      AndNode(exactChildren)
+    return if (partialChildren != children) {
+      AndNode(partialChildren)
     } else {
       this
     }
@@ -80,11 +81,11 @@ data class NotNode(val child: SearchNode) : SearchNode {
     return DSL.not(child.toCondition())
   }
 
-  override fun toExactSearch(): NotNode {
-    val exactChild = child.toExactSearch()
+  override fun toPartialSearch(): NotNode {
+    val partialChild = child.toPartialSearch()
 
-    return if (exactChild != child) {
-      NotNode(exactChild)
+    return if (partialChild != child) {
+      NotNode(partialChild)
     } else {
       this
     }
@@ -128,9 +129,9 @@ data class FieldNode(
     }
   }
 
-  override fun toExactSearch(): FieldNode {
-    return if (type == SearchFilterType.ExactOrFuzzy && values.any { it != null }) {
-      FieldNode(field, values.filterNotNull())
+  override fun toPartialSearch(): FieldNode {
+    return if (type == SearchFilterType.PartialOrFuzzy && values.any { it != null }) {
+      FieldNode(field, values.filterNotNull(), SearchFilterType.Partial)
     } else {
       this
     }
@@ -149,7 +150,7 @@ class NoConditionNode : SearchNode {
     return DSL.noCondition()
   }
 
-  override fun toExactSearch(): NoConditionNode {
+  override fun toPartialSearch(): NoConditionNode {
     return this
   }
 

@@ -55,7 +55,9 @@ class AgeField(
                 }
               }
           )
-      SearchFilterType.ExactOrFuzzy,
+      SearchFilterType.Partial ->
+          throw IllegalArgumentException("Partial search not supported for dates")
+      SearchFilterType.PartialOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for dates")
       SearchFilterType.PhraseMatch ->

@@ -36,7 +36,9 @@ class DateField(
                   if (fieldNode.values.any { it == null }) databaseField.isNull else null,
               )
           )
-      SearchFilterType.ExactOrFuzzy,
+      SearchFilterType.Partial ->
+          throw IllegalArgumentException("Partial search not supported for dates")
+      SearchFilterType.PartialOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for dates")
       SearchFilterType.PhraseMatch ->

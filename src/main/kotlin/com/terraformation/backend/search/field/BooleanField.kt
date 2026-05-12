@@ -48,7 +48,9 @@ class BooleanField(
             )
         )
       }
-      SearchFilterType.ExactOrFuzzy,
+      SearchFilterType.Partial ->
+          throw IllegalArgumentException("Partial search not supported for boolean fields")
+      SearchFilterType.PartialOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw RuntimeException("Fuzzy search not supported for boolean fields")
       SearchFilterType.PhraseMatch ->

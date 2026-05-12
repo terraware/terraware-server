@@ -30,7 +30,9 @@ class UriField(
               listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
                   .plus(nonNullValues.map { databaseField.contains(URI(it)) })
           )
-      SearchFilterType.ExactOrFuzzy,
+      SearchFilterType.Partial ->
+          throw IllegalArgumentException("Partial search is not supported for URI fields")
+      SearchFilterType.PartialOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search is not supported for URI fields")
       SearchFilterType.Range ->

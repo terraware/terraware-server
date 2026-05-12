@@ -56,7 +56,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             speciesNameField,
             mapOf(
                 rootPrefix to
-                    FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.ExactOrFuzzy)
+                    FieldNode(accessionNumberField, listOf("xyzz"), SearchFilterType.PartialOrFuzzy)
             ),
         )
     assertEquals(listOf("Kousa Dogwood"), values)
@@ -80,7 +80,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
             accessionNumberField,
             mapOf(
                 rootPrefix to
-                    FieldNode(accessionNumberField, listOf("abcd"), SearchFilterType.ExactOrFuzzy)
+                    FieldNode(accessionNumberField, listOf("abcd"), SearchFilterType.PartialOrFuzzy)
             ),
         )
     assertEquals(listOf("ABCD", "ZABCDY"), values)
@@ -112,7 +112,7 @@ internal class SearchServiceFetchValuesTest : SearchServiceTest() {
                     FieldNode(
                         collectionSiteNameField,
                         listOf("location 1"),
-                        SearchFilterType.ExactOrFuzzy,
+                        SearchFilterType.PartialOrFuzzy,
                     )
             ),
         )

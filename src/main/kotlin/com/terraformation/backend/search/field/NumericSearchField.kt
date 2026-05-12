@@ -55,7 +55,9 @@ abstract class NumericSearchField<T : Number>(
             )
         )
       }
-      SearchFilterType.ExactOrFuzzy,
+      SearchFilterType.Partial ->
+          throw IllegalArgumentException("Partial search not supported for numeric fields")
+      SearchFilterType.PartialOrFuzzy,
       SearchFilterType.Fuzzy ->
           throw RuntimeException("Fuzzy search not supported for numeric fields")
       SearchFilterType.PhraseMatch ->
