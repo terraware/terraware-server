@@ -942,14 +942,14 @@
 <text text-anchor="start" x="172" y="-5058.2" font-family="Helvetica,sans-Serif" font-size="11.00">code_alpha3</text>
 <polygon fill="none" stroke="black" points="149,-5032 149,-5050 249,-5050 249,-5032 149,-5032"/>
 <text text-anchor="start" x="152" y="-5038.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="149,-5014 149,-5032 192,-5032 192,-5014 149,-5014"/>
-<polygon fill="none" stroke="black" points="149,-5014 149,-5032 192,-5032 192,-5014 149,-5014"/>
+<polygon fill="#ffffff" stroke="transparent" points="149,-5014 149,-5032 173,-5032 173,-5014 149,-5014"/>
+<polygon fill="none" stroke="black" points="149,-5014 149,-5032 173,-5032 173,-5014 149,-5014"/>
 <text text-anchor="start" x="152" y="-5020.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="192,-5014 192,-5032 216,-5032 216,-5014 192,-5014"/>
-<polygon fill="none" stroke="black" points="192,-5014 192,-5032 216,-5032 216,-5014 192,-5014"/>
-<text text-anchor="start" x="206" y="-5020.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="216,-5014 216,-5032 249,-5032 249,-5014 216,-5014"/>
-<polygon fill="none" stroke="black" points="216,-5014 216,-5032 249,-5032 249,-5014 216,-5014"/>
+<polygon fill="#ffffff" stroke="transparent" points="173,-5014 173,-5032 226,-5032 226,-5014 173,-5014"/>
+<polygon fill="none" stroke="black" points="173,-5014 173,-5032 226,-5032 226,-5014 173,-5014"/>
+<text text-anchor="start" x="177" y="-5020.2" font-family="Helvetica,sans-Serif" font-size="11.00">249 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="226,-5014 226,-5032 249,-5032 249,-5014 226,-5014"/>
+<polygon fill="none" stroke="black" points="226,-5014 226,-5032 249,-5032 249,-5014 226,-5014"/>
 <text text-anchor="start" x="230" y="-5020.2" font-family="Helvetica,sans-Serif" font-size="11.00">8 &gt;</text>
 </a>
 </g>
@@ -979,14 +979,14 @@
 <text text-anchor="start" x="344" y="-5085.2" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
 <polygon fill="none" stroke="black" points="312,-5059 312,-5077 481,-5077 481,-5059 312,-5059"/>
 <text text-anchor="start" x="315" y="-5065.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="312,-5041 312,-5059 390,-5059 390,-5041 312,-5041"/>
-<polygon fill="none" stroke="black" points="312,-5041 312,-5059 390,-5059 390,-5041 312,-5041"/>
+<polygon fill="#ffffff" stroke="transparent" points="312,-5041 312,-5059 373,-5059 373,-5041 312,-5041"/>
+<polygon fill="none" stroke="black" points="312,-5041 312,-5059 373,-5059 373,-5041 312,-5041"/>
 <text text-anchor="start" x="315" y="-5047.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="390,-5041 390,-5059 431,-5059 431,-5041 390,-5041"/>
-<polygon fill="none" stroke="black" points="390,-5041 390,-5059 431,-5059 431,-5041 390,-5041"/>
-<text text-anchor="start" x="421" y="-5047.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="431,-5041 431,-5059 481,-5059 481,-5041 431,-5041"/>
-<polygon fill="none" stroke="black" points="431,-5041 431,-5059 481,-5059 481,-5041 431,-5041"/>
+<polygon fill="#ffffff" stroke="transparent" points="373,-5041 373,-5059 439,-5059 439,-5041 373,-5041"/>
+<polygon fill="none" stroke="black" points="373,-5041 373,-5059 439,-5059 439,-5041 373,-5041"/>
+<text text-anchor="start" x="396" y="-5047.2" font-family="Helvetica,sans-Serif" font-size="11.00">57 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="439,-5041 439,-5059 481,-5059 481,-5041 439,-5041"/>
+<polygon fill="none" stroke="black" points="439,-5041 439,-5059 481,-5059 481,-5041 439,-5041"/>
 <text text-anchor="start" x="462" y="-5047.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
 </a>
 </g>

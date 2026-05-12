@@ -1,3 +1,5 @@
+e72cf8c7 SW-8333 Updated Search API to include a Partial option, and replace ExactOrFuzzy with PartialOrFuzzy (#4367)
+e78b00d9 SW-8330 Added admin UI functionality to backfill observations (#4366)
 30c7485f Receive and store average camera height from sqs, expose it in splat info (#4369)
 7b1e5ac0 Receive and store ground plane from sqs, expose it in splat info (#4361)
 841d1d93 Receive and store scene bounds from sqs, expose them in splat info (#4352)
