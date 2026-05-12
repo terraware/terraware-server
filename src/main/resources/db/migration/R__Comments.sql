@@ -226,7 +226,7 @@ COMMENT ON TABLE species_problems IS 'Problems found in species data. Rows are d
 COMMENT ON TABLE splats IS 'Information about 3D Gaussian splatting models generated from video files.';
 COMMENT ON COLUMN splats.camera_position IS 'Starting location of the camera in cartesian coordinates.';
 COMMENT ON COLUMN splats.ground_color IS 'Average color of the ground.';
-COMMENT ON COLUMN splats.ground_plane IS 'Ground plane of the splat in cartesian coordinates.';
+COMMENT ON COLUMN splats.ground_plane IS 'Ground plane of the splat in cartesian coordinates represented by 3 points in a MULTIPOINTZ.';
 COMMENT ON COLUMN splats.origin_position IS 'Center point of the splat in cartesian coordinates.';
 COMMENT ON COLUMN splats.scene_bounds IS 'Bounding perimeter of the splat in cartesian coordinates, defined as a PointZM such that XYZ is the center of the circle, and M is the radius. The circle lies on the ground plane.';
 COMMENT ON COLUMN splats.sky_color IS 'Average color of the sky.';

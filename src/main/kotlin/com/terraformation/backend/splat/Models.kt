@@ -43,6 +43,7 @@ data class SplatInfoModel(
     val cameraPosition: CoordinateModel?,
     val groundColor: String?,
     val originPosition: CoordinateModel?,
+    val sceneBounds: CoordinateModel? = null,
     val skyColor: String?,
 )
 
@@ -66,32 +67,56 @@ data class ObservationBirdnetResultModel(
 }
 
 data class ModelMetadataModel(
-    val skyColor: String?,
-    val groundColor: String?,
+    val groundColor: String? = null,
+    val sceneBounds: CoordinateModel? = null,
+    val skyColor: String? = null,
 )
 
-data class CoordinateModel(val x: BigDecimal, val y: BigDecimal, val z: BigDecimal) {
+data class CoordinateModel(
+    val x: BigDecimal,
+    val y: BigDecimal,
+    val z: BigDecimal,
+    val m: BigDecimal? = null,
+) {
   constructor(
       x: Double,
       y: Double,
       z: Double,
-  ) : this(BigDecimal.valueOf(x), BigDecimal.valueOf(y), BigDecimal.valueOf(z))
+      m: Double? = null,
+  ) : this(
+      BigDecimal.valueOf(x),
+      BigDecimal.valueOf(y),
+      BigDecimal.valueOf(z),
+      m?.let { BigDecimal.valueOf(it) },
+  )
 
   fun toPoint(): Point =
       cartesianGeometryFactory.createPoint(Coordinate(x.toDouble(), y.toDouble(), z.toDouble()))
 
   companion object {
     fun of(record: Record, pointField: Field<Geometry?>): CoordinateModel? =
-        (record.get(pointField) as Point?)?.let { CoordinateModel(it.x, it.y, it.coordinate.z) }
+        (record.get(pointField) as Point?)?.let {
+          val m = it.coordinate.m.takeUnless { v -> v.isNaN() }
+          CoordinateModel(x = it.x, y = it.y, z = it.coordinate.z, m = m)
+        }
   }
 }
 
 private val cartesianGeometryFactory = GeometryFactory(PrecisionModel(), 0)
 
 @Suppress("UNCHECKED_CAST")
-fun CoordinateModel?.toPointZField(): Field<Geometry?> =
+fun CoordinateModel?.toPointField(): Field<Geometry?> =
     if (this == null) {
       DSL.castNull(SQLDataType.GEOMETRY) as Field<Geometry?>
+    } else if (m != null) {
+      DSL.field(
+          "ST_MakePoint({0}, {1}, {2}, {3})",
+          SQLDataType.GEOMETRY,
+          DSL.value(x),
+          DSL.value(y),
+          DSL.value(z),
+          DSL.value(m),
+      ) as Field<Geometry?>
     } else {
       DSL.field(
           "ST_MakePoint({0}, {1}, {2})",

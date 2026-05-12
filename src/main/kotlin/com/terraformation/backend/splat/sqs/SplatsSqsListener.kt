@@ -1,11 +1,15 @@
 package com.terraformation.backend.splat.sqs
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.terraformation.backend.db.PointWithMDeserializer
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.splat.CoordinateModel
 import com.terraformation.backend.splat.ModelMetadataModel
 import com.terraformation.backend.splat.SplatService
 import io.awspring.cloud.sqs.annotation.SqsListener
 import jakarta.inject.Named
+import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
 @ConditionalOnProperty("terraware.splatter.enabled")
@@ -56,12 +60,33 @@ data class SplatterResponsePayload(
 )
 
 data class SplatterResponseModelMetadataPayload(
-    val skyColor: String?,
     val groundColor: String?,
+    @JsonDeserialize(using = PointWithMDeserializer::class) //
+    val sceneBounds: Point? = null,
+    val skyColor: String?,
 ) {
-  fun toModel() =
-      ModelMetadataModel(
-          skyColor = skyColor,
-          groundColor = groundColor,
-      )
+  fun toModel(): ModelMetadataModel {
+    val parsedSceneBounds = sceneBounds?.run {
+      if (coordinate.m.isNaN()) {
+        log.warn("Ignoring scene_bounds with no M coordinate: $this")
+        null
+      } else {
+        CoordinateModel(
+            x = x,
+            y = y,
+            z = coordinate.z,
+            m = coordinate.m,
+        )
+      }
+    }
+    return ModelMetadataModel(
+        groundColor = groundColor,
+        sceneBounds = parsedSceneBounds,
+        skyColor = skyColor,
+    )
+  }
+
+  companion object {
+    private val log = perClassLogger()
+  }
 }

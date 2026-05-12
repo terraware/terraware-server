@@ -8,6 +8,9 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem
  * geometric value has an associated SRID.
  */
 object SRID {
+  /** Non-geographic Cartesian coordinate system with no fixed unit. */
+  const val CARTESIAN = 0
+
   /** Longitude and latitude as used by GPS. [Reference.](https://epsg.io/4326) */
   const val LONG_LAT = 4326
 
