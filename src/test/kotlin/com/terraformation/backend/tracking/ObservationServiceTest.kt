@@ -110,6 +110,7 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.util.Turtle
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
@@ -132,7 +133,6 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.mockito.Mockito.verifyNoMoreInteractions
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
@@ -2406,6 +2406,16 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               state = ObservationState.Abandoned,
               completedTime = Instant.ofEpochSecond(200),
           )
+      // In progress observation
+      insertObservation(
+          plantingSiteId = plantingSiteId,
+          state = ObservationState.InProgress,
+      )
+      // Upcoming observation
+      insertObservation(
+          plantingSiteId = plantingSiteId,
+          state = ObservationState.Upcoming,
+      )
       // Completed observation in a planting site the user cannot manage.
       insertObservation(
           plantingSiteId = otherPlantingSiteId,
@@ -2446,7 +2456,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         spyStore.populateObservationResults(abandonedId)
       }
 
-      verifyNoMoreInteractions(spyStore)
+      confirmVerified(spyStore)
     }
   }
 
