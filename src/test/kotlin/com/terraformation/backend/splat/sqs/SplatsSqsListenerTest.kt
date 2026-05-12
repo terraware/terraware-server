@@ -15,12 +15,18 @@ import org.junit.jupiter.api.Test
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.CoordinateXYZM
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.MultiPoint
+import org.locationtech.jts.geom.PrecisionModel
 
 class SplatsSqsListenerTest {
   private val splatService: SplatService = mockk()
   private val listener = SplatsSqsListener(splatService)
 
   private val fileId = FileId(123)
+  private val geometryFactory = GeometryFactory(PrecisionModel(), 0)
+
+  private fun multiPoint(vararg coords: Coordinate): MultiPoint =
+      geometryFactory.createMultiPointFromCoords(coords)
 
   @BeforeEach
   fun setUp() {
@@ -152,6 +158,115 @@ class SplatsSqsListenerTest {
       listener.receiveSplatterResponse(payload)
 
       verify { splatService.recordSplatSuccess(fileId, ModelMetadataModel(sceneBounds = null)) }
+    }
+
+    @Test
+    fun `passes ground plane to recordSplatSuccess when present`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      groundColor = null,
+                      groundPlane =
+                          multiPoint(
+                              Coordinate(1.0, 2.0, 3.0),
+                              Coordinate(4.0, 5.0, 6.0),
+                              Coordinate(7.0, 8.0, 9.0),
+                          ),
+                      skyColor = null,
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify {
+        splatService.recordSplatSuccess(
+            fileId,
+            ModelMetadataModel(
+                groundPlane =
+                    listOf(
+                        CoordinateModel(1.0, 2.0, 3.0),
+                        CoordinateModel(4.0, 5.0, 6.0),
+                        CoordinateModel(7.0, 8.0, 9.0),
+                    ),
+            ),
+        )
+      }
+    }
+
+    @Test
+    fun `skips ground plane when fewer than 3 points`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      groundColor = null,
+                      groundPlane =
+                          multiPoint(
+                              Coordinate(1.0, 2.0, 3.0),
+                              Coordinate(4.0, 5.0, 6.0),
+                          ),
+                      skyColor = null,
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify { splatService.recordSplatSuccess(fileId, ModelMetadataModel(groundPlane = null)) }
+    }
+
+    @Test
+    fun `skips ground plane when a point has fewer than 3 coordinates`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      groundColor = null,
+                      groundPlane =
+                          multiPoint(
+                              Coordinate(1.0, 2.0, 3.0),
+                              Coordinate(4.0, 5.0),
+                              Coordinate(7.0, 8.0, 9.0),
+                          ),
+                      skyColor = null,
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify { splatService.recordSplatSuccess(fileId, ModelMetadataModel(groundPlane = null)) }
+    }
+
+    @Test
+    fun `passes null ground plane when absent from metadata`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      groundColor = null,
+                      skyColor = null,
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify { splatService.recordSplatSuccess(fileId, ModelMetadataModel()) }
     }
 
     @Test
