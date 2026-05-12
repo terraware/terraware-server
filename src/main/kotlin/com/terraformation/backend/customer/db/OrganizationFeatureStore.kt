@@ -72,7 +72,8 @@ class OrganizationFeatureStore(private val dslContext: DSLContext) {
                       record,
                       virtualWalkthroughField,
                   ),
-          ).associateBy { it.feature }
+              )
+              .associateBy { it.feature }
         } ?: emptyMap()
   }
 

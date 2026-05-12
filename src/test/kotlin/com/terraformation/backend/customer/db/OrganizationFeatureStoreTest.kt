@@ -25,13 +25,14 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val emptyOrganizationFeatures: Map<OrganizationFeature, OrganizationFeatureModel> =
       listOf(
-          OrganizationFeatureModel(OrganizationFeature.Applications, false),
-          OrganizationFeatureModel(OrganizationFeature.Deliverables, false),
-          OrganizationFeatureModel(OrganizationFeature.Modules, false),
-          OrganizationFeatureModel(OrganizationFeature.Reports, false),
-          OrganizationFeatureModel(OrganizationFeature.SeedFundReports, false),
-          OrganizationFeatureModel(OrganizationFeature.VirtualWalkthrough, false),
-      ).associateBy { it.feature }
+              OrganizationFeatureModel(OrganizationFeature.Applications, false),
+              OrganizationFeatureModel(OrganizationFeature.Deliverables, false),
+              OrganizationFeatureModel(OrganizationFeature.Modules, false),
+              OrganizationFeatureModel(OrganizationFeature.Reports, false),
+              OrganizationFeatureModel(OrganizationFeature.SeedFundReports, false),
+              OrganizationFeatureModel(OrganizationFeature.VirtualWalkthrough, false),
+          )
+          .associateBy { it.feature }
 
   @BeforeEach
   fun setUp() {
@@ -72,11 +73,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertApplication()
 
     val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
-    expectedFeatures[OrganizationFeature.Applications] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Applications,
-        enabled = true,
-        projectIds = setOf(projectId),
-    )
+    expectedFeatures[OrganizationFeature.Applications] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Applications,
+            enabled = true,
+            projectIds = setOf(projectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -99,11 +101,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertProjectModule()
 
     val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
-    expectedFeatures[OrganizationFeature.Modules] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Modules,
-        enabled = true,
-        projectIds = setOf(projectId),
-    )
+    expectedFeatures[OrganizationFeature.Modules] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Modules,
+            enabled = true,
+            projectIds = setOf(projectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -127,17 +130,19 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertProjectModule()
 
     val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
-    expectedFeatures[OrganizationFeature.Deliverables] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Deliverables,
-        enabled = true,
-        projectIds = setOf(projectId),
-    )
+    expectedFeatures[OrganizationFeature.Deliverables] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Deliverables,
+            enabled = true,
+            projectIds = setOf(projectId),
+        )
 
-    expectedFeatures[OrganizationFeature.Modules] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Modules,
-        enabled = true,
-        projectIds = setOf(projectId),
-    )
+    expectedFeatures[OrganizationFeature.Modules] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Modules,
+            enabled = true,
+            projectIds = setOf(projectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -170,11 +175,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertSubmission()
 
     val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
-    expectedFeatures[OrganizationFeature.Deliverables] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Deliverables,
-        enabled = true,
-        projectIds = setOf(projectId),
-    )
+    expectedFeatures[OrganizationFeature.Deliverables] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Deliverables,
+            enabled = true,
+            projectIds = setOf(projectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -200,11 +206,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertReport()
 
     val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
-    expectedFeatures[OrganizationFeature.Reports] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Reports,
-        enabled = true,
-        projectIds = setOf(projectId, otherProjectId),
-    )
+    expectedFeatures[OrganizationFeature.Reports] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Reports,
+            enabled = true,
+            projectIds = setOf(projectId, otherProjectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -225,11 +232,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertSeedFundReport(projectId = projectId)
 
     val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
-    expectedFeatures[OrganizationFeature.SeedFundReports] = OrganizationFeatureModel(
-        feature = OrganizationFeature.SeedFundReports,
-        enabled = true,
-        projectIds = setOf(projectId),
-    )
+    expectedFeatures[OrganizationFeature.SeedFundReports] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.SeedFundReports,
+            enabled = true,
+            projectIds = setOf(projectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -249,10 +257,11 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertOrganizationInternalTag(organizationId = organizationId, tagId = InternalTagId(4))
 
     val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
-    expectedFeatures[OrganizationFeature.VirtualWalkthrough] = OrganizationFeatureModel(
-        feature = OrganizationFeature.VirtualWalkthrough,
-        enabled = true,
-    )
+    expectedFeatures[OrganizationFeature.VirtualWalkthrough] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.VirtualWalkthrough,
+            enabled = true,
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -277,11 +286,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertDeliverable()
     insertSubmission()
 
-    expectedFeatures[OrganizationFeature.Applications] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Applications,
-        enabled = true,
-        projectIds = setOf(applicationProjectId),
-    )
+    expectedFeatures[OrganizationFeature.Applications] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Applications,
+            enabled = true,
+            projectIds = setOf(applicationProjectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -295,16 +305,18 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertDeliverable()
     insertProjectModule()
 
-    expectedFeatures[OrganizationFeature.Deliverables] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Deliverables,
-        enabled = true,
-        projectIds = setOf(moduleProjectId),
-    )
-    expectedFeatures[OrganizationFeature.Modules] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Modules,
-        enabled = true,
-        projectIds = setOf(moduleProjectId),
-    )
+    expectedFeatures[OrganizationFeature.Deliverables] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Deliverables,
+            enabled = true,
+            projectIds = setOf(moduleProjectId),
+        )
+    expectedFeatures[OrganizationFeature.Modules] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Modules,
+            enabled = true,
+            projectIds = setOf(moduleProjectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -316,11 +328,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertProjectReportConfig()
     insertReport()
 
-    expectedFeatures[OrganizationFeature.Reports] = OrganizationFeatureModel(
-        feature = OrganizationFeature.Reports,
-        enabled = true,
-        projectIds = setOf(reportProjectId),
-    )
+    expectedFeatures[OrganizationFeature.Reports] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.Reports,
+            enabled = true,
+            projectIds = setOf(reportProjectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),
@@ -330,11 +343,12 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     val seedFundProjectId = insertProject()
     insertSeedFundReport(projectId = seedFundProjectId)
-    expectedFeatures[OrganizationFeature.SeedFundReports] = OrganizationFeatureModel(
-        feature = OrganizationFeature.SeedFundReports,
-        enabled = true,
-        projectIds = setOf(seedFundProjectId),
-    )
+    expectedFeatures[OrganizationFeature.SeedFundReports] =
+        OrganizationFeatureModel(
+            feature = OrganizationFeature.SeedFundReports,
+            enabled = true,
+            projectIds = setOf(seedFundProjectId),
+        )
 
     assertEquals(
         expectedFeatures.toMap(),

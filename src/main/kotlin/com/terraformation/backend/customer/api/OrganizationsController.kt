@@ -479,7 +479,8 @@ data class ListOrganizationFeaturesResponsePayload(
       modules = OrganizationFeaturePayload(features[OrganizationFeature.Modules]),
       reports = OrganizationFeaturePayload(features[OrganizationFeature.Reports]),
       seedFundReports = OrganizationFeaturePayload(features[OrganizationFeature.SeedFundReports]),
-      virtualWalkthrough = OrganizationFeaturePayload(features[OrganizationFeature.VirtualWalkthrough]),
+      virtualWalkthrough =
+          OrganizationFeaturePayload(features[OrganizationFeature.VirtualWalkthrough]),
   )
 }
 
