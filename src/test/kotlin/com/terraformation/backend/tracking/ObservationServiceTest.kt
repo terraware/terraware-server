@@ -132,6 +132,7 @@ import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import org.mockito.Mockito.verifyNoMoreInteractions
 import org.springframework.http.MediaType
 import org.springframework.security.access.AccessDeniedException
 
@@ -2444,6 +2445,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         spyStore.populateObservationResults(completedId)
         spyStore.populateObservationResults(abandonedId)
       }
+
+      verifyNoMoreInteractions(spyStore)
     }
   }
 

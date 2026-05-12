@@ -1615,11 +1615,14 @@ class ObservationStore(
         updateObservationResults(
             observationId,
             plantingSite,
-            record.value5(),
-            record.value4(),
-            record.value2(),
-            record.value3(),
-            record.value1(),
+            record[
+                OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
+                    .STRATUM_ID],
+            record[
+                OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID],
+            record[OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_ID],
+            record[OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID],
+            record[OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable()],
             isAdHoc,
         )
       }
