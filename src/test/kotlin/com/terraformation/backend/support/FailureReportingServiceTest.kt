@@ -210,6 +210,12 @@ class FailureReportingServiceTest {
 
   @Nested
   inner class OnSplatGenerationFailed {
+    @BeforeEach
+    fun runWithoutUser() {
+      // Clear user because this event is triggered by a message queue
+      CurrentUserHolder.setCurrentUser(null)
+    }
+
     @Test
     fun `creates Jira ticket with correct content`() {
       service.on(
