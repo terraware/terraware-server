@@ -9,6 +9,7 @@ import com.terraformation.backend.splat.ModelMetadataModel
 import com.terraformation.backend.splat.SplatService
 import io.awspring.cloud.sqs.annotation.SqsListener
 import jakarta.inject.Named
+import java.math.BigDecimal
 import org.locationtech.jts.geom.MultiPoint
 import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -61,6 +62,7 @@ data class SplatterResponsePayload(
 )
 
 data class SplatterResponseModelMetadataPayload(
+    val averageCameraHeight: BigDecimal? = null,
     val groundColor: String?,
     val groundPlane: MultiPoint? = null,
     @JsonDeserialize(using = PointWithMDeserializer::class) //
@@ -101,6 +103,7 @@ data class SplatterResponseModelMetadataPayload(
     }
 
     return ModelMetadataModel(
+        averageCameraHeight = averageCameraHeight,
         groundColor = groundColor,
         groundPlane = parsedGroundPlane,
         sceneBounds = parsedSceneBounds,

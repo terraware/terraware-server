@@ -9,6 +9,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import io.mockk.verify
+import java.math.BigDecimal
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -251,6 +252,52 @@ class SplatsSqsListenerTest {
 
     @Test
     fun `passes null ground plane when absent from metadata`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      groundColor = null,
+                      skyColor = null,
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify { splatService.recordSplatSuccess(fileId, ModelMetadataModel()) }
+    }
+
+    @Test
+    fun `passes average camera height to recordSplatSuccess when present`() {
+      val payload =
+          SplatterResponsePayload(
+              errorMessage = null,
+              jobId = fileId,
+              output = SplatterResponseOutputPayload("bucket", "key"),
+              success = true,
+              modelMetadata =
+                  SplatterResponseModelMetadataPayload(
+                      averageCameraHeight = BigDecimal("12.5"),
+                      groundColor = null,
+                      skyColor = null,
+                  ),
+          )
+
+      listener.receiveSplatterResponse(payload)
+
+      verify {
+        splatService.recordSplatSuccess(
+            fileId,
+            ModelMetadataModel(averageCameraHeight = BigDecimal("12.5")),
+        )
+      }
+    }
+
+    @Test
+    fun `passes null average camera height when absent from metadata`() {
       val payload =
           SplatterResponsePayload(
               errorMessage = null,

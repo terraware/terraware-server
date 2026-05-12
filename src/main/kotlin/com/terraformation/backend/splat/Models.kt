@@ -41,6 +41,7 @@ data class ObservationSplatModel(
 
 data class SplatInfoModel(
     val annotations: List<SplatAnnotationModel<SplatAnnotationId>>,
+    val averageCameraHeight: BigDecimal? = null,
     val cameraPosition: CoordinateModel?,
     val groundColor: String?,
     val groundPlane: List<CoordinateModel>? = null,
@@ -69,6 +70,7 @@ data class ObservationBirdnetResultModel(
 }
 
 data class ModelMetadataModel(
+    val averageCameraHeight: BigDecimal? = null,
     val groundColor: String? = null,
     val groundPlane: List<CoordinateModel>? = null,
     val sceneBounds: CoordinateModel? = null,
