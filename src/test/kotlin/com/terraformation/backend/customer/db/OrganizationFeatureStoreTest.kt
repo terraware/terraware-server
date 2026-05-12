@@ -2,12 +2,13 @@ package com.terraformation.backend.customer.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.model.OrganizationFeature
+import com.terraformation.backend.customer.model.OrganizationFeatureModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
+import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.OrganizationId
-import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -22,14 +23,15 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var organizationId: OrganizationId
   private val store: OrganizationFeatureStore by lazy { OrganizationFeatureStore(dslContext) }
 
-  private val emptyOrganizationFeatureProjects: Map<OrganizationFeature, Set<ProjectId>> =
-      mapOf(
-          OrganizationFeature.Applications to emptySet(),
-          OrganizationFeature.Deliverables to emptySet(),
-          OrganizationFeature.Modules to emptySet(),
-          OrganizationFeature.Reports to emptySet(),
-          OrganizationFeature.SeedFundReports to emptySet(),
-      )
+  private val emptyOrganizationFeatures: Map<OrganizationFeature, OrganizationFeatureModel> =
+      listOf(
+          OrganizationFeatureModel(OrganizationFeature.Applications, false),
+          OrganizationFeatureModel(OrganizationFeature.Deliverables, false),
+          OrganizationFeatureModel(OrganizationFeature.Modules, false),
+          OrganizationFeatureModel(OrganizationFeature.Reports, false),
+          OrganizationFeatureModel(OrganizationFeature.SeedFundReports, false),
+          OrganizationFeatureModel(OrganizationFeature.VirtualWalkthrough, false),
+      ).associateBy { it.feature }
 
   @BeforeEach
   fun setUp() {
@@ -61,7 +63,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Test
   fun `checks for projects of applications for the applications feature`() {
     assertEquals(
-        emptyOrganizationFeatureProjects,
+        emptyOrganizationFeatures,
         store.listOrganizationFeatureProjects(organizationId),
         "No projects",
     )
@@ -69,11 +71,15 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val projectId = insertProject()
     insertApplication()
 
-    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
-    expectedFeatureProjects[OrganizationFeature.Applications] = setOf(projectId)
+    val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
+    expectedFeatures[OrganizationFeature.Applications] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Applications,
+        enabled = true,
+        projectIds = setOf(projectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "Has applications",
     )
@@ -82,7 +88,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Test
   fun `checks for projects of modules for the modules feature`() {
     assertEquals(
-        emptyOrganizationFeatureProjects,
+        emptyOrganizationFeatures,
         store.listOrganizationFeatureProjects(organizationId),
         "No modules",
     )
@@ -92,11 +98,15 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertModule()
     insertProjectModule()
 
-    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
-    expectedFeatureProjects[OrganizationFeature.Modules] = setOf(projectId)
+    val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
+    expectedFeatures[OrganizationFeature.Modules] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Modules,
+        enabled = true,
+        projectIds = setOf(projectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "Has modules",
     )
@@ -105,7 +115,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Test
   fun `checks for projects of deliverables in a module for the deliverables feature`() {
     assertEquals(
-        emptyOrganizationFeatureProjects,
+        emptyOrganizationFeatures,
         store.listOrganizationFeatureProjects(organizationId),
         "No deliverables",
     )
@@ -116,12 +126,21 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertDeliverable()
     insertProjectModule()
 
-    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
-    expectedFeatureProjects[OrganizationFeature.Deliverables] = setOf(projectId)
-    expectedFeatureProjects[OrganizationFeature.Modules] = setOf(projectId)
+    val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
+    expectedFeatures[OrganizationFeature.Deliverables] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Deliverables,
+        enabled = true,
+        projectIds = setOf(projectId),
+    )
+
+    expectedFeatures[OrganizationFeature.Modules] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Modules,
+        enabled = true,
+        projectIds = setOf(projectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "Has deliverables",
     )
@@ -130,7 +149,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Test
   fun `checks for projects of submissions for projects not in a phase for the deliverables feature`() {
     assertEquals(
-        emptyOrganizationFeatureProjects,
+        emptyOrganizationFeatures,
         store.listOrganizationFeatureProjects(organizationId),
         "No submission",
     )
@@ -140,7 +159,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertProject()
     insertSubmission()
     assertEquals(
-        emptyOrganizationFeatureProjects,
+        emptyOrganizationFeatures,
         store.listOrganizationFeatureProjects(organizationId),
         "Only submission for application module",
     )
@@ -150,11 +169,15 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val projectId = insertProject()
     insertSubmission()
 
-    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
-    expectedFeatureProjects[OrganizationFeature.Deliverables] = setOf(projectId)
+    val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
+    expectedFeatures[OrganizationFeature.Deliverables] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Deliverables,
+        enabled = true,
+        projectIds = setOf(projectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "Has submissions",
     )
@@ -163,7 +186,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Test
   fun `checks for projects of reports for projects`() {
     assertEquals(
-        emptyOrganizationFeatureProjects,
+        emptyOrganizationFeatures,
         store.listOrganizationFeatureProjects(organizationId),
         "No reports",
     )
@@ -176,11 +199,15 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertProjectReportConfig()
     insertReport()
 
-    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
-    expectedFeatureProjects[OrganizationFeature.Reports] = setOf(projectId, otherProjectId)
+    val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
+    expectedFeatures[OrganizationFeature.Reports] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Reports,
+        enabled = true,
+        projectIds = setOf(projectId, otherProjectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "Has reports",
     )
@@ -189,7 +216,7 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   @Test
   fun `checks for projects of seed fund reports for projects`() {
     assertEquals(
-        emptyOrganizationFeatureProjects,
+        emptyOrganizationFeatures,
         store.listOrganizationFeatureProjects(organizationId),
         "No seed fund reports",
     )
@@ -197,25 +224,52 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val projectId = insertProject()
     insertSeedFundReport(projectId = projectId)
 
-    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
-    expectedFeatureProjects[OrganizationFeature.SeedFundReports] = setOf(projectId)
+    val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
+    expectedFeatures[OrganizationFeature.SeedFundReports] = OrganizationFeatureModel(
+        feature = OrganizationFeature.SeedFundReports,
+        enabled = true,
+        projectIds = setOf(projectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "Has seed fund reports",
     )
   }
 
   @Test
+  fun `checks for virtual walkthrough internal tag`() {
+    assertEquals(
+        emptyOrganizationFeatures,
+        store.listOrganizationFeatureProjects(organizationId),
+        "No virtual walkthrough",
+    )
+
+    insertOrganizationInternalTag(organizationId = organizationId, tagId = InternalTagId(4))
+
+    val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
+    expectedFeatures[OrganizationFeature.VirtualWalkthrough] = OrganizationFeatureModel(
+        feature = OrganizationFeature.VirtualWalkthrough,
+        enabled = true,
+    )
+
+    assertEquals(
+        expectedFeatures.toMap(),
+        store.listOrganizationFeatureProjects(organizationId),
+        "Virtual walkthrough enabled",
+    )
+  }
+
+  @Test
   fun `queries with multiple projects`() {
     assertEquals(
-        emptyOrganizationFeatureProjects,
+        emptyOrganizationFeatures,
         store.listOrganizationFeatureProjects(organizationId),
         "No project added",
     )
 
-    val expectedFeatureProjects = emptyOrganizationFeatureProjects.toMutableMap()
+    val expectedFeatures = emptyOrganizationFeatures.toMutableMap()
 
     val applicationProjectId = insertProject(name = "Application project")
     insertApplication()
@@ -223,10 +277,14 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertDeliverable()
     insertSubmission()
 
-    expectedFeatureProjects[OrganizationFeature.Applications] = setOf(applicationProjectId)
+    expectedFeatures[OrganizationFeature.Applications] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Applications,
+        enabled = true,
+        projectIds = setOf(applicationProjectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "One application project",
     )
@@ -237,11 +295,19 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertDeliverable()
     insertProjectModule()
 
-    expectedFeatureProjects[OrganizationFeature.Deliverables] = setOf(moduleProjectId)
-    expectedFeatureProjects[OrganizationFeature.Modules] = setOf(moduleProjectId)
+    expectedFeatures[OrganizationFeature.Deliverables] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Deliverables,
+        enabled = true,
+        projectIds = setOf(moduleProjectId),
+    )
+    expectedFeatures[OrganizationFeature.Modules] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Modules,
+        enabled = true,
+        projectIds = setOf(moduleProjectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "One application project and one phase 1 project",
     )
@@ -250,20 +316,28 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     insertProjectReportConfig()
     insertReport()
 
-    expectedFeatureProjects[OrganizationFeature.Reports] = setOf(reportProjectId)
+    expectedFeatures[OrganizationFeature.Reports] = OrganizationFeatureModel(
+        feature = OrganizationFeature.Reports,
+        enabled = true,
+        projectIds = setOf(reportProjectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "One application project, one phase 1 project, and one report project",
     )
 
     val seedFundProjectId = insertProject()
     insertSeedFundReport(projectId = seedFundProjectId)
-    expectedFeatureProjects[OrganizationFeature.SeedFundReports] = setOf(seedFundProjectId)
+    expectedFeatures[OrganizationFeature.SeedFundReports] = OrganizationFeatureModel(
+        feature = OrganizationFeature.SeedFundReports,
+        enabled = true,
+        projectIds = setOf(seedFundProjectId),
+    )
 
     assertEquals(
-        expectedFeatureProjects.toMap(),
+        expectedFeatures.toMap(),
         store.listOrganizationFeatureProjects(organizationId),
         "One project for every organization feature",
     )

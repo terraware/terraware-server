@@ -15,6 +15,7 @@ import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.IndividualUser
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.OrganizationFeature
+import com.terraformation.backend.customer.model.OrganizationFeatureModel
 import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.OrganizationUserModel
 import com.terraformation.backend.db.CannotRemoveLastOwnerException
@@ -408,13 +409,13 @@ data class OrganizationPayload(
 
 data class OrganizationFeaturePayload(
     val enabled: Boolean,
-    val projectIds: List<ProjectId>,
+    val projectIds: List<ProjectId>?,
 ) {
   constructor(
-      projectIds: Set<ProjectId>
+      model: OrganizationFeatureModel?,
   ) : this(
-      enabled = projectIds.isNotEmpty(),
-      projectIds = projectIds.toList(),
+      enabled = model?.enabled ?: false,
+      projectIds = model?.projectIds?.toList() ?: emptyList(),
   )
 }
 
@@ -468,18 +469,17 @@ data class ListOrganizationFeaturesResponsePayload(
     val modules: OrganizationFeaturePayload,
     val reports: OrganizationFeaturePayload,
     val seedFundReports: OrganizationFeaturePayload,
+    val virtualWalkthrough: OrganizationFeaturePayload,
 ) : SuccessResponsePayload {
   constructor(
-      features: Map<OrganizationFeature, Set<ProjectId>>
+      features: Map<OrganizationFeature, OrganizationFeatureModel>
   ) : this(
-      applications =
-          OrganizationFeaturePayload(features[OrganizationFeature.Applications] ?: emptySet()),
-      deliverables =
-          OrganizationFeaturePayload(features[OrganizationFeature.Deliverables] ?: emptySet()),
-      modules = OrganizationFeaturePayload(features[OrganizationFeature.Modules] ?: emptySet()),
-      reports = OrganizationFeaturePayload(features[OrganizationFeature.Reports] ?: emptySet()),
-      seedFundReports =
-          OrganizationFeaturePayload(features[OrganizationFeature.SeedFundReports] ?: emptySet()),
+      applications = OrganizationFeaturePayload(features[OrganizationFeature.Applications]),
+      deliverables = OrganizationFeaturePayload(features[OrganizationFeature.Deliverables]),
+      modules = OrganizationFeaturePayload(features[OrganizationFeature.Modules]),
+      reports = OrganizationFeaturePayload(features[OrganizationFeature.Reports]),
+      seedFundReports = OrganizationFeaturePayload(features[OrganizationFeature.SeedFundReports]),
+      virtualWalkthrough = OrganizationFeaturePayload(features[OrganizationFeature.VirtualWalkthrough]),
   )
 }
 
