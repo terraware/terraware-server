@@ -18,6 +18,7 @@ import org.jooq.impl.SQLDataType
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.MultiPoint
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.PrecisionModel
 
@@ -42,6 +43,7 @@ data class SplatInfoModel(
     val annotations: List<SplatAnnotationModel<SplatAnnotationId>>,
     val cameraPosition: CoordinateModel?,
     val groundColor: String?,
+    val groundPlane: List<CoordinateModel>? = null,
     val originPosition: CoordinateModel?,
     val sceneBounds: CoordinateModel? = null,
     val skyColor: String?,
@@ -68,6 +70,7 @@ data class ObservationBirdnetResultModel(
 
 data class ModelMetadataModel(
     val groundColor: String? = null,
+    val groundPlane: List<CoordinateModel>? = null,
     val sceneBounds: CoordinateModel? = null,
     val skyColor: String? = null,
 )
@@ -99,6 +102,14 @@ data class CoordinateModel(
           val m = it.coordinate.m.takeUnless { v -> v.isNaN() }
           CoordinateModel(x = it.x, y = it.y, z = it.coordinate.z, m = m)
         }
+
+    fun ofList(record: Record, multiPointField: Field<Geometry?>): List<CoordinateModel>? =
+        (record.get(multiPointField) as MultiPoint?)?.let { mp ->
+          (0..<mp.numGeometries).map { i ->
+            val p = mp.getGeometryN(i) as Point
+            CoordinateModel(x = p.x, y = p.y, z = p.coordinate.z)
+          }
+        }
   }
 }
 
@@ -124,6 +135,24 @@ fun CoordinateModel?.toPointField(): Field<Geometry?> =
           DSL.value(x),
           DSL.value(y),
           DSL.value(z),
+      ) as Field<Geometry?>
+    }
+
+@Suppress("UNCHECKED_CAST")
+fun List<CoordinateModel>?.toMultiPointField(): Field<Geometry?> =
+    if (this == null) {
+      DSL.castNull(SQLDataType.GEOMETRY) as Field<Geometry?>
+    } else {
+      val pointPlaceholders =
+          indices.joinToString(", ") { i ->
+            "ST_MakePoint({${i * 3}}, {${i * 3 + 1}}, {${i * 3 + 2}})"
+          }
+      val bindings =
+          flatMap { c -> listOf(DSL.value(c.x), DSL.value(c.y), DSL.value(c.z)) }.toTypedArray()
+      DSL.field(
+          "ST_Collect(ARRAY[$pointPlaceholders])",
+          SQLDataType.GEOMETRY,
+          *bindings,
       ) as Field<Geometry?>
     }
 

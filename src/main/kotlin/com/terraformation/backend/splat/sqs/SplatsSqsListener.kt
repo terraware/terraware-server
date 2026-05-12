@@ -9,6 +9,7 @@ import com.terraformation.backend.splat.ModelMetadataModel
 import com.terraformation.backend.splat.SplatService
 import io.awspring.cloud.sqs.annotation.SqsListener
 import jakarta.inject.Named
+import org.locationtech.jts.geom.MultiPoint
 import org.locationtech.jts.geom.Point
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
@@ -61,6 +62,7 @@ data class SplatterResponsePayload(
 
 data class SplatterResponseModelMetadataPayload(
     val groundColor: String?,
+    val groundPlane: MultiPoint? = null,
     @JsonDeserialize(using = PointWithMDeserializer::class) //
     val sceneBounds: Point? = null,
     val skyColor: String?,
@@ -79,8 +81,28 @@ data class SplatterResponseModelMetadataPayload(
         )
       }
     }
+    val parsedGroundPlane = groundPlane?.run {
+      // SRID is 4326 from GeometryDeserializer; reset to 0 for correctness since these are
+      // cartesian coordinates, not geographic. Not technically necessary since we only
+      // extract coordinate values and never use the geometry's SRID.
+      srid = 0
+      if (numGeometries < 3) {
+        log.warn("Ignoring ground_plane with fewer than 3 points")
+        null
+      } else if ((0..<numGeometries).any { i -> getGeometryN(i).coordinate.z.isNaN() }) {
+        log.warn("Ignoring ground_plane with a point missing Z coordinate")
+        null
+      } else {
+        (0..<numGeometries).map { i ->
+          val p = getGeometryN(i) as Point
+          CoordinateModel(x = p.x, y = p.y, z = p.coordinate.z)
+        }
+      }
+    }
+
     return ModelMetadataModel(
         groundColor = groundColor,
+        groundPlane = parsedGroundPlane,
         sceneBounds = parsedSceneBounds,
         skyColor = skyColor,
     )

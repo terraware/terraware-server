@@ -814,6 +814,28 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `returns ground plane when present`() {
+      val groundPlane =
+          listOf(
+              CoordinateModel(1.0, 2.0, 3.0),
+              CoordinateModel(4.0, 5.0, 6.0),
+              CoordinateModel(7.0, 8.0, 9.0),
+          )
+      insertSplat(groundPlane = groundPlane)
+
+      val expected =
+          SplatInfoModel(
+              annotations = emptyList(),
+              cameraPosition = null,
+              groundColor = null,
+              groundPlane = groundPlane,
+              originPosition = null,
+              skyColor = null,
+          )
+      assertEquals(expected, service.getObservationSplatInfo(observationId, fileId))
+    }
+
+    @Test
     fun `throws exception if file is not associated with observation`() {
       val otherFileId = insertFile()
 
@@ -1031,6 +1053,30 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               .fetchOne()!!
               .value1()
       assertEquals("{\"type\":\"Point\",\"coordinates\":[1,2,3]}", geoJson)
+    }
+
+    @Test
+    fun `saves ground plane when model metadata includes it`() {
+      service.recordSplatSuccess(
+          fileId,
+          ModelMetadataModel(
+              groundPlane =
+                  listOf(
+                      CoordinateModel(1.0, 2.0, 3.0),
+                      CoordinateModel(4.0, 5.0, 6.0),
+                      CoordinateModel(7.0, 8.0, 9.0),
+                  ),
+          ),
+      )
+
+      val geoJson =
+          dslContext
+              .select(DSL.field("ST_AsGeoJSON(ground_plane)", String::class.java))
+              .from(SPLATS)
+              .where(SPLATS.FILE_ID.eq(fileId))
+              .fetchOne()!!
+              .value1()
+      assertEquals("""{"type":"MultiPoint","coordinates":[[1,2,3],[4,5,6],[7,8,9]]}""", geoJson)
     }
   }
 
