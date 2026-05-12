@@ -81,6 +81,10 @@ class AdminController(
     )
     model.addAttribute("canReadAllAcceleratorDetails", currentUser().canReadAllAcceleratorDetails())
     model.addAttribute(
+        "canBackfillObservationResults",
+        GlobalRole.SuperAdmin in currentUser().globalRoles,
+    )
+    model.addAttribute(
         "canRecalculateSurvivalRates",
         GlobalRole.SuperAdmin in currentUser().globalRoles,
     )

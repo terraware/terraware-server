@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -20,6 +21,7 @@ import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationMediaFilesDao
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.file.FileService
@@ -488,6 +490,32 @@ class ObservationService(
             )
       }
     }
+  }
+
+  /**
+   * Populates the `observation_*_results` tables for every Completed or Abandoned observation the
+   * current user can manage, processing them in order of completion time so survival-rate
+   * calculations honor inter-observation dependencies. Safe to re-run; the underlying populate
+   * logic is idempotent.
+   */
+  fun backfillObservationResults(): Int {
+    val observationIds =
+        dslContext
+            .select(OBSERVATIONS.ID.asNonNullable())
+            .from(OBSERVATIONS)
+            .where(
+                OBSERVATIONS.STATE_ID.`in`(
+                    ObservationState.Completed,
+                    ObservationState.Abandoned,
+                )
+            )
+            .orderBy(OBSERVATIONS.COMPLETED_TIME.asc().nullsLast(), OBSERVATIONS.ID)
+            .fetch { it.value1() }
+            .filter { currentUser().canManageObservation(it) }
+
+    observationIds.forEach { observationStore.populateObservationResults(it) }
+
+    return observationIds.size
   }
 
   /** Replaces a monitoring plot in an observation with a different one if possible. */

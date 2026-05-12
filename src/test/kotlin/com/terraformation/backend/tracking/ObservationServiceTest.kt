@@ -110,9 +110,11 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.util.Turtle
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verifyOrder
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -2369,6 +2371,92 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             ReplacementDuration.LongTerm,
         )
       }
+    }
+  }
+
+  @Nested
+  inner class BackfillObservationResults {
+    private lateinit var otherOrganizationId: OrganizationId
+    private lateinit var otherPlantingSiteId: PlantingSiteId
+
+    @BeforeEach
+    fun setUp() {
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+
+      // A second org the user is NOT a member of, so canManageObservation returns false for any
+      // observations there even though the user is SuperAdmin.
+      otherOrganizationId = insertOrganization()
+      otherPlantingSiteId = insertPlantingSite(organizationId = otherOrganizationId, x = 0)
+    }
+
+    @Test
+    fun `processes Completed and Abandoned observations only`() {
+      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.Upcoming)
+      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.InProgress)
+      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.Overdue)
+      val completedId =
+          insertObservation(
+              plantingSiteId = plantingSiteId,
+              state = ObservationState.Completed,
+              completedTime = Instant.ofEpochSecond(100),
+          )
+      val abandonedId =
+          insertObservation(
+              plantingSiteId = plantingSiteId,
+              state = ObservationState.Abandoned,
+              completedTime = Instant.ofEpochSecond(200),
+          )
+      // In progress observation
+      insertObservation(
+          plantingSiteId = plantingSiteId,
+          state = ObservationState.InProgress,
+      )
+      // Upcoming observation
+      insertObservation(
+          plantingSiteId = plantingSiteId,
+          state = ObservationState.Upcoming,
+      )
+      // Completed observation in a planting site the user cannot manage.
+      insertObservation(
+          plantingSiteId = otherPlantingSiteId,
+          state = ObservationState.Completed,
+          completedTime = Instant.ofEpochSecond(300),
+      )
+
+      val spyStore = spyk(observationStore)
+      every { spyStore.populateObservationResults(any()) } answers { /* tracked via verify */ }
+
+      val spyService =
+          ObservationService(
+              biomassStore,
+              clock,
+              dslContext,
+              eventPublisher,
+              fileService,
+              monitoringPlotsDao,
+              muxService,
+              observationMediaFilesDao,
+              observationLocker,
+              spyStore,
+              plantingSiteStore,
+              parentStore,
+              eventPublisher,
+              SystemUser(usersDao),
+              thumbnailService,
+          )
+
+      val count = spyService.backfillObservationResults()
+
+      assertEquals(2, count, "Number of observations processed")
+
+      // Completed (t=100) precedes Abandoned (t=200); the unmanageable observation and the
+      // non-terminal states are skipped.
+      verifyOrder {
+        spyStore.populateObservationResults(completedId)
+        spyStore.populateObservationResults(abandonedId)
+      }
+
+      confirmVerified(spyStore)
     }
   }
 

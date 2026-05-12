@@ -266,6 +266,21 @@
         </form>
     </th:block>
 
+    <th:block th:if="${canBackfillObservationResults}">
+        <h3>Backfill Observation Results</h3>
+
+        <p>
+            Populates the new <code>observation_*_results</code> tables for every completed
+            observation, in completion-time order. Run this once after deploying the new tables;
+            existing rows are upserted, so re-running is safe but may take a while on sites with
+            many observations.
+        </p>
+
+        <form method="POST" action="/admin/backfillObservationResults">
+            <input type="submit" value="Backfill Observation Results"/>
+        </form>
+    </th:block>
+
     <th:block th:if="${canRecalculatePopulations}">
         <h3>Recalculate Planting Site Populations</h3>
 

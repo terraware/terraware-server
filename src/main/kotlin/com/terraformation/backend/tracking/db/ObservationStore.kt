@@ -1576,6 +1576,63 @@ class ObservationStore(
     }
   }
 
+  /**
+   * Populates the `observation_*_results` tables for an observation whose plot completions predate
+   * those tables existing, treating `observed_*_species_totals` as the source of truth.
+   */
+  fun populateObservationResults(observationId: ObservationId) {
+    requirePermissions { manageObservation(observationId) }
+
+    val observation = fetchObservationById(observationId)
+    val plantingSiteId = observation.plantingSiteId
+    val isAdHoc = observation.isAdHoc
+
+    val plantingSite =
+        dslContext
+            .select()
+            .from(PLANTING_SITES)
+            .where(PLANTING_SITES.ID.eq(plantingSiteId))
+            .fetchOneInto(PlantingSitesRow::class.java)
+            ?: throw PlantingSiteNotFoundException(plantingSiteId)
+
+    val completedPlots =
+        dslContext
+            .select(
+                OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable(),
+                OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_ID,
+                OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID,
+                OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID,
+                OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
+                    .STRATUM_ID,
+            )
+            .from(OBSERVATION_PLOTS)
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+            .fetch()
+
+    dslContext.transaction { _ ->
+      completedPlots.forEach { record ->
+        updateObservationResults(
+            observationId,
+            plantingSite,
+            record[
+                OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
+                    .STRATUM_ID],
+            record[
+                OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID],
+            record[OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_ID],
+            record[OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID],
+            record[OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable()],
+            isAdHoc,
+        )
+      }
+
+      if (!isAdHoc) {
+        recalculateSurvivalRateResults(observationId, plantingSiteId)
+      }
+    }
+  }
+
   /** Recalculates the stratum- and site-level survival rates for an observation. */
   fun recalculateSurvivalRates(
       observationId: ObservationId,
