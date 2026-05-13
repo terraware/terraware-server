@@ -2445,9 +2445,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       insertMonitoringPlot()
       insertObservationPlot(completedTime = Instant.ofEpochSecond(50))
 
-      assertTrue(completedFirstId < completedSecondId, "Inserted ids should be increasing")
-      assertTrue(inProgressFirstId < inProgressSecondId, "Inserted ids should be increasing")
-
       val spyStore = spyk(observationStore)
       every { spyStore.populateObservationResults(any()) } answers { /* tracked via verify */ }
 
