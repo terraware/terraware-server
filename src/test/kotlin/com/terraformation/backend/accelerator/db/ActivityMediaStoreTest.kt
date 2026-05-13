@@ -3,10 +3,12 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
+import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.FileId
@@ -14,12 +16,15 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertNull
 import org.junit.jupiter.api.assertThrows
 
 class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
@@ -43,6 +48,51 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     activityId = insertActivity(createdBy = createdBy, projectId = projectId)
 
     insertOrganizationUser(role = Role.Admin)
+  }
+
+  @Nested
+  inner class FetchByActivityId {
+    @Test
+    fun `does not return observation metadata for non-observation media files`() {
+      insertFileForActivity()
+      insertActivityMediaFile()
+
+      val files = store.fetchByActivityId(activityId)
+      assertNull(files.single().observation)
+    }
+
+    @Test
+    fun `returns observation metadata for observation media files`() {
+      insertPlantingSite(x = 0, width = 11)
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot(plotNumber = 123)
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot(completedBy = user.userId, completedTime = Instant.EPOCH)
+      insertFileForActivity()
+      insertObservationMediaFile(
+          position = ObservationPlotPosition.SoutheastCorner,
+          type = ObservationMediaType.Plot,
+      )
+
+      activitiesDao.update(
+          activitiesDao.fetchOneById(activityId)!!.copy(activityTypeId = ActivityType.Monitoring)
+      )
+      insertActivityMediaFile()
+
+      val files = store.fetchByActivityId(activityId)
+      assertEquals(
+          listOf(
+              ActivityMediaModel.Observation(
+                  observationId = inserted.observationId,
+                  monitoringPlotNumber = 123,
+                  position = ObservationPlotPosition.SoutheastCorner,
+                  type = ObservationMediaType.Plot,
+              )
+          ),
+          files.map { it.observation },
+      )
+    }
   }
 
   @Nested

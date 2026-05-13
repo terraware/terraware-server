@@ -6,6 +6,11 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDI
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -26,10 +31,18 @@ data class ActivityMediaModel(
     val isCoverPhoto: Boolean,
     val isHiddenOnMap: Boolean,
     val listPosition: Int,
+    val observation: Observation? = null,
     val type: ActivityMediaType,
 ) {
   val capturedDate: LocalDate
     get() = capturedLocalTime.toLocalDate()
+
+  data class Observation(
+      val monitoringPlotNumber: Long,
+      val observationId: ObservationId,
+      val position: ObservationPlotPosition?,
+      val type: ObservationMediaType,
+  )
 
   companion object {
     fun of(
@@ -48,6 +61,15 @@ data class ActivityMediaModel(
           isCoverPhoto = record[ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO]!!,
           isHiddenOnMap = record[ACTIVITY_MEDIA_FILES.IS_HIDDEN_ON_MAP]!!,
           listPosition = record[ACTIVITY_MEDIA_FILES.LIST_POSITION]!!,
+          observation =
+              record[OBSERVATION_MEDIA_FILES.OBSERVATION_ID]?.let { observationId ->
+                Observation(
+                    monitoringPlotNumber = record[MONITORING_PLOTS.PLOT_NUMBER]!!,
+                    observationId = observationId,
+                    position = record[OBSERVATION_MEDIA_FILES.POSITION_ID],
+                    type = record[OBSERVATION_MEDIA_FILES.TYPE_ID]!!,
+                )
+              },
           type = record[ACTIVITY_MEDIA_FILES.ACTIVITY_MEDIA_TYPE_ID]!!,
       )
     }

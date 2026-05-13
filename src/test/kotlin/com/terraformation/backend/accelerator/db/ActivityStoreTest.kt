@@ -25,6 +25,8 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.point
 import java.time.Instant
 import java.time.LocalDate
@@ -265,6 +267,12 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `includes activity media`() {
       insertOrganizationUser(role = Role.Admin)
+      insertPlantingSite(x = 0, width = 11)
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot(plotNumber = 321)
+      insertObservation(completedTime = Instant.EPOCH)
+      insertObservationPlot()
 
       val activityId =
           insertActivity(
@@ -277,6 +285,10 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               capturedLocalTime = LocalDate.of(2024, 2, 19).atStartOfDay(),
               storageUrl = "s3://x/y/my-file.jpg",
           )
+      insertObservationMediaFile(
+          position = null,
+          type = ObservationMediaType.Soil,
+      )
       insertActivityMediaFile(
           caption = "Caption 1",
           isCoverPhoto = true,
@@ -287,6 +299,10 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = Instant.ofEpochSecond(1),
               geolocation = point(1),
           )
+      insertObservationMediaFile(
+          position = ObservationPlotPosition.SouthwestCorner,
+          type = ObservationMediaType.Plot,
+      )
       insertActivityMediaFile(
           caption = "Caption 2",
           isHiddenOnMap = true,
@@ -321,6 +337,13 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isCoverPhoto = true,
                           isHiddenOnMap = false,
                           listPosition = 1,
+                          observation =
+                              ActivityMediaModel.Observation(
+                                  monitoringPlotNumber = 321,
+                                  observationId = inserted.observationId,
+                                  position = null,
+                                  type = ObservationMediaType.Soil,
+                              ),
                           type = ActivityMediaType.Photo,
                       ),
                       ActivityMediaModel(
@@ -335,6 +358,13 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           isCoverPhoto = false,
                           isHiddenOnMap = true,
                           listPosition = 2,
+                          observation =
+                              ActivityMediaModel.Observation(
+                                  monitoringPlotNumber = 321,
+                                  observationId = inserted.observationId,
+                                  position = ObservationPlotPosition.SouthwestCorner,
+                                  type = ObservationMediaType.Plot,
+                              ),
                           type = ActivityMediaType.Video,
                       ),
                   ),

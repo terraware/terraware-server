@@ -17,6 +17,8 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -208,10 +210,18 @@ class ActivityStore(
                       FILES.CREATED_TIME,
                       FILES.STORAGE_URL,
                       geolocationField,
+                      OBSERVATION_MEDIA_FILES.OBSERVATION_ID,
+                      OBSERVATION_MEDIA_FILES.POSITION_ID,
+                      OBSERVATION_MEDIA_FILES.TYPE_ID,
+                      MONITORING_PLOTS.PLOT_NUMBER,
                   )
                   .from(ACTIVITY_MEDIA_FILES)
                   .join(FILES)
                   .on(ACTIVITY_MEDIA_FILES.FILE_ID.eq(FILES.ID))
+                  .leftJoin(OBSERVATION_MEDIA_FILES)
+                  .on(ACTIVITY_MEDIA_FILES.FILE_ID.eq(OBSERVATION_MEDIA_FILES.FILE_ID))
+                  .leftJoin(MONITORING_PLOTS)
+                  .on(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                   .where(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(ACTIVITIES.ID))
                   .and(condition)
                   .orderBy(ACTIVITY_MEDIA_FILES.LIST_POSITION)

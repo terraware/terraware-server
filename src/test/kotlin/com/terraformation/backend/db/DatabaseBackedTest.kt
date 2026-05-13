@@ -3253,7 +3253,8 @@ abstract class DatabaseBackedTest {
       isOriginal: Boolean = row.isOriginal ?: true,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
-      position: ObservationPlotPosition = row.positionId ?: ObservationPlotPosition.SouthwestCorner,
+      position: ObservationPlotPosition? =
+          row.positionId ?: ObservationPlotPosition.SouthwestCorner,
       type: ObservationMediaType = row.typeId ?: ObservationMediaType.Plot,
   ) {
     val rowWithDefaults =
