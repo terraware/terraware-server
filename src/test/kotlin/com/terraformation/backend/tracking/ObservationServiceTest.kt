@@ -2376,52 +2376,74 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @Nested
   inner class BackfillObservationResults {
-    private lateinit var otherOrganizationId: OrganizationId
-    private lateinit var otherPlantingSiteId: PlantingSiteId
-
     @BeforeEach
     fun setUp() {
       insertUserGlobalRole(role = GlobalRole.SuperAdmin)
-
-      // A second org the user is NOT a member of, so canManageObservation returns false for any
-      // observations there even though the user is SuperAdmin.
-      otherOrganizationId = insertOrganization()
-      otherPlantingSiteId = insertPlantingSite(organizationId = otherOrganizationId, x = 0)
     }
 
     @Test
-    fun `processes Completed and Abandoned observations only`() {
-      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.Upcoming)
-      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.InProgress)
-      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.Overdue)
-      val completedId =
+    fun `processes observations with at least one completed plot in completed-time then id order`() {
+      // Two Completed observations sharing completion time — id is the tie-breaker.
+      val completedFirstId =
           insertObservation(
               plantingSiteId = plantingSiteId,
               state = ObservationState.Completed,
               completedTime = Instant.ofEpochSecond(100),
           )
+      insertMonitoringPlot()
+      insertObservationPlot(completedTime = Instant.ofEpochSecond(100))
+
+      val completedSecondId =
+          insertObservation(
+              plantingSiteId = plantingSiteId,
+              state = ObservationState.Completed,
+              completedTime = Instant.ofEpochSecond(100),
+          )
+      insertMonitoringPlot()
+      insertObservationPlot(completedTime = Instant.ofEpochSecond(100))
+
+      // Abandoned observation with a completed plot, later completion time.
       val abandonedId =
           insertObservation(
               plantingSiteId = plantingSiteId,
               state = ObservationState.Abandoned,
               completedTime = Instant.ofEpochSecond(200),
           )
-      // In progress observation
-      insertObservation(
-          plantingSiteId = plantingSiteId,
-          state = ObservationState.InProgress,
-      )
-      // Upcoming observation
-      insertObservation(
-          plantingSiteId = plantingSiteId,
-          state = ObservationState.Upcoming,
-      )
-      // Completed observation in a planting site the user cannot manage.
+      insertMonitoringPlot()
+      insertObservationPlot(completedTime = Instant.ofEpochSecond(200))
+
+      // Two InProgress observations with a completed plot each — null completed_time, so id is
+      // the tie-breaker and both sort after the rows with non-null completed_time.
+      val inProgressFirstId =
+          insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.InProgress)
+      insertMonitoringPlot()
+      insertObservationPlot(completedTime = Instant.ofEpochSecond(300))
+      insertMonitoringPlot()
+      insertObservationPlot()
+
+      val inProgressSecondId =
+          insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.InProgress)
+      insertMonitoringPlot()
+      insertObservationPlot(completedTime = Instant.ofEpochSecond(400))
+
+      // InProgress observation with only an unclaimed plot — skipped.
+      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.InProgress)
+      insertMonitoringPlot()
+      insertObservationPlot()
+
+      // Upcoming observation with no plots — skipped.
+      insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.Upcoming)
+
+      // Observation in another org the user cannot manage — skipped even with a completed plot.
+      val otherOrganizationId = insertOrganization()
+      val otherPlantingSiteId = insertPlantingSite(organizationId = otherOrganizationId, x = 0)
       insertObservation(
           plantingSiteId = otherPlantingSiteId,
           state = ObservationState.Completed,
-          completedTime = Instant.ofEpochSecond(300),
+          completedTime = Instant.ofEpochSecond(50),
       )
+      insertMonitoringPlot()
+      insertObservationPlot(completedTime = Instant.ofEpochSecond(50))
 
       val spyStore = spyk(observationStore)
       every { spyStore.populateObservationResults(any()) } answers { /* tracked via verify */ }
@@ -2447,13 +2469,17 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val count = spyService.backfillObservationResults()
 
-      assertEquals(2, count, "Number of observations processed")
+      assertEquals(5, count, "Number of observations processed")
 
-      // Completed (t=100) precedes Abandoned (t=200); the unmanageable observation and the
-      // non-terminal states are skipped.
+      // Order by completed_time asc nulls last, then id asc:
+      // (100, completedFirstId) → (100, completedSecondId) → (200, abandonedId) →
+      // (null, inProgressFirstId) → (null, inProgressSecondId).
       verifyOrder {
-        spyStore.populateObservationResults(completedId)
+        spyStore.populateObservationResults(completedFirstId)
+        spyStore.populateObservationResults(completedSecondId)
         spyStore.populateObservationResults(abandonedId)
+        spyStore.populateObservationResults(inProgressFirstId)
+        spyStore.populateObservationResults(inProgressSecondId)
       }
 
       confirmVerified(spyStore)
