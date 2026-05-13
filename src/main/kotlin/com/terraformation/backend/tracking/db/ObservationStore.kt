@@ -959,29 +959,29 @@ class ObservationStore(
 
       if (allPlotsCompleted) {
         completeObservation(observationId, plantingSiteId, isAdHoc)
-      }
-
-      if (!isAdHoc) {
-        recalculateSurvivalRateResults(
-            ObservationResultsPlot(monitoringPlotHistoryId, monitoringPlotId),
-            observationId,
-        )
-        if (substratumHistoryId != null) {
+      } else {
+        if (!isAdHoc) {
           recalculateSurvivalRateResults(
-              ObservationResultsSubstratum(substratumHistoryId, substratumId),
+              ObservationResultsPlot(monitoringPlotHistoryId, monitoringPlotId),
+              observationId,
+          )
+          if (substratumHistoryId != null) {
+            recalculateSurvivalRateResults(
+                ObservationResultsSubstratum(substratumHistoryId, substratumId),
+                observationId,
+            )
+          }
+          if (stratumHistoryId != null) {
+            recalculateSurvivalRateResults(
+                ObservationResultsStratum(stratumHistoryId, stratumId),
+                observationId,
+            )
+          }
+          recalculateSurvivalRateResults(
+              ObservationResultsSite(plantingSiteHistoryId, plantingSite.id!!),
               observationId,
           )
         }
-        if (stratumHistoryId != null) {
-          recalculateSurvivalRateResults(
-              ObservationResultsStratum(stratumHistoryId, stratumId),
-              observationId,
-          )
-        }
-        recalculateSurvivalRateResults(
-            ObservationResultsSite(plantingSiteHistoryId, plantingSite.id!!),
-            observationId,
-        )
       }
     }
   }

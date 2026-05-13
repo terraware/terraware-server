@@ -82,6 +82,7 @@ import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
@@ -493,10 +494,10 @@ class ObservationService(
   }
 
   /**
-   * Populates the `observation_*_results` tables for every Completed or Abandoned observation the
-   * current user can manage, processing them in order of completion time so survival-rate
-   * calculations honor inter-observation dependencies. Safe to re-run; the underlying populate
-   * logic is idempotent.
+   * Populates the `observation_*_results` tables for every observation that has at least one
+   * completed plot and that the current user can manage, processing them in order of completion
+   * time so survival-rate calculations honor inter-observation dependencies. Safe to re-run; the
+   * underlying populate logic is idempotent.
    */
   fun backfillObservationResults(): Int {
     val observationIds =
@@ -504,9 +505,11 @@ class ObservationService(
             .select(OBSERVATIONS.ID.asNonNullable())
             .from(OBSERVATIONS)
             .where(
-                OBSERVATIONS.STATE_ID.`in`(
-                    ObservationState.Completed,
-                    ObservationState.Abandoned,
+                DSL.exists(
+                    DSL.selectOne()
+                        .from(OBSERVATION_PLOTS)
+                        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+                        .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
                 )
             )
             .orderBy(OBSERVATIONS.COMPLETED_TIME.asc().nullsLast(), OBSERVATIONS.ID)
