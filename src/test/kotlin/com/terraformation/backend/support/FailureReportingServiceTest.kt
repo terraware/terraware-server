@@ -1,17 +1,23 @@
 package com.terraformation.backend.support
 
+import com.terraformation.backend.RunsAsDatabaseUser
+import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.auth.CurrentUserHolder
+import com.terraformation.backend.auth.InMemoryKeycloakAdminClient
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.OrganizationStore
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.PermissionStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserStore
-import com.terraformation.backend.customer.model.OrganizationModel
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
-import com.terraformation.backend.db.accelerator.tables.daos.DeliverablesDao
+import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.dummyKeycloakInfo
 import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
@@ -20,64 +26,80 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.Instant
-import java.time.ZoneId
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
-class FailureReportingServiceTest {
+class FailureReportingServiceTest : DatabaseTest(), RunsAsDatabaseUser {
+  override lateinit var user: TerrawareUser
+
   private val config: TerrawareServerConfig = mockk()
-  private val deliverablesDao: DeliverablesDao = mockk()
-  private val organizationStore: OrganizationStore = mockk()
-  private val projectStore: ProjectStore = mockk()
+  private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val supportService: SupportService = mockk()
-  private val systemUser: SystemUser = SystemUser(mockk())
-  private val userStore: UserStore = mockk()
+  private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
 
-  private val service =
-      FailureReportingService(
-          config,
-          deliverablesDao,
-          organizationStore,
-          projectStore,
-          supportService,
-          systemUser,
-          userStore,
-      )
+  private val organizationStore: OrganizationStore by lazy {
+    OrganizationStore(clock, dslContext, organizationsDao, eventPublisher)
+  }
 
-  private val fileId = FileId(100)
+  private val projectStore: ProjectStore by lazy {
+    ProjectStore(clock, dslContext, eventPublisher, ParentStore(dslContext), projectsDao)
+  }
 
-  private val orgModel: OrganizationModel = mockk()
-  private val organizationId = OrganizationId(200)
+  private val userStore: UserStore by lazy {
+    UserStore(
+        clock,
+        config,
+        dslContext,
+        mockk(),
+        InMemoryKeycloakAdminClient(),
+        dummyKeycloakInfo(),
+        organizationStore,
+        parentStore,
+        PermissionStore(dslContext),
+        eventPublisher,
+        usersDao,
+    )
+  }
+
+  private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
+
+  private val service: FailureReportingService by lazy {
+    FailureReportingService(
+        config,
+        deliverablesDao,
+        organizationStore,
+        projectStore,
+        supportService,
+        systemUser,
+        userStore,
+    )
+  }
+
+  private lateinit var fileId: FileId
+
   private val orgName = "Test Organization"
+  private lateinit var organizationId: OrganizationId
 
-  private val uploadedByUser: TerrawareUser = mockk()
-  private val uploadedByUserId = UserId(300)
+  private lateinit var uploadedByUserId: UserId
   private val uploadedByUserEmail = "uploaded@example.com"
 
-  private val currentUser: TerrawareUser = mockk()
-  private val currentUserId = UserId(301)
+  private lateinit var currentUserId: UserId
   private val currentUserEmail = "current@example.com"
 
   private val videoUploadedTime = Instant.parse("2026-04-16T10:00:00Z")
 
   @BeforeEach
   fun setup() {
-    every { organizationStore.fetchOneById(organizationId) } returns orgModel
-    every { orgModel.name } returns orgName
-    every { orgModel.timeZone } returns ZoneId.of("UTC")
+    fileId = insertFile()
+    organizationId = insertOrganization(name = orgName)
+    currentUserId = insertUser(email = currentUserEmail)
+    uploadedByUserId = insertUser(email = uploadedByUserEmail)
 
-    every { userStore.fetchOneById(uploadedByUserId) } returns uploadedByUser
-    every { uploadedByUser.email } returns uploadedByUserEmail
-    every { uploadedByUser.userId } returns uploadedByUserId
-
-    every { userStore.fetchOneById(currentUserId) } returns currentUser
-    every { currentUser.email } returns currentUserEmail
-    every { currentUser.userId } returns currentUserId
-
-    CurrentUserHolder.setCurrentUser(currentUser)
+    switchToUser(currentUserId)
 
     every {
       supportService.submitServiceRequest(any(), any(), any(), any(), any(), any(), any())
@@ -90,6 +112,13 @@ class FailureReportingServiceTest {
             apiHost = "https://test.atlassian.net",
             apiToken = "test-token",
             serviceDeskKey = "TEST",
+        )
+
+    every { config.keycloak } returns
+        TerrawareServerConfig.KeycloakConfig(
+            apiClientId = "dummy",
+            apiClientGroupName = "dummy",
+            apiClientUsernamePrefix = "dummy",
         )
   }
 
