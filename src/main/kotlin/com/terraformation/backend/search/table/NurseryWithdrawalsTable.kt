@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_PHOTOS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.search.SearchTable
@@ -35,6 +36,10 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
           facilities.asSingleValueSublist(
               "facility",
               WITHDRAWAL_SUMMARIES.FACILITY_ID.eq(FACILITIES.ID),
+          ),
+          nurseryWithdrawalPhotos.asMultiValueSublist(
+              "photos",
+              WITHDRAWAL_SUMMARIES.ID.eq(WITHDRAWAL_PHOTOS.WITHDRAWAL_ID),
           ),
           organizations.asSingleValueSublist(
               "organization",
