@@ -72,7 +72,7 @@ class FailureReportingService(
   @EventListener
   fun on(event: SplatMarkedNeedsAttentionEvent) {
     try {
-      val organization = organizationStore.fetchOneById(event.organizationId)
+      val organization = systemUser.run { organizationStore.fetchOneById(event.organizationId) }
       val userEmail = systemUser.run { userStore.fetchOneById(event.markedByUserId).email }
 
       val description =
@@ -105,7 +105,7 @@ class FailureReportingService(
   @EventListener
   fun on(event: SplatDeletedEvent) {
     try {
-      val organization = organizationStore.fetchOneById(event.organizationId)
+      val organization = systemUser.run { organizationStore.fetchOneById(event.organizationId) }
       val userEmail = systemUser.run { userStore.fetchOneById(event.deletedByUserId).email }
 
       val description =
@@ -138,7 +138,7 @@ class FailureReportingService(
   @EventListener
   fun on(event: SplatGenerationFailedEvent) {
     try {
-      val organization = organizationStore.fetchOneById(event.organizationId)
+      val organization = systemUser.run { organizationStore.fetchOneById(event.organizationId) }
       val user = systemUser.run { userStore.fetchOneById(event.uploadedByUserId) }
 
       val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
