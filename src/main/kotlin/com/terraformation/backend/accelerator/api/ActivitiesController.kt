@@ -23,6 +23,8 @@ import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
 import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.file.model.FileMetadata
@@ -211,6 +213,20 @@ class ActivitiesController(
   }
 }
 
+data class ObservationActivityMediaFilePayload(
+    val monitoringPlotNumber: Long,
+    val position: ObservationPlotPosition?,
+    val type: ObservationMediaType,
+) {
+  constructor(
+      observation: ActivityMediaModel.Observation
+  ) : this(
+      monitoringPlotNumber = observation.monitoringPlotNumber,
+      position = observation.position,
+      type = observation.type,
+  )
+}
+
 data class ActivityMediaFilePayload(
     val caption: String?,
     val capturedDate: LocalDate,
@@ -220,6 +236,11 @@ data class ActivityMediaFilePayload(
     val isCoverPhoto: Boolean,
     val isHiddenOnMap: Boolean,
     val listPosition: Int,
+    @Schema(
+        description =
+            "If this file is from an observation, additional observation-specific data about it."
+    )
+    val observation: ObservationActivityMediaFilePayload? = null,
     val type: ActivityMediaType,
 ) {
   constructor(
@@ -233,6 +254,7 @@ data class ActivityMediaFilePayload(
       isCoverPhoto = model.isCoverPhoto,
       isHiddenOnMap = model.isHiddenOnMap,
       listPosition = model.listPosition,
+      observation = model.observation?.let { ObservationActivityMediaFilePayload(it) },
       type = model.type,
   )
 }
