@@ -11,15 +11,18 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.nursery.BatchId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.point
 import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
 import com.terraformation.backend.search.OrNode
 import com.terraformation.backend.search.SearchFieldPrefix
+import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.SearchSortField
@@ -27,11 +30,13 @@ import com.terraformation.backend.search.table.SearchTables
 import io.mockk.every
 import java.text.NumberFormat
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.util.Locale
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
   override val user = mockUser()
@@ -1035,6 +1040,194 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           )
 
       assertJsonEquals(expected, actual)
+    }
+  }
+
+  @Nested
+  inner class WithdrawalPhotos {
+    private val capturedTime1 = LocalDateTime.of(2024, 1, 15, 10, 30, 45)
+    private val capturedTime2 = LocalDateTime.of(2024, 6, 1, 14, 0, 0)
+    private val capturedTime3 = LocalDateTime.of(2024, 11, 20, 8, 15, 30)
+
+    private lateinit var withdrawalId: WithdrawalId
+
+    @BeforeEach
+    fun setUpPhotos() {
+      every { user.organizationRoles } returns mapOf(organizationId to Role.Manager)
+
+      insertSpecies()
+      insertBatch()
+      withdrawalId =
+          insertNurseryWithdrawal(
+              facilityId = facilityId,
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.of(2024, 1, 1),
+          )
+    }
+
+    @Test
+    fun `can query photo fields including columns reached via the files implicit join`() {
+      val fileId = insertFile(capturedLocalTime = capturedTime1, geolocation = point(12, 34))
+      insertNurseryWithdrawalPhoto()
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawalPhotos)
+      val fields =
+          listOf(
+                  "fileId",
+                  "capturedLocalTime",
+                  "gpsCoordinate",
+                  "withdrawal.id",
+                  "withdrawal.purpose",
+              )
+              .map { prefix.resolve(it) }
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "fileId" to "$fileId",
+                      "capturedLocalTime" to "2024-01-15T10:30:45",
+                      "gpsCoordinate" to """{"type":"Point","coordinates":[12,34]}""",
+                      "withdrawal" to
+                          mapOf(
+                              "id" to "$withdrawalId",
+                              "purpose" to
+                                  WithdrawalPurpose.OutPlant.getDisplayName(Locale.ENGLISH),
+                          ),
+                  )
+              )
+          )
+
+      val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+
+      assertJsonEquals(expected, actual)
+    }
+
+    @Test
+    fun `can query photos as a sublist of withdrawals`() {
+      val fileId1 = insertFile(capturedLocalTime = capturedTime1)
+      insertNurseryWithdrawalPhoto()
+      val fileId2 = insertFile(capturedLocalTime = capturedTime2)
+      insertNurseryWithdrawalPhoto()
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawals)
+      val fields =
+          listOf("id", "photos.fileId", "photos.capturedLocalTime").map { prefix.resolve(it) }
+      val orderBy =
+          listOf(
+              SearchSortField(prefix.resolve("id")),
+              SearchSortField(prefix.resolve("photos.fileId")),
+          )
+
+      val expected =
+          SearchResults(
+              listOf(
+                  mapOf(
+                      "id" to "$withdrawalId",
+                      "photos" to
+                          listOf(
+                              mapOf(
+                                  "fileId" to "$fileId1",
+                                  "capturedLocalTime" to "2024-01-15T10:30:45",
+                              ),
+                              mapOf(
+                                  "fileId" to "$fileId2",
+                                  "capturedLocalTime" to "2024-06-01T14:00:00",
+                              ),
+                          ),
+                  )
+              )
+          )
+
+      val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()), orderBy)
+
+      assertJsonEquals(expected, actual)
+    }
+
+    @Test
+    fun `can filter photos by exact capturedLocalTime`() {
+      insertFile(capturedLocalTime = capturedTime1)
+      insertNurseryWithdrawalPhoto()
+      val matchingFileId = insertFile(capturedLocalTime = capturedTime2)
+      insertNurseryWithdrawalPhoto()
+      insertFile(capturedLocalTime = capturedTime3)
+      insertNurseryWithdrawalPhoto()
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawalPhotos)
+      val fields = listOf(prefix.resolve("fileId"))
+      val filter = FieldNode(prefix.resolve("capturedLocalTime"), listOf(capturedTime2.toString()))
+
+      val actual = searchService.search(prefix, fields, mapOf(prefix to filter))
+
+      assertJsonEquals(SearchResults(listOf(mapOf("fileId" to "$matchingFileId"))), actual)
+    }
+
+    @Test
+    fun `can filter photos by capturedLocalTime range`() {
+      insertFile(capturedLocalTime = capturedTime1)
+      insertNurseryWithdrawalPhoto()
+      val middleFileId = insertFile(capturedLocalTime = capturedTime2)
+      insertNurseryWithdrawalPhoto()
+      insertFile(capturedLocalTime = capturedTime3)
+      insertNurseryWithdrawalPhoto()
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawalPhotos)
+      val fields = listOf(prefix.resolve("fileId"))
+      val filter =
+          FieldNode(
+              prefix.resolve("capturedLocalTime"),
+              listOf("2024-03-01T00:00:00", "2024-09-01T00:00:00"),
+              SearchFilterType.Range,
+          )
+
+      val actual = searchService.search(prefix, fields, mapOf(prefix to filter))
+
+      assertJsonEquals(SearchResults(listOf(mapOf("fileId" to "$middleFileId"))), actual)
+    }
+
+    @Test
+    fun `rejects unsupported filter types on capturedLocalTime`() {
+      insertFile(capturedLocalTime = capturedTime1)
+      insertNurseryWithdrawalPhoto()
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawalPhotos)
+      val fields = listOf(prefix.resolve("fileId"))
+      val fuzzyFilter =
+          FieldNode(
+              prefix.resolve("capturedLocalTime"),
+              listOf(capturedTime1.toString()),
+              SearchFilterType.Fuzzy,
+          )
+
+      assertThrows<IllegalArgumentException> {
+        searchService.search(prefix, fields, mapOf(prefix to fuzzyFilter))
+      }
+    }
+
+    @Test
+    fun `photos from other organizations are not visible`() {
+      val ownFileId = insertFile(capturedLocalTime = capturedTime1)
+      insertNurseryWithdrawalPhoto()
+
+      insertOrganization()
+      insertFacility(type = FacilityType.Nursery)
+      insertSpecies()
+      insertBatch()
+      insertNurseryWithdrawal(purpose = WithdrawalPurpose.OutPlant)
+      insertFile(capturedLocalTime = capturedTime2)
+      insertNurseryWithdrawalPhoto()
+
+      val prefix = SearchFieldPrefix(root = searchTables.nurseryWithdrawalPhotos)
+      val fields = listOf(prefix.resolve("fileId"))
+
+      val actual = searchService.search(prefix, fields, mapOf(prefix to NoConditionNode()))
+
+      assertJsonEquals(SearchResults(listOf(mapOf("fileId" to "$ownFileId"))), actual)
+      assertEquals(
+          2,
+          withdrawalPhotosDao.findAll().size,
+          "Both photos should be persisted; visibility filters at query time, not insert time",
+      )
     }
   }
 
