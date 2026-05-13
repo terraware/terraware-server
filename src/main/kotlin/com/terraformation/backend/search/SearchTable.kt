@@ -15,6 +15,7 @@ import com.terraformation.backend.search.field.EnumField
 import com.terraformation.backend.search.field.GeometryField
 import com.terraformation.backend.search.field.IdWrapperField
 import com.terraformation.backend.search.field.IntegerField
+import com.terraformation.backend.search.field.LocalTimestampField
 import com.terraformation.backend.search.field.LocalizedTextField
 import com.terraformation.backend.search.field.LongField
 import com.terraformation.backend.search.field.NonLocalizableEnumField
@@ -31,6 +32,7 @@ import java.net.URI
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.Field
@@ -270,6 +272,9 @@ abstract class SearchTable {
 
   fun integerField(fieldName: String, databaseField: Field<Int?>, localize: Boolean = true) =
       IntegerField(fieldName, databaseField, this, localize)
+
+  fun localTimestampField(fieldName: String, databaseField: TableField<*, LocalDateTime?>) =
+      LocalTimestampField(fieldName, databaseField, this)
 
   fun localizedTextField(
       fieldName: String,

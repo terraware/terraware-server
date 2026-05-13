@@ -51,6 +51,7 @@ class SearchTables(clock: Clock) {
   val monitoringPlotHistories = MonitoringPlotHistoriesTable(this)
   val monitoringPlots = MonitoringPlotsTable(this)
   val nurserySpeciesProjects = NurserySpeciesProjectsTable(this)
+  val nurseryWithdrawalPhotos = NurseryWithdrawalPhotosTable(this)
   val nurseryWithdrawals = NurseryWithdrawalsTable(this)
   val observationBiomassDetails = ObservationBiomassDetailsTable(this)
   val observationBiomassQuadratSpecies = ObservationBiomassQuadratSpeciesTable(this)
