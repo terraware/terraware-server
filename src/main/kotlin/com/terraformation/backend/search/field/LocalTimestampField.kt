@@ -4,9 +4,11 @@ import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import java.util.EnumSet
 import org.jooq.Condition
+import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
@@ -53,6 +55,14 @@ class LocalTimestampField(
     }
   }
 
+  override fun computeValue(record: Record): String? =
+      record.get(databaseField)?.format(OUTPUT_FORMATTER)
+
   // Timestamp values are always machine-readable.
   override fun raw(): SearchField? = null
+
+  companion object {
+    private val OUTPUT_FORMATTER: DateTimeFormatter =
+        DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
+  }
 }
