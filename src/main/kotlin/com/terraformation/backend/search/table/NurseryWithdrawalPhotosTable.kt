@@ -29,7 +29,7 @@ class NurseryWithdrawalPhotosTable(private val tables: SearchTables) : SearchTab
       listOf(
           idWrapperField("fileId", WITHDRAWAL_PHOTOS.FILE_ID) { FileId(it) },
           geometryField("gpsCoordinate", WITHDRAWAL_PHOTOS.files.GEOLOCATION),
-          localTimestampField("capturedLocalTime", WITHDRAWAL_PHOTOS.files.CAPTURED_LOCAL_TIME),
+          localDateTimeField("capturedLocalTime", WITHDRAWAL_PHOTOS.files.CAPTURED_LOCAL_TIME),
       )
 
   override val inheritsVisibilityFrom: SearchTable

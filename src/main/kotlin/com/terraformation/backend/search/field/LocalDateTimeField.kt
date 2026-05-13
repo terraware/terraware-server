@@ -12,8 +12,8 @@ import org.jooq.Record
 import org.jooq.TableField
 import org.jooq.impl.DSL
 
-/** Search field for columns that have local timestamps. */
-class LocalTimestampField(
+/** Search field for columns that have local date time. */
+class LocalDateTimeField(
     override val fieldName: String,
     override val databaseField: TableField<*, LocalDateTime?>,
     override val table: SearchTable,
@@ -62,7 +62,6 @@ class LocalTimestampField(
   override fun raw(): SearchField? = null
 
   companion object {
-    private val OUTPUT_FORMATTER: DateTimeFormatter =
-        DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss")
+    private val OUTPUT_FORMATTER: DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME
   }
 }
