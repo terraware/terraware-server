@@ -1,3 +1,4 @@
+60d35d90 SW-8322 Use system user to fetch details for failure reporting (#4378)
 478f183e Update database dependencies (#3933)
 d459ecb1 Update Spring dependencies (#4316)
 85d6b9f2 Update dependency mypy to v2 (#4359)
