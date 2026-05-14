@@ -3,6 +3,7 @@ package com.terraformation.backend.admin
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.SplatsDao
 import com.terraformation.backend.db.tracking.ObservationId
@@ -38,7 +39,8 @@ class AdminSplatsController(
 
   @PostMapping("/splats/process")
   fun processSplat(
-      @RequestParam observationId: ObservationId,
+      @RequestParam observationId: ObservationId?,
+      @RequestParam organizationId: OrganizationId?,
       @RequestParam fileId: FileId,
       @RequestParam abortAfter: String?,
       @RequestParam dataFactor: Int?,
@@ -95,13 +97,25 @@ class AdminSplatsController(
 
       val params = SplatGenerationParams(abortAfter, restartAt, stepArgs)
 
-      splatService.generateObservationSplat(
-          observationId,
-          fileId,
-          true,
-          params,
-          runBirdNet ?: false,
-      )
+      if (organizationId != null) {
+        splatService.generateOrganizationMediaSplat(
+            organizationId,
+            fileId,
+            true,
+            params,
+            runBirdNet ?: false,
+        )
+      } else if (observationId != null) {
+        splatService.generateObservationSplat(
+            observationId,
+            fileId,
+            true,
+            params,
+            runBirdNet ?: false,
+        )
+      } else {
+        throw IllegalArgumentException("Either observationId or organizationId must be specified")
+      }
 
       val storageUrl = filesDao.fetchOneById(fileId)?.storageUrl
       val modelUrl = splatsDao.fetchOneByFileId(fileId)?.splatStorageUrl
@@ -121,6 +135,7 @@ class AdminSplatsController(
     }
 
     redirectAttributes.addFlashAttribute("observationId", "$observationId")
+    redirectAttributes.addFlashAttribute("organizationId", "$organizationId")
     redirectAttributes.addFlashAttribute("fileId", "$fileId")
     redirectAttributes.addFlashAttribute("abortAfter", abortAfter)
     redirectAttributes.addFlashAttribute("dataFactor", dataFactor)

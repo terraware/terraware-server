@@ -36,10 +36,15 @@
         </thead>
         <tbody>
         <tr>
-            <td rowspan="2"></td>
+            <td rowspan="3"></td>
             <td>Observation&nbsp;ID</td>
-            <td colspan="2"><input type="text" name="observationId" required
+            <td colspan="2"><input type="text" name="observationId"
                                    th:value="${observationId}"/></td>
+        </tr>
+        <tr>
+            <td>Organization&nbsp;ID</td>
+            <td colspan="2"><input type="text" name="organizationId"
+                                   th:value="${organizationId}"/></td>
         </tr>
         <tr>
             <td>File ID</td>
