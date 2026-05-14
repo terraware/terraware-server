@@ -1,3 +1,5 @@
+1ce6f24b Allow splats to be created for an org level in admin (#4390)
+b458db9b SW-8346 Allow null activity descriptions (#4386)
 f1be72e0 Backfill in-progress observaitons (#4387)
 18f4fc9a Added search tables for withdrawal photos (#4380)
 fe9dea3e SW-8359 Return observation-specific activity media data (#4379)
