@@ -112,6 +112,12 @@ class ActivityStore(
       throw CannotUpdatePublishedActivityException(activityId)
     }
 
+    // We will allow null descriptions for observation activities, but those don't exist yet, so
+    // descriptions are required for now.
+    if (updatedModel.description == null) {
+      throw IllegalArgumentException("Description is required for this type of activity")
+    }
+
     if (existingModel != updatedModel) {
       val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))
 
@@ -140,6 +146,12 @@ class ActivityStore(
     val existingModel = fetchOneById(activityId)
     val updatedModel = applyFunc(existingModel)
     val now = clock.instant()
+
+    // We will allow null descriptions for observation activities, but those don't exist yet, so
+    // descriptions are required for now.
+    if (updatedModel.description == null) {
+      throw IllegalArgumentException("Description is required for this type of activity")
+    }
 
     if (existingModel != updatedModel) {
       val activitiesRecord = dslContext.fetchSingle(ACTIVITIES, ACTIVITIES.ID.eq(activityId))

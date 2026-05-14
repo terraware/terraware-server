@@ -4492,7 +4492,7 @@ abstract class DatabaseBackedTest {
       activityType: ActivityType = ActivityType.Planting,
       createdBy: UserId = currentUser().userId,
       createdTime: Instant = Instant.EPOCH,
-      description: String = "Activity",
+      description: String? = "Activity",
       isHighlight: Boolean = false,
       modifiedBy: UserId = createdBy,
       modifiedTime: Instant = createdTime,

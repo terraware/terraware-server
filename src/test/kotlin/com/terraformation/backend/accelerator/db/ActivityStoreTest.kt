@@ -203,7 +203,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertActivity(
               activityDate = LocalDate.of(2024, 2, 20),
               activityType = ActivityType.Monitoring,
-              description = "Test monitoring activity",
+              description = null,
           )
       val fileId1 =
           insertFile(
@@ -236,7 +236,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               activityType = ActivityType.Monitoring,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
-              description = "Test monitoring activity",
+              description = null,
               id = activityId,
               isHighlight = false,
               media =
@@ -912,6 +912,40 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<CannotUpdatePublishedActivityException> {
         store.update(activityId) { it.copy(description = "Updated") }
+      }
+    }
+
+    @Test
+    fun `throws exception if user-created activity is missing a description on update`() {
+      insertOrganizationUser(role = Role.Admin)
+
+      val activityId =
+          insertActivity(
+              activityDate = LocalDate.EPOCH,
+              activityType = ActivityType.SeedCollection,
+              description = "Original description",
+              projectId = projectId,
+          )
+
+      assertThrows<IllegalArgumentException> {
+        store.update(activityId) { it.copy(description = null) }
+      }
+    }
+
+    @Test
+    fun `throws exception if user-created activity is missing a description on admin update`() {
+      insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
+
+      val activityId =
+          insertActivity(
+              activityDate = LocalDate.EPOCH,
+              activityType = ActivityType.SeedCollection,
+              description = "Original description",
+              projectId = projectId,
+          )
+
+      assertThrows<IllegalArgumentException> {
+        store.updateForAdmin(activityId) { it.copy(description = null) }
       }
     }
   }

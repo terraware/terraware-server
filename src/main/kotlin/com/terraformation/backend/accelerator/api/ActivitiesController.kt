@@ -317,7 +317,10 @@ data class UpdateActivityMediaRequestPayload(
 
 data class UpdateActivityRequestPayload(
     val date: LocalDate,
-    val description: String,
+    @Schema(
+        description = "Required for user-created activities; optional for system-generated ones."
+    )
+    val description: String?,
     val status: ActivityStatus,
     val type: ActivityType,
 ) {
