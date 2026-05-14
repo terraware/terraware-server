@@ -1,3 +1,4 @@
+9147837d SW-8352 Fixed incorrect primary keys in observation results search tables (#4392)
 1ce6f24b Allow splats to be created for an org level in admin (#4390)
 b458db9b SW-8346 Allow null activity descriptions (#4386)
 f1be72e0 Backfill in-progress observaitons (#4387)

@@ -267,10 +267,36 @@
 <polygon fill="black" stroke="black" points="606.66,-2598.96 614.68,-2595.4 609.33,-2595.98 612,-2593 612,-2593 612,-2593 609.33,-2595.98 609.32,-2590.6 606.66,-2598.96 606.66,-2598.96"/>
 <ellipse fill="none" stroke="black" cx="604.52" cy="-2601.34" rx="3.2" ry="3.2"/>
 </g>
-<!-- device_managers -->
+<!-- timeseries_types -->
 <g id="node6" class="node">
+<title>timeseries_types</title>
+<g id="a_node6"><a xlink:href="../../tables/timeseries_types.html" xlink:title="timeseries_types" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="586,-37 586,-121 730,-121 730,-37 586,-37"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="586,-99 586,-121 730,-121 730,-99 586,-99"/>
+<polygon fill="none" stroke="black" points="586,-99 586,-121 730,-121 730,-99 586,-99"/>
+<text text-anchor="start" x="591" y="-108.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries_types</text>
+<text text-anchor="start" x="691" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="586,-77 586,-99 730,-99 730,-77 586,-77"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="591" y="-94"/>
+<text text-anchor="start" x="618" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="586,-55 586,-77 730,-77 730,-55 586,-55"/>
+<text text-anchor="start" x="618" y="-63.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="586,-37 586,-55 647,-55 647,-37 586,-37"/>
+<polygon fill="none" stroke="black" points="586,-37 586,-55 647,-55 647,-37 586,-37"/>
+<text text-anchor="start" x="589" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="647,-37 647,-55 684,-55 684,-37 647,-37"/>
+<polygon fill="none" stroke="black" points="647,-37 647,-55 684,-55 684,-37 647,-37"/>
+<text text-anchor="start" x="674" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="684,-37 684,-55 730,-55 730,-37 684,-37"/>
+<polygon fill="none" stroke="black" points="684,-37 684,-55 730,-55 730,-37 684,-37"/>
+<text text-anchor="start" x="711" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- device_managers -->
+<g id="node7" class="node">
 <title>device_managers</title>
-<g id="a_node6"><a xlink:href="../../tables/device_managers.html" xlink:title="device_managers" target="_top">
+<g id="a_node7"><a xlink:href="../../tables/device_managers.html" xlink:title="device_managers" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="577.5,-2907 577.5,-3233 738.5,-3233 738.5,-2907 577.5,-2907"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="578,-3211 578,-3233 739,-3233 739,-3211 578,-3211"/>
 <polygon fill="none" stroke="black" points="578,-3211 578,-3233 739,-3233 739,-3211 578,-3211"/>
@@ -328,32 +354,6 @@
 <polygon fill="black" stroke="black" points="576.72,-2997.93 575.69,-3005.86 574.11,-3005.66 575.13,-2997.73 576.72,-2997.93"/>
 <polyline fill="none" stroke="black" points="577,-3002 573.03,-3001.49 "/>
 <ellipse fill="none" stroke="black" cx="569.86" cy="-3001.08" rx="3.2" ry="3.2"/>
-</g>
-<!-- timeseries_types -->
-<g id="node7" class="node">
-<title>timeseries_types</title>
-<g id="a_node7"><a xlink:href="../../tables/timeseries_types.html" xlink:title="timeseries_types" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="586,-37 586,-121 730,-121 730,-37 586,-37"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="586,-99 586,-121 730,-121 730,-99 586,-99"/>
-<polygon fill="none" stroke="black" points="586,-99 586,-121 730,-121 730,-99 586,-99"/>
-<text text-anchor="start" x="591" y="-108.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries_types</text>
-<text text-anchor="start" x="691" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="586,-77 586,-99 730,-99 730,-77 586,-77"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="591" y="-94"/>
-<text text-anchor="start" x="618" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="586,-55 586,-77 730,-77 730,-55 586,-55"/>
-<text text-anchor="start" x="618" y="-63.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="586,-37 586,-55 647,-55 647,-37 586,-37"/>
-<polygon fill="none" stroke="black" points="586,-37 586,-55 647,-55 647,-37 586,-37"/>
-<text text-anchor="start" x="589" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="647,-37 647,-55 684,-55 684,-37 647,-37"/>
-<polygon fill="none" stroke="black" points="647,-37 647,-55 684,-55 684,-37 647,-37"/>
-<text text-anchor="start" x="674" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="684,-37 684,-55 730,-55 730,-37 684,-37"/>
-<polygon fill="none" stroke="black" points="684,-37 684,-55 730,-55 730,-37 684,-37"/>
-<text text-anchor="start" x="711" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
 </g>
 <!-- device_templates -->
 <g id="node8" class="node">
