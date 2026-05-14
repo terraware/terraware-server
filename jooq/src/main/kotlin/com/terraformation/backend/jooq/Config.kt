@@ -608,6 +608,10 @@ val EMBEDDABLES =
                 "biomass_species_id",
             ),
         EmbeddableDefinitionType()
+            .withName("observation_plot_history_id")
+            .withTables("tracking.observation_plot_results")
+            .withColumns("observation_id", "monitoring_plot_history_id"),
+        EmbeddableDefinitionType()
             .withName("observation_plot_id")
             .withTables(
                 listOf(
@@ -622,6 +626,18 @@ val EMBEDDABLES =
                     .joinToString("|", prefix = "tracking.")
             )
             .withColumns("observation_id", "monitoring_plot_id"),
+        EmbeddableDefinitionType()
+            .withName("observation_site_history_id")
+            .withTables("tracking.observation_site_results")
+            .withColumns("observation_id", "planting_site_history_id"),
+        EmbeddableDefinitionType()
+            .withName("observation_stratum_history_id")
+            .withTables("tracking.observation_stratum_results")
+            .withColumns("observation_id", "stratum_history_id"),
+        EmbeddableDefinitionType()
+            .withName("observation_substratum_history_id")
+            .withTables("tracking.observation_substratum_results")
+            .withColumns("observation_id", "substratum_history_id"),
         EmbeddableDefinitionType()
             .withName("organization_internal_tag_id")
             .withTables("public.organization_internal_tags")
