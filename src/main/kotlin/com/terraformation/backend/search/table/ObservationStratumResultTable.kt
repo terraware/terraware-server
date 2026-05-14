@@ -17,7 +17,7 @@ import org.jooq.impl.DSL
 
 class ObservationStratumResultTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID
+    get() = OBSERVATION_STRATUM_RESULTS.OBSERVATION_STRATUM_HISTORY_ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {

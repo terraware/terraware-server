@@ -15,7 +15,7 @@ import org.jooq.TableField
 
 class ObservationPlotResultTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = OBSERVATION_PLOT_RESULTS.OBSERVATION_ID
+    get() = OBSERVATION_PLOT_RESULTS.OBSERVATION_PLOT_HISTORY_ID
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
