@@ -13,7 +13,9 @@ CREATE TABLE tracking.planting_seasons (
     created_by BIGINT NOT NULL REFERENCES users,
     created_time TIMESTAMP WITH TIME ZONE NOT NULL,
     modified_by BIGINT NOT NULL REFERENCES users,
-    modified_time TIMESTAMP WITH TIME ZONE NOT NULL
+    modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
+
+    UNIQUE (planting_site_id, name)
 );
 
 CREATE INDEX ON tracking.planting_seasons (planting_site_id);
