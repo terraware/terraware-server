@@ -58,6 +58,7 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -65,6 +66,7 @@ import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
 import com.terraformation.backend.tracking.db.DraftPlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
@@ -324,6 +326,17 @@ class PermissionRequirements(private val user: TerrawareUser) {
     }
   }
 
+  fun createPlantingSeason(plantingSiteId: PlantingSiteId) {
+    user.recordPermissionChecks {
+      if (!user.canCreatePlantingSeason(plantingSiteId)) {
+        readPlantingSite(plantingSiteId)
+        throw AccessDeniedException(
+            "No permission to create planting seasons in planting site $plantingSiteId"
+        )
+      }
+    }
+  }
+
   fun createPlantingSite(organizationId: OrganizationId) {
     user.recordPermissionChecks {
       if (!user.canCreatePlantingSite(organizationId)) {
@@ -506,6 +519,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
         throw AccessDeniedException(
             "No permission to delete participant project species $participantProjectSpeciesId"
         )
+      }
+    }
+  }
+
+  fun deletePlantingSeason(plantingSeasonId: PlantingSeasonId) {
+    user.recordPermissionChecks {
+      if (!user.canDeletePlantingSeason(plantingSeasonId)) {
+        readPlantingSeason(plantingSeasonId)
+        throw AccessDeniedException("No permission to delete planting season $plantingSeasonId")
       }
     }
   }
@@ -1065,6 +1087,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canReadPlanting(plantingId)) {
         throw PlantingNotFoundException(plantingId)
+      }
+    }
+  }
+
+  fun readPlantingSeason(plantingSeasonId: PlantingSeasonId) {
+    user.recordPermissionChecks {
+      if (!user.canReadPlantingSeason(plantingSeasonId)) {
+        throw PlantingSeasonNotFoundException(plantingSeasonId)
       }
     }
   }
@@ -1718,6 +1748,15 @@ class PermissionRequirements(private val user: TerrawareUser) {
         throw AccessDeniedException(
             "No permission to update participant project species $participantProjectSpeciesId"
         )
+      }
+    }
+  }
+
+  fun updatePlantingSeason(plantingSeasonId: PlantingSeasonId) {
+    user.recordPermissionChecks {
+      if (!user.canUpdatePlantingSeason(plantingSeasonId)) {
+        readPlantingSeason(plantingSeasonId)
+        throw AccessDeniedException("No permission to update planting season $plantingSeasonId")
       }
     }
   }

@@ -62,6 +62,7 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -70,6 +71,7 @@ import com.terraformation.backend.db.tracking.tables.references.DRAFT_PLANTING_S
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
@@ -173,6 +175,13 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getOrganizationId(plantingId: PlantingId): OrganizationId? =
       fetchFieldById(plantingId, PLANTINGS.ID, PLANTINGS.plantingSites.ORGANIZATION_ID)
+
+  fun getOrganizationId(plantingSeasonId: PlantingSeasonId): OrganizationId? =
+      fetchFieldById(
+          plantingSeasonId,
+          PLANTING_SEASONS.ID,
+          PLANTING_SEASONS.plantingSites.ORGANIZATION_ID,
+      )
 
   fun getOrganizationId(plantingSiteId: PlantingSiteId): OrganizationId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.ORGANIZATION_ID)

@@ -64,6 +64,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -173,6 +174,7 @@ internal class PermissionTest : DatabaseTest() {
 
   private val deliveryIds = plantingSiteIds.map { DeliveryId(it.value) }
   private val plantingIds = plantingSiteIds.map { PlantingId(it.value) }
+  private val plantingSeasonIds = plantingSiteIds.map { PlantingSeasonId(it.value) }
 
   private val userFundingEntityId = FundingEntityId(1000)
   private val otherFundingEntityId = FundingEntityId(2000)
@@ -359,6 +361,13 @@ internal class PermissionTest : DatabaseTest() {
           insertPlanting(
               createdBy = userId,
               speciesId = getDatabaseId(SpeciesId(plantingSiteId.value / 1000)),
+          ),
+      )
+      putDatabaseId(
+          PlantingSeasonId(plantingSiteId.value),
+          insertPlantingSeason(
+              createdBy = userId,
+              plantingSiteId = getDatabaseId(plantingSiteId),
           ),
       )
     }
@@ -603,6 +612,13 @@ internal class PermissionTest : DatabaseTest() {
         *withdrawalIds.forOrg1(),
         createWithdrawalPhoto = true,
         readWithdrawal = true,
+    )
+
+    permissions.expect(
+        *plantingSeasonIds.forOrg1(),
+        deletePlantingSeason = true,
+        readPlantingSeason = true,
+        updatePlantingSeason = true,
     )
 
     permissions.expect(
@@ -905,6 +921,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSeasonIds.forOrg1(),
+        deletePlantingSeason = true,
+        readPlantingSeason = true,
+        updatePlantingSeason = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
         createObservation = true,
@@ -1122,6 +1145,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSeasonIds.forOrg1(),
+        deletePlantingSeason = true,
+        readPlantingSeason = true,
+        updatePlantingSeason = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
         createObservation = true,
@@ -1304,6 +1334,11 @@ internal class PermissionTest : DatabaseTest() {
         *withdrawalIds.forOrg1(),
         createWithdrawalPhoto = true,
         readWithdrawal = true,
+    )
+
+    permissions.expect(
+        *plantingSeasonIds.forOrg1(),
+        readPlantingSeason = true,
     )
 
     permissions.expect(
@@ -1579,6 +1614,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSeasonIds.toTypedArray(),
+        deletePlantingSeason = true,
+        readPlantingSeason = true,
+        updatePlantingSeason = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.toTypedArray(),
         createDelivery = true,
         createObservation = true,
@@ -1806,6 +1848,13 @@ internal class PermissionTest : DatabaseTest() {
         removeTerraformationContact = true,
         updateOrganization = true,
         updateOrganizationMedia = true,
+    )
+
+    permissions.expect(
+        *plantingSeasonIds.forOrg1(),
+        deletePlantingSeason = true,
+        readPlantingSeason = true,
+        updatePlantingSeason = true,
     )
 
     permissions.expect(
@@ -2080,6 +2129,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSeasonIds.forOrg1(),
+        deletePlantingSeason = true,
+        readPlantingSeason = true,
+        updatePlantingSeason = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
         createObservation = true,
@@ -2344,6 +2400,13 @@ internal class PermissionTest : DatabaseTest() {
     )
 
     permissions.expect(
+        *plantingSeasonIds.forOrg1(),
+        deletePlantingSeason = true,
+        readPlantingSeason = true,
+        updatePlantingSeason = true,
+    )
+
+    permissions.expect(
         *plantingSiteIds.forOrg1(),
         createDelivery = true,
         createObservation = true,
@@ -2599,6 +2662,11 @@ internal class PermissionTest : DatabaseTest() {
         readOrganization = true,
         readOrganizationDeliverables = true,
         readOrganizationUser = true,
+    )
+
+    permissions.expect(
+        *plantingSeasonIds.forOrg1(),
+        readPlantingSeason = true,
     )
 
     permissions.expect(
@@ -3116,6 +3184,7 @@ internal class PermissionTest : DatabaseTest() {
     private val uncheckedOrgs = organizationIds.toMutableSet()
     private val uncheckedParticipantProjectSpecies = participantProjectSpeciesIds.toMutableSet()
     private val uncheckedPlantings = plantingIds.toMutableSet()
+    private val uncheckedPlantingSeasons = plantingSeasonIds.toMutableSet()
     private val uncheckedPlantingSites = plantingSiteIds.toMutableSet()
     private val uncheckedProjects = projectIds.toMutableSet()
     private val uncheckedReports = reportIds.toMutableSet()
@@ -3752,6 +3821,35 @@ internal class PermissionTest : DatabaseTest() {
         )
 
         uncheckedWithdrawals.remove(withdrawalId)
+      }
+    }
+
+    fun expect(
+        vararg plantingSeasonIds: PlantingSeasonId,
+        deletePlantingSeason: Boolean = false,
+        readPlantingSeason: Boolean = false,
+        updatePlantingSeason: Boolean = false,
+    ) {
+      plantingSeasonIds.forEach { plantingSeasonId ->
+        val idInDatabase = getDatabaseId(plantingSeasonId)
+
+        assertEquals(
+            deletePlantingSeason,
+            user.canDeletePlantingSeason(idInDatabase),
+            "Can delete planting season $plantingSeasonId",
+        )
+        assertEquals(
+            readPlantingSeason,
+            user.canReadPlantingSeason(idInDatabase),
+            "Can read planting season $plantingSeasonId",
+        )
+        assertEquals(
+            updatePlantingSeason,
+            user.canUpdatePlantingSeason(idInDatabase),
+            "Can update planting season $plantingSeasonId",
+        )
+
+        uncheckedPlantingSeasons.remove(plantingSeasonId)
       }
     }
 
@@ -4551,6 +4649,7 @@ internal class PermissionTest : DatabaseTest() {
       expect(*uncheckedOrgs.toTypedArray())
       expect(*uncheckedParticipantProjectSpecies.toTypedArray())
       expect(*uncheckedPlantings.toTypedArray())
+      expect(*uncheckedPlantingSeasons.toTypedArray())
       expect(*uncheckedPlantingSites.toTypedArray())
       expect(*uncheckedSubstrata.toTypedArray())
       expect(*uncheckedStrata.toTypedArray())

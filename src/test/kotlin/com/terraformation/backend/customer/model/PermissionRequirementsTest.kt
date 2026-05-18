@@ -54,12 +54,14 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotFoundException
 import com.terraformation.backend.tracking.db.DeliveryNotFoundException
 import com.terraformation.backend.tracking.db.DraftPlantingSiteNotFoundException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
@@ -160,6 +162,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       }
   private val plantingId: PlantingId by
       readableId(PlantingNotFoundException::class) { canReadPlanting(it) }
+  private val plantingSeasonId: PlantingSeasonId by
+      readableId(PlantingSeasonNotFoundException::class) { canReadPlantingSeason(it) }
   private val plantingSiteId: PlantingSiteId by
       readableId(PlantingSiteNotFoundException::class) { canReadPlantingSite(it) }
   private val projectId: ProjectId by
@@ -385,6 +389,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test
+  fun createPlantingSeason() =
+      allow { createPlantingSeason(plantingSiteId) } ifUser
+          {
+            canCreatePlantingSeason(plantingSiteId)
+          }
+
+  @Test
   fun createPlantingSite() =
       allow { createPlantingSite(organizationId) } ifUser { canCreatePlantingSite(organizationId) }
 
@@ -465,6 +476,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { deleteParticipantProjectSpecies(participantProjectSpeciesId) } ifUser
           {
             canDeleteParticipantProjectSpecies(participantProjectSpeciesId)
+          }
+
+  @Test
+  fun deletePlantingSeason() =
+      allow { deletePlantingSeason(plantingSeasonId) } ifUser
+          {
+            canDeletePlantingSeason(plantingSeasonId)
           }
 
   @Test
@@ -739,6 +757,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   }
 
   @Test fun readPlanting() = testRead { readPlanting(plantingId) }
+
+  @Test fun readPlantingSeason() = testRead { readPlantingSeason(plantingSeasonId) }
 
   @Test fun readPlantingSite() = testRead { readPlantingSite(plantingSiteId) }
 
@@ -1105,6 +1125,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { updateParticipantProjectSpecies(participantProjectSpeciesId) } ifUser
           {
             canUpdateParticipantProjectSpecies(participantProjectSpeciesId)
+          }
+
+  @Test
+  fun updatePlantingSeason() =
+      allow { updatePlantingSeason(plantingSeasonId) } ifUser
+          {
+            canUpdatePlantingSeason(plantingSeasonId)
           }
 
   @Test
