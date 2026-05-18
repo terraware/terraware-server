@@ -888,4 +888,14 @@ COMMENT ON TABLE funder.published_report_project_indicators IS 'Project-specific
 
 COMMENT ON TABLE funder.published_reports IS 'Published reports visible to funders.';
 
+COMMENT ON TABLE plantmgmt.planting_season_species_targets IS 'Target quantities of each species to plant in each substratum for a planting season.';
+
+COMMENT ON TABLE plantmgmt.planting_season_statuses IS '(Enum) Possible statuses of a planting season.';
+
+COMMENT ON TABLE plantmgmt.planting_seasons IS 'Named planting seasons for planting sites, with start and end dates.';
+
+COMMENT ON TABLE plantmgmt.scheduled_planting_dates IS 'Planned planting dates within a planting season.';
+
+COMMENT ON TABLE plantmgmt.scheduled_planting_date_species IS 'Species and substratum quantities planned for a scheduled planting date.';
+
 -- When adding new tables, put them in alphabetical (ASCII) order.

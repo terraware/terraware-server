@@ -8,6 +8,7 @@ import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DOCPROD
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.FUNDER
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.NURSERY
+import com.terraformation.backend.db.SchemaDocsGenerator.Slice.PLANTMGMT
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SEEDBANK
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SPECIES
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.TRACKING
@@ -119,6 +120,7 @@ class SchemaDocsGenerator : DatabaseTest() {
     DOCPROD("docprod"),
     FUNDER("funder"),
     NURSERY("nursery"),
+    PLANTMGMT("plantmgmt"),
     SEEDBANK("seedbank"),
     SPECIES("species"),
     TRACKING("tracking"),
@@ -272,6 +274,14 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "withdrawal_photos" to setOf(ALL, NURSERY),
                   "withdrawal_purposes" to setOf(ALL, NURSERY),
                   "withdrawals" to setOf(ALL, NURSERY),
+              ),
+          "plantmgmt" to
+              mapOf(
+                  "planting_season_statuses" to setOf(ALL, PLANTMGMT, TRACKING),
+                  "planting_seasons" to setOf(ALL, PLANTMGMT, TRACKING),
+                  "planting_season_species_targets" to setOf(ALL, PLANTMGMT, TRACKING),
+                  "scheduled_planting_date_species" to setOf(ALL, PLANTMGMT, TRACKING),
+                  "scheduled_planting_dates" to setOf(ALL, PLANTMGMT, TRACKING),
               ),
           "public" to
               mapOf(
