@@ -637,7 +637,7 @@ class AdminPlantingSitesController(
   @PostMapping("/updatePlantingSeason")
   fun updatePlantingSeason(
       @RequestParam plantingSiteId: PlantingSiteId,
-      @RequestParam plantingSeasonId: SimplePlantingSeasonId,
+      @RequestParam simplePlantingSeasonId: SimplePlantingSeasonId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
       redirectAttributes: RedirectAttributes,
@@ -646,10 +646,10 @@ class AdminPlantingSitesController(
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
       val desiredSeasons =
           site.plantingSeasons.map { season ->
-            if (season.id == plantingSeasonId) {
+            if (season.id == simplePlantingSeasonId) {
               UpdatedPlantingSeasonModel(
                   endDate = LocalDate.parse(endDate),
-                  id = plantingSeasonId,
+                  id = simplePlantingSeasonId,
                   startDate = LocalDate.parse(startDate),
               )
             } else {
