@@ -75,6 +75,11 @@ data class ObservationRescheduledEvent(
     val rescheduledObservation: ExistingObservationModel,
 )
 
+/** Published when an observation is completed. */
+data class ObservationCompletedEvent(
+    val observationId: ObservationId,
+)
+
 interface ObservationSchedulingNotificationEvent
 
 /** Published when a site is ready to have observations scheduled */

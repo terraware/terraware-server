@@ -38,6 +38,7 @@ import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotInObservationException
+import com.terraformation.backend.tracking.event.ObservationCompletedEvent
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
 import java.math.BigDecimal
@@ -1048,6 +1049,8 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
         substratumPopulationsDao.findAll(),
         "Substratum plants since last observation should have been reset",
     )
+
+    eventPublisher.assertEventPublished(ObservationCompletedEvent(observationId))
   }
 
   @Test

@@ -69,6 +69,7 @@ import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPUL
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.log.withMDC
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
+import com.terraformation.backend.tracking.event.ObservationCompletedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotCreatedEvent
 import com.terraformation.backend.tracking.event.ObservationPlotEditedEvent
 import com.terraformation.backend.tracking.event.ObservationStateUpdatedEvent
@@ -1574,6 +1575,8 @@ class ObservationStore(
       recalculateSurvivalRates(observationId, plantingSiteId)
       recalculateSurvivalRateResults(observationId, plantingSiteId)
     }
+
+    eventPublisher.publishEvent(ObservationCompletedEvent(observationId))
   }
 
   /**
