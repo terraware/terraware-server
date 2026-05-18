@@ -1,3 +1,4 @@
+fe3f97b9 Upgrade ktor to v3.5.0 (#4404)
 c4016ec3 SW-8346 Publish event when observation is completed (#4395)
 4f2308c5 Update Gradle to v9.5.1 (#4401)
 06204546 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v4.0.1 (#4400)
