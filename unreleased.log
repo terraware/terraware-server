@@ -1,3 +1,4 @@
+4f2308c5 Update Gradle to v9.5.1 (#4401)
 06204546 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v4.0.1 (#4400)
 607708ca Update dependency requests to v2.34.2 (#4399)
 69c0d0c5 Update dependency io.swagger.core.v3:swagger-annotations to v2.2.50 (#4398)
