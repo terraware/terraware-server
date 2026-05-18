@@ -36,7 +36,7 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
-        plantingSeasonsDao,
+        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
         strataDao,

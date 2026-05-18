@@ -144,7 +144,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
-            plantingSeasonsDao,
+            simplePlantingSeasonsDao,
             plantingSitesDao,
             publisher,
             strataDao,

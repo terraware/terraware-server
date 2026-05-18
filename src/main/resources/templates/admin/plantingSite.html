@@ -173,7 +173,7 @@
     <li th:each="season : ${futurePlantingSeasons}">
         <form method="POST" action="/admin/updatePlantingSeason" style="display: inline-block;">
             <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-            <input type="hidden" name="plantingSeasonId" th:value="${season.id}"/>
+            <input type="hidden" name="simplePlantingSeasonId" th:value="${season.id}"/>
             <input type="date" name="startDate" required th:value="${season.startDate}"/>
             -
             <input type="date" name="endDate" required th:value="${season.endDate}"/>
@@ -181,7 +181,7 @@
         </form>
         <form method="POST" action="/admin/deletePlantingSeason" style="display: inline-block;">
             <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-            <input type="hidden" name="plantingSeasonId" th:value="${season.id}"/>
+            <input type="hidden" name="simplePlantingSeasonId" th:value="${season.id}"/>
             <input type="submit" value="Delete"/>
         </form>
     </li>

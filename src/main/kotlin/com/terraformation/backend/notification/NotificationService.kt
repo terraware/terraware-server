@@ -697,7 +697,7 @@ class NotificationService(
   @EventListener
   fun on(event: PlantingSeasonStartedEvent) {
     log.info(
-        "Creating notifications for start of planting season ${event.plantingSeasonId} at site ${event.plantingSiteId}"
+        "Creating notifications for start of planting season ${event.simplePlantingSeasonId} at site ${event.plantingSiteId}"
     )
     val plantingSite = plantingSiteStore.fetchSiteById(event.plantingSiteId, PlantingSiteDepth.Site)
 

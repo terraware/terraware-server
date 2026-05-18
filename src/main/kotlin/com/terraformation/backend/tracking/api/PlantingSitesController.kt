@@ -12,9 +12,9 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
@@ -402,7 +402,7 @@ data class StratumResponsePayload(
 
 data class PlantingSeasonPayload(
     val endDate: LocalDate,
-    val id: PlantingSeasonId,
+    val id: SimplePlantingSeasonId,
     val startDate: LocalDate,
 ) {
   constructor(
@@ -617,7 +617,7 @@ data class UpdatedPlantingSeasonPayload(
             "If present, the start and end dates of an existing planting season will be updated. " +
                 "Otherwise a new planting season will be created."
     )
-    val id: PlantingSeasonId? = null,
+    val id: SimplePlantingSeasonId? = null,
     val startDate: LocalDate,
 ) {
   fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, id = id, startDate = startDate)

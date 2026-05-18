@@ -4,9 +4,9 @@ import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.StableId
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplePlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
@@ -498,7 +498,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
 
       val expected =
           listOf(
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = season1EndDate,
                   endTime = season1EndDate.plusDays(1).toInstant(timeZone),
                   isActive = true,
@@ -506,7 +506,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
                   startDate = season1StartDate,
                   startTime = season1StartDate.toInstant(timeZone),
               ),
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = season2EndDate,
                   endTime = season2EndDate.plusDays(1).toInstant(timeZone),
                   isActive = false,
@@ -516,7 +516,8 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
               ),
           )
 
-      val actual = plantingSeasonsDao.findAll().map { it.copy(id = null) }.sortedBy { it.startDate }
+      val actual =
+          simplePlantingSeasonsDao.findAll().map { it.copy(id = null) }.sortedBy { it.startDate }
 
       assertEquals(expected, actual)
     }

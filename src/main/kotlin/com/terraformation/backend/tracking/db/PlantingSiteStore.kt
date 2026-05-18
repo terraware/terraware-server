@@ -22,21 +22,21 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.MonitoringPlotIdConverter
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
-import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
+import com.terraformation.backend.db.tracking.tables.daos.SimplePlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplePlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
@@ -48,11 +48,11 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.SIMPLE_PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_STRATA
@@ -142,7 +142,7 @@ class PlantingSiteStore(
     private val identifierGenerator: IdentifierGenerator,
     private val monitoringPlotsDao: MonitoringPlotsDao,
     private val parentStore: ParentStore,
-    private val plantingSeasonsDao: PlantingSeasonsDao,
+    private val simplePlantingSeasonsDao: SimplePlantingSeasonsDao,
     private val plantingSitesDao: PlantingSitesDao,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val strataDao: StrataDao,
@@ -1141,20 +1141,20 @@ class PlantingSiteStore(
 
     validatePlantingSeasons(desiredSeasons, existingSeasonsById, todayAtSite)
 
-    val pastSeasonIds: Set<PlantingSeasonId> =
+    val pastSeasonIds: Set<SimplePlantingSeasonId> =
         existingSeasons.filter { it.endDate < todayAtSite }.map { it.id }.toSet()
 
-    val seasonIdsToDelete: Set<PlantingSeasonId> =
+    val seasonIdsToDelete: Set<SimplePlantingSeasonId> =
         existingSeasonsById.keys - desiredSeasonsById.keys - pastSeasonIds
 
-    val seasonsToInsert: List<PlantingSeasonsRow> =
+    val seasonsToInsert: List<SimplePlantingSeasonsRow> =
         desiredSeasons
             .filter { it.id == null }
             .map { desiredSeason ->
               val startTime = desiredSeason.startDate.toInstant(desiredTimeZone)
               val endTime = desiredSeason.endDate.plusDays(1).toInstant(desiredTimeZone)
 
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = desiredSeason.endDate,
                   endTime = endTime,
                   isActive = now >= startTime && now < endTime,
@@ -1174,7 +1174,7 @@ class PlantingSiteStore(
         }
 
     if (seasonIdsToDelete.isNotEmpty()) {
-      plantingSeasonsDao.deleteById(seasonIdsToDelete)
+      simplePlantingSeasonsDao.deleteById(seasonIdsToDelete)
     }
 
     seasonsToUpdate.forEach { desiredSeason ->
@@ -1198,9 +1198,9 @@ class PlantingSiteStore(
             existingSeason.endTime
           }
 
-      with(PLANTING_SEASONS) {
+      with(SIMPLE_PLANTING_SEASONS) {
         dslContext
-            .update(PLANTING_SEASONS)
+            .update(SIMPLE_PLANTING_SEASONS)
             .set(END_DATE, desiredSeason.endDate)
             .set(END_TIME, endTime)
             .set(IS_ACTIVE, now >= startTime && now < endTime)
@@ -1223,7 +1223,7 @@ class PlantingSiteStore(
     }
 
     if (seasonsToInsert.isNotEmpty()) {
-      plantingSeasonsDao.insert(seasonsToInsert)
+      simplePlantingSeasonsDao.insert(seasonsToInsert)
 
       seasonsToInsert.forEach { season ->
         eventPublisher.publishEvent(
@@ -1567,8 +1567,8 @@ class PlantingSiteStore(
         .and(PLANTING_SITES.CREATED_TIME.le(maxCreatedTime))
         .andNotExists(
             DSL.selectOne()
-                .from(PLANTING_SEASONS)
-                .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
+                .from(SIMPLE_PLANTING_SEASONS)
+                .where(PLANTING_SITES.ID.eq(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID))
         )
         .andExists(
             DSL.selectOne()
@@ -1594,9 +1594,9 @@ class PlantingSiteStore(
         .where(additionalCondition)
         .and(
             DSL.field(
-                    DSL.select(DSL.max(PLANTING_SEASONS.END_TIME))
-                        .from(PLANTING_SEASONS)
-                        .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
+                    DSL.select(DSL.max(SIMPLE_PLANTING_SEASONS.END_TIME))
+                        .from(SIMPLE_PLANTING_SEASONS)
+                        .where(PLANTING_SITES.ID.eq(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID))
                 )
                 .le(maxEndTime)
         )
@@ -2346,26 +2346,26 @@ class PlantingSiteStore(
   private val plantingSeasonsMultiset =
       DSL.multiset(
               DSL.select(
-                      PLANTING_SEASONS.END_DATE,
-                      PLANTING_SEASONS.END_TIME,
-                      PLANTING_SEASONS.ID,
-                      PLANTING_SEASONS.IS_ACTIVE,
-                      PLANTING_SEASONS.START_DATE,
-                      PLANTING_SEASONS.START_TIME,
+                      SIMPLE_PLANTING_SEASONS.END_DATE,
+                      SIMPLE_PLANTING_SEASONS.END_TIME,
+                      SIMPLE_PLANTING_SEASONS.ID,
+                      SIMPLE_PLANTING_SEASONS.IS_ACTIVE,
+                      SIMPLE_PLANTING_SEASONS.START_DATE,
+                      SIMPLE_PLANTING_SEASONS.START_TIME,
                   )
-                  .from(PLANTING_SEASONS)
-                  .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
-                  .orderBy(PLANTING_SEASONS.START_DATE)
+                  .from(SIMPLE_PLANTING_SEASONS)
+                  .where(PLANTING_SITES.ID.eq(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID))
+                  .orderBy(SIMPLE_PLANTING_SEASONS.START_DATE)
           )
           .convertFrom { result ->
             result.map { record ->
               ExistingPlantingSeasonModel(
-                  endDate = record[PLANTING_SEASONS.END_DATE]!!,
-                  endTime = record[PLANTING_SEASONS.END_TIME]!!,
-                  id = record[PLANTING_SEASONS.ID]!!,
-                  isActive = record[PLANTING_SEASONS.IS_ACTIVE]!!,
-                  startDate = record[PLANTING_SEASONS.START_DATE]!!,
-                  startTime = record[PLANTING_SEASONS.START_TIME]!!,
+                  endDate = record[SIMPLE_PLANTING_SEASONS.END_DATE]!!,
+                  endTime = record[SIMPLE_PLANTING_SEASONS.END_TIME]!!,
+                  id = record[SIMPLE_PLANTING_SEASONS.ID]!!,
+                  isActive = record[SIMPLE_PLANTING_SEASONS.IS_ACTIVE]!!,
+                  startDate = record[SIMPLE_PLANTING_SEASONS.START_DATE]!!,
+                  startTime = record[SIMPLE_PLANTING_SEASONS.START_TIME]!!,
               )
             }
           }
@@ -2887,7 +2887,7 @@ class PlantingSiteStore(
 
   private fun validatePlantingSeasons(
       desiredPlantingSeasons: Collection<UpdatedPlantingSeasonModel>,
-      existingPlantingSeasons: Map<PlantingSeasonId, ExistingPlantingSeasonModel>,
+      existingPlantingSeasons: Map<SimplePlantingSeasonId, ExistingPlantingSeasonModel>,
       todayAtSite: LocalDate,
   ) {
     if (desiredPlantingSeasons.isNotEmpty()) {
@@ -2928,22 +2928,24 @@ class PlantingSiteStore(
 
   private fun startPlantingSeason(
       plantingSiteId: PlantingSiteId,
-      plantingSeasonId: PlantingSeasonId,
+      simplePlantingSeasonId: SimplePlantingSeasonId,
   ) {
     dslContext.transaction { _ ->
       val rowsUpdated =
           dslContext
-              .update(PLANTING_SEASONS)
-              .set(PLANTING_SEASONS.IS_ACTIVE, true)
-              .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
-              .and(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
-              .and(PLANTING_SEASONS.IS_ACTIVE.isFalse)
+              .update(SIMPLE_PLANTING_SEASONS)
+              .set(SIMPLE_PLANTING_SEASONS.IS_ACTIVE, true)
+              .where(SIMPLE_PLANTING_SEASONS.ID.eq(simplePlantingSeasonId))
+              .and(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
+              .and(SIMPLE_PLANTING_SEASONS.IS_ACTIVE.isFalse)
               .execute()
 
       if (rowsUpdated > 0) {
-        log.info("Planting season $plantingSeasonId at site $plantingSiteId has started")
+        log.info("Planting season $simplePlantingSeasonId at site $plantingSiteId has started")
 
-        eventPublisher.publishEvent(PlantingSeasonStartedEvent(plantingSiteId, plantingSeasonId))
+        eventPublisher.publishEvent(
+            PlantingSeasonStartedEvent(plantingSiteId, simplePlantingSeasonId)
+        )
       }
     }
   }
@@ -2953,13 +2955,13 @@ class PlantingSiteStore(
 
     dslContext
         .select(
-            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(),
-            PLANTING_SEASONS.ID.asNonNullable(),
+            SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(),
+            SIMPLE_PLANTING_SEASONS.ID.asNonNullable(),
         )
-        .from(PLANTING_SEASONS)
-        .where(PLANTING_SEASONS.START_TIME.le(now))
-        .and(PLANTING_SEASONS.END_TIME.gt(now))
-        .and(PLANTING_SEASONS.IS_ACTIVE.isFalse)
+        .from(SIMPLE_PLANTING_SEASONS)
+        .where(SIMPLE_PLANTING_SEASONS.START_TIME.le(now))
+        .and(SIMPLE_PLANTING_SEASONS.END_TIME.gt(now))
+        .and(SIMPLE_PLANTING_SEASONS.IS_ACTIVE.isFalse)
         .fetch()
         .forEach { (plantingSiteId, plantingSeasonId) ->
           startPlantingSeason(plantingSiteId, plantingSeasonId)
@@ -2968,23 +2970,25 @@ class PlantingSiteStore(
 
   private fun endPlantingSeason(
       plantingSiteId: PlantingSiteId,
-      plantingSeasonId: PlantingSeasonId,
+      simplePlantingSeasonId: SimplePlantingSeasonId,
   ) {
     dslContext.transaction { _ ->
       val rowsUpdated =
           dslContext
-              .update(PLANTING_SEASONS)
-              .set(PLANTING_SEASONS.IS_ACTIVE, false)
-              .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
-              .and(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
-              .and(PLANTING_SEASONS.IS_ACTIVE.isTrue)
+              .update(SIMPLE_PLANTING_SEASONS)
+              .set(SIMPLE_PLANTING_SEASONS.IS_ACTIVE, false)
+              .where(SIMPLE_PLANTING_SEASONS.ID.eq(simplePlantingSeasonId))
+              .and(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
+              .and(SIMPLE_PLANTING_SEASONS.IS_ACTIVE.isTrue)
               .execute()
 
       if (rowsUpdated > 0) {
-        log.info("Planting season $plantingSeasonId at site $plantingSiteId has ended")
+        log.info("Planting season $simplePlantingSeasonId at site $plantingSiteId has ended")
 
         deleteRecurringPlantingSeasonNotifications(plantingSiteId)
-        eventPublisher.publishEvent(PlantingSeasonEndedEvent(plantingSiteId, plantingSeasonId))
+        eventPublisher.publishEvent(
+            PlantingSeasonEndedEvent(plantingSiteId, simplePlantingSeasonId)
+        )
       }
     }
   }
@@ -2992,12 +2996,12 @@ class PlantingSiteStore(
   private fun endPlantingSeasons() {
     dslContext
         .select(
-            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(),
-            PLANTING_SEASONS.ID.asNonNullable(),
+            SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(),
+            SIMPLE_PLANTING_SEASONS.ID.asNonNullable(),
         )
-        .from(PLANTING_SEASONS)
-        .where(PLANTING_SEASONS.END_TIME.le(clock.instant()))
-        .and(PLANTING_SEASONS.IS_ACTIVE.isTrue)
+        .from(SIMPLE_PLANTING_SEASONS)
+        .where(SIMPLE_PLANTING_SEASONS.END_TIME.le(clock.instant()))
+        .and(SIMPLE_PLANTING_SEASONS.IS_ACTIVE.isTrue)
         .fetch()
         .forEach { (plantingSiteId, plantingSeasonId) ->
           endPlantingSeason(plantingSiteId, plantingSeasonId)

@@ -44,7 +44,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),
-            plantingSeasonsDao,
+            simplePlantingSeasonsDao,
             plantingSitesDao,
             eventPublisher,
             strataDao,
@@ -163,7 +163,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does not send reminders if there are upcoming seasons`() {
       insertPlantingSiteWithSeason()
-      insertPlantingSeason(
+      insertSimplePlantingSeason(
           timeZone = timeZone,
           startDate = initialDate.plusMonths(1),
           endDate = initialDate.plusMonths(3),
@@ -213,7 +213,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
       insertSubstratum(plantingCompletedTime = initialInstant)
       insertStratum()
       insertSubstratum(plantingCompletedTime = initialInstant)
-      insertPlantingSeason(
+      insertSimplePlantingSeason(
           timeZone = timeZone,
           startDate = initialDate.minusWeeks(6),
           endDate = initialDate.minusDays(1),
@@ -298,7 +298,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     // The end date is the day before initialDate so that calculating week numbers based on
     // initialDate will give us weeks since the end of the last season.
-    insertPlantingSeason(
+    insertSimplePlantingSeason(
         plantingSiteId = plantingSiteId,
         timeZone = timeZone,
         startDate = initialDate.minusWeeks(6),

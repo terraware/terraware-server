@@ -42,7 +42,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),
-            plantingSeasonsDao,
+            simplePlantingSeasonsDao,
             plantingSitesDao,
             eventPublisher,
             strataDao,

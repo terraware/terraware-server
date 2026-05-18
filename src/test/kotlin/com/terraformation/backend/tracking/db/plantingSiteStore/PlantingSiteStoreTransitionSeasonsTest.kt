@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test
 
 internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTest() {
   @Nested
-  inner class TransitionPlantingSeasons {
+  inner class TransitionSimpleSimplePlantingSeasons {
     @Test
     fun `marks planting season as active when its start time arrives`() {
       val startDate = LocalDate.EPOCH.plusDays(1)
@@ -97,7 +97,11 @@ internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTes
     }
 
     private fun assertSeasonActive(isActive: Boolean, message: String) {
-      assertEquals(listOf(isActive), plantingSeasonsDao.findAll().map { it.isActive }, message)
+      assertEquals(
+          listOf(isActive),
+          simplePlantingSeasonsDao.findAll().map { it.isActive },
+          message,
+      )
     }
   }
 }

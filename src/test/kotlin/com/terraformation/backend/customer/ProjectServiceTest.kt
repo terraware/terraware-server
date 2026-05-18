@@ -93,7 +93,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
-            plantingSeasonsDao,
+            simplePlantingSeasonsDao,
             plantingSitesDao,
             publisher,
             strataDao,

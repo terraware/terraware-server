@@ -1,7 +1,7 @@
 package com.terraformation.backend.tracking.model
 
 import com.terraformation.backend.db.MismatchedStateException
-import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.SubstratumId
 import java.time.LocalDate
 
@@ -9,11 +9,11 @@ class CannotCreatePastPlantingSeasonException(val startDate: LocalDate, val endD
     IllegalArgumentException("Cannot create planting season $startDate-$endDate in the past")
 
 class CannotUpdatePastPlantingSeasonException(
-    val plantingSeasonId: PlantingSeasonId,
+    val simplePlantingSeasonId: SimplePlantingSeasonId,
     val endDate: LocalDate,
 ) :
     IllegalArgumentException(
-        "Cannot update planting season $plantingSeasonId because it ended on $endDate"
+        "Cannot update planting season $simplePlantingSeasonId because it ended on $endDate"
     )
 
 class PlantingSeasonsOverlapException(

@@ -16,8 +16,8 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.useAndDelete
@@ -613,14 +613,14 @@ class AdminPlantingSitesController(
   @PostMapping("/deletePlantingSeason")
   fun deletePlantingSeason(
       @RequestParam plantingSiteId: PlantingSiteId,
-      @RequestParam plantingSeasonId: PlantingSeasonId,
+      @RequestParam simplePlantingSeasonId: SimplePlantingSeasonId,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
       val site = plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
       val desiredSeasons =
           site.plantingSeasons
-              .filter { it.id != plantingSeasonId }
+              .filter { it.id != simplePlantingSeasonId }
               .map { UpdatedPlantingSeasonModel(it) }
 
       plantingSiteStore.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
@@ -637,7 +637,7 @@ class AdminPlantingSitesController(
   @PostMapping("/updatePlantingSeason")
   fun updatePlantingSeason(
       @RequestParam plantingSiteId: PlantingSiteId,
-      @RequestParam plantingSeasonId: PlantingSeasonId,
+      @RequestParam plantingSeasonId: SimplePlantingSeasonId,
       @RequestParam startDate: String,
       @RequestParam endDate: String,
       redirectAttributes: RedirectAttributes,

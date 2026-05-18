@@ -45,7 +45,7 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
-        plantingSeasonsDao,
+        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
         strataDao,

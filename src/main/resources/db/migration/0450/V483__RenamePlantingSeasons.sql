@@ -1,0 +1,5 @@
+ALTER INDEX tracking.planting_seasons_pkey RENAME TO simple_planting_seasons_pkey;
+ALTER INDEX tracking.planting_seasons_planting_site_id_idx RENAME TO simple_planting_seasons_planting_site_id_idx;
+ALTER TABLE tracking.planting_seasons RENAME CONSTRAINT planting_seasons_check TO simple_planting_seasons_check;
+ALTER TABLE tracking.planting_seasons RENAME CONSTRAINT planting_seasons_check1 TO simple_planting_seasons_check1;
+ALTER TABLE tracking.planting_seasons RENAME TO simple_planting_seasons;
