@@ -56,6 +56,9 @@ group = "com.terraformation"
 
 version = computeGitVersion("0.1")
 
+// Required by ktor 3.5.0; overrides version from Spring Boot 3.5.14
+extra["kotlin-coroutines.version"] = "1.11.0"
+
 repositories {
   maven("https://repo.osgeo.org/repository/geotools-releases/")
   mavenCentral()
