@@ -8,7 +8,6 @@ import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DEVICE
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.DOCPROD
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.FUNDER
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.NURSERY
-import com.terraformation.backend.db.SchemaDocsGenerator.Slice.PLANTMGMT
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SEEDBANK
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.SPECIES
 import com.terraformation.backend.db.SchemaDocsGenerator.Slice.TRACKING
@@ -120,7 +119,6 @@ class SchemaDocsGenerator : DatabaseTest() {
     DOCPROD("docprod"),
     FUNDER("funder"),
     NURSERY("nursery"),
-    PLANTMGMT("plantmgmt"),
     SEEDBANK("seedbank"),
     SPECIES("species"),
     TRACKING("tracking"),
@@ -275,14 +273,6 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "withdrawal_purposes" to setOf(ALL, NURSERY),
                   "withdrawals" to setOf(ALL, NURSERY),
               ),
-          "plantmgmt" to
-              mapOf(
-                  "planting_season_statuses" to setOf(ALL, PLANTMGMT, TRACKING),
-                  "planting_seasons" to setOf(ALL, PLANTMGMT, TRACKING),
-                  "planting_season_species_targets" to setOf(ALL, PLANTMGMT, TRACKING),
-                  "scheduled_planting_date_species" to setOf(ALL, PLANTMGMT, TRACKING),
-                  "scheduled_planting_dates" to setOf(ALL, PLANTMGMT, TRACKING),
-              ),
           "public" to
               mapOf(
                   "app_versions" to setOf(ALL, CUSTOMER),
@@ -431,11 +421,14 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "observed_site_species_totals" to setOf(ALL, TRACKING),
                   "observed_stratum_species_totals" to setOf(ALL, TRACKING),
                   "observed_substratum_species_totals" to setOf(ALL, TRACKING),
-                  "planting_types" to setOf(ALL, TRACKING),
+                  "planting_season_statuses" to setOf(ALL, TRACKING),
+                  "planting_seasons" to setOf(ALL, TRACKING),
+                  "planting_season_species_targets" to setOf(ALL, TRACKING),
                   "planting_site_histories" to setOf(ALL, TRACKING),
                   "planting_site_notifications" to setOf(ALL, TRACKING),
                   "planting_site_populations" to setOf(ALL, TRACKING),
                   "planting_sites" to setOf(ALL, TRACKING),
+                  "planting_types" to setOf(ALL, TRACKING),
                   "plantings" to setOf(ALL, TRACKING),
                   "plot_t0_densities" to setOf(ALL, TRACKING),
                   "plot_t0_observations" to setOf(ALL, TRACKING),
@@ -443,6 +436,8 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "recorded_plants" to setOf(ALL, TRACKING),
                   "recorded_species_certainties" to setOf(ALL, TRACKING),
                   "recorded_trees" to setOf(ALL, TRACKING),
+                  "scheduled_planting_date_species" to setOf(ALL, TRACKING),
+                  "scheduled_planting_dates" to setOf(ALL, TRACKING),
                   "simple_planting_seasons" to setOf(ALL, TRACKING),
                   "simplified_planting_site_histories" to setOf(ALL, TRACKING),
                   "simplified_planting_sites" to setOf(ALL, TRACKING),

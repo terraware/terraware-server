@@ -444,7 +444,7 @@ VALUES (1, 'Seed collection & germination'),
        (7, 'Other')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
-INSERT INTO plantmgmt.planting_season_statuses (id, name)
+INSERT INTO tracking.planting_season_statuses (id, name)
 VALUES (1, 'Active'),
        (2, 'Upcoming'),
        (3, 'Past End Date'),
