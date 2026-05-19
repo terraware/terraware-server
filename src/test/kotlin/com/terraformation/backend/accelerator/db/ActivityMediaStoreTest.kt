@@ -3,6 +3,7 @@ package com.terraformation.backend.accelerator.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.event.ActivityMediaUpdatedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -110,7 +111,7 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val now = Instant.ofEpochSecond(30)
       clock.instant = now
 
-      store.updateMedia(activityId, fileId) {
+      store.updateMedia(activityId, fileId, "trigger") {
         it.copy(caption = "New caption", isCoverPhoto = true)
       }
 
@@ -131,6 +132,16 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             record.modifiedBy = user.userId
             record.modifiedTime = now
           }
+      )
+
+      eventPublisher.assertEventPublished(
+          ActivityMediaUpdatedEvent(
+              activityId,
+              ActivityType.Planting,
+              "New caption",
+              fileId,
+              "trigger",
+          )
       )
     }
 

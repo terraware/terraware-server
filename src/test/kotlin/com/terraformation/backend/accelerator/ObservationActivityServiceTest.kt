@@ -3,13 +3,14 @@ package com.terraformation.backend.accelerator
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.ActivityStore
+import com.terraformation.backend.accelerator.event.ActivityMediaUpdatedEvent
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityStatus
@@ -18,20 +19,31 @@ import com.terraformation.backend.db.accelerator.tables.records.ActivitiesRecord
 import com.terraformation.backend.db.accelerator.tables.records.ActivityMediaFilesRecord
 import com.terraformation.backend.db.accelerator.tables.records.ActivityObservationsRecord
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.tables.records.ObservationMediaFilesRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.gis.CountryDetector
+import com.terraformation.backend.tracking.ObservationService
+import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
+import io.mockk.mockk
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalDateTime
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -43,64 +55,186 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val eventPublisher = TestEventPublisher()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
+  private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
+  private val observationStore: ObservationStore by lazy {
+    ObservationStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        observationLocker,
+        observationsDao,
+        observationPlotConditionsDao,
+        observationPlotsDao,
+        observationRequestedSubstrataDao,
+        parentStore,
+    )
+  }
+  private val plantingSiteStore: PlantingSiteStore by lazy {
+    PlantingSiteStore(
+        clock,
+        CountryDetector(),
+        dslContext,
+        eventPublisher,
+        mockk(),
+        monitoringPlotsDao,
+        parentStore,
+        simplePlantingSeasonsDao,
+        plantingSitesDao,
+        eventPublisher,
+        strataDao,
+        substrataDao,
+    )
+  }
   private val service by lazy {
     ObservationActivityService(
+        ActivityMediaStore(clock, dslContext, eventPublisher),
         ActivityStore(clock, dslContext, eventPublisher, parentStore),
         dslContext,
         ObservationResultsStoreV2(dslContext),
-        ObservationStore(
+        ObservationService(
+            BiomassStore(dslContext, eventPublisher, observationLocker, parentStore),
             clock,
             dslContext,
             eventPublisher,
-            ObservationLocker(dslContext),
-            observationsDao,
-            observationPlotConditionsDao,
-            observationPlotsDao,
-            observationRequestedSubstrataDao,
-            parentStore,
-        ),
-        parentStore,
-        PlantingSiteStore(
-            clock,
-            CountryDetector(),
-            dslContext,
-            eventPublisher,
-            IdentifierGenerator(clock, dslContext),
+            mockk(),
             monitoringPlotsDao,
+            mockk(),
+            observationMediaFilesDao,
+            observationLocker,
+            observationStore,
+            plantingSiteStore,
             parentStore,
-            simplePlantingSeasonsDao,
-            plantingSitesDao,
             eventPublisher,
-            strataDao,
-            substrataDao,
+            systemUser,
+            mockk(),
         ),
+        observationStore,
+        parentStore,
+        plantingSiteStore,
         ProjectStore(clock, dslContext, eventPublisher, parentStore, projectsDao),
         systemUser,
     )
   }
 
+  private lateinit var monitoringPlotId: MonitoringPlotId
   private lateinit var observationId: ObservationId
+  private lateinit var organizationId: OrganizationId
   private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var projectId: ProjectId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Manager)
     projectId = insertProject(phase = AcceleratorPhase.Phase2PlanAndScale)
     plantingSiteId = insertPlantingSite(x = 0, width = 15, projectId = projectId)
 
     observationId = insertObservation(completedTime = Instant.EPOCH)
+    insertStratum()
+    insertSubstratum()
+    monitoringPlotId = insertMonitoringPlot()
+    insertObservationPlot(completedBy = user.userId)
+  }
+
+  @Nested
+  inner class OnActivityMediaUpdatedEvent {
+    @Test
+    fun `updates caption of observation photo`() {
+      val activityId = insertActivity(activityType = ActivityType.Monitoring)
+      insertActivityObservation()
+      val fileId = insertFile()
+      insertActivityMediaFile(caption = "New caption")
+      insertObservationMediaFile(caption = "Old caption", position = null)
+
+      service.on(
+          ActivityMediaUpdatedEvent(
+              activityId = activityId,
+              activityType = ActivityType.Monitoring,
+              caption = "New caption",
+              fileId = fileId,
+              triggeredBy = null,
+          )
+      )
+
+      assertTableEquals(
+          ObservationMediaFilesRecord(
+              caption = "New caption",
+              fileId = fileId,
+              isOriginal = true,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              positionId = null,
+              typeId = ObservationMediaType.Plot,
+          )
+      )
+    }
+
+    @Test
+    fun `ignores updates that were triggered by observation media file updates`() {
+      val activityId = insertActivity(activityType = ActivityType.Monitoring)
+      insertActivityObservation()
+      val fileId = insertFile()
+      insertActivityMediaFile(caption = "Old caption")
+      insertObservationMediaFile(caption = "Old caption", position = null)
+
+      service.on(
+          ActivityMediaUpdatedEvent(
+              activityId = activityId,
+              activityType = ActivityType.Monitoring,
+              caption = "Ignored caption",
+              fileId = fileId,
+              triggeredBy =
+                  ObservationMediaFileEditedEvent(
+                      ObservationMediaFileEditedEventValues("Old caption"),
+                      ObservationMediaFileEditedEventValues("Ignored caption"),
+                      fileId,
+                      monitoringPlotId,
+                      observationId,
+                      organizationId,
+                      plantingSiteId,
+                  ),
+          )
+      )
+
+      assertTableEquals(
+          ObservationMediaFilesRecord(
+              caption = "Old caption",
+              fileId = fileId,
+              isOriginal = true,
+              monitoringPlotId = monitoringPlotId,
+              observationId = observationId,
+              positionId = null,
+              typeId = ObservationMediaType.Plot,
+          )
+      )
+
+      eventPublisher.assertEventNotPublished<ObservationMediaFileEditedEvent>()
+    }
+
+    @Test
+    fun `ignores updates of non-observation activity media`() {
+      val activityId = insertActivity(activityType = ActivityType.Monitoring)
+      val fileId = insertFile()
+      insertActivityMediaFile(caption = "New caption")
+
+      service.on(
+          ActivityMediaUpdatedEvent(
+              activityId = activityId,
+              activityType = ActivityType.Monitoring,
+              caption = "New caption",
+              fileId = fileId,
+              triggeredBy = null,
+          )
+      )
+
+      assertTableEmpty(OBSERVATION_MEDIA_FILES)
+    }
   }
 
   @Nested
   inner class OnObservationCompletedEvent {
     @Test
     fun `creates new activity on observation completion`() {
-      insertStratum()
-      insertSubstratum()
-      insertMonitoringPlot()
-      insertObservationPlot(completedBy = user.userId)
       val plot1File1Id = insertFile()
       insertObservationMediaFile(caption = "Caption 1")
       val plot1File2Id = insertFile()
@@ -220,6 +354,73 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       service.on(ObservationCompletedEvent(observationId))
 
       assertTableEmpty(ACTIVITIES)
+    }
+  }
+
+  @Nested
+  inner class OnObservationMediaFileEditedEvent {
+    @Test
+    fun `updates caption on activity media file`() {
+      val activityId = insertActivity(activityType = ActivityType.Monitoring)
+      insertActivityObservation()
+      val fileId = insertFile(capturedLocalTime = LocalDateTime.of(2026, 1, 2, 3, 4))
+      insertActivityMediaFile(caption = "Old caption")
+
+      val event =
+          ObservationMediaFileEditedEvent(
+              ObservationMediaFileEditedEventValues("Old caption"),
+              ObservationMediaFileEditedEventValues("New caption"),
+              fileId,
+              monitoringPlotId,
+              observationId,
+              organizationId,
+              plantingSiteId,
+          )
+      service.on(event)
+
+      assertTableEquals(
+          ActivityMediaFilesRecord(
+              fileId = fileId,
+              activityId = activityId,
+              activityMediaTypeId = ActivityMediaType.Photo,
+              isCoverPhoto = false,
+              caption = "New caption",
+              isHiddenOnMap = false,
+              listPosition = 1,
+          )
+      )
+
+      eventPublisher.assertEventPublished(
+          ActivityMediaUpdatedEvent(
+              activityId = activityId,
+              activityType = ActivityType.Monitoring,
+              caption = "New caption",
+              fileId = fileId,
+              triggeredBy = event,
+          )
+      )
+    }
+
+    @Test
+    fun `ignores update of media file when observation has no activity`() {
+      val fileId = insertFile()
+      insertObservationMediaFile()
+
+      service.on(
+          ObservationMediaFileEditedEvent(
+              ObservationMediaFileEditedEventValues("Old caption"),
+              ObservationMediaFileEditedEventValues("New caption"),
+              fileId,
+              monitoringPlotId,
+              observationId,
+              organizationId,
+              plantingSiteId,
+          )
+      )
+
+      assertTableEmpty(ACTIVITY_MEDIA_FILES)
+
+      eventPublisher.assertEventNotPublished<ActivityMediaUpdatedEvent>()
     }
   }
 }
