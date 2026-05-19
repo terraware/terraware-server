@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @TrackingEndpoint
@@ -48,6 +49,16 @@ class PlantingSeasonsController(
     val model = plantingSeasonStore.fetchById(id)
     return GetPlantingSeasonResponsePayload(model)
   }
+
+  @ApiResponse200
+  @Operation(summary = "Lists the planting seasons for a planting site.")
+  @GetMapping
+  fun listPlantingSeasons(
+      @RequestParam plantingSiteId: PlantingSiteId,
+  ): ListPlantingSeasonsResponsePayload {
+    val seasons = plantingSeasonStore.fetchList(plantingSiteId)
+    return ListPlantingSeasonsResponsePayload(seasons.map { PlantingSeasonPayload(it) })
+  }
 }
 
 data class CreatePlantingSeasonRequestPayload(
@@ -78,6 +89,10 @@ data class GetPlantingSeasonResponsePayload(
 ) : SuccessResponsePayload {
   constructor(model: ExistingPlantingSeasonModel) : this(PlantingSeasonPayload(model))
 }
+
+data class ListPlantingSeasonsResponsePayload(
+    val seasons: List<PlantingSeasonPayload>,
+) : SuccessResponsePayload
 
 data class PlantingSeasonPayload(
     val endDate: LocalDate,

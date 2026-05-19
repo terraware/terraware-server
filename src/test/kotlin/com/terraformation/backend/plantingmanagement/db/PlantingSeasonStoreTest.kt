@@ -10,6 +10,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonsRecord
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
@@ -267,6 +268,89 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             )
         )
       }
+    }
+  }
+
+  @Nested
+  inner class FetchList {
+    @Test
+    fun `returns all seasons for planting site`() {
+      val id1 =
+          insertPlantingSeason(
+              name = "Spring 2025",
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              status = PlantingSeasonStatus.Upcoming,
+          )
+      val id2 =
+          insertPlantingSeason(
+              name = "Fall 2025",
+              startDate = LocalDate.of(2025, 9, 1),
+              endDate = LocalDate.of(2025, 11, 30),
+              status = PlantingSeasonStatus.Upcoming,
+          )
+
+      val result = store.fetchList(plantingSiteId)
+
+      assertEquals(
+          listOf(
+              ExistingPlantingSeasonModel(
+                  endDate = LocalDate.of(2025, 3, 31),
+                  id = id1,
+                  name = "Spring 2025",
+                  plantingSiteId = plantingSiteId,
+                  startDate = LocalDate.of(2025, 1, 1),
+                  status = PlantingSeasonStatus.Upcoming,
+              ),
+              ExistingPlantingSeasonModel(
+                  endDate = LocalDate.of(2025, 11, 30),
+                  id = id2,
+                  name = "Fall 2025",
+                  plantingSiteId = plantingSiteId,
+                  startDate = LocalDate.of(2025, 9, 1),
+                  status = PlantingSeasonStatus.Upcoming,
+              ),
+          ),
+          result,
+      )
+    }
+
+    @Test
+    fun `returns empty list when no seasons exist for site`() {
+      val result = store.fetchList(plantingSiteId)
+
+      assertEquals(emptyList<ExistingPlantingSeasonModel>(), result)
+    }
+
+    @Test
+    fun `only returns seasons for the specified site`() {
+      val id = insertPlantingSeason(name = "Spring 2025", plantingSiteId = plantingSiteId)
+      insertPlantingSite()
+      val otherSiteId = inserted.plantingSiteId
+      insertPlantingSeason(name = "Spring 2025", plantingSiteId = otherSiteId)
+
+      val result = store.fetchList(plantingSiteId)
+
+      assertEquals(
+          listOf(
+              ExistingPlantingSeasonModel(
+                  endDate = LocalDate.EPOCH.plusDays(1),
+                  id = id,
+                  name = "Spring 2025",
+                  plantingSiteId = plantingSiteId,
+                  startDate = LocalDate.EPOCH,
+                  status = PlantingSeasonStatus.Upcoming,
+              ),
+          ),
+          result,
+      )
+    }
+
+    @Test
+    fun `throws PlantingSiteNotFoundException when user is not a member of the organization`() {
+      deleteOrganizationUser()
+
+      assertThrows<PlantingSiteNotFoundException> { store.fetchList(plantingSiteId) }
     }
   }
 

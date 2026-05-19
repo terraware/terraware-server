@@ -13,6 +13,7 @@ import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.ZoneId
+import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
 
@@ -56,8 +57,19 @@ class PlantingSeasonStore(
   fun fetchById(id: PlantingSeasonId): ExistingPlantingSeasonModel {
     requirePermissions { readPlantingSeason(id) }
 
+    return fetchByCondition(PLANTING_SEASONS.ID.eq(id)).firstOrNull()
+        ?: throw PlantingSeasonNotFoundException(id)
+  }
+
+  fun fetchList(plantingSiteId: PlantingSiteId): List<ExistingPlantingSeasonModel> {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return fetchByCondition(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
+  }
+
+  private fun fetchByCondition(condition: Condition): List<ExistingPlantingSeasonModel> {
     return with(PLANTING_SEASONS) {
-      dslContext.selectFrom(PLANTING_SEASONS).where(ID.eq(id)).fetchOne()?.let { record ->
+      dslContext.selectFrom(PLANTING_SEASONS).where(condition).fetch { record ->
         ExistingPlantingSeasonModel(
             endDate = record[END_DATE]!!,
             id = record[ID]!!,
@@ -66,7 +78,7 @@ class PlantingSeasonStore(
             startDate = record[START_DATE]!!,
             status = record[STATUS_ID]!!,
         )
-      } ?: throw PlantingSeasonNotFoundException(id)
+      }
     }
   }
 
