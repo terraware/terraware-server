@@ -2,6 +2,7 @@ package com.terraformation.backend.plantingmanagement.api
 
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.SuccessResponsePayload
+import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
+@TrackingEndpoint
 @RequestMapping("/api/v1/planting-seasons")
 @RestController
 class PlantingSeasonsController(
