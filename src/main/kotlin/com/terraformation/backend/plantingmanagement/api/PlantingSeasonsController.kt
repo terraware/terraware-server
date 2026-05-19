@@ -65,7 +65,6 @@ data class CreatePlantingSeasonRequestPayload(
   fun toModel(): NewPlantingSeasonModel =
       NewPlantingSeasonModel(
           endDate = endDate,
-          id = null,
           name = name,
           plantingSiteId = plantingSiteId,
           startDate = startDate,
@@ -96,6 +95,6 @@ data class PlantingSeasonPayload(
       name = model.name,
       plantingSiteId = model.plantingSiteId,
       startDate = model.startDate,
-      status = model.status!!,
+      status = model.status,
   )
 }

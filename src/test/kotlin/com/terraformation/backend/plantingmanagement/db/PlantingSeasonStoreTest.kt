@@ -47,7 +47,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -80,7 +79,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -113,7 +111,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2024",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -148,7 +145,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -185,7 +181,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -219,7 +214,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -251,7 +245,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.create(
             NewPlantingSeasonModel(
                 endDate = LocalDate.of(2025, 3, 31),
-                id = null,
                 name = "Spring 2025",
                 plantingSiteId = plantingSiteId,
                 startDate = LocalDate.of(2025, 1, 1),
@@ -268,7 +261,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.create(
             NewPlantingSeasonModel(
                 endDate = LocalDate.of(2025, 3, 31),
-                id = null,
                 name = "Spring 2025",
                 plantingSiteId = plantingSiteId,
                 startDate = LocalDate.of(2025, 1, 1),
