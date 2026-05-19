@@ -3,21 +3,17 @@ package com.terraformation.backend.plantingmanagement.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.LocalDate
-import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.DSLContext
-import org.jooq.impl.DSL
 
 @Named
 class PlantingSeasonStore(
@@ -102,7 +98,8 @@ class PlantingSeasonStore(
       endDate: LocalDate,
       plantingSiteId: PlantingSiteId,
   ): PlantingSeasonStatus {
-    val today = clock.instant().atZone(plantingSiteTimeZone(plantingSiteId)).toLocalDate()
+    val today =
+        clock.instant().atZone(parentStore.getEffectiveTimeZone(plantingSiteId)).toLocalDate()
     return when {
       today < startDate -> PlantingSeasonStatus.Upcoming
       today <= endDate -> PlantingSeasonStatus.Active
@@ -123,21 +120,5 @@ class PlantingSeasonStore(
         )
       }
     }
-  }
-
-  private fun plantingSiteTimeZone(plantingSiteId: PlantingSiteId): ZoneId {
-    val zoneField =
-        DSL.coalesce(
-            PLANTING_SITES.TIME_ZONE,
-            ORGANIZATIONS.TIME_ZONE,
-            DSL.value("UTC"),
-        )
-    return dslContext
-        .select(zoneField)
-        .from(PLANTING_SITES)
-        .join(ORGANIZATIONS)
-        .on(PLANTING_SITES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-        .where(PLANTING_SITES.ID.eq(plantingSiteId))
-        .fetchSingle(zoneField)!!
   }
 }
