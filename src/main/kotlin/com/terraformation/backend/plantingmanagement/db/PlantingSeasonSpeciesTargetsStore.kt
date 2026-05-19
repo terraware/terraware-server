@@ -6,8 +6,10 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
+import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import jakarta.inject.Named
 import java.time.InstantSource
+import org.jooq.Condition
 import org.jooq.DSLContext
 
 @Named
@@ -15,6 +17,12 @@ class PlantingSeasonSpeciesTargetsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
 ) {
+  fun fetchList(plantingSeasonId: PlantingSeasonId): List<PlantingSeasonSpeciesTargetModel> {
+    requirePermissions { readPlantingSeason(plantingSeasonId) }
+
+    return fetchByCondition(PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID.eq(plantingSeasonId))
+  }
+
   fun upsert(
       plantingSeasonId: PlantingSeasonId,
       substratumId: SubstratumId,
@@ -44,6 +52,18 @@ class PlantingSeasonSpeciesTargetsStore(
           .set(MODIFIED_BY, userId)
           .set(MODIFIED_TIME, now)
           .execute()
+    }
+  }
+
+  private fun fetchByCondition(condition: Condition): List<PlantingSeasonSpeciesTargetModel> {
+    return with(PLANTING_SEASON_SPECIES_TARGETS) {
+      dslContext.selectFrom(PLANTING_SEASON_SPECIES_TARGETS).where(condition).fetch { record ->
+        PlantingSeasonSpeciesTargetModel(
+            substratumId = record[SUBSTRATUM_ID]!!,
+            speciesId = record[SPECIES_ID]!!,
+            quantity = record[QUANTITY]!!,
+        )
+      }
     }
   }
 }
