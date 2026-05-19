@@ -1,6 +1,7 @@
 package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -12,6 +13,7 @@ import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import jakarta.inject.Named
 import java.time.InstantSource
+import java.time.LocalDate
 import java.time.ZoneId
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -21,19 +23,14 @@ import org.jooq.impl.DSL
 class PlantingSeasonStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val parentStore: ParentStore,
 ) {
   fun create(newModel: NewPlantingSeasonModel): PlantingSeasonId {
     requirePermissions { createPlantingSeason(newModel.plantingSiteId) }
 
     val userId = currentUser().userId
     val now = clock.instant()
-    val today = now.atZone(plantingSiteTimeZone(newModel.plantingSiteId)).toLocalDate()
-    val status =
-        when {
-          today < newModel.startDate -> PlantingSeasonStatus.Upcoming
-          today <= newModel.endDate -> PlantingSeasonStatus.Active
-          else -> PlantingSeasonStatus.PastEndDate
-        }
+    val status = calculateStatus(newModel.startDate, newModel.endDate, newModel.plantingSiteId)
 
     return with(PLANTING_SEASONS) {
       dslContext
@@ -65,6 +62,52 @@ class PlantingSeasonStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchByCondition(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
+  }
+
+  fun update(
+      plantingSeasonId: PlantingSeasonId,
+      name: String,
+      startDate: LocalDate,
+      endDate: LocalDate,
+  ) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    val now = clock.instant()
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(plantingSeasonId)
+            ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+    val status = calculateStatus(startDate, endDate, plantingSiteId)
+
+    val rowsUpdated =
+        with(PLANTING_SEASONS) {
+          dslContext
+              .update(PLANTING_SEASONS)
+              .set(NAME, name)
+              .set(START_DATE, startDate)
+              .set(END_DATE, endDate)
+              .set(STATUS_ID, status)
+              .set(MODIFIED_BY, currentUser().userId)
+              .set(MODIFIED_TIME, now)
+              .where(ID.eq(plantingSeasonId))
+              .execute()
+        }
+
+    if (rowsUpdated == 0) {
+      throw PlantingSeasonNotFoundException(plantingSeasonId)
+    }
+  }
+
+  private fun calculateStatus(
+      startDate: LocalDate,
+      endDate: LocalDate,
+      plantingSiteId: PlantingSiteId,
+  ): PlantingSeasonStatus {
+    val today = clock.instant().atZone(plantingSiteTimeZone(plantingSiteId)).toLocalDate()
+    return when {
+      today < startDate -> PlantingSeasonStatus.Upcoming
+      today <= endDate -> PlantingSeasonStatus.Active
+      else -> PlantingSeasonStatus.PastEndDate
+    }
   }
 
   private fun fetchByCondition(condition: Condition): List<ExistingPlantingSeasonModel> {
