@@ -19,5 +19,11 @@ docker/volumes
 !.claude/skills
 !.claude/agents
 
+# Claude Superpowers Plugin
+docs/superpowers
+
+# Codegraph AI tool
+.codegraph
+
 # Kotlin compiler temporary files
 .kotlin
