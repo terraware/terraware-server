@@ -70,13 +70,13 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val plantingSiteHistoryId = inserted.plantingSiteHistoryId
 
     val plantingSeasonId1 =
-        insertPlantingSeason(
+        insertSimplePlantingSeason(
             startDate = LocalDate.of(1970, 1, 1),
             endDate = LocalDate.of(1970, 2, 15),
             isActive = true,
         )
     val plantingSeasonId2 =
-        insertPlantingSeason(
+        insertSimplePlantingSeason(
             startDate = LocalDate.of(1970, 3, 1),
             endDate = LocalDate.of(1970, 6, 5),
         )

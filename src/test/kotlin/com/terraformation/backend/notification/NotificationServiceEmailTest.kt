@@ -88,11 +88,11 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.device.db.DeviceStore
@@ -1087,7 +1087,7 @@ internal class NotificationServiceEmailTest {
     val event =
         PlantingSeasonScheduledEvent(
             plantingSite.id,
-            PlantingSeasonId(1),
+            SimplePlantingSeasonId(1),
             LocalDate.of(2023, 1, 1),
             LocalDate.of(2023, 3, 3),
         )
@@ -1108,7 +1108,7 @@ internal class NotificationServiceEmailTest {
     val event =
         PlantingSeasonScheduledEvent(
             plantingSite.id,
-            PlantingSeasonId(1),
+            SimplePlantingSeasonId(1),
             LocalDate.of(2023, 1, 1),
             LocalDate.of(2023, 3, 3),
         )
@@ -1126,7 +1126,7 @@ internal class NotificationServiceEmailTest {
     val event =
         PlantingSeasonRescheduledEvent(
             plantingSite.id,
-            PlantingSeasonId(1),
+            SimplePlantingSeasonId(1),
             LocalDate.of(2023, 1, 1),
             LocalDate.of(2023, 3, 3),
             LocalDate.of(2023, 1, 2),
@@ -1150,7 +1150,7 @@ internal class NotificationServiceEmailTest {
     val event =
         PlantingSeasonRescheduledEvent(
             plantingSite.id,
-            PlantingSeasonId(1),
+            SimplePlantingSeasonId(1),
             LocalDate.of(2023, 1, 1),
             LocalDate.of(2023, 3, 3),
             LocalDate.of(2023, 1, 2),
@@ -1164,7 +1164,7 @@ internal class NotificationServiceEmailTest {
 
   @Test
   fun plantingSeasonStarted() {
-    val event = PlantingSeasonStartedEvent(plantingSite.id, PlantingSeasonId(1))
+    val event = PlantingSeasonStartedEvent(plantingSite.id, SimplePlantingSeasonId(1))
 
     service.on(event)
 

@@ -230,7 +230,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
-            plantingSeasonsDao,
+            simplePlantingSeasonsDao,
             plantingSitesDao,
             publisher,
             strataDao,
@@ -848,10 +848,10 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     val plantingSiteName = "My Site"
 
     insertPlantingSite(name = plantingSiteName)
-    insertPlantingSeason()
+    insertSimplePlantingSeason()
 
     testEventNotification(
-        PlantingSeasonStartedEvent(inserted.plantingSiteId, inserted.plantingSeasonId),
+        PlantingSeasonStartedEvent(inserted.plantingSiteId, inserted.simplePlantingSeasonId),
         type = NotificationType.PlantingSeasonStarted,
         title = "It's planting season!",
         body =
@@ -866,7 +866,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     val plantingSiteName = "My Site"
 
     insertPlantingSite(name = plantingSiteName)
-    insertPlantingSeason()
+    insertSimplePlantingSeason()
 
     testEventNotification(
         PlantingSeasonNotScheduledNotificationEvent(inserted.plantingSiteId, 1),

@@ -54,7 +54,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       val season1StartDate = LocalDate.of(2023, 6, 1)
       val season1EndDate = LocalDate.of(2023, 7, 31)
       val plantingSeasonId1 =
-          insertPlantingSeason(
+          insertSimplePlantingSeason(
               startDate = season1StartDate,
               endDate = season1EndDate,
               timeZone = timeZone,
@@ -62,7 +62,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
       val season2StartDate = LocalDate.of(2023, 1, 1)
       val season2EndDate = LocalDate.of(2023, 1, 31)
       val plantingSeasonId2 =
-          insertPlantingSeason(
+          insertSimplePlantingSeason(
               startDate = season2StartDate,
               endDate = season2EndDate,
               timeZone = timeZone,

@@ -10,10 +10,10 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
-import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
@@ -80,8 +80,8 @@ class ObservationPlotNotFoundException(
 class PlantingNotFoundException(val plantingId: PlantingId) :
     EntityNotFoundException("Planting $plantingId not found")
 
-class PlantingSeasonNotFoundException(val plantingSeasonId: PlantingSeasonId) :
-    EntityNotFoundException("Planting season $plantingSeasonId not found")
+class PlantingSeasonNotFoundException(val simplePlantingSeasonId: SimplePlantingSeasonId) :
+    EntityNotFoundException("Planting season $simplePlantingSeasonId not found")
 
 class PlantingSiteHistoryNotFoundException(val plantingSiteHistoryId: PlantingSiteHistoryId) :
     EntityNotFoundException("Planting site history $plantingSiteHistoryId not found")

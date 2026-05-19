@@ -1,6 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
-import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
+import com.terraformation.backend.db.tracking.tables.pojos.SimplePlantingSeasonsRow
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
@@ -43,14 +43,22 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
 
       val plantingSiteId = insertPlantingSite(timeZone = timeZone)
       val season1Id =
-          insertPlantingSeason(startDate = season1Start, endDate = season1End, timeZone = timeZone)
+          insertSimplePlantingSeason(
+              startDate = season1Start,
+              endDate = season1End,
+              timeZone = timeZone,
+          )
       val season2Id =
-          insertPlantingSeason(
+          insertSimplePlantingSeason(
               startDate = oldSeason2Start,
               endDate = oldSeason2End,
               timeZone = timeZone,
           )
-      insertPlantingSeason(startDate = season3Start, endDate = season3End, timeZone = timeZone)
+      insertSimplePlantingSeason(
+          startDate = season3Start,
+          endDate = season3End,
+          timeZone = timeZone,
+      )
 
       val desiredSeasons =
           listOf(
@@ -72,11 +80,11 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
 
       store.updatePlantingSite(plantingSiteId, desiredSeasons) { it }
 
-      val actual = plantingSeasonsDao.findAll().sortedBy { it.startDate }
+      val actual = simplePlantingSeasonsDao.findAll().sortedBy { it.startDate }
 
       val expected =
           listOf(
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = season1End,
                   endTime = season1End.plusDays(1).toInstant(timeZone),
                   id = season1Id,
@@ -85,7 +93,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
                   startDate = season1Start,
                   startTime = season1Start.toInstant(timeZone),
               ),
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = newSeason2End,
                   endTime = newSeason2End.plusDays(1).toInstant(timeZone),
                   id = season2Id,
@@ -94,7 +102,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
                   startDate = newSeason2Start,
                   startTime = newSeason2Start.toInstant(timeZone),
               ),
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = season4End,
                   endTime = season4End.plusDays(1).toInstant(timeZone),
                   id = actual.last().id,
@@ -112,7 +120,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
     fun `marks planting season as inactive if it is rescheduled for the future after starting`() {
       val plantingSiteId = insertPlantingSite()
       val seasonId =
-          insertPlantingSeason(
+          insertSimplePlantingSeason(
               startDate = LocalDate.of(2022, 12, 1),
               endDate = LocalDate.of(2023, 2, 1),
               isActive = true,
@@ -133,7 +141,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
 
       val expected =
           listOf(
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = newEndDate,
                   endTime = newEndDate.plusDays(1).toInstant(ZoneOffset.UTC),
                   id = seasonId,
@@ -144,14 +152,14 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
               ),
           )
 
-      assertEquals(expected, plantingSeasonsDao.findAll())
+      assertEquals(expected, simplePlantingSeasonsDao.findAll())
     }
 
     @Test
     fun `marks planting season as active if it is rescheduled to start in the past`() {
       val plantingSiteId = insertPlantingSite()
       val seasonId =
-          insertPlantingSeason(
+          insertSimplePlantingSeason(
               startDate = LocalDate.of(2023, 2, 1),
               endDate = LocalDate.of(2023, 4, 1),
           )
@@ -171,7 +179,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
 
       val expected =
           listOf(
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = newEndDate,
                   endTime = newEndDate.plusDays(1).toInstant(ZoneOffset.UTC),
                   id = seasonId,
@@ -182,7 +190,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
               ),
           )
 
-      assertEquals(expected, plantingSeasonsDao.findAll())
+      assertEquals(expected, simplePlantingSeasonsDao.findAll())
     }
 
     @Test
@@ -239,7 +247,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
       val endDate = LocalDate.of(2022, 12, 15)
 
       val plantingSiteId = insertPlantingSite()
-      val plantingSeasonId = insertPlantingSeason(startDate = startDate, endDate = endDate)
+      val plantingSeasonId = insertSimplePlantingSeason(startDate = startDate, endDate = endDate)
 
       assertThrows<CannotUpdatePastPlantingSeasonException> {
         store.updatePlantingSite(
@@ -263,9 +271,9 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
       val endDate = LocalDate.of(2020, 3, 1)
 
       val plantingSiteId = insertPlantingSite()
-      val plantingSeasonId = insertPlantingSeason(startDate = startDate, endDate = endDate)
+      val plantingSeasonId = insertSimplePlantingSeason(startDate = startDate, endDate = endDate)
 
-      val expected = plantingSeasonsDao.findAll()
+      val expected = simplePlantingSeasonsDao.findAll()
 
       store.updatePlantingSite(
           plantingSiteId,
@@ -280,7 +288,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
         it
       }
 
-      val actual = plantingSeasonsDao.findAll()
+      val actual = simplePlantingSeasonsDao.findAll()
 
       assertEquals(expected, actual)
     }
@@ -291,13 +299,13 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
       val endDate = LocalDate.of(2020, 3, 1)
 
       val plantingSiteId = insertPlantingSite()
-      insertPlantingSeason(startDate = startDate, endDate = endDate)
+      insertSimplePlantingSeason(startDate = startDate, endDate = endDate)
 
-      val expected = plantingSeasonsDao.findAll()
+      val expected = simplePlantingSeasonsDao.findAll()
 
       store.updatePlantingSite(plantingSiteId, emptyList()) { it }
 
-      assertEquals(expected, plantingSeasonsDao.findAll())
+      assertEquals(expected, simplePlantingSeasonsDao.findAll())
     }
 
     @Test
@@ -307,15 +315,15 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
       val pastStartDate = LocalDate.of(2020, 1, 1)
       val pastEndDate = LocalDate.of(2020, 3, 1)
       val pastPlantingSeasonId =
-          insertPlantingSeason(startDate = pastStartDate, endDate = pastEndDate)
+          insertSimplePlantingSeason(startDate = pastStartDate, endDate = pastEndDate)
       val activeStartDate = LocalDate.of(2022, 12, 1)
       val activeEndDate = LocalDate.of(2022, 12, 31)
       val activePlantingSeasonId =
-          insertPlantingSeason(startDate = activeStartDate, endDate = activeEndDate)
+          insertSimplePlantingSeason(startDate = activeStartDate, endDate = activeEndDate)
       val futureStartDate = LocalDate.of(2023, 6, 1)
       val futureEndDate = LocalDate.of(2023, 8, 15)
       val futurePlantingSeasonId =
-          insertPlantingSeason(startDate = futureStartDate, endDate = futureEndDate)
+          insertSimplePlantingSeason(startDate = futureStartDate, endDate = futureEndDate)
 
       store.updatePlantingSite(
           plantingSiteId,
@@ -342,7 +350,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
 
       val expected =
           listOf(
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = pastEndDate,
                   endTime = pastEndDate.plusDays(1).toInstant(ZoneOffset.UTC),
                   id = pastPlantingSeasonId,
@@ -351,7 +359,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
                   startDate = pastStartDate,
                   startTime = pastStartDate.toInstant(ZoneOffset.UTC),
               ),
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = activeEndDate,
                   endTime = activeEndDate.plusDays(1).toInstant(timeZone),
                   id = activePlantingSeasonId,
@@ -364,7 +372,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
                   // updated.
                   startTime = activeStartDate.toInstant(ZoneOffset.UTC),
               ),
-              PlantingSeasonsRow(
+              SimplePlantingSeasonsRow(
                   endDate = futureEndDate,
                   endTime = futureEndDate.plusDays(1).toInstant(timeZone),
                   id = futurePlantingSeasonId,
@@ -375,7 +383,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
               ),
           )
 
-      assertEquals(expected, plantingSeasonsDao.findAll().sortedBy { it.startDate })
+      assertEquals(expected, simplePlantingSeasonsDao.findAll().sortedBy { it.startDate })
     }
 
     @Test
@@ -393,7 +401,7 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
         it
       }
 
-      val plantingSeasonId = plantingSeasonsDao.findAll().first().id!!
+      val plantingSeasonId = simplePlantingSeasonsDao.findAll().first().id!!
 
       eventPublisher.assertEventPublished(
           PlantingSeasonScheduledEvent(plantingSiteId, plantingSeasonId, startDate, endDate)
@@ -408,7 +416,8 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
       val newStartDate = LocalDate.of(2023, 1, 2)
       val newEndDate = LocalDate.of(2023, 2, 15)
 
-      val plantingSeasonId = insertPlantingSeason(startDate = oldStartDate, endDate = oldEndDate)
+      val plantingSeasonId =
+          insertSimplePlantingSeason(startDate = oldStartDate, endDate = oldEndDate)
 
       store.updatePlantingSite(
           plantingSiteId,

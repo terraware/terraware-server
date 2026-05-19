@@ -56,7 +56,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        plantingSeasonsDao,
+        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
         strataDao,

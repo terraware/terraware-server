@@ -57,7 +57,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        plantingSeasonsDao,
+        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
         strataDao,
@@ -164,7 +164,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
       insertOrganization(timeZone = oldTimeZone)
       insertPlantingSite(timeZone = oldTimeZone)
-      insertPlantingSeason(timeZone = oldTimeZone, startDate = startDate, endDate = endDate)
+      insertSimplePlantingSeason(timeZone = oldTimeZone, startDate = startDate, endDate = endDate)
 
       val oldSiteModel =
           plantingSiteStore.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Site)
