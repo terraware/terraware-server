@@ -1,6 +1,7 @@
 package com.terraformation.backend.plantingmanagement.api
 
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
@@ -53,4 +54,4 @@ data class CreatePlantingSeasonRequestPayload(
       )
 }
 
-data class CreatePlantingSeasonResponsePayload(val id: PlantingSeasonId)
+data class CreatePlantingSeasonResponsePayload(val id: PlantingSeasonId) : SuccessResponsePayload
