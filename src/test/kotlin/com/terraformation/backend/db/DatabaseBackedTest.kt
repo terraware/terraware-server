@@ -418,6 +418,8 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.PlantingSiteNotificationId
@@ -451,6 +453,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationStratumResu
 import com.terraformation.backend.db.tracking.tables.daos.ObservationSubstratumResultsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteNotificationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitePopulationsDao
@@ -493,6 +496,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinat
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteNotificationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitePopulationsRow
@@ -727,6 +731,7 @@ abstract class DatabaseBackedTest {
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val participantProjectSpeciesDao: ParticipantProjectSpeciesDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
+  protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
   protected val plantingSiteHistoriesDao: PlantingSiteHistoriesDao by lazyDao()
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
   protected val plantingSitePopulationsDao: PlantingSitePopulationsDao by lazyDao()
@@ -2257,6 +2262,38 @@ abstract class DatabaseBackedTest {
         )
 
     batchWithdrawalsDao.insert(rowWithDefaults)
+  }
+
+  var nextPlantingSeasonNumber: Int = 1
+
+  fun insertPlantingSeason(
+      row: PlantingSeasonsRow = PlantingSeasonsRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      name: String = row.name ?: "Season ${nextPlantingSeasonNumber++}",
+      plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
+      startDate: LocalDate = LocalDate.EPOCH,
+      status: PlantingSeasonStatus = PlantingSeasonStatus.Upcoming,
+  ): PlantingSeasonId {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            endDate = endDate,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            name = name,
+            plantingSiteId = plantingSiteId,
+            startDate = startDate,
+            statusId = status,
+        )
+
+    plantingSeasonsDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.plantingSeasonIds.add(it) }
   }
 
   var nextPlantingSiteNumber: Int = 1
@@ -5762,6 +5799,7 @@ abstract class DatabaseBackedTest {
     val organizationIds = mutableListOf<OrganizationId>()
     val participantProjectSpeciesIds = mutableListOf<ParticipantProjectSpeciesId>()
     val plantingIds = mutableListOf<PlantingId>()
+    val plantingSeasonIds = mutableListOf<PlantingSeasonId>()
     val plantingSiteHistoryIds = mutableListOf<PlantingSiteHistoryId>()
     val plantingSiteHistoryIdsByPlantingSiteId =
         mutableMapOf<PlantingSiteId, MutableList<PlantingSiteHistoryId>>()

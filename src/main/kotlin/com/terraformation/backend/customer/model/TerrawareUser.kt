@@ -37,6 +37,7 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -263,6 +264,8 @@ interface TerrawareUser : Principal, UserDetails {
 
   fun canCreateParticipantProjectSpecies(projectId: ProjectId): Boolean = defaultPermission
 
+  fun canCreatePlantingSeason(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
+
   fun canCreatePlantingSite(organizationId: OrganizationId): Boolean = defaultPermission
 
   fun canCreateProject(organizationId: OrganizationId): Boolean = defaultPermission
@@ -305,6 +308,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canDeleteParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
   ): Boolean = defaultPermission
+
+  fun canDeletePlantingSeason(plantingSeasonId: PlantingSeasonId): Boolean = defaultPermission
 
   fun canDeletePlantingSite(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
@@ -447,6 +452,8 @@ interface TerrawareUser : Principal, UserDetails {
   ): Boolean = defaultPermission
 
   fun canReadPlanting(plantingId: PlantingId): Boolean = defaultPermission
+
+  fun canReadPlantingSeason(plantingSeasonId: PlantingSeasonId): Boolean = defaultPermission
 
   fun canReadPlantingSite(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 
@@ -603,6 +610,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canUpdateParticipantProjectSpecies(
       participantProjectSpeciesId: ParticipantProjectSpeciesId
   ): Boolean = defaultPermission
+
+  fun canUpdatePlantingSeason(plantingSeasonId: PlantingSeasonId): Boolean = defaultPermission
 
   fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId): Boolean = defaultPermission
 

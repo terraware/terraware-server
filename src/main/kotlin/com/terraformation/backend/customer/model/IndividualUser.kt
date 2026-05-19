@@ -39,6 +39,7 @@ import com.terraformation.backend.db.tracking.DraftPlantingSiteId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -189,6 +190,9 @@ data class IndividualUser(
   override fun canCreateParticipantProjectSpecies(projectId: ProjectId) =
       isTFExpertOrHigher() || isManagerOrHigher(parentStore.getOrganizationId(projectId))
 
+  override fun canCreatePlantingSeason(plantingSiteId: PlantingSiteId) =
+      isManagerOrHigher(parentStore.getOrganizationId(plantingSiteId))
+
   override fun canCreatePlantingSite(organizationId: OrganizationId) =
       isAdminOrHigher(organizationId)
 
@@ -242,6 +246,9 @@ data class IndividualUser(
   ) =
       isTFExpertOrHigher() ||
           isManagerOrHigher(parentStore.getOrganizationId(participantProjectSpeciesId))
+
+  override fun canDeletePlantingSeason(plantingSeasonId: PlantingSeasonId) =
+      isManagerOrHigher(parentStore.getOrganizationId(plantingSeasonId))
 
   override fun canDeletePlantingSite(plantingSiteId: PlantingSiteId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
@@ -445,6 +452,9 @@ data class IndividualUser(
   override fun canReadPlanting(plantingId: PlantingId): Boolean =
       canReadAcceleratorProject(parentStore.getProjectId(plantingId)) ||
           isMember(parentStore.getOrganizationId(plantingId))
+
+  override fun canReadPlantingSeason(plantingSeasonId: PlantingSeasonId) =
+      isMember(parentStore.getOrganizationId(plantingSeasonId))
 
   override fun canReadPlantingSite(plantingSiteId: PlantingSiteId) =
       canReadAcceleratorProject(parentStore.getProjectId(plantingSiteId)) ||
@@ -683,6 +693,9 @@ data class IndividualUser(
   ) =
       isTFExpertOrHigher() ||
           isManagerOrHigher(parentStore.getOrganizationId(participantProjectSpeciesId))
+
+  override fun canUpdatePlantingSeason(plantingSeasonId: PlantingSeasonId) =
+      isManagerOrHigher(parentStore.getOrganizationId(plantingSeasonId))
 
   override fun canUpdatePlantingSite(plantingSiteId: PlantingSiteId) =
       isAdminOrHigher(parentStore.getOrganizationId(plantingSiteId))
