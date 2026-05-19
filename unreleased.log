@@ -1,3 +1,4 @@
+fc11b3bd Allowed all members to read org features (#4415)
 f666af46 Add Software Engineer agent for claude (#4411)
 eec0964f Ignore some AI generated files (#4410)
 8c09e038 Add matching mode to admin view (#4409)
