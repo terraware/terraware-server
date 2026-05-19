@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Start and end dates of planting seasons for planting sites.</p>
+                            <p>Named planting seasons for planting sites, with start and end dates.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -130,6 +130,16 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="planting_season_species_targets.planting_season_id references planting_seasons.id via planting_season_species_targets_planting_season_id_fkey"><a href='planting_season_species_targets.html'>planting_season_species_targets</a><span class='relatedKey'>.planting_season_id</span></td>
+                                                <td class="constraint detail">planting_season_species_targets_planting_season_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="scheduled_planting_dates.planting_season_id references planting_seasons.id via scheduled_planting_dates_planting_season_id_fkey"><a href='scheduled_planting_dates.html'>scheduled_planting_dates</a><span class='relatedKey'>.planting_season_id</span></td>
+                                                <td class="constraint detail">scheduled_planting_dates_planting_season_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -152,10 +162,27 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="planting_seasons.planting_site_id references planting_sites.id via planting_seasons_planting_site_id_fkey"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">planting_seasons_planting_site_id_fkey</td>
+                                                <td title="planting_seasons.planting_site_id references planting_sites.id via planting_seasons_planting_site_id_fkey1"><a href='planting_sites.html'>planting_sites</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">planting_seasons_planting_site_id_fkey1</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="name">name</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
                                     <td></td>
@@ -175,24 +202,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>What day the planting season starts.</p></td>
-                                </tr>
-                                <tr>
-                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="start_time">start_time</span></td>
-                                    <td>timestamptz</td>
-                                    <td>35,6</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td><p>When the planting season will start. This is midnight on <code>start_date</code> in the planting site&rsquo;s time zone.</p></td>
+                                    <td></td>
                                 </tr>
                                 <tr>
                                     <td><span id="end_date">end_date</span></td>
@@ -209,10 +219,54 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>What day the planting season ends. This is the last day of the season, not the day after the season, that is, if the planting season is the month of January, this will be January 31, not February 1.</p></td>
+                                    <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="end_time">end_time</span></td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="status_id">status_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="planting_seasons.status_id references planting_season_statuses.id via planting_seasons_status_id_fkey"><a href='planting_season_statuses.html'>planting_season_statuses</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">planting_seasons_status_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="created_by">created_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="planting_seasons.created_by references public.users.id via planting_seasons_created_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">planting_seasons_created_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="created_time">created_time</span></td>
                                     <td>timestamptz</td>
                                     <td>35,6</td>
                                     <td title=''></td>
@@ -226,12 +280,34 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>When the planting season will be finished. This is midnight on the day after <code>end_date</code> in the planting site&rsquo;s time zone.</p></td>
+                                    <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="is_active">is_active</span></td>
-                                    <td>bool</td>
-                                    <td>1</td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="modified_by">modified_by</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="planting_seasons.modified_by references public.users.id via planting_seasons_modified_by_fkey"><a href='../../public/tables/users.html'>users</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">planting_seasons_modified_by_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td><span id="modified_time">modified_time</span></td>
+                                    <td>timestamptz</td>
+                                    <td>35,6</td>
                                     <td title=''></td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -243,7 +319,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td><p>True if the planting season is currently in progress. Only one planting season can be active at a time for a planting site.</p></td>
+                                    <td></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -282,28 +358,16 @@
                                     <td>id</td>
                                 </tr>
                                 <tr>
-                                    <td title='Indexed'>one_active_per_site</td>
-                                    <td>Performance</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>planting_site_id</td>
-                                </tr>
-                                <tr>
-                                    <td title='Indexed'>planting_seasons_is_active_end_time_idx</td>
-                                    <td>Performance</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>is_active + end_time</td>
-                                </tr>
-                                <tr>
-                                    <td title='Indexed'>planting_seasons_is_active_start_time_end_time_idx</td>
-                                    <td>Performance</td>
-                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
-                                    <td>is_active + start_time + end_time</td>
-                                </tr>
-                                <tr>
                                     <td title='Indexed'>planting_seasons_planting_site_id_idx</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>planting_site_id</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> planting_seasons_planting_site_id_name_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>planting_site_id + name</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -335,11 +399,7 @@
                                 <tbody>
                                 <tr>
                                     <td>planting_seasons_check</td>
-                                    <td>(start_date &lt; end_date)</td>
-                                </tr>
-                                <tr>
-                                    <td>planting_seasons_check1</td>
-                                    <td>(start_time &lt; end_time)</td>
+                                    <td>(end_date &gt;&#61; start_date)</td>
                                 </tr>
                                 </tbody>
                             </table>

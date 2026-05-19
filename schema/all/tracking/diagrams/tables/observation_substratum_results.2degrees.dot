@@ -79,6 +79,9 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observed_substratum_species_totals":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_substratum_species_totals":"elipses":w -> "substratum_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_substratum_species_totals":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_season_species_targets":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_season_species_targets":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_season_species_targets":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_histories":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_site_histories":"elipses":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_sites":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -102,6 +105,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "recorded_trees":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "scheduled_planting_date_species":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "simplified_substrata":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "simplified_substratum_histories":"elipses":w -> "substratum_histories":"id":e [arrowhead=none dir=back arrowtail=teeodot];
   "strata":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -123,7 +127,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="72" HEIGHT="16"><B>public.users</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">27 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">33 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/users.html"
     target="_top"
@@ -386,6 +390,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="observed_substratum_species_totals"
   ];
+  "planting_season_species_targets" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="192" HEIGHT="16"><B>planting_season_species_targets</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/planting_season_species_targets.html"
+    target="_top"
+    tooltip="planting_season_species_targets"
+  ];
   "planting_site_histories" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -402,7 +417,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="82" HEIGHT="16"><B>planting_sites</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">14 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/planting_sites.html"
     target="_top"
@@ -451,6 +466,17 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/recorded_trees.html"
     target="_top"
     tooltip="recorded_trees"
+  ];
+  "scheduled_planting_date_species" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="196" HEIGHT="16"><B>scheduled_planting_date_species</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/scheduled_planting_date_species.html"
+    target="_top"
+    tooltip="scheduled_planting_date_species"
   ];
   "simplified_substrata" [
    label=<
@@ -501,7 +527,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="57" HEIGHT="16"><B>substrata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">10 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">12 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/substrata.html"
     target="_top"

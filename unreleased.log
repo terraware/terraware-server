@@ -1,3 +1,6 @@
+18a2282c SW-8369 Add permissions for planting seasons (#4408)
+521a19c0 SW-8368 Create db tables for planting season management (#4406)
+b93109c0 SW-8367 Rename existing planting seasons table to make way for new one (#4407)
 da212edc Update plugin com.diffplug.spotless to v8.5.0 (#4405)
 fe3f97b9 Upgrade ktor to v3.5.0 (#4404)
 c4016ec3 SW-8346 Publish event when observation is completed (#4395)

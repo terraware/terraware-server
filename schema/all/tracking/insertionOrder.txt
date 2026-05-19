@@ -7,6 +7,7 @@ observation_media_types
 observation_plot_statuses
 observation_states
 observation_types
+planting_season_statuses
 planting_types
 recorded_plant_statuses
 tree_growth_forms
@@ -21,10 +22,12 @@ observations
 monitoring_plot_histories
 observation_plots
 observation_biomass_details
+planting_seasons
 observation_biomass_species
 deliveries
 observation_biomass_quadrat_details
-planting_seasons
+scheduled_planting_dates
+simple_planting_seasons
 simplified_planting_site_histories
 simplified_planting_sites
 simplified_strata
@@ -41,6 +44,7 @@ observation_plot_conditions
 observation_site_results
 observation_stratum_results
 observation_substratum_results
+scheduled_planting_date_species
 plot_t0_densities
 stratum_t0_temp_densities
 observation_plot_results
@@ -49,6 +53,7 @@ observed_plot_species_totals
 observed_site_species_totals
 observed_stratum_species_totals
 observed_substratum_species_totals
+planting_season_species_targets
 plot_t0_observations
 draft_planting_sites
 observation_media_files

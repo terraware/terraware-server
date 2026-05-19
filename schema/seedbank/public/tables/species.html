@@ -171,6 +171,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="planting_season_species_targets.species_id references species.id via planting_season_species_targets_species_id_fkey"><a href='../../tracking/tables/planting_season_species_targets.html'>planting_season_species_targets</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">planting_season_species_targets_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="planting_site_populations.species_id references species.id via planting_site_populations_species_id_fkey"><a href='../../tracking/tables/planting_site_populations.html'>planting_site_populations</a><span class='relatedKey'>.species_id</span></td>
                                                 <td class="constraint detail">planting_site_populations_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -189,6 +194,11 @@
                                                 <td title="recorded_plants.species_id references species.id via recorded_plants_species_id_fkey"><a href='../../tracking/tables/recorded_plants.html'>recorded_plants</a><span class='relatedKey'>.species_id</span></td>
                                                 <td class="constraint detail">recorded_plants_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="scheduled_planting_date_species.species_id references species.id via scheduled_planting_date_species_species_id_fkey"><a href='../../tracking/tables/scheduled_planting_date_species.html'>scheduled_planting_date_species</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">scheduled_planting_date_species_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
                                                 <td title="stratum_populations.species_id references species.id via stratum_populations_species_id_fkey"><a href='../../tracking/tables/stratum_populations.html'>stratum_populations</a><span class='relatedKey'>.species_id</span></td>
@@ -731,12 +741,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>species_common_name_check</td>
-                                    <td>(common_name !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>species_family_name_check</td>
                                     <td>(family_name !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                </tr>
+                                <tr>
+                                    <td>species_common_name_check</td>
+                                    <td>(common_name !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

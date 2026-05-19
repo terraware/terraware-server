@@ -1189,10 +1189,12 @@
             <child column="species_id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
             <child column="species_id" foreignKey="observed_stratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_stratum_species_totals"/>
             <child column="species_id" foreignKey="observed_substratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_substratum_species_totals"/>
+            <child column="species_id" foreignKey="planting_season_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_species_targets"/>
             <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>
             <child column="species_id" foreignKey="plot_t0_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="plot_t0_densities"/>
             <child column="species_id" foreignKey="recorded_plants_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="recorded_plants"/>
+            <child column="species_id" foreignKey="scheduled_planting_date_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="scheduled_planting_date_species"/>
             <child column="species_id" foreignKey="stratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_populations"/>
             <child column="species_id" foreignKey="stratum_t0_temp_densities_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="stratum_t0_temp_densities"/>
             <child column="species_id" foreignKey="substratum_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="substratum_populations"/>
@@ -1840,6 +1842,10 @@
             <child column="completed_by" foreignKey="observation_plots_completed_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <child column="created_by" foreignKey="observation_plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <child column="modified_by" foreignKey="observation_plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="created_by" foreignKey="planting_season_species_targets_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_species_targets"/>
+            <child column="modified_by" foreignKey="planting_season_species_targets_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_species_targets"/>
+            <child column="created_by" foreignKey="planting_seasons_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_seasons"/>
+            <child column="modified_by" foreignKey="planting_seasons_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_seasons"/>
             <child column="created_by" foreignKey="planting_site_histories_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_site_histories"/>
             <child column="created_by" foreignKey="planting_sites_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
             <child column="modified_by" foreignKey="planting_sites_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_sites"/>
@@ -1848,6 +1854,8 @@
             <child column="modified_by" foreignKey="plot_t0_densities_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_densities"/>
             <child column="created_by" foreignKey="plot_t0_observations_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_observations"/>
             <child column="modified_by" foreignKey="plot_t0_observations_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plot_t0_observations"/>
+            <child column="created_by" foreignKey="scheduled_planting_dates_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="scheduled_planting_dates"/>
+            <child column="modified_by" foreignKey="scheduled_planting_dates_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="scheduled_planting_dates"/>
             <child column="boundary_modified_by" foreignKey="strata_boundary_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
             <child column="created_by" foreignKey="strata_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>
             <child column="modified_by" foreignKey="strata_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="strata"/>

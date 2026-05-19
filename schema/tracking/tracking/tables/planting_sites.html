@@ -161,8 +161,8 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="planting_seasons.planting_site_id references planting_sites.id via planting_seasons_planting_site_id_fkey"><a href='planting_seasons.html'>planting_seasons</a><span class='relatedKey'>.planting_site_id</span></td>
-                                                <td class="constraint detail">planting_seasons_planting_site_id_fkey</td>
+                                                <td title="planting_seasons.planting_site_id references planting_sites.id via planting_seasons_planting_site_id_fkey1"><a href='planting_seasons.html'>planting_seasons</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">planting_seasons_planting_site_id_fkey1</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -183,6 +183,11 @@
                                             <tr>
                                                 <td title="plantings.planting_site_id references planting_sites.id via plantings_planting_site_id_fkey"><a href='plantings.html'>plantings</a><span class='relatedKey'>.planting_site_id</span></td>
                                                 <td class="constraint detail">plantings_planting_site_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="simple_planting_seasons.planting_site_id references planting_sites.id via planting_seasons_planting_site_id_fkey"><a href='simple_planting_seasons.html'>simple_planting_seasons</a><span class='relatedKey'>.planting_site_id</span></td>
+                                                <td class="constraint detail">planting_seasons_planting_site_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
@@ -540,12 +545,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>planting_sites_description_check</td>
-                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>area_positive</td>
                                     <td>(area_ha &gt; (0)::numeric)</td>
+                                </tr>
+                                <tr>
+                                    <td>planting_sites_description_check</td>
+                                    <td>(description !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 </tbody>
                             </table>

@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">120 Foreign Key Constraints</h3>
+                            <h3 class="box-title">127 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -176,6 +176,78 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/planting_sites.html'>planting_sites</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_season_species_targets_planting_season_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_season_species_targets.html'>planting_season_species_targets</a><span>.planting_season_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_seasons.html'>planting_seasons</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_season_species_targets_substratum_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_season_species_targets.html'>planting_season_species_targets</a><span>.substratum_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/substrata.html'>substrata</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>scheduled_planting_date_species_substratum_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/scheduled_planting_date_species.html'>scheduled_planting_date_species</a><span>.substratum_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/substrata.html'>substrata</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>scheduled_planting_date_species_scheduled_planting_date_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/scheduled_planting_date_species.html'>scheduled_planting_date_species</a><span>.scheduled_planting_date_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/scheduled_planting_dates.html'>scheduled_planting_dates</a><span>.id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -578,6 +650,24 @@
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>scheduled_planting_dates_planting_season_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/scheduled_planting_dates.html'>scheduled_planting_dates</a><span>.planting_season_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_seasons.html'>planting_seasons</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>simplified_strata_stratum_id_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -955,6 +1045,24 @@
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
                                                     <td><a href='tables/planting_site_notifications.html'>planting_site_notifications</a><span>.planting_site_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_sites.html'>planting_sites</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_seasons_planting_site_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/simple_planting_seasons.html'>simple_planting_seasons</a><span>.planting_site_id</span></td>
                                                 </tr>
                                             </table>
                                         </td>
@@ -1400,7 +1508,25 @@
                                         <td><span title='Cascade on delete:&#10;Deletion of parent deletes child'>Cascade on delete</span></td>
                                     </tr>
                                     <tr>
-                                        <td>planting_seasons_planting_site_id_fkey</td>
+                                        <td>planting_seasons_status_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_seasons.html'>planting_seasons</a><span>.status_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_season_statuses.html'>planting_season_statuses</a><span>.id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>Restrict delete</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>planting_seasons_planting_site_id_fkey1</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
                                                 <tr>
@@ -2395,6 +2521,16 @@
                                 </thead>
                                 <tbody>
                                     <tr>
+                                        <td><a href='tables/planting_season_species_targets.html'>planting_season_species_targets</a></td>
+                                        <td>planting_season_species_targets_quantity_check</td>
+                                        <td>(quantity &gt;&#61; 0)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/scheduled_planting_date_species.html'>scheduled_planting_date_species</a></td>
+                                        <td>scheduled_planting_date_species_quantity_check</td>
+                                        <td>(quantity &gt;&#61; 0)</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/observation_plots.html'>observation_plots</a></td>
                                         <td>cannot_unclaim_completed_plot</td>
                                         <td>((completed_by IS NULL) OR ((completed_by IS NOT NULL) AND (claimed_by IS NOT NULL)))</td>
@@ -2435,6 +2571,16 @@
                                         <td>(((certainty_id &#61; 1) AND (species_id IS NOT NULL) AND (species_name IS NULL)) OR ((certainty_id &#61; 2) AND (species_id IS NULL)) OR ((certainty_id &#61; 3) AND (species_id IS NULL) AND (species_name IS NULL)))</td>
                                     </tr>
                                     <tr>
+                                        <td><a href='tables/simple_planting_seasons.html'>simple_planting_seasons</a></td>
+                                        <td>simple_planting_seasons_check</td>
+                                        <td>(start_date &lt; end_date)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/simple_planting_seasons.html'>simple_planting_seasons</a></td>
+                                        <td>simple_planting_seasons_check1</td>
+                                        <td>(start_time &lt; end_time)</td>
+                                    </tr>
+                                    <tr>
                                         <td><a href='tables/observation_biomass_species.html'>observation_biomass_species</a></td>
                                         <td>species_identifier</td>
                                         <td>(((species_id IS NOT NULL) AND (scientific_name IS NULL)) OR ((species_id IS NULL) AND (scientific_name IS NOT NULL)))</td>
@@ -2462,12 +2608,7 @@
                                     <tr>
                                         <td><a href='tables/planting_seasons.html'>planting_seasons</a></td>
                                         <td>planting_seasons_check</td>
-                                        <td>(start_date &lt; end_date)</td>
-                                    </tr>
-                                    <tr>
-                                        <td><a href='tables/planting_seasons.html'>planting_seasons</a></td>
-                                        <td>planting_seasons_check1</td>
-                                        <td>(start_time &lt; end_time)</td>
+                                        <td>(end_date &gt;&#61; start_date)</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/observation_biomass_details.html'>observation_biomass_details</a></td>
