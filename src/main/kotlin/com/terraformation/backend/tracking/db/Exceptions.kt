@@ -77,11 +77,11 @@ class ObservationPlotNotFoundException(
     val plotId: MonitoringPlotId,
 ) : EntityNotFoundException("Observation $observationId plot $plotId not found")
 
+class ObservationRescheduleStateException(val observationId: ObservationId) :
+    MismatchedStateException("Observation $observationId cannot be rescheduled")
+
 class PlantingNotFoundException(val plantingId: PlantingId) :
     EntityNotFoundException("Planting $plantingId not found")
-
-class PlantingSeasonNotFoundException(val simplePlantingSeasonId: SimplePlantingSeasonId) :
-    EntityNotFoundException("Planting season $simplePlantingSeasonId not found")
 
 class PlantingSiteHistoryNotFoundException(val plantingSiteHistoryId: PlantingSiteHistoryId) :
     EntityNotFoundException("Planting site history $plantingSiteHistoryId not found")
@@ -157,9 +157,6 @@ class ReassignmentToSamePlotNotAllowedException(val plantingId: PlantingId) :
 class RecordedTreeNotFoundException(val recordedTreeId: RecordedTreeId) :
     EntityNotFoundException("Recorded tree $recordedTreeId not found")
 
-class ObservationRescheduleStateException(val observationId: ObservationId) :
-    MismatchedStateException("Observation $observationId cannot be rescheduled")
-
 class ScheduleObservationWithoutPlantsException(val plantingSiteId: PlantingSiteId) :
     IllegalArgumentException(
         "Cannot schedule observation in planting site $plantingSiteId which has no reported plants in substrata"
@@ -169,6 +166,9 @@ class ShapefilesInvalidException(val problems: List<String>) :
     RuntimeException("Found problems in planting site map data") {
   constructor(problem: String) : this(listOf(problem))
 }
+
+class SimplePlantingSeasonNotFoundException(val simplePlantingSeasonId: SimplePlantingSeasonId) :
+    EntityNotFoundException("Simple planting season $simplePlantingSeasonId not found")
 
 class SpeciesInWrongOrganizationException(val speciesId: SpeciesId) :
     MismatchedStateException("Species $speciesId is in the wrong organization")

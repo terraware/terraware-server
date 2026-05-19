@@ -1167,7 +1167,8 @@ class PlantingSiteStore(
     val seasonsToUpdate: List<UpdatedPlantingSeasonModel> =
         desiredSeasonsById.values.filter { season ->
           val existingSeason =
-              existingSeasonsById[season.id!!] ?: throw PlantingSeasonNotFoundException(season.id)
+              existingSeasonsById[season.id!!]
+                  ?: throw SimplePlantingSeasonNotFoundException(season.id)
           (existingTimeZone != desiredTimeZone && existingSeason.endDate >= todayAtSite) ||
               season.startDate != existingSeason.startDate ||
               season.endDate != existingSeason.endDate
