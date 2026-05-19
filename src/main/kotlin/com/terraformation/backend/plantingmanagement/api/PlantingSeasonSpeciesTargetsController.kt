@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class PlantingSeasonSpeciesTargetsController(
-    private val store: PlantingSeasonSpeciesTargetsStore,
+    private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore,
 ) {
   @ApiResponseSimpleSuccess
   @ApiResponse404
@@ -32,7 +32,7 @@ class PlantingSeasonSpeciesTargetsController(
   fun upsertSpeciesTarget(
       @RequestBody @Valid payload: UpsertPlantingSeasonSpeciesTargetRequestPayload,
   ): SimpleSuccessResponsePayload {
-    store.upsert(
+    plantingSeasonSpeciesTargetsStore.upsert(
         payload.plantingSeasonId,
         payload.substratumId,
         payload.speciesId,

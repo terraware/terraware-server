@@ -47,7 +47,7 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
 
       assertTableEquals(
           PlantingSeasonSpeciesTargetsRecord(
-              plantingSeasonId = plantingSeasonId.value,
+              plantingSeasonId = plantingSeasonId,
               substratumId = substratumId,
               speciesId = speciesId,
               quantity = 5,
@@ -67,7 +67,7 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
 
       assertTableEquals(
           PlantingSeasonSpeciesTargetsRecord(
-              plantingSeasonId = plantingSeasonId.value,
+              plantingSeasonId = plantingSeasonId,
               substratumId = substratumId,
               speciesId = speciesId,
               quantity = 20,

@@ -30,7 +30,7 @@ class PlantingSeasonSpeciesTargetsStore(
     with(PLANTING_SEASON_SPECIES_TARGETS) {
       dslContext
           .insertInto(PLANTING_SEASON_SPECIES_TARGETS)
-          .set(PLANTING_SEASON_ID, plantingSeasonId.value)
+          .set(PLANTING_SEASON_ID, plantingSeasonId)
           .set(SUBSTRATUM_ID, substratumId)
           .set(SPECIES_ID, speciesId)
           .set(QUANTITY, quantity)
