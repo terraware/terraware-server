@@ -11,14 +11,14 @@ planting_season_statuses
 planting_types
 recorded_plant_statuses
 tree_growth_forms
+observations
+planting_site_histories
 planting_sites
 strata
-planting_site_histories
 substrata
 stratum_histories
 monitoring_plots
 substratum_histories
-observations
 monitoring_plot_histories
 observation_plots
 observation_biomass_details

@@ -136,6 +136,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="activity_observations.activity_id references activities.id via activity_observations_activity_id_fkey"><a href='activity_observations.html'>activity_observations</a><span class='relatedKey'>.activity_id</span></td>
+                                                <td class="constraint detail">activity_observations_activity_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="published_activities.activity_id references activities.id via published_activities_activity_id_fkey"><a href='../../funder/tables/published_activities.html'>published_activities</a><span class='relatedKey'>.activity_id</span></td>
                                                 <td class="constraint detail">published_activities_activity_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>

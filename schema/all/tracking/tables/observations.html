@@ -131,6 +131,16 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="activity_observations.observation_id references observations.id via activity_observations_observation_id_fkey"><a href='../../accelerator/tables/activity_observations.html'>activity_observations</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">activity_observations_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="published_activity_observations.observation_id references observations.id via published_activity_observations_observation_id_fkey"><a href='../../funder/tables/published_activity_observations.html'>published_activity_observations</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">published_activity_observations_observation_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="observation_biomass_details.observation_id references observations.id via observation_biomass_details_observation_id_fkey"><a href='observation_biomass_details.html'>observation_biomass_details</a><span class='relatedKey'>.observation_id</span></td>
                                                 <td class="constraint detail">observation_biomass_details_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -505,16 +515,16 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>history_id_required_at_start</td>
+                                    <td>(((state_id &#61; 1) AND (planting_site_history_id IS NULL)) OR ((state_id &lt;&gt; 1) AND (planting_site_history_id IS NOT NULL)))</td>
+                                </tr>
+                                <tr>
                                     <td>completed_time_and_state</td>
                                     <td>(((completed_time IS NULL) AND (state_id &lt;&gt; ALL (ARRAY[3, 5]))) OR ((completed_time IS NOT NULL) AND (state_id &#61; ANY (ARRAY[3, 5]))))</td>
                                 </tr>
                                 <tr>
                                     <td>end_after_start</td>
                                     <td>(start_date &lt;&#61; end_date)</td>
-                                </tr>
-                                <tr>
-                                    <td>history_id_required_at_start</td>
-                                    <td>(((state_id &#61; 1) AND (planting_site_history_id IS NULL)) OR ((state_id &lt;&gt; 1) AND (planting_site_history_id IS NOT NULL)))</td>
                                 </tr>
                                 </tbody>
                             </table>

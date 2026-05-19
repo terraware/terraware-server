@@ -25,6 +25,7 @@ deliverable_variables
 deliverable_project_due_dates
 common_indicator_targets
 auto_calculated_indicator_targets
+activity_observations
 report_challenges
 report_achievements
 default_voters

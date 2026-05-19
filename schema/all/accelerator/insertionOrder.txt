@@ -37,6 +37,7 @@ events
 default_voters
 report_achievements
 report_challenges
+activity_observations
 auto_calculated_indicator_targets
 common_indicator_targets
 deliverable_project_due_dates

@@ -34,6 +34,7 @@ applications
 submissions
 deal_stages
 events
+activity_observations
 deliverable_variables
 project_overall_scores
 report_achievements
