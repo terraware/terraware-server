@@ -509,6 +509,12 @@ COMMENT ON TABLE tracking.observed_stratum_species_totals IS 'Aggregated per-str
 COMMENT ON COLUMN tracking.observed_stratum_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
 COMMENT ON COLUMN tracking.observed_stratum_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the stratum, in either the current observation or in previous ones, that have survived since the t0 point.';
 
+COMMENT ON TABLE tracking.planting_season_species_targets IS 'Target quantities of each species to plant in each substratum for a planting season.';
+
+COMMENT ON TABLE tracking.planting_season_statuses IS '(Enum) Possible statuses of a planting season.';
+
+COMMENT ON TABLE tracking.planting_seasons IS 'Named planting seasons for planting sites, with start and end dates.';
+
 COMMENT ON TABLE tracking.planting_site_histories IS 'Versions of planting site maps over time. Each time a planting site map changes, the new map is inserted into this table and its child tables.';
 COMMENT ON COLUMN tracking.planting_site_histories.created_time IS 'When the site map was created or updated. You can determine which map was active for a site at a particular time by looking for the maximum `created_time` less than or equal to the time in question.';
 
@@ -530,6 +536,10 @@ COMMENT ON COLUMN tracking.planting_sites.name IS 'Short name of this planting s
 COMMENT ON COLUMN tracking.planting_sites.organization_id IS 'Which organization owns this planting site.';
 
 COMMENT ON TABLE tracking.planting_types IS '(Enum) Type of planting associated with a delivery. Different planting types distinguish reassignments from initial plantings.';
+
+COMMENT ON TABLE tracking.scheduled_planting_dates IS 'Planned planting dates within a planting season.';
+
+COMMENT ON TABLE tracking.scheduled_planting_date_species IS 'Species and substratum quantities planned for a scheduled planting date.';
 
 COMMENT ON TABLE tracking.simple_planting_seasons IS 'Start and end dates of simple planting seasons for planting sites.';
 COMMENT ON COLUMN tracking.simple_planting_seasons.end_date IS 'What day the planting season ends. This is the last day of the season, not the day after the season, that is, if the planting season is the month of January, this will be January 31, not February 1.';
