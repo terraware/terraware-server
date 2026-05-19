@@ -636,6 +636,8 @@ COMMENT ON TABLE accelerator.activity_media_files IS 'Information about activity
 
 COMMENT ON TABLE accelerator.activity_media_types IS '(Enum) Types of media that can be associated with entries in the activity log.';
 
+COMMENT ON TABLE accelerator.activity_observations IS 'Defines which observations are associated with which activities.';
+
 COMMENT ON TABLE accelerator.activity_statuses IS '(Enum) Statuses of entries in the activity log.';
 
 COMMENT ON TABLE accelerator.activity_types IS '(Enum) Types of entries in the activity log.';
@@ -863,6 +865,8 @@ COMMENT ON TABLE funder.funding_entity_users IS 'Funding Entity membership.';
 COMMENT ON TABLE funder.published_activities IS 'Published project activities visible to funders.';
 
 COMMENT ON TABLE funder.published_activity_media_files IS 'Media files for published project activities visible to funders. It is possible for a file to continue to appear here after it has been removed from the activity if the removal has not been published yet.';
+
+COMMENT ON TABLE funder.published_activity_observations IS 'Which published activities represent which observations. Top-level observation results are copied here as well since the underlying results could change after publication.';
 
 COMMENT ON TABLE funder.published_auto_calculated_indicator_baselines IS 'Published project-level baseline and end-of-project target values for auto-calculated indicators.';
 
