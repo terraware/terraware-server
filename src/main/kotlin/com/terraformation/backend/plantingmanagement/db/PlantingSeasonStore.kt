@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import jakarta.inject.Named
 import java.time.InstantSource
@@ -49,6 +50,23 @@ class PlantingSeasonStore(
           .returning(ID)
           .fetchOne(ID)
           ?: throw PlantingSeasonExistsException(newModel.plantingSiteId, newModel.name)
+    }
+  }
+
+  fun fetchById(id: PlantingSeasonId): ExistingPlantingSeasonModel {
+    requirePermissions { readPlantingSeason(id) }
+
+    return with(PLANTING_SEASONS) {
+      dslContext.selectFrom(PLANTING_SEASONS).where(ID.eq(id)).fetchOne()?.let { record ->
+        ExistingPlantingSeasonModel(
+            endDate = record[END_DATE]!!,
+            id = record[ID]!!,
+            name = record[NAME]!!,
+            plantingSiteId = record[PLANTING_SITE_ID]!!,
+            startDate = record[START_DATE]!!,
+            status = record[STATUS_ID]!!,
+        )
+      } ?: throw PlantingSeasonNotFoundException(id)
     }
   }
 
