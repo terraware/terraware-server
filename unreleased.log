@@ -1,3 +1,4 @@
+8c09e038 Add matching mode to admin view (#4409)
 18a2282c SW-8369 Add permissions for planting seasons (#4408)
 521a19c0 SW-8368 Create db tables for planting season management (#4406)
 b93109c0 SW-8367 Rename existing planting seasons table to make way for new one (#4407)
