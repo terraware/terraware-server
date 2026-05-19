@@ -131,6 +131,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionDocument
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionSnapshotsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.SubmissionsRow
 import com.terraformation.backend.db.accelerator.tables.pojos.UserInternalInterestsRow
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_OBSERVATIONS
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
@@ -4589,6 +4590,19 @@ abstract class DatabaseBackedTest {
 
     lastActivityMediaFileActivityId = activityId
     nextActivityMediaFileListPosition = listPosition + 1
+  }
+
+  protected fun insertActivityObservation(
+      activityId: ActivityId = inserted.activityId,
+      observationId: ObservationId = inserted.observationId,
+  ) {
+    with(ACTIVITY_OBSERVATIONS) {
+      dslContext
+          .insertInto(this)
+          .set(ACTIVITY_ID, activityId)
+          .set(OBSERVATION_ID, observationId)
+          .execute()
+    }
   }
 
   protected fun insertPublishedActivity(

@@ -1,6 +1,8 @@
 package com.terraformation.backend.accelerator
 
+import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.ActivityStore
+import com.terraformation.backend.accelerator.event.ActivityMediaUpdatedEvent
 import com.terraformation.backend.accelerator.model.NewActivityModel
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
@@ -10,11 +12,14 @@ import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_OBSERVATIONS
 import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import org.jooq.DSLContext
@@ -22,9 +27,11 @@ import org.springframework.context.event.EventListener
 
 @Named
 class ObservationActivityService(
+    val activityMediaStore: ActivityMediaStore,
     val activityStore: ActivityStore,
     val dslContext: DSLContext,
     val observationResultsStore: ObservationResultsStoreV2,
+    val observationService: ObservationService,
     val observationStore: ObservationStore,
     val parentStore: ParentStore,
     val plantingSiteStore: PlantingSiteStore,
@@ -32,6 +39,41 @@ class ObservationActivityService(
     val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
+
+  @EventListener
+  fun on(event: ActivityMediaUpdatedEvent) {
+    try {
+      if (event.triggeredBy is ObservationMediaFileEditedEvent) {
+        // The activity media file update was triggered by an observation media file update, so no
+        // need to update the observation media file.
+        return
+      }
+
+      if (event.activityType != ActivityType.Monitoring) {
+        return
+      }
+
+      val observationId =
+          dslContext.fetchValue(
+              ACTIVITY_OBSERVATIONS.OBSERVATION_ID,
+              ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(event.activityId),
+          ) ?: return
+
+      with(OBSERVATION_MEDIA_FILES) {
+        val monitoringPlotId =
+            dslContext.fetchValue(
+                MONITORING_PLOT_ID,
+                OBSERVATION_ID.eq(observationId).and(FILE_ID.eq(event.fileId)),
+            ) ?: return
+
+        observationService.updateMediaFile(observationId, monitoringPlotId, event.fileId) {
+          it.copy(caption = event.caption)
+        }
+      }
+    } catch (e: Exception) {
+      log.error("Unable to propagate observation activity media edit to observation data", e)
+    }
+  }
 
   @EventListener
   fun on(event: ObservationCompletedEvent) {
@@ -134,6 +176,23 @@ class ObservationActivityService(
       } catch (e: Exception) {
         log.error("Unable to create activity for completed observation", e)
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: ObservationMediaFileEditedEvent) {
+    try {
+      val activityId =
+          dslContext.fetchValue(
+              ACTIVITY_OBSERVATIONS.ACTIVITY_ID,
+              ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(event.observationId),
+          ) ?: return
+
+      activityMediaStore.updateMedia(activityId, event.fileId, event) {
+        it.copy(caption = event.changedTo.caption)
+      }
+    } catch (e: Exception) {
+      log.error("Unable to propagate observation media edit to activity media", e)
     }
   }
 }

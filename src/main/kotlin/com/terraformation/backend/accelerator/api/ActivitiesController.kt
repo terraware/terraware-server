@@ -196,7 +196,7 @@ class ActivitiesController(
       @PathVariable fileId: FileId,
       @RequestBody payload: UpdateActivityMediaRequestPayload,
   ): SimpleSuccessResponsePayload {
-    activityMediaStore.updateMedia(activityId, fileId, payload::applyTo)
+    activityMediaStore.updateMedia(activityId, fileId, applyFunc = payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }

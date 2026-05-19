@@ -1,5 +1,6 @@
 package com.terraformation.backend.accelerator.db
 
+import com.terraformation.backend.accelerator.event.ActivityMediaUpdatedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
@@ -7,6 +8,7 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFilesRow
+import com.terraformation.backend.db.accelerator.tables.records.ActivitiesRecord
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.asNonNullable
@@ -65,12 +67,23 @@ class ActivityMediaStore(
     }
   }
 
+  /**
+   * Updates information about an activity media file.
+   *
+   * @param triggeredBy If this update is triggered by some other action, for example, editing an
+   *   observation media file for an observation that has an activity, an object representing the
+   *   triggering action. This will typically be an application event. Bypasses the permission check
+   *   (the triggering action is assumed to enforce its own permissions).
+   */
   fun updateMedia(
       activityId: ActivityId,
       fileId: FileId,
+      triggeredBy: Any? = null,
       applyFunc: (ActivityMediaModel) -> ActivityMediaModel,
   ) {
-    requirePermissions { updateActivity(activityId) }
+    if (triggeredBy == null) {
+      requirePermissions { updateActivity(activityId) }
+    }
 
     val existing = fetchOne(activityId, fileId)
     val updated = applyFunc(existing)
@@ -79,7 +92,7 @@ class ActivityMediaStore(
       throw IllegalArgumentException("Only photo files can be selected as cover photos")
     }
 
-    withLockedActivity(activityId) {
+    withLockedActivity(activityId) { activitiesRecord ->
       with(ACTIVITY_MEDIA_FILES) {
         if (!existing.isCoverPhoto && updated.isCoverPhoto) {
           dslContext
@@ -120,6 +133,16 @@ class ActivityMediaStore(
             .where(ID.eq(fileId))
             .execute()
       }
+
+      eventPublisher.publishEvent(
+          ActivityMediaUpdatedEvent(
+              activityId = activityId,
+              activityType = activitiesRecord.activityTypeId!!,
+              caption = updated.caption,
+              fileId = fileId,
+              triggeredBy = triggeredBy,
+          )
+      )
     }
   }
 
@@ -231,16 +254,16 @@ class ActivityMediaStore(
         .fetch { ActivityMediaModel.of(it) }
   }
 
-  private fun <T> withLockedActivity(activityId: ActivityId, func: () -> T): T {
+  private fun <T> withLockedActivity(activityId: ActivityId, func: (ActivitiesRecord) -> T): T {
     return dslContext.transactionResult { _ ->
-      dslContext
-          .selectOne()
-          .from(ACTIVITIES)
-          .where(ACTIVITIES.ID.eq(activityId))
-          .forUpdate()
-          .fetchOne() ?: throw ActivityNotFoundException(activityId)
+      val record =
+          dslContext
+              .selectFrom(ACTIVITIES)
+              .where(ACTIVITIES.ID.eq(activityId))
+              .forUpdate()
+              .fetchOne() ?: throw ActivityNotFoundException(activityId)
 
-      func()
+      func(record)
     }
   }
 
