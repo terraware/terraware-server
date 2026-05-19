@@ -408,4 +408,32 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       }
     }
   }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `deletes the planting season row`() {
+      val id = insertPlantingSeason()
+
+      store.delete(id)
+
+      assertThrows<PlantingSeasonNotFoundException> { store.fetchById(id) }
+    }
+
+    @Test
+    fun `throws PlantingSeasonNotFoundException when season does not exist`() {
+      val nonExistentId = PlantingSeasonId(999999L)
+
+      assertThrows<PlantingSeasonNotFoundException> { store.delete(nonExistentId) }
+    }
+
+    @Test
+    fun `throws AccessDeniedException when user has no delete permission`() {
+      val id = insertPlantingSeason()
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.delete(id) }
+    }
+  }
 }

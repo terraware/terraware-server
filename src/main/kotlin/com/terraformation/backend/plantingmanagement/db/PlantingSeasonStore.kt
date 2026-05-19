@@ -93,6 +93,17 @@ class PlantingSeasonStore(
     }
   }
 
+  fun delete(id: PlantingSeasonId) {
+    requirePermissions { deletePlantingSeason(id) }
+
+    val rowsDeleted =
+        dslContext.deleteFrom(PLANTING_SEASONS).where(PLANTING_SEASONS.ID.eq(id)).execute()
+
+    if (rowsDeleted == 0) {
+      throw PlantingSeasonNotFoundException(id)
+    }
+  }
+
   private fun calculateStatus(
       startDate: LocalDate,
       endDate: LocalDate,
