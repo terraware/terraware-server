@@ -433,7 +433,7 @@ data class IndividualUser(
       isReadOnlyOrHigher() || isManagerOrHigher(organizationId)
 
   override fun canReadOrganizationFeatures(organizationId: OrganizationId): Boolean =
-      isManagerOrHigher(organizationId)
+      isMember(organizationId)
 
   override fun canReadOrganizationMedia(organizationId: OrganizationId) = isMember(organizationId)
 

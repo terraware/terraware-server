@@ -13,9 +13,7 @@ import com.terraformation.backend.db.default_schema.Role
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
-import org.springframework.security.access.AccessDeniedException
 
 class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -44,19 +42,6 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   fun `throws exception for non-organization user`() {
     deleteOrganizationUser()
     assertThrows<OrganizationNotFoundException> {
-      store.listOrganizationFeatureProjects(organizationId)
-    }
-  }
-
-  @Test
-  fun `throws exception for contributors`() {
-    deleteOrganizationUser()
-    insertOrganizationUser(role = Role.Contributor)
-    assertThrows<AccessDeniedException> { store.listOrganizationFeatureProjects(organizationId) }
-
-    deleteOrganizationUser()
-    insertOrganizationUser(role = Role.Manager)
-    assertDoesNotThrow("Organization manager") {
       store.listOrganizationFeatureProjects(organizationId)
     }
   }
