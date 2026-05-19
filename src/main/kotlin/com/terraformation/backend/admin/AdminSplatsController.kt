@@ -48,6 +48,7 @@ class AdminSplatsController(
       @RequestParam featureMatcherSubcommand: String?,
       @RequestParam fps: Int?,
       @RequestParam keepPercent: Double?,
+      @RequestParam matchingMode: String?,
       @RequestParam maxSize: Int?,
       @RequestParam maxSteps: Int?,
       @RequestParam restartAt: String?,
@@ -71,6 +72,8 @@ class AdminSplatsController(
                       "filter-blurry" to listOf("--no-filter-blurry")
                     }
                   },
+                  matchingMode?.takeIf { it.isNotBlank() }
+                      ?.let { "feature-matcher" to listOf("--matching-mode", it) },
                   maxSize?.let { "extract" to listOf("--max-size", "$maxSize") },
                   maxSteps?.let { "gsplat" to listOf("--max_steps", "$maxSteps") },
                   ssimLambda?.let { "gsplat" to listOf("--ssim_lambda", "$ssimLambda") },
@@ -143,6 +146,7 @@ class AdminSplatsController(
     redirectAttributes.addFlashAttribute("featureMatcherSubcommand", featureMatcherSubcommand)
     redirectAttributes.addFlashAttribute("fps", fps)
     redirectAttributes.addFlashAttribute("keepPercent", keepPercent)
+    redirectAttributes.addFlashAttribute("matchingMode", matchingMode)
     redirectAttributes.addFlashAttribute("maxSize", maxSize)
     redirectAttributes.addFlashAttribute("maxSteps", maxSteps)
     redirectAttributes.addFlashAttribute("restartAt", restartAt)

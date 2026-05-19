@@ -137,7 +137,7 @@
 
         <tbody>
         <tr>
-            <td rowspan="2">feature-matcher</td>
+            <td rowspan="3">feature-matcher</td>
             <td>Subcommand</td>
             <td>
                 <input type="text" name="featureMatcherSubcommand"
@@ -145,6 +145,28 @@
             </td>
             <td>
                 Which colmap subcommand to use for feature matching.
+            </td>
+        </tr>
+        <tr>
+            <td>Matching Mode</td>
+            <td>
+                <select name="matchingMode">
+                    <option value=""
+                            th:selected="${matchingMode == null or matchingMode == ''}">
+                        Default (sequential)
+                    </option>
+                    <option value="sequential"
+                            th:selected="${matchingMode == 'sequential'}">
+                        Sequential
+                    </option>
+                    <option value="exhaustive"
+                            th:selected="${matchingMode == 'exhaustive'}">
+                        Exhaustive
+                    </option>
+                </select>
+            </td>
+            <td>
+                Pair selection strategy.
             </td>
         </tr>
         <tr>
