@@ -202,22 +202,24 @@ class ObservationActivityService(
               ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(event.observationId),
           ) ?: return
 
-      with(ACTIVITY_MEDIA_FILES) {
-        dslContext
-            .insertInto(ACTIVITY_MEDIA_FILES)
-            .set(ACTIVITY_ID, activityId)
-            .set(ACTIVITY_MEDIA_TYPE_ID, activityMediaTypeFor(event.contentType))
-            .set(CAPTION, event.caption)
-            .set(FILE_ID, event.fileId)
-            .set(IS_COVER_PHOTO, false)
-            .set(IS_HIDDEN_ON_MAP, false)
-            .set(
-                LIST_POSITION,
-                DSL.select(DSL.coalesce(DSL.max(LIST_POSITION).plus(1), 1))
-                    .from(ACTIVITY_MEDIA_FILES)
-                    .where(ACTIVITY_ID.eq(activityId)),
-            )
-            .execute()
+      activityStore.withLockedActivity(activityId) {
+        with(ACTIVITY_MEDIA_FILES) {
+          dslContext
+              .insertInto(ACTIVITY_MEDIA_FILES)
+              .set(ACTIVITY_ID, activityId)
+              .set(ACTIVITY_MEDIA_TYPE_ID, activityMediaTypeFor(event.contentType))
+              .set(CAPTION, event.caption)
+              .set(FILE_ID, event.fileId)
+              .set(IS_COVER_PHOTO, false)
+              .set(IS_HIDDEN_ON_MAP, false)
+              .set(
+                  LIST_POSITION,
+                  DSL.select(DSL.coalesce(DSL.max(LIST_POSITION).plus(1), 1))
+                      .from(ACTIVITY_MEDIA_FILES)
+                      .where(ACTIVITY_ID.eq(activityId)),
+              )
+              .execute()
+        }
       }
     } catch (e: Exception) {
       log.error("Unable to propagate new observation media file to activity media", e)
