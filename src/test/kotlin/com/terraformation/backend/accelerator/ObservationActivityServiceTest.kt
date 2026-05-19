@@ -31,6 +31,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.ObservationMediaFilesRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.gis.CountryDetector
+import com.terraformation.backend.point
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationLocker
@@ -40,6 +41,7 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
+import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
 import io.mockk.mockk
 import java.time.Instant
 import java.time.LocalDate
@@ -421,6 +423,85 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       assertTableEmpty(ACTIVITY_MEDIA_FILES)
 
       eventPublisher.assertEventNotPublished<ActivityMediaUpdatedEvent>()
+    }
+  }
+
+  @Nested
+  inner class OnObservationMediaFileUploadedEvent {
+    @Test
+    fun `creates activity media file for new observation media file`() {
+      val activityId = insertActivity(activityType = ActivityType.Monitoring)
+      insertActivityObservation()
+      val existingFileId = insertFile()
+      insertObservationMediaFile()
+      insertActivityMediaFile(caption = "Existing", type = ActivityMediaType.Video)
+      val fileId = insertFile(capturedLocalTime = LocalDateTime.of(2026, 1, 2, 3, 4))
+      insertObservationMediaFile(caption = "Caption", isOriginal = false, position = null)
+
+      val event =
+          ObservationMediaFileUploadedEvent(
+              "Caption",
+              "image/jpeg",
+              fileId,
+              point(1),
+              false,
+              monitoringPlotId,
+              observationId,
+              organizationId,
+              plantingSiteId,
+              null,
+              ObservationMediaType.Plot,
+          )
+
+      service.on(event)
+
+      assertTableEquals(
+          setOf(
+              ActivityMediaFilesRecord(
+                  existingFileId,
+                  activityId,
+                  ActivityMediaType.Video,
+                  false,
+                  "Existing",
+                  false,
+                  1,
+              ),
+              ActivityMediaFilesRecord(
+                  fileId,
+                  activityId,
+                  ActivityMediaType.Photo,
+                  false,
+                  "Caption",
+                  false,
+                  2,
+              ),
+          )
+      )
+    }
+
+    @Test
+    fun `ignores uploaded files for observations without activities`() {
+      val fileId = insertFile(capturedLocalTime = LocalDateTime.of(2026, 1, 2, 3, 4))
+      insertObservationMediaFile(caption = "Caption", isOriginal = false, position = null)
+
+      val event =
+          ObservationMediaFileUploadedEvent(
+              "Caption",
+              "image/jpeg",
+              fileId,
+              point(1),
+              false,
+              monitoringPlotId,
+              observationId,
+              organizationId,
+              plantingSiteId,
+              null,
+              ObservationMediaType.Plot,
+          )
+
+      service.on(event)
+
+      assertTableEmpty(ACTIVITY_MEDIA_FILES)
     }
   }
 }

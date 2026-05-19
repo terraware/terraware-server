@@ -20,9 +20,11 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import jakarta.inject.Named
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.context.event.EventListener
 
 @Named
@@ -151,12 +153,7 @@ class ObservationActivityService(
                     }
 
             mediaFiles.forEach { file ->
-              val activityMediaTypeId =
-                  if (file.contentType.startsWith("video/")) {
-                    ActivityMediaType.Video
-                  } else {
-                    ActivityMediaType.Photo
-                  }
+              val activityMediaTypeId = activityMediaTypeFor(file.contentType)
 
               with(ACTIVITY_MEDIA_FILES) {
                 dslContext
@@ -195,4 +192,42 @@ class ObservationActivityService(
       log.error("Unable to propagate observation media edit to activity media", e)
     }
   }
+
+  @EventListener
+  fun on(event: ObservationMediaFileUploadedEvent) {
+    try {
+      val activityId =
+          dslContext.fetchValue(
+              ACTIVITY_OBSERVATIONS.ACTIVITY_ID,
+              ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(event.observationId),
+          ) ?: return
+
+      with(ACTIVITY_MEDIA_FILES) {
+        dslContext
+            .insertInto(ACTIVITY_MEDIA_FILES)
+            .set(ACTIVITY_ID, activityId)
+            .set(ACTIVITY_MEDIA_TYPE_ID, activityMediaTypeFor(event.contentType))
+            .set(CAPTION, event.caption)
+            .set(FILE_ID, event.fileId)
+            .set(IS_COVER_PHOTO, false)
+            .set(IS_HIDDEN_ON_MAP, false)
+            .set(
+                LIST_POSITION,
+                DSL.select(DSL.coalesce(DSL.max(LIST_POSITION).plus(1), 1))
+                    .from(ACTIVITY_MEDIA_FILES)
+                    .where(ACTIVITY_ID.eq(activityId)),
+            )
+            .execute()
+      }
+    } catch (e: Exception) {
+      log.error("Unable to propagate new observation media file to activity media", e)
+    }
+  }
+
+  private fun activityMediaTypeFor(contentType: String): ActivityMediaType =
+      if (contentType.startsWith("video/")) {
+        ActivityMediaType.Video
+      } else {
+        ActivityMediaType.Photo
+      }
 }
