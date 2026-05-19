@@ -15,6 +15,7 @@ CREATE TABLE tracking.planting_seasons (
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
 
+    CHECK (end_date >= start_date),
     UNIQUE (planting_site_id, name)
 );
 
