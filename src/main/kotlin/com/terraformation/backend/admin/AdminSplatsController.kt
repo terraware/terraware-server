@@ -72,7 +72,8 @@ class AdminSplatsController(
                       "filter-blurry" to listOf("--no-filter-blurry")
                     }
                   },
-                  matchingMode?.takeIf { it.isNotBlank() }
+                  matchingMode
+                      ?.takeIf { it.isNotBlank() }
                       ?.let { "feature-matcher" to listOf("--matching-mode", it) },
                   maxSize?.let { "extract" to listOf("--max-size", "$maxSize") },
                   maxSteps?.let { "gsplat" to listOf("--max_steps", "$maxSteps") },
