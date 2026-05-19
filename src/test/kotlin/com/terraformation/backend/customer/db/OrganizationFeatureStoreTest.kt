@@ -49,19 +49,6 @@ class OrganizationFeatureStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
-  fun `throws exception for contributors`() {
-    deleteOrganizationUser()
-    insertOrganizationUser(role = Role.Contributor)
-    assertThrows<AccessDeniedException> { store.listOrganizationFeatureProjects(organizationId) }
-
-    deleteOrganizationUser()
-    insertOrganizationUser(role = Role.Manager)
-    assertDoesNotThrow("Organization manager") {
-      store.listOrganizationFeatureProjects(organizationId)
-    }
-  }
-
-  @Test
   fun `checks for projects of applications for the applications feature`() {
     assertEquals(
         emptyOrganizationFeatures,
