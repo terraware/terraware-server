@@ -1422,13 +1422,13 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       // change plot 112 to permanent and adds plot 312 to site (also temp)
       // adds all history objects that would occur with this edit
       insertPlantingSiteHistory()
-      val stratum1 = stratumIds["Zone1"]!!
-      val stratum2 = stratumIds["Zone2"]!!
+      val stratum1 = stratumIds["Stratum1"]!!
+      val stratum2 = stratumIds["Stratum2"]!!
       val newStratum1History = insertStratumHistory(stratumId = stratum1)
       val newStratum2History = insertStratumHistory(stratumId = stratum2)
-      val substratum1 = substratumIds["Subzone1"]!!
-      val substratum2 = substratumIds["Subzone2"]!!
-      val substratum3 = substratumIds["Subzone3"]!!
+      val substratum1 = substratumIds["Substratum1"]!!
+      val substratum2 = substratumIds["Substratum2"]!!
+      val substratum3 = substratumIds["Substratum3"]!!
       val newSubstratum1History =
           insertSubstratumHistory(
               substratumId = substratum1,
@@ -1592,7 +1592,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     }
 
     val substratumRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
-    mapCsv("$prefix/SubzoneRates.csv", 1) { cols ->
+    mapCsv("$prefix/SubstratumRates.csv", 1) { cols ->
       val substratumName = cols[0]
       val substratumId =
           substratumIds[substratumName]
@@ -1613,7 +1613,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     }
 
     val stratumRates = mutableMapOf<Any, Map<SpeciesId?, Number?>>()
-    mapCsv("$prefix/ZoneRates.csv", 1) { cols ->
+    mapCsv("$prefix/StratumRates.csv", 1) { cols ->
       val stratumName = cols[0]
       val stratumId =
           stratumIds[stratumName]

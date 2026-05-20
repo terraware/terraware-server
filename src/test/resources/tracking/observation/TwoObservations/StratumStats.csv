@@ -1,0 +1,4 @@
+Observation ->,1,1,1,1,1,2,2,2,2,2
+Stratum,# Plants (excluding existing),Planting Density,# Live Species,Survival Rate,Est Plants,# Plants (excluding existing),Planting Density,# Live Species,Survival Rate,Est Plants
+Alpha,14,20,6,,,16,24,7,,36000
+Beta,12,17,2,88%,16500,9,15,3,63%,15400

@@ -1143,7 +1143,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     @Test
     fun `partial observations of disjoint substratum lists`() {
       runScenario(
-          "/tracking/observation/DisjointSubzones",
+          "/tracking/observation/DisjointSubstrata",
           numObservations = 3,
           sizeMeters = 30,
           plantingSiteId,
