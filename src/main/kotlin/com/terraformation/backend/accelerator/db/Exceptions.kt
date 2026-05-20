@@ -18,6 +18,11 @@ class ActivityNotFoundException(id: ActivityId) : EntityNotFoundException("Activ
 class ApplicationNotFoundException(id: ApplicationId) :
     EntityNotFoundException("Application $id not found")
 
+class CannotDeleteObservationActivityMediaException(activityId: ActivityId) :
+    MismatchedStateException(
+        "Activity $activityId is an observation; media files can only be deleted from the observation"
+    )
+
 class CannotDeletePublishedActivityException(activityId: ActivityId) :
     MismatchedStateException("Activity $activityId has been published and cannot be deleted")
 

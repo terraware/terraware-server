@@ -204,6 +204,35 @@ class ActivityMediaStore(
     }
   }
 
+  /**
+   * Deletes an activity media file from the database as part of a higher-level operation. The
+   * higher-level operation is assumed to have done the necessary permission checks and is assumed
+   * to publish [FileReferenceDeletedEvent] after calling this.
+   *
+   * Returns silently if the file doesn't exist on the activity.
+   */
+  fun deleteForTrigger(fileId: FileId) {
+    val activityId =
+        dslContext.fetchValue(
+            ACTIVITY_MEDIA_FILES.ACTIVITY_ID,
+            ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId),
+        ) ?: return
+
+    withLockedActivity(activityId) {
+      val rowsDeleted =
+          dslContext
+              .deleteFrom(ACTIVITY_MEDIA_FILES)
+              .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
+              .execute()
+
+      if (rowsDeleted > 0) {
+        updateListPositions(activityId, fetchFileIds(activityId))
+
+        markActivityModified(activityId)
+      }
+    }
+  }
+
   fun ensureFileExists(activityId: ActivityId, fileId: FileId) {
     val fileExists =
         dslContext.fetchExists(

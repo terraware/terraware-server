@@ -19,6 +19,7 @@ import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -173,6 +174,16 @@ class ObservationActivityService(
       } catch (e: Exception) {
         log.error("Unable to create activity for completed observation", e)
       }
+    }
+  }
+
+  @EventListener
+  fun on(event: ObservationMediaFileDeletedEvent) {
+    try {
+      // This will be a no-op if the observation had no activity.
+      activityMediaStore.deleteForTrigger(event.fileId)
+    } catch (e: Exception) {
+      log.error("Unable to delete activity media file for observation", e)
     }
   }
 

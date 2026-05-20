@@ -5,6 +5,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.accelerator.db.ActivityMediaStore
 import com.terraformation.backend.accelerator.db.ActivityNotFoundException
+import com.terraformation.backend.accelerator.db.CannotDeleteObservationActivityMediaException
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.assertIsEventListener
@@ -76,6 +77,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     ActivityMediaService(
         ActivityMediaStore(clock, dslContext, eventPublisher),
         clock,
+        dslContext,
         fileService,
         muxService,
         ParentStore(dslContext),
@@ -372,6 +374,24 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       val fileId = storeMedia("pixel.png", pngMetadata)
 
       assertThrows<FileNotFoundException> { service.deleteMedia(otherActivityId, fileId) }
+    }
+
+    @Test
+    fun `throws exception if activity is an observation`() {
+      insertPlantingSite(x = 0, width = 10)
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot()
+      insertObservation()
+      insertObservationPlot()
+      insertActivityObservation()
+      val fileId = insertFile()
+      insertActivityMediaFile()
+      insertObservationMediaFile()
+
+      assertThrows<CannotDeleteObservationActivityMediaException> {
+        service.deleteMedia(activityId, fileId)
+      }
     }
 
     @Test

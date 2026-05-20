@@ -1,6 +1,7 @@
 package com.terraformation.backend.accelerator
 
 import com.terraformation.backend.accelerator.db.ActivityMediaStore
+import com.terraformation.backend.accelerator.db.CannotDeleteObservationActivityMediaException
 import com.terraformation.backend.accelerator.event.ActivityDeletionStartedEvent
 import com.terraformation.backend.accelerator.model.ActivityMediaModel
 import com.terraformation.backend.customer.db.ParentStore
@@ -10,6 +11,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFilesRow
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_OBSERVATIONS
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.SizedInputStream
@@ -22,6 +24,7 @@ import jakarta.inject.Named
 import java.io.InputStream
 import java.time.InstantSource
 import java.time.LocalDateTime
+import org.jooq.DSLContext
 import org.springframework.context.event.EventListener
 import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 
@@ -29,6 +32,7 @@ import org.springframework.web.reactive.function.UnsupportedMediaTypeException
 class ActivityMediaService(
     private val activityMediaStore: ActivityMediaStore,
     private val clock: InstantSource,
+    private val dslContext: DSLContext,
     private val fileService: FileService,
     private val muxService: MuxService,
     private val parentStore: ParentStore,
@@ -118,6 +122,10 @@ class ActivityMediaService(
   fun deleteMedia(activityId: ActivityId, fileId: FileId) {
     requirePermissions { updateActivity(activityId) }
 
+    if (isObservation(activityId)) {
+      throw CannotDeleteObservationActivityMediaException(activityId)
+    }
+
     activityMediaStore.deleteFromDatabase(activityId, fileId)
   }
 
@@ -149,4 +157,10 @@ class ActivityMediaService(
   /** Returns the current date in the time zone of the organization associated with an activity. */
   private fun getCurrentTime(activityId: ActivityId): LocalDateTime =
       LocalDateTime.ofInstant(clock.instant(), parentStore.getEffectiveTimeZone(activityId))
+
+  private fun isObservation(activityId: ActivityId): Boolean =
+      dslContext.fetchExists(
+          ACTIVITY_OBSERVATIONS,
+          ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId),
+      )
 }
