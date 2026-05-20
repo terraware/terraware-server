@@ -2,6 +2,7 @@ package com.terraformation.backend.plantingmanagement.api
 
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
+import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
@@ -13,6 +14,7 @@ import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import io.swagger.v3.oas.annotations.Operation
 import java.time.LocalDate
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -62,6 +64,17 @@ class PlantingSeasonsController(
   ): SimpleSuccessResponsePayload {
     payload.validate()
     plantingSeasonStore.update(id, payload.name, payload.startDate, payload.endDate)
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @Operation(summary = "Deletes a planting season.")
+  @DeleteMapping("/{id}")
+  fun deletePlantingSeason(
+      @PathVariable id: PlantingSeasonId,
+  ): SimpleSuccessResponsePayload {
+    plantingSeasonStore.delete(id)
     return SimpleSuccessResponsePayload()
   }
 
