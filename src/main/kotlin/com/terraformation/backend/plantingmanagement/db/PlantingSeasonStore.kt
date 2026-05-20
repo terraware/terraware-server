@@ -7,13 +7,16 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.LocalDate
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class PlantingSeasonStore(
@@ -119,17 +122,44 @@ class PlantingSeasonStore(
   }
 
   private fun fetchByCondition(condition: Condition): List<ExistingPlantingSeasonModel> {
+    val targetsMultiset =
+        DSL.multiset(
+                DSL.select(
+                        PLANTING_SEASON_SPECIES_TARGETS.SUBSTRATUM_ID,
+                        PLANTING_SEASON_SPECIES_TARGETS.SPECIES_ID,
+                        PLANTING_SEASON_SPECIES_TARGETS.QUANTITY,
+                    )
+                    .from(PLANTING_SEASON_SPECIES_TARGETS)
+                    .where(
+                        PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID)
+                    )
+            )
+            .convertFrom { result ->
+              result.map { record ->
+                PlantingSeasonSpeciesTargetModel(
+                    substratumId = record[PLANTING_SEASON_SPECIES_TARGETS.SUBSTRATUM_ID]!!,
+                    speciesId = record[PLANTING_SEASON_SPECIES_TARGETS.SPECIES_ID]!!,
+                    quantity = record[PLANTING_SEASON_SPECIES_TARGETS.QUANTITY]!!,
+                )
+              }
+            }
+
     return with(PLANTING_SEASONS) {
-      dslContext.selectFrom(PLANTING_SEASONS).where(condition).fetch { record ->
-        ExistingPlantingSeasonModel(
-            endDate = record[END_DATE]!!,
-            id = record[ID]!!,
-            name = record[NAME]!!,
-            plantingSiteId = record[PLANTING_SITE_ID]!!,
-            startDate = record[START_DATE]!!,
-            status = record[STATUS_ID]!!,
-        )
-      }
+      dslContext
+          .select(PLANTING_SEASONS.asterisk(), targetsMultiset)
+          .from(PLANTING_SEASONS)
+          .where(condition)
+          .fetch { record ->
+            ExistingPlantingSeasonModel(
+                endDate = record[END_DATE]!!,
+                id = record[ID]!!,
+                name = record[NAME]!!,
+                plantingSiteId = record[PLANTING_SITE_ID]!!,
+                speciesTargets = record[targetsMultiset],
+                startDate = record[START_DATE]!!,
+                status = record[STATUS_ID]!!,
+            )
+          }
     }
   }
 }

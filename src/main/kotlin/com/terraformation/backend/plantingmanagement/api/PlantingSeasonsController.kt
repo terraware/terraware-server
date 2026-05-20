@@ -141,6 +141,7 @@ data class PlantingSeasonPayload(
     val id: PlantingSeasonId,
     val name: String,
     val plantingSiteId: PlantingSiteId,
+    val speciesTargets: List<SpeciesTargetPayload> = emptyList(),
     val startDate: LocalDate,
     val status: PlantingSeasonStatus,
 ) {
@@ -151,6 +152,7 @@ data class PlantingSeasonPayload(
       id = model.id,
       name = model.name,
       plantingSiteId = model.plantingSiteId,
+      speciesTargets = model.speciesTargets.map { SpeciesTargetPayload(it) },
       startDate = model.startDate,
       status = model.status,
   )

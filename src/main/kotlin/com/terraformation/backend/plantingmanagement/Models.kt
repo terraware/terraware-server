@@ -19,6 +19,7 @@ data class ExistingPlantingSeasonModel(
     val id: PlantingSeasonId,
     val name: String,
     val plantingSiteId: PlantingSiteId,
+    val speciesTargets: List<PlantingSeasonSpeciesTargetModel> = emptyList(),
     val startDate: LocalDate,
     val status: PlantingSeasonStatus,
 )
