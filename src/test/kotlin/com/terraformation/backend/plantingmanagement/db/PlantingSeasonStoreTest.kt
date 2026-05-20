@@ -2,17 +2,19 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonsRecord
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -25,7 +27,9 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
-  private val store: PlantingSeasonStore by lazy { PlantingSeasonStore(clock, dslContext) }
+  private val store: PlantingSeasonStore by lazy {
+    PlantingSeasonStore(clock, dslContext, ParentStore(dslContext))
+  }
 
   private lateinit var plantingSiteId: PlantingSiteId
 
@@ -126,109 +130,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               startDate = startDate,
               endDate = endDate,
               statusId = PlantingSeasonStatus.PastEndDate,
-              createdBy = user.userId,
-              createdTime = clock.instant,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-          )
-      )
-    }
-
-    @Test
-    fun `uses planting site timezone to determine today when calculating status`() {
-      // 03:00 UTC on Jan 1 is still Dec 31 in America/New_York (UTC-5)
-      val startDate = LocalDate.of(2025, 1, 1)
-      val endDate = LocalDate.of(2025, 3, 31)
-      clock.instant = startDate.atTime(3, 0).toInstant(ZoneOffset.UTC)
-      plantingSiteId = insertPlantingSite(timeZone = ZoneId.of("America/New_York"))
-
-      val id =
-          store.create(
-              NewPlantingSeasonModel(
-                  endDate = endDate,
-                  name = "Spring 2025",
-                  plantingSiteId = plantingSiteId,
-                  startDate = startDate,
-              )
-          )
-
-      assertTableEquals(
-          PlantingSeasonsRecord(
-              id = id,
-              name = "Spring 2025",
-              plantingSiteId = plantingSiteId,
-              startDate = startDate,
-              endDate = endDate,
-              statusId = PlantingSeasonStatus.Upcoming,
-              createdBy = user.userId,
-              createdTime = clock.instant,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-          )
-      )
-    }
-
-    @Test
-    fun `falls back to organization timezone when planting site has no timezone`() {
-      // 03:00 UTC on Jan 1 is still Dec 31 in America/New_York (UTC-5)
-      val startDate = LocalDate.of(2025, 1, 1)
-      val endDate = LocalDate.of(2025, 3, 31)
-      clock.instant = startDate.atTime(3, 0).toInstant(ZoneOffset.UTC)
-      val orgId = insertOrganization(timeZone = ZoneId.of("America/New_York"))
-      insertOrganizationUser(organizationId = orgId, role = Role.Manager)
-      plantingSiteId = insertPlantingSite(organizationId = orgId)
-
-      val id =
-          store.create(
-              NewPlantingSeasonModel(
-                  endDate = endDate,
-                  name = "Spring 2025",
-                  plantingSiteId = plantingSiteId,
-                  startDate = startDate,
-              )
-          )
-
-      assertTableEquals(
-          PlantingSeasonsRecord(
-              id = id,
-              name = "Spring 2025",
-              plantingSiteId = plantingSiteId,
-              startDate = startDate,
-              endDate = endDate,
-              statusId = PlantingSeasonStatus.Upcoming,
-              createdBy = user.userId,
-              createdTime = clock.instant,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-          )
-      )
-    }
-
-    @Test
-    fun `falls back to UTC when neither planting site nor organization has a timezone`() {
-      // 03:00 UTC on Jan 1 is Jan 1 in UTC, so the season is Active
-      val startDate = LocalDate.of(2025, 1, 1)
-      val endDate = LocalDate.of(2025, 3, 31)
-      clock.instant = startDate.atTime(3, 0).toInstant(ZoneOffset.UTC)
-
-      val id =
-          store.create(
-              NewPlantingSeasonModel(
-                  endDate = endDate,
-                  name = "Spring 2025",
-                  plantingSiteId = plantingSiteId,
-                  startDate = startDate,
-              )
-          )
-
-      assertTableEquals(
-          PlantingSeasonsRecord(
-              id = id,
-              name = "Spring 2025",
-              plantingSiteId = plantingSiteId,
-              startDate = startDate,
-              endDate = endDate,
-              statusId = PlantingSeasonStatus.Active,
               createdBy = user.userId,
               createdTime = clock.instant,
               modifiedBy = user.userId,
@@ -389,6 +290,122 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser()
 
       assertThrows<PlantingSeasonNotFoundException> { store.fetchById(id) }
+    }
+  }
+
+  @Nested
+  inner class Update {
+    @Test
+    fun `updates all fields and recalculates status`() {
+      val id =
+          insertPlantingSeason(
+              name = "Old Name",
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              status = PlantingSeasonStatus.PastEndDate,
+          )
+      val newStart = LocalDate.of(2025, 6, 1)
+      val newEnd = LocalDate.of(2025, 8, 31)
+      clock.instant = Instant.EPOCH.plusSeconds(60)
+
+      store.update(id, "New Name", newStart, newEnd)
+
+      assertTableEquals(
+          PlantingSeasonsRecord(
+              id = id,
+              name = "New Name",
+              plantingSiteId = plantingSiteId,
+              startDate = newStart,
+              endDate = newEnd,
+              statusId = PlantingSeasonStatus.Upcoming,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `sets status to Active when today falls within the new date range`() {
+      val id =
+          insertPlantingSeason(
+              name = "Season",
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 1, 31),
+              status = PlantingSeasonStatus.Upcoming,
+          )
+      val newStart = LocalDate.of(2025, 1, 1)
+      val newEnd = LocalDate.of(2025, 3, 31)
+      clock.instant = newStart.atStartOfDay().toInstant(ZoneOffset.UTC)
+
+      store.update(id, "Season", newStart, newEnd)
+
+      assertTableEquals(
+          PlantingSeasonsRecord(
+              id = id,
+              name = "Season",
+              plantingSiteId = plantingSiteId,
+              startDate = newStart,
+              endDate = newEnd,
+              statusId = PlantingSeasonStatus.Active,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `sets status to PastEndDate when new end date is in the past`() {
+      val id =
+          insertPlantingSeason(
+              name = "Season",
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              status = PlantingSeasonStatus.Upcoming,
+          )
+      val newStart = LocalDate.of(2024, 1, 1)
+      val newEnd = LocalDate.of(2024, 3, 31)
+      clock.instant = newEnd.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+
+      store.update(id, "Season", newStart, newEnd)
+
+      assertTableEquals(
+          PlantingSeasonsRecord(
+              id = id,
+              name = "Season",
+              plantingSiteId = plantingSiteId,
+              startDate = newStart,
+              endDate = newEnd,
+              statusId = PlantingSeasonStatus.PastEndDate,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `throws PlantingSeasonNotFoundException when season does not exist`() {
+      val nonExistentId = PlantingSeasonId(999999L)
+
+      assertThrows<PlantingSeasonNotFoundException> {
+        store.update(nonExistentId, "Name", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 31))
+      }
+    }
+
+    @Test
+    fun `throws AccessDeniedException when user has no update permission`() {
+      val id = insertPlantingSeason()
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.update(id, "New Name", LocalDate.of(2025, 1, 1), LocalDate.of(2025, 3, 31))
+      }
     }
   }
 }
