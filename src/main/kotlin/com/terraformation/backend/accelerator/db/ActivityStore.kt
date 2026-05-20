@@ -205,6 +205,24 @@ class ActivityStore(
     return fetchByCondition(ACTIVITIES.PROJECT_ID.eq(projectId), mediaDepth)
   }
 
+  fun <T> withLockedActivity(activityId: ActivityId, func: () -> T): T {
+    return dslContext.transactionResult { _ ->
+      val exists =
+          dslContext
+              .selectOne()
+              .from(ACTIVITIES)
+              .where(ACTIVITIES.ID.eq(activityId))
+              .forUpdate()
+              .fetchOne() != null
+
+      if (!exists) {
+        throw ActivityNotFoundException(activityId)
+      }
+
+      func()
+    }
+  }
+
   private val geolocationField = FILES.GEOLOCATION.forMultiset()
 
   private fun mediaMultiset(condition: Condition) =
