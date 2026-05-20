@@ -740,7 +740,7 @@ class AdminPlantingSitesController(
   @RequireGlobalRole([GlobalRole.SuperAdmin])
   fun backfillObservationResults(redirectAttributes: RedirectAttributes): String {
     try {
-      val count = observationService.backfillObservationResults()
+      val count = systemUser.run { observationService.backfillObservationResults() }
       redirectAttributes.successMessage =
           "Backfilled observation_*_results rows for $count completed observations."
     } catch (e: Exception) {
