@@ -1,3 +1,5 @@
+bf0e84bf SW-8370 Update create api endpoint to copy a planting season's species targets (#4435)
+e801d065 SW-8370 Include season targets when fetching planting seasons (#4434)
 c952003c Run backfill observations as system user in the Admin UI (#4436)
 52e655ec SW-8359 Delete deleted observation files from activity (#4432)
 d48fc873 SW-8370 Add api endpoint to delete a target for a planting season's species (#4431)
