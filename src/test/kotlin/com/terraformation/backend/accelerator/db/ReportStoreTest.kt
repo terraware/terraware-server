@@ -6021,8 +6021,8 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         permanentLive = 6,
         // total live at a site level can be lower than substratum level because of disjoint
-        // substrata
-        // set this to 0 to ensure that tests use substratum level for temp plots in survival rates
+        // substrata. set this to 0 to ensure that tests use substratum level for temp plots in
+        // survival rates
         totalLive = 0,
     )
     insertObservedSubstratumSpeciesTotals(
