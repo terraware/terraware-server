@@ -11,6 +11,7 @@ import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class PlantingSeasonSpeciesTargetsStore(
@@ -51,6 +52,49 @@ class PlantingSeasonSpeciesTargetsStore(
           .set(QUANTITY, quantity)
           .set(MODIFIED_BY, userId)
           .set(MODIFIED_TIME, now)
+          .execute()
+    }
+  }
+
+  fun copySpeciesTargets(
+      fromPlantingSeasonId: PlantingSeasonId,
+      toPlantingSeasonId: PlantingSeasonId,
+  ) {
+    requirePermissions {
+      updatePlantingSeason(toPlantingSeasonId)
+      readPlantingSeason(fromPlantingSeasonId)
+    }
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    with(PLANTING_SEASON_SPECIES_TARGETS) {
+      dslContext
+          .insertInto(
+              PLANTING_SEASON_SPECIES_TARGETS,
+              PLANTING_SEASON_ID,
+              SUBSTRATUM_ID,
+              SPECIES_ID,
+              QUANTITY,
+              CREATED_BY,
+              CREATED_TIME,
+              MODIFIED_BY,
+              MODIFIED_TIME,
+          )
+          .select(
+              DSL.select(
+                      DSL.`val`(toPlantingSeasonId),
+                      SUBSTRATUM_ID,
+                      SPECIES_ID,
+                      DSL.`val`(0),
+                      DSL.`val`(userId),
+                      DSL.`val`(now),
+                      DSL.`val`(userId),
+                      DSL.`val`(now),
+                  )
+                  .from(PLANTING_SEASON_SPECIES_TARGETS)
+                  .where(PLANTING_SEASON_ID.eq(fromPlantingSeasonId))
+          )
           .execute()
     }
   }

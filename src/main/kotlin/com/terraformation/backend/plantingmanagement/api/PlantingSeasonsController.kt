@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonService
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import io.swagger.v3.oas.annotations.Operation
 import java.time.LocalDate
@@ -28,18 +29,23 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1/planting-seasons")
 @RestController
 class PlantingSeasonsController(
+    private val plantingSeasonService: PlantingSeasonService,
     private val plantingSeasonStore: PlantingSeasonStore,
 ) {
 
   @ApiResponse200
-  @Operation(summary = "Creates a new planting season.")
+  @Operation(
+      summary = "Creates a new planting season.",
+      description =
+          "If fromPlantingSeasonId is specified, copy all species/substrata over to the new season (with quantities of 0).",
+  )
   @PostMapping
   fun createPlantingSeason(
       @RequestBody payload: CreatePlantingSeasonRequestPayload
   ): CreatePlantingSeasonResponsePayload {
     payload.validate()
 
-    val plantingSeasonId = plantingSeasonStore.create(payload.toModel())
+    val plantingSeasonId = plantingSeasonService.create(payload.toModel())
     return CreatePlantingSeasonResponsePayload(plantingSeasonId)
   }
 
@@ -97,6 +103,7 @@ private fun validateDateRange(startDate: LocalDate, endDate: LocalDate) {
 
 data class CreatePlantingSeasonRequestPayload(
     val endDate: LocalDate,
+    val fromPlantingSeasonId: PlantingSeasonId? = null,
     val name: String,
     val plantingSiteId: PlantingSiteId,
     val startDate: LocalDate,
@@ -108,6 +115,7 @@ data class CreatePlantingSeasonRequestPayload(
   fun toModel(): NewPlantingSeasonModel =
       NewPlantingSeasonModel(
           endDate = endDate,
+          fromPlantingSeasonId = fromPlantingSeasonId,
           name = name,
           plantingSiteId = plantingSiteId,
           startDate = startDate,

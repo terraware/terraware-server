@@ -163,6 +163,80 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
   }
 
   @Nested
+  inner class CopySpeciesTargets {
+    @Test
+    fun `throws AccessDeniedException when user lacks permission`() {
+      val otherPlantingSeasonId = insertPlantingSeason()
+
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.copySpeciesTargets(otherPlantingSeasonId, plantingSeasonId)
+      }
+    }
+
+    @Test
+    fun `copies all species targets from another planting season`() {
+      val otherPlantingSeasonId = insertPlantingSeason()
+      val speciesId2 = insertSpecies()
+      val initialTime = Instant.EPOCH
+      clock.instant = initialTime
+      insertPlantingSeasonSpeciesTarget(speciesId = speciesId, quantity = 5)
+      insertPlantingSeasonSpeciesTarget(speciesId = speciesId2, quantity = 10)
+
+      val laterTime = initialTime.plusSeconds(86400)
+      clock.instant = laterTime
+      store.copySpeciesTargets(otherPlantingSeasonId, plantingSeasonId)
+
+      assertTableEquals(
+          listOf(
+              PlantingSeasonSpeciesTargetsRecord(
+                  plantingSeasonId = otherPlantingSeasonId,
+                  substratumId = substratumId,
+                  speciesId = speciesId,
+                  quantity = 5,
+                  createdBy = user.userId,
+                  createdTime = initialTime,
+                  modifiedBy = user.userId,
+                  modifiedTime = initialTime,
+              ),
+              PlantingSeasonSpeciesTargetsRecord(
+                  plantingSeasonId = otherPlantingSeasonId,
+                  substratumId = substratumId,
+                  speciesId = speciesId2,
+                  quantity = 10,
+                  createdBy = user.userId,
+                  createdTime = initialTime,
+                  modifiedBy = user.userId,
+                  modifiedTime = initialTime,
+              ),
+              PlantingSeasonSpeciesTargetsRecord(
+                  plantingSeasonId = plantingSeasonId,
+                  substratumId = substratumId,
+                  speciesId = speciesId,
+                  quantity = 0,
+                  createdBy = user.userId,
+                  createdTime = laterTime,
+                  modifiedBy = user.userId,
+                  modifiedTime = laterTime,
+              ),
+              PlantingSeasonSpeciesTargetsRecord(
+                  plantingSeasonId = plantingSeasonId,
+                  substratumId = substratumId,
+                  speciesId = speciesId2,
+                  quantity = 0,
+                  createdBy = user.userId,
+                  createdTime = laterTime,
+                  modifiedBy = user.userId,
+                  modifiedTime = laterTime,
+              ),
+          )
+      )
+    }
+  }
+
+  @Nested
   inner class Delete {
     @Test
     fun `deletes the species target row`() {
