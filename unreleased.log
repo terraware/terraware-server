@@ -1,3 +1,8 @@
+b2b02100 SW-8370 Add api endpoint to delete a planting season (#4420)
+ce28f530 SW-8370 Add api endpoint to update a planting season (#4419)
+eb669f19 SW-8370 Add api endpoint to fetch a list of planting seasons (#4418)
+f8c3a8fe SW-8370 Add api endpoint to fetch a planting season (#4417)
+c34ab9f8 SW-8370 Add api endpoint to create planting season (#4416)
 56ec8014 SW-8375 Add post-observation media to activities (#4425)
 22ee9a74 SW-8374 Sync observation photo captions with activity (#4424)
 61bf0af1 SW-8346 Create activity when observation completed (#4423)

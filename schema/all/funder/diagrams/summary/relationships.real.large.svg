@@ -493,9 +493,9 @@
 </g>
 </g>
 <!-- published_reports -->
-<g id="node10" class="node">
+<g id="node11" class="node">
 <title>published_reports</title>
-<g id="a_node10"><a xlink:href="../../tables/published_reports.html" xlink:title="published_reports" target="_top">
+<g id="a_node11"><a xlink:href="../../tables/published_reports.html" xlink:title="published_reports" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="417,-2945 417,-3205 569,-3205 569,-2945 417,-2945"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="417,-3183 417,-3205 569,-3205 569,-3183 417,-3183"/>
 <polygon fill="none" stroke="black" points="417,-3183 417,-3205 569,-3205 569,-3183 417,-3183"/>
@@ -757,6 +757,74 @@
 <polygon fill="black" stroke="black" points="369,-2785.77 376.9,-2789.6 373,-2785.89 377,-2786 377,-2786 377,-2786 373,-2785.89 377.1,-2782.4 369,-2785.77 369,-2785.77"/>
 <ellipse fill="none" stroke="black" cx="365.8" cy="-2785.68" rx="3.2" ry="3.2"/>
 </g>
+<!-- published_project_land_use -->
+<g id="node10" class="node">
+<title>published_project_land_use</title>
+<g id="a_node10"><a xlink:href="../../tables/published_project_land_use.html" xlink:title="published_project_land_use" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="389.5,-3310 389.5,-3416 596.5,-3416 596.5,-3310 389.5,-3310"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="390,-3394 390,-3416 597,-3416 597,-3394 390,-3394"/>
+<polygon fill="none" stroke="black" points="390,-3394 390,-3416 597,-3416 597,-3394 390,-3394"/>
+<text text-anchor="start" x="395" y="-3403.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">published_project_land_use</text>
+<text text-anchor="start" x="558" y="-3402.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="390,-3372 390,-3394 597,-3394 597,-3372 390,-3372"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="395" y="-3389"/>
+<text text-anchor="start" x="422" y="-3380.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="none" stroke="black" points="390,-3350 390,-3372 597,-3372 597,-3350 390,-3350"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="395" y="-3367"/>
+<text text-anchor="start" x="422" y="-3358.2" font-family="Helvetica,sans-Serif" font-size="11.00">land_use_model_type_id</text>
+<polygon fill="none" stroke="black" points="390,-3328 390,-3350 597,-3350 597,-3328 390,-3328"/>
+<text text-anchor="start" x="422" y="-3336.2" font-family="Helvetica,sans-Serif" font-size="11.00">land_use_model_hectares</text>
+<polygon fill="#ffffff" stroke="transparent" points="390,-3310 390,-3328 491,-3328 491,-3310 390,-3310"/>
+<polygon fill="none" stroke="black" points="390,-3310 390,-3328 491,-3328 491,-3310 390,-3310"/>
+<text text-anchor="start" x="393" y="-3316.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="491,-3310 491,-3328 544,-3328 544,-3310 491,-3310"/>
+<polygon fill="none" stroke="black" points="491,-3310 491,-3328 544,-3328 544,-3310 491,-3310"/>
+<text text-anchor="start" x="534" y="-3316.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="544,-3310 544,-3328 597,-3328 597,-3310 544,-3310"/>
+<polygon fill="none" stroke="black" points="544,-3310 544,-3328 597,-3328 597,-3310 544,-3310"/>
+<text text-anchor="start" x="587" y="-3316.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- public.land_use_model_types -->
+<g id="node26" class="node">
+<title>public.land_use_model_types</title>
+<g id="a_node26"><a xlink:href="../../../public/tables/land_use_model_types.html" xlink:title="public.land_use_model_types" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="37.5,-3393 37.5,-3477 253.5,-3477 253.5,-3393 37.5,-3393"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="37.5,-3455 37.5,-3477 253.5,-3477 253.5,-3455 37.5,-3455"/>
+<polygon fill="none" stroke="black" points="37.5,-3455 37.5,-3477 253.5,-3477 253.5,-3455 37.5,-3455"/>
+<text text-anchor="start" x="42.5" y="-3464.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.land_use_model_types</text>
+<text text-anchor="start" x="214.5" y="-3463.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="37.5,-3433 37.5,-3455 253.5,-3455 253.5,-3433 37.5,-3433"/>
+<text text-anchor="start" x="89.5" y="-3441.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="37.5,-3411 37.5,-3433 253.5,-3433 253.5,-3411 37.5,-3411"/>
+<text text-anchor="start" x="89.5" y="-3419.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="37.5,-3393 37.5,-3411 120.5,-3411 120.5,-3393 37.5,-3393"/>
+<polygon fill="none" stroke="black" points="37.5,-3393 37.5,-3411 120.5,-3411 120.5,-3393 37.5,-3393"/>
+<text text-anchor="start" x="40.5" y="-3399.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="120.5,-3393 120.5,-3411 195.5,-3411 195.5,-3393 120.5,-3393"/>
+<polygon fill="none" stroke="black" points="120.5,-3393 120.5,-3411 195.5,-3411 195.5,-3393 120.5,-3393"/>
+<text text-anchor="start" x="158.5" y="-3399.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="195.5,-3393 195.5,-3411 253.5,-3411 253.5,-3393 195.5,-3393"/>
+<polygon fill="none" stroke="black" points="195.5,-3393 195.5,-3411 253.5,-3411 253.5,-3393 195.5,-3393"/>
+<text text-anchor="start" x="234.5" y="-3399.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- published_project_land_use&#45;&gt;public.land_use_model_types -->
+<g id="edge34" class="edge">
+<title>published_project_land_use:w&#45;&gt;public.land_use_model_types:e</title>
+<path fill="none" stroke="black" d="M374.56,-3362.3C319.23,-3372.86 319.53,-3444 254.5,-3444"/>
+<polygon fill="black" stroke="black" points="381.03,-3361.72 389.32,-3364.59 385.02,-3361.36 389,-3361 389,-3361 389,-3361 385.02,-3361.36 388.68,-3357.41 381.03,-3361.72 381.03,-3361.72"/>
+<ellipse fill="none" stroke="black" cx="377.85" cy="-3362.01" rx="3.2" ry="3.2"/>
+</g>
+<!-- published_project_land_use&#45;&gt;public.projects -->
+<g id="edge35" class="edge">
+<title>published_project_land_use:w&#45;&gt;public.projects:e</title>
+<path fill="none" stroke="black" d="M374.5,-3381.84C313.08,-3371.11 340.61,-3287.88 324,-3215 303.35,-3124.37 341.5,-2876.04 291,-2798 269.39,-2764.6 252.28,-2755 212.5,-2755"/>
+<polygon fill="black" stroke="black" points="381.03,-3382.36 388.71,-3386.59 385.01,-3382.68 389,-3383 389,-3383 389,-3383 385.01,-3382.68 389.29,-3379.41 381.03,-3382.36 381.03,-3382.36"/>
+<ellipse fill="none" stroke="black" cx="377.84" cy="-3382.11" rx="3.2" ry="3.2"/>
+</g>
 <!-- accelerator.reports -->
 <g id="node27" class="node">
 <title>accelerator.reports</title>
@@ -922,74 +990,6 @@
 <path fill="none" stroke="black" d="M401.41,-3039.01C352.3,-3031.9 344.5,-2987.34 324,-2934 255.53,-2755.89 372.68,-1389.45 291,-1217 278.38,-1190.36 269.98,-1174 240.5,-1174"/>
 <polygon fill="black" stroke="black" points="408.02,-3039.46 415.76,-3043.59 412.01,-3039.73 416,-3040 416,-3040 416,-3040 412.01,-3039.73 416.24,-3036.41 408.02,-3039.46 408.02,-3039.46"/>
 <ellipse fill="none" stroke="black" cx="404.83" cy="-3039.24" rx="3.2" ry="3.2"/>
-</g>
-<!-- published_project_land_use -->
-<g id="node11" class="node">
-<title>published_project_land_use</title>
-<g id="a_node11"><a xlink:href="../../tables/published_project_land_use.html" xlink:title="published_project_land_use" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="389.5,-3310 389.5,-3416 596.5,-3416 596.5,-3310 389.5,-3310"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="390,-3394 390,-3416 597,-3416 597,-3394 390,-3394"/>
-<polygon fill="none" stroke="black" points="390,-3394 390,-3416 597,-3416 597,-3394 390,-3394"/>
-<text text-anchor="start" x="395" y="-3403.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">published_project_land_use</text>
-<text text-anchor="start" x="558" y="-3402.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="390,-3372 390,-3394 597,-3394 597,-3372 390,-3372"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="395" y="-3389"/>
-<text text-anchor="start" x="422" y="-3380.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
-<polygon fill="none" stroke="black" points="390,-3350 390,-3372 597,-3372 597,-3350 390,-3350"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="395" y="-3367"/>
-<text text-anchor="start" x="422" y="-3358.2" font-family="Helvetica,sans-Serif" font-size="11.00">land_use_model_type_id</text>
-<polygon fill="none" stroke="black" points="390,-3328 390,-3350 597,-3350 597,-3328 390,-3328"/>
-<text text-anchor="start" x="422" y="-3336.2" font-family="Helvetica,sans-Serif" font-size="11.00">land_use_model_hectares</text>
-<polygon fill="#ffffff" stroke="transparent" points="390,-3310 390,-3328 491,-3328 491,-3310 390,-3310"/>
-<polygon fill="none" stroke="black" points="390,-3310 390,-3328 491,-3328 491,-3310 390,-3310"/>
-<text text-anchor="start" x="393" y="-3316.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="491,-3310 491,-3328 544,-3328 544,-3310 491,-3310"/>
-<polygon fill="none" stroke="black" points="491,-3310 491,-3328 544,-3328 544,-3310 491,-3310"/>
-<text text-anchor="start" x="534" y="-3316.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="544,-3310 544,-3328 597,-3328 597,-3310 544,-3310"/>
-<polygon fill="none" stroke="black" points="544,-3310 544,-3328 597,-3328 597,-3310 544,-3310"/>
-<text text-anchor="start" x="587" y="-3316.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- public.land_use_model_types -->
-<g id="node26" class="node">
-<title>public.land_use_model_types</title>
-<g id="a_node26"><a xlink:href="../../../public/tables/land_use_model_types.html" xlink:title="public.land_use_model_types" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="37.5,-3393 37.5,-3477 253.5,-3477 253.5,-3393 37.5,-3393"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="37.5,-3455 37.5,-3477 253.5,-3477 253.5,-3455 37.5,-3455"/>
-<polygon fill="none" stroke="black" points="37.5,-3455 37.5,-3477 253.5,-3477 253.5,-3455 37.5,-3455"/>
-<text text-anchor="start" x="42.5" y="-3464.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.land_use_model_types</text>
-<text text-anchor="start" x="214.5" y="-3463.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="37.5,-3433 37.5,-3455 253.5,-3455 253.5,-3433 37.5,-3433"/>
-<text text-anchor="start" x="89.5" y="-3441.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="37.5,-3411 37.5,-3433 253.5,-3433 253.5,-3411 37.5,-3411"/>
-<text text-anchor="start" x="89.5" y="-3419.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="37.5,-3393 37.5,-3411 120.5,-3411 120.5,-3393 37.5,-3393"/>
-<polygon fill="none" stroke="black" points="37.5,-3393 37.5,-3411 120.5,-3411 120.5,-3393 37.5,-3393"/>
-<text text-anchor="start" x="40.5" y="-3399.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="120.5,-3393 120.5,-3411 195.5,-3411 195.5,-3393 120.5,-3393"/>
-<polygon fill="none" stroke="black" points="120.5,-3393 120.5,-3411 195.5,-3411 195.5,-3393 120.5,-3393"/>
-<text text-anchor="start" x="158.5" y="-3399.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="195.5,-3393 195.5,-3411 253.5,-3411 253.5,-3393 195.5,-3393"/>
-<polygon fill="none" stroke="black" points="195.5,-3393 195.5,-3411 253.5,-3411 253.5,-3393 195.5,-3393"/>
-<text text-anchor="start" x="234.5" y="-3399.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
-<!-- published_project_land_use&#45;&gt;public.land_use_model_types -->
-<g id="edge34" class="edge">
-<title>published_project_land_use:w&#45;&gt;public.land_use_model_types:e</title>
-<path fill="none" stroke="black" d="M374.56,-3362.3C319.23,-3372.86 319.53,-3444 254.5,-3444"/>
-<polygon fill="black" stroke="black" points="381.03,-3361.72 389.32,-3364.59 385.02,-3361.36 389,-3361 389,-3361 389,-3361 385.02,-3361.36 388.68,-3357.41 381.03,-3361.72 381.03,-3361.72"/>
-<ellipse fill="none" stroke="black" cx="377.85" cy="-3362.01" rx="3.2" ry="3.2"/>
-</g>
-<!-- published_project_land_use&#45;&gt;public.projects -->
-<g id="edge35" class="edge">
-<title>published_project_land_use:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M374.5,-3381.84C313.08,-3371.11 340.61,-3287.88 324,-3215 303.35,-3124.37 341.5,-2876.04 291,-2798 269.39,-2764.6 252.28,-2755 212.5,-2755"/>
-<polygon fill="black" stroke="black" points="381.03,-3382.36 388.71,-3386.59 385.01,-3382.68 389,-3383 389,-3383 389,-3383 385.01,-3382.68 389.29,-3379.41 381.03,-3382.36 381.03,-3382.36"/>
-<ellipse fill="none" stroke="black" cx="377.84" cy="-3382.11" rx="3.2" ry="3.2"/>
 </g>
 <!-- funding_entity_users -->
 <g id="node12" class="node">
