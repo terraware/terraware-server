@@ -77,6 +77,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     ActivityMediaService(
         ActivityMediaStore(clock, dslContext, eventPublisher),
         clock,
+        dslContext,
         fileService,
         muxService,
         ParentStore(dslContext),
