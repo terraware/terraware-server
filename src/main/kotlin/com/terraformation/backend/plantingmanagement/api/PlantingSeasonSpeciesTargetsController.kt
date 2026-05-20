@@ -11,12 +11,13 @@ import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTar
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
-import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-@RequestMapping("/api/v1/planting-seasons/species-targets")
+@RequestMapping("/api/v1/planting-seasons/{plantingSeasonId}/species-targets")
 @RestController
 @TrackingEndpoint
 class PlantingSeasonSpeciesTargetsController(
@@ -28,12 +29,13 @@ class PlantingSeasonSpeciesTargetsController(
       summary =
           "Creates or updates the target quantity for a species in a substratum for a planting season."
   )
-  @PostMapping
+  @PutMapping
   fun upsertSpeciesTarget(
+      @PathVariable plantingSeasonId: PlantingSeasonId,
       @RequestBody @Valid payload: UpsertPlantingSeasonSpeciesTargetRequestPayload,
   ): SimpleSuccessResponsePayload {
     plantingSeasonSpeciesTargetsStore.upsert(
-        payload.plantingSeasonId,
+        plantingSeasonId,
         payload.substratumId,
         payload.speciesId,
         payload.quantity,
@@ -43,7 +45,6 @@ class PlantingSeasonSpeciesTargetsController(
 }
 
 data class UpsertPlantingSeasonSpeciesTargetRequestPayload(
-    val plantingSeasonId: PlantingSeasonId,
     val substratumId: SubstratumId,
     val speciesId: SpeciesId,
     @field:Min(0) val quantity: Int,
