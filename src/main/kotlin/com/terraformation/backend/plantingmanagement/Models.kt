@@ -9,6 +9,7 @@ import java.time.LocalDate
 
 data class NewPlantingSeasonModel(
     val endDate: LocalDate,
+    val fromPlantingSeasonId: PlantingSeasonId? = null,
     val name: String,
     val plantingSiteId: PlantingSiteId,
     val startDate: LocalDate,
