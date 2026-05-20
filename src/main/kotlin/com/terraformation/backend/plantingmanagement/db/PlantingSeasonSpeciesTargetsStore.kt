@@ -55,6 +55,23 @@ class PlantingSeasonSpeciesTargetsStore(
     }
   }
 
+  fun delete(
+      plantingSeasonId: PlantingSeasonId,
+      substratumId: SubstratumId,
+      speciesId: SpeciesId,
+  ) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    with(PLANTING_SEASON_SPECIES_TARGETS) {
+      dslContext
+          .deleteFrom(PLANTING_SEASON_SPECIES_TARGETS)
+          .where(PLANTING_SEASON_ID.eq(plantingSeasonId))
+          .and(SUBSTRATUM_ID.eq(substratumId))
+          .and(SPECIES_ID.eq(speciesId))
+          .execute()
+    }
+  }
+
   private fun fetchByCondition(condition: Condition): List<PlantingSeasonSpeciesTargetModel> {
     return with(PLANTING_SEASON_SPECIES_TARGETS) {
       dslContext.selectFrom(PLANTING_SEASON_SPECIES_TARGETS).where(condition).fetch { record ->

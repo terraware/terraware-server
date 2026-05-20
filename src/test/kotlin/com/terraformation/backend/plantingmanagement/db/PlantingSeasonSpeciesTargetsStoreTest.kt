@@ -9,6 +9,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonSpeciesTargetsRecord
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -158,6 +159,34 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
 
       assertThrows<AccessDeniedException> {
         store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
+      }
+    }
+  }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `deletes the species target row`() {
+      store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
+      store.delete(plantingSeasonId, substratumId, speciesId)
+
+      assertTableEmpty(PLANTING_SEASON_SPECIES_TARGETS)
+    }
+
+    @Test
+    fun `does nothing when the species target row does not exist`() {
+      store.delete(plantingSeasonId, substratumId, speciesId)
+    }
+
+    @Test
+    fun `throws AccessDeniedException when user lacks permission`() {
+      store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
+
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.delete(plantingSeasonId, substratumId, speciesId)
       }
     }
   }
