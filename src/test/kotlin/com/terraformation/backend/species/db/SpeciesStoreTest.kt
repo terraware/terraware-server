@@ -531,9 +531,9 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
   }
 
   @Nested
-  inner class FetchSiteSpeciesByPlantingSubzoneId {
+  inner class FetchSiteSpeciesBySubstratumId {
     @Test
-    fun `returns species planted across entire site, not just requested subzone`() {
+    fun `returns species planted across entire site, not just requested substratum`() {
       val speciesId1 = insertSpecies(scientificName = "Species 1")
       val speciesId2 = insertSpecies(scientificName = "Species 2", commonName = "Common 2")
       val speciesId3 = insertSpecies(scientificName = "Species 3")
@@ -545,7 +545,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertPlantingSite()
       insertStratum()
 
-      val subzoneId = insertSubstratum()
+      val substratumId = insertSubstratum()
       insertNurseryWithdrawal()
       insertDelivery()
       insertPlanting(speciesId = speciesId1)
@@ -570,7 +570,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertDelivery()
       insertPlanting(speciesId = speciesId5)
 
-      every { user.canReadSubstratum(subzoneId) } returns true
+      every { user.canReadSubstratum(substratumId) } returns true
 
       val expected =
           listOf(
@@ -601,7 +601,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val actual = store.fetchSiteSpeciesBySubstratumId(subzoneId)
+      val actual = store.fetchSiteSpeciesBySubstratumId(substratumId)
 
       assertEquals(expected, actual)
     }
@@ -616,7 +616,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertFacility(type = FacilityType.Nursery)
       insertPlantingSite(x = 0)
       insertStratum()
-      val subzoneId = insertSubstratum()
+      val substratumId = insertSubstratum()
       insertMonitoringPlot()
 
       insertNurseryWithdrawal()
@@ -642,7 +642,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
             .insert()
       }
 
-      every { user.canReadSubstratum(subzoneId) } returns true
+      every { user.canReadSubstratum(substratumId) } returns true
 
       val expected =
           listOf(
@@ -672,20 +672,22 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
               ),
           )
 
-      val actual = store.fetchSiteSpeciesBySubstratumId(subzoneId)
+      val actual = store.fetchSiteSpeciesBySubstratumId(substratumId)
 
       assertEquals(expected, actual)
     }
 
     @Test
-    fun `throws exception if no permission to read subzone`() {
+    fun `throws exception if no permission to read substratum`() {
       insertPlantingSite()
       insertStratum()
-      val subzoneId = insertSubstratum()
+      val substratumId = insertSubstratum()
 
-      every { user.canReadSubstratum(subzoneId) } returns false
+      every { user.canReadSubstratum(substratumId) } returns false
 
-      assertThrows<SubstratumNotFoundException> { store.fetchSiteSpeciesBySubstratumId(subzoneId) }
+      assertThrows<SubstratumNotFoundException> {
+        store.fetchSiteSpeciesBySubstratumId(substratumId)
+      }
     }
   }
 

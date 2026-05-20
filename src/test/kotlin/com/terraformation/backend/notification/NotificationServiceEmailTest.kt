@@ -348,25 +348,25 @@ internal class NotificationServiceEmailTest {
           sizeMeters = 30,
           elevationMeters = BigDecimal.ONE,
       )
-  private val plantingSubzone =
+  private val substratum =
       SubstratumModel(
           id = SubstratumId(1),
           areaHa = BigDecimal.ONE,
           boundary = multiPolygon(1),
-          name = "My Zone",
-          fullName = "My Zone",
-          stableId = StableId("stableSubzone"),
+          name = "My Stratum",
+          fullName = "My Stratum",
+          stableId = StableId("stableSubstratum"),
           monitoringPlots = listOf(monitoringPlot),
       )
-  private val plantingZone =
+  private val stratum =
       StratumModel(
           id = StratumId(1),
           areaHa = BigDecimal.ONE,
           boundary = multiPolygon(1),
           boundaryModifiedTime = Instant.EPOCH,
-          name = "My Zone",
-          stableId = StableId("stableZone"),
-          substrata = listOf(plantingSubzone),
+          name = "My Stratum",
+          stableId = StableId("stableStratum"),
+          substrata = listOf(substratum),
       )
 
   private val plantingSite =
@@ -376,7 +376,7 @@ internal class NotificationServiceEmailTest {
           id = PlantingSiteId(1),
           organizationId = organization.id,
           name = "My Site",
-          strata = listOf(plantingZone),
+          strata = listOf(stratum),
           timeZone = ZoneId.of("Asia/Tokyo"),
       )
   private val project =
@@ -1439,8 +1439,8 @@ internal class NotificationServiceEmailTest {
             strata =
                 listOf(
                     StratumT0DensityChangedEventModel(
-                        plantingZone.id,
-                        stratumName = "This Zone",
+                        stratum.id,
+                        stratumName = "This Stratum",
                         speciesDensityChanges =
                             listOf(
                                 SpeciesDensityChangedEventModel(
@@ -1463,7 +1463,7 @@ internal class NotificationServiceEmailTest {
     assertBodyContains(species.scientificName, message = message)
     assertBodyContains("10.123", message = message)
     assertBodyContains("20.456", message = message)
-    assertBodyContains("This Zone:", message = message)
+    assertBodyContains("This Stratum:", message = message)
     assertBodyContains("OtherSpecies", message = message)
     assertBodyContains("100.5", message = message)
     assertBodyContains("200.6", message = message)
@@ -1550,7 +1550,7 @@ internal class NotificationServiceEmailTest {
   }
 
   @Test
-  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in plots or zones`() {
+  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in plots or strata`() {
     service.on(
         RateLimitedT0DataAssignedEvent(
             organizationId = organization.id,
@@ -1571,8 +1571,8 @@ internal class NotificationServiceEmailTest {
             strata =
                 listOf(
                     StratumT0DensityChangedEventModel(
-                        plantingZone.id,
-                        stratumName = plantingZone.name,
+                        stratum.id,
+                        stratumName = stratum.name,
                         speciesDensityChanges = emptyList(),
                     ),
                     StratumT0DensityChangedEventModel(
@@ -1588,7 +1588,7 @@ internal class NotificationServiceEmailTest {
   }
 
   @Test
-  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in zones`() {
+  fun `rateLimitedT0DataAssignedEvent doesn't send if no species changes in strata`() {
     service.on(
         RateLimitedT0DataAssignedEvent(
             organizationId = organization.id,
@@ -1597,8 +1597,8 @@ internal class NotificationServiceEmailTest {
             strata =
                 listOf(
                     StratumT0DensityChangedEventModel(
-                        plantingZone.id,
-                        stratumName = plantingZone.name,
+                        stratum.id,
+                        stratumName = stratum.name,
                         speciesDensityChanges = emptyList(),
                     ),
                     StratumT0DensityChangedEventModel(
@@ -1614,7 +1614,7 @@ internal class NotificationServiceEmailTest {
   }
 
   @Test
-  fun `rateLimitedT0DataAssignedEvent doesn't send if no plots or zones`() {
+  fun `rateLimitedT0DataAssignedEvent doesn't send if no plots or strata`() {
     service.on(
         RateLimitedT0DataAssignedEvent(
             organizationId = organization.id,
