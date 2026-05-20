@@ -4,6 +4,7 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -64,7 +65,8 @@ data class UpsertPlantingSeasonSpeciesTargetRequestPayload(
     @field:Min(0) val quantity: Int,
 )
 
-data class ListSpeciesTargetsResponsePayload(val targets: List<SpeciesTargetPayload>)
+data class ListSpeciesTargetsResponsePayload(val targets: List<SpeciesTargetPayload>) :
+    SuccessResponsePayload
 
 data class SpeciesTargetPayload(
     val quantity: Int,

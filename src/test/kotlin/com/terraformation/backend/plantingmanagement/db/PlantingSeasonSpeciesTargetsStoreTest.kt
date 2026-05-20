@@ -53,8 +53,8 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
     @Test
     fun `returns all targets for the planting season`() {
       val speciesId2 = insertSpecies()
-      store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
-      store.upsert(plantingSeasonId, substratumId, speciesId2, quantity = 10)
+      insertPlantingSeasonSpeciesTarget(speciesId = speciesId, quantity = 5)
+      insertPlantingSeasonSpeciesTarget(speciesId = speciesId2, quantity = 10)
 
       val result = store.fetchList(plantingSeasonId)
 
@@ -78,8 +78,16 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
     @Test
     fun `only returns targets for the specified planting season`() {
       val otherPlantingSeasonId = insertPlantingSeason()
-      store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
-      store.upsert(otherPlantingSeasonId, substratumId, speciesId, quantity = 10)
+      insertPlantingSeasonSpeciesTarget(
+          plantingSeasonId = plantingSeasonId,
+          speciesId = speciesId,
+          quantity = 5,
+      )
+      insertPlantingSeasonSpeciesTarget(
+          plantingSeasonId = otherPlantingSeasonId,
+          speciesId = speciesId,
+          quantity = 10,
+      )
 
       val result = store.fetchList(plantingSeasonId)
 
