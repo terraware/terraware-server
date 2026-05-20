@@ -9,7 +9,6 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonSpeciesTargetsRecord
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -168,9 +167,22 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
     @Test
     fun `deletes the species target row`() {
       insertPlantingSeasonSpeciesTarget(quantity = 5)
+      val speciesId2 = insertSpecies()
+      insertPlantingSeasonSpeciesTarget(speciesId = speciesId2, quantity = 10)
       store.delete(plantingSeasonId, substratumId, speciesId)
 
-      assertTableEmpty(PLANTING_SEASON_SPECIES_TARGETS)
+      assertTableEquals(
+          PlantingSeasonSpeciesTargetsRecord(
+              plantingSeasonId = plantingSeasonId,
+              substratumId = substratumId,
+              speciesId = speciesId2,
+              quantity = 10,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
     }
 
     @Test
