@@ -8,10 +8,12 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonsRecord
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.ZoneOffset
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -45,7 +47,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -78,7 +79,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -111,7 +111,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2024",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -146,7 +145,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -183,7 +181,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -217,7 +214,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           store.create(
               NewPlantingSeasonModel(
                   endDate = endDate,
-                  id = null,
                   name = "Spring 2025",
                   plantingSiteId = plantingSiteId,
                   startDate = startDate,
@@ -249,7 +245,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.create(
             NewPlantingSeasonModel(
                 endDate = LocalDate.of(2025, 3, 31),
-                id = null,
                 name = "Spring 2025",
                 plantingSiteId = plantingSiteId,
                 startDate = LocalDate.of(2025, 1, 1),
@@ -266,13 +261,50 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         store.create(
             NewPlantingSeasonModel(
                 endDate = LocalDate.of(2025, 3, 31),
-                id = null,
                 name = "Spring 2025",
                 plantingSiteId = plantingSiteId,
                 startDate = LocalDate.of(2025, 1, 1),
             )
         )
       }
+    }
+  }
+
+  @Nested
+  inner class FetchById {
+    @Test
+    fun `returns model with all fields`() {
+      val startDate = LocalDate.of(2025, 1, 1)
+      val endDate = LocalDate.of(2025, 3, 31)
+      val id =
+          insertPlantingSeason(
+              name = "Spring 2025",
+              startDate = startDate,
+              endDate = endDate,
+              status = PlantingSeasonStatus.Upcoming,
+          )
+
+      val result = store.fetchById(id)
+
+      assertEquals(
+          ExistingPlantingSeasonModel(
+              endDate = endDate,
+              id = id,
+              name = "Spring 2025",
+              plantingSiteId = plantingSiteId,
+              startDate = startDate,
+              status = PlantingSeasonStatus.Upcoming,
+          ),
+          result,
+      )
+    }
+
+    @Test
+    fun `throws PlantingSeasonNotFoundException when user is not a member of the organization`() {
+      val id = insertPlantingSeason()
+      deleteOrganizationUser()
+
+      assertThrows<PlantingSeasonNotFoundException> { store.fetchById(id) }
     }
   }
 }
