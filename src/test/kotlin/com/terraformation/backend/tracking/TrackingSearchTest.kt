@@ -52,9 +52,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val projectId = insertProject(name = "Project 1", description = "Project 1 description")
     val plantingSiteGeometry = multiPolygon(3.0)
     val exclusionGeometry = multiPolygon(0.5)
-    val plantingZoneGeometry = multiPolygon(2.0)
-    val plantingSubzoneGeometry3 = multiPolygon(1.0)
-    val plantingSubzoneGeometry4 = multiPolygon(1.0)
+    val stratumGeometry = multiPolygon(2.0)
+    val substratumGeometry3 = multiPolygon(1.0)
+    val substratumGeometry4 = multiPolygon(1.0)
     val monitoringPlotGeometry5 = polygon(5, 6, 7, 8)
     val monitoringPlotGeometry6 = polygon(6, 7, 8, 9)
     val monitoringPlotGeometry7 = polygon(7, 8, 9, 10)
@@ -81,17 +81,17 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             endDate = LocalDate.of(1970, 6, 5),
         )
 
-    val plantingZoneId2 = insertStratum(boundary = plantingZoneGeometry, name = "S2")
-    val plantingZoneHistoryId2 = inserted.stratumHistoryId
+    val stratumId2 = insertStratum(boundary = stratumGeometry, name = "S2")
+    val stratumHistoryId2 = inserted.stratumHistoryId
 
-    val plantingSubzoneId3 =
+    val substratumId3 =
         insertSubstratum(
-            boundary = plantingSubzoneGeometry3,
+            boundary = substratumGeometry3,
             name = "3",
             observedTime = Instant.ofEpochSecond(1),
             stableId = "3",
         )
-    val plantingSubzoneHistoryId3 = inserted.substratumHistoryId
+    val substratumHistoryId3 = inserted.substratumHistoryId
 
     val monitoringPlotId5 = insertMonitoringPlot(boundary = monitoringPlotGeometry5)
     val monitoringPlotHistoryId5 = inserted.monitoringPlotHistoryId
@@ -99,14 +99,14 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val monitoringPlotId6 = insertMonitoringPlot(boundary = monitoringPlotGeometry6)
     val monitoringPlotHistoryId6 = inserted.monitoringPlotHistoryId
 
-    val plantingSubzoneId4 =
+    val substratumId4 =
         insertSubstratum(
-            boundary = plantingSubzoneGeometry4,
+            boundary = substratumGeometry4,
             plantingCompletedTime = Instant.ofEpochSecond(1),
             name = "4",
             stableId = "4",
         )
-    val plantingSubzoneHistoryId4 = inserted.substratumHistoryId
+    val substratumHistoryId4 = inserted.substratumHistoryId
 
     val monitoringPlotId7 = insertMonitoringPlot(boundary = monitoringPlotGeometry7)
     val monitoringPlotHistoryId7 = inserted.monitoringPlotHistoryId
@@ -130,7 +130,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val plantingId1 =
         insertPlanting(
             numPlants = 1,
-            substratumId = plantingSubzoneId3,
+            substratumId = substratumId3,
             speciesId = speciesId1,
         )
 
@@ -138,27 +138,27 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         insertPlanting(
             numPlants = -2,
             plantingTypeId = PlantingType.ReassignmentFrom,
-            substratumId = plantingSubzoneId3,
+            substratumId = substratumId3,
             speciesId = speciesId1,
         )
     val plantingId4 =
         insertPlanting(
             numPlants = 2,
             plantingTypeId = PlantingType.ReassignmentTo,
-            substratumId = plantingSubzoneId4,
+            substratumId = substratumId4,
             speciesId = speciesId1,
         )
     val plantingId5 =
         insertPlanting(
             numPlants = 8,
-            substratumId = plantingSubzoneId4,
+            substratumId = substratumId4,
             speciesId = speciesId2,
         )
     val deliveryId2 = insertDelivery(plantingSiteId = plantingSiteId)
     val plantingId2 =
         insertPlanting(
             numPlants = 4,
-            substratumId = plantingSubzoneId3,
+            substratumId = substratumId3,
             speciesId = speciesId1,
         )
 
@@ -166,11 +166,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     // searches are querying the right columns from the right tables.
     insertPlantingSitePopulation(plantingSiteId, speciesId1, 2, 1)
     insertPlantingSitePopulation(plantingSiteId, speciesId2, 4, 3)
-    insertStratumPopulation(plantingZoneId2, speciesId1, 6, 5)
-    insertStratumPopulation(plantingZoneId2, speciesId2, 8, 7)
-    insertSubstratumPopulation(plantingSubzoneId3, speciesId1, 10, 9)
-    insertSubstratumPopulation(plantingSubzoneId4, speciesId1, 12, 11)
-    insertSubstratumPopulation(plantingSubzoneId4, speciesId2, 14, 13)
+    insertStratumPopulation(stratumId2, speciesId1, 6, 5)
+    insertStratumPopulation(stratumId2, speciesId2, 8, 7)
+    insertSubstratumPopulation(substratumId3, speciesId1, 10, 9)
+    insertSubstratumPopulation(substratumId4, speciesId1, 12, 11)
+    insertSubstratumPopulation(substratumId4, speciesId2, 14, 13)
 
     val observationId1 =
         insertObservation(
@@ -263,8 +263,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     )
     insertObservationStratumResult(
         observationId = observationId1,
-        stratumId = plantingZoneId2,
-        stratumHistoryId = plantingZoneHistoryId2,
+        stratumId = stratumId2,
+        stratumHistoryId = stratumHistoryId2,
         totalLive = 11,
         totalDead = 2,
         totalExisting = 3,
@@ -276,8 +276,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     )
     insertObservationSubstratumResult(
         observationId = observationId1,
-        substratumId = plantingSubzoneId3,
-        substratumHistoryId = plantingSubzoneHistoryId3,
+        substratumId = substratumId3,
+        substratumHistoryId = substratumHistoryId3,
         totalLive = 7,
         totalDead = 1,
         totalExisting = 2,
@@ -466,7 +466,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "permanentLive" to "6",
                                             "plantDensity" to "110",
                                             "plantDensityStdDev" to "5",
-                                            "stratum" to mapOf("id" to "$plantingZoneId2"),
+                                            "stratum" to mapOf("id" to "$stratumId2"),
                                             "survivalRate" to "80",
                                             "survivalRateStdDev" to "4",
                                             "totalDead" to "2",
@@ -480,7 +480,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                             "permanentLive" to "4",
                                             "plantDensity" to "90",
                                             "plantDensityStdDev" to "3",
-                                            "substratum" to mapOf("id" to "$plantingSubzoneId3"),
+                                            "substratum" to mapOf("id" to "$substratumId3"),
                                             "survivalRate" to "75",
                                             "survivalRateStdDev" to "2",
                                             "totalDead" to "1",
@@ -605,26 +605,24 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                     "strata" to
                         listOf(
                             mapOf(
-                                "boundary" to postgisRenderGeoJson(plantingZoneGeometry),
+                                "boundary" to postgisRenderGeoJson(stratumGeometry),
                                 "boundaryModifiedTime" to "1970-01-01T00:00:00Z",
                                 "createdTime" to "1970-01-01T00:00:00Z",
                                 "histories" to
                                     listOf(
                                         mapOf(
-                                            "boundary" to
-                                                postgisRenderGeoJson(plantingZoneGeometry),
-                                            "id" to "$plantingZoneHistoryId2",
+                                            "boundary" to postgisRenderGeoJson(stratumGeometry),
+                                            "id" to "$stratumHistoryId2",
                                             "name" to "S2",
                                         ),
                                     ),
-                                "id" to "$plantingZoneId2",
+                                "id" to "$stratumId2",
                                 "modifiedTime" to "1970-01-01T00:00:00Z",
                                 "name" to "S2",
                                 "substrata" to
                                     listOf(
                                         mapOf(
-                                            "boundary" to
-                                                postgisRenderGeoJson(plantingSubzoneGeometry3),
+                                            "boundary" to postgisRenderGeoJson(substratumGeometry3),
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "fullName" to "S2-3",
                                             "histories" to
@@ -632,15 +630,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                     mapOf(
                                                         "boundary" to
                                                             postgisRenderGeoJson(
-                                                                plantingSubzoneGeometry3,
+                                                                substratumGeometry3,
                                                             ),
                                                         "fullName" to "S2-3",
-                                                        "id" to "$plantingSubzoneHistoryId3",
+                                                        "id" to "$substratumHistoryId3",
                                                         "name" to "3",
                                                         "stableId" to "3",
                                                     ),
                                                 ),
-                                            "id" to "$plantingSubzoneId3",
+                                            "id" to "$substratumId3",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "3",
                                             "observedTime" to "1970-01-01T00:00:01Z",
@@ -702,8 +700,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                 ),
                                         ),
                                         mapOf(
-                                            "boundary" to
-                                                postgisRenderGeoJson(plantingSubzoneGeometry4),
+                                            "boundary" to postgisRenderGeoJson(substratumGeometry4),
                                             "createdTime" to "1970-01-01T00:00:00Z",
                                             "fullName" to "S2-4",
                                             "histories" to
@@ -711,15 +708,15 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                     mapOf(
                                                         "boundary" to
                                                             postgisRenderGeoJson(
-                                                                plantingSubzoneGeometry4,
+                                                                substratumGeometry4,
                                                             ),
                                                         "fullName" to "S2-4",
-                                                        "id" to "$plantingSubzoneHistoryId4",
+                                                        "id" to "$substratumHistoryId4",
                                                         "name" to "4",
                                                         "stableId" to "4",
                                                     ),
                                                 ),
-                                            "id" to "$plantingSubzoneId4",
+                                            "id" to "$substratumId4",
                                             "modifiedTime" to "1970-01-01T00:00:00Z",
                                             "name" to "4",
                                             "plantingCompletedTime" to "1970-01-01T00:00:01Z",

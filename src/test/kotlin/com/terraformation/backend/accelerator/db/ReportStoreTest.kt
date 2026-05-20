@@ -5652,7 +5652,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val site1oldHistory = insertPlantingSiteHistory()
     val site1newHistory = insertPlantingSiteHistory()
     insertStratum(insertHistory = false)
-    val site1zoneOldHistory = insertStratumHistory(plantingSiteHistoryId = site1oldHistory)
+    val site1stratumOldHistory = insertStratumHistory(plantingSiteHistoryId = site1oldHistory)
     insertStratumHistory()
     insertStratumT0TempDensity(
         speciesId = speciesId,
@@ -5662,21 +5662,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         stratumDensity = BigDecimal.valueOf(110).toPlantsPerHectare(),
     )
-    val subzoneId1 =
+    val substratumId1 =
         insertSubstratum(
             areaHa = BigDecimal(10),
             plantingCompletedTime = plantingCompletedDate1.atStartOfDay().toInstant(ZoneOffset.UTC),
             insertHistory = false,
         )
-    val subzone1oldHistory = insertSubstratumHistory(stratumHistoryId = site1zoneOldHistory)
+    val substratum1oldHistory = insertSubstratumHistory(stratumHistoryId = site1stratumOldHistory)
     insertSubstratumHistory()
-    val subzone1plot1 = insertMonitoringPlot(permanentIndex = 1, insertHistory = false)
-    val subzone1plot1OldHist =
+    val substratum1plot1 = insertMonitoringPlot(permanentIndex = 1, insertHistory = false)
+    val substratum1plot1OldHist =
         insertMonitoringPlotHistory(
-            substratumHistoryId = subzone1oldHistory,
+            substratumHistoryId = substratum1oldHistory,
             plantingSiteHistoryId = site1oldHistory,
         )
-    val subzone1plot1Hist = insertMonitoringPlotHistory()
+    val substratum1plot1Hist = insertMonitoringPlotHistory()
     insertPlotT0Density(
         speciesId = speciesId,
         plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare(),
@@ -5685,13 +5685,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         plotDensity = BigDecimal.valueOf(11).toPlantsPerHectare(),
     )
-    val subzone1plot2 = insertMonitoringPlot(permanentIndex = null, insertHistory = false)
-    val subzone1plot2OldHist =
+    val substratum1plot2 = insertMonitoringPlot(permanentIndex = null, insertHistory = false)
+    val substratum1plot2OldHist =
         insertMonitoringPlotHistory(
-            substratumHistoryId = subzone1oldHistory,
+            substratumHistoryId = substratum1oldHistory,
             plantingSiteHistoryId = site1oldHistory,
         )
-    val subzone1plot2Hist = insertMonitoringPlotHistory()
+    val substratum1plot2Hist = insertMonitoringPlotHistory()
     // these old densities from when the plot was permanent should be excluded
     insertPlotT0Density(
         speciesId = speciesId,
@@ -5703,14 +5703,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     // Not counted towards hectares planted, planting completed before report period
-    val subzoneId2 =
+    val substratumId2 =
         insertSubstratum(
             areaHa = BigDecimal(20),
             plantingCompletedTime =
                 pastPlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
             insertHistory = false,
         )
-    val subzone2oldHistory = insertSubstratumHistory(stratumHistoryId = site1zoneOldHistory)
+    val substratum2oldHistory = insertSubstratumHistory(stratumHistoryId = site1stratumOldHistory)
     insertSubstratumHistory()
     // this plot was in observation1 but was reassigned from observation2
     val reassignedPlot = insertMonitoringPlot(permanentIndex = 2)
@@ -5727,7 +5727,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val newlyPermanentPlot = insertMonitoringPlot(permanentIndex = 3, insertHistory = false)
     val newlyPermanentPlotOldHist =
         insertMonitoringPlotHistory(
-            substratumHistoryId = subzone2oldHistory,
+            substratumHistoryId = substratum2oldHistory,
             plantingSiteHistoryId = site1oldHistory,
         )
     val newlyPermanentPlotHist = insertMonitoringPlotHistory()
@@ -5743,7 +5743,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val newlyTemporaryPlot = insertMonitoringPlot(permanentIndex = null, insertHistory = false)
     val newlyTemporaryPlotOldHist =
         insertMonitoringPlotHistory(
-            substratumHistoryId = subzone2oldHistory,
+            substratumHistoryId = substratum2oldHistory,
             plantingSiteHistoryId = site1oldHistory,
         )
     insertMonitoringPlotHistory()
@@ -5755,12 +5755,12 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = otherSpeciesId,
         plotDensity = BigDecimal.valueOf(106).toPlantsPerHectare(),
     )
-    // this plot used to be in a subzone but is no longer
-    val plotNotInSubzone =
+    // this plot used to be in a substratum but is no longer
+    val plotNotInSubstratum =
         insertMonitoringPlot(permanentIndex = 4, insertHistory = false, substratumId = null)
-    val plotNotInSubzoneOldHist =
+    val plotNotInSubstratumOldHist =
         insertMonitoringPlotHistory(
-            substratumHistoryId = subzone2oldHistory,
+            substratumHistoryId = substratum2oldHistory,
             plantingSiteHistoryId = site1oldHistory,
         )
     insertMonitoringPlotHistory(substratumId = null, substratumHistoryId = null)
@@ -5777,24 +5777,24 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         insertMonitoringPlot(permanentIndex = null, insertHistory = false)
     val previouslyObservedTempPlotOldHist =
         insertMonitoringPlotHistory(
-            substratumHistoryId = subzone2oldHistory,
+            substratumHistoryId = substratum2oldHistory,
             plantingSiteHistoryId = site1oldHistory,
         )
     insertMonitoringPlotHistory()
     // Not counted towards hectares planted, not completed
-    val incompleteSubzone =
+    val incompleteSubstratum =
         insertSubstratum(
             areaHa = BigDecimal(1000),
             plantingCompletedTime = null,
         )
-    // plot was in a different subzone previously
-    val incompleteSubzonePlot1 = insertMonitoringPlot(permanentIndex = 5, insertHistory = false)
-    val incompleteSubzonePlot1OldHist =
+    // plot was in a different substratum previously
+    val incompleteSubstratumPlot1 = insertMonitoringPlot(permanentIndex = 5, insertHistory = false)
+    val incompleteSubstratumPlot1OldHist =
         insertMonitoringPlotHistory(
-            substratumHistoryId = subzone2oldHistory,
+            substratumHistoryId = substratum2oldHistory,
             plantingSiteHistoryId = site1oldHistory,
         )
-    val incompleteSubzonePlot1Hist = insertMonitoringPlotHistory()
+    val incompleteSubstratumPlot1Hist = insertMonitoringPlotHistory()
     insertPlotT0Density(
         speciesId = speciesId,
         plotDensity = BigDecimal.valueOf(40).toPlantsPerHectare(),
@@ -5804,22 +5804,22 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         plotDensity = BigDecimal.valueOf(41).toPlantsPerHectare(),
     )
     // Not counted towards hectares planted, after reporting period
-    val futureSubzone =
+    val futureSubstratum =
         insertSubstratum(
             areaHa = BigDecimal(3000),
             plantingCompletedTime =
                 futurePlantingCompletedDate.atStartOfDay().toInstant(ZoneOffset.UTC),
             insertHistory = false,
         )
-    val futureSubzoneOldHist = insertSubstratumHistory(stratumHistoryId = site1zoneOldHistory)
+    val futureSubstratumOldHist = insertSubstratumHistory(stratumHistoryId = site1stratumOldHistory)
     insertSubstratumHistory()
-    val futureSubzonePlot1 = insertMonitoringPlot(permanentIndex = 6, insertHistory = false)
-    val futureSubzonePlot1OldHist =
+    val futureSubstratumPlot1 = insertMonitoringPlot(permanentIndex = 6, insertHistory = false)
+    val futureSubstratumPlot1OldHist =
         insertMonitoringPlotHistory(
-            substratumHistoryId = futureSubzoneOldHist,
+            substratumHistoryId = futureSubstratumOldHist,
             plantingSiteHistoryId = site1oldHistory,
         )
-    val futureSubzonePlot1Hist = insertMonitoringPlotHistory()
+    val futureSubstratumPlot1Hist = insertMonitoringPlotHistory()
     insertPlotT0Density(
         speciesId = speciesId,
         plotDensity = BigDecimal.valueOf(50).toPlantsPerHectare(),
@@ -5836,13 +5836,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         speciesId = speciesId,
         stratumDensity = BigDecimal.valueOf(200).toPlantsPerHectare(),
     )
-    val site2Subzone1 =
+    val site2Substratum1 =
         insertSubstratum(
             areaHa = BigDecimal(30),
             plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
-    val subzone3plot1 = insertMonitoringPlot(permanentIndex = 1)
-    val subzone3plot1Hist = inserted.monitoringPlotHistoryId
+    val substratum3plot1 = insertMonitoringPlot(permanentIndex = 1)
+    val substratum3plot1Hist = inserted.monitoringPlotHistoryId
     insertPlotT0Density(
         speciesId = speciesId,
         plotDensity = BigDecimal.valueOf(65).toPlantsPerHectare(),
@@ -5862,7 +5862,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         stratumDensity = BigDecimal.valueOf(310).toPlantsPerHectare(),
     )
     // Not counted towards hectares planted, outside of project site
-    val otherSiteSubzoneId =
+    val otherSiteSubstratumId =
         insertSubstratum(
             areaHa = BigDecimal(5000),
             plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
@@ -5880,49 +5880,49 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     val allPlotsOldHist =
         mapOf(
-            subzone1plot1 to subzone1plot1OldHist,
-            subzone1plot2 to subzone1plot2OldHist,
+            substratum1plot1 to substratum1plot1OldHist,
+            substratum1plot2 to substratum1plot2OldHist,
             newlyPermanentPlot to newlyPermanentPlotOldHist,
             newlyTemporaryPlot to newlyTemporaryPlotOldHist,
-            incompleteSubzonePlot1 to incompleteSubzonePlot1OldHist,
-            futureSubzonePlot1 to futureSubzonePlot1OldHist,
-            plotNotInSubzone to plotNotInSubzoneOldHist,
+            incompleteSubstratumPlot1 to incompleteSubstratumPlot1OldHist,
+            futureSubstratumPlot1 to futureSubstratumPlot1OldHist,
+            plotNotInSubstratum to plotNotInSubstratumOldHist,
             previouslyObservedTempPlot to previouslyObservedTempPlotOldHist,
             reassignedPlot to reassignedPlotHist,
         )
     val allPlotsObs2 =
         mapOf(
             newlyPermanentPlot to newlyPermanentPlotHist,
-            incompleteSubzonePlot1 to incompleteSubzonePlot1Hist,
-            futureSubzonePlot1 to futureSubzonePlot1Hist,
+            incompleteSubstratumPlot1 to incompleteSubstratumPlot1Hist,
+            futureSubstratumPlot1 to futureSubstratumPlot1Hist,
         )
     val allPlots =
         mapOf(
-            subzone1plot1 to subzone1plot1Hist,
-            subzone1plot2 to subzone1plot2Hist,
+            substratum1plot1 to substratum1plot1Hist,
+            substratum1plot2 to substratum1plot2Hist,
             newlyPermanentPlot to newlyPermanentPlotHist,
-            incompleteSubzonePlot1 to incompleteSubzonePlot1Hist,
-            futureSubzonePlot1 to futureSubzonePlot1Hist,
+            incompleteSubstratumPlot1 to incompleteSubstratumPlot1Hist,
+            futureSubstratumPlot1 to futureSubstratumPlot1Hist,
             previouslyObservedTempPlot to previouslyObservedTempPlotOldHist,
-            subzone3plot1 to subzone3plot1Hist,
+            substratum3plot1 to substratum3plot1Hist,
             excludedPlot to excludedPlotHist,
         )
-    val site2plots = mapOf(subzone3plot1 to subzone3plot1Hist)
-    val allSubzonesInSite1 =
+    val site2plots = mapOf(substratum3plot1 to substratum3plot1Hist)
+    val allSubstrataInSite1 =
         listOf(
-            subzoneId1,
-            subzoneId2,
-            incompleteSubzone,
-            futureSubzone,
+            substratumId1,
+            substratumId2,
+            incompleteSubstratum,
+            futureSubstratum,
         )
-    val site1subzonesObservation2 =
+    val site1substrataObservation2 =
         listOf(
-            subzoneId2,
-            incompleteSubzone,
-            futureSubzone,
+            substratumId2,
+            incompleteSubstratum,
+            futureSubstratum,
         )
 
-    val tempPlots = listOf(subzone1plot2, previouslyObservedTempPlot)
+    val tempPlots = listOf(substratum1plot2, previouslyObservedTempPlot)
 
     val deliveryId =
         insertDelivery(
@@ -5931,7 +5931,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = plantingSiteId1,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         deliveryId = deliveryId,
         numPlants = 27, // This should match up with the number of seedlings withdrawn
     )
@@ -5944,7 +5944,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = plantingSiteId1,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         deliveryId = undoneDeliveryId,
         numPlants = 200,
     )
@@ -5955,7 +5955,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = plantingSiteId1,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         plantingTypeId = PlantingType.Undo,
         deliveryId = undoDeliveryId,
         numPlants = -200,
@@ -5969,7 +5969,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = otherPlantingSiteId,
-        substratumId = otherSiteSubzoneId,
+        substratumId = otherSiteSubstratumId,
         deliveryId = otherDeliveryId,
         numPlants = 6,
     )
@@ -5982,7 +5982,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         )
     insertPlanting(
         plantingSiteId = plantingSiteId1,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         deliveryId = futureDeliveryId,
         numPlants = 9,
     )
@@ -6005,10 +6005,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           completedTime = observationTime,
       )
     }
-    allSubzonesInSite1.forEach { insertObservationRequestedSubstratum(substratumId = it) }
+    allSubstrataInSite1.forEach { insertObservationRequestedSubstratum(substratumId = it) }
     insertObservedSubstratumSpeciesTotals(
         observationId = site1OldObservationId,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 6,
@@ -6020,13 +6020,14 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 6,
-        // total live at a site level can be lower than subzone level because of disjoint subzones
-        // set this to 0 to ensure that tests use subzone level for temp plots in survival rates
+        // total live at a site level can be lower than substratum level because of disjoint
+        // substrata. set this to 0 to ensure that tests use substratum level for temp plots in
+        // survival rates
         totalLive = 0,
     )
     insertObservedSubstratumSpeciesTotals(
         observationId = site1OldObservationId,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = otherSpeciesId,
         permanentLive = 11,
@@ -6042,7 +6043,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
     insertObservedSubstratumSpeciesTotals(
         observationId = site1OldObservationId,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Other,
         speciesName = "Other",
         permanentLive = 6,
@@ -6072,10 +6073,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           completedTime = observationTime,
       )
     }
-    site1subzonesObservation2.forEach { insertObservationRequestedSubstratum(substratumId = it) }
+    site1substrataObservation2.forEach { insertObservationRequestedSubstratum(substratumId = it) }
     insertObservedSubstratumSpeciesTotals(
         observationId = site1observation2,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 6,
@@ -6091,7 +6092,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
     insertObservedSubstratumSpeciesTotals(
         observationId = site1observation2,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = otherSpeciesId,
         permanentLive = 11,
@@ -6107,7 +6108,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
     insertObservedSubstratumSpeciesTotals(
         observationId = site1observation2,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Other,
         speciesName = "Other",
         permanentLive = 6,
@@ -6124,7 +6125,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     // Unknown plants are not counted towards survival rates
     insertObservedSubstratumSpeciesTotals(
         observationId = site1observation2,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 0,
         totalLive = 0,
@@ -6146,7 +6147,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             state = ObservationState.Completed,
             completedTime = futureObservationDate.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
-    site1subzonesObservation2.forEach { insertObservationRequestedSubstratum(substratumId = it) }
+    site1substrataObservation2.forEach { insertObservationRequestedSubstratum(substratumId = it) }
     allPlots.forEach { (plotId, histId) ->
       insertObservationPlot(
           monitoringPlotId = plotId,
@@ -6157,7 +6158,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
     insertObservedSubstratumSpeciesTotals(
         observationId = site1FutureObservationId,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = otherSpeciesId,
         permanentLive = 12,
@@ -6173,7 +6174,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
     insertObservedSubstratumSpeciesTotals(
         observationId = site1FutureObservationId,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 7,
@@ -6189,7 +6190,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
     insertObservedSubstratumSpeciesTotals(
         observationId = site1FutureObservationId,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Other,
         speciesName = "Other",
         permanentLive = 7,
@@ -6206,7 +6207,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     // Unknown plants are not counted towards survival rate
     insertObservedSubstratumSpeciesTotals(
         observationId = site1FutureObservationId,
-        substratumId = subzoneId1,
+        substratumId = substratumId1,
         certainty = RecordedSpeciesCertainty.Unknown,
         permanentLive = 1,
         totalLive = 1,
@@ -6236,10 +6237,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           completedTime = site2ObservationTime,
       )
     }
-    insertObservationRequestedSubstratum(substratumId = site2Subzone1)
+    insertObservationRequestedSubstratum(substratumId = site2Substratum1)
     insertObservedSubstratumSpeciesTotals(
         observationId = site2ObservationId,
-        substratumId = site2Subzone1,
+        substratumId = site2Substratum1,
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 7,
@@ -6273,10 +6274,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           completedTime = observationTime,
       )
     }
-    insertObservationRequestedSubstratum(substratumId = otherSiteSubzoneId)
+    insertObservationRequestedSubstratum(substratumId = otherSiteSubstratumId)
     insertObservedSubstratumSpeciesTotals(
         observationId = otherSiteObservationId,
-        substratumId = otherSiteSubzoneId,
+        substratumId = otherSiteSubstratumId,
         certainty = RecordedSpeciesCertainty.Known,
         speciesId = speciesId,
         permanentLive = 0,
@@ -6361,7 +6362,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val site3Substratum1History = inserted.substratumHistoryId
     val site3perm1 = insertMonitoringPlot(permanentIndex = 1) // missing plot t0
     val site3perm1Hist = inserted.monitoringPlotHistoryId
-    val site3temp1 = insertMonitoringPlot(permanentIndex = null) // missing zone t0
+    val site3temp1 = insertMonitoringPlot(permanentIndex = null) // missing stratum t0
     val site3temp1Hist = inserted.monitoringPlotHistoryId
     insertStratum()
     insertStratumT0TempDensity(stratumDensity = BigDecimal.valueOf(100).toPlantsPerHectare())

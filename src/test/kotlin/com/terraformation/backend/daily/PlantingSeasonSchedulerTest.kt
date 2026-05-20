@@ -69,7 +69,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
   inner class FirstPlantingSeasonNotification {
     @Test
     fun `sends reminders after correct numbers of weeks have passed since site creation`() {
-      val plantingSiteId = insertPlantingSiteWithSubzone()
+      val plantingSiteId = insertPlantingSiteWithSubstratum()
 
       assertEventsAtWeekNumber(0, PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, 1))
       assertEventsAtWeekNumber(4, PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, 2))
@@ -85,7 +85,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `does not send multiple reminders if several reminder deadlines have passed`() {
-      val plantingSiteId = insertPlantingSiteWithSubzone()
+      val plantingSiteId = insertPlantingSiteWithSubstratum()
 
       clock.instant = initialDate.plusWeeks(52).toInstant(timeZone)
       scheduler.transitionPlantingSeasons()
@@ -103,7 +103,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not send reminders about sites without subzones`() {
+    fun `does not send reminders about sites without substrata`() {
       insertPlantingSite(createdTime = initialInstant)
 
       assertNoEventsAtWeekNumber(52)
@@ -111,7 +111,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `sends reminders about partially-planted sites`() {
-      val plantingSiteId = insertPlantingSiteWithSubzone()
+      val plantingSiteId = insertPlantingSiteWithSubstratum()
       insertSubstratum(plantingCompletedTime = initialInstant)
 
       assertEventsAtWeekNumber(0, PlantingSeasonNotScheduledNotificationEvent(plantingSiteId, 1))
@@ -131,7 +131,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `sends support notifications for accelerator planting sites`() {
       insertProject(phase = AcceleratorPhase.Phase2PlanAndScale)
-      val plantingSiteId = insertPlantingSiteWithSubzone(inserted.projectId)
+      val plantingSiteId = insertPlantingSiteWithSubstratum(inserted.projectId)
 
       assertNoEventsBeforeWeekNumber(
           6,
@@ -192,8 +192,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `does not send reminders about sites without subzones`() {
-      insertPlantingSiteWithSeason(subzone = false)
+    fun `does not send reminders about sites without substrata`() {
+      insertPlantingSiteWithSeason(substratum = false)
 
       assertNoEventsAtWeekNumber(52)
     }
@@ -277,7 +277,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     eventPublisher.assertNoEventsPublished("Sent duplicate $weeks-weeks notification")
   }
 
-  private fun insertPlantingSiteWithSubzone(projectId: ProjectId? = null): PlantingSiteId {
+  private fun insertPlantingSiteWithSubstratum(projectId: ProjectId? = null): PlantingSiteId {
     val plantingSiteId = insertPlantingSite(createdTime = clock.instant, projectId = projectId)
     insertStratum()
     insertSubstratum()
@@ -286,12 +286,12 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
   }
 
   private fun insertPlantingSiteWithSeason(
-      subzone: Boolean = true,
+      substratum: Boolean = true,
       projectId: ProjectId? = null,
   ): PlantingSiteId {
     val plantingSiteId =
-        if (subzone) {
-          insertPlantingSiteWithSubzone(projectId)
+        if (substratum) {
+          insertPlantingSiteWithSubstratum(projectId)
         } else {
           insertPlantingSite(createdTime = clock.instant, projectId = projectId)
         }
