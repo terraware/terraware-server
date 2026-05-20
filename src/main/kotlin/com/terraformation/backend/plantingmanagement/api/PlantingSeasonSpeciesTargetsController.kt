@@ -14,11 +14,13 @@ import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTar
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/v1/planting-seasons/{plantingSeasonId}/species-targets")
@@ -55,6 +57,19 @@ class PlantingSeasonSpeciesTargetsController(
         payload.speciesId,
         payload.quantity,
     )
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse200
+  @DeleteMapping
+  @Operation(summary = "Deletes a species target for a planting season.")
+  fun deleteSpeciesTarget(
+      @PathVariable plantingSeasonId: PlantingSeasonId,
+      @RequestParam substratumId: SubstratumId,
+      @RequestParam speciesId: SpeciesId,
+  ): SimpleSuccessResponsePayload {
+    plantingSeasonSpeciesTargetsStore.delete(plantingSeasonId, substratumId, speciesId)
     return SimpleSuccessResponsePayload()
   }
 }

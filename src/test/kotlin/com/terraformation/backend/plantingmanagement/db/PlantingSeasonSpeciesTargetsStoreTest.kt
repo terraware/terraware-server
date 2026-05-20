@@ -161,4 +161,45 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
       }
     }
   }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `deletes the species target row`() {
+      insertPlantingSeasonSpeciesTarget(quantity = 5)
+      val speciesId2 = insertSpecies()
+      insertPlantingSeasonSpeciesTarget(speciesId = speciesId2, quantity = 10)
+      store.delete(plantingSeasonId, substratumId, speciesId)
+
+      assertTableEquals(
+          PlantingSeasonSpeciesTargetsRecord(
+              plantingSeasonId = plantingSeasonId,
+              substratumId = substratumId,
+              speciesId = speciesId2,
+              quantity = 10,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `does nothing when the species target row does not exist`() {
+      store.delete(plantingSeasonId, substratumId, speciesId)
+    }
+
+    @Test
+    fun `throws AccessDeniedException when user lacks permission`() {
+      insertPlantingSeasonSpeciesTarget(quantity = 5)
+
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.delete(plantingSeasonId, substratumId, speciesId)
+      }
+    }
+  }
 }
