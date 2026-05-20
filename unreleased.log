@@ -1,3 +1,5 @@
+37fc10a6 Rename some leftover variables in observation tests and csv's from zones to strata (#4442)
+204489f9 Rename some leftover variables in tests from zones to strata (#4441)
 bf0e84bf SW-8370 Update create api endpoint to copy a planting season's species targets (#4435)
 e801d065 SW-8370 Include season targets when fetching planting seasons (#4434)
 c952003c Run backfill observations as system user in the Admin UI (#4436)
