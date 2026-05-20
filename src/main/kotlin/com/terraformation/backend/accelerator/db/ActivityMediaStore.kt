@@ -11,6 +11,7 @@ import com.terraformation.backend.db.accelerator.tables.pojos.ActivityMediaFiles
 import com.terraformation.backend.db.accelerator.tables.records.ActivitiesRecord
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_OBSERVATIONS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -191,6 +192,10 @@ class ActivityMediaStore(
     withLockedActivity(activityId) {
       ensureFileExists(activityId, fileId)
 
+      if (isObservation(activityId)) {
+        throw CannotDeleteObservationActivityMediaException(activityId)
+      }
+
       dslContext
           .deleteFrom(ACTIVITY_MEDIA_FILES)
           .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
@@ -201,6 +206,35 @@ class ActivityMediaStore(
       markActivityModified(activityId)
 
       eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
+    }
+  }
+
+  /**
+   * Deletes an activity media file from the database as part of a higher-level operation. The
+   * higher-level operation is assumed to have done the necessary permission checks and is assumed
+   * to publish [FileReferenceDeletedEvent] after calling this.
+   *
+   * Returns silently if the file doesn't exist on the activity.
+   */
+  fun deleteForTrigger(fileId: FileId) {
+    val activityId =
+        dslContext.fetchValue(
+            ACTIVITY_MEDIA_FILES.ACTIVITY_ID,
+            ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId),
+        ) ?: return
+
+    withLockedActivity(activityId) {
+      val rowsDeleted =
+          dslContext
+              .deleteFrom(ACTIVITY_MEDIA_FILES)
+              .where(ACTIVITY_MEDIA_FILES.FILE_ID.eq(fileId))
+              .execute()
+
+      if (rowsDeleted > 0) {
+        updateListPositions(activityId, fetchFileIds(activityId))
+
+        markActivityModified(activityId)
+      }
     }
   }
 
@@ -285,6 +319,12 @@ class ActivityMediaStore(
           .execute()
     }
   }
+
+  private fun isObservation(activityId: ActivityId): Boolean =
+      dslContext.fetchExists(
+          ACTIVITY_OBSERVATIONS,
+          ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId),
+      )
 
   private fun markActivityModified(activityId: ActivityId) {
     with(ACTIVITIES) {

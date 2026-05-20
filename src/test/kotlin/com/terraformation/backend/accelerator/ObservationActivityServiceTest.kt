@@ -39,6 +39,7 @@ import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
+import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
@@ -356,6 +357,35 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       service.on(ObservationCompletedEvent(observationId))
 
       assertTableEmpty(ACTIVITIES)
+    }
+  }
+
+  @Nested
+  inner class OnObservationMediaFileDeletedEvent {
+    @Test
+    fun `removes activity media file`() {
+      insertActivity(activityType = ActivityType.Monitoring)
+      insertActivityObservation()
+      insertFile(capturedLocalTime = LocalDateTime.of(2026, 2, 3, 4, 5))
+      insertActivityMediaFile(caption = "Retained file", listPosition = 2)
+      val retainedFileRecord = dslContext.fetchSingle(ACTIVITY_MEDIA_FILES)
+      val fileId = insertFile(capturedLocalTime = LocalDateTime.of(2026, 1, 2, 3, 4))
+      insertActivityMediaFile(caption = "Old caption", listPosition = 1)
+
+      val event =
+          ObservationMediaFileDeletedEvent(
+              fileId,
+              monitoringPlotId,
+              observationId,
+              organizationId,
+              plantingSiteId,
+          )
+      service.on(event)
+
+      // Should update list positions of remaining files
+      retainedFileRecord.listPosition = 1
+
+      assertTableEquals(retainedFileRecord)
     }
   }
 
