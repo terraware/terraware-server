@@ -8,10 +8,10 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
-import com.terraformation.backend.db.tracking.tables.references.SIMPLE_PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -61,7 +61,7 @@ class PlantingSitesTable(tables: SearchTables) : SearchTable() {
           ),
           plantingSeasons.asMultiValueSublist(
               "plantingSeasons",
-              PLANTING_SITE_SUMMARIES.ID.eq(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID),
+              PLANTING_SITE_SUMMARIES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID),
           ),
           plantingSitePopulations.asMultiValueSublist(
               "populations",
