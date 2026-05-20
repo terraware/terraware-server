@@ -18,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RequestMapping("/api/v1/planting-seasons/{plantingSeasonId}/species-targets")
@@ -32,7 +31,7 @@ class PlantingSeasonSpeciesTargetsController(
   @Operation(summary = "Gets all species targets for a planting season.")
   @GetMapping
   fun getSpeciesTargets(
-      @RequestParam plantingSeasonId: PlantingSeasonId,
+      @PathVariable plantingSeasonId: PlantingSeasonId,
   ): ListSpeciesTargetsResponsePayload {
     val targets = plantingSeasonSpeciesTargetsStore.fetchList(plantingSeasonId)
     return ListSpeciesTargetsResponsePayload(targets.map { SpeciesTargetPayload(it) })
