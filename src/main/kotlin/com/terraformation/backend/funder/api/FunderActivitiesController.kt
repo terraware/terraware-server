@@ -11,6 +11,8 @@ import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.funder.PublishedActivityService
 import com.terraformation.backend.funder.db.PublishedActivityStore
@@ -19,6 +21,7 @@ import com.terraformation.backend.funder.model.PublishedActivityModel
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.QueryParam
+import java.time.Instant
 import java.time.LocalDate
 import org.locationtech.jts.geom.Point
 import org.springframework.core.io.InputStreamResource
@@ -87,6 +90,20 @@ class FunderActivitiesController(
   }
 }
 
+data class FunderObservationActivityMediaFilePayload(
+    val monitoringPlotNumber: Long,
+    val position: ObservationPlotPosition?,
+    val type: ObservationMediaType,
+) {
+  constructor(
+      observation: PublishedActivityMediaModel.Observation
+  ) : this(
+      monitoringPlotNumber = observation.monitoringPlotNumber,
+      position = observation.position,
+      type = observation.type,
+  )
+}
+
 data class FunderActivityMediaFilePayload(
     val caption: String?,
     val capturedDate: LocalDate,
@@ -96,6 +113,7 @@ data class FunderActivityMediaFilePayload(
     val isCoverPhoto: Boolean,
     val isHiddenOnMap: Boolean,
     val listPosition: Int,
+    val observation: FunderObservationActivityMediaFilePayload?,
     val type: ActivityMediaType,
 ) {
   constructor(
@@ -109,7 +127,24 @@ data class FunderActivityMediaFilePayload(
       isCoverPhoto = model.isCoverPhoto,
       isHiddenOnMap = model.isHiddenOnMap,
       listPosition = model.listPosition,
+      observation = model.observation?.let { FunderObservationActivityMediaFilePayload(it) },
       type = model.type,
+  )
+}
+
+data class FunderActivityObservationPayload(
+    val completedTime: Instant,
+    val livePlants: Int?,
+    val plantDensity: Int?,
+    val survivalRate: Int?,
+) {
+  constructor(
+      model: PublishedActivityModel.Observation
+  ) : this(
+      completedTime = model.completedTime,
+      livePlants = model.livePlants,
+      plantDensity = model.plantDensity,
+      survivalRate = model.survivalRate,
   )
 }
 
@@ -119,6 +154,7 @@ data class FunderActivityPayload(
     val id: ActivityId,
     val isHighlight: Boolean,
     val media: List<FunderActivityMediaFilePayload>,
+    val observation: FunderActivityObservationPayload?,
     val type: ActivityType,
 ) {
   constructor(
@@ -129,6 +165,7 @@ data class FunderActivityPayload(
       id = model.id,
       isHighlight = model.isHighlight,
       media = model.media.map { FunderActivityMediaFilePayload(it) },
+      observation = model.observation?.let { FunderActivityObservationPayload(it) },
       type = model.activityType,
   )
 }

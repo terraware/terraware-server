@@ -91,16 +91,28 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val activity1FileId2 = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
+
+      insertPlantingSite(x = 0, width = 10)
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot(plotNumber = 123)
+      val completedTime = Instant.ofEpochSecond(12345)
+      val observationId = insertObservation(completedTime = completedTime)
+      insertObservationPlot(completedBy = user.userId)
+
       val activityId2 =
           insertActivity(activityType = ActivityType.Monitoring, verifiedBy = user.userId)
+      insertActivityObservation()
       insertPublishedActivity(
           activityDate = LocalDate.of(2025, 1, 2),
           activityType = ActivityType.Monitoring,
           description = "Activity 2",
       )
+      insertPublishedActivityObservation()
       val activity2FileId = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
+      insertPublishedActivityObservationMediaFile()
 
       // Activities from other projects shouldn't be included.
       insertProject()
@@ -165,8 +177,22 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                               isCoverPhoto = false,
                               isHiddenOnMap = false,
                               listPosition = 1,
+                              observation =
+                                  PublishedActivityMediaModel.Observation(
+                                      monitoringPlotNumber = 123,
+                                      position = ObservationPlotPosition.SouthwestCorner,
+                                      type = ObservationMediaType.Plot,
+                                  ),
                               type = ActivityMediaType.Photo,
                           ),
+                      ),
+                  observation =
+                      PublishedActivityModel.Observation(
+                          livePlants = 100,
+                          completedTime = completedTime,
+                          observationId = observationId,
+                          plantDensity = 20,
+                          survivalRate = 90,
                       ),
                   projectId = projectId,
                   publishedBy = user.userId,

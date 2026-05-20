@@ -5,6 +5,10 @@ import com.terraformation.backend.db.accelerator.ActivityMediaType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import java.time.LocalDate
 import java.time.LocalDateTime
 import org.jooq.Field
@@ -22,10 +26,31 @@ data class PublishedActivityMediaModel(
     val isCoverPhoto: Boolean,
     val isHiddenOnMap: Boolean,
     val listPosition: Int,
+    val observation: Observation? = null,
     val type: ActivityMediaType,
 ) {
   val capturedDate: LocalDate
     get() = capturedLocalTime.toLocalDate()
+
+  data class Observation(
+      val monitoringPlotNumber: Long,
+      val position: ObservationPlotPosition?,
+      val type: ObservationMediaType,
+  ) {
+    companion object {
+      fun ofOrNull(record: Record): Observation? {
+        return record[MONITORING_PLOTS.PLOT_NUMBER]?.let { plotNumber ->
+          record[PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES.TYPE_ID]?.let { type ->
+            Observation(
+                monitoringPlotNumber = plotNumber,
+                position = record[PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES.POSITION_ID],
+                type = type,
+            )
+          }
+        }
+      }
+    }
+  }
 
   companion object {
     fun of(
@@ -43,6 +68,7 @@ data class PublishedActivityMediaModel(
             isCoverPhoto = record[IS_COVER_PHOTO]!!,
             isHiddenOnMap = record[IS_HIDDEN_ON_MAP]!!,
             listPosition = record[LIST_POSITION]!!,
+            observation = Observation.ofOrNull(record),
             type = record[ACTIVITY_MEDIA_TYPE_ID]!!,
         )
       }
