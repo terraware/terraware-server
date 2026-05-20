@@ -70,22 +70,30 @@ class PlantingSeasonSpeciesTargetsStore(
 
     with(PLANTING_SEASON_SPECIES_TARGETS) {
       dslContext
-          .insertInto(PLANTING_SEASON_SPECIES_TARGETS)
+          .insertInto(
+              PLANTING_SEASON_SPECIES_TARGETS,
+              PLANTING_SEASON_ID,
+              SUBSTRATUM_ID,
+              SPECIES_ID,
+              QUANTITY,
+              CREATED_BY,
+              CREATED_TIME,
+              MODIFIED_BY,
+              MODIFIED_TIME,
+          )
           .select(
               DSL.select(
                       DSL.`val`(toPlantingSeasonId),
                       SUBSTRATUM_ID,
                       SPECIES_ID,
-                      DSL.`val`(0), // quantity
-                      DSL.`val`(userId), // created_by
-                      DSL.`val`(now), // created_time
-                      DSL.`val`(userId), // modified_by
-                      DSL.`val`(now), // modified_time
+                      DSL.`val`(0),
+                      DSL.`val`(userId),
+                      DSL.`val`(now),
+                      DSL.`val`(userId),
+                      DSL.`val`(now),
                   )
                   .from(PLANTING_SEASON_SPECIES_TARGETS)
-                  .where(
-                      PLANTING_SEASON_ID.eq(fromPlantingSeasonId),
-                  )
+                  .where(PLANTING_SEASON_ID.eq(fromPlantingSeasonId))
           )
           .execute()
     }
