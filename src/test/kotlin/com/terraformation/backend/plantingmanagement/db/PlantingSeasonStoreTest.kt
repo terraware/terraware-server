@@ -268,7 +268,7 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val substratumId = insertSubstratum()
       val speciesId = insertSpecies()
       insertPlantingSeasonSpeciesTarget(plantingSeasonId = id1, quantity = 10)
-      insertPlantingSeasonSpeciesTarget(plantingSeasonId = id2, quantity = 10)
+      insertPlantingSeasonSpeciesTarget(plantingSeasonId = id2, quantity = 20)
 
       val result = store.fetchList(plantingSiteId)
 
