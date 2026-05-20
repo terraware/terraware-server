@@ -167,7 +167,7 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
   inner class Delete {
     @Test
     fun `deletes the species target row`() {
-      store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
+      insertPlantingSeasonSpeciesTarget(quantity = 5)
       store.delete(plantingSeasonId, substratumId, speciesId)
 
       assertTableEmpty(PLANTING_SEASON_SPECIES_TARGETS)
@@ -180,7 +180,7 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
 
     @Test
     fun `throws AccessDeniedException when user lacks permission`() {
-      store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
+      insertPlantingSeasonSpeciesTarget(quantity = 5)
 
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
