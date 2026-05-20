@@ -21,7 +21,11 @@ import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.tables.records.PublishedActivitiesRecord
 import com.terraformation.backend.db.funder.tables.records.PublishedActivityMediaFilesRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedActivityObservationMediaFilesRecord
+import com.terraformation.backend.db.funder.tables.records.PublishedActivityObservationsRecord
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
 import com.terraformation.backend.funder.model.PublishedActivityModel
@@ -87,7 +91,8 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val activity1FileId2 = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
-      val activityId2 = insertActivity(verifiedBy = user.userId)
+      val activityId2 =
+          insertActivity(activityType = ActivityType.Monitoring, verifiedBy = user.userId)
       insertPublishedActivity(
           activityDate = LocalDate.of(2025, 1, 2),
           activityType = ActivityType.Monitoring,
@@ -275,6 +280,74 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   isHiddenOnMap = true,
                   listPosition = 2,
               ),
+          )
+      )
+    }
+
+    @Test
+    fun `publishes observation-specific details for observation`() {
+      insertUserGlobalRole(role = GlobalRole.TFExpert)
+
+      activitiesDao.update(
+          activitiesDao.fetchOneById(activityId)!!.copy(activityTypeId = ActivityType.Monitoring)
+      )
+      insertPlantingSite(x = 0, width = 10)
+      insertStratum()
+      insertSubstratum()
+      val monitoringPlotId = insertMonitoringPlot()
+      val observationId = insertObservation()
+      insertObservationPlot(completedBy = user.userId)
+      insertObservationSiteResult(totalLive = 123, plantDensity = 4, survivalRate = 56)
+      insertActivityObservation()
+
+      val fileId1 = insertFile(capturedLocalTime = LocalDate.of(2024, 1, 10).atStartOfDay())
+      insertObservationMediaFile(position = ObservationPlotPosition.NorthwestCorner)
+      insertActivityMediaFile(caption = "Photo caption", isCoverPhoto = true)
+
+      store.publish(activityId)
+
+      assertTableEquals(
+          PublishedActivitiesRecord(
+              activityDate = LocalDate.of(2024, 1, 15),
+              activityId = activityId,
+              activityTypeId = ActivityType.Monitoring,
+              description = "Test activity",
+              isHighlight = true,
+              projectId = projectId,
+              publishedBy = user.userId,
+              publishedTime = Instant.EPOCH,
+          )
+      )
+
+      assertTableEquals(
+          PublishedActivityObservationsRecord(
+              activityId = activityId,
+              observationId = observationId,
+              livePlants = 123,
+              plantDensity = 4,
+              survivalRate = 56,
+          )
+      )
+
+      assertTableEquals(
+          PublishedActivityMediaFilesRecord(
+              activityId = activityId,
+              activityMediaTypeId = ActivityMediaType.Photo,
+              caption = "Photo caption",
+              fileId = fileId1,
+              isCoverPhoto = true,
+              isHiddenOnMap = false,
+              listPosition = 1,
+          )
+      )
+
+      assertTableEquals(
+          PublishedActivityObservationMediaFilesRecord(
+              activityId = activityId,
+              fileId = fileId1,
+              monitoringPlotId = monitoringPlotId,
+              positionId = ObservationPlotPosition.NorthwestCorner,
+              typeId = ObservationMediaType.Plot,
           )
       )
     }

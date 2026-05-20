@@ -866,6 +866,8 @@ COMMENT ON TABLE funder.published_activities IS 'Published project activities vi
 
 COMMENT ON TABLE funder.published_activity_media_files IS 'Media files for published project activities visible to funders. It is possible for a file to continue to appear here after it has been removed from the activity if the removal has not been published yet.';
 
+COMMENT ON TABLE funder.published_activity_observation_media_files IS 'Observation-specific details about media files in published activities.';
+
 COMMENT ON TABLE funder.published_activity_observations IS 'Which published activities represent which observations. Top-level observation results are copied here as well since the underlying results could change after publication.';
 
 COMMENT ON TABLE funder.published_auto_calculated_indicator_baselines IS 'Published project-level baseline and end-of-project target values for auto-calculated indicators.';

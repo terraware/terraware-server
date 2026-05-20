@@ -8,6 +8,7 @@ import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_OBSERVATIONS
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -16,6 +17,10 @@ import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_OBSERVATIONS
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
 import com.terraformation.backend.funder.model.PublishedActivityModel
@@ -188,6 +193,40 @@ class PublishedActivityStore(
           .set(PUBLISHED_TIME, DSL.excluded(PUBLISHED_TIME))
           .execute()
     }
+
+    with(PUBLISHED_ACTIVITY_OBSERVATIONS) {
+      dslContext
+          .insertInto(
+              PUBLISHED_ACTIVITY_OBSERVATIONS,
+              ACTIVITY_ID,
+              OBSERVATION_ID,
+              LIVE_PLANTS,
+              PLANT_DENSITY,
+              SURVIVAL_RATE,
+          )
+          .select(
+              DSL.select(
+                      ACTIVITY_OBSERVATIONS.ACTIVITY_ID,
+                      ACTIVITY_OBSERVATIONS.OBSERVATION_ID,
+                      OBSERVATION_SITE_RESULTS.TOTAL_LIVE,
+                      OBSERVATION_SITE_RESULTS.PLANT_DENSITY,
+                      OBSERVATION_SITE_RESULTS.SURVIVAL_RATE,
+                  )
+                  .from(ACTIVITY_OBSERVATIONS)
+                  .leftJoin(OBSERVATION_SITE_RESULTS)
+                  .on(
+                      ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(
+                          OBSERVATION_SITE_RESULTS.OBSERVATION_ID
+                      )
+                  )
+                  .where(ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId))
+          )
+          .onDuplicateKeyUpdate()
+          .set(LIVE_PLANTS, DSL.excluded(LIVE_PLANTS))
+          .set(PLANT_DENSITY, DSL.excluded(PLANT_DENSITY))
+          .set(SURVIVAL_RATE, DSL.excluded(SURVIVAL_RATE))
+          .execute()
+    }
   }
 
   /**
@@ -240,6 +279,34 @@ class PublishedActivityStore(
           .set(IS_COVER_PHOTO, DSL.excluded(IS_COVER_PHOTO))
           .set(IS_HIDDEN_ON_MAP, DSL.excluded(IS_HIDDEN_ON_MAP))
           .set(LIST_POSITION, DSL.excluded(LIST_POSITION))
+          .execute()
+    }
+
+    with(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES) {
+      dslContext
+          .insertInto(
+              PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES,
+              ACTIVITY_ID,
+              FILE_ID,
+              MONITORING_PLOT_ID,
+              POSITION_ID,
+              TYPE_ID,
+          )
+          .select(
+              DSL.select(
+                      ACTIVITY_MEDIA_FILES.ACTIVITY_ID,
+                      ACTIVITY_MEDIA_FILES.FILE_ID,
+                      OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID,
+                      OBSERVATION_MEDIA_FILES.POSITION_ID,
+                      OBSERVATION_MEDIA_FILES.TYPE_ID,
+                  )
+                  .from(ACTIVITY_MEDIA_FILES)
+                  .join(OBSERVATION_MEDIA_FILES)
+                  .on(ACTIVITY_MEDIA_FILES.FILE_ID.eq(OBSERVATION_MEDIA_FILES.FILE_ID))
+                  .where(ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId))
+          )
+          .onConflict(FILE_ID)
+          .doNothing() // None of the properties is editable, so no point updating them.
           .execute()
     }
   }
