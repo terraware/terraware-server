@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonsRecord
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import java.time.Instant
 import java.time.LocalDate
@@ -29,6 +30,9 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val clock = TestClock()
   private val store: PlantingSeasonStore by lazy {
     PlantingSeasonStore(clock, dslContext, ParentStore(dslContext))
+  }
+  private val targetsStore: PlantingSeasonSpeciesTargetsStore by lazy {
+    PlantingSeasonSpeciesTargetsStore(clock, dslContext)
   }
 
   private lateinit var plantingSiteId: PlantingSiteId
@@ -248,6 +252,69 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `returns species targets for each season`() {
+      val id1 =
+          insertPlantingSeason(
+              name = "Spring 2025",
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              status = PlantingSeasonStatus.Upcoming,
+          )
+      val id2 =
+          insertPlantingSeason(
+              name = "Fall 2025",
+              startDate = LocalDate.of(2025, 9, 1),
+              endDate = LocalDate.of(2025, 11, 30),
+              status = PlantingSeasonStatus.Upcoming,
+          )
+      insertStratum()
+      val substratumId = insertSubstratum()
+      val speciesId = insertSpecies()
+      targetsStore.upsert(id1, substratumId, speciesId, quantity = 10)
+      targetsStore.upsert(id2, substratumId, speciesId, quantity = 20)
+
+      val result = store.fetchList(plantingSiteId)
+
+      assertEquals(
+          listOf(
+              ExistingPlantingSeasonModel(
+                  endDate = LocalDate.of(2025, 3, 31),
+                  id = id1,
+                  name = "Spring 2025",
+                  plantingSiteId = plantingSiteId,
+                  speciesTargets =
+                      listOf(
+                          PlantingSeasonSpeciesTargetModel(
+                              substratumId = substratumId,
+                              speciesId = speciesId,
+                              quantity = 10,
+                          )
+                      ),
+                  startDate = LocalDate.of(2025, 1, 1),
+                  status = PlantingSeasonStatus.Upcoming,
+              ),
+              ExistingPlantingSeasonModel(
+                  endDate = LocalDate.of(2025, 11, 30),
+                  id = id2,
+                  name = "Fall 2025",
+                  plantingSiteId = plantingSiteId,
+                  speciesTargets =
+                      listOf(
+                          PlantingSeasonSpeciesTargetModel(
+                              substratumId = substratumId,
+                              speciesId = speciesId,
+                              quantity = 20,
+                          )
+                      ),
+                  startDate = LocalDate.of(2025, 9, 1),
+                  status = PlantingSeasonStatus.Upcoming,
+              ),
+          ),
+          result,
+      )
+    }
+
+    @Test
     fun `throws PlantingSiteNotFoundException when user is not a member of the organization`() {
       deleteOrganizationUser()
 
@@ -277,6 +344,45 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               id = id,
               name = "Spring 2025",
               plantingSiteId = plantingSiteId,
+              startDate = startDate,
+              status = PlantingSeasonStatus.Upcoming,
+          ),
+          result,
+      )
+    }
+
+    @Test
+    fun `returns species targets when they exist`() {
+      val startDate = LocalDate.of(2025, 1, 1)
+      val endDate = LocalDate.of(2025, 3, 31)
+      val id =
+          insertPlantingSeason(
+              name = "Spring 2025",
+              startDate = startDate,
+              endDate = endDate,
+              status = PlantingSeasonStatus.Upcoming,
+          )
+      insertStratum()
+      val substratumId = insertSubstratum()
+      val speciesId = insertSpecies()
+      targetsStore.upsert(id, substratumId, speciesId, quantity = 42)
+
+      val result = store.fetchById(id)
+
+      assertEquals(
+          ExistingPlantingSeasonModel(
+              endDate = endDate,
+              id = id,
+              name = "Spring 2025",
+              plantingSiteId = plantingSiteId,
+              speciesTargets =
+                  listOf(
+                      PlantingSeasonSpeciesTargetModel(
+                          substratumId = substratumId,
+                          speciesId = speciesId,
+                          quantity = 42,
+                      )
+                  ),
               startDate = startDate,
               status = PlantingSeasonStatus.Upcoming,
           ),
