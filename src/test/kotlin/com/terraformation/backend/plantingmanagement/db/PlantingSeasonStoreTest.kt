@@ -31,9 +31,6 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val store: PlantingSeasonStore by lazy {
     PlantingSeasonStore(clock, dslContext, ParentStore(dslContext))
   }
-  private val targetsStore: PlantingSeasonSpeciesTargetsStore by lazy {
-    PlantingSeasonSpeciesTargetsStore(clock, dslContext)
-  }
 
   private lateinit var plantingSiteId: PlantingSiteId
 
@@ -270,8 +267,8 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertStratum()
       val substratumId = insertSubstratum()
       val speciesId = insertSpecies()
-      targetsStore.upsert(id1, substratumId, speciesId, quantity = 10)
-      targetsStore.upsert(id2, substratumId, speciesId, quantity = 20)
+      insertPlantingSeasonSpeciesTarget(plantingSeasonId = id1, quantity = 10)
+      insertPlantingSeasonSpeciesTarget(plantingSeasonId = id2, quantity = 10)
 
       val result = store.fetchList(plantingSiteId)
 
@@ -365,7 +362,7 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertStratum()
       val substratumId = insertSubstratum()
       val speciesId = insertSpecies()
-      targetsStore.upsert(id, substratumId, speciesId, quantity = 42)
+      insertPlantingSeasonSpeciesTarget(plantingSeasonId = id, quantity = 42)
 
       val result = store.fetchById(id)
 
