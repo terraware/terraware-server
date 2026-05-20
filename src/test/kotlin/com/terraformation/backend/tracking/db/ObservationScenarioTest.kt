@@ -236,7 +236,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStats.csv", actual) { row ->
+    assertResultsMatchCsv("$prefix/StratumStats.csv", actual) { row ->
       row.filterIndexed { index, _ -> (index - 1) % 5 != 4 } // estimated plants
     }
   }
@@ -262,7 +262,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStats.csv", actual) { row ->
+    assertResultsMatchCsv("$prefix/SubstratumStats.csv", actual) { row ->
       row.filterIndexed { index, _ -> (index - 1) % 5 != 4 } // estimated plants
     }
   }
@@ -391,7 +391,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStatsSummary.csv", actual)
+    assertResultsMatchCsv("$prefix/StratumStatsSummary.csv", actual)
   }
 
   protected fun assertSubstratumSummary(
@@ -421,7 +421,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStatsSummary.csv", actual)
+    assertResultsMatchCsv("$prefix/SubstratumStatsSummary.csv", actual)
   }
 
   protected fun assertPlotSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
@@ -516,7 +516,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStatsPerSpecies.csv", actual)
+    assertResultsMatchCsv("$prefix/SubstratumStatsPerSpecies.csv", actual)
   }
 
   protected fun assertStratumSpeciesResults(
@@ -547,7 +547,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStatsPerSpecies.csv", actual)
+    assertResultsMatchCsv("$prefix/StratumStatsPerSpecies.csv", actual)
   }
 
   protected fun assertPlotSpeciesResults(
@@ -617,7 +617,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/ZoneStatsPerSpeciesSummary.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/StratumStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun assertSubstratumSpeciesSummary(
@@ -642,7 +642,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             },
         )
 
-    assertResultsMatchCsv("$prefix/SubzoneStatsPerSpeciesSummary.csv", actual, skipRows = 3)
+    assertResultsMatchCsv("$prefix/SubstratumStatsPerSpeciesSummary.csv", actual, skipRows = 3)
   }
 
   protected fun assertPlotSpeciesSummary(
@@ -722,7 +722,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     val newStratumIds = mutableMapOf<String, StratumId>()
     val newStratumHistoryIds = mutableMapOf<StratumId, StratumHistoryId>()
 
-    mapCsv("$prefix/Zones.csv", 2) { cols ->
+    mapCsv("$prefix/Strata.csv", 2) { cols ->
       val stratumName = cols[1]
       val areaHa = BigDecimal(cols[2])
 
@@ -740,7 +740,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     val newSubstratumIds = mutableMapOf<String, SubstratumId>()
     val newSubstratumHistoryIds = mutableMapOf<SubstratumId, SubstratumHistoryId>()
 
-    mapCsv("$prefix/Subzones.csv", 2) { cols ->
+    mapCsv("$prefix/Substrata.csv", 2) { cols ->
       val stratumName = cols[0]
       val substratumName = cols[1]
       val substratumArea = BigDecimal(cols[2])
@@ -841,7 +841,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   }
 
   fun importT0StratumDensitiesCsv(prefix: String): Boolean {
-    val filePath = "$prefix/T0ZoneDensities.csv"
+    val filePath = "$prefix/T0StratumDensities.csv"
     if (javaClass.getResource(filePath) == null) {
       return false
     }

@@ -1,0 +1,4 @@
+Observation ->,1,1,1,1,1,1,1
+Stratum,# Plants (excluding existing),Planting Density,Planting Density Std Dev,# Live Species,Survival Rate,Survival Rate Std Dev,Est Plants
+Stratum1,139,772,636,2,99%,1%,
+Stratum2,139,1544,,2,93%,0%,
