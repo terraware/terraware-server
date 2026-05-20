@@ -74,10 +74,7 @@ class PublishedActivityStore(
   fun deletePublishedActivity(activityId: ActivityId) {
     deletePublishedMediaFiles(PUBLISHED_ACTIVITY_MEDIA_FILES.ACTIVITY_ID.eq(activityId))
 
-    dslContext
-        .deleteFrom(PUBLISHED_ACTIVITIES)
-        .where(PUBLISHED_ACTIVITIES.ACTIVITY_ID.eq(activityId))
-        .execute()
+    deletePublishedActivities(PUBLISHED_ACTIVITIES.ACTIVITY_ID.eq(activityId))
   }
 
   @Deprecated("Do not call this except when handling deletion of the organization")
@@ -88,10 +85,7 @@ class PublishedActivityStore(
         )
     )
 
-    dslContext
-        .deleteFrom(PUBLISHED_ACTIVITIES)
-        .where(PUBLISHED_ACTIVITIES.projects.ORGANIZATION_ID.eq(organizationId))
-        .execute()
+    deletePublishedActivities(PUBLISHED_ACTIVITIES.projects.ORGANIZATION_ID.eq(organizationId))
   }
 
   @Deprecated("Do not call this except when handling deletion of the project")
@@ -100,10 +94,7 @@ class PublishedActivityStore(
         PUBLISHED_ACTIVITY_MEDIA_FILES.publishedActivities.PROJECT_ID.eq(projectId)
     )
 
-    dslContext
-        .deleteFrom(PUBLISHED_ACTIVITIES)
-        .where(PUBLISHED_ACTIVITIES.PROJECT_ID.eq(projectId))
-        .execute()
+    deletePublishedActivities(PUBLISHED_ACTIVITIES.PROJECT_ID.eq(projectId))
   }
 
   private val geolocationField = FILES.GEOLOCATION.forMultiset()
@@ -311,18 +302,41 @@ class PublishedActivityStore(
     }
   }
 
+  private fun deletePublishedActivities(condition: Condition) {
+    val activityIds =
+        dslContext
+            .select(PUBLISHED_ACTIVITIES.ACTIVITY_ID)
+            .from(PUBLISHED_ACTIVITIES)
+            .where(condition)
+            .fetch(PUBLISHED_ACTIVITIES.ACTIVITY_ID.asNonNullable())
+
+    dslContext
+        .deleteFrom(PUBLISHED_ACTIVITY_OBSERVATIONS)
+        .where(PUBLISHED_ACTIVITY_OBSERVATIONS.ACTIVITY_ID.`in`(activityIds))
+        .execute()
+
+    dslContext
+        .deleteFrom(PUBLISHED_ACTIVITIES)
+        .where(PUBLISHED_ACTIVITIES.ACTIVITY_ID.`in`(activityIds))
+        .execute()
+  }
+
   private fun deletePublishedMediaFiles(condition: Condition) {
     with(PUBLISHED_ACTIVITY_MEDIA_FILES) {
-      val deletedFileIds =
+      val fileIds =
           dslContext
-              .deleteFrom(PUBLISHED_ACTIVITY_MEDIA_FILES)
+              .select(FILE_ID)
+              .from(PUBLISHED_ACTIVITY_MEDIA_FILES)
               .where(condition)
-              .returning(FILE_ID)
               .fetch(FILE_ID.asNonNullable())
 
-      deletedFileIds.forEach { fileId ->
-        eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId))
-      }
+      dslContext
+          .deleteFrom(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES)
+          .where(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES.FILE_ID.`in`(fileIds))
+          .execute()
+      dslContext.deleteFrom(PUBLISHED_ACTIVITY_MEDIA_FILES).where(FILE_ID.`in`(fileIds)).execute()
+
+      fileIds.forEach { fileId -> eventPublisher.publishEvent(FileReferenceDeletedEvent(fileId)) }
     }
   }
 

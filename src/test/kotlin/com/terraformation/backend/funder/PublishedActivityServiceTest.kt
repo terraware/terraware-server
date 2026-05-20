@@ -13,6 +13,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.accelerator.ActivityId
+import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -64,6 +65,7 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     activityId =
         insertActivity(
+            activityType = ActivityType.Monitoring,
             verifiedBy = user.userId,
             verifiedTime = clock.instant(),
         )
@@ -81,10 +83,18 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @BeforeEach
     fun setUp() {
+      insertPlantingSite(x = 0)
+      insertStratum()
+      insertSubstratum()
+      insertMonitoringPlot()
+      insertObservation()
+      insertActivityObservation()
+
       activityFileId = insertFile()
       insertActivityMediaFile()
       insertPublishedActivity()
       insertPublishedActivityMediaFile()
+      insertPublishedActivityObservationMediaFile()
 
       otherActivityId = insertActivity()
       otherActivityFileId = insertFile()

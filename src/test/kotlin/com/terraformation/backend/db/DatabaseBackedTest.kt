@@ -323,6 +323,8 @@ import com.terraformation.backend.db.funder.tables.daos.FundingEntityProjectsDao
 import com.terraformation.backend.db.funder.tables.daos.FundingEntityUsersDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedActivitiesDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedActivityMediaFilesDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedActivityObservationMediaFilesDao
+import com.terraformation.backend.db.funder.tables.daos.PublishedActivityObservationsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedAutoCalculatedIndicatorBaselinesDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedAutoCalculatedIndicatorTargetsDao
 import com.terraformation.backend.db.funder.tables.daos.PublishedCommonIndicatorBaselinesDao
@@ -342,6 +344,8 @@ import com.terraformation.backend.db.funder.tables.pojos.FundingEntityProjectsRo
 import com.terraformation.backend.db.funder.tables.pojos.FundingEntityUsersRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedActivitiesRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedActivityMediaFilesRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedActivityObservationMediaFilesRow
+import com.terraformation.backend.db.funder.tables.pojos.PublishedActivityObservationsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedAutoCalculatedIndicatorBaselinesRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedAutoCalculatedIndicatorTargetsRow
 import com.terraformation.backend.db.funder.tables.pojos.PublishedCommonIndicatorBaselinesRow
@@ -754,6 +758,10 @@ abstract class DatabaseBackedTest {
   protected val projectVoteDecisionDao: ProjectVoteDecisionsDao by lazyDao()
   protected val projectVotesDao: ProjectVotesDao by lazyDao()
   protected val publishedActivitiesDao: PublishedActivitiesDao by lazyDao()
+  protected val publishedActivityObservationMediaFilesDao:
+      PublishedActivityObservationMediaFilesDao by
+      lazyDao()
+  protected val publishedActivityObservationsDao: PublishedActivityObservationsDao by lazyDao()
   protected val publishedActivityMediaFilesDao: PublishedActivityMediaFilesDao by lazyDao()
   protected val publishedAutoCalculatedIndicatorBaselinesDao:
       PublishedAutoCalculatedIndicatorBaselinesDao by
@@ -4659,6 +4667,25 @@ abstract class DatabaseBackedTest {
     publishedActivitiesDao.insert(row)
   }
 
+  protected fun insertPublishedActivityObservation(
+      activityId: ActivityId = inserted.activityId,
+      observationId: ObservationId = inserted.observationId,
+      livePlants: Int? = 100,
+      plantDensity: Int? = 20,
+      survivalRate: Int? = 90,
+  ) {
+    val row =
+        PublishedActivityObservationsRow(
+            activityId = activityId,
+            observationId = observationId,
+            livePlants = livePlants,
+            plantDensity = plantDensity,
+            survivalRate = survivalRate,
+        )
+
+    publishedActivityObservationsDao.insert(row)
+  }
+
   private var lastPublishedActivityMediaFileActivityId: ActivityId? = null
   private var nextPublishedActivityMediaFileListPosition = 1
 
@@ -4689,6 +4716,25 @@ abstract class DatabaseBackedTest {
 
     lastPublishedActivityMediaFileActivityId = activityId
     nextPublishedActivityMediaFileListPosition = listPosition + 1
+  }
+
+  protected fun insertPublishedActivityObservationMediaFile(
+      activityId: ActivityId = inserted.activityId,
+      fileId: FileId = inserted.fileId,
+      monitoringPlotId: MonitoringPlotId = inserted.monitoringPlotId,
+      position: ObservationPlotPosition? = ObservationPlotPosition.SouthwestCorner,
+      type: ObservationMediaType = ObservationMediaType.Plot,
+  ) {
+    val row =
+        PublishedActivityObservationMediaFilesRow(
+            activityId = activityId,
+            fileId = fileId,
+            monitoringPlotId = monitoringPlotId,
+            positionId = position,
+            typeId = type,
+        )
+
+    publishedActivityObservationMediaFilesDao.insert(row)
   }
 
   private var nextInternalTagNumber = 1
