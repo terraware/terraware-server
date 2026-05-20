@@ -13,6 +13,7 @@ import com.terraformation.backend.db.accelerator.ActivityId
 import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.tables.Activities.Companion.ACTIVITIES
 import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_OBSERVATIONS
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
@@ -112,10 +113,11 @@ class ActivityStore(
       throw CannotUpdatePublishedActivityException(activityId)
     }
 
-    // We will allow null descriptions for observation activities, but those don't exist yet, so
-    // descriptions are required for now.
     if (updatedModel.description == null) {
-      throw IllegalArgumentException("Description is required for this type of activity")
+      // Only allow null descriptions for observation activities.
+      if (!isObservation(activityId)) {
+        throw IllegalArgumentException("Description is required for this type of activity")
+      }
     }
 
     if (existingModel != updatedModel) {
@@ -147,10 +149,11 @@ class ActivityStore(
     val updatedModel = applyFunc(existingModel)
     val now = clock.instant()
 
-    // We will allow null descriptions for observation activities, but those don't exist yet, so
-    // descriptions are required for now.
     if (updatedModel.description == null) {
-      throw IllegalArgumentException("Description is required for this type of activity")
+      // Only allow null descriptions for observation activities.
+      if (!isObservation(activityId)) {
+        throw IllegalArgumentException("Description is required for this type of activity")
+      }
     }
 
     if (existingModel != updatedModel) {
@@ -304,6 +307,13 @@ class ActivityStore(
     return dslContext.fetchExists(
         PUBLISHED_ACTIVITIES,
         PUBLISHED_ACTIVITIES.ACTIVITY_ID.eq(activityId),
+    )
+  }
+
+  private fun isObservation(activityId: ActivityId): Boolean {
+    return dslContext.fetchExists(
+        ACTIVITY_OBSERVATIONS,
+        ACTIVITY_OBSERVATIONS.ACTIVITY_ID.eq(activityId),
     )
   }
 }

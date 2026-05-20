@@ -852,6 +852,29 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `allows null descriptions on observation activities`() {
+      insertOrganizationUser(role = Role.Admin)
+
+      val activityId =
+          insertActivity(
+              activityDate = LocalDate.EPOCH,
+              activityType = ActivityType.Monitoring,
+              description = "Original description",
+              projectId = projectId,
+          )
+      insertPlantingSite(x = 0, width = 10)
+      insertObservation()
+      insertActivityObservation()
+
+      val record = dslContext.fetchSingle(ACTIVITIES)
+      record.description = null
+
+      store.update(activityId) { it.copy(description = null) }
+
+      assertTableEquals(record)
+    }
+
+    @Test
     fun `leaves verifiedBy and verifiedTime alone if status remains Verified`() {
       insertUserGlobalRole(role = GlobalRole.AcceleratorAdmin)
       val otherUserId = insertUser()
