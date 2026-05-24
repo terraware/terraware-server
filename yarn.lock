@@ -538,9 +538,9 @@ he@^1.2.0:
   integrity sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==
 
 html-minifier-next@^6.0.0:
-  version "6.2.6"
-  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-6.2.6.tgz#23fd4775cdb9294922887a2566452dc090d6300e"
-  integrity sha512-M7wfbuXj8YePrWucceM01F2IjBcxmE6Z1Lfj2yKkZpCzk/lIpsYCAQF7cM9gDNxhBUJyM7FKlOzQ/VEM7JEtsw==
+  version "6.2.7"
+  resolved "https://registry.yarnpkg.com/html-minifier-next/-/html-minifier-next-6.2.7.tgz#6e53fa54a66f287afb64687c6aee85b4c04737e4"
+  integrity sha512-DKvbAkZTNbaQf3OoYA65jgqiy+Yim8tKbBCt3ma1RvpjNUQJS1yeZKRs5epRmF0I+oGukBVSd/tc8vZ1UT4KaA==
   dependencies:
     commander "^14.0.3"
     entities "^8.0.0"
@@ -1746,9 +1746,9 @@ svgo@^4.0.1:
     sax "^1.5.0"
 
 terser@^5.46.2:
-  version "5.47.1"
-  resolved "https://registry.yarnpkg.com/terser/-/terser-5.47.1.tgz#99b298e51bc41214304847de1429ec92fd1f7648"
-  integrity sha512-tPbLXTI6ohPASb/1YViL428oEHu6/qv1OxqYnfaonVCFHqx4+wCd95pHrQWsL5X4pl90CTyW9piSAsS2L0VoMw==
+  version "5.48.0"
+  resolved "https://registry.yarnpkg.com/terser/-/terser-5.48.0.tgz#8b391171cfbb7ac4a88f9f04ba1cfabc54f643db"
+  integrity sha512-J/9An6vs9Us6wKRriSFXBWdRZapREHqFzdNUKk0pmu804EMR6dr6winwo7e5JDxN4xahxQsuysyYFwlwj4XN/Q==
   dependencies:
     "@jridgewell/source-map" "^0.3.3"
     acorn "^8.15.0"
