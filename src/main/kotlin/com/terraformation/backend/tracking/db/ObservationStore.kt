@@ -58,6 +58,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRA
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.STRATA
@@ -1463,6 +1464,8 @@ class ObservationStore(
           updateObservationResults(laterObservationId, observation.plantingSiteId)
         }
 
+        markObservationRecalculationRequested(observation.plantingSiteId, clock.instant())
+
         eventPublisher.publishEvent(
             MonitoringSpeciesTotalsEditedEvent(
                 certainty = certainty,
@@ -1478,6 +1481,20 @@ class ObservationStore(
         )
       }
     }
+  }
+
+  private fun markObservationRecalculationRequested(
+      plantingSiteId: PlantingSiteId,
+      now: Instant,
+  ) {
+    dslContext
+        .insertInto(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS)
+        .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID, plantingSiteId)
+        .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_OBSERVATION_MODIFIED_TIME, now)
+        .onConflict(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID)
+        .doUpdate()
+        .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_OBSERVATION_MODIFIED_TIME, now)
+        .execute()
   }
 
   fun updateObservedPlotCoordinates(
@@ -2195,11 +2212,60 @@ class ObservationStore(
   }
 
   fun runRecalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
-    systemUser.run { recalculateSurvivalRates(monitoringPlotId) }
+    val plantingSiteId = parentStore.getPlantingSiteId(monitoringPlotId) ?: return
+    systemUser.run {
+      recalculateSurvivalRatesWithStatus(plantingSiteId) {
+        recalculateSurvivalRates(monitoringPlotId)
+      }
+    }
   }
 
   fun runRecalculateSurvivalRates(stratumId: StratumId) {
-    systemUser.run { recalculateSurvivalRates(stratumId) }
+    val plantingSiteId = parentStore.getPlantingSiteId(stratumId) ?: return
+    systemUser.run {
+      recalculateSurvivalRatesWithStatus(plantingSiteId) { recalculateSurvivalRates(stratumId) }
+    }
+  }
+
+  private fun recalculateSurvivalRatesWithStatus(
+      plantingSiteId: PlantingSiteId,
+      recalc: () -> Unit,
+  ) {
+    dslContext.transaction { _ ->
+      val snapshot =
+          dslContext
+              .select(
+                  PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME,
+                  PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_OBSERVATION_MODIFIED_TIME,
+              )
+              .from(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS)
+              .where(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+              .fetchOne() ?: return@transaction
+
+      val t0Snapshot = snapshot[PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME]
+      val observationSnapshot =
+          snapshot[PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_OBSERVATION_MODIFIED_TIME]
+
+      recalc()
+
+      // Mark the site clean only if no T0 or observation write arrived between the snapshot above
+      // and now. `IS NOT DISTINCT FROM` handles the NULL-equals-NULL case for sites that have only
+      // ever been dirtied by one of the two sources.
+      dslContext
+          .update(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS)
+          .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_RECALCULATED_TIME, clock.instant())
+          .where(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+          .and(
+              PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME.isNotDistinctFrom(
+                  t0Snapshot
+              )
+          )
+          .and(
+              PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_OBSERVATION_MODIFIED_TIME
+                  .isNotDistinctFrom(observationSnapshot)
+          )
+          .execute()
+    }
   }
 
   private fun deleteObservation(observationId: ObservationId) {

@@ -34,6 +34,7 @@ data class PlotObservationSpeciesDensityModel(
 data class SiteT0DataModel(
     val plantingSiteId: PlantingSiteId,
     val survivalRateIncludesTempPlots: Boolean,
+    val survivalRateRecalculationInProgress: Boolean = false,
     val plots: List<PlotT0DataModel> = emptyList(),
     val strata: List<StratumT0TempDataModel> = emptyList(),
 )

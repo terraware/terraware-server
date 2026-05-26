@@ -18,12 +18,14 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.db.tracking.tables.records.PlantingSiteSurvivalRateRecalculationsRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0DensitiesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlotT0ObservationsRecord
 import com.terraformation.backend.db.tracking.tables.records.StratumT0TempDensitiesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.multiPolygon
@@ -1951,5 +1953,100 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       vararg densities: Pair<SpeciesId, BigDecimal?>
   ): List<OptionalSpeciesDensityModel> {
     return densities.map { OptionalSpeciesDensityModel(speciesId = it.first, density = it.second) }
+  }
+
+  @Nested
+  inner class RecalculationStatus {
+    @Test
+    fun `assignT0PlotObservation marks the site recalculation as requested`() {
+      insertObservedPlotSpeciesTotals(speciesId = speciesId1, totalLive = 1, totalDead = 2)
+
+      store.assignT0PlotObservation(monitoringPlotId, observationId)
+
+      assertSiteRecalculationState(lastT0ModifiedTime = clock.instant())
+    }
+
+    @Test
+    fun `assignT0PlotSpeciesDensities marks the site recalculation as requested`() {
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+      )
+
+      assertSiteRecalculationState(lastT0ModifiedTime = clock.instant())
+    }
+
+    @Test
+    fun `assignT0TempStratumSpeciesDensities marks the site recalculation as requested`() {
+      store.assignT0TempStratumSpeciesDensities(
+          stratumId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+      )
+
+      assertSiteRecalculationState(lastT0ModifiedTime = clock.instant())
+    }
+
+    @Test
+    fun `repeated writes advance last_modified_time`() {
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+      )
+      clock.instant = clock.instant().plusSeconds(60)
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.valueOf(20))),
+      )
+
+      assertSiteRecalculationState(lastT0ModifiedTime = clock.instant())
+    }
+
+    @Test
+    fun `isSurvivalRateRecalculationInProgress returns false when no row exists`() {
+      assertFalse(store.isSurvivalRateRecalculationInProgress(plantingSiteId))
+    }
+
+    @Test
+    fun `isSurvivalRateRecalculationInProgress returns true after a write`() {
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+      )
+
+      assertTrue(store.isSurvivalRateRecalculationInProgress(plantingSiteId))
+    }
+
+    @Test
+    fun `isSurvivalRateRecalculationInProgress returns false when last_recalculated_time catches up`() {
+      store.assignT0PlotSpeciesDensities(
+          monitoringPlotId,
+          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
+      )
+
+      // Simulate a completed recalc by setting last_recalculated_time = last_modified_time.
+      val modified = clock.instant()
+      dslContext
+          .update(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS)
+          .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_RECALCULATED_TIME, modified)
+          .where(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+          .execute()
+
+      assertFalse(store.isSurvivalRateRecalculationInProgress(plantingSiteId))
+    }
+  }
+
+  private fun assertSiteRecalculationState(
+      lastT0ModifiedTime: java.time.Instant? = null,
+      lastObservationModifiedTime: java.time.Instant? = null,
+      lastRecalculatedTime: java.time.Instant? = null,
+  ) {
+    assertTableEquals(
+        PlantingSiteSurvivalRateRecalculationsRecord(
+            plantingSiteId = plantingSiteId,
+            lastT0ModifiedTime = lastT0ModifiedTime,
+            lastObservationModifiedTime = lastObservationModifiedTime,
+            lastRecalculatedTime = lastRecalculatedTime,
+        )
+    )
   }
 }

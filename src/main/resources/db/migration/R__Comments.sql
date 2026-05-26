@@ -523,6 +523,11 @@ COMMENT ON COLUMN tracking.planting_site_notifications.notification_number IS 'N
 
 COMMENT ON TABLE tracking.planting_site_populations IS 'Total number of plants of each species in each planting site.';
 
+COMMENT ON TABLE tracking.planting_site_survival_rate_recalculations IS 'Tracks whether a survival rate recalculation is pending or in progress for a planting site. A row exists for any site whose underlying data has triggered a recalc. The site is considered to have a recalculation in progress whenever `last_recalculated_time` is `NULL` or older than either `last_t0_modified_time` or `last_observation_modified_time`.';
+COMMENT ON COLUMN tracking.planting_site_survival_rate_recalculations.last_t0_modified_time IS 'Most recent time at which a T0 write requested a survival rate recalculation. `NULL` if no T0 write has ever requested one for this site.';
+COMMENT ON COLUMN tracking.planting_site_survival_rate_recalculations.last_observation_modified_time IS 'Most recent time at which an edit to observation species totals requested a survival rate recalculation. `NULL` if no such edit has ever requested one for this site.';
+COMMENT ON COLUMN tracking.planting_site_survival_rate_recalculations.last_recalculated_time IS 'Most recent time at which a recalculation job completed and observed no newer write since it took its snapshot. `NULL` until the first recalculation completes.';
+
 COMMENT ON TABLE tracking.planting_sites IS 'Top-level information about entire planting sites. Every planting site has at least one stratum.';
 COMMENT ON COLUMN tracking.planting_sites.boundary IS 'Boundary of the entire planting site. strata will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).';
 COMMENT ON COLUMN tracking.planting_sites.exclusion IS 'Optional area to exclude from a site. No monitoring plots will be located in this area.';

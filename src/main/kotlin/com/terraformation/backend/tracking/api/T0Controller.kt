@@ -54,9 +54,11 @@ class T0Controller(
   ): GetAllSiteT0DataSetResponsePayload {
     val allSet = t0Store.fetchAllT0SiteDataSet(plantingSiteId)
     val plots = t0Store.fetchMonitoringPlotsT0Status(plantingSiteId)
+    val recalculationInProgress = t0Store.isSurvivalRateRecalculationInProgress(plantingSiteId)
 
     return GetAllSiteT0DataSetResponsePayload(
         allSet = allSet,
+        survivalRateRecalculationInProgress = recalculationInProgress,
         plots = plots.map { MonitoringPlotT0StatusPayload(it) },
     )
   }
@@ -202,6 +204,7 @@ data class StratumT0DataPayload(
 data class SiteT0DataResponsePayload(
     val plantingSiteId: PlantingSiteId,
     val survivalRateIncludesTempPlots: Boolean = false,
+    val survivalRateRecalculationInProgress: Boolean = false,
     val plots: List<PlotT0DataPayload> = emptyList(),
     val zones: List<ZoneT0DataPayload> = emptyList(),
     val strata: List<StratumT0DataPayload> = emptyList(),
@@ -211,6 +214,7 @@ data class SiteT0DataResponsePayload(
   ) : this(
       plantingSiteId = model.plantingSiteId,
       survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
+      survivalRateRecalculationInProgress = model.survivalRateRecalculationInProgress,
       plots = model.plots.map { PlotT0DataPayload(it) },
       zones = model.strata.map { ZoneT0DataPayload(it) },
       strata = model.strata.map { StratumT0DataPayload(it) },
@@ -265,6 +269,7 @@ data class MonitoringPlotT0StatusPayload(
 
 data class GetAllSiteT0DataSetResponsePayload(
     val allSet: Boolean,
+    val survivalRateRecalculationInProgress: Boolean,
     val plots: List<MonitoringPlotT0StatusPayload>,
 ) : SuccessResponsePayload
 

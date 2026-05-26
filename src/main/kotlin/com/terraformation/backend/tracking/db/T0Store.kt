@@ -17,8 +17,10 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_POPULATIONS
@@ -41,6 +43,7 @@ import com.terraformation.backend.tracking.model.StratumT0TempDensityChangedMode
 import com.terraformation.backend.util.toPlantsPerHectare
 import jakarta.inject.Named
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -74,11 +77,36 @@ class T0Store(
             SiteT0DataModel(
                 plantingSiteId = plantingSiteId,
                 survivalRateIncludesTempPlots = record[SURVIVAL_RATE_INCLUDES_TEMP_PLOTS]!!,
+                survivalRateRecalculationInProgress =
+                    isSurvivalRateRecalculationInProgress(plantingSiteId),
                 plots = record[plotMultiset]!!,
                 strata = record[stratumMultiset]!!,
             )
           }
     } ?: throw PlantingSiteNotFoundException(plantingSiteId)
+  }
+
+  fun isSurvivalRateRecalculationInProgress(plantingSiteId: PlantingSiteId): Boolean {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    val row =
+        with(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS) {
+          dslContext
+              .select(LAST_T0_MODIFIED_TIME, LAST_OBSERVATION_MODIFIED_TIME, LAST_RECALCULATED_TIME)
+              .from(this)
+              .where(PLANTING_SITE_ID.eq(plantingSiteId))
+              .fetchOne()
+        } ?: return false
+
+    val t0Modified = row[PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME]
+    val observationModified =
+        row[PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_OBSERVATION_MODIFIED_TIME]
+    val recalculated = row[PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_RECALCULATED_TIME]
+
+    if (t0Modified == null && observationModified == null) return false
+    if (recalculated == null) return true
+    return (t0Modified != null && t0Modified > recalculated) ||
+        (observationModified != null && observationModified > recalculated)
   }
 
   fun fetchAllT0SiteDataSet(plantingSiteId: PlantingSiteId): Boolean {
@@ -462,6 +490,8 @@ class T0Store(
             .set(MODIFIED_TIME, now)
             .execute()
 
+        markRecalculationRequestedForPlot(monitoringPlotId, now)
+
         eventPublisher.publishEvent(
             T0PlotDataAssignedEvent(
                 monitoringPlotId = monitoringPlotId,
@@ -548,6 +578,8 @@ class T0Store(
             .execute()
       }
 
+      markRecalculationRequestedForPlot(monitoringPlotId, now)
+
       eventPublisher.publishEvent(T0PlotDataAssignedEvent(monitoringPlotId = monitoringPlotId))
     }
 
@@ -614,6 +646,8 @@ class T0Store(
             .set(MODIFIED_TIME, now)
             .execute()
       }
+
+      markRecalculationRequestedForStratum(stratumId, now)
 
       eventPublisher.publishEvent(T0StratumDataAssignedEvent(stratumId = stratumId))
     }
@@ -698,6 +732,37 @@ class T0Store(
                 .and(OBSERVED_PLOT_SPECIES_TOTALS.SPECIES_ID.isNotNull)
                 .and(PLOT_T0_DENSITIES.SPECIES_ID.isNull)
         )
+        .execute()
+  }
+
+  private fun markRecalculationRequestedForPlot(monitoringPlotId: MonitoringPlotId, now: Instant) {
+    val plantingSiteId =
+        dslContext
+            .select(MONITORING_PLOTS.PLANTING_SITE_ID)
+            .from(MONITORING_PLOTS)
+            .where(MONITORING_PLOTS.ID.eq(monitoringPlotId))
+            .fetchOne(MONITORING_PLOTS.PLANTING_SITE_ID.asNonNullable()) ?: return
+    markRecalculationRequested(plantingSiteId, now)
+  }
+
+  private fun markRecalculationRequestedForStratum(stratumId: StratumId, now: Instant) {
+    val plantingSiteId =
+        dslContext
+            .select(STRATA.PLANTING_SITE_ID)
+            .from(STRATA)
+            .where(STRATA.ID.eq(stratumId))
+            .fetchOne(STRATA.PLANTING_SITE_ID.asNonNullable()) ?: return
+    markRecalculationRequested(plantingSiteId, now)
+  }
+
+  private fun markRecalculationRequested(plantingSiteId: PlantingSiteId, now: Instant) {
+    dslContext
+        .insertInto(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS)
+        .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID, plantingSiteId)
+        .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME, now)
+        .onConflict(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID)
+        .doUpdate()
+        .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME, now)
         .execute()
   }
 
