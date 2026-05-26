@@ -22,6 +22,7 @@ import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_MEDIA_FILES
+import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.VideoStreamNotFoundException
@@ -132,6 +133,8 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
           setOf(otherActivityFileId, otherProjectActivityFileId, otherOrganizationActivityFileId)
       )
 
+      assertTableEmpty(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES)
+
       assertIsEventListener<ActivityDeletionStartedEvent>(service)
     }
 
@@ -141,6 +144,8 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val publishedActivitiesBefore = dslContext.fetch(PUBLISHED_ACTIVITIES)
       val publishedActivityMediaBefore = dslContext.fetch(PUBLISHED_ACTIVITY_MEDIA_FILES)
+      val publishedActivityObservationMediaBefore =
+          dslContext.fetch(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES)
 
       service.on(ActivityDeletionStartedEvent(unpublishedActivityId))
 
@@ -148,6 +153,7 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEquals(publishedActivitiesBefore)
       assertTableEquals(publishedActivityMediaBefore)
+      assertTableEquals(publishedActivityObservationMediaBefore)
     }
 
     @Test
@@ -166,6 +172,8 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       assertRemainingFileIds(setOf(otherProjectActivityFileId, otherOrganizationActivityFileId))
 
+      assertTableEmpty(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES)
+
       assertIsEventListener<ProjectDeletionStartedEvent>(service)
     }
 
@@ -183,6 +191,8 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertRemainingPublishedActivityIds(setOf(otherOrganizationActivityId))
       assertRemainingFileIds(setOf(otherOrganizationActivityFileId))
+
+      assertTableEmpty(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES)
 
       assertIsEventListener<OrganizationDeletionStartedEvent>(service)
     }
