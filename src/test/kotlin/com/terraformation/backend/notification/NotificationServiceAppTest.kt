@@ -101,7 +101,6 @@ import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
-import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
@@ -152,7 +151,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var moduleEventStore: ModuleEventStore
   private lateinit var moduleStore: ModuleStore
   private lateinit var notificationStore: NotificationStore
-  private lateinit var observationResultsStore: ObservationResultsStore
   private lateinit var organizationStore: OrganizationStore
   private lateinit var parentStore: ParentStore
   private lateinit var plantingSiteStore: PlantingSiteStore
@@ -224,7 +222,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     moduleStore = ModuleStore(dslContext)
     notificationStore = NotificationStore(dslContext, clock)
     organizationStore = OrganizationStore(clock, dslContext, organizationsDao, publisher)
-    observationResultsStore = ObservationResultsStore(dslContext)
     plantingSiteStore =
         PlantingSiteStore(
             clock,
@@ -248,7 +245,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             dslContext,
             publisher,
             messages,
-            observationResultsStore,
             reportsDao,
             SystemUser(usersDao),
         )
