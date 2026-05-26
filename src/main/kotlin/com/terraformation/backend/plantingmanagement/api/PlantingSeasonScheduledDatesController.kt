@@ -12,6 +12,7 @@ import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDate
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
+import jakarta.validation.constraints.Min
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -42,7 +43,7 @@ class PlantingSeasonScheduledDatesController(
 }
 
 data class ScheduledPlantingDateSpeciesPayload(
-    val quantity: Int,
+    @field:Min(0) val quantity: Int,
     val speciesId: SpeciesId,
     val substratumId: SubstratumId,
 ) {
