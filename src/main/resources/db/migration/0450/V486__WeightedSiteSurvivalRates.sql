@@ -64,13 +64,25 @@ SET survival_rate = CASE
     END
 FROM aggregates a
 WHERE osr.observation_id = a.observation_id
-  AND osr.planting_site_history_id = a.planting_site_history_id;
+  AND osr.planting_site_history_id = a.planting_site_history_id
+  AND EXISTS (
+      SELECT 1
+      FROM tracking.observations o
+      WHERE o.id = osr.observation_id
+      AND o.completed_time IS NOT NULL
+  );
 
 -- Rows with no qualifying substrata at all (so no aggregates row was produced) should
 -- have null survival rates. The UPDATE above won't touch them, so handle them separately.
 UPDATE tracking.observation_site_results osr
 SET survival_rate = NULL
 WHERE survival_rate IS NOT NULL
+  AND EXISTS (
+      SELECT 1
+      FROM tracking.observations o
+      WHERE o.id = osr.observation_id
+      AND o.completed_time IS NOT NULL
+  )
   AND NOT EXISTS (
       SELECT 1
       FROM tracking.observation_stratum_results stratum_r
