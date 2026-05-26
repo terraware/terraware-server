@@ -70,21 +70,6 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         )
     val plantingSiteHistoryId = inserted.plantingSiteHistoryId
 
-    val plantingSeasonId1 =
-        insertPlantingSeason(
-            endDate = LocalDate.of(1970, 2, 15),
-            name = "Season 1",
-            startDate = LocalDate.of(1970, 1, 1),
-            status = PlantingSeasonStatus.Active,
-        )
-    val plantingSeasonId2 =
-        insertPlantingSeason(
-            endDate = LocalDate.of(1970, 6, 5),
-            name = "Season 2",
-            startDate = LocalDate.of(1970, 3, 1),
-            status = PlantingSeasonStatus.Upcoming,
-        )
-
     val stratumId2 = insertStratum(boundary = stratumGeometry, name = "S2")
     val stratumHistoryId2 = inserted.stratumHistoryId
 
@@ -124,6 +109,23 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     val speciesId1 = insertSpecies()
     val speciesId2 = insertSpecies()
+
+    val plantingSeasonId1 =
+        insertPlantingSeason(
+            endDate = LocalDate.of(1970, 2, 15),
+            name = "Season 1",
+            startDate = LocalDate.of(1970, 1, 1),
+            status = PlantingSeasonStatus.Active,
+        )
+    insertPlantingSeasonSpeciesTarget(quantity = 11)
+    val plantingSeasonId2 =
+        insertPlantingSeason(
+            endDate = LocalDate.of(1970, 6, 5),
+            name = "Season 2",
+            startDate = LocalDate.of(1970, 3, 1),
+            status = PlantingSeasonStatus.Upcoming,
+        )
+    insertPlantingSeasonSpeciesTarget(quantity = 12)
 
     insertFacility(type = FacilityType.Nursery)
 
@@ -597,6 +599,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "endDate" to "1970-02-15",
                                 "id" to "$plantingSeasonId1",
                                 "name" to "Season 1",
+                                "speciesTargets" to listOf(mapOf("quantity" to "11")),
                                 "startDate" to "1970-01-01",
                                 "status" to "Active",
                             ),
@@ -604,6 +607,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "endDate" to "1970-06-05",
                                 "id" to "$plantingSeasonId2",
                                 "name" to "Season 2",
+                                "speciesTargets" to listOf(mapOf("quantity" to "12")),
                                 "startDate" to "1970-03-01",
                                 "status" to "Upcoming",
                             ),
@@ -940,6 +944,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingSeasons.name",
                 "plantingSeasons.startDate",
                 "plantingSeasons.status",
+                "plantingSeasons.speciesTargets.quantity",
                 "strata.boundary",
                 "strata.boundaryModifiedTime",
                 "strata.createdTime",
