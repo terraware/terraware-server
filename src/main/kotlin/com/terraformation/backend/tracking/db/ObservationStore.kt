@@ -2143,22 +2143,22 @@ class ObservationStore(
   @EventListener
   fun on(event: T0PlotDataAssignedEvent) {
     jobScheduler.enqueue<ObservationStore> {
-      runRecalculateSurvivalRatesForPlot(event.monitoringPlotId)
+      runRecalculateSurvivalRates(event.monitoringPlotId)
     }
   }
 
   @EventListener
   fun on(event: T0StratumDataAssignedEvent) {
     jobScheduler.enqueue<ObservationStore> {
-      runRecalculateSurvivalRatesForStratum(event.stratumId)
+      runRecalculateSurvivalRates(event.stratumId)
     }
   }
 
-  fun runRecalculateSurvivalRatesForPlot(monitoringPlotId: MonitoringPlotId) {
+  fun runRecalculateSurvivalRates(monitoringPlotId: MonitoringPlotId) {
     systemUser.run { recalculateSurvivalRates(monitoringPlotId) }
   }
 
-  fun runRecalculateSurvivalRatesForStratum(stratumId: StratumId) {
+  fun runRecalculateSurvivalRates(stratumId: StratumId) {
     systemUser.run { recalculateSurvivalRates(stratumId) }
   }
 
