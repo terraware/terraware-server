@@ -313,6 +313,15 @@ class PublishedActivityStore(
 
   private fun deletePublishedMediaFiles(condition: Condition) {
     with(PUBLISHED_ACTIVITY_MEDIA_FILES) {
+      dslContext
+          .deleteFrom(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES)
+          .where(
+              PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES.FILE_ID.`in`(
+                  DSL.select(FILE_ID).from(PUBLISHED_ACTIVITY_MEDIA_FILES).where(condition)
+              )
+          )
+          .execute()
+
       val deletedFileIds =
           dslContext
               .deleteFrom(PUBLISHED_ACTIVITY_MEDIA_FILES)
