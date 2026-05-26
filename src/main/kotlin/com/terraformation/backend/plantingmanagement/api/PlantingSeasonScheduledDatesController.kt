@@ -41,7 +41,7 @@ class PlantingSeasonScheduledDatesController(
   }
 }
 
-data class CreateScheduledPlantingDateSpeciesPayload(
+data class ScheduledPlantingDateSpeciesPayload(
     val quantity: Int,
     val speciesId: SpeciesId,
     val substratumId: SubstratumId,
@@ -56,7 +56,7 @@ data class CreateScheduledPlantingDateSpeciesPayload(
 
 data class CreateScheduledPlantingDateRequestPayload(
     val date: LocalDate,
-    val species: List<CreateScheduledPlantingDateSpeciesPayload> = emptyList(),
+    val species: List<ScheduledPlantingDateSpeciesPayload> = emptyList(),
 ) {
   fun toModel(plantingSeasonId: PlantingSeasonId): PlantingSeasonScheduledDateModel =
       PlantingSeasonScheduledDateModel(
