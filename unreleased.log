@@ -1,3 +1,7 @@
+d1d42e31 SW-8390 Add planting season species targets to search api (#4440)
+725b861f SW-8390 Change simple seasons to named seasons in search api (#4439)
+1dec09b6 Add planting management controllers to springdoc, add test to ensure this doesn't happen again (#4453)
+f4cc72ff Update Node.js to v24.16.0 (#4452)
 502aa636 Update dependency org.springframework.ai:spring-ai-bom to v1.1.7 (#4451)
 fdb267d7 Update dependency html-minifier-next to v6.2.7 (#4450)
 a1ec0496 Update plugin com.diffplug.spotless to v8.5.1 (#4449)
