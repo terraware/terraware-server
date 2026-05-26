@@ -78,6 +78,7 @@ class ActivityStore(
         media = emptyList(),
         modifiedBy = userId,
         modifiedTime = now,
+        observation = null,
         projectId = model.projectId,
     )
   }
@@ -266,40 +267,34 @@ class ActivityStore(
       mediaDepth: ActivityMediaDepth,
   ): List<ExistingActivityModel> {
     return with(ACTIVITIES) {
-      if (mediaDepth != ActivityMediaDepth.None) {
-        val mediaCondition =
-            when (mediaDepth) {
-              ActivityMediaDepth.CoverPhotos -> ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO.isTrue()
-              ActivityMediaDepth.All -> DSL.trueCondition()
-            }
-        val mediaField = mediaMultiset(mediaCondition)
-        dslContext
-            .select(
-                asterisk(),
-                PUBLISHED_ACTIVITIES.PUBLISHED_BY,
-                PUBLISHED_ACTIVITIES.PUBLISHED_TIME,
-                mediaField,
-            )
-            .from(ACTIVITIES)
-            .leftJoin(PUBLISHED_ACTIVITIES)
-            .on(ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
-            .where(condition)
-            .orderBy(ID)
-            .fetch { ExistingActivityModel.of(it, mediaField) }
-      } else {
-        dslContext
-            .select(
-                asterisk(),
-                PUBLISHED_ACTIVITIES.PUBLISHED_BY,
-                PUBLISHED_ACTIVITIES.PUBLISHED_TIME,
-            )
-            .from(ACTIVITIES)
-            .leftJoin(PUBLISHED_ACTIVITIES)
-            .on(ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
-            .where(condition)
-            .orderBy(ID)
-            .fetch { ExistingActivityModel.of(it, null) }
-      }
+      val mediaField =
+          if (mediaDepth != ActivityMediaDepth.None) {
+            val mediaCondition =
+                when (mediaDepth) {
+                  ActivityMediaDepth.CoverPhotos -> ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO.isTrue()
+                  ActivityMediaDepth.All -> DSL.trueCondition()
+                }
+            mediaMultiset(mediaCondition)
+          } else {
+            null
+          }
+
+      dslContext
+          .select(
+              asterisk(),
+              ACTIVITY_OBSERVATIONS.OBSERVATION_ID,
+              PUBLISHED_ACTIVITIES.PUBLISHED_BY,
+              PUBLISHED_ACTIVITIES.PUBLISHED_TIME,
+              mediaField ?: DSL.one(),
+          )
+          .from(ACTIVITIES)
+          .leftJoin(ACTIVITY_OBSERVATIONS)
+          .on(ID.eq(ACTIVITY_OBSERVATIONS.ACTIVITY_ID))
+          .leftJoin(PUBLISHED_ACTIVITIES)
+          .on(ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
+          .where(condition)
+          .orderBy(ID)
+          .fetch { ExistingActivityModel.of(it, mediaField) }
     }
   }
 

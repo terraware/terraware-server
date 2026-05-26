@@ -271,7 +271,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertStratum()
       insertSubstratum()
       insertMonitoringPlot(plotNumber = 321)
-      insertObservation(completedTime = Instant.EPOCH)
+      val observationId = insertObservation(completedTime = Instant.EPOCH)
       insertObservationPlot()
 
       val activityId =
@@ -280,6 +280,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               activityType = ActivityType.Monitoring,
               description = "Test monitoring activity",
           )
+      insertActivityObservation()
       val fileId1 =
           insertFile(
               capturedLocalTime = LocalDate.of(2024, 2, 19).atStartOfDay(),
@@ -370,6 +371,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   ),
               modifiedBy = user.userId,
               modifiedTime = Instant.EPOCH,
+              observation = ExistingActivityModel.Observation(observationId),
               projectId = projectId,
           )
 
