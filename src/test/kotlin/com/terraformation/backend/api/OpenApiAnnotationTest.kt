@@ -12,8 +12,13 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.springframework.boot.context.properties.bind.Bindable
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.boot.env.YamlPropertySourceLoader
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
 import org.springframework.core.annotation.MergedAnnotations
+import org.springframework.core.env.StandardEnvironment
+import org.springframework.core.io.ClassPathResource
 import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,11 +27,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.boot.context.properties.bind.Bindable
-import org.springframework.boot.context.properties.bind.Binder
-import org.springframework.boot.env.YamlPropertySourceLoader
-import org.springframework.core.env.StandardEnvironment
-import org.springframework.core.io.ClassPathResource
 
 /**
  * Verifies that all our controller methods have the expected set of annotations to generate a good
@@ -86,14 +86,14 @@ class OpenApiAnnotationTest {
 
   companion object {
     /**
-     * Packages containing @RestController classes that are intentionally excluded from
-     * springdoc scanning (e.g., internal-only controllers that should not appear in the public
-     * API docs).
+     * Packages containing @RestController classes that are intentionally excluded from springdoc
+     * scanning (e.g., internal-only controllers that should not appear in the public API docs).
      */
     private val SPRINGDOC_PACKAGE_SCAN_BLACKLIST: Set<String> = setOf()
 
     private val springdocPackagesToScan: Set<String> by lazy {
-      val propertySources = YamlPropertySourceLoader().load("application", ClassPathResource("application.yaml"))
+      val propertySources =
+          YamlPropertySourceLoader().load("application", ClassPathResource("application.yaml"))
       val environment = StandardEnvironment()
       propertySources.forEach { environment.propertySources.addFirst(it) }
       Binder.get(environment)
