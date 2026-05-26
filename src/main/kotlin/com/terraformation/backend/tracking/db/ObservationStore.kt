@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
@@ -103,6 +104,7 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
+import org.jobrunr.scheduling.JobScheduler
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -110,6 +112,7 @@ import org.jooq.Record
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.context.annotation.Lazy
 import org.springframework.context.event.EventListener
 
 @Named
@@ -117,12 +120,15 @@ class ObservationStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    // JobRunr is disabled when generating OpenAPI docs from Gradle
+    @Lazy private val jobScheduler: JobScheduler,
     private val observationLocker: ObservationLocker,
     private val observationsDao: ObservationsDao,
     private val observationPlotConditionsDao: ObservationPlotConditionsDao,
     private val observationPlotsDao: ObservationPlotsDao,
     private val observationRequestedSubstrataDao: ObservationRequestedSubstrataDao,
     private val parentStore: ParentStore,
+    private val systemUser: SystemUser,
 ) {
   companion object {
     val requestedSubstratumIdsField: Field<Set<SubstratumId>> =
@@ -2166,12 +2172,24 @@ class ObservationStore(
 
   @EventListener
   fun on(event: T0PlotDataAssignedEvent) {
-    recalculateSurvivalRates(event.monitoringPlotId)
+    jobScheduler.enqueue<ObservationStore> {
+      runRecalculateSurvivalRatesForPlot(event.monitoringPlotId)
+    }
   }
 
   @EventListener
   fun on(event: T0StratumDataAssignedEvent) {
-    recalculateSurvivalRates(event.stratumId)
+    jobScheduler.enqueue<ObservationStore> {
+      runRecalculateSurvivalRatesForStratum(event.stratumId)
+    }
+  }
+
+  fun runRecalculateSurvivalRatesForPlot(monitoringPlotId: MonitoringPlotId) {
+    systemUser.run { recalculateSurvivalRates(monitoringPlotId) }
+  }
+
+  fun runRecalculateSurvivalRatesForStratum(stratumId: StratumId) {
+    systemUser.run { recalculateSurvivalRates(stratumId) }
   }
 
   private fun deleteObservation(observationId: ObservationId) {

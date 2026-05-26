@@ -121,6 +121,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -155,17 +156,21 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val biomassStore: BiomassStore by lazy {
     BiomassStore(dslContext, eventPublisher, observationLocker, parentStore)
   }
+  private val jobScheduler: JobScheduler = mockk()
+  private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
         eventPublisher,
+        jobScheduler,
         observationLocker,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
         parentStore,
+        systemUser,
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {

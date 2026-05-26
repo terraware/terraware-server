@@ -23,6 +23,7 @@ import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.nearlyCoveredBy
 import io.mockk.every
 import io.mockk.mockk
+import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.RepeatedTest
@@ -36,17 +37,21 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
   private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
+  private val jobScheduler: JobScheduler = mockk()
+  private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val observationStore: ObservationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
         eventPublisher,
+        jobScheduler,
         observationLocker,
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
         parentStore,
+        systemUser,
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
