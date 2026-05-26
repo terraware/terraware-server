@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotsRow
@@ -70,15 +71,18 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     val plantingSiteHistoryId = inserted.plantingSiteHistoryId
 
     val plantingSeasonId1 =
-        insertSimplePlantingSeason(
-            startDate = LocalDate.of(1970, 1, 1),
+        insertPlantingSeason(
             endDate = LocalDate.of(1970, 2, 15),
-            isActive = true,
+            name = "Season 1",
+            startDate = LocalDate.of(1970, 1, 1),
+            status = PlantingSeasonStatus.Active,
         )
     val plantingSeasonId2 =
-        insertSimplePlantingSeason(
-            startDate = LocalDate.of(1970, 3, 1),
+        insertPlantingSeason(
             endDate = LocalDate.of(1970, 6, 5),
+            name = "Season 2",
+            startDate = LocalDate.of(1970, 3, 1),
+            status = PlantingSeasonStatus.Upcoming,
         )
 
     val stratumId2 = insertStratum(boundary = stratumGeometry, name = "S2")
@@ -592,14 +596,16 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                             mapOf(
                                 "endDate" to "1970-02-15",
                                 "id" to "$plantingSeasonId1",
-                                "isActive" to "true",
+                                "name" to "Season 1",
                                 "startDate" to "1970-01-01",
+                                "status" to "Active",
                             ),
                             mapOf(
                                 "endDate" to "1970-06-05",
                                 "id" to "$plantingSeasonId2",
-                                "isActive" to "false",
+                                "name" to "Season 2",
                                 "startDate" to "1970-03-01",
+                                "status" to "Upcoming",
                             ),
                         ),
                     "strata" to
@@ -931,8 +937,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "observations.substratumResults.totalLive",
                 "plantingSeasons.endDate",
                 "plantingSeasons.id",
-                "plantingSeasons.isActive",
+                "plantingSeasons.name",
                 "plantingSeasons.startDate",
+                "plantingSeasons.status",
                 "strata.boundary",
                 "strata.boundaryModifiedTime",
                 "strata.createdTime",
