@@ -98,7 +98,7 @@ dependencies {
   implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2"))
   implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
-  implementation(platform("org.springframework.ai:spring-ai-bom:1.1.6"))
+  implementation(platform("org.springframework.ai:spring-ai-bom:1.1.7"))
   implementation("org.springframework.ai:spring-ai-starter-model-openai")
   implementation("org.springframework.ai:spring-ai-starter-vector-store-pgvector")
   implementation("org.springframework.ai:spring-ai-advisors-vector-store")
