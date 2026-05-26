@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import java.math.BigDecimal
+import java.math.MathContext
 import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
@@ -424,9 +425,15 @@ data class ObservationRollupResultsModel(
           }
 
       val survivalRate =
-          if (nonNullStratumResults.all { it.survivalRate != null })
-              species.calculateSurvivalRate(survivalRateIncludesTempPlots)
-          else null
+          calculateAreaWeightedSurvivalRate(
+              nonNullStratumResults.map { stratum ->
+                StratumWithObservedArea(
+                    survivalRate = stratum.survivalRate,
+                    observedSubstratumAreaHa =
+                        stratum.substrata.filter { it.survivalRate != null }.sumOf { it.areaHa },
+                )
+              }
+          )
       val survivalRateStdDev =
           if (survivalRate != null)
               monitoringPlots
@@ -491,6 +498,30 @@ fun calculateSurvivalRate(numKnownLive: Int, sumDensity: BigDecimal?): Int? {
   } else {
     null
   }
+}
+
+/** Input to [calculateAreaWeightedSurvivalRate]: one entry per stratum with observed substrata. */
+data class StratumWithObservedArea(
+    val survivalRate: Int?,
+    val observedSubstratumAreaHa: BigDecimal,
+)
+
+/**
+ * Returns the area-weighted average of the strata's survival rates as an integer percentage rounded
+ * HALF_UP, matching [calculateSurvivalRate].
+ */
+fun calculateAreaWeightedSurvivalRate(strata: List<StratumWithObservedArea>): Int? {
+  if (strata.isEmpty() || strata.any { it.survivalRate == null }) return null
+
+  val denominator = strata.sumOf { it.observedSubstratumAreaHa }
+  if (denominator.signum() <= 0) return null
+
+  val numerator = strata.sumOf { it.observedSubstratumAreaHa * BigDecimal(it.survivalRate!!) }
+
+  return numerator
+      .divide(denominator, MathContext.DECIMAL64)
+      .setScale(0, RoundingMode.HALF_UP)
+      .toInt()
 }
 
 /**

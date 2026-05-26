@@ -639,7 +639,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     }
     observationStore.recalculateSurvivalRates(stratumId)
 
-    val actualResults = resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)
+    val actualResults = resultsStoreV2.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)
     val obs1UpdatedResults = ratesObjectFromResults(actualResults[1], plantingSiteId)
     val obs2UpdatedResults = ratesObjectFromResults(actualResults[0], plantingSiteId)
 
@@ -838,7 +838,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
       val baseline =
           expectResults(1) {
-            survivalRate(96)
+            survivalRate(97)
             species(0, survivalRate = 97)
             species(1, survivalRate = 96)
             stratum(1) {
@@ -970,7 +970,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
       val baseline =
           expectResults(1) {
-            survivalRate(56)
+            survivalRate(54)
             species(0, survivalRate = 62)
             species(1, survivalRate = 52)
             stratum(1) {
@@ -1023,7 +1023,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
       // Only species 0's results should change, and only in stratum 1.
       expectResults(1, baseline = baseline) {
-        survivalRate(60)
+        survivalRate(58)
         species(0, survivalRate = 74)
         stratum(1) {
           survivalRate(49)
@@ -1122,7 +1122,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
       val observation1Results =
           expectResults(1) {
-            survivalRate(81)
+            survivalRate(83)
             species(0, survivalRate = 83)
             species(1, survivalRate = 80)
             stratum(1) {
@@ -1239,7 +1239,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       expectUnchangedResults(observation = 1, baseline = observation1Results)
 
       expectResults(observation = 2) {
-        survivalRate(92)
+        survivalRate(93)
         species(0, survivalRate = 92)
         species(1, survivalRate = 93)
         stratum(1) {
@@ -1333,15 +1333,20 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         plot(3) { species(0, live = obsLive[1][3]) }
       }
 
+      // Area-weighted site rate; substratum areas are all 1, so each stratum's rate is weighted by
+      // the count of its observed substrata.
+      fun areaWeightedSiteRate(stratumRates: List<Pair<Int, Int>>): Int {
+        val totalWeight = stratumRates.sumOf { it.first }
+        val weighted = stratumRates.sumOf { (substrataCount, rate) -> substrataCount * rate }
+        return weighted / totalWeight
+      }
+
       expectResults(observation = 1) {
-        survivalRate(
-            percent(
-                obsLive[1][1] + obsLive[1][2] + obsLive[1][3],
-                densities[1] + densities[2] + densities[3],
-            )
-        )
+        val stratum1ObsRate1 = percent(obsLive[1][1] + obsLive[1][2], densities[1] + densities[2])
+        val stratum2ObsRate1 = percent(obsLive[1][3], densities[3])
+        survivalRate(areaWeightedSiteRate(listOf(2 to stratum1ObsRate1, 1 to stratum2ObsRate1)))
         stratum(1) {
-          survivalRate(percent(obsLive[1][1] + obsLive[1][2], densities[1] + densities[2]))
+          survivalRate(stratum1ObsRate1)
           substratum(1) {
             survivalRate(percent(obsLive[1][1], densities[1]))
             plot(1) { survivalRate(percent(obsLive[1][1], densities[1])) }
@@ -1352,10 +1357,10 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           }
         }
         stratum(2) {
-          survivalRate(percent(obsLive[1][3], densities[3]))
+          survivalRate(stratum2ObsRate1)
           substratum(3) {
-            survivalRate(percent(obsLive[1][3], densities[3]))
-            plot(3) { survivalRate(percent(obsLive[1][3], densities[3])) }
+            survivalRate(stratum2ObsRate1)
+            plot(3) { survivalRate(stratum2ObsRate1) }
           }
         }
       }
@@ -1363,14 +1368,11 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       observation(2) { plot(1) { species(0, live = obsLive[2][1]) } }
 
       expectResults(observation = 2) {
-        survivalRate(
-            percent(
-                obsLive[2][1] + obsLive[1][2] + obsLive[1][3],
-                densities[1] + densities[2] + densities[3],
-            )
-        )
+        // Stratum 2 has no result in this observation, so the site rate is just stratum 1's.
+        val stratum1ObsRate2 = percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2])
+        survivalRate(areaWeightedSiteRate(listOf(2 to stratum1ObsRate2)))
         stratum(1) {
-          survivalRate(percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2]))
+          survivalRate(stratum1ObsRate2)
           substratum(1) {
             survivalRate(percent(obsLive[2][1], densities[1]))
             plot(1) { survivalRate(percent(obsLive[2][1], densities[1])) }
@@ -1392,18 +1394,15 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       observation(3) { plot(3) { species(0, live = obsLive[3][3]) } }
 
       expectResults(observation = 3) {
-        // Should pull substratum 1 rate from observation 2
-        survivalRate(
-            percent(
-                obsLive[2][1] + obsLive[1][2] + obsLive[3][3],
-                densities[1] + densities[2] + densities[3],
-            )
-        )
+        // Stratum 1 has no OBSERVATION_STRATUM_RESULTS row in this observation (no plot in it was
+        // observed), so the site SR only includes stratum 2's substrata.
+        val stratum2ObsRate3 = percent(obsLive[1][2] + obsLive[3][3], densities[2] + densities[3])
+        survivalRate(areaWeightedSiteRate(listOf(2 to stratum2ObsRate3)))
         noResultForStratum(1)
         stratum(2) {
           // Should pull substratum 2 rate from observation 1, but credit it to stratum 2
           // thanks to the map edit
-          survivalRate(percent(obsLive[1][2] + obsLive[3][3], densities[2] + densities[3]))
+          survivalRate(stratum2ObsRate3)
           noResultForSubstratum(2)
           substratum(3) { survivalRate(percent(obsLive[3][3], densities[3])) }
         }
@@ -1537,6 +1536,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         ratesObjectFromResults(
             resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1],
             inserted.plantingSiteId,
+            resultsStoreV2
+                .fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1]
+                .survivalRate,
         )
     assertSurvivalRates(observation1Expected, observation1Actual, "Observation 1 shouldn't change")
   }
@@ -1681,7 +1683,12 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       message: String,
   ) {
     val siteResults = resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 1)[0]
-    val actual = ratesObjectFromResults(siteResults, inserted.plantingSiteId)
+    // The v1 store's site-level survival rate uses the legacy density-weighted formula; for the
+    // overall site rate we use the v2 store (which reads the area-weighted DB column) so that the
+    // assertion matches the same value as the raw DB column check below.
+    val siteResultsV2 = resultsStoreV2.fetchOneById(siteResults.observationId)
+    val actual =
+        ratesObjectFromResults(siteResults, inserted.plantingSiteId, siteResultsV2.survivalRate)
     assertSurvivalRates(expected, actual, message)
     assertResultTablesSurvivalRates(expected, siteResults.observationId, message)
   }
@@ -1832,6 +1839,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   private fun ratesObjectFromResults(
       siteResults: ObservationResultsModel,
       plantingSiteId: PlantingSiteId,
+      siteSurvivalRateOverride: Int? = siteResults.survivalRate,
   ): SurvivalRates {
     val siteMap = mutableMapOf<SpeciesId?, Int?>()
     val allStrataMap = mutableMapOf<Any, Map<SpeciesId?, Int?>>()
@@ -1840,7 +1848,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     siteResults.species
         .filter { it.certainty == RecordedSpeciesCertainty.Known }
         .forEach { species -> siteMap[species.speciesId] = species.survivalRate }
-    siteResults.survivalRate?.let { siteMap[null] = it }
+    siteSurvivalRateOverride?.let { siteMap[null] = it }
 
     siteResults.strata.forEach { stratum ->
       val stratumMap = mutableMapOf<SpeciesId?, Int?>()

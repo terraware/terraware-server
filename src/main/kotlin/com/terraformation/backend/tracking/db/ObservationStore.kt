@@ -1982,27 +1982,12 @@ class ObservationStore(
     val latestLiveField = updateScope.latestLiveField
 
     val survivalRateValue =
-        DSL.case_()
-            .`when`(
-                updateScope.anyChildHasNullSurvivalRateCondition(observationIdField),
-                DSL.castNull(SQLDataType.INTEGER),
-            )
-            .`when`(
-                survivalRateDenominator.eq(BigDecimal.ZERO),
-                DSL.castNull(SQLDataType.INTEGER),
-            )
-            .else_(
-                DSL.case_()
-                    .`when`(
-                        updateScope.observedTotalsPlantingSiteTempCondition,
-                        (latestLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator)),
-                    )
-                    .else_(
-                        (permanentLiveField
-                            .mul(BigDecimal.valueOf(100))
-                            .div(survivalRateDenominator)),
-                    )
-            )
+        updateScope.survivalRateValue(
+            observationIdField,
+            survivalRateDenominator,
+            latestLiveField,
+            permanentLiveField,
+        )
 
     dslContext
         .update(table)
@@ -2107,27 +2092,12 @@ class ObservationStore(
     val latestLiveField = updateScope.latestLiveField
 
     val survivalRateValue =
-        DSL.case_()
-            .`when`(
-                updateScope.anyChildHasNullSurvivalRateCondition(DSL.value(observationId)),
-                DSL.castNull(SQLDataType.INTEGER),
-            )
-            .`when`(
-                survivalRateDenominator.eq(BigDecimal.ZERO),
-                DSL.castNull(SQLDataType.INTEGER),
-            )
-            .else_(
-                DSL.case_()
-                    .`when`(
-                        updateScope.observedTotalsPlantingSiteTempCondition,
-                        (latestLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator)),
-                    )
-                    .else_(
-                        (permanentLiveField
-                            .mul(BigDecimal.valueOf(100))
-                            .div(survivalRateDenominator)),
-                    )
-            )
+        updateScope.survivalRateValue(
+            DSL.value(observationId),
+            survivalRateDenominator,
+            latestLiveField,
+            permanentLiveField,
+        )
 
     val allPlotsCompleted =
         dslContext

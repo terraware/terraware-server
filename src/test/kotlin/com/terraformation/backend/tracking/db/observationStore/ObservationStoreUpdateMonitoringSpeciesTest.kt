@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEventValues
 import com.terraformation.backend.tracking.scenario.ObservationScenario
@@ -51,6 +52,21 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(role = Role.Admin)
+  }
+
+  /**
+   * Models the area-weighted site survival rate over a list of (substratum count, stratum SR)
+   * pairs, where the substratum count is the number of substrata in the stratum that contribute to
+   * the site rate (carry-forward predicate applies). DSL default substratum area is 1 ha, so each
+   * substratum carries equal weight.
+   */
+  private fun areaWeightedSiteRate(stratumRates: List<Pair<Int, Int>>): Int {
+    val totalWeight = stratumRates.sumOf { it.first }
+    val weighted = stratumRates.sumOf { (substrataCount, rate) -> substrataCount * rate }
+    return weighted
+        .toBigDecimal()
+        .divide(totalWeight.toBigDecimal(), 0, java.math.RoundingMode.HALF_UP)
+        .toInt()
   }
 
   @Test
@@ -314,25 +330,32 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
       }
 
       fun assertResultsMatchNumbersFromObsLive() {
+        // Site-level survival rate is the area-weighted average across substrata of each stratum's
+        // SR (DSL default substratum area is 1 ha, so each substratum has equal weight).
+        val stratum1Live =
+            obsLive[111][0] +
+                obsLive[111][1] +
+                obsLive[112][0] +
+                obsLive[112][1] +
+                obsLive[211][0] +
+                obsLive[211][1]
+        val stratum1Density =
+            densities[111][0] +
+                densities[111][1] +
+                densities[112][0] +
+                densities[112][1] +
+                densities[211][0] +
+                densities[211][1]
+        val stratum2Live = obsLive[311][0] + obsLive[311][1]
+        val stratum2Density = densities[311][0] + densities[311][1]
+        // Stratum 1 has 2 substrata, stratum 2 has 1.
         expectResults(observation = 1) {
           survivalRate(
-              percent(
-                  obsLive[111][0] +
-                      obsLive[111][1] +
-                      obsLive[112][0] +
-                      obsLive[112][1] +
-                      obsLive[211][0] +
-                      obsLive[211][1] +
-                      obsLive[311][0] +
-                      obsLive[311][1],
-                  densities[111][0] +
-                      densities[111][1] +
-                      densities[112][0] +
-                      densities[112][1] +
-                      densities[211][0] +
-                      densities[211][1] +
-                      densities[311][0] +
-                      densities[311][1],
+              areaWeightedSiteRate(
+                  listOf(
+                      2 to percent(stratum1Live, stratum1Density),
+                      1 to percent(stratum2Live, stratum2Density),
+                  )
               )
           )
           species(
@@ -708,12 +731,9 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
         }
 
         expectResults(observation = 3) {
-          survivalRate(
-              percent(
-                  obsLive[1][111] + obsLive[2][121] + obsLive[3][211],
-                  densities[111] + densities[121] + densities[211],
-              )
-          )
+          // Stratum 1 has no OBSERVATION_STRATUM_RESULTS row in observation 3 (none of its plots
+          // were observed there), so the site SR only includes stratum 2's substrata.
+          survivalRate(percent(obsLive[3][211], densities[211]))
           stratum(2) {
             survivalRate(percent(obsLive[3][211], densities[211]))
             substratum(21) {
@@ -776,15 +796,15 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
       }
 
       fun assertResultsMatchNumbersFromObsLive() {
+        // Stratum 1 contains substrata 1 (plot 1) and 2 (plot 2); stratum 2 contains substratum 3.
         expectResults(observation = 1) {
-          survivalRate(
-              percent(
-                  obsLive[1][1] + obsLive[1][2] + obsLive[1][3],
-                  densities[1] + densities[2] + densities[3],
-              )
-          )
+          val stratum1SrObs1 = percent(obsLive[1][1] + obsLive[1][2], densities[1] + densities[2])
+          val stratum2SrObs1 = percent(obsLive[1][3], densities[3])
+
+          // Stratum 1 has 2 substrata, stratum 2 has 1.
+          survivalRate(areaWeightedSiteRate(listOf(2 to stratum1SrObs1, 1 to stratum2SrObs1)))
           stratum(1) {
-            survivalRate(percent(obsLive[1][1] + obsLive[1][2], densities[1] + densities[2]))
+            survivalRate(stratum1SrObs1)
             substratum(1) {
               survivalRate(percent(obsLive[1][1], densities[1]))
               plot(1) { survivalRate(percent(obsLive[1][1], densities[1])) }
@@ -795,23 +815,21 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
             }
           }
           stratum(2) {
-            survivalRate(percent(obsLive[1][3], densities[3]))
+            survivalRate(stratum2SrObs1)
             substratum(3) {
-              survivalRate(percent(obsLive[1][3], densities[3]))
-              plot(3) { survivalRate(percent(obsLive[1][3], densities[3])) }
+              survivalRate(stratum2SrObs1)
+              plot(3) { survivalRate(stratum2SrObs1) }
             }
           }
         }
 
+        // Observation 2: only plot 1 observed; stratum 2 has no OBSERVATION_STRATUM_RESULTS row,
+        // so the site SR includes only stratum 1's substrata.
         expectResults(observation = 2) {
-          survivalRate(
-              percent(
-                  obsLive[2][1] + obsLive[1][2] + obsLive[1][3],
-                  densities[1] + densities[2] + densities[3],
-              )
-          )
+          val stratum1SrObs2 = percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2])
+          survivalRate(areaWeightedSiteRate(listOf(2 to stratum1SrObs2)))
           stratum(1) {
-            survivalRate(percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2]))
+            survivalRate(stratum1SrObs2)
             substratum(1) {
               survivalRate(percent(obsLive[2][1], densities[1]))
               plot(1) { survivalRate(percent(obsLive[2][1], densities[1])) }
@@ -821,18 +839,15 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
           noResultForStratum(2)
         }
 
+        // Observation 3: only plot 3 observed; stratum 1 has no OBSERVATION_STRATUM_RESULTS row.
         expectResults(observation = 3) {
-          survivalRate(
-              percent(
-                  obsLive[2][1] + obsLive[1][2] + obsLive[3][3],
-                  densities[1] + densities[2] + densities[3],
-              )
-          )
+          val stratum2SrObs3 = percent(obsLive[3][3], densities[3])
+          survivalRate(areaWeightedSiteRate(listOf(1 to stratum2SrObs3)))
           noResultForStratum(1)
           stratum(2) {
-            survivalRate(percent(obsLive[3][3], densities[3]))
+            survivalRate(stratum2SrObs3)
             noResultForSubstratum(2)
-            substratum(3) { survivalRate(percent(obsLive[3][3], densities[3])) }
+            substratum(3) { survivalRate(stratum2SrObs3) }
           }
         }
       }
@@ -902,14 +917,13 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
 
       fun assertResultsMatchNumbersFromObsLive() {
         expectResults(observation = 1) {
-          survivalRate(
-              percent(
-                  obsLive[1][1] + obsLive[1][2] + obsLive[1][3],
-                  densities[1] + densities[2] + densities[3],
-              )
-          )
+          val stratum1SrObs1 = percent(obsLive[1][1] + obsLive[1][2], densities[1] + densities[2])
+          val stratum2SrObs1 = percent(obsLive[1][3], densities[3])
+
+          // Before the site edit, stratum 1 has 2 substrata and stratum 2 has 1.
+          survivalRate(areaWeightedSiteRate(listOf(2 to stratum1SrObs1, 1 to stratum2SrObs1)))
           stratum(1) {
-            survivalRate(percent(obsLive[1][1] + obsLive[1][2], densities[1] + densities[2]))
+            survivalRate(stratum1SrObs1)
             substratum(1) {
               survivalRate(percent(obsLive[1][1], densities[1]))
               plot(1) { survivalRate(percent(obsLive[1][1], densities[1])) }
@@ -920,23 +934,20 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
             }
           }
           stratum(2) {
-            survivalRate(percent(obsLive[1][3], densities[3]))
+            survivalRate(stratum2SrObs1)
             substratum(3) {
-              survivalRate(percent(obsLive[1][3], densities[3]))
-              plot(3) { survivalRate(percent(obsLive[1][3], densities[3])) }
+              survivalRate(stratum2SrObs1)
+              plot(3) { survivalRate(stratum2SrObs1) }
             }
           }
         }
 
         expectResults(observation = 2) {
-          survivalRate(
-              percent(
-                  obsLive[2][1] + obsLive[1][2] + obsLive[1][3],
-                  densities[1] + densities[2] + densities[3],
-              )
-          )
+          // Stratum 2 has no OBSERVATION_STRATUM_RESULTS row in observation 2.
+          val stratum1SrObs2 = percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2])
+          survivalRate(areaWeightedSiteRate(listOf(2 to stratum1SrObs2)))
           stratum(1) {
-            survivalRate(percent(obsLive[2][1] + obsLive[1][2], densities[1] + densities[2]))
+            survivalRate(stratum1SrObs2)
             substratum(1) {
               survivalRate(percent(obsLive[2][1], densities[1]))
               plot(1) { survivalRate(percent(obsLive[2][1], densities[1])) }
@@ -947,17 +958,15 @@ class ObservationStoreUpdateMonitoringSpeciesTest : DatabaseTest(), RunsAsDataba
         }
 
         expectResults(observation = 3) {
-          survivalRate(
-              percent(
-                  obsLive[2][1] + obsLive[1][2] + obsLive[3][3],
-                  densities[1] + densities[2] + densities[3],
-              )
-          )
+          // After the map edit stratum 1 has 1 substratum (1) and stratum 2 has 2 (2 and 3).
+          // Stratum 1 has no OBSERVATION_STRATUM_RESULTS row in observation 3.
+          val stratum2SrObs3 = percent(obsLive[1][2] + obsLive[3][3], densities[2] + densities[3])
+          survivalRate(areaWeightedSiteRate(listOf(2 to stratum2SrObs3)))
           noResultForStratum(1)
           stratum(2) {
             // Should pull substratum 2 rate from observation 1, but credit it to stratum 2
             // thanks to the map edit
-            survivalRate(percent(obsLive[1][2] + obsLive[3][3], densities[2] + densities[3]))
+            survivalRate(stratum2SrObs3)
             noResultForSubstratum(2)
             substratum(3) { survivalRate(percent(obsLive[3][3], densities[3])) }
           }

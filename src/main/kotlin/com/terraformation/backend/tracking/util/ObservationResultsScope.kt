@@ -30,6 +30,7 @@ import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIE
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.tracking.db.latestObservationForSubstratumField
+import com.terraformation.backend.tracking.db.substratumObservedAtOrBefore
 import java.math.BigDecimal
 import org.jooq.Condition
 import org.jooq.Field
@@ -68,6 +69,38 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
   fun observationPlotsCondition(observationIdField: Field<ObservationId?>): Condition
 
   fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults): Condition
+
+  /**
+   * Returns the SQL expression that produces the survival rate (as an integer percentage 0–100) for
+   * this scope on a row of [observedTotalsTable], given the observation id field. The default
+   * implementation uses a density-weighted formula; the site scope overrides this to return the
+   * area-weighted strata average.
+   */
+  fun survivalRateValue(
+      observationIdField: Field<ObservationId?>,
+      survivalRateDenominator: Field<BigDecimal>,
+      latestLiveField: Field<Int>,
+      permanentLiveField: Field<Int>,
+  ): Field<Int?> =
+      DSL.case_()
+          .`when`(
+              anyChildHasNullSurvivalRateCondition(observationIdField),
+              DSL.castNull(SQLDataType.INTEGER),
+          )
+          .`when`(
+              survivalRateDenominator.eq(BigDecimal.ZERO),
+              DSL.castNull(SQLDataType.INTEGER),
+          )
+          .else_(
+              DSL.case_()
+                  .`when`(
+                      observedTotalsPlantingSiteTempCondition,
+                      latestLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator),
+                  )
+                  .else_(
+                      permanentLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator),
+                  ),
+          )
 }
 
 class ObservationResultsPlot(
@@ -527,6 +560,79 @@ class ObservationResultsSite(
               .and(STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.`in`(siteHistorySelect))
               .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNull)
       )
+
+  /**
+   * Returns the site-level survival rate as an area-weighted average of the stratum-level survival
+   * rates. Substrata that weren't observed in or before this observation don't count toward the
+   * areas of their strata in the weighting formula.
+   */
+  override fun survivalRateValue(
+      observationIdField: Field<ObservationId?>,
+      survivalRateDenominator: Field<BigDecimal>,
+      latestLiveField: Field<Int>,
+      permanentLiveField: Field<Int>,
+  ): Field<Int?> {
+    val weightedSum =
+        DSL.field(
+            DSL.select(
+                    DSL.sum(
+                        SUBSTRATUM_HISTORIES.AREA_HA.mul(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE)
+                    )
+                )
+                .from(OBSERVATION_STRATUM_RESULTS)
+                .join(STRATUM_HISTORIES)
+                .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
+                .join(SUBSTRATUM_HISTORIES)
+                .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+                .where(
+                    STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                        OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
+                    )
+                )
+                .and(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
+                .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNotNull)
+                .and(
+                    substratumObservedAtOrBefore(
+                        SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+                        observationIdField,
+                    )
+                )
+        )
+
+    val totalWeight =
+        DSL.field(
+            DSL.select(DSL.sum(SUBSTRATUM_HISTORIES.AREA_HA))
+                .from(OBSERVATION_STRATUM_RESULTS)
+                .join(STRATUM_HISTORIES)
+                .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
+                .join(SUBSTRATUM_HISTORIES)
+                .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+                .where(
+                    STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                        OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
+                    )
+                )
+                .and(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
+                .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNotNull)
+                .and(
+                    substratumObservedAtOrBefore(
+                        SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+                        observationIdField,
+                    )
+                )
+        )
+
+    return DSL.case_()
+        .`when`(
+            anyChildHasNullSurvivalRateCondition(observationIdField),
+            DSL.castNull(SQLDataType.INTEGER),
+        )
+        .`when`(
+            totalWeight.isNull.or(totalWeight.eq(BigDecimal.ZERO)),
+            DSL.castNull(SQLDataType.INTEGER),
+        )
+        .else_(weightedSum.div(totalWeight).cast(SQLDataType.INTEGER))
+  }
 
   override fun observationPlotsCondition(observationIdField: Field<ObservationId?>) =
       OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField)
