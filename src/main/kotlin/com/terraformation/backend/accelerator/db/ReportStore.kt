@@ -98,7 +98,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.db.substratumObservedAtOrBefore
 import jakarta.inject.Named
 import java.math.BigDecimal
-import java.math.MathContext
+import java.math.RoundingMode
 import java.net.URI
 import java.time.Instant
 import java.time.InstantSource
@@ -2002,7 +2002,7 @@ class ReportStore(
     val denominator = result?.get("denominator", BigDecimal::class.java)
 
     return if (numerator != null && denominator != null && denominator.signum() > 0) {
-      numerator.divide(denominator, MathContext.DECIMAL64)
+      numerator.divide(denominator, 0, RoundingMode.HALF_UP)
     } else {
       null
     }
