@@ -285,10 +285,19 @@ val ENUM_TABLES =
                 ),
                 EnumTable(
                     "observation_media_types",
-                    listOf("observation_media_files\\.type_id"),
+                    listOf(
+                        "observation_media_files\\.type_id",
+                        "funder\\.published_activity_observation_media_files\\.type_id",
+                    ),
                     isLocalizable = false,
                 ),
-                EnumTable("observation_plot_positions", listOf("tracking\\..*\\.position_id")),
+                EnumTable(
+                    "observation_plot_positions",
+                    listOf(
+                        "tracking\\..*\\.position_id",
+                        "funder\\.published_activity_observation_media_files\\.position_id",
+                    ),
+                ),
                 EnumTable(
                     "observation_plot_statuses",
                     listOf("observation_plots\\.status_id"),

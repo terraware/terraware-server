@@ -241,6 +241,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "funding_entity_projects" to setOf(ALL, FUNDER),
                   "published_activities" to setOf(ALL, FUNDER),
                   "published_activity_media_files" to setOf(ALL, FUNDER),
+                  "published_activity_observation_media_files" to setOf(ALL, FUNDER),
                   "published_activity_observations" to setOf(ALL, FUNDER),
                   "published_auto_calculated_indicator_baselines" to setOf(ALL, FUNDER),
                   "published_auto_calculated_indicator_targets" to setOf(ALL, FUNDER),
