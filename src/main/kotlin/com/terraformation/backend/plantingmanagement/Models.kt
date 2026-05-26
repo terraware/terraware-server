@@ -30,3 +30,15 @@ data class PlantingSeasonSpeciesTargetModel(
     val speciesId: SpeciesId,
     val substratumId: SubstratumId,
 )
+
+data class PlantingSeasonScheduledDateSpecies(
+    val quantity: Int,
+    val speciesId: SpeciesId,
+    val substratumId: SubstratumId,
+)
+
+data class PlantingSeasonScheduledDateModel(
+    val date: LocalDate,
+    val plantingSeasonId: PlantingSeasonId,
+    val species: List<PlantingSeasonScheduledDateSpecies> = emptyList(),
+)
