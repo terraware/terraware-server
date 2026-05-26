@@ -22,6 +22,11 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.boot.context.properties.bind.Bindable
+import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.boot.env.YamlPropertySourceLoader
+import org.springframework.core.env.StandardEnvironment
+import org.springframework.core.io.ClassPathResource
 
 /**
  * Verifies that all our controller methods have the expected set of annotations to generate a good
@@ -61,7 +66,42 @@ class OpenApiAnnotationTest {
     assertNotNull(operation.getString("summary"), "Operation annotation on $name missing summary")
   }
 
+  @MethodSource("findAllControllerPackages")
+  @ParameterizedTest(name = "{0}")
+  fun `all controller packages are in springdoc packages-to-scan`(packageName: String) {
+    val classNames =
+        controllerClasses()
+            .filter { it.packageName == packageName }
+            .map { it.simpleName }
+            .sorted()
+            .joinToString(", ")
+
+    assertTrue(
+        packageName in springdocPackagesToScan,
+        "Package '$packageName' has @RestController classes [$classNames] but is missing from " +
+            "springdoc.packages-to-scan in application.yaml. " +
+            "Add it, or add it to SPRINGDOC_PACKAGE_SCAN_BLACKLIST in this test if it should be excluded.",
+    )
+  }
+
   companion object {
+    /**
+     * Packages containing @RestController classes that are intentionally excluded from
+     * springdoc scanning (e.g., internal-only controllers that should not appear in the public
+     * API docs).
+     */
+    private val SPRINGDOC_PACKAGE_SCAN_BLACKLIST: Set<String> = setOf()
+
+    private val springdocPackagesToScan: Set<String> by lazy {
+      val propertySources = YamlPropertySourceLoader().load("application", ClassPathResource("application.yaml"))
+      val environment = StandardEnvironment()
+      propertySources.forEach { environment.propertySources.addFirst(it) }
+      Binder.get(environment)
+          .bind("springdoc.packages-to-scan", Bindable.listOf(String::class.java))
+          .orElse(emptyList())
+          .toSet()
+    }
+
     private val controllerMethodAnnotations =
         setOf(
             DeleteMapping::class,
@@ -86,6 +126,15 @@ class OpenApiAnnotationTest {
     @JvmStatic
     fun findAllControllerClasses(): Stream<Class<*>> {
       return controllerClasses().asStream()
+    }
+
+    @JvmStatic
+    fun findAllControllerPackages(): Stream<String> {
+      return controllerClasses()
+          .map { it.packageName }
+          .filter { it !in SPRINGDOC_PACKAGE_SCAN_BLACKLIST }
+          .distinct()
+          .asStream()
     }
 
     @JvmStatic
