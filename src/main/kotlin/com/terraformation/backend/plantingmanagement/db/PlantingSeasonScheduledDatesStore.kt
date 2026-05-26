@@ -22,45 +22,49 @@ class PlantingSeasonScheduledDatesStore(
     val userId = currentUser().userId
     val now = clock.instant()
 
-    val scheduledDateId =
-        with(SCHEDULED_PLANTING_DATES) {
-          dslContext
-              .insertInto(SCHEDULED_PLANTING_DATES)
-              .set(PLANTING_SEASON_ID, model.plantingSeasonId)
-              .set(DATE, model.date)
-              .set(CREATED_BY, userId)
-              .set(CREATED_TIME, now)
-              .set(MODIFIED_BY, userId)
-              .set(MODIFIED_TIME, now)
-              .onConflictDoNothing()
-              .returning(ID)
-              .fetchOne(ID)
-              ?: throw PlantingSeasonScheduledDateExistsException(
-                  model.plantingSeasonId,
-                  model.date,
-              )
+    val scheduledDateId = dslContext.transactionResult { _ ->
+      val scheduledDateId =
+          with(SCHEDULED_PLANTING_DATES) {
+            dslContext
+                .insertInto(SCHEDULED_PLANTING_DATES)
+                .set(PLANTING_SEASON_ID, model.plantingSeasonId)
+                .set(DATE, model.date)
+                .set(CREATED_BY, userId)
+                .set(CREATED_TIME, now)
+                .set(MODIFIED_BY, userId)
+                .set(MODIFIED_TIME, now)
+                .onConflictDoNothing()
+                .returning(ID)
+                .fetchOne(ID)
+                ?: throw PlantingSeasonScheduledDateExistsException(
+                    model.plantingSeasonId,
+                    model.date,
+                )
+          }
+
+      with(SCHEDULED_PLANTING_DATE_SPECIES) {
+        val insertQuery =
+            dslContext.insertInto(
+                SCHEDULED_PLANTING_DATE_SPECIES,
+                SCHEDULED_PLANTING_DATE_ID,
+                SPECIES_ID,
+                SUBSTRATUM_ID,
+                QUANTITY,
+            )
+
+        model.species.forEach { species ->
+          insertQuery.values(
+              scheduledDateId,
+              species.speciesId,
+              species.substratumId,
+              species.quantity,
+          )
         }
 
-    with(SCHEDULED_PLANTING_DATE_SPECIES) {
-      val insertQuery =
-          dslContext.insertInto(
-              SCHEDULED_PLANTING_DATE_SPECIES,
-              SCHEDULED_PLANTING_DATE_ID,
-              SPECIES_ID,
-              SUBSTRATUM_ID,
-              QUANTITY,
-          )
-
-      model.species.forEach { species ->
-        insertQuery.values(
-            scheduledDateId,
-            species.speciesId,
-            species.substratumId,
-            species.quantity,
-        )
+        insertQuery.onConflictDoNothing().execute()
       }
 
-      insertQuery.onConflictDoNothing().execute()
+      scheduledDateId
     }
 
     return scheduledDateId
