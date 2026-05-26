@@ -572,36 +572,16 @@ class ObservationResultsSite(
       latestLiveField: Field<Int>,
       permanentLiveField: Field<Int>,
   ): Field<Int?> {
-    val weightedSum =
+    val weightedAverage =
         DSL.field(
             DSL.select(
                     DSL.sum(
-                        SUBSTRATUM_HISTORIES.AREA_HA.mul(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE)
-                    )
+                            SUBSTRATUM_HISTORIES.AREA_HA.mul(
+                                OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE
+                            )
+                        )
+                        .div(DSL.nullif(DSL.sum(SUBSTRATUM_HISTORIES.AREA_HA), BigDecimal.ZERO))
                 )
-                .from(OBSERVATION_STRATUM_RESULTS)
-                .join(STRATUM_HISTORIES)
-                .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
-                .join(SUBSTRATUM_HISTORIES)
-                .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
-                .where(
-                    STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
-                        OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
-                    )
-                )
-                .and(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
-                .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNotNull)
-                .and(
-                    substratumObservedAtOrBefore(
-                        SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
-                        observationIdField,
-                    )
-                )
-        )
-
-    val totalWeight =
-        DSL.field(
-            DSL.select(DSL.sum(SUBSTRATUM_HISTORIES.AREA_HA))
                 .from(OBSERVATION_STRATUM_RESULTS)
                 .join(STRATUM_HISTORIES)
                 .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
@@ -628,10 +608,10 @@ class ObservationResultsSite(
             DSL.castNull(SQLDataType.INTEGER),
         )
         .`when`(
-            totalWeight.isNull.or(totalWeight.eq(BigDecimal.ZERO)),
+            weightedAverage.isNull,
             DSL.castNull(SQLDataType.INTEGER),
         )
-        .else_(weightedSum.div(totalWeight).cast(SQLDataType.INTEGER))
+        .else_(weightedAverage.cast(SQLDataType.INTEGER))
   }
 
   override fun observationPlotsCondition(observationIdField: Field<ObservationId?>) =

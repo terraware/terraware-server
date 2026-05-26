@@ -21,7 +21,6 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.util.HECTARES_PER_PLOT
 import java.math.BigDecimal
-import java.math.MathContext
 import java.math.RoundingMode
 import java.time.Instant
 import java.time.LocalDate
@@ -518,10 +517,7 @@ fun calculateAreaWeightedSurvivalRate(strata: List<StratumWithObservedArea>): In
 
   val numerator = strata.sumOf { it.observedSubstratumAreaHa * BigDecimal(it.survivalRate!!) }
 
-  return numerator
-      .divide(denominator, MathContext.DECIMAL64)
-      .setScale(0, RoundingMode.HALF_UP)
-      .toInt()
+  return numerator.divide(denominator, 0, RoundingMode.HALF_UP).toInt()
 }
 
 /**
