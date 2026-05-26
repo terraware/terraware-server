@@ -5,6 +5,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -34,11 +35,13 @@ import com.terraformation.backend.tracking.scenario.ObservationScenario
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.toPlantsPerHectare
 import io.mockk.every
+import io.mockk.mockk
 import java.io.InputStreamReader
 import java.math.BigDecimal
 import java.nio.file.NoSuchFileException
 import java.time.Instant
 import kotlin.math.sqrt
+import org.jobrunr.scheduling.JobScheduler
 import org.jooq.impl.DSL
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -61,17 +64,21 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
 
   protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
+  protected val jobScheduler: JobScheduler = mockk()
+  protected val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   protected val observationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
         eventPublisher,
+        jobScheduler,
         ObservationLocker(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
         ParentStore(dslContext),
+        systemUser,
     )
   }
   protected val resultsStore by lazy { ObservationResultsStore(dslContext) }

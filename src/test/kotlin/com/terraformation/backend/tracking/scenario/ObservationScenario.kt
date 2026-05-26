@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.scenario
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseBackedTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -29,9 +30,12 @@ import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
+import com.terraformation.backend.tracking.event.T0StratumDataAssignedEvent
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.util.GeometrySimplifier
+import io.mockk.mockk
 import java.time.temporal.ChronoUnit
+import org.jobrunr.scheduling.JobScheduler
 import org.jooq.Configuration
 
 /**
@@ -83,17 +87,21 @@ class ObservationScenario(
         observationLocker: ObservationLocker = ObservationLocker(test.dslContext),
         parentStore: ParentStore = ParentStore(test.dslContext),
         configuration: Configuration = test.dslContext.configuration(),
+        jobScheduler: JobScheduler = mockk(),
+        systemUser: SystemUser = mockk(relaxed = true),
         observationStore: ObservationStore =
             ObservationStore(
                 clock,
                 test.dslContext,
                 eventPublisher,
+                jobScheduler,
                 observationLocker,
                 ObservationsDao(configuration),
                 ObservationPlotConditionsDao(configuration),
                 ObservationPlotsDao(configuration),
                 ObservationRequestedSubstrataDao(configuration),
                 parentStore,
+                systemUser,
             ),
         plantingSiteStore: PlantingSiteStore =
             PlantingSiteStore(
@@ -114,7 +122,14 @@ class ObservationScenario(
     ): ObservationScenario {
       if (registerListeners) {
         eventPublisher.register<MonitoringSpeciesTotalsEditedEvent> { t0Store.on(it) }
-        eventPublisher.register<T0PlotDataAssignedEvent> { observationStore.on(it) }
+        // Recalculation runs asynchronously via JobRunr in production. In scenario tests we
+        // invoke the recalc method directly so observation results reflect the changes inline.
+        eventPublisher.register<T0PlotDataAssignedEvent> {
+          observationStore.recalculateSurvivalRates(it.monitoringPlotId)
+        }
+        eventPublisher.register<T0StratumDataAssignedEvent> {
+          observationStore.recalculateSurvivalRates(it.stratumId)
+        }
       }
 
       return ObservationScenario(
