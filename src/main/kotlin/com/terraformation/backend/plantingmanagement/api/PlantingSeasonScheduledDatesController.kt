@@ -33,7 +33,7 @@ class PlantingSeasonScheduledDatesController(
   @PostMapping
   fun createScheduledPlantingDate(
       @PathVariable plantingSeasonId: PlantingSeasonId,
-      @RequestBody @Valid payload: CreateScheduledPlantingDateRequestPayload,
+      @RequestBody @Valid payload: ScheduledPlantingDateRequestPayload,
   ): SimpleSuccessResponsePayload {
     plantingSeasonScheduledDatesStore.create(payload.toModel(plantingSeasonId))
 
@@ -54,7 +54,7 @@ data class ScheduledPlantingDateSpeciesPayload(
       )
 }
 
-data class CreateScheduledPlantingDateRequestPayload(
+data class ScheduledPlantingDateRequestPayload(
     val date: LocalDate,
     val species: List<ScheduledPlantingDateSpeciesPayload> = emptyList(),
 ) {
