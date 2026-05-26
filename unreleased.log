@@ -1,3 +1,6 @@
+f4cc72ff Update Node.js to v24.16.0 (#4452)
+502aa636 Update dependency org.springframework.ai:spring-ai-bom to v1.1.7 (#4451)
+fdb267d7 Update dependency html-minifier-next to v6.2.7 (#4450)
 a1ec0496 Update plugin com.diffplug.spotless to v8.5.1 (#4449)
 f7262e56 Update Python dependencies (#4448)
 8d2abf7d Update Flyway to v12.6.2 (#4447)
