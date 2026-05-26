@@ -90,7 +90,7 @@ interface BaseMonitoringResult {
    * Estimated planting density for the region based on the observed planting densities of
    * monitoring plots.
    */
-  val plantingDensity: Int
+  val plantingDensity: Int?
 
   /** List of species result used for this rollup */
   val species: List<ObservationSpeciesResultsModel>
@@ -140,7 +140,7 @@ data class ObservationMonitoringPlotResultsModel(
      * because the intent is to track how many of the plants that were introduced to the site are
      * still alive.
      */
-    override val plantingDensity: Int,
+    override val plantingDensity: Int?,
     val plants: List<RecordedPlantModel>?,
     val sizeMeters: Int,
     override val species: List<ObservationSpeciesResultsModel>,
@@ -195,7 +195,7 @@ data class ObservationSubstratumResultsModel(
     val monitoringPlots: List<ObservationMonitoringPlotResultsModel>,
     val name: String,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int,
+    override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
     override val species: List<ObservationSpeciesResultsModel>,
     val substratumId: SubstratumId?,
@@ -212,7 +212,7 @@ data class ObservationStratumResultsModel(
     override val estimatedPlants: Int?,
     val name: String,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int,
+    override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
     override val species: List<ObservationSpeciesResultsModel>,
     val stratumId: StratumId?,
@@ -233,7 +233,7 @@ data class ObservationResultsModel(
     val observationId: ObservationId,
     val observationType: ObservationType,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int,
+    override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
     val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
@@ -256,7 +256,7 @@ data class ObservationStratumRollupResultsModel(
     /** Time when the latest observation in this rollup was completed. */
     val latestCompletedTime: Instant,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int,
+    override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
     override val species: List<ObservationSpeciesResultsModel>,
     val stratumId: StratumId,
@@ -297,17 +297,19 @@ data class ObservationStratumRollupResultsModel(
         it.certainty != RecordedSpeciesCertainty.Unknown && (it.totalLive + it.totalExisting) > 0
       }
 
-      val completedPlotsPlantingDensities = completedMonitoringPlots.map { it.plantingDensity }
+      val completedPlotsPlantingDensities = completedMonitoringPlots.mapNotNull {
+        it.plantingDensity
+      }
       val plantingDensity =
           if (completedPlotsPlantingDensities.isNotEmpty()) {
             completedPlotsPlantingDensities.average().roundToInt()
           } else {
-            0
+            null
           }
       val plantingDensityStdDev = completedPlotsPlantingDensities.calculateStandardDeviation()
 
       val estimatedPlants =
-          if (plantingCompleted) {
+          if (plantingCompleted && plantingDensity != null) {
             areaHa.toDouble() * plantingDensity
           } else {
             null
@@ -363,7 +365,7 @@ data class ObservationRollupResultsModel(
     /** Time when the latest observation in this rollup was completed. */
     val latestCompletedTime: Instant,
     override val plantingCompleted: Boolean,
-    override val plantingDensity: Int,
+    override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
     val plantingSiteId: PlantingSiteId,
     /** List of species result used for this rollup */
@@ -405,12 +407,12 @@ data class ObservationRollupResultsModel(
       val completedPlotsPlantingDensities =
           monitoringPlots
               .filter { it.status == ObservationPlotStatus.Completed }
-              .map { it.plantingDensity }
+              .mapNotNull { it.plantingDensity }
       val plantingDensity =
           if (completedPlotsPlantingDensities.isNotEmpty()) {
             completedPlotsPlantingDensities.average().roundToInt()
           } else {
-            0
+            null
           }
       val plantingDensityStdDev = completedPlotsPlantingDensities.calculateStandardDeviation()
 
