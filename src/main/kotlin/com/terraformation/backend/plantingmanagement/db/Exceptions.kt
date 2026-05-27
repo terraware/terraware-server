@@ -4,6 +4,7 @@ import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import java.time.LocalDate
 
 class PlantingSeasonNotFoundException(val plantingSeasonId: PlantingSeasonId) :
@@ -21,3 +22,7 @@ class PlantingSeasonScheduledDateExistsException(
     MismatchedStateException(
         "Planting Season $plantingSeasonId already has a scheduled planting date for $date"
     )
+
+class PlantingSeasonScheduledDateNotFoundException(
+    scheduledPlantingDateId: ScheduledPlantingDateId
+) : EntityNotFoundException("Scheduled planting date $scheduledPlantingDateId not found")

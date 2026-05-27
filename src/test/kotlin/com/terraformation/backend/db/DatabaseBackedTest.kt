@@ -433,6 +433,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
@@ -467,6 +468,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedTreesDao
+import com.terraformation.backend.db.tracking.tables.daos.ScheduledPlantingDateSpeciesDao
 import com.terraformation.backend.db.tracking.tables.daos.ScheduledPlantingDatesDao
 import com.terraformation.backend.db.tracking.tables.daos.SimplePlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.SimplifiedPlantingSiteHistoriesDao
@@ -514,6 +516,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensitiesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
+import com.terraformation.backend.db.tracking.tables.pojos.ScheduledPlantingDateSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ScheduledPlantingDatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SimplePlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedPlantingSiteHistoriesRow
@@ -803,6 +806,7 @@ abstract class DatabaseBackedTest {
   protected val reportProjectIndicatorsDao: ReportProjectIndicatorsDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
   protected val scheduledPlantingDatesDao: ScheduledPlantingDatesDao by lazyDao()
+  protected val scheduledPlantingDateSpeciesDao: ScheduledPlantingDateSpeciesDao by lazyDao()
   protected val seedFundReportFilesDao: SeedFundReportFilesDao by lazyDao()
   protected val seedFundReportPhotosDao: SeedFundReportPhotosDao by lazyDao()
   protected val seedFundReportsDao: SeedFundReportsDao by lazyDao()
@@ -2345,7 +2349,7 @@ abstract class DatabaseBackedTest {
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
-  ) {
+  ): ScheduledPlantingDateId {
     val rowWithDefaults =
         row.copy(
             createdBy = createdBy,
@@ -2357,6 +2361,27 @@ abstract class DatabaseBackedTest {
         )
 
     scheduledPlantingDatesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.scheduledPlantingDateIds.add(it) }
+  }
+
+  fun insertScheduledPlantingDateSpecies(
+      row: ScheduledPlantingDateSpeciesRow = ScheduledPlantingDateSpeciesRow(),
+      scheduledPlantingDateId: ScheduledPlantingDateId =
+          row.scheduledPlantingDateId ?: inserted.scheduledPlantingDateId,
+      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
+      substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
+      quantity: Int = row.quantity ?: 1,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            scheduledPlantingDateId = scheduledPlantingDateId,
+            speciesId = speciesId,
+            substratumId = substratumId,
+            quantity = quantity,
+        )
+
+    scheduledPlantingDateSpeciesDao.insert(rowWithDefaults)
   }
 
   var nextPlantingSiteNumber: Int = 1
@@ -5924,6 +5949,7 @@ abstract class DatabaseBackedTest {
     val projectReportConfigIds = mutableListOf<ProjectReportConfigId>()
     val recordedTreeIds = mutableListOf<RecordedTreeId>()
     val reportIds = mutableListOf<ReportId>()
+    val scheduledPlantingDateIds = mutableListOf<ScheduledPlantingDateId>()
     val seedbankWithdrawalIds = mutableListOf<SeedbankWithdrawalId>()
     val seedFundReportIds = mutableListOf<SeedFundReportId>()
     val simplePlantingSeasonIds = mutableListOf<SimplePlantingSeasonId>()
@@ -6064,6 +6090,9 @@ abstract class DatabaseBackedTest {
 
     val reportId
       get() = reportIds.last()
+
+    val scheduledPlantingDateId
+      get() = scheduledPlantingDateIds.last()
 
     val seedFundReportId
       get() = seedFundReportIds.last()
