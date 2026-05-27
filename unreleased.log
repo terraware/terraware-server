@@ -1,3 +1,4 @@
+60fd3ce9 SW-8359 Include observation in activity payloads (#4460)
 c319ee00 SW-8359 Return observation-only published activity data (#4445)
 61a10873 SW-8376 Delete observation data for published activities (#4444)
 85f2c265 SW-8376 Publish observation-specific activity data (#4443)
