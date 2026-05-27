@@ -16,7 +16,6 @@ class PlantingSeasonScheduledDatesStore(
     private val dslContext: DSLContext,
 ) {
   fun create(model: PlantingSeasonScheduledDateModel): ScheduledPlantingDateId {
-    require(model.species.all { it.quantity >= 0 }) { "All quantities must be >= 0" }
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
     val userId = currentUser().userId
