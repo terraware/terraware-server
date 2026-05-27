@@ -48,13 +48,16 @@ class PlantingSeasonScheduledDatesController(
   @Operation(
       summary = "Updates a scheduled date for a planting season.",
   )
-  @PutMapping("/{id}")
+  @PutMapping("/{scheduledPlantingDateId}")
   fun updateScheduledPlantingDate(
       @PathVariable plantingSeasonId: PlantingSeasonId,
-      @PathVariable id: ScheduledPlantingDateId,
+      @PathVariable scheduledPlantingDateId: ScheduledPlantingDateId,
       @RequestBody @Valid payload: ScheduledPlantingDateRequestPayload,
   ): SimpleSuccessResponsePayload {
-    plantingSeasonScheduledDatesStore.update(id, payload.toModel(plantingSeasonId))
+    plantingSeasonScheduledDatesStore.update(
+        scheduledPlantingDateId,
+        payload.toModel(plantingSeasonId),
+    )
 
     return SimpleSuccessResponsePayload()
   }
