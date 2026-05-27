@@ -1,4 +1,5 @@
 published_project_details
+published_activity_observation_media_files
 published_report_photos
 published_report_project_indicators
 published_report_common_indicators
@@ -18,6 +19,6 @@ published_report_challenges
 published_report_achievements
 published_project_sdg
 published_project_carbon_certs
-published_activities
 funding_entities
+published_activities
 published_reports

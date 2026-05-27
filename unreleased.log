@@ -1,3 +1,6 @@
+c319ee00 SW-8359 Return observation-only published activity data (#4445)
+61a10873 SW-8376 Delete observation data for published activities (#4444)
+85f2c265 SW-8376 Publish observation-specific activity data (#4443)
 d1d42e31 SW-8390 Add planting season species targets to search api (#4440)
 725b861f SW-8390 Change simple seasons to named seasons in search api (#4439)
 1dec09b6 Add planting management controllers to springdoc, add test to ensure this doesn't happen again (#4453)

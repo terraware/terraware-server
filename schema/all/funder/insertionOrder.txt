@@ -1,6 +1,6 @@
 published_reports
-funding_entities
 published_activities
+funding_entities
 published_project_carbon_certs
 published_project_sdg
 published_report_achievements
@@ -20,4 +20,5 @@ published_report_auto_calculated_indicators
 published_report_common_indicators
 published_report_project_indicators
 published_report_photos
+published_activity_observation_media_files
 published_project_details

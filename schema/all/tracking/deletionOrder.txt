@@ -41,8 +41,8 @@ observation_biomass_details
 observation_plots
 monitoring_plot_histories
 substratum_histories
-monitoring_plots
 stratum_histories
+monitoring_plots
 substrata
 strata
 planting_sites
@@ -55,9 +55,9 @@ planting_season_statuses
 observation_types
 observation_states
 observation_plot_statuses
-observation_media_types
 observable_conditions
 mangrove_tides
 biomass_forest_types
-observation_plot_positions
+observation_media_types
 recorded_species_certainties
+observation_plot_positions
