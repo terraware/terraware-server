@@ -139,7 +139,7 @@ data class SpeciesLookupDetailsResponsePayload(
                 "alternative."
     )
     val suggestedScientificName: String?,
-) {
+) : SuccessResponsePayload {
   constructor(
       model: GbifTaxonModel,
       problem: SpeciesProblemsRow?,

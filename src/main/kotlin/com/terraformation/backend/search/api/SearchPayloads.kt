@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.search.AndNode
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
@@ -174,7 +175,8 @@ data class FieldNodePayload(
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor: String?) {
+data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor: String?) :
+    SuccessResponsePayload {
   constructor(searchResults: SearchResults) : this(searchResults.results, searchResults.cursor)
 }
 
@@ -198,6 +200,7 @@ data class FieldValuesPayload(
     val partial: Boolean,
 )
 
-data class SearchValuesResponsePayload(val results: Map<String, FieldValuesPayload>)
+data class SearchValuesResponsePayload(val results: Map<String, FieldValuesPayload>) :
+    SuccessResponsePayload
 
-data class SearchCountResponsePayload(val count: Long)
+data class SearchCountResponsePayload(val count: Long) : SuccessResponsePayload
