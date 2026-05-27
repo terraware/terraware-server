@@ -184,7 +184,7 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
-    fun `throws PlantingSeasonScheduledDateNotFoundException when no date does exist`() {
+    fun `throws PlantingSeasonScheduledDateNotFoundException when no date exists`() {
       assertThrows<PlantingSeasonScheduledDateNotFoundException> {
         store.fetch(plantingSeasonId, ScheduledPlantingDateId(99999L))
       }

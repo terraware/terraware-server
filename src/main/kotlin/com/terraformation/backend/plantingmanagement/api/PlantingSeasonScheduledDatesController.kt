@@ -46,7 +46,7 @@ class PlantingSeasonScheduledDatesController(
   }
 
   @ApiResponse200
-  @Operation(summary = "Gets all scheduled dates for a planting season.")
+  @Operation(summary = "Gets a single scheduled date for a planting season.")
   @GetMapping("/{scheduledPlantingDateId}")
   fun getSingleScheduledPlantingDate(
       @PathVariable plantingSeasonId: PlantingSeasonId,
