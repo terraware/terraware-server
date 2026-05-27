@@ -28,6 +28,20 @@ class PlantingSeasonScheduledDatesStore(
     return fetchByCondition(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(plantingSeasonId))
   }
 
+  fun fetch(
+      plantingSeasonId: PlantingSeasonId,
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+  ): ExistingPlantingSeasonScheduledDateModel {
+    requirePermissions { readPlantingSeason(plantingSeasonId) }
+
+    return fetchByCondition(
+            SCHEDULED_PLANTING_DATES.ID.eq(scheduledPlantingDateId)
+                .and(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(plantingSeasonId))
+        )
+        .firstOrNull()
+        ?: throw PlantingSeasonScheduledDateNotFoundException(scheduledPlantingDateId)
+  }
+
   fun create(model: PlantingSeasonScheduledDateModel): ScheduledPlantingDateId {
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
