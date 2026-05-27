@@ -51,10 +51,10 @@ class PlantingSeasonScheduledDatesController(
   fun getSingleScheduledPlantingDate(
       @PathVariable plantingSeasonId: PlantingSeasonId,
       @PathVariable scheduledPlantingDateId: ScheduledPlantingDateId,
-  ): ScheduledDatePayload {
+  ): GetScheduledDateResponsePayload {
     val model = plantingSeasonScheduledDatesStore.fetch(plantingSeasonId, scheduledPlantingDateId)
 
-    return ScheduledDatePayload(model)
+    return GetScheduledDateResponsePayload(scheduledDate = ScheduledDatePayload(model))
   }
 
   @ApiResponseSimpleSuccess
@@ -118,6 +118,9 @@ data class ScheduledPlantingDateRequestPayload(
 }
 
 data class ListScheduledDatesResponsePayload(val scheduledDates: List<ScheduledDatePayload>) :
+    SuccessResponsePayload
+
+data class GetScheduledDateResponsePayload(val scheduledDate: ScheduledDatePayload) :
     SuccessResponsePayload
 
 data class ScheduledDatePayload(
