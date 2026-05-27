@@ -143,6 +143,7 @@ class PlantingSeasonScheduledDatesStore(
                   DSL.select(SPECIES_ID, SUBSTRATUM_ID, QUANTITY)
                       .from(SCHEDULED_PLANTING_DATE_SPECIES)
                       .where(SCHEDULED_PLANTING_DATE_ID.eq(SCHEDULED_PLANTING_DATES.ID))
+                      .orderBy(SPECIES_ID, SUBSTRATUM_ID)
               )
               .convertFrom { result ->
                 result.map { record ->
@@ -160,6 +161,7 @@ class PlantingSeasonScheduledDatesStore(
           .select(SCHEDULED_PLANTING_DATES.asterisk(), speciesMultiset)
           .from(SCHEDULED_PLANTING_DATES)
           .where(condition)
+          .orderBy(DATE.desc())
           .fetch { record ->
             ExistingPlantingSeasonScheduledDateModel(
                 date = record[DATE]!!,

@@ -91,19 +91,6 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
       assertEquals(
           listOf(
               ExistingPlantingSeasonScheduledDateModel(
-                  date = date1,
-                  plantingSeasonId = plantingSeasonId,
-                  scheduledPlantingDateId = scheduledDate1,
-                  species =
-                      listOf(
-                          PlantingSeasonScheduledDateSpecies(
-                              quantity = 10,
-                              speciesId = speciesId,
-                              substratumId = substratumId,
-                          )
-                      ),
-              ),
-              ExistingPlantingSeasonScheduledDateModel(
                   date = date2,
                   plantingSeasonId = plantingSeasonId,
                   scheduledPlantingDateId = scheduledDate2,
@@ -112,6 +99,19 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
                           PlantingSeasonScheduledDateSpecies(
                               quantity = 20,
                               speciesId = speciesId2,
+                              substratumId = substratumId,
+                          )
+                      ),
+              ),
+              ExistingPlantingSeasonScheduledDateModel(
+                  date = date1,
+                  plantingSeasonId = plantingSeasonId,
+                  scheduledPlantingDateId = scheduledDate1,
+                  species =
+                      listOf(
+                          PlantingSeasonScheduledDateSpecies(
+                              quantity = 10,
+                              speciesId = speciesId,
                               substratumId = substratumId,
                           )
                       ),
