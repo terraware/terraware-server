@@ -107,13 +107,13 @@ interface BaseMonitoringResult {
    * Total number of plants recorded. Includes all plants, regardless of live/dead status or
    * species.
    */
-  val totalPlants: Int
+  val totalPlants: Int?
   /**
    * Total number of species observed, not counting dead plants. Includes plants with Known and
    * Other certainties. In the case of Other, each distinct user-supplied species name is counted as
    * a separate species for purposes of this total.
    */
-  val totalSpecies: Int
+  val totalSpecies: Int?
 }
 
 data class ObservationMonitoringPlotResultsModel(
@@ -155,13 +155,13 @@ data class ObservationMonitoringPlotResultsModel(
      * Total number of plants recorded. Includes all plants, regardless of live/dead status or
      * species.
      */
-    override val totalPlants: Int,
+    override val totalPlants: Int?,
     /**
      * Total number of species observed, not counting dead plants. Includes plants with Known and
      * Other certainties. In the case of Other, each distinct user-supplied species name is counted
      * as a separate species for purposes of this total.
      */
-    override val totalSpecies: Int,
+    override val totalSpecies: Int?,
 ) : BaseMonitoringResult
 
 /**
@@ -202,8 +202,8 @@ data class ObservationSubstratumResultsModel(
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
     val survivalRateIncludesTempPlots: Boolean,
-    override val totalPlants: Int,
-    override val totalSpecies: Int,
+    override val totalPlants: Int?,
+    override val totalSpecies: Int?,
 ) : BaseAggregatedMonitoringResult
 
 data class ObservationStratumResultsModel(
@@ -219,8 +219,8 @@ data class ObservationStratumResultsModel(
     val substrata: List<ObservationSubstratumResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
-    override val totalPlants: Int,
-    override val totalSpecies: Int,
+    override val totalPlants: Int?,
+    override val totalSpecies: Int?,
 ) : BaseAggregatedMonitoringResult
 
 data class ObservationResultsModel(
@@ -244,8 +244,8 @@ data class ObservationResultsModel(
     override val survivalRate: Int?,
     val survivalRateIncludesTempPlots: Boolean,
     override val survivalRateStdDev: Int?,
-    override val totalPlants: Int,
-    override val totalSpecies: Int,
+    override val totalPlants: Int?,
+    override val totalSpecies: Int?,
 ) : BaseAggregatedMonitoringResult
 
 data class ObservationStratumRollupResultsModel(
@@ -265,8 +265,8 @@ data class ObservationStratumRollupResultsModel(
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
     val survivalRateIncludesTempPlots: Boolean,
-    override val totalPlants: Int,
-    override val totalSpecies: Int,
+    override val totalPlants: Int?,
+    override val totalSpecies: Int?,
 ) : BaseAggregatedMonitoringResult {
   companion object {
     fun of(
@@ -351,7 +351,7 @@ data class ObservationStratumRollupResultsModel(
           survivalRate = survivalRate,
           survivalRateStdDev = survivalRateStdDev,
           survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
-          totalPlants = species.sumOf { it.totalLive + it.totalDead },
+          totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead },
           totalSpecies = totalLiveSpeciesExceptUnknown,
       )
     }
@@ -374,8 +374,8 @@ data class ObservationRollupResultsModel(
     val strata: List<ObservationStratumRollupResultsModel>,
     override val survivalRate: Int?,
     override val survivalRateStdDev: Int?,
-    override val totalPlants: Int,
-    override val totalSpecies: Int,
+    override val totalPlants: Int?,
+    override val totalSpecies: Int?,
 ) : BaseAggregatedMonitoringResult {
   companion object {
     fun of(
@@ -451,7 +451,7 @@ data class ObservationRollupResultsModel(
           strata = nonNullStratumResults,
           survivalRate = survivalRate,
           survivalRateStdDev = survivalRateStdDev,
-          totalPlants = species.sumOf { it.totalLive + it.totalDead },
+          totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead },
           totalSpecies = totalLiveSpeciesExceptUnknown,
       )
     }
@@ -531,7 +531,7 @@ fun List<ObservationSpeciesResultsModel>.unionSpecies(
             t0Density = t0Density,
             totalDead = groupedSpecies.sumOf { it.totalDead },
             totalExisting = groupedSpecies.sumOf { it.totalExisting },
-            totalLive = groupedSpecies.sumOf { it.totalLive },
+            totalLive = totalLive,
             totalPlants = groupedSpecies.sumOf { it.totalPlants },
         )
       }
