@@ -19,6 +19,8 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITI
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_MEDIA_FILES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_OBSERVATIONS
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
@@ -122,10 +124,21 @@ class PublishedActivityStore(
                         FILES.CAPTURED_LOCAL_TIME,
                         FILES.STORAGE_URL,
                         geolocationField,
+                        MONITORING_PLOTS.PLOT_NUMBER,
+                        PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES.POSITION_ID,
+                        PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES.TYPE_ID,
                     )
                     .from(PUBLISHED_ACTIVITY_MEDIA_FILES)
                     .join(FILES)
                     .on(PUBLISHED_ACTIVITY_MEDIA_FILES.FILE_ID.eq(FILES.ID))
+                    .leftJoin(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES)
+                    .on(FILE_ID.eq(PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES.FILE_ID))
+                    .leftJoin(MONITORING_PLOTS)
+                    .on(
+                        PUBLISHED_ACTIVITY_OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.eq(
+                            MONITORING_PLOTS.ID
+                        )
+                    )
                     .where(ACTIVITY_ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
                     .orderBy(LIST_POSITION)
             )
@@ -141,14 +154,32 @@ class PublishedActivityStore(
     return with(PUBLISHED_ACTIVITIES) {
       if (includeMedia) {
         dslContext
-            .select(asterisk(), mediaMultiset)
+            .select(
+                asterisk(),
+                PUBLISHED_ACTIVITY_OBSERVATIONS.asterisk(),
+                OBSERVATIONS.COMPLETED_TIME,
+                mediaMultiset,
+            )
             .from(PUBLISHED_ACTIVITIES)
+            .leftJoin(PUBLISHED_ACTIVITY_OBSERVATIONS)
+            .on(ACTIVITY_ID.eq(PUBLISHED_ACTIVITY_OBSERVATIONS.ACTIVITY_ID))
+            .leftJoin(OBSERVATIONS)
+            .on(PUBLISHED_ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
             .where(condition)
             .orderBy(ACTIVITY_DATE, ACTIVITY_ID)
             .fetch { PublishedActivityModel.of(it, mediaMultiset) }
       } else {
         dslContext
-            .selectFrom(PUBLISHED_ACTIVITIES)
+            .select(
+                asterisk(),
+                PUBLISHED_ACTIVITY_OBSERVATIONS.asterisk(),
+                OBSERVATIONS.COMPLETED_TIME,
+            )
+            .from(PUBLISHED_ACTIVITIES)
+            .leftJoin(PUBLISHED_ACTIVITY_OBSERVATIONS)
+            .on(ACTIVITY_ID.eq(PUBLISHED_ACTIVITY_OBSERVATIONS.ACTIVITY_ID))
+            .leftJoin(OBSERVATIONS)
+            .on(PUBLISHED_ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
             .where(condition)
             .orderBy(ACTIVITY_DATE, ACTIVITY_ID)
             .fetch { PublishedActivityModel.of(it, null) }
