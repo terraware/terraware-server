@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.api
 
+import com.terraformation.backend.accelerator.api.ReportChallengePayload
 import com.terraformation.backend.accelerator.api.ReportPhotoPayload
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
@@ -81,11 +82,6 @@ class FunderReportsController(
   }
 }
 
-data class PublishedReportChallengePayload(
-    val challenge: String,
-    val mitigationPlan: String,
-)
-
 data class PublishedCumulativeIndicatorProgressPayload(
     val quarter: ReportQuarter,
     val value: BigDecimal,
@@ -154,7 +150,7 @@ data class PublishedReportPayload(
     val achievements: List<String>,
     val additionalComments: String?,
     val autoCalculatedIndicators: List<PublishedReportIndicatorPayload>,
-    val challenges: List<PublishedReportChallengePayload>,
+    val challenges: List<ReportChallengePayload>,
     val commonIndicators: List<PublishedReportIndicatorPayload>,
     val endDate: LocalDate,
     val financialSummaries: String?,
@@ -176,8 +172,7 @@ data class PublishedReportPayload(
       additionalComments = model.additionalComments,
       autoCalculatedIndicators =
           model.autoCalculatedIndicators.map { PublishedReportIndicatorPayload(it) },
-      challenges =
-          model.challenges.map { PublishedReportChallengePayload(it.challenge, it.mitigationPlan) },
+      challenges = model.challenges.map { ReportChallengePayload(it.challenge, it.mitigationPlan) },
       commonIndicators = model.commonIndicators.map { PublishedReportIndicatorPayload(it) },
       endDate = model.endDate,
       financialSummaries = model.financialSummaries,
