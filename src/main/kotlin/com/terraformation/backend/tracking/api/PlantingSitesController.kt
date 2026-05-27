@@ -400,7 +400,7 @@ data class StratumResponsePayload(
   )
 }
 
-data class PlantingSeasonPayload(
+data class SimplePlantingSeasonPayload(
     val endDate: LocalDate,
     val id: SimplePlantingSeasonId,
     val startDate: LocalDate,
@@ -429,7 +429,7 @@ data class PlantingSitePayload(
     val latestObservationId: ObservationId?,
     val name: String,
     val organizationId: OrganizationId,
-    val plantingSeasons: List<PlantingSeasonPayload>,
+    val plantingSeasons: List<SimplePlantingSeasonPayload>,
     @Schema(description = "Use strata instead", deprecated = true)
     val plantingZones: List<PlantingZonePayload>?,
     val projectId: ProjectId? = null,
@@ -452,7 +452,7 @@ data class PlantingSitePayload(
       latestObservationId = model.latestObservationId,
       name = model.name,
       organizationId = model.organizationId,
-      plantingSeasons = model.plantingSeasons.map { PlantingSeasonPayload(it) },
+      plantingSeasons = model.plantingSeasons.map { SimplePlantingSeasonPayload(it) },
       plantingZones = if (includeZones) model.strata.map { PlantingZonePayload(it) } else null,
       projectId = model.projectId,
       strata = model.strata.map { StratumResponsePayload(it) },
