@@ -18,6 +18,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
@@ -53,6 +54,60 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
 
     return fetchByCondition(OBSERVATIONS.ID.eq(observationId), depth, 1).first()
   }
+
+  /**
+   * Returns true if a survival rate recalculation is pending or in progress for the given planting
+   * site, based on the timestamps tracked in [PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS].
+   */
+  fun isSurvivalRateRecalculationInProgress(plantingSiteId: PlantingSiteId): Boolean {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return dslContext
+        .select(survivalRateCalculationInProgressField(DSL.value(plantingSiteId)))
+        .fetchOne()
+        ?.value1() == true
+  }
+
+  /**
+   * Returns a derived boolean field that's true when the site's survival rate is being recalculated
+   * — i.e. there's a `planting_site_survival_rate_recalculations` row whose
+   * `last_recalculated_time` is `NULL` or older than either modified-time column.
+   */
+  private fun survivalRateCalculationInProgressField(
+      plantingSiteIdField: Field<PlantingSiteId?>
+  ): Field<Boolean> =
+      DSL.field(
+          DSL.exists(
+              DSL.selectOne()
+                  .from(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS)
+                  .where(
+                      PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID.eq(
+                          plantingSiteIdField
+                      )
+                  )
+                  .and(
+                      DSL.or(
+                          PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_RECALCULATED_TIME.isNull
+                              .and(
+                                  PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME
+                                      .isNotNull
+                                      .or(
+                                          PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS
+                                              .LAST_OBSERVATION_MODIFIED_TIME
+                                              .isNotNull
+                                      )
+                              ),
+                          PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME.gt(
+                              PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_RECALCULATED_TIME
+                          ),
+                          PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_OBSERVATION_MODIFIED_TIME
+                              .gt(
+                                  PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_RECALCULATED_TIME
+                              ),
+                      )
+                  )
+          )
+      )
 
   fun fetchByPlantingSiteId(
       plantingSiteId: PlantingSiteId,
@@ -481,6 +536,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
     val adHocPlotsField = adHocMonitoringPlotsMultiset(queryDepth)
     val strataField = stratumMultiset(queryDepth)
     val plantingSiteSpeciesMultisetField = plantingSiteSpeciesMultiset()
+    val survivalRateCalculationInProgressField =
+        survivalRateCalculationInProgressField(OBSERVATIONS.PLANTING_SITE_ID)
 
     val results =
         dslContext
@@ -503,6 +560,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 OBSERVATION_SITE_RESULTS.SURVIVAL_RATE_STD_DEV,
                 OBSERVATION_SITE_RESULTS.PLANT_DENSITY,
                 OBSERVATION_SITE_RESULTS.PLANT_DENSITY_STD_DEV,
+                survivalRateCalculationInProgressField,
             )
             .from(OBSERVATIONS)
             .leftJoin(PLANTING_SITE_HISTORIES)
@@ -560,6 +618,8 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                   state = record[OBSERVATIONS.STATE_ID.asNonNullable()],
                   strata = strata,
                   survivalRate = survivalRate,
+                  survivalRateCalculationInProgress =
+                      record[survivalRateCalculationInProgressField],
                   survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
                   survivalRateStdDev = survivalRateStdDev,
                   totalPlants = totalPlants,

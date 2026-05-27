@@ -77,36 +77,11 @@ class T0Store(
             SiteT0DataModel(
                 plantingSiteId = plantingSiteId,
                 survivalRateIncludesTempPlots = record[SURVIVAL_RATE_INCLUDES_TEMP_PLOTS]!!,
-                survivalRateRecalculationInProgress =
-                    isSurvivalRateRecalculationInProgress(plantingSiteId),
                 plots = record[plotMultiset]!!,
                 strata = record[stratumMultiset]!!,
             )
           }
     } ?: throw PlantingSiteNotFoundException(plantingSiteId)
-  }
-
-  fun isSurvivalRateRecalculationInProgress(plantingSiteId: PlantingSiteId): Boolean {
-    requirePermissions { readPlantingSite(plantingSiteId) }
-
-    val row =
-        with(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS) {
-          dslContext
-              .select(LAST_T0_MODIFIED_TIME, LAST_OBSERVATION_MODIFIED_TIME, LAST_RECALCULATED_TIME)
-              .from(this)
-              .where(PLANTING_SITE_ID.eq(plantingSiteId))
-              .fetchOne()
-        } ?: return false
-
-    val t0Modified = row[PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_T0_MODIFIED_TIME]
-    val observationModified =
-        row[PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_OBSERVATION_MODIFIED_TIME]
-    val recalculated = row[PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_RECALCULATED_TIME]
-
-    if (t0Modified == null && observationModified == null) return false
-    if (recalculated == null) return true
-    return (t0Modified != null && t0Modified > recalculated) ||
-        (observationModified != null && observationModified > recalculated)
   }
 
   fun fetchAllT0SiteDataSet(plantingSiteId: PlantingSiteId): Boolean {

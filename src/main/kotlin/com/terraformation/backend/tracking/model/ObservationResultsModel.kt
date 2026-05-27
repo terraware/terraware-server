@@ -242,6 +242,11 @@ data class ObservationResultsModel(
     val state: ObservationState,
     val strata: List<ObservationStratumResultsModel>,
     override val survivalRate: Int?,
+    /**
+     * True if a survival rate recalculation is pending or in progress for this observation's
+     * planting site. Defaults to `false`; only the V2 results store populates it.
+     */
+    val survivalRateCalculationInProgress: Boolean = false,
     val survivalRateIncludesTempPlots: Boolean,
     override val survivalRateStdDev: Int?,
     override val totalPlants: Int?,

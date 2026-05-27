@@ -25,7 +25,6 @@ import com.terraformation.backend.db.tracking.tables.records.StratumT0TempDensit
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.multiPolygon
@@ -1999,39 +1998,6 @@ internal class T0StoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
 
       assertSiteRecalculationState(lastT0ModifiedTime = clock.instant())
-    }
-
-    @Test
-    fun `isSurvivalRateRecalculationInProgress returns false when no row exists`() {
-      assertFalse(store.isSurvivalRateRecalculationInProgress(plantingSiteId))
-    }
-
-    @Test
-    fun `isSurvivalRateRecalculationInProgress returns true after a write`() {
-      store.assignT0PlotSpeciesDensities(
-          monitoringPlotId,
-          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
-      )
-
-      assertTrue(store.isSurvivalRateRecalculationInProgress(plantingSiteId))
-    }
-
-    @Test
-    fun `isSurvivalRateRecalculationInProgress returns false when last_recalculated_time catches up`() {
-      store.assignT0PlotSpeciesDensities(
-          monitoringPlotId,
-          listOf(SpeciesDensityModel(speciesId1, BigDecimal.TEN)),
-      )
-
-      // Simulate a completed recalc by setting last_recalculated_time = last_modified_time.
-      val modified = clock.instant()
-      dslContext
-          .update(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS)
-          .set(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.LAST_RECALCULATED_TIME, modified)
-          .where(PLANTING_SITE_SURVIVAL_RATE_RECALCULATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-          .execute()
-
-      assertFalse(store.isSurvivalRateRecalculationInProgress(plantingSiteId))
     }
   }
 
