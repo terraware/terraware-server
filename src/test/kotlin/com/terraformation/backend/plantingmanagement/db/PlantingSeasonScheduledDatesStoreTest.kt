@@ -301,6 +301,34 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
+    fun `throws DuplicateKeyException when same species-substratum combination is added twice`() {
+      val scheduledDate = insertPlantingSeasonScheduledDate()
+
+      assertThrows<DuplicateKeyException> {
+        store.update(
+            scheduledDate,
+            PlantingSeasonScheduledDateModel(
+                plantingSeasonId = plantingSeasonId,
+                date = LocalDate.EPOCH,
+                species =
+                    listOf(
+                        PlantingSeasonScheduledDateSpecies(
+                            quantity = 5,
+                            speciesId = speciesId,
+                            substratumId = substratumId,
+                        ),
+                        PlantingSeasonScheduledDateSpecies(
+                            quantity = 10,
+                            speciesId = speciesId,
+                            substratumId = substratumId,
+                        ),
+                    ),
+            ),
+        )
+      }
+    }
+
+    @Test
     fun `throws AccessDeniedException when user lacks permission`() {
       val scheduledDateId = insertPlantingSeasonScheduledDate()
       deleteOrganizationUser()

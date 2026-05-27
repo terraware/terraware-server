@@ -117,7 +117,7 @@ class PlantingSeasonScheduledDatesStore(
           )
         }
 
-        insertQuery.onConflictDoNothing().execute()
+        insertQuery.execute()
       }
     }
   }
