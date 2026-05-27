@@ -73,7 +73,6 @@ class PlantingSeasonScheduledDatesStore(
       scheduledDateId: ScheduledPlantingDateId,
       model: PlantingSeasonScheduledDateModel,
   ) {
-    require(model.species.all { it.quantity >= 0 }) { "All quantities must be >= 0" }
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
     dslContext.transaction { _ ->
