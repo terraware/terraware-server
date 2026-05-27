@@ -360,5 +360,21 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
         )
       }
     }
+
+    @Test
+    fun `throws PlantingSeasonScheduledDateNotFoundException when date belongs to different planting season`() {
+      insertPlantingSeason()
+      val scheduledDate = insertPlantingSeasonScheduledDate()
+
+      assertThrows<PlantingSeasonScheduledDateNotFoundException> {
+        store.update(
+            scheduledDate,
+            PlantingSeasonScheduledDateModel(
+                plantingSeasonId = plantingSeasonId,
+                date = LocalDate.EPOCH,
+            ),
+        )
+      }
+    }
   }
 }

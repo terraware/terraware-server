@@ -85,6 +85,7 @@ class PlantingSeasonScheduledDatesStore(
                 .set(MODIFIED_BY, currentUser().userId)
                 .set(MODIFIED_TIME, clock.instant())
                 .where(ID.eq(scheduledDateId))
+                .and(PLANTING_SEASON_ID.eq(model.plantingSeasonId))
                 .execute()
           }
 
