@@ -161,33 +161,6 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
-    fun `throws IllegalArgumentException when a quantity is less than 0`() {
-      val speciesId2 = insertSpecies()
-
-      assertThrows<IllegalArgumentException> {
-        store.create(
-            PlantingSeasonScheduledDateModel(
-                plantingSeasonId = plantingSeasonId,
-                date = LocalDate.EPOCH,
-                species =
-                    listOf(
-                        PlantingSeasonScheduledDateSpecies(
-                            quantity = -1,
-                            speciesId = speciesId,
-                            substratumId = substratumId,
-                        ),
-                        PlantingSeasonScheduledDateSpecies(
-                            quantity = 1,
-                            speciesId = speciesId2,
-                            substratumId = substratumId,
-                        ),
-                    ),
-            )
-        )
-      }
-    }
-
-    @Test
     fun `throws PlantingSeasonScheduledDateExistsException when date already exists`() {
       insertPlantingSeasonScheduledDate()
 

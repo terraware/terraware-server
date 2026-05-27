@@ -41,4 +41,8 @@ data class PlantingSeasonScheduledDateModel(
     val date: LocalDate,
     val plantingSeasonId: PlantingSeasonId,
     val species: List<PlantingSeasonScheduledDateSpecies> = emptyList(),
-)
+) {
+  init {
+    require(species.all { it.quantity >= 0 }) { "All quantities must be >= 0" }
+  }
+}
