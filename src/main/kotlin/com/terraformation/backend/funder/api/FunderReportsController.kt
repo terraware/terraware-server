@@ -1,5 +1,6 @@
 package com.terraformation.backend.funder.api
 
+import com.terraformation.backend.accelerator.api.ReportChallengePayload
 import com.terraformation.backend.accelerator.api.ReportPhotoPayload
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse200Photo
@@ -80,11 +81,6 @@ class FunderReportsController(
         .toResponseEntity()
   }
 }
-
-data class ReportChallengePayload(
-    val challenge: String,
-    val mitigationPlan: String,
-)
 
 data class PublishedCumulativeIndicatorProgressPayload(
     val quarter: ReportQuarter,

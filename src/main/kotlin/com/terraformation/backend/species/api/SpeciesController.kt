@@ -23,7 +23,6 @@ import com.terraformation.backend.db.default_schema.SpeciesProblemType
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
 import com.terraformation.backend.db.default_schema.WoodDensityLevel
 import com.terraformation.backend.db.default_schema.tables.pojos.SpeciesProblemsRow
-import com.terraformation.backend.seedbank.api.ValuesController
 import com.terraformation.backend.species.SpeciesService
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.species.model.ExistingSpeciesModel
@@ -47,20 +46,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-/**
- * Species management endpoints.
- *
- * Implementation note: The names of the methods and payload classes are unusual here because there
- * are some existing species management endpoints in [ValuesController], and those endpoints are
- * already using the obvious names. The OpenAPI schema doesn't allow duplicate names, so if we
- * reused names such as `CreateSpeciesRequestPayload` here, the schema generator would pick one and
- * ignore the other. We can't change the names in [ValuesController] because the seed bank app uses
- * the existing names to look up the payload definitions.
- *
- * Once we've updated the seed bank client code to use these endpoints, we can get rid of the
- * equivalents in [ValuesController] and update the names here to conform to our usual naming
- * conventions.
- */
 @SeedBankAppEndpoint
 @RequestMapping("/api/v1/species")
 @RestController
