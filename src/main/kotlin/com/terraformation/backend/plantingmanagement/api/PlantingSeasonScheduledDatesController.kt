@@ -94,6 +94,9 @@ class PlantingSeasonScheduledDatesController(
 
   @ApiResponseSimpleSuccess
   @ApiResponse200
+  @Operation(
+      summary = "Deletes a scheduled date for a planting season.",
+  )
   @DeleteMapping("/{scheduledPlantingDateId}")
   fun deleteScheduledPlantingDate(
       @PathVariable plantingSeasonId: PlantingSeasonId,
