@@ -148,23 +148,27 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
 
     @Test
     fun `throws DuplicateKeyException when same species-substratum combination is added twice`() {
-      assertThrows<DuplicateKeyException> { store.create(PlantingSeasonScheduledDateModel(
-          plantingSeasonId = plantingSeasonId,
-          date = LocalDate.EPOCH,
-          species =
-              listOf(
-                  PlantingSeasonScheduledDateSpecies(
-                      quantity = 5,
-                      speciesId = speciesId,
-                      substratumId = substratumId,
-                  ),
-                  PlantingSeasonScheduledDateSpecies(
-                      quantity = 10,
-                      speciesId = speciesId,
-                      substratumId = substratumId,
-                  ),
-              ),
-      )) }
+      assertThrows<DuplicateKeyException> {
+        store.create(
+            PlantingSeasonScheduledDateModel(
+                plantingSeasonId = plantingSeasonId,
+                date = LocalDate.EPOCH,
+                species =
+                    listOf(
+                        PlantingSeasonScheduledDateSpecies(
+                            quantity = 5,
+                            speciesId = speciesId,
+                            substratumId = substratumId,
+                        ),
+                        PlantingSeasonScheduledDateSpecies(
+                            quantity = 10,
+                            speciesId = speciesId,
+                            substratumId = substratumId,
+                        ),
+                    ),
+            )
+        )
+      }
     }
 
     @Test
