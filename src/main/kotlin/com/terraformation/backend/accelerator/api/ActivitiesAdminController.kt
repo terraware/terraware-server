@@ -17,6 +17,9 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationMediaType
+import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.funder.db.PublishedActivityStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -106,6 +109,20 @@ class ActivitiesAdminController(
   }
 }
 
+data class AdminActivityObservationMediaFilePayload(
+    val monitoringPlotNumber: Long,
+    val position: ObservationPlotPosition?,
+    val type: ObservationMediaType,
+) {
+  constructor(
+      observation: ActivityMediaModel.Observation
+  ) : this(
+      monitoringPlotNumber = observation.monitoringPlotNumber,
+      position = observation.position,
+      type = observation.type,
+  )
+}
+
 data class AdminActivityMediaFilePayload(
     val caption: String?,
     val capturedDate: LocalDate,
@@ -117,6 +134,7 @@ data class AdminActivityMediaFilePayload(
     val isCoverPhoto: Boolean,
     val isHiddenOnMap: Boolean,
     val listPosition: Int,
+    val observation: AdminActivityObservationMediaFilePayload?,
     val type: ActivityMediaType,
 ) {
   constructor(
@@ -132,8 +150,15 @@ data class AdminActivityMediaFilePayload(
       isCoverPhoto = model.isCoverPhoto,
       isHiddenOnMap = model.isHiddenOnMap,
       listPosition = model.listPosition,
+      observation = model.observation?.let { AdminActivityObservationMediaFilePayload(it) },
       type = model.type,
   )
+}
+
+data class AdminActivityObservationPayload(
+    val observationId: ObservationId,
+) {
+  constructor(model: ExistingActivityModel.Observation) : this(model.observationId)
 }
 
 data class AdminActivityPayload(
@@ -146,6 +171,7 @@ data class AdminActivityPayload(
     val media: List<AdminActivityMediaFilePayload>,
     val modifiedBy: UserId,
     val modifiedTime: Instant,
+    val observation: AdminActivityObservationPayload?,
     val publishedBy: UserId?,
     val publishedTime: Instant?,
     val status: ActivityStatus,
@@ -165,6 +191,7 @@ data class AdminActivityPayload(
       media = model.media.map { AdminActivityMediaFilePayload(it) },
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
+      observation = model.observation?.let { AdminActivityObservationPayload(it) },
       publishedBy = model.publishedBy,
       publishedTime = model.publishedTime,
       status = model.activityStatus,

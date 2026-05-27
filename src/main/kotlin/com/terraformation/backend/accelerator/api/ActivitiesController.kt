@@ -23,6 +23,7 @@ import com.terraformation.backend.db.accelerator.ActivityStatus
 import com.terraformation.backend.db.accelerator.ActivityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
@@ -213,7 +214,7 @@ class ActivitiesController(
   }
 }
 
-data class ObservationActivityMediaFilePayload(
+data class ActivityObservationMediaFilePayload(
     val monitoringPlotNumber: Long,
     val position: ObservationPlotPosition?,
     val type: ObservationMediaType,
@@ -240,7 +241,7 @@ data class ActivityMediaFilePayload(
         description =
             "If this file is from an observation, additional observation-specific data about it."
     )
-    val observation: ObservationActivityMediaFilePayload? = null,
+    val observation: ActivityObservationMediaFilePayload? = null,
     val type: ActivityMediaType,
 ) {
   constructor(
@@ -254,9 +255,15 @@ data class ActivityMediaFilePayload(
       isCoverPhoto = model.isCoverPhoto,
       isHiddenOnMap = model.isHiddenOnMap,
       listPosition = model.listPosition,
-      observation = model.observation?.let { ObservationActivityMediaFilePayload(it) },
+      observation = model.observation?.let { ActivityObservationMediaFilePayload(it) },
       type = model.type,
   )
+}
+
+data class ActivityObservationPayload(
+    val observationId: ObservationId,
+) {
+  constructor(model: ExistingActivityModel.Observation) : this(model.observationId)
 }
 
 data class ActivityPayload(
@@ -265,6 +272,7 @@ data class ActivityPayload(
     val id: ActivityId,
     val isHighlight: Boolean,
     val media: List<ActivityMediaFilePayload>,
+    val observation: ActivityObservationPayload? = null,
     val publishedTime: Instant?,
     val status: ActivityStatus,
     val type: ActivityType,
@@ -277,6 +285,7 @@ data class ActivityPayload(
       id = model.id,
       isHighlight = model.isHighlight,
       media = model.media.map { ActivityMediaFilePayload(it) },
+      observation = model.observation?.let { ActivityObservationPayload(it) },
       publishedTime = model.publishedTime,
       status = model.activityStatus,
       type = model.activityType,
