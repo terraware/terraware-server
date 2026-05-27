@@ -23,7 +23,7 @@ class PlantingSeasonScheduledDatesStore(
     val now = clock.instant()
 
     val scheduledDateId = dslContext.transactionResult { _ ->
-      val scheduledDateId =
+      val newScheduledDateId =
           with(SCHEDULED_PLANTING_DATES) {
             dslContext
                 .insertInto(SCHEDULED_PLANTING_DATES)
@@ -54,7 +54,7 @@ class PlantingSeasonScheduledDatesStore(
 
         model.species.forEach { species ->
           insertQuery.values(
-              scheduledDateId,
+              newScheduledDateId,
               species.speciesId,
               species.substratumId,
               species.quantity,
@@ -64,7 +64,7 @@ class PlantingSeasonScheduledDatesStore(
         insertQuery.onConflictDoNothing().execute()
       }
 
-      scheduledDateId
+      newScheduledDateId
     }
 
     return scheduledDateId

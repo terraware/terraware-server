@@ -57,7 +57,7 @@ data class ScheduledPlantingDateSpeciesPayload(
 
 data class ScheduledPlantingDateRequestPayload(
     val date: LocalDate,
-    val species: List<ScheduledPlantingDateSpeciesPayload> = emptyList(),
+    val species: List<ScheduledPlantingDateSpeciesPayload>,
 ) {
   fun toModel(plantingSeasonId: PlantingSeasonId): PlantingSeasonScheduledDateModel =
       PlantingSeasonScheduledDateModel(
