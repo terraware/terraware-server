@@ -148,6 +148,26 @@ class PlantingSeasonScheduledDatesStore(
     }
   }
 
+  fun delete(
+      plantingSeasonId: PlantingSeasonId,
+      scheduledDateId: ScheduledPlantingDateId,
+  ) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    with(SCHEDULED_PLANTING_DATES) {
+      val rowsDeleted =
+          dslContext
+              .deleteFrom(SCHEDULED_PLANTING_DATES)
+              .where(ID.eq(scheduledDateId))
+              .and(PLANTING_SEASON_ID.eq(plantingSeasonId))
+              .execute()
+
+      if (rowsDeleted == 0) {
+        throw PlantingSeasonScheduledDateNotFoundException(scheduledDateId)
+      }
+    }
+  }
+
   private fun fetchByCondition(
       condition: Condition
   ): List<ExistingPlantingSeasonScheduledDateModel> {

@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDateSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDatesRecord
+import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
@@ -536,6 +537,46 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
             ),
         )
       }
+    }
+  }
+
+  @Nested
+  inner class Delete {
+    @Test
+    fun `deletes the scheduled date`() {
+      val scheduledDateId = insertPlantingSeasonScheduledDate()
+      insertScheduledPlantingDateSpecies()
+
+      store.delete(plantingSeasonId, scheduledDateId)
+
+      assertTableEmpty(SCHEDULED_PLANTING_DATES)
+      assertTableEmpty(SCHEDULED_PLANTING_DATE_SPECIES)
+    }
+
+    @Test
+    fun `throws PlantingSeasonScheduledDateNotFoundException when date doesn't exist`() {
+      assertThrows<PlantingSeasonScheduledDateNotFoundException> {
+        store.delete(plantingSeasonId, ScheduledPlantingDateId(99999L))
+      }
+    }
+
+    @Test
+    fun `throws PlantingSeasonScheduledDateNotFoundException when date belongs to different season`() {
+      insertPlantingSeason()
+      val scheduledDateId = insertPlantingSeasonScheduledDate()
+
+      assertThrows<PlantingSeasonScheduledDateNotFoundException> {
+        store.delete(plantingSeasonId, scheduledDateId)
+      }
+    }
+
+    @Test
+    fun `throws AccessDeniedException when user lacks permission`() {
+      val scheduledDateId = insertPlantingSeasonScheduledDate()
+      insertScheduledPlantingDateSpecies()
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+      assertThrows<AccessDeniedException> { store.delete(plantingSeasonId, scheduledDateId) }
     }
   }
 }
