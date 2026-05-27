@@ -120,7 +120,6 @@ class ObservationStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
-    // JobRunr is disabled when generating OpenAPI docs from Gradle
     @Lazy private val jobScheduler: JobScheduler,
     private val observationLocker: ObservationLocker,
     private val observationsDao: ObservationsDao,
@@ -2173,6 +2172,7 @@ class ObservationStore(
   @EventListener
   fun on(event: T0PlotDataAssignedEvent) {
     jobScheduler.enqueue<ObservationStore> {
+      // Do the survival rate recalculation asynchronously to avoid delays on a T0 settings change.
       runRecalculateSurvivalRates(event.monitoringPlotId)
     }
   }
@@ -2180,6 +2180,7 @@ class ObservationStore(
   @EventListener
   fun on(event: T0StratumDataAssignedEvent) {
     jobScheduler.enqueue<ObservationStore> {
+      // Do the survival rate recalculation asynchronously to avoid delays on a T0 settings change.
       runRecalculateSurvivalRates(event.stratumId)
     }
   }
