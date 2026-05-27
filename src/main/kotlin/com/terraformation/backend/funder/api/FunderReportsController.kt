@@ -81,7 +81,7 @@ class FunderReportsController(
   }
 }
 
-data class ReportChallengePayload(
+data class PublishedReportChallengePayload(
     val challenge: String,
     val mitigationPlan: String,
 )
@@ -154,7 +154,7 @@ data class PublishedReportPayload(
     val achievements: List<String>,
     val additionalComments: String?,
     val autoCalculatedIndicators: List<PublishedReportIndicatorPayload>,
-    val challenges: List<ReportChallengePayload>,
+    val challenges: List<PublishedReportChallengePayload>,
     val commonIndicators: List<PublishedReportIndicatorPayload>,
     val endDate: LocalDate,
     val financialSummaries: String?,
@@ -176,7 +176,8 @@ data class PublishedReportPayload(
       additionalComments = model.additionalComments,
       autoCalculatedIndicators =
           model.autoCalculatedIndicators.map { PublishedReportIndicatorPayload(it) },
-      challenges = model.challenges.map { ReportChallengePayload(it.challenge, it.mitigationPlan) },
+      challenges =
+          model.challenges.map { PublishedReportChallengePayload(it.challenge, it.mitigationPlan) },
       commonIndicators = model.commonIndicators.map { PublishedReportIndicatorPayload(it) },
       endDate = model.endDate,
       financialSummaries = model.financialSummaries,

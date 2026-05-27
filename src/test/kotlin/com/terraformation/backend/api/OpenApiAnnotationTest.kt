@@ -12,6 +12,7 @@ import java.util.stream.Stream
 import kotlin.streams.asStream
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -83,6 +85,40 @@ class OpenApiAnnotationTest {
     )
   }
 
+  @Test
+  fun `no two payload classes have the same simple name`() {
+    val payloadClasses = buildList {
+      val visited = mutableSetOf<String>()
+      controllerClasses()
+          .flatMap { clazz ->
+            clazz.declaredMethods.filter { method: Method ->
+              method.annotations.any { it.annotationClass in controllerMethodAnnotations }
+            }
+          }
+          .forEach { method ->
+            collectPayloadTypes(method.genericReturnType, this, visited)
+            method.parameters
+                .filter { param -> param.isAnnotationPresent(RequestBody::class.java) }
+                .forEach { param -> collectPayloadTypes(param.parameterizedType, this, visited) }
+          }
+    }
+
+    val duplicates =
+        payloadClasses
+            .groupBy { it.simpleName }
+            .filter { (name, classes) ->
+              name !in DUPLICATE_CLASS_NAME_ALLOWLIST && classes.map { it.name }.distinct().size > 1
+            }
+
+    assertTrue(
+        duplicates.isEmpty(),
+        "Found payload classes with the same simple name:\n" +
+            duplicates.entries.joinToString("\n") { (name, classes) ->
+              "  $name: ${classes.map { it.name }.distinct().joinToString(", ")}"
+            },
+    )
+  }
+
   @MethodSource("findAllControllerPackages")
   @ParameterizedTest(name = "{0}")
   fun `all controller packages are in springdoc packages-to-scan`(packageName: String) {
@@ -107,6 +143,16 @@ class OpenApiAnnotationTest {
      * scanning (e.g., internal-only controllers that should not appear in the public API docs).
      */
     private val SPRINGDOC_PACKAGE_SCAN_BLACKLIST: Set<String> = setOf()
+
+    /**
+     * Classes that are intentionally allowed to share a simple name across packages and should not
+     * be flagged as conflicts.
+     */
+    private val DUPLICATE_CLASS_NAME_ALLOWLIST: Set<String> =
+        setOf(
+            "WithdrawalId",
+            "WithdrawalPurpose",
+        )
 
     private val springdocPackagesToScan: Set<String> by lazy {
       val propertySources =
@@ -194,6 +240,31 @@ class OpenApiAnnotationTest {
           .filter { it !in SPRINGDOC_PACKAGE_SCAN_BLACKLIST }
           .distinct()
           .asStream()
+    }
+
+    private fun collectPayloadTypes(
+        type: Type,
+        result: MutableList<Class<*>>,
+        visited: MutableSet<String>,
+    ) {
+      when (type) {
+        is Class<*> -> {
+          if (
+              type.name.startsWith("com.terraformation.backend") &&
+                  type.simpleName != "Companion" &&
+                  visited.add(type.name)
+          ) {
+            result.add(type)
+            type.declaredFields.forEach { field ->
+              collectPayloadTypes(field.genericType, result, visited)
+            }
+          }
+        }
+        is ParameterizedType -> {
+          collectPayloadTypes(type.rawType, result, visited)
+          type.actualTypeArguments.forEach { collectPayloadTypes(it, result, visited) }
+        }
+      }
     }
 
     @JvmStatic
