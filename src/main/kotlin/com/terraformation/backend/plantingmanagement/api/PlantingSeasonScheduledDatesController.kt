@@ -4,6 +4,7 @@ import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -104,7 +105,8 @@ data class ScheduledPlantingDateRequestPayload(
       )
 }
 
-data class ListScheduledDatesResponsePayload(val scheduledDates: List<ScheduledDatePayload>)
+data class ListScheduledDatesResponsePayload(val scheduledDates: List<ScheduledDatePayload>) :
+    SuccessResponsePayload
 
 data class ScheduledDatePayload(
     val date: LocalDate,
