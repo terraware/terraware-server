@@ -110,6 +110,20 @@ class PlantingSeasonStore(
     }
   }
 
+  fun close(plantingSeasonId: PlantingSeasonId) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    with(PLANTING_SEASONS) {
+      dslContext
+          .update(PLANTING_SEASONS)
+          .set(STATUS_ID, PlantingSeasonStatus.Closed)
+          .set(MODIFIED_BY, currentUser().userId)
+          .set(MODIFIED_TIME, clock.instant())
+          .where(ID.eq(plantingSeasonId))
+          .execute()
+    }
+  }
+
   fun delete(id: PlantingSeasonId) {
     requirePermissions { deletePlantingSeason(id) }
 

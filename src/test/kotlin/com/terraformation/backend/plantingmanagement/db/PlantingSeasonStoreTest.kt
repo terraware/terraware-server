@@ -607,4 +607,46 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<AccessDeniedException> { store.delete(id) }
     }
   }
+
+  @Nested
+  inner class Close {
+    @Test
+    fun `closes the planting season`() {
+      val id = insertPlantingSeason(name = "Spring 2025")
+      clock.instant = Instant.EPOCH.plusSeconds(60)
+
+      store.close(id)
+
+      assertTableEquals(
+          PlantingSeasonsRecord(
+              id = id,
+              name = "Spring 2025",
+              plantingSiteId = plantingSiteId,
+              startDate = LocalDate.EPOCH,
+              endDate = LocalDate.EPOCH.plusDays(1),
+              statusId = PlantingSeasonStatus.Closed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `throws PlantingSeasonNotFoundException when season does not exist`() {
+      val nonExistentId = PlantingSeasonId(999999L)
+
+      assertThrows<PlantingSeasonNotFoundException> { store.close(nonExistentId) }
+    }
+
+    @Test
+    fun `throws AccessDeniedException when user has no update permission`() {
+      val id = insertPlantingSeason()
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> { store.close(id) }
+    }
+  }
 }
