@@ -560,6 +560,37 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `does not change status when season is closed`() {
+      val id =
+          insertPlantingSeason(
+              name = "Season",
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              status = PlantingSeasonStatus.Closed,
+          )
+      val newStart = LocalDate.of(2024, 1, 1)
+      val newEnd = LocalDate.of(2024, 3, 31)
+      clock.instant = newEnd.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+
+      store.update(id, "Season", newStart, newEnd)
+
+      assertTableEquals(
+          PlantingSeasonsRecord(
+              id = id,
+              name = "Season",
+              plantingSiteId = plantingSiteId,
+              startDate = newStart,
+              endDate = newEnd,
+              statusId = PlantingSeasonStatus.Closed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
     fun `throws PlantingSeasonNotFoundException when season does not exist`() {
       val nonExistentId = PlantingSeasonId(999999L)
 
