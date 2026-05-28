@@ -361,7 +361,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
       // PlantingSiteEditCalculatorV2Test.
       val initial =
           newSite(x = 0, width = 1000) {
-            stratum(name = "A", x = 0, width = 500) {
+            stratum(name = "A", x = 0, width = 500, numPermanent = 8, numTemporary = 3) {
               substratum {
                 permanent(plotNumber = 1, x = 300, y = 0)
                 permanent(plotNumber = 2, x = 300, y = 30)
@@ -369,7 +369,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
                 permanent(plotNumber = 7, x = 300, y = 90)
               }
             }
-            stratum(name = "B", x = 500, width = 500) {
+            stratum(name = "B", x = 500, width = 500, numPermanent = 8, numTemporary = 3) {
               substratum {
                 permanent(plotNumber = 16, x = 600, y = 0)
                 permanent(plotNumber = 18, x = 600, y = 30)

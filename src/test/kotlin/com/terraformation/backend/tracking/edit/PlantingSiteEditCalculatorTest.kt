@@ -131,9 +131,11 @@ class PlantingSiteEditCalculatorTest {
     val newTargetPlantingDensity = BigDecimal(1100)
     val newVariance = BigDecimal(40001)
 
-    val existing = existingSite { stratum { substratum { repeat(8) { permanent() } } } }
+    val existing = existingSite {
+      stratum(numPermanent = 8, numTemporary = 3) { substratum { repeat(8) { permanent() } } }
+    }
     val desired = newSite {
-      stratum {
+      stratum(numPermanent = 8, numTemporary = 3) {
         errorMargin = newErrorMargin
         studentsT = newStudentsT
         targetPlantingDensity = newTargetPlantingDensity
