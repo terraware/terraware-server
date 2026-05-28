@@ -705,6 +705,10 @@ val EMBEDDABLES =
             .withTables("project_variables")
             .withColumns("project_id", "stable_id"),
         EmbeddableDefinitionType()
+            .withName("scheduled_planting_date_species_id")
+            .withTables("tracking.scheduled_planting_date_species")
+            .withColumns("scheduled_planting_date_id", "species_id", "substratum_id"),
+        EmbeddableDefinitionType()
             .withName("species_ecosystem_id")
             .withTables("public.species_ecosystem_types")
             .withColumns("species_id", "ecosystem_type_id"),

@@ -4,6 +4,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SUMMARIES
+import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
 import com.terraformation.backend.search.field.SearchField
@@ -25,6 +26,10 @@ class PlantingSeasonsTable(private val tables: SearchTables) : SearchTable() {
           plantingSeasonSpeciesTargets.asMultiValueSublist(
               "speciesTargets",
               PLANTING_SEASONS.ID.eq(PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID),
+          ),
+          plantingSeasonScheduledDates.asMultiValueSublist(
+              "scheduledDates",
+              PLANTING_SEASONS.ID.eq(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID),
           ),
       )
     }
