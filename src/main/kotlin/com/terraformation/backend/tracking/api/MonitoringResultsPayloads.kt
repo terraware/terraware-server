@@ -150,7 +150,7 @@ data class ObservationMonitoringPlotResultsPayload(
     @Schema(description = "IDs of any older monitoring plots this one overlaps with.")
     val overlapsWithPlotIds: Set<MonitoringPlotId>,
     @Schema(description = "Number of live plants per hectare.") //
-    val plantingDensity: Int,
+    val plantingDensity: Int?,
     val plants: List<RecordedPlantPayload>?,
     @Schema(description = "Length of each edge of the monitoring plot in meters.")
     val sizeMeters: Int,
@@ -241,7 +241,7 @@ data class ObservationSubstratumResultsPayload(
             "Estimated planting density for the substratum based on the observed planting densities " +
                 "of monitoring plots."
     )
-    val plantingDensity: Int,
+    val plantingDensity: Int?,
     val plantingDensityStdDev: Int?,
     @Schema(
         description =
@@ -304,7 +304,7 @@ data class ObservationStratumResultsPayload(
             "Estimated planting density for the stratum based on the observed planting densities " +
                 "of monitoring plots."
     )
-    val plantingDensity: Int,
+    val plantingDensity: Int?,
     val plantingDensityStdDev: Int?,
     @Schema(
         description = "ID of the stratum. Absent if the stratum was deleted after the observation."
@@ -379,7 +379,7 @@ data class ObservationResultsPayload(
             "Estimated planting density for the site, based on the observed planting densities " +
                 "of monitoring plots."
     )
-    val plantingDensity: Int,
+    val plantingDensity: Int?,
     val plantingDensityStdDev: Int?,
     val plantingSiteHistoryId: PlantingSiteHistoryId?,
     val plantingSiteId: PlantingSiteId,
@@ -441,7 +441,7 @@ data class StratumObservationSummaryPayload(
             "Estimated planting density for the stratum based on the observed planting densities " +
                 "of monitoring plots."
     )
-    val plantingDensity: Int,
+    val plantingDensity: Int?,
     val plantingDensityStdDev: Int?,
     @Schema(
         description =
@@ -510,7 +510,7 @@ data class PlantingSiteObservationSummaryPayload(
             "Estimated planting density for the site, based on the observed planting densities " +
                 "of monitoring plots."
     )
-    val plantingDensity: Int,
+    val plantingDensity: Int?,
     val plantingDensityStdDev: Int?,
     val plantingSiteId: PlantingSiteId,
     @Schema(

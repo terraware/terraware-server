@@ -676,7 +676,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
           completePlotResults.status,
           "Completed Plot Status",
       )
-      assertEquals(0, incompletePlotResults.plantingDensity, "Incomplete Plot Planting Density")
+      assertNull(incompletePlotResults.plantingDensity, "Incomplete Plot Planting Density")
       assertEquals(
           ObservationPlotStatus.NotObserved,
           incompletePlotResults.status,

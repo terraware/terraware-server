@@ -174,7 +174,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             }
 
             val survivalRate = record[OBSERVATION_PLOT_RESULTS.SURVIVAL_RATE]
-            val plantingDensity = record[OBSERVATION_PLOT_RESULTS.PLANT_DENSITY] ?: 0
+            val plantingDensity = record[OBSERVATION_PLOT_RESULTS.PLANT_DENSITY]
 
             val status = record[OBSERVATION_PLOTS.STATUS_ID]!!
 
@@ -298,12 +298,12 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
 
             val survivalRate = record[OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE]
             val survivalRateStdDev = record[OBSERVATION_SUBSTRATUM_RESULTS.SURVIVAL_RATE_STD_DEV]
-            val plantingDensity = record[OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY] ?: 0
+            val plantingDensity = record[OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY]
             val plantingDensityStdDev = record[OBSERVATION_SUBSTRATUM_RESULTS.PLANT_DENSITY_STD_DEV]
 
             val plantingCompleted = record[SUBSTRATA.PLANTING_COMPLETED_TIME] != null
             val estimatedPlants =
-                if (plantingCompleted) {
+                if (plantingCompleted && plantingDensity != null) {
                   (areaHa.toDouble() * plantingDensity).roundToInt()
                 } else {
                   null
@@ -421,12 +421,12 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
 
             val survivalRate = record[OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE]
             val survivalRateStdDev = record[OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_STD_DEV]
-            val plantingDensity = record[OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY] ?: 0
+            val plantingDensity = record[OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY]
             val plantingDensityStdDev = record[OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY_STD_DEV]
 
             val plantingCompleted = record[stratumPlantingCompletedField]
             val estimatedPlants =
-                if (plantingCompleted) {
+                if (plantingCompleted && plantingDensity != null) {
                   (areaHa.toDouble() * plantingDensity).roundToInt()
                 } else {
                   null
@@ -528,7 +528,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
 
               val survivalRate = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE]
               val survivalRateStdDev = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE_STD_DEV]
-              val plantingDensity = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY] ?: 0
+              val plantingDensity = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY]
               val plantingDensityStdDev = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY_STD_DEV]
 
               ObservationResultsModel(
