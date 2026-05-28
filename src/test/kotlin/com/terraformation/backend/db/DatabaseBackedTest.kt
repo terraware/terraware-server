@@ -467,6 +467,7 @@ import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedTreesDao
+import com.terraformation.backend.db.tracking.tables.daos.ScheduledPlantingDatesDao
 import com.terraformation.backend.db.tracking.tables.daos.SimplePlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.SimplifiedPlantingSiteHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.SimplifiedPlantingSitesDao
@@ -513,6 +514,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.PlotT0DensitiesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlotT0ObservationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
+import com.terraformation.backend.db.tracking.tables.pojos.ScheduledPlantingDatesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SimplePlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedPlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedPlantingSitesRow
@@ -800,6 +802,7 @@ abstract class DatabaseBackedTest {
   protected val reportProjectIndicatorTargetsDao: ReportProjectIndicatorTargetsDao by lazyDao()
   protected val reportProjectIndicatorsDao: ReportProjectIndicatorsDao by lazyDao()
   protected val reportsDao: ReportsDao by lazyDao()
+  protected val scheduledPlantingDatesDao: ScheduledPlantingDatesDao by lazyDao()
   protected val seedFundReportFilesDao: SeedFundReportFilesDao by lazyDao()
   protected val seedFundReportPhotosDao: SeedFundReportPhotosDao by lazyDao()
   protected val seedFundReportsDao: SeedFundReportsDao by lazyDao()
@@ -2332,6 +2335,28 @@ abstract class DatabaseBackedTest {
         )
 
     plantingSeasonSpeciesTargetsDao.insert(rowWithDefaults)
+  }
+
+  fun insertPlantingSeasonScheduledDate(
+      row: ScheduledPlantingDatesRow = ScheduledPlantingDatesRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      date: LocalDate = LocalDate.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            date = date,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            plantingSeasonId = plantingSeasonId,
+        )
+
+    scheduledPlantingDatesDao.insert(rowWithDefaults)
   }
 
   var nextPlantingSiteNumber: Int = 1
