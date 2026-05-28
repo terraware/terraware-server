@@ -16,6 +16,9 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
+import com.terraformation.backend.util.GeometrySimplifier
+import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -27,18 +30,20 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
 
   protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
+  protected val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   protected val store: PlantingSiteStore by lazy {
     PlantingSiteStore(
         clock,
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
-        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
+        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )
@@ -48,6 +53,8 @@ class PlantingSiteStoreMonitoringPlotElevationTest : DatabaseTest(), RunsAsDatab
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     organizationId = insertOrganization()
     insertOrganizationUser(user.userId, organizationId, Role.Admin)
   }

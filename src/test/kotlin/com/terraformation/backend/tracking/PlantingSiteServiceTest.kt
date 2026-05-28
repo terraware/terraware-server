@@ -25,6 +25,7 @@ import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import io.mockk.mockk
@@ -44,6 +45,7 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val parentStore by lazy { ParentStore(dslContext) }
   private val deliveryStore by lazy {
     DeliveryStore(clock, deliveriesDao, dslContext, parentStore, plantingsDao)
@@ -54,12 +56,13 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
+        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )
@@ -71,6 +74,8 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     every { user.canReadOrganization(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
   }

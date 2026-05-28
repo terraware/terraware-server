@@ -17,6 +17,7 @@ import org.locationtech.jts.geom.PrecisionModel
 class GeometrySimplifierTest {
   private val objectMapper = jacksonObjectMapper().registerModule(GeometryModule())
   private val parser = GeometryFileParser(objectMapper)
+  private val simplifier = GeometrySimplifier()
 
   @Test
   fun `simplifies geometry for a polygon`() {
@@ -70,9 +71,9 @@ class GeometrySimplifierTest {
             )
         )
 
-    val actualSimplifiedPolygon1 = GeometrySimplifier.simplify(originalPolygon, 0.5)
-    val actualSimplifiedPolygon2 = GeometrySimplifier.simplify(originalPolygon, 1.0)
-    val actualSimplifiedPolygon3 = GeometrySimplifier.simplify(originalPolygon, 1.5)
+    val actualSimplifiedPolygon1 = simplifier.simplify(originalPolygon, 0.5)
+    val actualSimplifiedPolygon2 = simplifier.simplify(originalPolygon, 1.0)
+    val actualSimplifiedPolygon3 = simplifier.simplify(originalPolygon, 1.5)
 
     assertGeometryEquals(
         originalPolygon,
@@ -94,7 +95,7 @@ class GeometrySimplifierTest {
   private fun runGeoJson(path: String) {
     val original = parseGeoJson(path)
 
-    val simplified = GeometrySimplifier.simplify(original)
+    val simplified = simplifier.simplify(original)
     val jaccardSimilarity = jaccard(simplified, original)
     val reductionRate = reductionRatio(simplified, original)
 

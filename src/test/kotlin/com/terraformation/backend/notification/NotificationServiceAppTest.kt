@@ -111,6 +111,7 @@ import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
 import com.terraformation.backend.tracking.model.ExistingObservationModel
+import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.mockDeliverable
 import io.mockk.every
 import io.mockk.mockk
@@ -166,11 +167,14 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
   private lateinit var webAppUrls: WebAppUrls
   private val emailService: EmailService = mockk(relaxed = true)
   private val fundingEntityStore: FundingEntityStore = mockk(relaxed = true)
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val observationStore: ObservationStore = mockk(relaxed = true)
   private lateinit var service: NotificationService
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     val objectMapper = jacksonObjectMapper()
     val publisher = TestEventPublisher()
 
@@ -227,12 +231,13 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             publisher,
+            mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
-            simplePlantingSeasonsDao,
             plantingSitesDao,
             publisher,
+            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         )

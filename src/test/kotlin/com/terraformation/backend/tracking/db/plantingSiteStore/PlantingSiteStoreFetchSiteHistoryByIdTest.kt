@@ -24,6 +24,9 @@ import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.StratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
+import com.terraformation.backend.util.GeometrySimplifier
+import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -36,18 +39,20 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
 
   protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
+  protected val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   protected val store: PlantingSiteStore by lazy {
     PlantingSiteStore(
         clock,
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         ParentStore(dslContext),
-        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
+        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )
@@ -55,6 +60,8 @@ internal class PlantingSiteStoreFetchSiteHistoryByIdTest : DatabaseTest(), RunsA
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     insertOrganization()
     insertOrganizationUser(user.userId, inserted.organizationId, Role.Contributor)
   }

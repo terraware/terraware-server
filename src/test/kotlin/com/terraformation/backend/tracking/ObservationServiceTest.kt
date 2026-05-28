@@ -110,6 +110,7 @@ import com.terraformation.backend.tracking.model.NotificationCriteria
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementDuration
 import com.terraformation.backend.tracking.model.ReplacementResult
+import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.Turtle
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -142,6 +143,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = spyk(TestClock())
   private val eventPublisher = TestEventPublisher()
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val fileStore = InMemoryFileStore()
   private val muxService: MuxService = mockk()
   private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
@@ -172,12 +174,13 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         TestSingletons.countryDetector,
         dslContext,
         TestEventPublisher(),
+        mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
+        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )
@@ -211,6 +214,8 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Admin)
     plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
