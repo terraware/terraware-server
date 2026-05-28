@@ -421,12 +421,21 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
                         .asNonNullable()]
 
-            val species = record[substratumSpeciesMultisetField]
+            val anyCompleted = monitoringPlots.any { it.completedTime != null }
+            val species =
+                if (anyCompleted) {
+                  record[substratumSpeciesMultisetField]
+                } else {
+                  emptyList()
+                }
             val totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead }
-            val totalLiveSpeciesExceptUnknown = species.count {
-              it.certainty != RecordedSpeciesCertainty.Unknown &&
-                  (it.totalLive + it.totalExisting) > 0
-            }
+            val totalLiveSpeciesExceptUnknown =
+                species
+                    .ifEmpty { null }
+                    ?.count {
+                      it.certainty != RecordedSpeciesCertainty.Unknown &&
+                          (it.totalLive + it.totalExisting) > 0
+                    }
 
             val isCompleted =
                 monitoringPlots.isNotEmpty() && monitoringPlots.all { it.completedTime != null }
@@ -555,7 +564,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
         .convertFrom { results ->
           results.map { record: Record ->
             val areaHa = record[STRATUM_HISTORIES.AREA_HA]!!
-            val species = record[stratumSpeciesMultisetField]
             val substrata = record[substrataField]
             val survivalRateIncludesTempPlots =
                 record[
@@ -563,13 +571,21 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
                         .asNonNullable()]
 
+            val anyCompleted = substrata.any { substratum ->
+              substratum.monitoringPlots.any { it.completedTime != null }
+            }
+            val species =
+                if (anyCompleted) {
+                  record[stratumSpeciesMultisetField]
+                } else {
+                  emptyList()
+                }
             val identifiedSpecies = species.filter {
               it.certainty != RecordedSpeciesCertainty.Unknown
             }
             val totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead }
-            val totalLiveSpeciesExceptUnknown = identifiedSpecies.count {
-              (it.totalLive + it.totalExisting) > 0
-            }
+            val totalLiveSpeciesExceptUnknown =
+                identifiedSpecies.ifEmpty { null }?.count { (it.totalLive + it.totalExisting) > 0 }
 
             val isCompleted =
                 substrata.isNotEmpty() &&
@@ -701,7 +717,16 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
               val areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA]
 
               val strata = record[strataField]
-              val species = record[plantingSiteSpeciesMultisetField]
+              val monitoringPlots = strata.flatMap { it.substrata }.flatMap { it.monitoringPlots }
+              val completedPlots = monitoringPlots.filter {
+                it.status == ObservationPlotStatus.Completed
+              }
+              val species =
+                  if (completedPlots.isNotEmpty()) {
+                    record[plantingSiteSpeciesMultisetField]
+                  } else {
+                    emptyList()
+                  }
               val survivalRateIncludesTempPlots =
                   record[
                       OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable()]
@@ -711,11 +736,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
 
               val plantingCompleted = strata.isNotEmpty() && strata.all { it.plantingCompleted }
 
-              val monitoringPlots = strata.flatMap { it.substrata }.flatMap { it.monitoringPlots }
-              val completedPlotsPlantingDensities =
-                  monitoringPlots
-                      .filter { it.status == ObservationPlotStatus.Completed }
-                      .mapNotNull { it.plantingDensity }
+              val completedPlotsPlantingDensities = completedPlots.mapNotNull { it.plantingDensity }
               val plantingDensity =
                   if (completedPlotsPlantingDensities.isNotEmpty()) {
                     completedPlotsPlantingDensities.average()
