@@ -1,13 +1,16 @@
 package com.terraformation.backend.plantingmanagement.api
 
+import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.ApiResponse404
 import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
+import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
@@ -15,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import java.time.LocalDate
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -28,6 +32,19 @@ import org.springframework.web.bind.annotation.RestController
 class PlantingSeasonScheduledDatesController(
     private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore,
 ) {
+  @ApiResponse200
+  @Operation(summary = "Gets all scheduled dates for a planting season.")
+  @GetMapping
+  fun getScheduledPlantingDates(
+      @PathVariable plantingSeasonId: PlantingSeasonId,
+  ): ListScheduledDatesResponsePayload {
+    val models = plantingSeasonScheduledDatesStore.fetchList(plantingSeasonId)
+
+    return ListScheduledDatesResponsePayload(
+        scheduledDates = models.map { ScheduledDatePayload(it) }
+    )
+  }
+
   @ApiResponseSimpleSuccess
   @ApiResponse404
   @Operation(
@@ -86,4 +103,28 @@ data class ScheduledPlantingDateRequestPayload(
           date = date,
           species = species.map { it.toModel() },
       )
+}
+
+data class ListScheduledDatesResponsePayload(val scheduledDates: List<ScheduledDatePayload>) :
+    SuccessResponsePayload
+
+data class ScheduledDatePayload(
+    val date: LocalDate,
+    val scheduledPlantingDateId: ScheduledPlantingDateId,
+    val species: List<ScheduledPlantingDateSpeciesPayload>,
+) {
+  constructor(
+      model: ExistingPlantingSeasonScheduledDateModel
+  ) : this(
+      date = model.date,
+      scheduledPlantingDateId = model.scheduledPlantingDateId,
+      species =
+          model.species.map {
+            ScheduledPlantingDateSpeciesPayload(
+                quantity = it.quantity,
+                speciesId = it.speciesId,
+                substratumId = it.substratumId,
+            )
+          },
+  )
 }

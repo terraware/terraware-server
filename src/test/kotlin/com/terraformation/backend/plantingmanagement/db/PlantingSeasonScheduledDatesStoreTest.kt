@@ -12,10 +12,12 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDateSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDatesRecord
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
 import java.time.Instant
 import java.time.LocalDate
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -43,6 +45,91 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
     plantingSeasonId = insertPlantingSeason()
     substratumId = insertSubstratum()
     speciesId = insertSpecies()
+  }
+
+  @Nested
+  inner class FetchList {
+    @Test
+    fun `returns empty list when no dates exist`() {
+      val result = store.fetchList(plantingSeasonId)
+
+      assertEquals(
+          emptyList<ExistingPlantingSeasonScheduledDateModel>(),
+          result,
+          "No dates to fetch",
+      )
+    }
+
+    @Test
+    fun `returns dates for the specified season`() {
+      val date1 = LocalDate.EPOCH
+      val date2 = LocalDate.EPOCH.plusDays(1)
+      val speciesId2 = insertSpecies()
+      val scheduledDate1 = insertPlantingSeasonScheduledDate(date = date1)
+      val scheduledDate2 = insertPlantingSeasonScheduledDate(date = date2)
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = scheduledDate1,
+          speciesId = speciesId,
+          quantity = 10,
+      )
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = scheduledDate2,
+          speciesId = speciesId2,
+          quantity = 20,
+      )
+
+      insertPlantingSeason()
+      val otherSeasonScheduledDate = insertPlantingSeasonScheduledDate(date = date1)
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = otherSeasonScheduledDate,
+          speciesId = speciesId,
+          quantity = 30,
+      )
+
+      val result = store.fetchList(plantingSeasonId)
+
+      assertEquals(
+          listOf(
+              ExistingPlantingSeasonScheduledDateModel(
+                  date = date2,
+                  plantingSeasonId = plantingSeasonId,
+                  scheduledPlantingDateId = scheduledDate2,
+                  species =
+                      listOf(
+                          PlantingSeasonScheduledDateSpecies(
+                              quantity = 20,
+                              speciesId = speciesId2,
+                              substratumId = substratumId,
+                          )
+                      ),
+              ),
+              ExistingPlantingSeasonScheduledDateModel(
+                  date = date1,
+                  plantingSeasonId = plantingSeasonId,
+                  scheduledPlantingDateId = scheduledDate1,
+                  species =
+                      listOf(
+                          PlantingSeasonScheduledDateSpecies(
+                              quantity = 10,
+                              speciesId = speciesId,
+                              substratumId = substratumId,
+                          )
+                      ),
+              ),
+          ),
+          result,
+          "Dates for the correct season",
+      )
+    }
+
+    @Test
+    fun `throws PlantingSeasonNotFoundException when user lacks permission`() {
+      insertPlantingSeasonScheduledDate()
+      insertScheduledPlantingDateSpecies()
+
+      deleteOrganizationUser()
+      assertThrows<PlantingSeasonNotFoundException> { store.fetchList(plantingSeasonId) }
+    }
   }
 
   @Nested

@@ -4,6 +4,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import java.time.LocalDate
 
@@ -46,3 +47,10 @@ data class PlantingSeasonScheduledDateModel(
     require(species.all { it.quantity >= 0 }) { "All quantities must be >= 0" }
   }
 }
+
+data class ExistingPlantingSeasonScheduledDateModel(
+    val date: LocalDate,
+    val plantingSeasonId: PlantingSeasonId,
+    val scheduledPlantingDateId: ScheduledPlantingDateId,
+    val species: List<PlantingSeasonScheduledDateSpecies> = emptyList(),
+)

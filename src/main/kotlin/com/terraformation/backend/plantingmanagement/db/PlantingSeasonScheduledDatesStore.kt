@@ -2,19 +2,32 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
 import jakarta.inject.Named
 import java.time.InstantSource
+import org.jooq.Condition
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 
 @Named
 class PlantingSeasonScheduledDatesStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
 ) {
+  fun fetchList(
+      plantingSeasonId: PlantingSeasonId
+  ): List<ExistingPlantingSeasonScheduledDateModel> {
+    requirePermissions { readPlantingSeason(plantingSeasonId) }
+
+    return fetchByCondition(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(plantingSeasonId))
+  }
+
   fun create(model: PlantingSeasonScheduledDateModel): ScheduledPlantingDateId {
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
@@ -118,6 +131,45 @@ class PlantingSeasonScheduledDatesStore(
 
         insertQuery.execute()
       }
+    }
+  }
+
+  private fun fetchByCondition(
+      condition: Condition
+  ): List<ExistingPlantingSeasonScheduledDateModel> {
+    val speciesMultiset =
+        with(SCHEDULED_PLANTING_DATE_SPECIES) {
+          DSL.multiset(
+                  DSL.select(SPECIES_ID, SUBSTRATUM_ID, QUANTITY)
+                      .from(SCHEDULED_PLANTING_DATE_SPECIES)
+                      .where(SCHEDULED_PLANTING_DATE_ID.eq(SCHEDULED_PLANTING_DATES.ID))
+                      .orderBy(SPECIES_ID, SUBSTRATUM_ID)
+              )
+              .convertFrom { result ->
+                result.map { record ->
+                  PlantingSeasonScheduledDateSpecies(
+                      speciesId = record[SPECIES_ID]!!,
+                      substratumId = record[SUBSTRATUM_ID]!!,
+                      quantity = record[QUANTITY]!!,
+                  )
+                }
+              }
+        }
+
+    return with(SCHEDULED_PLANTING_DATES) {
+      dslContext
+          .select(SCHEDULED_PLANTING_DATES.asterisk(), speciesMultiset)
+          .from(SCHEDULED_PLANTING_DATES)
+          .where(condition)
+          .orderBy(DATE.desc())
+          .fetch { record ->
+            ExistingPlantingSeasonScheduledDateModel(
+                date = record[DATE]!!,
+                plantingSeasonId = record[PLANTING_SEASON_ID]!!,
+                scheduledPlantingDateId = record[ID]!!,
+                species = record[speciesMultiset],
+            )
+          }
     }
   }
 }
