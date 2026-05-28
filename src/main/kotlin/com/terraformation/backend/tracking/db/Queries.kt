@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
+import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.impl.DSL
 
@@ -140,3 +141,15 @@ fun observationIdForPlot(
           .limit(1)
   )
 }
+
+fun substratumObservedAtOrBefore(
+    substratumIdField: Field<SubstratumId?>,
+    observationIdField: Field<ObservationId?>,
+): Condition =
+    DSL.exists(
+        DSL.selectOne()
+            .from(
+                latestObservationForSubstratumField(observationIdField, substratumIdField)
+                    .asTable("latest_obs")
+            )
+    )

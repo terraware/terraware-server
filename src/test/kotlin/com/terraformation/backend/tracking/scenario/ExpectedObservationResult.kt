@@ -39,7 +39,12 @@ abstract class ExpectedObservationResult<
   fun survivalRate(expected: Int?) {
     survivalRate = expected
     survivalRateSet = true
-    assertions.add { assertEquals(expected, actualResult.survivalRate, "$name survival rate") }
+    // The v1 store's site-level survival rate uses the legacy density-weighted formula and is
+    // being removed; only the v2 store (which reads the area-weighted DB column) is asserted at
+    // the site level.
+    if (name != "Site") {
+      assertions.add { assertEquals(expected, actualResult.survivalRate, "$name survival rate") }
+    }
     assertions.add {
       assertEquals(expected, actualResultV2.survivalRate, "$name survival rate [V2]")
     }

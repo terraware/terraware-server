@@ -47,6 +47,13 @@ import org.locationtech.jts.geom.Polygon
  *
  * Some of the statistics are calculated at query time here; others are accumulated incrementally in
  * [ObservationStore] as observation results are recorded.
+ *
+ * # Survival rate calculations
+ *
+ * The site-level survival rate calculations here use an older formula rather than the current
+ * area-weighted formula. That's intentional; this class's survival rate calculations will be going
+ * away entirely once clients have been updated to use the API endpoints that call
+ * ObservationResultsStoreV2. There is no need to update this class to use area-weighted rates.
  */
 @Named
 class ObservationResultsStore(private val dslContext: DSLContext) {
