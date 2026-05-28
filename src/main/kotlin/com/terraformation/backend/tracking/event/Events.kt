@@ -782,6 +782,7 @@ data class RecordedTreeCreatedEventV1(
     val shrubDiameterCm: Int? = null,
     val speciesId: SpeciesId? = null,
     val speciesName: String? = null,
+    val treeCrownDiameterCm: Int? = null,
     val treeGrowthForm: TreeGrowthForm,
     val treeNumber: Int,
     val trunkNumber: Int,
@@ -805,6 +806,7 @@ data class RecordedTreeUpdatedEventV1(
       val isDead: Boolean? = null,
       val pointOfMeasurementM: BigDecimal? = null,
       val shrubDiameterCm: Int? = null,
+      val treeCrownDiameterCm: Int? = null,
   )
 
   override fun listUpdatedFields(messages: Messages) =
@@ -834,6 +836,11 @@ data class RecordedTreeUpdatedEventV1(
               "shrubDiameterCm",
               messages.numericValueOrNull(changedFrom.shrubDiameterCm),
               messages.numericValueOrNull(changedTo.shrubDiameterCm),
+          ),
+          createUpdatedField(
+              "treeCrownDiameterCm",
+              messages.numericValueOrNull(changedFrom.treeCrownDiameterCm),
+              messages.numericValueOrNull(changedTo.treeCrownDiameterCm),
           ),
       )
 }

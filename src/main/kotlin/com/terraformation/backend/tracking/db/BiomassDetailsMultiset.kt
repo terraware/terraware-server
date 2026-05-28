@@ -105,6 +105,7 @@ internal val recordedTreesMultiset =
                       SHRUB_DIAMETER_CM,
                       recordedTreesBiomassSpeciesIdFkey.SPECIES_ID,
                       recordedTreesBiomassSpeciesIdFkey.SCIENTIFIC_NAME,
+                      TREE_CROWN_DIAMETER_CM,
                       TREE_GROWTH_FORM_ID,
                       TREE_NUMBER,
                       TRUNK_NUMBER,

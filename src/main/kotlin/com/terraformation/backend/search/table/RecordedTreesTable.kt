@@ -50,6 +50,7 @@ class RecordedTreesTable(private val tables: SearchTables) : SearchTable() {
           booleanField("isDead", RECORDED_TREES.IS_DEAD),
           bigDecimalField("pointOfMeasurement", RECORDED_TREES.POINT_OF_MEASUREMENT_M),
           integerField("shrubDiameter", RECORDED_TREES.SHRUB_DIAMETER_CM),
+          integerField("treeCrownDiameter", RECORDED_TREES.TREE_CROWN_DIAMETER_CM),
           integerField("treeNumber", RECORDED_TREES.TREE_NUMBER),
           integerField("trunkNumber", RECORDED_TREES.TRUNK_NUMBER),
       )

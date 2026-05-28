@@ -3957,22 +3957,24 @@ abstract class DatabaseBackedTest {
       pointOfMeasurementM: BigDecimal? = row.pointOfMeasurementM,
       heightM: BigDecimal? = row.heightM,
       shrubDiameterCm: Int? = row.shrubDiameterCm,
+      treeCrownDiameterCm: Int? = row.treeCrownDiameterCm,
       description: String? = row.description,
   ): RecordedTreeId {
     val rowWithDefaults =
         row.copy(
-            observationId = observationId,
-            monitoringPlotId = monitoringPlotId,
             biomassSpeciesId = biomassSpeciesId,
+            description = description,
+            diameterAtBreastHeightCm = diameterAtBreastHeightCm,
+            heightM = heightM,
+            isDead = isDead,
+            monitoringPlotId = monitoringPlotId,
+            observationId = observationId,
+            pointOfMeasurementM = pointOfMeasurementM,
+            shrubDiameterCm = shrubDiameterCm,
+            treeCrownDiameterCm = treeCrownDiameterCm,
+            treeGrowthFormId = treeGrowthForm,
             treeNumber = treeNumber,
             trunkNumber = trunkNumber,
-            treeGrowthFormId = treeGrowthForm,
-            isDead = isDead,
-            diameterAtBreastHeightCm = diameterAtBreastHeightCm,
-            pointOfMeasurementM = pointOfMeasurementM,
-            heightM = heightM,
-            shrubDiameterCm = shrubDiameterCm,
-            description = description,
         )
 
     recordedTreesDao.insert(rowWithDefaults)

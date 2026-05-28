@@ -76,6 +76,7 @@ class BiomassStore(
               SHRUB_DIAMETER_CM,
               recordedTreesBiomassSpeciesIdFkey.SPECIES_ID,
               recordedTreesBiomassSpeciesIdFkey.SCIENTIFIC_NAME,
+              TREE_CROWN_DIAMETER_CM,
               TREE_GROWTH_FORM_ID,
               TREE_NUMBER,
               TRUNK_NUMBER,
@@ -299,6 +300,13 @@ class BiomassStore(
                         if (treeModel.treeGrowthForm == TreeGrowthForm.Shrub)
                             treeModel.shrubDiameterCm
                         else null,
+                    treeCrownDiameterCm =
+                        if (
+                            treeModel.treeGrowthForm == TreeGrowthForm.Tree ||
+                                treeModel.treeGrowthForm == TreeGrowthForm.Trunk
+                        )
+                            treeModel.treeCrownDiameterCm
+                        else null,
                     description = treeModel.description,
                 )
                 .attach(dslContext)
@@ -322,6 +330,7 @@ class BiomassStore(
                 shrubDiameterCm = record.shrubDiameterCm,
                 speciesId = treeModel.speciesId,
                 speciesName = treeModel.speciesName,
+                treeCrownDiameterCm = record.treeCrownDiameterCm,
                 treeGrowthForm = treeModel.treeGrowthForm,
                 treeNumber = treeModel.treeNumber,
                 trunkNumber = treeModel.trunkNumber,
@@ -761,6 +770,7 @@ class BiomassStore(
               .set(IS_DEAD, updated.isDead)
               .set(POINT_OF_MEASUREMENT_M, updated.pointOfMeasurementM)
               .set(SHRUB_DIAMETER_CM, updated.shrubDiameterCm)
+              .set(TREE_CROWN_DIAMETER_CM, updated.treeCrownDiameterCm)
               .where(ID.eq(recordedTreeId))
               .execute()
 
@@ -819,7 +829,8 @@ class BiomassStore(
           require(
               updated.diameterAtBreastHeightCm == null &&
                   updated.heightM == null &&
-                  updated.pointOfMeasurementM == null
+                  updated.pointOfMeasurementM == null &&
+                  updated.treeCrownDiameterCm == null
           ) {
             "Tree measurements may not be edited on shrubs"
           }

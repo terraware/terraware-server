@@ -84,6 +84,7 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
         diameterAtBreastHeightCm = BigDecimal(1),
         heightM = BigDecimal(2),
         pointOfMeasurementM = BigDecimal(3),
+        treeCrownDiameterCm = 10,
         treeGrowthForm = TreeGrowthForm.Tree,
     )
 
@@ -96,6 +97,7 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
           heightM = BigDecimal(5),
           isDead = true,
           pointOfMeasurementM = BigDecimal(6),
+          treeCrownDiameterCm = 11,
       )
     }
 
@@ -106,6 +108,7 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
           heightM = BigDecimal(5)
           isDead = true
           pointOfMeasurementM = BigDecimal(6)
+          treeCrownDiameterCm = 11
         }
 
     assertTableEquals(expected)
@@ -119,6 +122,7 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
                     heightM = BigDecimal(2),
                     isDead = false,
                     pointOfMeasurementM = BigDecimal(3),
+                    treeCrownDiameterCm = 10,
                 ),
             changedTo =
                 RecordedTreeUpdatedEventValues(
@@ -127,6 +131,7 @@ class BiomassStoreUpdateRecordedTreeTest : BaseBiomassStoreTest() {
                     heightM = BigDecimal(5),
                     isDead = true,
                     pointOfMeasurementM = BigDecimal(6),
+                    treeCrownDiameterCm = 11,
                 ),
             monitoringPlotId = inserted.monitoringPlotId,
             observationId = inserted.observationId,

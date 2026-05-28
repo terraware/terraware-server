@@ -53,6 +53,7 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
     val shrubDiameterCm: Int? = null,
     val speciesId: SpeciesId? = null,
     val speciesName: String? = null,
+    val treeCrownDiameterCm: Int? = null,
     val treeGrowthForm: TreeGrowthForm,
     val treeNumber: Int,
     val trunkNumber: Int,
@@ -66,6 +67,7 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
           isDead = isDead.nullIfEquals(other.isDead),
           pointOfMeasurementM = pointOfMeasurementM.nullIfEquals(other.pointOfMeasurementM),
           shrubDiameterCm = shrubDiameterCm.nullIfEquals(other.shrubDiameterCm),
+          treeCrownDiameterCm = treeCrownDiameterCm.nullIfEquals(other.treeCrownDiameterCm),
       )
 
   fun validate() {
@@ -76,6 +78,9 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
       TreeGrowthForm.Shrub -> {
         if (shrubDiameterCm == null) {
           throw IllegalStateException("Tree $treeNumber: shrubDiameter missing for Shrub")
+        }
+        if (treeCrownDiameterCm != null) {
+          throw IllegalStateException("Tree $treeNumber: treeCrownDiameter not allowed for Shrub")
         }
         if (trunkNumber != 1) {
           throw IllegalStateException("Tree $treeNumber: Trunk number must be 1 for Shrub")
@@ -123,6 +128,7 @@ data class RecordedTreeModel<TreeId : RecordedTreeId?>(
             shrubDiameterCm = record[SHRUB_DIAMETER_CM],
             speciesId = record[recordedTreesBiomassSpeciesIdFkey.SPECIES_ID],
             speciesName = record[recordedTreesBiomassSpeciesIdFkey.SCIENTIFIC_NAME],
+            treeCrownDiameterCm = record[TREE_CROWN_DIAMETER_CM],
             treeGrowthForm = record[TREE_GROWTH_FORM_ID]!!,
             treeNumber = record[TREE_NUMBER]!!,
             trunkNumber = record[TRUNK_NUMBER]!!,
