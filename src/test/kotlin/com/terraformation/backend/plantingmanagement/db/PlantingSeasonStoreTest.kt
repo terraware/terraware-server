@@ -5,6 +5,8 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
@@ -32,11 +34,12 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     PlantingSeasonStore(clock, dslContext, ParentStore(dslContext))
   }
 
+  private lateinit var organizationId: OrganizationId
   private lateinit var plantingSiteId: PlantingSiteId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
+    organizationId = insertOrganization()
     insertPlantingSite()
     insertOrganizationUser(role = Role.Manager)
     plantingSiteId = inserted.plantingSiteId
@@ -218,8 +221,66 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `returns all seasons for organization`() {
+      val id1 =
+          insertPlantingSeason(
+              name = "Spring 2025",
+              startDate = LocalDate.of(2025, 1, 1),
+              endDate = LocalDate.of(2025, 3, 31),
+              status = PlantingSeasonStatus.Upcoming,
+          )
+      val id2 =
+          insertPlantingSeason(
+              name = "Fall 2025",
+              startDate = LocalDate.of(2025, 9, 1),
+              endDate = LocalDate.of(2025, 11, 30),
+              status = PlantingSeasonStatus.Upcoming,
+          )
+      insertOrganization()
+      insertOrganizationUser(role = Role.Manager)
+      insertPlantingSite()
+      insertPlantingSeason(
+          name = "Other Org Season",
+          startDate = LocalDate.of(2025, 1, 1),
+          endDate = LocalDate.of(2025, 3, 31),
+          status = PlantingSeasonStatus.Upcoming,
+      )
+
+      val result = store.fetchList(organizationId)
+
+      assertEquals(
+          listOf(
+              ExistingPlantingSeasonModel(
+                  endDate = LocalDate.of(2025, 3, 31),
+                  id = id1,
+                  name = "Spring 2025",
+                  plantingSiteId = plantingSiteId,
+                  startDate = LocalDate.of(2025, 1, 1),
+                  status = PlantingSeasonStatus.Upcoming,
+              ),
+              ExistingPlantingSeasonModel(
+                  endDate = LocalDate.of(2025, 11, 30),
+                  id = id2,
+                  name = "Fall 2025",
+                  plantingSiteId = plantingSiteId,
+                  startDate = LocalDate.of(2025, 9, 1),
+                  status = PlantingSeasonStatus.Upcoming,
+              ),
+          ),
+          result,
+      )
+    }
+
+    @Test
     fun `returns empty list when no seasons exist for site`() {
       val result = store.fetchList(plantingSiteId)
+
+      assertEquals(emptyList<ExistingPlantingSeasonModel>(), result)
+    }
+
+    @Test
+    fun `returns empty list when no seasons exist for org`() {
+      val result = store.fetchList(organizationId)
 
       assertEquals(emptyList<ExistingPlantingSeasonModel>(), result)
     }
@@ -316,6 +377,13 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       deleteOrganizationUser()
 
       assertThrows<PlantingSiteNotFoundException> { store.fetchList(plantingSiteId) }
+    }
+
+    @Test
+    fun `throws OrganizationNotFoundException when user is not a member of the organization`() {
+      deleteOrganizationUser()
+
+      assertThrows<OrganizationNotFoundException> { store.fetchList(organizationId) }
     }
   }
 

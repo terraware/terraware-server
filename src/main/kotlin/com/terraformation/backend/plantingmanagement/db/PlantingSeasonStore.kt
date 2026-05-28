@@ -3,11 +3,13 @@ package com.terraformation.backend.plantingmanagement.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
@@ -61,6 +63,18 @@ class PlantingSeasonStore(
     requirePermissions { readPlantingSite(plantingSiteId) }
 
     return fetchByCondition(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
+  }
+
+  fun fetchList(organizationId: OrganizationId): List<ExistingPlantingSeasonModel> {
+    requirePermissions { readOrganization(organizationId) }
+
+    return fetchByCondition(
+        PLANTING_SEASONS.PLANTING_SITE_ID.`in`(
+            DSL.select(PLANTING_SITES.ID)
+                .from(PLANTING_SITES)
+                .where(PLANTING_SITES.ORGANIZATION_ID.eq(organizationId))
+        )
+    )
   }
 
   fun update(

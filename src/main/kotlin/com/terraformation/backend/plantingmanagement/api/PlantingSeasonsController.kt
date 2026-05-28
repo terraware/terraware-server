@@ -6,6 +6,7 @@ import com.terraformation.backend.api.ApiResponseSimpleSuccess
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -44,8 +45,8 @@ class PlantingSeasonsController(
       @RequestBody payload: CreatePlantingSeasonRequestPayload
   ): CreatePlantingSeasonResponsePayload {
     payload.validate()
-
     val plantingSeasonId = plantingSeasonService.create(payload.toModel())
+
     return CreatePlantingSeasonResponsePayload(plantingSeasonId)
   }
 
@@ -57,6 +58,7 @@ class PlantingSeasonsController(
       @PathVariable id: PlantingSeasonId,
   ): GetPlantingSeasonResponsePayload {
     val model = plantingSeasonStore.fetchById(id)
+
     return GetPlantingSeasonResponsePayload(model)
   }
 
@@ -70,6 +72,7 @@ class PlantingSeasonsController(
   ): SimpleSuccessResponsePayload {
     payload.validate()
     plantingSeasonStore.update(id, payload.name, payload.startDate, payload.endDate)
+
     return SimpleSuccessResponsePayload()
   }
 
@@ -81,6 +84,7 @@ class PlantingSeasonsController(
       @PathVariable id: PlantingSeasonId,
   ): SimpleSuccessResponsePayload {
     plantingSeasonStore.delete(id)
+
     return SimpleSuccessResponsePayload()
   }
 
@@ -88,9 +92,17 @@ class PlantingSeasonsController(
   @Operation(summary = "Lists the planting seasons for a planting site.")
   @GetMapping
   fun listPlantingSeasons(
-      @RequestParam plantingSiteId: PlantingSiteId,
+      @RequestParam plantingSiteId: PlantingSiteId?,
+      @RequestParam organizationId: OrganizationId?,
   ): ListPlantingSeasonsResponsePayload {
-    val seasons = plantingSeasonStore.fetchList(plantingSiteId)
+    val seasons =
+        if (plantingSiteId != null) plantingSeasonStore.fetchList(plantingSiteId)
+        else if (organizationId != null) plantingSeasonStore.fetchList(organizationId)
+        else
+            throw IllegalArgumentException(
+                "Either plantingSiteId or organizationId must be specified"
+            )
+
     return ListPlantingSeasonsResponsePayload(seasons.map { PlantingSeasonPayload(it) })
   }
 }
