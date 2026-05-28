@@ -76,6 +76,18 @@ class PlantingSeasonsController(
     return SimpleSuccessResponsePayload()
   }
 
+  @ApiResponse200
+  @ApiResponse404
+  @Operation(summary = "Closes a planting season.")
+  @PostMapping("/{id}/close")
+  fun closePlantingSeason(
+      @PathVariable id: PlantingSeasonId,
+  ): SimpleSuccessResponsePayload {
+    plantingSeasonStore.close(id)
+
+    return SimpleSuccessResponsePayload()
+  }
+
   @ApiResponseSimpleSuccess
   @ApiResponse404
   @Operation(summary = "Deletes a planting season.")
