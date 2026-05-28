@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.SpeciesIdConverter
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.PlantingSiteIdConverter
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumIdConverter
@@ -293,19 +294,19 @@ internal val monitoringPlotSpeciesMultiset =
                           OBSERVATION_PLOTS.IS_PERMANENT.eq(true)
                               .and(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.eq(MONITORING_PLOTS.ID))
                       )
-              )
-              .or(
-                  MONITORING_PLOT_ID.isNull
-                      .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
-                      .and(
-                          STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
-                              OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories
-                                  .stratumHistories
-                                  .STRATUM_ID
-                          )
+                      .or(
+                          MONITORING_PLOT_ID.isNull
+                              .and(OBSERVATION_PLOTS.IS_PERMANENT.eq(false))
+                              .and(
+                                  STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.eq(
+                                      OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories
+                                          .stratumHistories
+                                          .STRATUM_ID
+                                  )
+                              )
                       )
-                  //                        )
               )
+              .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
               .and(OBSERVATION_ID.eq(OBSERVATIONS.ID).or(OBSERVATION_ID.isNull))
               .orderBy(SPECIES_ID, SPECIES_NAME)
       )

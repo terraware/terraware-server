@@ -39,7 +39,7 @@ data class ObservationSpeciesResultsPayload(
     @Schema(
         description =
             "Number of live plants observed in permanent plots in this observation, not " +
-                "including existing plants. 0 if ths is a plot-level result for a temporary " +
+                "including existing plants. 0 if this is a plot-level result for a temporary " +
                 "monitoring plot."
     )
     val permanentLive: Int,
@@ -167,14 +167,14 @@ data class ObservationMonitoringPlotResultsPayload(
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
                 "status or species."
     )
-    val totalPlants: Int,
+    val totalPlants: Int?,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
                 "species name is counted as a separate species for purposes of this total."
     )
-    val totalSpecies: Int,
+    val totalSpecies: Int?,
     @Schema(description = "Information about plants of unknown species, if any were observed.")
     val unknownSpecies: ObservationSpeciesResultsPayload?,
 ) {
@@ -256,14 +256,14 @@ data class ObservationSubstratumResultsPayload(
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
                 "status or species."
     )
-    val totalPlants: Int,
+    val totalPlants: Int?,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
                 "species name is counted as a separate species for purposes of this total."
     )
-    val totalSpecies: Int,
+    val totalSpecies: Int?,
 ) {
   constructor(
       model: ObservationSubstratumResultsModel
@@ -324,14 +324,14 @@ data class ObservationStratumResultsPayload(
             "Total number of plants recorded. Includes all plants, regardless of live/dead " +
                 "status or species."
     )
-    val totalPlants: Int,
+    val totalPlants: Int?,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
                 "species name is counted as a separate species for purposes of this total."
     )
-    val totalSpecies: Int,
+    val totalSpecies: Int?,
 ) {
   constructor(
       model: ObservationStratumResultsModel
@@ -389,8 +389,8 @@ data class ObservationResultsPayload(
     val strata: List<ObservationStratumResultsPayload>,
     val survivalRate: Int?,
     val survivalRateStdDev: Int?,
-    val totalPlants: Int,
-    val totalSpecies: Int,
+    val totalPlants: Int?,
+    val totalSpecies: Int?,
     val type: ObservationType,
 ) {
   constructor(
@@ -460,16 +460,17 @@ data class StratumObservationSummaryPayload(
     val survivalRateStdDev: Int?,
     @Schema(
         description =
-            "Total number of plants recorded from the latest observations of each substratum. Includes all plants, regardless of live/dead status or species."
+            "Total number of plants recorded from the latest observations of each substratum. " +
+                "Includes all plants, regardless of live/dead status or species."
     )
-    val totalPlants: Int,
+    val totalPlants: Int?,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
                 "species name is counted as a separate species for purposes of this total."
     )
-    val totalSpecies: Int,
+    val totalSpecies: Int?,
 ) {
   constructor(
       model: ObservationStratumRollupResultsModel
@@ -528,16 +529,18 @@ data class PlantingSiteObservationSummaryPayload(
     val survivalRateStdDev: Int?,
     @Schema(
         description =
-            "Total number of plants recorded from the latest observations of each substratum within each stratum. Includes all plants, regardless of live/dead status or species."
+            "Total number of plants recorded from the latest observations of each substratum " +
+                "within each stratum. Includes all plants, regardless of live/dead status or " +
+                "species."
     )
-    val totalPlants: Int,
+    val totalPlants: Int?,
     @Schema(
         description =
             "Total number of species observed, not counting dead plants. Includes plants with " +
                 "Known and Other certainties. In the case of Other, each distinct user-supplied " +
                 "species name is counted as a separate species for purposes of this total."
     )
-    val totalSpecies: Int,
+    val totalSpecies: Int?,
 ) {
   constructor(
       model: ObservationRollupResultsModel
