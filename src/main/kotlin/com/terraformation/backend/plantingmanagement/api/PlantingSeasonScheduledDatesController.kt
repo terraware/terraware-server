@@ -6,6 +6,7 @@ import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
@@ -16,6 +17,7 @@ import jakarta.validation.constraints.Min
 import java.time.LocalDate
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -37,6 +39,25 @@ class PlantingSeasonScheduledDatesController(
       @RequestBody @Valid payload: ScheduledPlantingDateRequestPayload,
   ): SimpleSuccessResponsePayload {
     plantingSeasonScheduledDatesStore.create(payload.toModel(plantingSeasonId))
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse404
+  @Operation(
+      summary = "Updates a scheduled date for a planting season.",
+  )
+  @PutMapping("/{scheduledPlantingDateId}")
+  fun updateScheduledPlantingDate(
+      @PathVariable plantingSeasonId: PlantingSeasonId,
+      @PathVariable scheduledPlantingDateId: ScheduledPlantingDateId,
+      @RequestBody @Valid payload: ScheduledPlantingDateRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    plantingSeasonScheduledDatesStore.update(
+        scheduledPlantingDateId,
+        payload.toModel(plantingSeasonId),
+    )
 
     return SimpleSuccessResponsePayload()
   }

@@ -68,4 +68,56 @@ class PlantingSeasonScheduledDatesStore(
 
     return scheduledDateId
   }
+
+  fun update(
+      scheduledDateId: ScheduledPlantingDateId,
+      model: PlantingSeasonScheduledDateModel,
+  ) {
+    requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
+
+    dslContext.transaction { _ ->
+      val updatedCount =
+          with(SCHEDULED_PLANTING_DATES) {
+            dslContext
+                .update(SCHEDULED_PLANTING_DATES)
+                .set(DATE, model.date)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, clock.instant())
+                .where(ID.eq(scheduledDateId))
+                .and(PLANTING_SEASON_ID.eq(model.plantingSeasonId))
+                .execute()
+          }
+
+      if (updatedCount == 0) {
+        throw PlantingSeasonScheduledDateNotFoundException(scheduledDateId)
+      }
+
+      with(SCHEDULED_PLANTING_DATE_SPECIES) {
+        dslContext
+            .deleteFrom(SCHEDULED_PLANTING_DATE_SPECIES)
+            .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledDateId))
+            .execute()
+
+        val insertQuery =
+            dslContext.insertInto(
+                SCHEDULED_PLANTING_DATE_SPECIES,
+                SCHEDULED_PLANTING_DATE_ID,
+                SPECIES_ID,
+                SUBSTRATUM_ID,
+                QUANTITY,
+            )
+
+        model.species.forEach { species ->
+          insertQuery.values(
+              scheduledDateId,
+              species.speciesId,
+              species.substratumId,
+              species.quantity,
+          )
+        }
+
+        insertQuery.execute()
+      }
+    }
+  }
 }
