@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
 import jakarta.validation.constraints.Min
 import java.time.LocalDate
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -87,6 +88,21 @@ class PlantingSeasonScheduledDatesController(
         scheduledPlantingDateId,
         payload.toModel(plantingSeasonId),
     )
+
+    return SimpleSuccessResponsePayload()
+  }
+
+  @ApiResponseSimpleSuccess
+  @ApiResponse200
+  @Operation(
+      summary = "Deletes a scheduled date for a planting season.",
+  )
+  @DeleteMapping("/{scheduledPlantingDateId}")
+  fun deleteScheduledPlantingDate(
+      @PathVariable plantingSeasonId: PlantingSeasonId,
+      @PathVariable scheduledPlantingDateId: ScheduledPlantingDateId,
+  ): SimpleSuccessResponsePayload {
+    plantingSeasonScheduledDatesStore.delete(plantingSeasonId, scheduledPlantingDateId)
 
     return SimpleSuccessResponsePayload()
   }
