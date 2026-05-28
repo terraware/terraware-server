@@ -79,7 +79,7 @@ class PlantingSeasonsController(
   @ApiResponse200
   @ApiResponse404
   @Operation(summary = "Closes a planting season.")
-  @PutMapping("/{id}/close")
+  @PostMapping("/{id}/close")
   fun closePlantingSeason(
       @PathVariable id: PlantingSeasonId,
   ): SimpleSuccessResponsePayload {
