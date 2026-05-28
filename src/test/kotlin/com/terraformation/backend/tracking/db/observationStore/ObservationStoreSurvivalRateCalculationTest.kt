@@ -131,7 +131,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         SurvivalRates(
             mapOf(
                 plotId to mapOf(speciesId to BigDecimal.ZERO),
-                plotId2 to mapOf(speciesId to BigDecimal.ZERO),
             ),
             mapOf(substratumId to mapOf(speciesId to BigDecimal.ZERO)),
             mapOf(stratumId to mapOf(speciesId to BigDecimal.ZERO)),
@@ -328,7 +327,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     assertSurvivalRates(
         SurvivalRates(
-            plot1SurvivalRates + mapOf(plot2 to mapOf(speciesId1 to 0, speciesId2 to 0, null to 0)),
+            plot1SurvivalRates,
             mapOf(substratumId to survivalRates1),
             mapOf(stratumId to survivalRates1),
             mapOf(plantingSiteId to survivalRates1),

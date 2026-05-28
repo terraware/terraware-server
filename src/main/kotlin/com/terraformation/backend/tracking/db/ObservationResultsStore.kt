@@ -305,10 +305,13 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             val totalLive = species.ifEmpty { null }?.sumOf { it.totalLive }
             val totalPlants =
                 species.ifEmpty { null }?.sumOf { it.totalLive + it.totalExisting + it.totalDead }
-            val totalLiveSpeciesExceptUnknown = species.count {
-              it.certainty != RecordedSpeciesCertainty.Unknown &&
-                  (it.totalLive + it.totalExisting) > 0
-            }
+            val totalLiveSpeciesExceptUnknown =
+                species
+                    .ifEmpty { null }
+                    ?.count {
+                      it.certainty != RecordedSpeciesCertainty.Unknown &&
+                          (it.totalLive + it.totalExisting) > 0
+                    }
 
             val survivalRate = species.calculateSurvivalRate(survivalRateIncludesTempPlots)
 

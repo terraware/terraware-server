@@ -912,7 +912,8 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
 
       // Plot with no plant because it is not observed
       val incompletePlotId = insertMonitoringPlot()
-      insertObservationPlot(claimedBy = user.userId)
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+      insertPlotT0Density()
 
       observationStore.completePlot(
           inserted.observationId,
@@ -964,7 +965,11 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
           completePlotResults.status,
           "Completed Plot Status",
       )
+
+      assertNull(incompletePlotResults.totalPlants, "Incomplete Plot Total Plants")
+      assertNull(incompletePlotResults.totalSpecies, "Incomplete Plot Total Species")
       assertNull(incompletePlotResults.plantingDensity, "Incomplete Plot Planting Density")
+      assertEquals(emptyList<Any>(), incompletePlotResults.species, "Incomplete Plot Species")
       assertEquals(
           ObservationPlotStatus.NotObserved,
           incompletePlotResults.status,
