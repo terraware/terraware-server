@@ -227,9 +227,9 @@
 <ellipse fill="none" stroke="black" cx="539.88" cy="-1344.29" rx="3.2" ry="3.2"/>
 </g>
 <!-- accession_states -->
-<g id="node9" class="node">
+<g id="node8" class="node">
 <title>accession_states</title>
-<g id="a_node9"><a xlink:href="../../tables/accession_states.html" xlink:title="accession_states" target="_top">
+<g id="a_node8"><a xlink:href="../../tables/accession_states.html" xlink:title="accession_states" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="19,-1227.67 19,-1307.67 162,-1307.67 162,-1227.67 19,-1227.67"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="19.5,-1285.67 19.5,-1307.67 162.5,-1307.67 162.5,-1285.67 19.5,-1285.67"/>
 <polygon fill="none" stroke="black" points="19.5,-1285.67 19.5,-1307.67 162.5,-1307.67 162.5,-1285.67 19.5,-1285.67"/>
@@ -644,9 +644,9 @@
 <ellipse fill="none" stroke="black" cx="544.87" cy="-1067.4" rx="3.2" ry="3.2"/>
 </g>
 <!-- viability_test_results -->
-<g id="node8" class="node">
+<g id="node9" class="node">
 <title>viability_test_results</title>
-<g id="a_node8"><a xlink:href="../../tables/viability_test_results.html" xlink:title="viability_test_results" target="_top">
+<g id="a_node9"><a xlink:href="../../tables/viability_test_results.html" xlink:title="viability_test_results" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="832,-1131.67 832,-1233.67 998,-1233.67 998,-1131.67 832,-1131.67"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="832,-1211.67 832,-1233.67 998,-1233.67 998,-1211.67 832,-1211.67"/>
 <polygon fill="none" stroke="black" points="832,-1211.67 832,-1233.67 998,-1233.67 998,-1211.67 832,-1211.67"/>

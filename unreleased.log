@@ -1,3 +1,7 @@
+b1d24cd3 Rename ReportChallengePayload to PublishedReportChallengePayload, add test to find duplicate payload names (#4471)
+d4581314 Verify that response payload classes have status (#4472)
+1541cfb0 SW-8372 Rename PlantingSeasonPayload to SimplePlantingSeasonPayload to avoid conflicts in FE (#4470)
+1d905483 Run unit tests in random order (#4465)
 60fd3ce9 SW-8359 Include observation in activity payloads (#4460)
 c319ee00 SW-8359 Return observation-only published activity data (#4445)
 61a10873 SW-8376 Delete observation data for published activities (#4444)
