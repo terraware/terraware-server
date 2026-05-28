@@ -45,6 +45,18 @@ class PlantingSeasonScheduledDatesController(
     )
   }
 
+  @ApiResponse200
+  @Operation(summary = "Gets a single scheduled date for a planting season.")
+  @GetMapping("/{scheduledPlantingDateId}")
+  fun getSingleScheduledPlantingDate(
+      @PathVariable plantingSeasonId: PlantingSeasonId,
+      @PathVariable scheduledPlantingDateId: ScheduledPlantingDateId,
+  ): GetScheduledDateResponsePayload {
+    val model = plantingSeasonScheduledDatesStore.fetch(plantingSeasonId, scheduledPlantingDateId)
+
+    return GetScheduledDateResponsePayload(scheduledDate = ScheduledDatePayload(model))
+  }
+
   @ApiResponseSimpleSuccess
   @ApiResponse404
   @Operation(
@@ -106,6 +118,9 @@ data class ScheduledPlantingDateRequestPayload(
 }
 
 data class ListScheduledDatesResponsePayload(val scheduledDates: List<ScheduledDatePayload>) :
+    SuccessResponsePayload
+
+data class GetScheduledDateResponsePayload(val scheduledDate: ScheduledDatePayload) :
     SuccessResponsePayload
 
 data class ScheduledDatePayload(

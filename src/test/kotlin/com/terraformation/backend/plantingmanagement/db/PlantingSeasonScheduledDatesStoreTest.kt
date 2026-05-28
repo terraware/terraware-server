@@ -133,6 +133,83 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
   }
 
   @Nested
+  inner class Fetch {
+    @Test
+    fun `returns the specified scheduled date`() {
+      val date1 = LocalDate.EPOCH
+      val speciesId2 = insertSpecies()
+      val scheduledDate = insertPlantingSeasonScheduledDate(date = date1)
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = scheduledDate,
+          speciesId = speciesId,
+          quantity = 10,
+      )
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = scheduledDate,
+          speciesId = speciesId2,
+          quantity = 20,
+      )
+
+      val otherScheduledDate = insertPlantingSeasonScheduledDate(date = date1.plusDays(1))
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = otherScheduledDate,
+          speciesId = speciesId,
+          quantity = 30,
+      )
+
+      val result = store.fetch(plantingSeasonId, scheduledDate)
+
+      assertEquals(
+          ExistingPlantingSeasonScheduledDateModel(
+              date = date1,
+              plantingSeasonId = plantingSeasonId,
+              scheduledPlantingDateId = scheduledDate,
+              species =
+                  listOf(
+                      PlantingSeasonScheduledDateSpecies(
+                          quantity = 10,
+                          speciesId = speciesId,
+                          substratumId = substratumId,
+                      ),
+                      PlantingSeasonScheduledDateSpecies(
+                          quantity = 20,
+                          speciesId = speciesId2,
+                          substratumId = substratumId,
+                      ),
+                  ),
+          ),
+          result,
+          "returns correct scheduled date",
+      )
+    }
+
+    @Test
+    fun `throws PlantingSeasonScheduledDateNotFoundException when no date exists`() {
+      assertThrows<PlantingSeasonScheduledDateNotFoundException> {
+        store.fetch(plantingSeasonId, ScheduledPlantingDateId(99999L))
+      }
+    }
+
+    @Test
+    fun `throws PlantingSeasonScheduledDateNotFoundException when date does not belong to season`() {
+      insertPlantingSeason()
+      val scheduledDateId = insertPlantingSeasonScheduledDate()
+      assertThrows<PlantingSeasonScheduledDateNotFoundException> {
+        store.fetch(plantingSeasonId, scheduledDateId)
+      }
+    }
+
+    @Test
+    fun `throws PlantingSeasonNotFoundException when user lacks permission`() {
+      val scheduledDate = insertPlantingSeasonScheduledDate()
+      insertScheduledPlantingDateSpecies()
+
+      deleteOrganizationUser()
+      assertThrows<PlantingSeasonNotFoundException> { store.fetch(plantingSeasonId, scheduledDate) }
+    }
+  }
+
+  @Nested
   inner class Create {
     @Test
     fun `inserts a new scheduled date with no species`() {
