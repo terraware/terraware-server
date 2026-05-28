@@ -579,7 +579,11 @@ class AccessionStore(
             AccessionHistoryModel(
                 createdTime = updatedTime,
                 date = date,
-                description = messages.historyAccessionStateChanged(newState),
+                description =
+                    when (oldState) {
+                      AccessionState.AwaitingCheckIn -> messages.historyAccessionCheckedIn(newState)
+                      else -> messages.historyAccessionStateChanged(newState)
+                    },
                 fullName = fullName,
                 type = AccessionHistoryType.StateChanged,
                 userId = userId,

@@ -564,6 +564,9 @@ class Messages {
               ),
       )
 
+  fun historyAccessionCheckedIn(newState: AccessionState) =
+      getMessage("historyAccessionCheckedIn", newState.getDisplayName(currentLocale()))
+
   fun historyAccessionCreated() = getMessage("historyAccessionCreated")
 
   fun historyAccessionQuantityUpdated(newQuantity: SeedQuantityModel) =
