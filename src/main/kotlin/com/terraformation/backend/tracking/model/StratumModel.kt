@@ -417,12 +417,12 @@ data class StratumModel<
     // required in each observation. The "Student's t" value is a constant based on a 90%
     // confidence level and should rarely need to change, but the other two will be adjusted by
     // admins based on the conditions at the planting site. These defaults mean that strata
-    // will have 11 permanent plots and 14 temporary plots.
-    val DEFAULT_ERROR_MARGIN = BigDecimal(100)
+    // will have 18 permanent plots and 6 temporary plots.
+    val DEFAULT_ERROR_MARGIN = BigDecimal(10)
     val DEFAULT_STUDENTS_T = BigDecimal("1.645")
-    val DEFAULT_VARIANCE = BigDecimal(40000)
-    const val DEFAULT_NUM_PERMANENT_PLOTS = 8
-    const val DEFAULT_NUM_TEMPORARY_PLOTS = 3
+    val DEFAULT_VARIANCE = BigDecimal(850)
+    const val DEFAULT_NUM_PERMANENT_PLOTS = 18
+    const val DEFAULT_NUM_TEMPORARY_PLOTS = 6
 
     /** Target planting density to use if not included in stratum properties. */
     val DEFAULT_TARGET_PLANTING_DENSITY = BigDecimal(1500)
