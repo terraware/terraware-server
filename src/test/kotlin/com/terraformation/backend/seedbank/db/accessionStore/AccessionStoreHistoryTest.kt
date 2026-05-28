@@ -263,7 +263,8 @@ internal class AccessionStoreHistoryTest : AccessionStoreTest() {
             AccessionHistoryModel(
                 createdTime = checkInTime,
                 date = LocalDate.ofInstant(checkInTime, ZoneOffset.UTC),
-                description = "updated the status to Awaiting Processing",
+                description =
+                    "checked in the accession and updated the status to Awaiting Processing",
                 fullName = null,
                 type = AccessionHistoryType.StateChanged,
                 userId = checkInUserId,
