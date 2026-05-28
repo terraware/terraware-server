@@ -98,10 +98,11 @@ class PlantingSeasonsController(
     val seasons =
         if (plantingSiteId != null) plantingSeasonStore.fetchList(plantingSiteId)
         else if (organizationId != null) plantingSeasonStore.fetchList(organizationId)
-        else
-            throw IllegalArgumentException(
-                "Either plantingSiteId or organizationId must be specified"
-            )
+        else {
+          throw IllegalArgumentException(
+              "Either plantingSiteId or organizationId must be specified"
+          )
+        }
 
     return ListPlantingSeasonsResponsePayload(seasons.map { PlantingSeasonPayload(it) })
   }
