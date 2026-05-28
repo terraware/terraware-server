@@ -31,6 +31,7 @@ import com.terraformation.backend.seedbank.db.GeolocationStore
 import com.terraformation.backend.seedbank.db.ViabilityTestStore
 import com.terraformation.backend.seedbank.db.WithdrawalStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.BeforeEach
@@ -52,6 +53,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   private val messages = Messages()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val publisher = TestEventPublisher()
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
 
   private val service: ProjectService by lazy {
     ProjectService(
@@ -90,12 +92,13 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             publisher,
+            mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
-            simplePlantingSeasonsDao,
             plantingSitesDao,
             publisher,
+            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         ),
@@ -154,6 +157,8 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     every { user.canReadAccession(any()) } returns true
     every { user.canReadBatch(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true

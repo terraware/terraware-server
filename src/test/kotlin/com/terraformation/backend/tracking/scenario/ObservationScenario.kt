@@ -31,6 +31,7 @@ import com.terraformation.backend.tracking.db.T0Store
 import com.terraformation.backend.tracking.event.MonitoringSpeciesTotalsEditedEvent
 import com.terraformation.backend.tracking.event.T0PlotDataAssignedEvent
 import com.terraformation.backend.tracking.model.ObservationResultsDepth
+import com.terraformation.backend.util.GeometrySimplifier
 import java.time.temporal.ChronoUnit
 import org.jooq.Configuration
 
@@ -75,6 +76,7 @@ class ObservationScenario(
         registerListeners: Boolean = true,
         clock: TestClock = TestClock(),
         eventPublisher: TestEventPublisher = TestEventPublisher(),
+        geometrySimplifier: GeometrySimplifier = GeometrySimplifier(),
         identifierGenerator: IdentifierGenerator = IdentifierGenerator(clock, test.dslContext),
         observationResultsStore: ObservationResultsStore = ObservationResultsStore(test.dslContext),
         observationResultsStoreV2: ObservationResultsStoreV2 =
@@ -100,12 +102,13 @@ class ObservationScenario(
                 CountryDetector(),
                 test.dslContext,
                 eventPublisher,
+                geometrySimplifier,
                 identifierGenerator,
                 MonitoringPlotsDao(configuration),
                 parentStore,
-                SimplePlantingSeasonsDao(configuration),
                 PlantingSitesDao(configuration),
                 eventPublisher,
+                SimplePlantingSeasonsDao(configuration),
                 StrataDao(configuration),
                 SubstrataDao(configuration),
             ),

@@ -19,6 +19,7 @@ import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.Shapefile
 import com.terraformation.backend.tracking.model.ShapefileFeature
+import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.nearlyCoveredBy
 import io.mockk.every
 import io.mockk.mockk
@@ -32,6 +33,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
   private val observationStore: ObservationStore by lazy {
@@ -53,12 +55,13 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         TestSingletons.countryDetector,
         dslContext,
         eventPublisher,
+        mockGeometrySimplifier,
         IdentifierGenerator(clock, dslContext),
         monitoringPlotsDao,
         parentStore,
-        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
+        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )
@@ -92,6 +95,8 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     organizationId = insertOrganization()
 
     every { user.canCreatePlantingSite(any()) } returns true

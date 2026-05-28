@@ -13,7 +13,9 @@ import com.terraformation.backend.tracking.ShapefileGenerator
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
 import com.terraformation.backend.tracking.model.Shapefile
+import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
+import io.mockk.mockk
 import java.math.BigDecimal
 import kotlin.io.path.Path
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,6 +34,7 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val importer: PlantingSiteImporter by lazy {
     PlantingSiteImporter(
         PlantingSiteStore(
@@ -39,12 +42,13 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
+            mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),
-            simplePlantingSeasonsDao,
             plantingSitesDao,
             eventPublisher,
+            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         )
@@ -57,6 +61,8 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     every { user.canCreatePlantingSite(any()) } returns true
     every { user.canReadPlantingSite(any()) } returns true
 

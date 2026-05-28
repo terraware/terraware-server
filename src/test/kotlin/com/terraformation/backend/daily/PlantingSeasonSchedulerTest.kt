@@ -16,7 +16,9 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSupportNotificationEvent
+import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.toInstant
+import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDate
 import java.time.ZoneId
@@ -31,6 +33,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val config = mockk<TerrawareServerConfig>()
   private val eventPublisher = TestEventPublisher()
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
 
   private val scheduler: PlantingSeasonScheduler by lazy {
     PlantingSeasonScheduler(
@@ -41,12 +44,13 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             eventPublisher,
+            mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             ParentStore(dslContext),
-            simplePlantingSeasonsDao,
             plantingSitesDao,
             eventPublisher,
+            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         ),
@@ -60,6 +64,8 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     insertOrganization(timeZone = timeZone)
 
     clock.instant = initialInstant

@@ -50,6 +50,7 @@ import com.terraformation.backend.report.render.SeedFundReportRenderer
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.species.db.SpeciesStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.util.GeometrySimplifier
 import io.mockk.every
 import io.mockk.mockk
 import java.math.BigDecimal
@@ -75,6 +76,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   private val messages = Messages()
   private val objectMapper = jacksonObjectMapper().registerModule(JavaTimeModule())
   private val publisher = TestEventPublisher()
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val parentStore by lazy { ParentStore(dslContext) }
   private val seedFundReportRenderer: SeedFundReportRenderer = mockk()
   private val seedFundReportStore by lazy {
@@ -141,12 +143,13 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             TestSingletons.countryDetector,
             dslContext,
             publisher,
+            mockGeometrySimplifier,
             IdentifierGenerator(clock, dslContext),
             monitoringPlotsDao,
             parentStore,
-            simplePlantingSeasonsDao,
             plantingSitesDao,
             publisher,
+            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         ),
@@ -170,6 +173,8 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     organizationId = insertOrganization()
 
     every { user.canCreateSeedFundReport(any()) } returns true

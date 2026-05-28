@@ -43,6 +43,8 @@ import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEven
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
 import com.terraformation.backend.tracking.event.ObservationMediaFileUploadedEvent
+import com.terraformation.backend.util.GeometrySimplifier
+import io.mockk.every
 import io.mockk.mockk
 import java.time.Instant
 import java.time.LocalDate
@@ -56,6 +58,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val observationLocker: ObservationLocker by lazy { ObservationLocker(dslContext) }
@@ -78,12 +81,13 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         CountryDetector(),
         dslContext,
         eventPublisher,
+        mockGeometrySimplifier,
         mockk(),
         monitoringPlotsDao,
         parentStore,
-        simplePlantingSeasonsDao,
         plantingSitesDao,
         eventPublisher,
+        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )
@@ -127,6 +131,8 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
   @BeforeEach
   fun setUp() {
+    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
+
     organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Manager)
     projectId = insertProject(phase = AcceleratorPhase.Phase2PlanAndScale)
