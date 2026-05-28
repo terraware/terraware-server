@@ -98,7 +98,14 @@ class PlantingSeasonStore(
               .set(NAME, name)
               .set(START_DATE, startDate)
               .set(END_DATE, endDate)
-              .set(STATUS_ID, status)
+              .set(
+                  STATUS_ID,
+                  DSL.`when`(
+                          STATUS_ID.eq(PlantingSeasonStatus.Closed),
+                          PlantingSeasonStatus.Closed,
+                      )
+                      .else_(status),
+              )
               .set(MODIFIED_BY, currentUser().userId)
               .set(MODIFIED_TIME, now)
               .where(ID.eq(plantingSeasonId))
