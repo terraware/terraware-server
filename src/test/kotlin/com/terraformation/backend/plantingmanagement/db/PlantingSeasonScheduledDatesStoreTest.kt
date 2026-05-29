@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDateSpeciesRecord
@@ -339,6 +340,20 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
+    fun `throws PlantingSeasonClosedException if season is closed`() {
+      val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
+
+      assertThrows<PlantingSeasonClosedException> {
+        store.create(
+            PlantingSeasonScheduledDateModel(
+                plantingSeasonId = plantingSeasonId,
+                date = LocalDate.EPOCH,
+            ),
+        )
+      }
+    }
+
+    @Test
     fun `throws AccessDeniedException when user lacks permission`() {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
@@ -494,6 +509,35 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
+    fun `throws PlantingSeasonClosedException if season is closed`() {
+      val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
+      val scheduledDateId = insertPlantingSeasonScheduledDate()
+
+      assertThrows<PlantingSeasonClosedException> {
+        store.update(
+            scheduledDateId,
+            PlantingSeasonScheduledDateModel(
+                plantingSeasonId = plantingSeasonId,
+                date = LocalDate.EPOCH,
+                species =
+                    listOf(
+                        PlantingSeasonScheduledDateSpecies(
+                            quantity = 5,
+                            speciesId = speciesId,
+                            substratumId = substratumId,
+                        ),
+                        PlantingSeasonScheduledDateSpecies(
+                            quantity = 10,
+                            speciesId = speciesId,
+                            substratumId = substratumId,
+                        ),
+                    ),
+            ),
+        )
+      }
+    }
+
+    @Test
     fun `throws AccessDeniedException when user lacks permission`() {
       val scheduledDateId = insertPlantingSeasonScheduledDate()
       deleteOrganizationUser()
@@ -551,6 +595,16 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
 
       assertTableEmpty(SCHEDULED_PLANTING_DATES)
       assertTableEmpty(SCHEDULED_PLANTING_DATE_SPECIES)
+    }
+
+    @Test
+    fun `throws PlantingSeasonClosedException if season is closed`() {
+      val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
+      val scheduledDateId = insertPlantingSeasonScheduledDate()
+
+      assertThrows<PlantingSeasonClosedException> {
+        store.delete(plantingSeasonId, scheduledDateId)
+      }
     }
 
     @Test

@@ -7,6 +7,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonSpeciesTargetsRecord
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
@@ -152,6 +153,15 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
+    fun `throws PlantingSeasonClosedException if season is closed`() {
+      val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
+
+      assertThrows<PlantingSeasonClosedException> {
+        store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
+      }
+    }
+
+    @Test
     fun `throws AccessDeniedException when user lacks permission`() {
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
@@ -262,6 +272,16 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
     @Test
     fun `does nothing when the species target row does not exist`() {
       store.delete(plantingSeasonId, substratumId, speciesId)
+    }
+
+    @Test
+    fun `throws PlantingSeasonClosedException if season is closed`() {
+      val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
+      insertPlantingSeasonSpeciesTarget(quantity = 5)
+
+      assertThrows<PlantingSeasonClosedException> {
+        store.delete(plantingSeasonId, substratumId, speciesId)
+      }
     }
 
     @Test

@@ -26,3 +26,6 @@ class PlantingSeasonScheduledDateExistsException(
 class PlantingSeasonScheduledDateNotFoundException(
     scheduledPlantingDateId: ScheduledPlantingDateId
 ) : EntityNotFoundException("Scheduled planting date $scheduledPlantingDateId not found")
+
+class PlantingSeasonClosedException(val plantingSeasonId: PlantingSeasonId) :
+    MismatchedStateException("Planting season $plantingSeasonId already closed")
