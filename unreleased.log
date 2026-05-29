@@ -1,3 +1,4 @@
+d3b040ce SW-8369 Don't allow closed planting seasons to be edited in any way (#4502)
 a7bb5058 Update geoToolsVersion to v34.4 (#4483)
 08788855 SW-8372 Change PlantingSeasonRescheduledEvent to named planting seasons only (#4500)
 0b981aad SW-8372 Change PlantingSeasonScheduledEvent to named planting seasons only (#4498)
