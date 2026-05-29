@@ -112,9 +112,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1))
       insertStratum()
 
-      store.updatePlantingSite(plantingSiteId) { model ->
-        model.copy(boundary = multiPolygon(2))
-      }
+      store.updatePlantingSite(plantingSiteId) { model -> model.copy(boundary = multiPolygon(2)) }
 
       assertEquals(multiPolygon(1), plantingSitesDao.findAll().first().boundary)
     }
@@ -152,9 +150,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
 
       every { user.canUpdatePlantingSite(any()) } returns false
 
-      assertThrows<AccessDeniedException> {
-        store.updatePlantingSite(plantingSiteId) { it }
-      }
+      assertThrows<AccessDeniedException> { store.updatePlantingSite(plantingSiteId) { it } }
     }
 
     @Test
@@ -164,9 +160,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       val otherOrgProjectId = insertProject()
 
       assertThrows<ProjectInDifferentOrganizationException> {
-        store.updatePlantingSite(plantingSiteId) {
-          it.copy(projectId = otherOrgProjectId)
-        }
+        store.updatePlantingSite(plantingSiteId) { it.copy(projectId = otherOrgProjectId) }
       }
     }
   }
