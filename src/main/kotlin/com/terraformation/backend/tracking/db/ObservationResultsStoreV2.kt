@@ -284,7 +284,13 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                         .SURVIVAL_RATE_INCLUDES_TEMP_PLOTS
                         .asNonNullable()]
 
-            val species = record[substratumSpeciesMultisetField]
+            val anyCompleted = monitoringPlots.any { it.completedTime != null }
+            val species =
+                if (anyCompleted) {
+                  record[substratumSpeciesMultisetField]
+                } else {
+                  emptyList()
+                }
             val totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead }
             val totalLiveSpeciesExceptUnknown =
                 species
@@ -401,8 +407,16 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
         .convertFrom { results ->
           results.map { record: Record ->
             val areaHa = record[STRATUM_HISTORIES.AREA_HA]!!
-            val species = record[stratumSpeciesMultisetField]
             val substrata = record[substrataField]
+            val anyCompleted = substrata.any { substratum ->
+              substratum.monitoringPlots.any { it.completedTime != null }
+            }
+            val species =
+                if (anyCompleted) {
+                  record[stratumSpeciesMultisetField]
+                } else {
+                  emptyList()
+                }
 
             val identifiedSpecies = species.filter {
               it.certainty != RecordedSpeciesCertainty.Unknown
@@ -516,7 +530,17 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
               val areaHa = record[PLANTING_SITE_HISTORIES.AREA_HA]
 
               val strata = record[strataField]
-              val species = record[plantingSiteSpeciesMultisetField]
+              val anyCompleted = strata.any { stratum ->
+                stratum.substrata.any { substratum ->
+                  substratum.monitoringPlots.any { it.completedTime != null }
+                }
+              }
+              val species =
+                  if (anyCompleted) {
+                    record[plantingSiteSpeciesMultisetField]
+                  } else {
+                    emptyList()
+                  }
               val survivalRateIncludesTempPlots =
                   record[
                       OBSERVATIONS.plantingSites.SURVIVAL_RATE_INCLUDES_TEMP_PLOTS.asNonNullable()]

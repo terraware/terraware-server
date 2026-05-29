@@ -685,6 +685,46 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
           "Incomplete Plot Status",
       )
     }
+
+    @Test
+    fun `plant counts and survival rate are null if there are no completed plots`() {
+      insertSpecies()
+      val observationId = insertObservation()
+      val incompleteStratumId = insertStratum()
+      insertSubstratum()
+      val incompletePlotId = insertMonitoringPlot()
+      insertObservationPlot(claimedBy = user.userId, isPermanent = true)
+      insertPlotT0Density()
+
+      val results = resultsStoreV2.fetchOneById(observationId)
+      val incompleteStratumResults = results.strata.single { it.stratumId == incompleteStratumId }
+      val incompleteSubstratumResults = incompleteStratumResults.substrata[0]
+      val incompletePlotResults =
+          incompleteSubstratumResults.monitoringPlots.first {
+            it.monitoringPlotId == incompletePlotId
+          }
+
+      assertNull(results.totalPlants, "Site Total Plants")
+      assertNull(results.totalSpecies, "Site Total Species")
+      assertNull(results.plantingDensity, "Site Planting Density")
+      assertNull(results.survivalRate, "Site Survival Rate")
+
+      assertNull(incompleteStratumResults.totalPlants, "Incomplete Stratum Total Plants")
+      assertNull(incompleteStratumResults.totalSpecies, "Incomplete Stratum Total Species")
+      assertNull(incompleteStratumResults.plantingDensity, "Incomplete Stratum Planting Density")
+      assertNull(incompleteStratumResults.survivalRate, "Incomplete Stratum Survival Rate")
+      assertNull(incompleteSubstratumResults.totalPlants, "Incomplete Substratum Total Plants")
+      assertNull(incompleteSubstratumResults.totalSpecies, "Incomplete Substratum Total Species")
+      assertNull(
+          incompleteSubstratumResults.plantingDensity,
+          "Incomplete Substratum Planting Density",
+      )
+      assertNull(incompleteSubstratumResults.survivalRate, "Incomplete Substratum Survival Rate")
+      assertNull(incompletePlotResults.totalPlants, "Incomplete Plot Total Plants")
+      assertNull(incompletePlotResults.totalSpecies, "Incomplete Plot Total Species")
+      assertNull(incompletePlotResults.plantingDensity, "Incomplete Plot Planting Density")
+      assertEquals(emptyList<Any>(), incompletePlotResults.species, "Incomplete Plot Species")
+    }
   }
 
   @Nested
