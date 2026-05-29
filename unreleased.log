@@ -1,3 +1,4 @@
+e942c659 Fix FieldValuesPayload to correctly use nullable strings in the list (#4494)
 16c84a31 SW-7311 Increase default number of monitoring plots (#4492)
 9dfa053f SW-8401 Use area-weighted survival rates at site level (#4455)
 c5fd3f37 SW-8347 Use different history text for accession check-in (#4487)
