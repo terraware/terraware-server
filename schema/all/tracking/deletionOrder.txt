@@ -31,7 +31,6 @@ simplified_stratum_histories
 simplified_strata
 simplified_planting_sites
 simplified_planting_site_histories
-simple_planting_seasons
 scheduled_planting_dates
 observation_biomass_quadrat_details
 deliveries

@@ -30,7 +30,6 @@ scheduled_planting_dates
 planting_site_notifications
 planting_site_populations
 plot_t0_densities
-simple_planting_seasons
 simplified_planting_site_histories
 simplified_planting_sites
 simplified_strata

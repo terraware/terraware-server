@@ -28,7 +28,6 @@ simplified_stratum_histories
 simplified_strata
 simplified_planting_sites
 simplified_planting_site_histories
-simple_planting_seasons
 plot_t0_densities
 planting_site_populations
 planting_site_notifications
