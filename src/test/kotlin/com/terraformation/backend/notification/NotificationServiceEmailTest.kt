@@ -182,6 +182,7 @@ import java.time.Month
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Locale
+import org.jooq.Configuration as JooqConfiguration
 import org.jooq.DSLContext
 import org.jooq.TransactionalRunnable
 import org.jooq.impl.DSL
@@ -191,7 +192,6 @@ import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.mail.javamail.JavaMailSenderImpl
-import org.jooq.Configuration as JooqConfiguration
 
 internal class NotificationServiceEmailTest {
   private val acceleratorUser: IndividualUser = mockk()
