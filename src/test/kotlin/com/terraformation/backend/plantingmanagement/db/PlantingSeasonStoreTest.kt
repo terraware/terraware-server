@@ -2,6 +2,7 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -16,6 +17,7 @@ import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -30,8 +32,9 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonStore by lazy {
-    PlantingSeasonStore(clock, dslContext, ParentStore(dslContext))
+    PlantingSeasonStore(clock, dslContext, eventPublisher, ParentStore(dslContext))
   }
 
   private lateinit var organizationId: OrganizationId
@@ -138,6 +141,31 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = clock.instant,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `publishes event when planting season is created`() {
+      val startDate = LocalDate.of(2025, 1, 1)
+      val endDate = LocalDate.of(2025, 3, 31)
+
+      val plantingSeasonId =
+          store.create(
+              NewPlantingSeasonModel(
+                  endDate = endDate,
+                  name = "Spring 2025",
+                  plantingSiteId = plantingSiteId,
+                  startDate = startDate,
+              )
+          )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonScheduledEvent(
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              startDate = startDate,
+              endDate = endDate,
           )
       )
     }

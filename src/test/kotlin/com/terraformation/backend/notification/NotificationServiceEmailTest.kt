@@ -1087,10 +1087,10 @@ internal class NotificationServiceEmailTest {
 
     val event =
         PlantingSeasonScheduledEvent(
-            plantingSite.id,
-            SimplePlantingSeasonId(1),
-            LocalDate.of(2023, 1, 1),
-            LocalDate.of(2023, 3, 3),
+            plantingSeasonId = PlantingSeasonId(1),
+            plantingSiteId = plantingSite.id,
+            startDate = LocalDate.of(2023, 1, 1),
+            endDate = LocalDate.of(2023, 3, 3),
         )
 
     service.on(event)
@@ -1108,10 +1108,10 @@ internal class NotificationServiceEmailTest {
   fun `plantingSeasonScheduled without Terraformation contact`() {
     val event =
         PlantingSeasonScheduledEvent(
-            plantingSite.id,
-            SimplePlantingSeasonId(1),
-            LocalDate.of(2023, 1, 1),
-            LocalDate.of(2023, 3, 3),
+            plantingSeasonId = PlantingSeasonId(1),
+            plantingSiteId = plantingSite.id,
+            startDate = LocalDate.of(2023, 1, 1),
+            endDate = LocalDate.of(2023, 3, 3),
         )
 
     service.on(event)

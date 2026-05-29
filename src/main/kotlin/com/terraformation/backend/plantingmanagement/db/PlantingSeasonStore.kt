@@ -13,17 +13,20 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
+import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import jakarta.inject.Named
 import java.time.InstantSource
 import java.time.LocalDate
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class PlantingSeasonStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val parentStore: ParentStore,
 ) {
   fun create(newModel: NewPlantingSeasonModel): PlantingSeasonId {
@@ -34,21 +37,33 @@ class PlantingSeasonStore(
     val status = calculateStatus(newModel.startDate, newModel.endDate, newModel.plantingSiteId)
 
     return with(PLANTING_SEASONS) {
-      dslContext
-          .insertInto(PLANTING_SEASONS)
-          .set(NAME, newModel.name)
-          .set(PLANTING_SITE_ID, newModel.plantingSiteId)
-          .set(START_DATE, newModel.startDate)
-          .set(END_DATE, newModel.endDate)
-          .set(STATUS_ID, status)
-          .set(CREATED_BY, userId)
-          .set(CREATED_TIME, now)
-          .set(MODIFIED_BY, userId)
-          .set(MODIFIED_TIME, now)
-          .onConflictDoNothing()
-          .returning(ID)
-          .fetchOne(ID)
-          ?: throw PlantingSeasonExistsException(newModel.plantingSiteId, newModel.name)
+      val newSeasonId =
+          dslContext
+              .insertInto(PLANTING_SEASONS)
+              .set(NAME, newModel.name)
+              .set(PLANTING_SITE_ID, newModel.plantingSiteId)
+              .set(START_DATE, newModel.startDate)
+              .set(END_DATE, newModel.endDate)
+              .set(STATUS_ID, status)
+              .set(CREATED_BY, userId)
+              .set(CREATED_TIME, now)
+              .set(MODIFIED_BY, userId)
+              .set(MODIFIED_TIME, now)
+              .onConflictDoNothing()
+              .returning(ID)
+              .fetchOne(ID)
+              ?: throw PlantingSeasonExistsException(newModel.plantingSiteId, newModel.name)
+
+      eventPublisher.publishEvent(
+          PlantingSeasonScheduledEvent(
+              plantingSeasonId = newSeasonId,
+              plantingSiteId = newModel.plantingSiteId,
+              startDate = newModel.startDate,
+              endDate = newModel.endDate,
+          )
+      )
+
+      newSeasonId
     }
   }
 
