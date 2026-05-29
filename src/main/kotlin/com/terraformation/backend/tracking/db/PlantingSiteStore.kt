@@ -1572,8 +1572,8 @@ class PlantingSiteStore(
         .and(PLANTING_SITES.CREATED_TIME.le(maxCreatedTime))
         .andNotExists(
             DSL.selectOne()
-                .from(SIMPLE_PLANTING_SEASONS)
-                .where(PLANTING_SITES.ID.eq(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID))
+                .from(PLANTING_SEASONS)
+                .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
         )
         .andExists(
             DSL.selectOne()
@@ -1599,11 +1599,11 @@ class PlantingSiteStore(
         .where(additionalCondition)
         .and(
             DSL.field(
-                    DSL.select(DSL.max(SIMPLE_PLANTING_SEASONS.END_TIME))
-                        .from(SIMPLE_PLANTING_SEASONS)
-                        .where(PLANTING_SITES.ID.eq(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID))
+                    DSL.select(DSL.max(PLANTING_SEASONS.END_DATE))
+                        .from(PLANTING_SEASONS)
+                        .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
                 )
-                .le(maxEndTime)
+                .lt(localDateInSiteTimezone(maxEndTime))
         )
         .andExists(
             DSL.selectOne()
