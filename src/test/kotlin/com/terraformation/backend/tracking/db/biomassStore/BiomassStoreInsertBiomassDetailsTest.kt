@@ -172,6 +172,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                         heightM = BigDecimal.TEN,
                         shrubDiameterCm = 1, // ignored
                         speciesName = "Other tree species",
+                        treeCrownDiameterCm = 16,
                         treeGrowthForm = TreeGrowthForm.Tree,
                         treeNumber = 2,
                         trunkNumber = 1,
@@ -440,6 +441,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                 heightM = BigDecimal.TEN,
                 pointOfMeasurementM = BigDecimal.valueOf(1.3),
                 isDead = true,
+                treeCrownDiameterCm = 16,
                 treeGrowthFormId = TreeGrowthForm.Tree,
                 treeNumber = 2,
                 trunkNumber = 1,
@@ -505,6 +507,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
                 pointOfMeasurementM = BigDecimal.valueOf(1.3),
                 recordedTreeId = recordedTreeIdsByTreeAndTrunk[2 to 1]!!,
                 speciesName = "Other tree species",
+                treeCrownDiameterCm = 16,
                 treeGrowthForm = TreeGrowthForm.Tree,
                 treeNumber = 2,
                 trunkNumber = 1,

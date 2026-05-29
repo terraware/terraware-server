@@ -141,9 +141,12 @@ data class ExistingTreePayload(
     val isThreatened: Boolean,
     @Schema(description = "Measured in meters.") //
     val pointOfMeasurement: BigDecimal?,
+    @Schema(description = "Measured in centimeters.") //
     val shrubDiameter: Int?,
     val speciesId: SpeciesId?,
     val speciesName: String?,
+    @Schema(description = "Measured in centimeters.") //
+    val treeCrownDiameter: Int?,
     val treeGrowthForm: TreeGrowthForm,
     val treeNumber: Int,
     val trunkNumber: Int,
@@ -164,6 +167,7 @@ data class ExistingTreePayload(
       shrubDiameter = model.shrubDiameterCm,
       speciesId = model.speciesId,
       speciesName = model.speciesName,
+      treeCrownDiameter = model.treeCrownDiameterCm,
       treeGrowthForm = model.treeGrowthForm,
       treeNumber = model.treeNumber,
       trunkNumber = model.trunkNumber,
@@ -227,6 +231,8 @@ data class NewTrunkPayload(
     val pointOfMeasurement: BigDecimal,
     val description: String?,
     val isDead: Boolean,
+    @Schema(description = "Measured in centimeters.") //
+    val treeCrownDiameter: Int?,
 ) {
   fun toTreeModel(
       gpsCoordinates: Point?,
@@ -247,6 +253,7 @@ data class NewTrunkPayload(
         shrubDiameterCm = null,
         speciesId = speciesId,
         speciesName = speciesName,
+        treeCrownDiameterCm = treeCrownDiameter,
         treeGrowthForm = growthForm,
         treeNumber = treeNumber,
         trunkNumber = trunkNumber,
