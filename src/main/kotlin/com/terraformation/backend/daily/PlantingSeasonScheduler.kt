@@ -3,8 +3,9 @@ package com.terraformation.backend.daily
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import com.terraformation.backend.time.ClockAdvancedEvent
-import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.event.PlantingSeasonSchedulingNotificationEvent
 import com.terraformation.backend.tracking.model.NotificationCriteria
 import jakarta.inject.Inject
@@ -20,7 +21,8 @@ import org.springframework.context.event.EventListener
 class PlantingSeasonScheduler(
     private val config: TerrawareServerConfig,
     private val eventPublisher: ApplicationEventPublisher,
-    private val plantingSiteStore: PlantingSiteStore,
+    private val plantingSeasonStore: PlantingSeasonStore,
+    private val plantingSiteNotificationStore: PlantingSiteNotificationStore,
     private val systemUser: SystemUser,
 ) {
   private val log = perClassLogger()
@@ -39,7 +41,7 @@ class PlantingSeasonScheduler(
 
   fun transitionPlantingSeasons() {
     systemUser.run {
-      plantingSiteStore.transitionPlantingSeasons()
+      plantingSeasonStore.transitionPlantingSeasons()
       sendNotifications()
     }
   }
@@ -51,7 +53,7 @@ class PlantingSeasonScheduler(
 
   private fun sendNotifications() {
     NotificationCriteria.FirstPlantingSeasonNotScheduled.notifications.forEach { criteria ->
-      plantingSiteStore
+      plantingSeasonStore
           .fetchPartiallyPlantedDetailedSitesWithNoPlantingSeasons(
               criteria.weeksSinceCreation,
               criteria.notificationNotCompletedCondition(),
@@ -62,7 +64,7 @@ class PlantingSeasonScheduler(
     }
 
     NotificationCriteria.NextPlantingSeasonNotScheduled.notifications.forEach { criteria ->
-      plantingSiteStore
+      plantingSeasonStore
           .fetchPartiallyPlantedDetailedSitesWithNoUpcomingPlantingSeasons(
               criteria.weeksSinceLastSeason,
               criteria.notificationNotCompletedCondition(),
@@ -81,7 +83,7 @@ class PlantingSeasonScheduler(
       // Mark the notification complete first to guard against concurrent attempts to send the
       // same notification, which will cause all but one of the attempts to fail with an integrity
       // constraint violation.
-      plantingSiteStore.markNotificationComplete(
+      plantingSiteNotificationStore.markNotificationComplete(
           event.plantingSiteId,
           criteria.notificationType,
           criteria.notificationNumber,

@@ -37,6 +37,7 @@ import com.terraformation.backend.tracking.db.BiomassStore
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
+import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationCompletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
@@ -108,6 +109,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             observationMediaFilesDao,
             observationLocker,
             observationStore,
+            PlantingSiteNotificationStore(clock, dslContext),
             plantingSiteStore,
             parentStore,
             eventPublisher,
