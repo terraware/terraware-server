@@ -17,6 +17,7 @@ import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import java.time.Instant
 import java.time.LocalDate
@@ -527,26 +528,28 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `sets status to Active when today falls within the new date range`() {
-      val id =
+      val oldStartDate = LocalDate.of(2025, 1, 1)
+      val oldEndDate = LocalDate.of(2025, 1, 31)
+      val plantingSeasonId =
           insertPlantingSeason(
               name = "Season",
-              startDate = LocalDate.of(2025, 1, 1),
-              endDate = LocalDate.of(2025, 1, 31),
+              startDate = oldStartDate,
+              endDate = oldEndDate,
               status = PlantingSeasonStatus.Upcoming,
           )
-      val newStart = LocalDate.of(2025, 1, 1)
-      val newEnd = LocalDate.of(2025, 3, 31)
-      clock.instant = newStart.atStartOfDay().toInstant(ZoneOffset.UTC)
+      val newStartDate = LocalDate.of(2025, 1, 1)
+      val newEndDate = LocalDate.of(2025, 3, 31)
+      clock.instant = newStartDate.atStartOfDay().toInstant(ZoneOffset.UTC)
 
-      store.update(id, "Season", newStart, newEnd)
+      store.update(plantingSeasonId, "Season", newStartDate, newEndDate)
 
       assertTableEquals(
           PlantingSeasonsRecord(
-              id = id,
+              id = plantingSeasonId,
               name = "Season",
               plantingSiteId = plantingSiteId,
-              startDate = newStart,
-              endDate = newEnd,
+              startDate = newStartDate,
+              endDate = newEndDate,
               statusId = PlantingSeasonStatus.Active,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -554,30 +557,43 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = clock.instant,
           )
       )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonRescheduledEvent(
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              oldStartDate = oldStartDate,
+              oldEndDate = oldEndDate,
+              newStartDate = newStartDate,
+              newEndDate = newEndDate,
+          )
+      )
     }
 
     @Test
     fun `sets status to PastEndDate when new end date is in the past`() {
-      val id =
+      val oldStartDate = LocalDate.of(2025, 1, 1)
+      val oldEndDate = LocalDate.of(2025, 3, 31)
+      val plantingSeasonId =
           insertPlantingSeason(
               name = "Season",
-              startDate = LocalDate.of(2025, 1, 1),
-              endDate = LocalDate.of(2025, 3, 31),
+              startDate = oldStartDate,
+              endDate = oldEndDate,
               status = PlantingSeasonStatus.Upcoming,
           )
-      val newStart = LocalDate.of(2024, 1, 1)
-      val newEnd = LocalDate.of(2024, 3, 31)
-      clock.instant = newEnd.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+      val newStartDate = LocalDate.of(2024, 1, 1)
+      val newEndDate = LocalDate.of(2024, 3, 31)
+      clock.instant = newEndDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
 
-      store.update(id, "Season", newStart, newEnd)
+      store.update(plantingSeasonId, "Season", newStartDate, newEndDate)
 
       assertTableEquals(
           PlantingSeasonsRecord(
-              id = id,
+              id = plantingSeasonId,
               name = "Season",
               plantingSiteId = plantingSiteId,
-              startDate = newStart,
-              endDate = newEnd,
+              startDate = newStartDate,
+              endDate = newEndDate,
               statusId = PlantingSeasonStatus.PastEndDate,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -585,30 +601,43 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = clock.instant,
           )
       )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonRescheduledEvent(
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              oldStartDate = oldStartDate,
+              oldEndDate = oldEndDate,
+              newStartDate = newStartDate,
+              newEndDate = newEndDate,
+          )
+      )
     }
 
     @Test
     fun `does not change status when season is closed`() {
-      val id =
+      val oldStartDate = LocalDate.of(2025, 1, 1)
+      val oldEndDate = LocalDate.of(2025, 3, 31)
+      val plantingSeasonId =
           insertPlantingSeason(
               name = "Season",
-              startDate = LocalDate.of(2025, 1, 1),
-              endDate = LocalDate.of(2025, 3, 31),
+              startDate = oldStartDate,
+              endDate = oldEndDate,
               status = PlantingSeasonStatus.Closed,
           )
-      val newStart = LocalDate.of(2024, 1, 1)
-      val newEnd = LocalDate.of(2024, 3, 31)
-      clock.instant = newEnd.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+      val newStartDate = LocalDate.of(2024, 1, 1)
+      val newEndDate = LocalDate.of(2024, 3, 31)
+      clock.instant = newEndDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
 
-      store.update(id, "Season", newStart, newEnd)
+      store.update(plantingSeasonId, "Season", newStartDate, newEndDate)
 
       assertTableEquals(
           PlantingSeasonsRecord(
-              id = id,
+              id = plantingSeasonId,
               name = "Season",
               plantingSiteId = plantingSiteId,
-              startDate = newStart,
-              endDate = newEnd,
+              startDate = newStartDate,
+              endDate = newEndDate,
               statusId = PlantingSeasonStatus.Closed,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -616,6 +645,49 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               modifiedTime = clock.instant,
           )
       )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonRescheduledEvent(
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              oldStartDate = oldStartDate,
+              oldEndDate = oldEndDate,
+              newStartDate = newStartDate,
+              newEndDate = newEndDate,
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish PlantingSeasonRescheduledEvent when dates do not change`() {
+      val startDate = LocalDate.of(2025, 1, 1)
+      val endDate = LocalDate.of(2025, 3, 31)
+      val plantingSeasonId =
+          insertPlantingSeason(
+              name = "Season",
+              startDate = startDate,
+              endDate = endDate,
+              status = PlantingSeasonStatus.Closed,
+          )
+
+      store.update(plantingSeasonId, "New Season", startDate, endDate)
+
+      assertTableEquals(
+          PlantingSeasonsRecord(
+              id = plantingSeasonId,
+              name = "New Season",
+              plantingSiteId = plantingSiteId,
+              startDate = startDate,
+              endDate = endDate,
+              statusId = PlantingSeasonStatus.Closed,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = Instant.EPOCH,
+          )
+      )
+
+      eventPublisher.assertNoEventsPublished()
     }
 
     @Test

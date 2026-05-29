@@ -76,7 +76,6 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.edit.SubstratumEdit
 import com.terraformation.backend.tracking.event.PlantingSeasonPastEndDateEvent
-import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
@@ -1213,17 +1212,6 @@ class PlantingSiteStore(
             .where(ID.eq(desiredSeason.id))
             .execute()
       }
-
-      eventPublisher.publishEvent(
-          PlantingSeasonRescheduledEvent(
-              plantingSiteId,
-              existingSeason.id,
-              existingSeason.startDate,
-              existingSeason.endDate,
-              desiredSeason.startDate,
-              desiredSeason.endDate,
-          )
-      )
     }
 
     if (seasonsToInsert.isNotEmpty()) {

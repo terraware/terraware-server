@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
+import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import jakarta.inject.Named
 import java.time.InstantSource
@@ -100,11 +101,12 @@ class PlantingSeasonStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    val now = clock.instant()
-    val plantingSiteId =
-        parentStore.getPlantingSiteId(plantingSeasonId)
+    val existingSeason =
+        fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
             ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
-    val status = calculateStatus(startDate, endDate, plantingSiteId)
+
+    val now = clock.instant()
+    val status = calculateStatus(startDate, endDate, existingSeason.plantingSiteId)
 
     val rowsUpdated =
         with(PLANTING_SEASONS) {
@@ -129,6 +131,19 @@ class PlantingSeasonStore(
 
     if (rowsUpdated == 0) {
       throw PlantingSeasonNotFoundException(plantingSeasonId)
+    }
+
+    if (existingSeason.startDate != startDate || existingSeason.endDate != endDate) {
+      eventPublisher.publishEvent(
+          PlantingSeasonRescheduledEvent(
+              plantingSeasonId = existingSeason.id,
+              plantingSiteId = existingSeason.plantingSiteId,
+              oldStartDate = existingSeason.startDate,
+              oldEndDate = existingSeason.endDate,
+              newStartDate = startDate,
+              newEndDate = endDate,
+          )
+      )
     }
   }
 
