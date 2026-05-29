@@ -541,13 +541,6 @@ COMMENT ON TABLE tracking.scheduled_planting_dates IS 'Planned planting dates wi
 
 COMMENT ON TABLE tracking.scheduled_planting_date_species IS 'Species and substratum quantities planned for a scheduled planting date.';
 
-COMMENT ON TABLE tracking.simple_planting_seasons IS 'Start and end dates of simple planting seasons for planting sites.';
-COMMENT ON COLUMN tracking.simple_planting_seasons.end_date IS 'What day the planting season ends. This is the last day of the season, not the day after the season, that is, if the planting season is the month of January, this will be January 31, not February 1.';
-COMMENT ON COLUMN tracking.simple_planting_seasons.end_time IS 'When the planting season will be finished. This is midnight on the day after `end_date` in the planting site''s time zone.';
-COMMENT ON COLUMN tracking.simple_planting_seasons.is_active IS 'True if the planting season is currently in progress. Only one planting season can be active at a time for a planting site.';
-COMMENT ON COLUMN tracking.simple_planting_seasons.start_date IS 'What day the planting season starts.';
-COMMENT ON COLUMN tracking.simple_planting_seasons.start_time IS 'When the planting season will start. This is midnight on `start_date` in the planting site''s time zone.';
-
 COMMENT ON TABLE tracking.simplified_planting_site_histories IS 'Simplified boundary geometries for planting site versions.';
 
 COMMENT ON TABLE tracking.simplified_planting_sites IS 'Simplified boundary geometries for planting sites.';

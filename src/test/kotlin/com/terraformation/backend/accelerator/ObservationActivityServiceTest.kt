@@ -87,7 +87,6 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         parentStore,
         plantingSitesDao,
         eventPublisher,
-        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )

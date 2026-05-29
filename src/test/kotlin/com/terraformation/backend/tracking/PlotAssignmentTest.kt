@@ -61,7 +61,6 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         parentStore,
         plantingSitesDao,
         eventPublisher,
-        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )

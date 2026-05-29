@@ -98,7 +98,6 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             plantingSitesDao,
             publisher,
-            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         ),

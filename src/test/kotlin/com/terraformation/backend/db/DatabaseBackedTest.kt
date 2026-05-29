@@ -434,7 +434,6 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
-import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
@@ -470,7 +469,6 @@ import com.terraformation.backend.db.tracking.tables.daos.RecordedPlantsDao
 import com.terraformation.backend.db.tracking.tables.daos.RecordedTreesDao
 import com.terraformation.backend.db.tracking.tables.daos.ScheduledPlantingDateSpeciesDao
 import com.terraformation.backend.db.tracking.tables.daos.ScheduledPlantingDatesDao
-import com.terraformation.backend.db.tracking.tables.daos.SimplePlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.SimplifiedPlantingSiteHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.SimplifiedPlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.SimplifiedStrataDao
@@ -518,7 +516,6 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedTreesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ScheduledPlantingDateSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ScheduledPlantingDatesRow
-import com.terraformation.backend.db.tracking.tables.pojos.SimplePlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedPlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedPlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.SimplifiedStrataRow
@@ -553,7 +550,6 @@ import com.terraformation.backend.toBigDecimal
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE
 import com.terraformation.backend.tracking.model.MONITORING_PLOT_SIZE_INT
 import com.terraformation.backend.tracking.model.StratumModel
-import com.terraformation.backend.util.toInstant
 import jakarta.ws.rs.NotFoundException
 import java.math.BigDecimal
 import java.net.URI
@@ -561,7 +557,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicLong
@@ -817,7 +812,6 @@ abstract class DatabaseBackedTest {
       lazyDao()
   protected val speciesProblemsDao: SpeciesProblemsDao by lazyDao()
   protected val speciesSuccessionalGroupsDao: SpeciesSuccessionalGroupsDao by lazyDao()
-  protected val simplePlantingSeasonsDao: SimplePlantingSeasonsDao by lazyDao()
   protected val simplifiedPlantingSiteHistoriesDao: SimplifiedPlantingSiteHistoriesDao by lazyDao()
   protected val simplifiedPlantingSitesDao: SimplifiedPlantingSitesDao by lazyDao()
   protected val simplifiedStrataDao: SimplifiedStrataDao by lazyDao()
@@ -2481,30 +2475,6 @@ abstract class DatabaseBackedTest {
           .getOrPut(plantingSiteId) { mutableListOf() }
           .add(it)
     }
-  }
-
-  fun insertSimplePlantingSeason(
-      timeZone: ZoneId = ZoneOffset.UTC,
-      endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
-      endTime: Instant = endDate.plusDays(1).toInstant(timeZone),
-      isActive: Boolean = false,
-      plantingSiteId: PlantingSiteId = inserted.plantingSiteId,
-      startDate: LocalDate = LocalDate.EPOCH,
-      startTime: Instant = startDate.toInstant(timeZone),
-  ): SimplePlantingSeasonId {
-    val row =
-        SimplePlantingSeasonsRow(
-            endDate = endDate,
-            endTime = endTime,
-            isActive = isActive,
-            plantingSiteId = plantingSiteId,
-            startDate = startDate,
-            startTime = startTime,
-        )
-
-    simplePlantingSeasonsDao.insert(row)
-
-    return row.id!!.also { inserted.simplePlantingSeasonIds.add(it) }
   }
 
   fun insertPlantingSiteNotification(
@@ -5952,7 +5922,6 @@ abstract class DatabaseBackedTest {
     val scheduledPlantingDateIds = mutableListOf<ScheduledPlantingDateId>()
     val seedbankWithdrawalIds = mutableListOf<SeedbankWithdrawalId>()
     val seedFundReportIds = mutableListOf<SeedFundReportId>()
-    val simplePlantingSeasonIds = mutableListOf<SimplePlantingSeasonId>()
     val speciesIds = mutableListOf<SpeciesId>()
     val splatAnnotationIds = mutableListOf<SplatAnnotationId>()
     val stratumHistoryIds = mutableListOf<StratumHistoryId>()
@@ -6096,9 +6065,6 @@ abstract class DatabaseBackedTest {
 
     val seedFundReportId
       get() = seedFundReportIds.last()
-
-    val simplePlantingSeasonId
-      get() = simplePlantingSeasonIds.last()
 
     val speciesId
       get() = speciesIds.last()

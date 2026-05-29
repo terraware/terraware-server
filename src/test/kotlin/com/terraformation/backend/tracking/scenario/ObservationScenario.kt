@@ -18,7 +18,6 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationRequestedSubstrataDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
-import com.terraformation.backend.db.tracking.tables.daos.SimplePlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.gis.CountryDetector
@@ -108,7 +107,6 @@ class ObservationScenario(
                 parentStore,
                 PlantingSitesDao(configuration),
                 eventPublisher,
-                SimplePlantingSeasonsDao(configuration),
                 StrataDao(configuration),
                 SubstrataDao(configuration),
             ),

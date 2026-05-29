@@ -149,7 +149,6 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             parentStore,
             plantingSitesDao,
             publisher,
-            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         ),

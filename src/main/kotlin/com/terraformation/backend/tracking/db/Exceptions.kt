@@ -13,7 +13,6 @@ import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
-import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.model.PlantingSiteValidationFailure
@@ -166,9 +165,6 @@ class ShapefilesInvalidException(val problems: List<String>) :
     RuntimeException("Found problems in planting site map data") {
   constructor(problem: String) : this(listOf(problem))
 }
-
-class SimplePlantingSeasonNotFoundException(val simplePlantingSeasonId: SimplePlantingSeasonId) :
-    EntityNotFoundException("Simple planting season $simplePlantingSeasonId not found")
 
 class SpeciesInWrongOrganizationException(val speciesId: SpeciesId) :
     MismatchedStateException("Species $speciesId is in the wrong organization")

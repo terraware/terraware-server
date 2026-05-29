@@ -44,7 +44,6 @@ class PlantingSiteStoreCreateAdHocMonitoringPlotsTest : DatabaseTest(), RunsAsDa
         ParentStore(dslContext),
         plantingSitesDao,
         eventPublisher,
-        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )
