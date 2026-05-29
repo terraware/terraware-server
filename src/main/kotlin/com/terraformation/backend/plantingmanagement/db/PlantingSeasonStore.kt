@@ -105,6 +105,10 @@ class PlantingSeasonStore(
         fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
             ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
 
+    if (existingSeason.status == PlantingSeasonStatus.Closed) {
+      throw PlantingSeasonClosedException(plantingSeasonId)
+    }
+
     val now = clock.instant()
     val status = calculateStatus(startDate, endDate, existingSeason.plantingSiteId)
 

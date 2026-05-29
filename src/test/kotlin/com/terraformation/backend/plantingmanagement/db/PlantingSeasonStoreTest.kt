@@ -615,47 +615,12 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
-    fun `does not change status when season is closed`() {
-      val oldStartDate = LocalDate.of(2025, 1, 1)
-      val oldEndDate = LocalDate.of(2025, 3, 31)
-      val plantingSeasonId =
-          insertPlantingSeason(
-              name = "Season",
-              startDate = oldStartDate,
-              endDate = oldEndDate,
-              status = PlantingSeasonStatus.Closed,
-          )
-      val newStartDate = LocalDate.of(2024, 1, 1)
-      val newEndDate = LocalDate.of(2024, 3, 31)
-      clock.instant = newEndDate.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+    fun `throws PlantingSeasonClosedException if season is closed`() {
+      val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
 
-      store.update(plantingSeasonId, "Season", newStartDate, newEndDate)
-
-      assertTableEquals(
-          PlantingSeasonsRecord(
-              id = plantingSeasonId,
-              name = "Season",
-              plantingSiteId = plantingSiteId,
-              startDate = newStartDate,
-              endDate = newEndDate,
-              statusId = PlantingSeasonStatus.Closed,
-              createdBy = user.userId,
-              createdTime = Instant.EPOCH,
-              modifiedBy = user.userId,
-              modifiedTime = clock.instant,
-          )
-      )
-
-      eventPublisher.assertEventPublished(
-          PlantingSeasonRescheduledEvent(
-              plantingSeasonId = plantingSeasonId,
-              plantingSiteId = plantingSiteId,
-              oldStartDate = oldStartDate,
-              oldEndDate = oldEndDate,
-              newStartDate = newStartDate,
-              newEndDate = newEndDate,
-          )
-      )
+      assertThrows<PlantingSeasonClosedException> {
+        store.update(plantingSeasonId, "Not possible", LocalDate.EPOCH, LocalDate.EPOCH.plusDays(1))
+      }
     }
 
     @Test
@@ -667,7 +632,7 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               name = "Season",
               startDate = startDate,
               endDate = endDate,
-              status = PlantingSeasonStatus.Closed,
+              status = PlantingSeasonStatus.Active,
           )
 
       store.update(plantingSeasonId, "New Season", startDate, endDate)
@@ -679,7 +644,7 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               plantingSiteId = plantingSiteId,
               startDate = startDate,
               endDate = endDate,
-              statusId = PlantingSeasonStatus.Closed,
+              statusId = PlantingSeasonStatus.Active,
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
