@@ -1,7 +1,6 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.db.tracking.tables.pojos.SimplePlantingSeasonsRow
-import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.model.CannotCreatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
 import com.terraformation.backend.tracking.model.PlantingSeasonTooFarInFutureException
@@ -383,42 +382,6 @@ internal class PlantingSiteStoreUpdateSeasonsTest : BasePlantingSiteStoreTest() 
           )
 
       assertEquals(expected, simplePlantingSeasonsDao.findAll().sortedBy { it.startDate })
-    }
-
-    @Test
-    fun `publishes event when planting season is modified`() {
-      val plantingSiteId = insertPlantingSite()
-      val oldStartDate = LocalDate.of(2023, 1, 1)
-      val oldEndDate = LocalDate.of(2023, 1, 31)
-      val newStartDate = LocalDate.of(2023, 1, 2)
-      val newEndDate = LocalDate.of(2023, 2, 15)
-
-      val plantingSeasonId =
-          insertSimplePlantingSeason(startDate = oldStartDate, endDate = oldEndDate)
-
-      store.updatePlantingSite(
-          plantingSiteId,
-          listOf(
-              UpdatedPlantingSeasonModel(
-                  startDate = newStartDate,
-                  endDate = newEndDate,
-                  id = plantingSeasonId,
-              ),
-          ),
-      ) {
-        it
-      }
-
-      eventPublisher.assertEventPublished(
-          PlantingSeasonRescheduledEvent(
-              plantingSiteId,
-              plantingSeasonId,
-              oldStartDate,
-              oldEndDate,
-              newStartDate,
-              newEndDate,
-          )
-      )
     }
 
     private inline fun <reified T : Exception> assertPlantingSeasonUpdateThrows(

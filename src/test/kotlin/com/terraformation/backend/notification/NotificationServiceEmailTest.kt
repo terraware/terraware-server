@@ -93,7 +93,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.device.db.DeviceStore
@@ -1126,12 +1125,12 @@ internal class NotificationServiceEmailTest {
 
     val event =
         PlantingSeasonRescheduledEvent(
-            plantingSite.id,
-            SimplePlantingSeasonId(1),
-            LocalDate.of(2023, 1, 1),
-            LocalDate.of(2023, 3, 3),
-            LocalDate.of(2023, 1, 2),
-            LocalDate.of(2023, 3, 4),
+            plantingSeasonId = PlantingSeasonId(1),
+            plantingSiteId = plantingSite.id,
+            oldStartDate = LocalDate.of(2023, 1, 1),
+            oldEndDate = LocalDate.of(2023, 3, 3),
+            newStartDate = LocalDate.of(2023, 1, 2),
+            newEndDate = LocalDate.of(2023, 3, 4),
         )
 
     service.on(event)
@@ -1150,12 +1149,12 @@ internal class NotificationServiceEmailTest {
   fun `plantingSeasonRescheduled without Terraformation contact`() {
     val event =
         PlantingSeasonRescheduledEvent(
-            plantingSite.id,
-            SimplePlantingSeasonId(1),
-            LocalDate.of(2023, 1, 1),
-            LocalDate.of(2023, 3, 3),
-            LocalDate.of(2023, 1, 2),
-            LocalDate.of(2023, 3, 4),
+            plantingSeasonId = PlantingSeasonId(1),
+            plantingSiteId = plantingSite.id,
+            oldStartDate = LocalDate.of(2023, 1, 1),
+            oldEndDate = LocalDate.of(2023, 3, 3),
+            newStartDate = LocalDate.of(2023, 1, 2),
+            newEndDate = LocalDate.of(2023, 3, 4),
         )
 
     service.on(event)
