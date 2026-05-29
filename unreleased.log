@@ -1,3 +1,4 @@
+d94050c6 SW-8377 Update season transitioning logic to new table (#4496)
 070aa723 SW-8403 Use area-weighted survival rates in reports (#4457)
 7eb12853 SW-8402 Backfill area-weighted survival rates (#4456)
 e942c659 Fix FieldValuesPayload to correctly use nullable strings in the list (#4494)
