@@ -11,6 +11,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -169,8 +170,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `does not send reminders if there are upcoming seasons`() {
       insertPlantingSiteWithSeason()
-      insertSimplePlantingSeason(
-          timeZone = timeZone,
+      insertPlantingSeason(
           startDate = initialDate.plusMonths(1),
           endDate = initialDate.plusMonths(3),
       )
@@ -219,8 +219,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
       insertSubstratum(plantingCompletedTime = initialInstant)
       insertStratum()
       insertSubstratum(plantingCompletedTime = initialInstant)
-      insertSimplePlantingSeason(
-          timeZone = timeZone,
+      insertPlantingSeason(
           startDate = initialDate.minusWeeks(6),
           endDate = initialDate.minusDays(1),
       )
@@ -294,6 +293,7 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
   private fun insertPlantingSiteWithSeason(
       substratum: Boolean = true,
       projectId: ProjectId? = null,
+      seasonStatus: PlantingSeasonStatus = PlantingSeasonStatus.PastEndDate,
   ): PlantingSiteId {
     val plantingSiteId =
         if (substratum) {
@@ -304,11 +304,11 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
     // The end date is the day before initialDate so that calculating week numbers based on
     // initialDate will give us weeks since the end of the last season.
-    insertSimplePlantingSeason(
+    insertPlantingSeason(
         plantingSiteId = plantingSiteId,
-        timeZone = timeZone,
         startDate = initialDate.minusWeeks(6),
         endDate = initialDate.minusDays(1),
+        status = seasonStatus,
     )
 
     return plantingSiteId
