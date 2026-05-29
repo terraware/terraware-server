@@ -182,6 +182,7 @@ data class SearchResponsePayload(val results: List<Map<String, Any>>, val cursor
 
 data class FieldValuesPayload(
     @ArraySchema(
+        schema = Schema(nullable = true),
         arraySchema =
             Schema(
                 description =
@@ -189,7 +190,7 @@ data class FieldValuesPayload(
                         "accessions have them. For fields that allow the user to enter arbitrary " +
                         "values, this is equivalent to querying the list of values without any " +
                         "filter criteria, that is, it's a list of all the user-entered values."
-            )
+            ),
     )
     val values: List<String?>,
     @Schema(
