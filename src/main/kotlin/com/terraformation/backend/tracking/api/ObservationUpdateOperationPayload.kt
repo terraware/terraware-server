@@ -153,6 +153,8 @@ data class RecordedTreeUpdateOperationPayload(
     val pointOfMeasurement: BigDecimal?,
     @Schema(description = "Only valid for Shrub growth form.") //
     val shrubDiameter: Int?,
+    @Schema(description = "Only valid for Tree and Trunk growth forms.") //
+    val treeCrownDiameter: Int?,
 ) : ObservationUpdateOperationPayload {
   fun applyTo(model: ExistingRecordedTreeModel): ExistingRecordedTreeModel {
     return model.copy(
@@ -162,6 +164,7 @@ data class RecordedTreeUpdateOperationPayload(
         isDead = isDead ?: model.isDead,
         pointOfMeasurementM = pointOfMeasurement ?: model.pointOfMeasurementM,
         shrubDiameterCm = shrubDiameter ?: model.shrubDiameterCm,
+        treeCrownDiameterCm = treeCrownDiameter ?: model.treeCrownDiameterCm,
     )
   }
 }
