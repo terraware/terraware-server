@@ -30,7 +30,6 @@ import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.funder.db.PublishedReportStore
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.tracking.db.ObservationResultsStore
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -62,7 +61,6 @@ class ReportServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         eventPublisher,
         messages,
-        ObservationResultsStore(dslContext),
         reportsDao,
         SystemUser(usersDao),
     )

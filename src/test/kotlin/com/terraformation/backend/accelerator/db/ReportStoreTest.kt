@@ -82,10 +82,8 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.multiPolygon
-import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.util.toInstant
 import com.terraformation.backend.util.toPlantsPerHectare
 import java.math.BigDecimal
@@ -95,9 +93,10 @@ import java.time.LocalDate
 import java.time.Month
 import java.time.ZoneId
 import java.time.ZoneOffset
-import kotlin.math.roundToInt
 import kotlin.random.Random
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -111,9 +110,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val messages = Messages()
-  private val observationResultsStore: ObservationResultsStore by lazy {
-    ObservationResultsStore(dslContext)
-  }
 
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val store: ReportStore by lazy {
@@ -122,7 +118,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         dslContext,
         eventPublisher,
         messages,
-        observationResultsStore,
         reportsDao,
         systemUser,
     )
@@ -131,11 +126,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private lateinit var organizationId: OrganizationId
   private lateinit var otherProjectId: ProjectId
   private lateinit var projectId: ProjectId
-
-  private val sitesLiveSum = 6 + 11 + 6 + 7
-  private val site1T0Density = 10 + 11 + 30 + 31 + 40 + 41 + 50 + 51
-  private val site1T0DensityWithTemp = 10 + 11 + 100 + 110 + 30 + 31 + 40 + 41 + 50 + 51
-  private val site2T0Density = 65
 
   @BeforeEach
   fun setup() {
@@ -694,14 +684,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ),
               ReportAutoCalculatedIndicatorModel(
                   indicator = AutoCalculatedIndicator.SurvivalRate,
-                  entry =
-                      ReportAutoCalculatedIndicatorEntryModel(
-                          systemValue =
-                              BigDecimal(
-                                  (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density))
-                                      .roundToInt()
-                              ),
-                      ),
+                  entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(50)),
               ),
           ),
           store
@@ -709,33 +692,6 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               .first()
               .autoCalculatedIndicators,
           "All indicators",
-      )
-
-      // check just survival rate with temp plots
-      with(PLANTING_SITES) {
-        dslContext.update(this).set(SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, true).execute()
-      }
-
-      val autoCalculatedIndicators =
-          store
-              .fetch(includeFuture = true, includeIndicators = true)
-              .first()
-              .autoCalculatedIndicators
-
-      assertEquals(
-          ReportAutoCalculatedIndicatorModel(
-              indicator = AutoCalculatedIndicator.SurvivalRate,
-              entry =
-                  ReportAutoCalculatedIndicatorEntryModel(
-                      systemValue =
-                          BigDecimal(
-                              (sitesLiveSum * 100.0 / (site1T0DensityWithTemp + site2T0Density))
-                                  .roundToInt()
-                          ),
-                  ),
-          ),
-          autoCalculatedIndicators.find { it.indicator == AutoCalculatedIndicator.SurvivalRate },
-          "Should include temp plots in survival rate indicator",
       )
     }
 
@@ -759,46 +715,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               .first()
               .autoCalculatedIndicators
 
+      // The fixture stores site 1 stratum SR=40 / site SR=40 and site 2 stratum SR=60 /
+      // site SR=60, each on one substratum of area 1 ha. Site 3 has site SR=null and is
+      // excluded by the site-SR-not-null gate. Project SR = (1*40 + 1*60) / (1+1) = 50.
       assertEquals(
           ReportAutoCalculatedIndicatorModel(
               indicator = AutoCalculatedIndicator.SurvivalRate,
-              entry =
-                  ReportAutoCalculatedIndicatorEntryModel(
-                      systemValue =
-                          BigDecimal(((5 + 6 + 7 + 8) * 100.0 / (10 + 11 + 12 + 13)).roundToInt()),
-                  ),
+              entry = ReportAutoCalculatedIndicatorEntryModel(systemValue = BigDecimal(50)),
           ),
           autoCalculatedIndicators.find { it.indicator == AutoCalculatedIndicator.SurvivalRate },
           "Project survival rate correctly excludes sites without a survival rate",
-      )
-
-      // check survival rate with temp plots
-      with(PLANTING_SITES) {
-        dslContext.update(this).set(SURVIVAL_RATE_INCLUDES_TEMP_PLOTS, true).execute()
-      }
-      val autoCalculatedIndicatorsWithTemp =
-          store
-              .fetch(includeFuture = true, includeIndicators = true)
-              .first()
-              .autoCalculatedIndicators
-
-      assertEquals(
-          ReportAutoCalculatedIndicatorModel(
-              indicator = AutoCalculatedIndicator.SurvivalRate,
-              entry =
-                  ReportAutoCalculatedIndicatorEntryModel(
-                      systemValue =
-                          BigDecimal(
-                              ((11 + 12 + 13 + 14) * 100.0 /
-                                      (10 + 11 + 12 + 13 + 20 + 21 + 22 + 23))
-                                  .roundToInt()
-                          ),
-                  ),
-          ),
-          autoCalculatedIndicatorsWithTemp.find {
-            it.indicator == AutoCalculatedIndicator.SurvivalRate
-          },
-          "Project survival rate w/temp correctly excludes sites without a survival rate",
       )
     }
 
@@ -3706,10 +3632,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ReportAutoCalculatedIndicatorsRecord(
                   reportId = reportId,
                   autoCalculatedIndicatorId = AutoCalculatedIndicator.SurvivalRate,
-                  systemValue =
-                      BigDecimal(
-                          (sitesLiveSum * 100.0 / (site1T0Density + site2T0Density)).roundToInt()
-                      ),
+                  systemValue = BigDecimal(50),
                   systemTime = clock.instant,
                   modifiedBy = user.userId,
                   modifiedTime = clock.instant,
@@ -5653,7 +5576,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val site1newHistory = insertPlantingSiteHistory()
     insertStratum(insertHistory = false)
     val site1stratumOldHistory = insertStratumHistory(plantingSiteHistoryId = site1oldHistory)
-    insertStratumHistory()
+    val site1stratumNewHistory = insertStratumHistory()
     insertStratumT0TempDensity(
         speciesId = speciesId,
         stratumDensity = BigDecimal.valueOf(100).toPlantsPerHectare(),
@@ -5832,6 +5755,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val plantingSiteId2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistoryId2 = insertPlantingSiteHistory()
     insertStratum()
+    val site2StratumHistory = inserted.stratumHistoryId
     insertStratumT0TempDensity(
         speciesId = speciesId,
         stratumDensity = BigDecimal.valueOf(200).toPlantsPerHectare(),
@@ -6293,6 +6217,33 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
     // Total plants: 50
     // Dead plants: 20
+
+    // Populate the rolled-up stratum and site SRs that the project-level area-weighted
+    // calculation reads from. Site 1's stratum has substrata of areas 10+20+1000+3000=4030 ha;
+    // site 2 has one substratum of area 30 ha. With both stratum SRs=50, the project SR is
+    // (50*4030 + 50*30) / (4030 + 30) = 50.
+    insertObservationStratumResult(
+        observationId = site1observation2,
+        stratumHistoryId = site1stratumNewHistory,
+        survivalRate = 50,
+    )
+    insertObservationSiteResult(
+        observationId = site1observation2,
+        plantingSiteId = plantingSiteId1,
+        plantingSiteHistoryId = site1newHistory,
+        survivalRate = 50,
+    )
+    insertObservationStratumResult(
+        observationId = site2ObservationId,
+        stratumHistoryId = site2StratumHistory,
+        survivalRate = 50,
+    )
+    insertObservationSiteResult(
+        observationId = site2ObservationId,
+        plantingSiteId = plantingSiteId2,
+        plantingSiteHistoryId = plantingSiteHistoryId2,
+        survivalRate = 50,
+    )
   }
 
   private fun insertDataForSurvivalRates(reportStartDate: LocalDate, reportEndDate: LocalDate) {
@@ -6302,6 +6253,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val plantingSite1 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistory1 = inserted.plantingSiteHistoryId
     insertStratum()
+    val site1StratumHistoryId = inserted.stratumHistoryId
     insertStratumT0TempDensity(
         speciesId = species1,
         stratumDensity = BigDecimal.valueOf(20).toPlantsPerHectare(),
@@ -6329,6 +6281,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     val plantingSite2 = insertPlantingSite(projectId = projectId, boundary = multiPolygon(1))
     val plantingSiteHistory2 = inserted.plantingSiteHistoryId
     insertStratum()
+    val site2StratumHistoryId = inserted.stratumHistoryId
     insertStratumT0TempDensity(
         speciesId = species1,
         stratumDensity = BigDecimal.valueOf(22).toPlantsPerHectare(),
@@ -6383,12 +6336,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     val observationDate = getRandomDate(reportStartDate, reportEndDate.minusDays(1))
     val observationTime = observationDate.atStartOfDay().toInstant(ZoneOffset.UTC)
-    insertObservation(
-        plantingSiteId = plantingSite1,
-        plantingSiteHistoryId = plantingSiteHistory1,
-        state = ObservationState.Completed,
-        completedTime = observationTime,
-    )
+    val site1ObservationId =
+        insertObservation(
+            plantingSiteId = plantingSite1,
+            plantingSiteHistoryId = plantingSiteHistory1,
+            state = ObservationState.Completed,
+            completedTime = observationTime,
+        )
     insertObservationRequestedSubstratum(substratumId = site1substratum)
     site1Plots.forEach { (plotId, histId) ->
       insertObservationPlot(
@@ -6441,12 +6395,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       )
     }
 
-    insertObservation(
-        plantingSiteId = plantingSite2,
-        plantingSiteHistoryId = plantingSiteHistory2,
-        state = ObservationState.Completed,
-        completedTime = observationTime,
-    )
+    val site2ObservationId =
+        insertObservation(
+            plantingSiteId = plantingSite2,
+            plantingSiteHistoryId = plantingSiteHistory2,
+            state = ObservationState.Completed,
+            completedTime = observationTime,
+        )
     insertObservationRequestedSubstratum(substratumId = site2substratum)
     site2Plots.forEach { (plotId, histId) ->
       insertObservationPlot(
@@ -6481,12 +6436,13 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         permanentLive = 8,
     )
 
-    insertObservation(
-        plantingSiteId = plantingSite3,
-        plantingSiteHistoryId = plantingSiteHistory3,
-        state = ObservationState.Completed,
-        completedTime = observationTime.plusSeconds(86400),
-    )
+    val site3ObservationId =
+        insertObservation(
+            plantingSiteId = plantingSite3,
+            plantingSiteHistoryId = plantingSiteHistory3,
+            state = ObservationState.Completed,
+            completedTime = observationTime.plusSeconds(86400),
+        )
     insertObservationRequestedSubstratum(substratumId = site3substratum1)
     insertObservationRequestedSubstratum(substratumId = site3substratum2)
     site3Plots.forEach { (plotId, histId) ->
@@ -6532,6 +6488,41 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSiteId = plantingSite3,
         plantingSiteHistoryId = plantingSiteHistory3,
         permanentLive = 51,
+    )
+
+    // Populate the rolled-up site/stratum SR values that the project-level area-weighted
+    // calculation reads from. Each site has a single substratum of area 1 (default), so under
+    // the area-weighted formula the project SR is the simple mean of the per-site SRs.
+    // Site 1: stratum SR=40, site SR=40.
+    // Site 2: stratum SR=60, site SR=60.
+    // Site 3: site SR=null so the site is excluded.
+    insertObservationStratumResult(
+        observationId = site1ObservationId,
+        stratumHistoryId = site1StratumHistoryId,
+        survivalRate = 40,
+    )
+    insertObservationSiteResult(
+        observationId = site1ObservationId,
+        plantingSiteId = plantingSite1,
+        plantingSiteHistoryId = plantingSiteHistory1,
+        survivalRate = 40,
+    )
+    insertObservationStratumResult(
+        observationId = site2ObservationId,
+        stratumHistoryId = site2StratumHistoryId,
+        survivalRate = 60,
+    )
+    insertObservationSiteResult(
+        observationId = site2ObservationId,
+        plantingSiteId = plantingSite2,
+        plantingSiteHistoryId = plantingSiteHistory2,
+        survivalRate = 60,
+    )
+    insertObservationSiteResult(
+        observationId = site3ObservationId,
+        plantingSiteId = plantingSite3,
+        plantingSiteHistoryId = plantingSiteHistory3,
+        survivalRate = null,
     )
   }
 

@@ -87,14 +87,18 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.tracking.db.ObservationResultsStore
-import com.terraformation.backend.tracking.model.calculateSurvivalRate
+import com.terraformation.backend.tracking.db.substratumObservedAtOrBefore
 import jakarta.inject.Named
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.net.URI
 import java.time.Instant
 import java.time.InstantSource
@@ -118,7 +122,6 @@ class ReportStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val messages: Messages,
-    private val observationResultsStore: ObservationResultsStore,
     private val reportsDao: ReportsDao,
     private val systemUser: SystemUser,
 ) {
@@ -1953,48 +1956,56 @@ class ReportStore(
               OBSERVATIONS.COMPLETED_TIME.desc(),
           )
 
-  // Calculate survival rate by fetching observations from observationResultsStore
+  /**
+   * Calculates the area-weighted survival rate for all planting sites in the project within the
+   * reporting period.
+   *
+   * The area-weighted survival rate is calculated from the stratum survival rates in the
+   * `observation_stratum_results` table:
+   *
+   *     sum(observed_substratum_area x stratum_SR) over strata
+   *       / sum(observed_substratum_area) over strata
+   */
   private fun calculateSurvivalRateForReport(reportId: ReportId): BigDecimal? {
-    // retrieve the latest observation for each planting site in the report's project within the
-    // report period. observationsInReportPeriod only returns one observation per planting site.
-    val observationIds =
+    val result =
         dslContext
-            .select(OBSERVATIONS.ID)
-            .from(OBSERVATIONS, REPORTS)
-            .where(REPORTS.ID.eq(reportId))
-            .and(OBSERVATIONS.ID.`in`(observationsInReportPeriod))
-            .fetch { it[OBSERVATIONS.ID]!! }
+            .select(
+                DSL.sum(SUBSTRATUM_HISTORIES.AREA_HA.mul(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE))
+                    .`as`("numerator"),
+                DSL.sum(SUBSTRATUM_HISTORIES.AREA_HA).`as`("denominator"),
+            )
+            .from(OBSERVATION_STRATUM_RESULTS)
+            .join(OBSERVATION_SITE_RESULTS)
+            .on(
+                OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(
+                        OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID
+                    )
+                    .and(OBSERVATION_SITE_RESULTS.SURVIVAL_RATE.isNotNull)
+            )
+            .join(STRATUM_HISTORIES)
+            .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
+            .join(SUBSTRATUM_HISTORIES)
+            .on(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(STRATUM_HISTORIES.ID))
+            .join(REPORTS)
+            .on(REPORTS.ID.eq(reportId))
+            .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.`in`(observationsInReportPeriod))
+            .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNotNull)
+            .and(
+                substratumObservedAtOrBefore(
+                    SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+                    OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
+                )
+            )
+            .fetchOne()
 
-    if (observationIds.isEmpty()) {
-      return null
+    val numerator = result?.get("numerator", BigDecimal::class.java)
+    val denominator = result?.get("denominator", BigDecimal::class.java)
+
+    return if (numerator != null && denominator != null && denominator.signum() > 0) {
+      numerator.divide(denominator, 0, RoundingMode.HALF_UP)
+    } else {
+      null
     }
-
-    val observationResults = observationIds.mapNotNull { observationResultsStore.fetchOneById(it) }
-
-    val speciesPairs =
-        observationResults
-            .filter { it.survivalRate != null }
-            .map { it.species to it.survivalRateIncludesTempPlots }
-
-    if (speciesPairs.isEmpty()) {
-      return null
-    }
-
-    // Calculate sumDensity and numKnownLive across all observations
-    var sumDensity = BigDecimal.ZERO
-    var numKnownLive = 0
-
-    speciesPairs.forEach { (speciesList, includesTempPlots) ->
-      sumDensity += speciesList.mapNotNull { it.t0Density }.sumOf { it }
-      numKnownLive +=
-          if (includesTempPlots) {
-            speciesList.sumOf { it.latestLive }
-          } else {
-            speciesList.sumOf { it.permanentLive }
-          }
-    }
-
-    return calculateSurvivalRate(numKnownLive, sumDensity)?.toBigDecimal()
   }
 
   private val withdrawnSeedlingsField =
