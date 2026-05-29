@@ -26,19 +26,16 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSitesDao
-import com.terraformation.backend.db.tracking.tables.daos.SimplePlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSitesRow
-import com.terraformation.backend.db.tracking.tables.pojos.SimplePlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.StrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.SubstrataRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationsRecord
@@ -55,7 +52,6 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
-import com.terraformation.backend.db.tracking.tables.references.SIMPLE_PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITE_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_STRATA
@@ -84,8 +80,6 @@ import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyStratumModel
 import com.terraformation.backend.tracking.model.AnySubstratumModel
-import com.terraformation.backend.tracking.model.CannotUpdatePastPlantingSeasonException
-import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.ExistingSubstratumModel
@@ -96,7 +90,6 @@ import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewStratumModel
 import com.terraformation.backend.tracking.model.NewSubstratumModel
-import com.terraformation.backend.tracking.model.PlantingSeasonsOverlapException
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.PlantingSiteHistoryModel
 import com.terraformation.backend.tracking.model.PlantingSiteModel
@@ -104,21 +97,18 @@ import com.terraformation.backend.tracking.model.PlantingSiteReportedPlantTotals
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.tracking.model.StratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
-import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.Turtle
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
 import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
-import com.terraformation.backend.util.toInstant
 import com.terraformation.backend.util.toMultiPolygon
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
-import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import org.geotools.referencing.CRS
 import org.jooq.Condition
@@ -146,7 +136,6 @@ class PlantingSiteStore(
     private val parentStore: ParentStore,
     private val plantingSitesDao: PlantingSitesDao,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
-    private val simplePlantingSeasonsDao: SimplePlantingSeasonsDao,
     private val strataDao: StrataDao,
     private val substrataDao: SubstrataDao,
 ) {
@@ -272,7 +261,6 @@ class PlantingSiteStore(
             exteriorPlotsField,
             latestObservationCompletedTimeField,
             latestObservationIdField,
-            plantingSeasonsMultiset,
             strataField,
         )
         .from(PLANTING_SITES)
@@ -293,7 +281,6 @@ class PlantingSiteStore(
               exteriorPlotsField,
               latestObservationCompletedTimeField,
               latestObservationIdField,
-              plantingSeasonsMultiset,
               strataField,
           )
         }
@@ -432,10 +419,7 @@ class PlantingSiteStore(
     return fetchReportedPlants(PLANTING_SITES.PROJECT_ID.eq(projectId))
   }
 
-  fun createPlantingSite(
-      newModel: NewPlantingSiteModel,
-      plantingSeasons: Collection<UpdatedPlantingSeasonModel> = emptyList(),
-  ): ExistingPlantingSiteModel {
+  fun createPlantingSite(newModel: NewPlantingSiteModel): ExistingPlantingSiteModel {
     requirePermissions {
       createPlantingSite(newModel.organizationId)
       newModel.projectId?.let { readProject(it) }
@@ -497,12 +481,6 @@ class PlantingSiteStore(
         eventPublisher.publishEvent(PlantingSiteHistoryCreatedEvent(plantingSiteId, siteHistoryId))
       }
 
-      val effectiveTimeZone = newModel.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId)
-
-      if (!plantingSeasons.isEmpty()) {
-        updatePlantingSeasons(plantingSiteId, plantingSeasons, effectiveTimeZone)
-      }
-
       log.info("Created planting site $plantingSiteId for organization ${newModel.organizationId}")
 
       fetchSiteById(plantingSiteId, PlantingSiteDepth.Substratum).copy(historyId = siteHistoryId)
@@ -511,7 +489,6 @@ class PlantingSiteStore(
 
   fun updatePlantingSite(
       plantingSiteId: PlantingSiteId,
-      plantingSeasons: Collection<UpdatedPlantingSeasonModel>,
       editFunc: (ExistingPlantingSiteModel) -> ExistingPlantingSiteModel,
   ) {
     requirePermissions { updatePlantingSite(plantingSiteId) }
@@ -554,14 +531,6 @@ class PlantingSiteStore(
             .where(ID.eq(plantingSiteId))
             .execute()
       }
-
-      updatePlantingSeasons(
-          plantingSiteId,
-          plantingSeasons,
-          edited.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId),
-          initial.plantingSeasons,
-          initial.timeZone ?: parentStore.getEffectiveTimeZone(plantingSiteId),
-      )
 
       if (
           initial.strata.isEmpty() &&
@@ -1125,97 +1094,6 @@ class PlantingSiteStore(
     if (strataWithDuplicatePermanentIndexes.isNotEmpty()) {
       val details = strataWithDuplicatePermanentIndexes.joinToString()
       throw IllegalStateException("BUG! Edit resulted in duplicate permanent indexes: $details")
-    }
-  }
-
-  fun updatePlantingSeasons(
-      plantingSiteId: PlantingSiteId,
-      desiredSeasons: Collection<UpdatedPlantingSeasonModel>,
-      desiredTimeZone: ZoneId,
-      existingSeasons: Collection<ExistingPlantingSeasonModel> = emptyList(),
-      existingTimeZone: ZoneId? = null,
-  ) {
-    val now = clock.instant()
-    val todayAtSite = now.atZone(desiredTimeZone).toLocalDate()
-
-    val desiredSeasonsById = desiredSeasons.filter { it.id != null }.associateBy { it.id!! }
-    val existingSeasonsById = existingSeasons.associateBy { it.id }
-
-    validatePlantingSeasons(desiredSeasons, existingSeasonsById, todayAtSite)
-
-    val pastSeasonIds: Set<SimplePlantingSeasonId> =
-        existingSeasons.filter { it.endDate < todayAtSite }.map { it.id }.toSet()
-
-    val seasonIdsToDelete: Set<SimplePlantingSeasonId> =
-        existingSeasonsById.keys - desiredSeasonsById.keys - pastSeasonIds
-
-    val seasonsToInsert: List<SimplePlantingSeasonsRow> =
-        desiredSeasons
-            .filter { it.id == null }
-            .map { desiredSeason ->
-              val startTime = desiredSeason.startDate.toInstant(desiredTimeZone)
-              val endTime = desiredSeason.endDate.plusDays(1).toInstant(desiredTimeZone)
-
-              SimplePlantingSeasonsRow(
-                  endDate = desiredSeason.endDate,
-                  endTime = endTime,
-                  isActive = now >= startTime && now < endTime,
-                  plantingSiteId = plantingSiteId,
-                  startDate = desiredSeason.startDate,
-                  startTime = startTime,
-              )
-            }
-
-    val seasonsToUpdate: List<UpdatedPlantingSeasonModel> =
-        desiredSeasonsById.values.filter { season ->
-          val existingSeason =
-              existingSeasonsById[season.id!!]
-                  ?: throw SimplePlantingSeasonNotFoundException(season.id)
-          (existingTimeZone != desiredTimeZone && existingSeason.endDate >= todayAtSite) ||
-              season.startDate != existingSeason.startDate ||
-              season.endDate != existingSeason.endDate
-        }
-
-    if (seasonIdsToDelete.isNotEmpty()) {
-      simplePlantingSeasonsDao.deleteById(seasonIdsToDelete)
-    }
-
-    seasonsToUpdate.forEach { desiredSeason ->
-      val existingSeason = existingSeasonsById[desiredSeason.id]!!
-      val startTime =
-          if (
-              existingSeason.startDate != desiredSeason.startDate ||
-                  existingSeason.startTime >= now && existingTimeZone != desiredTimeZone
-          ) {
-            desiredSeason.startDate.toInstant(desiredTimeZone)
-          } else {
-            existingSeason.startTime
-          }
-      val endTime =
-          if (
-              existingSeason.endDate != desiredSeason.endDate ||
-                  existingSeason.endTime >= now && existingTimeZone != desiredTimeZone
-          ) {
-            desiredSeason.endDate.plusDays(1).toInstant(desiredTimeZone)
-          } else {
-            existingSeason.endTime
-          }
-
-      with(SIMPLE_PLANTING_SEASONS) {
-        dslContext
-            .update(SIMPLE_PLANTING_SEASONS)
-            .set(END_DATE, desiredSeason.endDate)
-            .set(END_TIME, endTime)
-            .set(IS_ACTIVE, now >= startTime && now < endTime)
-            .set(START_DATE, desiredSeason.startDate)
-            .set(START_TIME, startTime)
-            .where(ID.eq(desiredSeason.id))
-            .execute()
-      }
-    }
-
-    if (seasonsToInsert.isNotEmpty()) {
-      simplePlantingSeasonsDao.insert(seasonsToInsert)
     }
   }
 
@@ -2324,33 +2202,6 @@ class PlantingSiteStore(
     log.info("Populated substrata for $rowsUpdated plantings")
   }
 
-  private val plantingSeasonsMultiset =
-      DSL.multiset(
-              DSL.select(
-                      SIMPLE_PLANTING_SEASONS.END_DATE,
-                      SIMPLE_PLANTING_SEASONS.END_TIME,
-                      SIMPLE_PLANTING_SEASONS.ID,
-                      SIMPLE_PLANTING_SEASONS.IS_ACTIVE,
-                      SIMPLE_PLANTING_SEASONS.START_DATE,
-                      SIMPLE_PLANTING_SEASONS.START_TIME,
-                  )
-                  .from(SIMPLE_PLANTING_SEASONS)
-                  .where(PLANTING_SITES.ID.eq(SIMPLE_PLANTING_SEASONS.PLANTING_SITE_ID))
-                  .orderBy(SIMPLE_PLANTING_SEASONS.START_DATE)
-          )
-          .convertFrom { result ->
-            result.map { record ->
-              ExistingPlantingSeasonModel(
-                  endDate = record[SIMPLE_PLANTING_SEASONS.END_DATE]!!,
-                  endTime = record[SIMPLE_PLANTING_SEASONS.END_TIME]!!,
-                  id = record[SIMPLE_PLANTING_SEASONS.ID]!!,
-                  isActive = record[SIMPLE_PLANTING_SEASONS.IS_ACTIVE]!!,
-                  startDate = record[SIMPLE_PLANTING_SEASONS.START_DATE]!!,
-                  startTime = record[SIMPLE_PLANTING_SEASONS.START_TIME]!!,
-              )
-            }
-          }
-
   private fun <T> latestObservationField(
       observationsTableField: TableField<ObservationsRecord, T>,
       observationPlotCondition: Condition,
@@ -2864,47 +2715,6 @@ class PlantingSiteStore(
               totalSpecies = species.size,
           )
         }
-  }
-
-  private fun validatePlantingSeasons(
-      desiredPlantingSeasons: Collection<UpdatedPlantingSeasonModel>,
-      existingPlantingSeasons: Map<SimplePlantingSeasonId, ExistingPlantingSeasonModel>,
-      todayAtSite: LocalDate,
-  ) {
-    if (desiredPlantingSeasons.isNotEmpty()) {
-      desiredPlantingSeasons.forEach { desiredSeason ->
-        desiredSeason.validate(todayAtSite)
-        desiredSeason.id
-            ?.let { existingPlantingSeasons[it] }
-            ?.let { existingSeason ->
-              if (
-                  existingSeason.endDate < todayAtSite &&
-                      (existingSeason.startDate != desiredSeason.startDate ||
-                          existingSeason.endDate != desiredSeason.endDate)
-              ) {
-                throw CannotUpdatePastPlantingSeasonException(
-                    existingSeason.id,
-                    existingSeason.endDate,
-                )
-              }
-            }
-      }
-
-      desiredPlantingSeasons
-          .sortedBy { it.startDate }
-          .reduce { previous, next ->
-            if (next.startDate <= previous.endDate) {
-              throw PlantingSeasonsOverlapException(
-                  previous.startDate,
-                  previous.endDate,
-                  next.startDate,
-                  next.endDate,
-              )
-            }
-
-            next
-          }
-    }
   }
 
   private fun localDateInSiteTimezone(instant: Instant = clock.instant()) =

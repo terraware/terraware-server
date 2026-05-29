@@ -105,7 +105,6 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.event.ObservationStartedEvent
 import com.terraformation.backend.tracking.event.ObservationUpcomingNotificationDueEvent
-import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationNotificationEvent
 import com.terraformation.backend.tracking.event.ScheduleObservationReminderNotificationEvent
@@ -234,7 +233,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
             parentStore,
             plantingSitesDao,
             publisher,
-            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         )
@@ -861,23 +859,6 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
         body =
             "Planting season has begun at planting site $plantingSiteName. To begin planting in the field, make sure that your nursery inventory is up-to-date and that you log your nursery withdrawals as you begin planting.",
         localUrl = webAppUrls.nurseryInventory(),
-        role = Role.Manager,
-    )
-  }
-
-  @Test
-  fun `should store planting season not scheduled notification`() {
-    val plantingSiteName = "My Site"
-
-    insertPlantingSite(name = plantingSiteName)
-    insertSimplePlantingSeason()
-
-    testEventNotification(
-        PlantingSeasonNotScheduledNotificationEvent(inserted.plantingSiteId, 1),
-        type = NotificationType.SchedulePlantingSeason,
-        title = "Add your next planting season",
-        body = "It's time to schedule your next planting season",
-        localUrl = webAppUrls.plantingSite(inserted.plantingSiteId),
         role = Role.Manager,
     )
   }

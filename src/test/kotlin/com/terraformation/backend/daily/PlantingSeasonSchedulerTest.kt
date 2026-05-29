@@ -51,7 +51,6 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
             ParentStore(dslContext),
             plantingSitesDao,
             eventPublisher,
-            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         ),

@@ -16,9 +16,7 @@ import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.nearlyCoveredBy
 import java.math.BigDecimal
-import java.time.Clock
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
@@ -55,28 +53,11 @@ data class PlantingSiteModel<
     val latestObservationId: ObservationId? = null,
     val name: String,
     val organizationId: OrganizationId,
-    val plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
     val strata: List<StratumModel<SID, SSID, TIMESTAMP>> = emptyList(),
     val projectId: ProjectId? = null,
     val survivalRateIncludesTempPlots: Boolean = false,
     val timeZone: ZoneId? = null,
 ) {
-  /**
-   * Returns the start date of the next observation for this planting site, or null if the planting
-   * season end date is not set.
-   *
-   * The next observation starts on the first of the month after the end of the planting season.
-   */
-  fun getNextObservationStart(clock: Clock): LocalDate? {
-    val now = clock.instant()
-
-    return plantingSeasons
-        .firstOrNull { it.endTime >= now }
-        ?.endDate
-        ?.plusMonths(1)
-        ?.withDayOfMonth(1)
-  }
-
   /** Returns the stratum that contains a monitoring plot, or null if the plot wasn't found. */
   fun findStratumWithMonitoringPlot(
       monitoringPlotId: MonitoringPlotId
@@ -151,8 +132,6 @@ data class PlantingSiteModel<
         gridOrigin.equalsOrBothNull(other.gridOrigin) &&
         exteriorPlots.size == other.exteriorPlots.size &&
         exteriorPlots.zip(other.exteriorPlots).all { it.first.equals(it.second, tolerance) } &&
-        plantingSeasons.size == other.plantingSeasons.size &&
-        plantingSeasons.zip(other.plantingSeasons).all { it.first == it.second } &&
         strata.size == other.strata.size &&
         strata.zip(other.strata).all { it.first.equals(it.second, tolerance) }
   }
@@ -168,7 +147,6 @@ data class PlantingSiteModel<
           id = null,
           name = name,
           organizationId = organizationId,
-          plantingSeasons = plantingSeasons,
           strata = strata.map { it.toNew() },
           projectId = projectId,
           survivalRateIncludesTempPlots = survivalRateIncludesTempPlots,
@@ -191,7 +169,6 @@ data class PlantingSiteModel<
         exteriorPlotsMultiset: Field<List<MonitoringPlotModel>>?,
         latestObservationCompletedTimeField: Field<Instant?>,
         latestObservationIdField: Field<ObservationId?>,
-        plantingSeasonsMultiset: Field<List<ExistingPlantingSeasonModel>>,
         strataMultiset: Field<List<ExistingStratumModel>>?,
     ) =
         ExistingPlantingSiteModel(
@@ -208,7 +185,6 @@ data class PlantingSiteModel<
             id = record[PLANTING_SITES.ID]!!,
             name = record[PLANTING_SITES.NAME]!!,
             organizationId = record[PLANTING_SITES.ORGANIZATION_ID]!!,
-            plantingSeasons = record[plantingSeasonsMultiset],
             strata = strataMultiset?.let { record[it] } ?: emptyList(),
             projectId = record[PLANTING_SITES.PROJECT_ID],
             survivalRateIncludesTempPlots =
@@ -224,7 +200,6 @@ data class PlantingSiteModel<
         gridOrigin: Point? = null,
         name: String,
         organizationId: OrganizationId,
-        plantingSeasons: List<ExistingPlantingSeasonModel> = emptyList(),
         strata: List<NewStratumModel> = emptyList(),
         projectId: ProjectId? = null,
         timeZone: ZoneId? = null,
@@ -262,7 +237,6 @@ data class PlantingSiteModel<
           id = null,
           name = name,
           organizationId = organizationId,
-          plantingSeasons = plantingSeasons,
           strata = strata,
           projectId = projectId,
           timeZone = timeZone,

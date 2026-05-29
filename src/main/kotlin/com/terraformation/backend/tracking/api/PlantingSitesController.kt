@@ -14,14 +14,12 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.db.tracking.SimplePlantingSeasonId
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.PlantingSiteService
 import com.terraformation.backend.tracking.db.PlantingSiteStore
-import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.ExistingSubstratumModel
@@ -40,7 +38,6 @@ import com.terraformation.backend.tracking.model.StratumHistoryModel
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumHistoryModel
 import com.terraformation.backend.tracking.model.SubstratumModel
-import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toMultiPolygon
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
@@ -48,7 +45,6 @@ import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneId
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.MultiPolygon
@@ -178,10 +174,7 @@ class PlantingSitesController(
   ): CreatePlantingSiteResponsePayload {
     payload.validate()
 
-    val plantingSeasons = payload.plantingSeasons?.map { it.toModel() } ?: emptyList()
-
-    val model =
-        plantingSiteStore.createPlantingSite(payload.toModel(), plantingSeasons = plantingSeasons)
+    val model = plantingSiteStore.createPlantingSite(payload.toModel())
     return CreatePlantingSiteResponsePayload(model.id)
   }
 
@@ -207,9 +200,7 @@ class PlantingSitesController(
       @PathVariable("id") id: PlantingSiteId,
       @RequestBody payload: UpdatePlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
-    val plantingSeasons = payload.plantingSeasons?.map { it.toModel() } ?: emptyList()
-
-    plantingSiteStore.updatePlantingSite(id, plantingSeasons, payload::applyTo)
+    plantingSiteStore.updatePlantingSite(id, payload::applyTo)
 
     return SimpleSuccessResponsePayload()
   }
@@ -400,20 +391,6 @@ data class StratumResponsePayload(
   )
 }
 
-data class SimplePlantingSeasonPayload(
-    val endDate: LocalDate,
-    val id: SimplePlantingSeasonId,
-    val startDate: LocalDate,
-) {
-  constructor(
-      model: ExistingPlantingSeasonModel
-  ) : this(
-      endDate = model.endDate,
-      id = model.id,
-      startDate = model.startDate,
-  )
-}
-
 // response payload
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class PlantingSitePayload(
@@ -429,7 +406,6 @@ data class PlantingSitePayload(
     val latestObservationId: ObservationId?,
     val name: String,
     val organizationId: OrganizationId,
-    val plantingSeasons: List<SimplePlantingSeasonPayload>,
     @Schema(description = "Use strata instead", deprecated = true)
     val plantingZones: List<PlantingZonePayload>?,
     val projectId: ProjectId? = null,
@@ -452,7 +428,6 @@ data class PlantingSitePayload(
       latestObservationId = model.latestObservationId,
       name = model.name,
       organizationId = model.organizationId,
-      plantingSeasons = model.plantingSeasons.map { SimplePlantingSeasonPayload(it) },
       plantingZones = if (includeZones) model.strata.map { PlantingZonePayload(it) } else null,
       projectId = model.projectId,
       strata = model.strata.map { StratumResponsePayload(it) },
@@ -603,26 +578,6 @@ data class ReportedSpeciesPayload(
   )
 }
 
-data class NewPlantingSeasonPayload(
-    val endDate: LocalDate,
-    val startDate: LocalDate,
-) {
-  fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, startDate = startDate)
-}
-
-data class UpdatedPlantingSeasonPayload(
-    val endDate: LocalDate,
-    @Schema(
-        description =
-            "If present, the start and end dates of an existing planting season will be updated. " +
-                "Otherwise a new planting season will be created."
-    )
-    val id: SimplePlantingSeasonId? = null,
-    val startDate: LocalDate,
-) {
-  fun toModel() = UpdatedPlantingSeasonModel(endDate = endDate, id = id, startDate = startDate)
-}
-
 data class NewSubstratumPayload(
     @Schema(oneOf = [MultiPolygon::class, Polygon::class]) //
     val boundary: Geometry,
@@ -715,7 +670,6 @@ data class CreatePlantingSiteRequestPayload(
     val exclusion: Geometry? = null,
     val name: String,
     val organizationId: OrganizationId,
-    val plantingSeasons: List<NewPlantingSeasonPayload>? = null,
     val projectId: ProjectId? = null,
     @Schema(
         description =
@@ -776,7 +730,6 @@ data class UpdatePlantingSiteRequestPayload(
     val boundary: MultiPolygon? = null,
     val description: String? = null,
     val name: String,
-    val plantingSeasons: List<UpdatedPlantingSeasonPayload>? = null,
     val projectId: ProjectId? = null,
     val survivalRateIncludesTempPlots: Boolean? = null,
     val timeZone: ZoneId?,

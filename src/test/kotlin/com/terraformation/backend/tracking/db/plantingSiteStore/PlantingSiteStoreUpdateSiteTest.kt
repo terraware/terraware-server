@@ -42,7 +42,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
 
       val newBoundary = Turtle(point(1)).makeMultiPolygon { square(200) }
 
-      store.updatePlantingSite(initialModel.id, emptyList()) { model ->
+      store.updatePlantingSite(initialModel.id) { model ->
         model.copy(
             boundary = newBoundary,
             description = "new description",
@@ -112,7 +112,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       val plantingSiteId = insertPlantingSite(boundary = multiPolygon(1))
       insertStratum()
 
-      store.updatePlantingSite(plantingSiteId, emptyList()) { model ->
+      store.updatePlantingSite(plantingSiteId) { model ->
         model.copy(boundary = multiPolygon(2))
       }
 
@@ -125,7 +125,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       val initialModel = store.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
       val newTimeZone = ZoneId.of("Europe/Paris")
 
-      store.updatePlantingSite(plantingSiteId, emptyList()) { it.copy(timeZone = newTimeZone) }
+      store.updatePlantingSite(plantingSiteId) { it.copy(timeZone = newTimeZone) }
 
       val expectedEvent =
           PlantingSiteTimeZoneChangedEvent(
@@ -141,7 +141,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
     fun `does not publish event if time zone not updated`() {
       val plantingSiteId = insertPlantingSite(timeZone = timeZone)
 
-      store.updatePlantingSite(plantingSiteId, emptyList()) { it.copy(description = "edited") }
+      store.updatePlantingSite(plantingSiteId) { it.copy(description = "edited") }
 
       eventPublisher.assertEventNotPublished(PlantingSiteTimeZoneChangedEvent::class.java)
     }
@@ -153,7 +153,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       every { user.canUpdatePlantingSite(any()) } returns false
 
       assertThrows<AccessDeniedException> {
-        store.updatePlantingSite(plantingSiteId, emptyList()) { it }
+        store.updatePlantingSite(plantingSiteId) { it }
       }
     }
 
@@ -164,7 +164,7 @@ internal class PlantingSiteStoreUpdateSiteTest : BasePlantingSiteStoreTest() {
       val otherOrgProjectId = insertProject()
 
       assertThrows<ProjectInDifferentOrganizationException> {
-        store.updatePlantingSite(plantingSiteId, emptyList()) {
+        store.updatePlantingSite(plantingSiteId) {
           it.copy(projectId = otherOrgProjectId)
         }
       }

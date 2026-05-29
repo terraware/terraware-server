@@ -26,14 +26,11 @@ import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.ReplacementResult
 import com.terraformation.backend.util.GeometrySimplifier
-import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import java.math.BigDecimal
-import java.time.LocalDate
 import java.time.ZoneId
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -62,7 +59,6 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
         parentStore,
         plantingSitesDao,
         eventPublisher,
-        simplePlantingSeasonsDao,
         strataDao,
         substrataDao,
     )
@@ -158,39 +154,6 @@ class PlantingSiteServiceTest : DatabaseTest(), RunsAsUser {
       )
 
       assertIsEventListener<OrganizationTimeZoneChangedEvent>(service)
-    }
-
-    @Test
-    fun `updates planting seasons when planting site time zone changes`() {
-      val oldTimeZone = ZoneId.of("America/New_York")
-      val newTimeZone = ZoneId.of("Europe/Paris")
-      val startDate = LocalDate.EPOCH.plusMonths(1)
-      val endDate = startDate.plusMonths(3)
-
-      insertOrganization(timeZone = oldTimeZone)
-      insertPlantingSite(timeZone = oldTimeZone)
-      insertSimplePlantingSeason(timeZone = oldTimeZone, startDate = startDate, endDate = endDate)
-
-      val oldSiteModel =
-          plantingSiteStore.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Site)
-
-      service.on(PlantingSiteTimeZoneChangedEvent(oldSiteModel, oldTimeZone, newTimeZone))
-
-      val newSiteModel =
-          plantingSiteStore.fetchSiteById(inserted.plantingSiteId, PlantingSiteDepth.Site)
-
-      assertEquals(
-          startDate.toInstant(newTimeZone),
-          newSiteModel.plantingSeasons.first().startTime,
-          "Start time",
-      )
-      assertEquals(
-          endDate.plusDays(1).toInstant(newTimeZone),
-          newSiteModel.plantingSeasons.first().endTime,
-          "End time",
-      )
-
-      assertIsEventListener<PlantingSiteTimeZoneChangedEvent>(service)
     }
   }
 

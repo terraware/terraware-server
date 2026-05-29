@@ -162,40 +162,6 @@
     <input type="submit" value="Update"/>
 </form>
 
-<h3>Planting Seasons</h3>
-
-<ol>
-    <li th:each="season : ${pastPlantingSeasons}">
-        <input type="date" disabled th:value="${season.startDate}">
-        -
-        <input type="date" disabled th:value="${season.endDate}">
-    </li>
-    <li th:each="season : ${futurePlantingSeasons}">
-        <form method="POST" action="/admin/updatePlantingSeason" style="display: inline-block;">
-            <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-            <input type="hidden" name="simplePlantingSeasonId" th:value="${season.id}"/>
-            <input type="date" name="startDate" required th:value="${season.startDate}"/>
-            -
-            <input type="date" name="endDate" required th:value="${season.endDate}"/>
-            <input type="submit" value="Update"/>
-        </form>
-        <form method="POST" action="/admin/deletePlantingSeason" style="display: inline-block;">
-            <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-            <input type="hidden" name="simplePlantingSeasonId" th:value="${season.id}"/>
-            <input type="submit" value="Delete"/>
-        </form>
-    </li>
-    <li>
-        <form method="POST" action="/admin/createPlantingSeason">
-            <input type="hidden" name="plantingSiteId" th:value="${site.id}"/>
-            <input type="date" name="startDate" required/>
-            -
-            <input type="date" name="endDate" required/>
-            <input type="submit" value="Create"/>
-        </form>
-    </li>
-</ol>
-
 <form method="POST" action="/admin/movePlantingSite" th:if="${canMovePlantingSiteToAnyOrg}"
       id="moveForm">
     <h3>Move to New Organization</h3>
@@ -410,12 +376,10 @@
         <tr th:if="${canCreateObservation}">
             <td></td>
             <td>
-                <input type="date" form="createObservation" name="startDate"
-                       th:value="${nextObservationStart}"/>
+                <input type="date" form="createObservation" name="startDate"/>
             </td>
             <td>
-                <input type="date" form="createObservation" name="endDate"
-                       th:value="${nextObservationEnd}"/>
+                <input type="date" form="createObservation" name="endDate"/>
             </td>
             <td>
                 <select multiple form="createObservation" name="requestedSubstratumIds">

@@ -48,7 +48,6 @@ internal class PlantingSiteImporterTest : DatabaseTest(), RunsAsUser {
             ParentStore(dslContext),
             plantingSitesDao,
             eventPublisher,
-            simplePlantingSeasonsDao,
             strataDao,
             substrataDao,
         )

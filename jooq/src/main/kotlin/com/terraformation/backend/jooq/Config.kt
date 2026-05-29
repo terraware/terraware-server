@@ -549,7 +549,6 @@ val ID_WRAPPERS =
                     "ScheduledPlantingDateId",
                     listOf("scheduled_planting_dates\\.id", ".*\\.scheduled_planting_date_id"),
                 ),
-                IdWrapper("SimplePlantingSeasonId", listOf("simple_planting_seasons\\.id")),
                 IdWrapper(
                     "SubstratumHistoryId",
                     listOf(

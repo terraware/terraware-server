@@ -6,18 +6,15 @@ import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
-import com.terraformation.backend.tracking.model.ExistingPlantingSeasonModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
 import com.terraformation.backend.tracking.model.MonitoringPlotModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
 import com.terraformation.backend.tracking.model.StratumModel
 import com.terraformation.backend.tracking.model.SubstratumModel
-import com.terraformation.backend.util.toInstant
 import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
-import java.time.LocalDate
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
 import org.junit.jupiter.api.Assertions.*
@@ -51,23 +48,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           insertMonitoringPlot(boundary = polygon(0.1), elevationMeters = BigDecimal.TEN)
       insertMonitoringPlot(boundary = polygon(0.1), isAdHoc = true)
 
-      val season1StartDate = LocalDate.of(2023, 6, 1)
-      val season1EndDate = LocalDate.of(2023, 7, 31)
-      val plantingSeasonId1 =
-          insertSimplePlantingSeason(
-              startDate = season1StartDate,
-              endDate = season1EndDate,
-              timeZone = timeZone,
-          )
-      val season2StartDate = LocalDate.of(2023, 1, 1)
-      val season2EndDate = LocalDate.of(2023, 1, 31)
-      val plantingSeasonId2 =
-          insertSimplePlantingSeason(
-              startDate = season2StartDate,
-              endDate = season2EndDate,
-              timeZone = timeZone,
-          )
-
       val adHocPlotId =
           insertMonitoringPlot(
               boundary = polygon(0.4),
@@ -87,25 +67,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               id = plantingSiteId,
               name = "Site 1",
               organizationId = organizationId,
-              plantingSeasons =
-                  listOf(
-                      ExistingPlantingSeasonModel(
-                          endDate = season2EndDate,
-                          endTime = season2EndDate.plusDays(1).toInstant(timeZone),
-                          id = plantingSeasonId2,
-                          isActive = false,
-                          startDate = season2StartDate,
-                          startTime = season2StartDate.toInstant(timeZone),
-                      ),
-                      ExistingPlantingSeasonModel(
-                          endDate = season1EndDate,
-                          endTime = season1EndDate.plusDays(1).toInstant(timeZone),
-                          id = plantingSeasonId1,
-                          isActive = false,
-                          startDate = season1StartDate,
-                          startTime = season1StartDate.toInstant(timeZone),
-                      ),
-                  ),
               strata = emptyList(),
               timeZone = timeZone,
           )
@@ -392,7 +353,6 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
               latestObservationId = observationId2,
               name = "Site 1",
               organizationId = organizationId,
-              plantingSeasons = emptyList(),
               strata =
                   listOf(
                       ExistingStratumModel(
