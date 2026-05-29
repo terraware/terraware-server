@@ -585,7 +585,11 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
             }
             val totalPlants = species.ifEmpty { null }?.sumOf { it.totalLive + it.totalDead }
             val totalLiveSpeciesExceptUnknown =
-                identifiedSpecies.ifEmpty { null }?.count { (it.totalLive + it.totalExisting) > 0 }
+                if (species.isNotEmpty()) {
+                  identifiedSpecies.count { (it.totalLive + it.totalExisting) > 0 }
+                } else {
+                  null
+                }
 
             val isCompleted =
                 substrata.isNotEmpty() &&
