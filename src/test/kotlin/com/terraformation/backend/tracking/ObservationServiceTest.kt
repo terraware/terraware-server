@@ -76,6 +76,7 @@ import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
 import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
+import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotCompletedException
@@ -197,6 +198,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
         observationMediaFilesDao,
         observationLocker,
         observationStore,
+        PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
         parentStore,
         eventPublisher,
@@ -2465,6 +2467,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               observationMediaFilesDao,
               observationLocker,
               spyStore,
+              PlantingSiteNotificationStore(clock, dslContext),
               plantingSiteStore,
               parentStore,
               eventPublisher,

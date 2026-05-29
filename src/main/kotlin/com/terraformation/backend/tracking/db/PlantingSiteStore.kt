@@ -11,7 +11,6 @@ import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.attach
-import com.terraformation.backend.db.default_schema.NotificationType
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesIdConverter
@@ -22,8 +21,6 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.MonitoringPlotIdConverter
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationType
-import com.terraformation.backend.db.tracking.PlantingSeasonId
-import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumHistoryId
@@ -47,10 +44,8 @@ import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HISTORIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_NOTIFICATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.SIMPLIFIED_PLANTING_SITE_HISTORIES
@@ -71,8 +66,6 @@ import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
 import com.terraformation.backend.tracking.edit.PlantingSiteEdit
 import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.edit.SubstratumEdit
-import com.terraformation.backend.tracking.event.PlantingSeasonPastEndDateEvent
-import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
@@ -108,8 +101,6 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.InstantSource
-import java.time.LocalDate
-import java.time.temporal.ChronoUnit
 import org.geotools.referencing.CRS
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -1411,90 +1402,6 @@ class PlantingSiteStore(
         .fetch(PLANTING_SITES.ID.asNonNullable())
   }
 
-  fun fetchPartiallyPlantedDetailedSitesWithNoPlantingSeasons(
-      weeksSinceCreation: Int,
-      additionalCondition: Condition,
-  ): List<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
-    val maxCreatedTime = clock.instant().minus(weeksSinceCreation * 7L, ChronoUnit.DAYS)
-
-    return dslContext
-        .select(PLANTING_SITES.ID)
-        .from(PLANTING_SITES)
-        .where(additionalCondition)
-        .and(PLANTING_SITES.CREATED_TIME.le(maxCreatedTime))
-        .andNotExists(
-            DSL.selectOne()
-                .from(PLANTING_SEASONS)
-                .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
-        )
-        .andExists(
-            DSL.selectOne()
-                .from(SUBSTRATA)
-                .where(PLANTING_SITES.ID.eq(SUBSTRATA.PLANTING_SITE_ID))
-                .and(SUBSTRATA.PLANTING_COMPLETED_TIME.isNull)
-        )
-        .orderBy(PLANTING_SITES.ID)
-        .fetch(PLANTING_SITES.ID.asNonNullable())
-  }
-
-  fun fetchPartiallyPlantedDetailedSitesWithNoUpcomingPlantingSeasons(
-      weeksSinceLastSeason: Int,
-      additionalCondition: Condition,
-  ): List<PlantingSiteId> {
-    requirePermissions { manageNotifications() }
-
-    val maxEndTime = clock.instant().minus(weeksSinceLastSeason * 7L, ChronoUnit.DAYS)
-
-    return dslContext
-        .select(PLANTING_SITES.ID)
-        .from(PLANTING_SITES)
-        .where(additionalCondition)
-        .and(
-            DSL.field(
-                    DSL.select(DSL.max(PLANTING_SEASONS.END_DATE))
-                        .from(PLANTING_SEASONS)
-                        .where(PLANTING_SITES.ID.eq(PLANTING_SEASONS.PLANTING_SITE_ID))
-                )
-                .lt(localDateInSiteTimezone(maxEndTime))
-        )
-        .andExists(
-            DSL.selectOne()
-                .from(SUBSTRATA)
-                .where(PLANTING_SITES.ID.eq(SUBSTRATA.PLANTING_SITE_ID))
-                .and(SUBSTRATA.PLANTING_COMPLETED_TIME.isNull)
-        )
-        .orderBy(PLANTING_SITES.ID)
-        .fetch(PLANTING_SITES.ID.asNonNullable())
-  }
-
-  fun transitionPlantingSeasons() {
-    markPlantingSeasonsPastEndDate()
-    markPlantingSeasonsActive()
-  }
-
-  fun markNotificationComplete(
-      plantingSiteId: PlantingSiteId,
-      notificationType: NotificationType,
-      notificationNumber: Int,
-  ) {
-    requirePermissions {
-      readPlantingSite(plantingSiteId)
-      manageNotifications()
-    }
-
-    with(PLANTING_SITE_NOTIFICATIONS) {
-      dslContext
-          .insertInto(PLANTING_SITE_NOTIFICATIONS)
-          .set(PLANTING_SITE_ID, plantingSiteId)
-          .set(NOTIFICATION_TYPE_ID, notificationType)
-          .set(NOTIFICATION_NUMBER, notificationNumber)
-          .set(SENT_TIME, clock.instant())
-          .execute()
-    }
-  }
-
   /**
    * Makes a monitoring plot unavailable for inclusion in future observations.
    *
@@ -2715,116 +2622,6 @@ class PlantingSiteStore(
               totalSpecies = species.size,
           )
         }
-  }
-
-  private fun localDateInSiteTimezone(instant: Instant = clock.instant()) =
-      DSL.field(
-          "({0} AT TIME ZONE COALESCE({1}, {2}, 'UTC'))::date",
-          LocalDate::class.java,
-          DSL.`val`(instant),
-          PLANTING_SITES.TIME_ZONE,
-          PLANTING_SITES.organizations.TIME_ZONE,
-      )
-
-  private fun markPlantingSeasonActive(
-      plantingSiteId: PlantingSiteId,
-      plantingSeasonId: PlantingSeasonId,
-  ) {
-    dslContext.transaction { _ ->
-      val rowsUpdated =
-          dslContext
-              .update(PLANTING_SEASONS)
-              .set(PLANTING_SEASONS.STATUS_ID, PlantingSeasonStatus.Active)
-              .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
-              .and(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
-              .and(PLANTING_SEASONS.STATUS_ID.eq(PlantingSeasonStatus.Upcoming))
-              .execute()
-
-      if (rowsUpdated > 0) {
-        log.info("Planting season $plantingSeasonId at site $plantingSiteId has started")
-
-        eventPublisher.publishEvent(PlantingSeasonStartedEvent(plantingSiteId, plantingSeasonId))
-      }
-    }
-  }
-
-  private fun markPlantingSeasonsActive() {
-    dslContext
-        .select(
-            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(),
-            PLANTING_SEASONS.ID.asNonNullable(),
-        )
-        .from(PLANTING_SEASONS)
-        .join(PLANTING_SITES)
-        .on(PLANTING_SEASONS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-        .where(PLANTING_SEASONS.START_DATE.le(localDateInSiteTimezone()))
-        .and(PLANTING_SEASONS.END_DATE.gt(localDateInSiteTimezone()))
-        .and(PLANTING_SEASONS.STATUS_ID.eq(PlantingSeasonStatus.Upcoming))
-        .fetch()
-        .forEach { (plantingSiteId, plantingSeasonId) ->
-          markPlantingSeasonActive(plantingSiteId, plantingSeasonId)
-        }
-  }
-
-  private fun markPlantingSeasonPastEndDate(
-      plantingSiteId: PlantingSiteId,
-      plantingSeasonId: PlantingSeasonId,
-  ) {
-    dslContext.transaction { _ ->
-      val rowsUpdated =
-          dslContext
-              .update(PLANTING_SEASONS)
-              .set(PLANTING_SEASONS.STATUS_ID, PlantingSeasonStatus.PastEndDate)
-              .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
-              .and(PLANTING_SEASONS.PLANTING_SITE_ID.eq(plantingSiteId))
-              .and(PLANTING_SEASONS.STATUS_ID.eq(PlantingSeasonStatus.Active))
-              .execute()
-
-      if (rowsUpdated > 0) {
-        log.info(
-            "Planting season $plantingSeasonId at site $plantingSiteId is now past the end date"
-        )
-
-        deleteRecurringPlantingSeasonNotifications(plantingSiteId)
-        eventPublisher.publishEvent(
-            PlantingSeasonPastEndDateEvent(plantingSiteId, plantingSeasonId)
-        )
-      }
-    }
-  }
-
-  private fun markPlantingSeasonsPastEndDate() {
-    dslContext
-        .select(
-            PLANTING_SEASONS.PLANTING_SITE_ID.asNonNullable(),
-            PLANTING_SEASONS.ID.asNonNullable(),
-        )
-        .from(PLANTING_SEASONS)
-        .join(PLANTING_SITES)
-        .on(PLANTING_SEASONS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
-        .where(PLANTING_SEASONS.END_DATE.lt(localDateInSiteTimezone()))
-        .and(PLANTING_SEASONS.STATUS_ID.eq(PlantingSeasonStatus.Active))
-        .fetch()
-        .forEach { (plantingSiteId, plantingSeasonId) ->
-          markPlantingSeasonPastEndDate(plantingSiteId, plantingSeasonId)
-        }
-  }
-
-  /**
-   * Deletes the records about planting-season-related notifications that can be sent for each
-   * planting season. This is so that when the next planting season happens, the existing records
-   * don't cause the system to think that it has already generated the necessary notifications.
-   */
-  private fun deleteRecurringPlantingSeasonNotifications(plantingSiteId: PlantingSiteId) {
-    dslContext
-        .deleteFrom(PLANTING_SITE_NOTIFICATIONS)
-        .where(PLANTING_SITE_NOTIFICATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-        .and(
-            PLANTING_SITE_NOTIFICATIONS.NOTIFICATION_TYPE_ID.`in`(
-                NotificationType.SchedulePlantingSeason,
-            )
-        )
-        .execute()
   }
 
   /**

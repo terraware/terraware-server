@@ -45,6 +45,7 @@ import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteNotDetailedException
+import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.db.PlotAlreadyCompletedException
 import com.terraformation.backend.tracking.db.PlotNotCompletedException
@@ -103,6 +104,7 @@ class ObservationService(
     private val observationMediaFilesDao: ObservationMediaFilesDao,
     private val observationLocker: ObservationLocker,
     private val observationStore: ObservationStore,
+    private val plantingSiteNotificationStore: PlantingSiteNotificationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val parentStore: ParentStore,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
@@ -449,7 +451,7 @@ class ObservationService(
       manageNotifications()
     }
 
-    plantingSiteStore.markNotificationComplete(
+    plantingSiteNotificationStore.markNotificationComplete(
         plantingSiteId,
         criteria.notificationType,
         criteria.notificationNumber,

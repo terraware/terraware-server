@@ -3,23 +3,20 @@ package com.terraformation.backend.daily
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.DatabaseTest
-import com.terraformation.backend.db.IdentifierGenerator
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
-import com.terraformation.backend.tracking.db.PlantingSiteStore
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
+import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSupportNotificationEvent
-import com.terraformation.backend.util.GeometrySimplifier
 import com.terraformation.backend.util.toInstant
-import io.mockk.every
 import io.mockk.mockk
 import java.time.LocalDate
 import java.time.ZoneId
@@ -34,26 +31,13 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
   private val config = mockk<TerrawareServerConfig>()
   private val eventPublisher = TestEventPublisher()
-  private val mockGeometrySimplifier = mockk<GeometrySimplifier>()
 
   private val scheduler: PlantingSeasonScheduler by lazy {
     PlantingSeasonScheduler(
         config,
         eventPublisher,
-        PlantingSiteStore(
-            clock,
-            TestSingletons.countryDetector,
-            dslContext,
-            eventPublisher,
-            mockGeometrySimplifier,
-            IdentifierGenerator(clock, dslContext),
-            monitoringPlotsDao,
-            ParentStore(dslContext),
-            plantingSitesDao,
-            eventPublisher,
-            strataDao,
-            substrataDao,
-        ),
+        PlantingSeasonStore(clock, dslContext, eventPublisher, ParentStore(dslContext)),
+        PlantingSiteNotificationStore(clock, dslContext),
         SystemUser(usersDao),
     )
   }
@@ -64,8 +48,6 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    every { mockGeometrySimplifier.simplify(any(), any()) } answers { firstArg() }
-
     insertOrganization(timeZone = timeZone)
 
     clock.instant = initialInstant

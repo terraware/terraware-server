@@ -14,6 +14,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteImporter
+import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.PlantingSiteDepth
@@ -80,6 +81,7 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationMediaFilesDao,
         observationLocker,
         observationStore,
+        PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
         parentStore,
         eventPublisher,
