@@ -853,10 +853,13 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     val plantingSiteName = "My Site"
 
     insertPlantingSite(name = plantingSiteName)
-    insertSimplePlantingSeason()
+    insertPlantingSeason()
 
     testEventNotification(
-        PlantingSeasonStartedEvent(inserted.plantingSiteId, inserted.simplePlantingSeasonId),
+        PlantingSeasonStartedEvent(
+            inserted.plantingSiteId,
+            inserted.plantingSeasonId,
+        ),
         type = NotificationType.PlantingSeasonStarted,
         title = "It's planting season!",
         body =

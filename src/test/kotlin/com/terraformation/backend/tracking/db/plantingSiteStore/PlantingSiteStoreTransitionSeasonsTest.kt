@@ -1,90 +1,69 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
-import com.terraformation.backend.tracking.event.PlantingSeasonEndedEvent
+import com.terraformation.backend.db.tracking.PlantingSeasonStatus
+import com.terraformation.backend.tracking.event.PlantingSeasonPastEndDateEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
-import com.terraformation.backend.tracking.model.PlantingSiteModel
-import com.terraformation.backend.tracking.model.UpdatedPlantingSeasonModel
 import com.terraformation.backend.util.toInstant
 import java.time.LocalDate
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTest() {
+
   @Nested
-  inner class TransitionSimpleSimplePlantingSeasons {
+  inner class TransitionPlantingSeasons {
     @Test
-    fun `marks planting season as active when its start time arrives`() {
-      val startDate = LocalDate.EPOCH.plusDays(1)
+    fun `uses site timezone for determining when season becomes active`() {
+      val startDate = LocalDate.EPOCH.plusDays(10)
       val endDate = startDate.plusDays(60)
-      val model =
-          store.createPlantingSite(
-              PlantingSiteModel.create(
-                  name = "name",
-                  organizationId = organizationId,
-                  timeZone = timeZone,
-              ),
-              plantingSeasons =
-                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)),
+
+      val plantingSiteId = insertPlantingSite(timeZone = timeZone)
+      val plantingSeasonId =
+          insertPlantingSeason(
+              startDate = startDate,
+              endDate = endDate,
+              status = PlantingSeasonStatus.Upcoming,
+              plantingSiteId = plantingSiteId,
           )
 
-      assertSeasonActive(false, "Should start as inactive")
+      // Pacific/Honolulu is UTC-10, so midnight there = 10:00 UTC.
+      // At 09:59:59 UTC on start_date, it is still the previous day in Honolulu.
+      clock.instant = startDate.toInstant(timeZone).minusSeconds(1)
 
       store.transitionPlantingSeasons()
 
-      assertSeasonActive(false, "Should stay inactive until start time arrives")
+      assertEquals(
+          PlantingSeasonStatus.Upcoming,
+          plantingSeasonsDao.fetchById(plantingSeasonId).first().statusId,
+          "Season should be Upcoming before midnight in site timezone",
+      )
       eventPublisher.assertEventNotPublished<PlantingSeasonStartedEvent>()
 
       clock.instant = startDate.toInstant(timeZone)
 
       store.transitionPlantingSeasons()
 
-      assertSeasonActive(true, "Should transition to active")
+      assertEquals(
+          PlantingSeasonStatus.Active,
+          plantingSeasonsDao.fetchById(plantingSeasonId).first().statusId,
+          "Season should be Active at midnight in site timezone",
+      )
       eventPublisher.assertEventPublished(
-          PlantingSeasonStartedEvent(model.id, model.plantingSeasons.first().id)
+          PlantingSeasonStartedEvent(plantingSiteId, plantingSeasonId)
       )
-
-      clock.instant = endDate.minusDays(1).toInstant(timeZone)
-      eventPublisher.clear()
-
-      store.transitionPlantingSeasons()
-      eventPublisher.assertNoEventsPublished(
-          "Should not publish any events if planting season already in correct state"
-      )
-    }
-
-    @Test
-    fun `marks planting season as inactive when its end time arrives`() {
-      val startDate = LocalDate.EPOCH.plusDays(1)
-      val endDate = startDate.plusDays(60)
-
-      clock.instant = startDate.toInstant(timeZone)
-
-      val model =
-          store.createPlantingSite(
-              PlantingSiteModel.create(
-                  name = "name",
-                  organizationId = organizationId,
-                  timeZone = timeZone,
-              ),
-              plantingSeasons =
-                  listOf(UpdatedPlantingSeasonModel(startDate = startDate, endDate = endDate)),
-          )
-
-      assertSeasonActive(true, "Should start as active")
-
-      store.transitionPlantingSeasons()
-
-      assertSeasonActive(true, "Should remain active until end time arrives")
-      eventPublisher.assertEventNotPublished<PlantingSeasonEndedEvent>()
 
       clock.instant = endDate.plusDays(1).toInstant(timeZone)
 
       store.transitionPlantingSeasons()
 
-      assertSeasonActive(false, "Should have been marked as inactive")
+      assertEquals(
+          PlantingSeasonStatus.PastEndDate,
+          plantingSeasonsDao.fetchById(plantingSeasonId).first().statusId,
+          "Season should be PastEndDate after end date in site timezone",
+      )
       eventPublisher.assertEventPublished(
-          PlantingSeasonEndedEvent(model.id, model.plantingSeasons.first().id)
+          PlantingSeasonPastEndDateEvent(plantingSiteId, plantingSeasonId)
       )
 
       clock.instant = endDate.plusDays(2).toInstant(timeZone)
@@ -93,14 +72,6 @@ internal class PlantingSiteStoreTransitionSeasonsTest : BasePlantingSiteStoreTes
       store.transitionPlantingSeasons()
       eventPublisher.assertNoEventsPublished(
           "Should not publish any events if planting season already in correct state"
-      )
-    }
-
-    private fun assertSeasonActive(isActive: Boolean, message: String) {
-      assertEquals(
-          listOf(isActive),
-          simplePlantingSeasonsDao.findAll().map { it.isActive },
-          message,
       )
     }
   }

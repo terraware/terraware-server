@@ -88,6 +88,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
@@ -181,7 +182,6 @@ import java.time.Month
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Locale
-import org.jooq.Configuration as JooqConfiguration
 import org.jooq.DSLContext
 import org.jooq.TransactionalRunnable
 import org.jooq.impl.DSL
@@ -191,6 +191,7 @@ import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.mail.javamail.JavaMailSenderImpl
+import org.jooq.Configuration as JooqConfiguration
 
 internal class NotificationServiceEmailTest {
   private val acceleratorUser: IndividualUser = mockk()
@@ -1164,7 +1165,7 @@ internal class NotificationServiceEmailTest {
 
   @Test
   fun plantingSeasonStarted() {
-    val event = PlantingSeasonStartedEvent(plantingSite.id, SimplePlantingSeasonId(1))
+    val event = PlantingSeasonStartedEvent(plantingSite.id, PlantingSeasonId(1))
 
     service.on(event)
 

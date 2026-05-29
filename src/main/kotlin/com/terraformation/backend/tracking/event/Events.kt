@@ -14,6 +14,7 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationState
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
@@ -128,12 +129,12 @@ data class PlantingSeasonScheduledEvent(
 
 data class PlantingSeasonStartedEvent(
     val plantingSiteId: PlantingSiteId,
-    val simplePlantingSeasonId: SimplePlantingSeasonId,
+    val plantingSeasonId: PlantingSeasonId,
 )
 
-data class PlantingSeasonEndedEvent(
+data class PlantingSeasonPastEndDateEvent(
     val plantingSiteId: PlantingSiteId,
-    val simplePlantingSeasonId: SimplePlantingSeasonId,
+    val plantingSeasonId: PlantingSeasonId,
 )
 
 interface PlantingSeasonSchedulingNotificationEvent {
