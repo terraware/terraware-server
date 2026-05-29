@@ -110,7 +110,10 @@ class PlantingSeasonStore(
     }
 
     val now = clock.instant()
-    val status = calculateStatus(startDate, endDate, existingSeason.plantingSiteId)
+    val status =
+        if (existingSeason.startDate == startDate && existingSeason.endDate == endDate)
+            existingSeason.status
+        else calculateStatus(startDate, endDate, existingSeason.plantingSiteId)
 
     val rowsUpdated =
         with(PLANTING_SEASONS) {
