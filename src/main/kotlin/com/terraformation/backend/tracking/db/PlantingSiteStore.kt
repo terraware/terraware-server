@@ -2931,12 +2931,13 @@ class PlantingSiteStore(
     }
   }
 
-  private fun localDateInSiteTimezone() =
+  private fun localDateInSiteTimezone(instant: Instant = clock.instant()) =
       DSL.field(
-          "({0} AT TIME ZONE COALESCE({1}, 'UTC'))::date",
+          "({0} AT TIME ZONE COALESCE({1}, {2}, 'UTC'))::date",
           LocalDate::class.java,
-          DSL.`val`(clock.instant()),
-          PLANTING_SITES.TIME_ZONE,
+          DSL.`val`(instant),
+          PLANTING_SEASONS.plantingSites.TIME_ZONE,
+          PLANTING_SEASONS.plantingSites.organizations.TIME_ZONE,
       )
 
   private fun markPlantingSeasonActive(
@@ -2968,8 +2969,6 @@ class PlantingSiteStore(
             PLANTING_SEASONS.ID.asNonNullable(),
         )
         .from(PLANTING_SEASONS)
-        .join(PLANTING_SITES)
-        .on(PLANTING_SEASONS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
         .where(PLANTING_SEASONS.START_DATE.le(localDateInSiteTimezone()))
         .and(PLANTING_SEASONS.END_DATE.gt(localDateInSiteTimezone()))
         .and(PLANTING_SEASONS.STATUS_ID.eq(PlantingSeasonStatus.Upcoming))
@@ -3013,8 +3012,6 @@ class PlantingSiteStore(
             PLANTING_SEASONS.ID.asNonNullable(),
         )
         .from(PLANTING_SEASONS)
-        .join(PLANTING_SITES)
-        .on(PLANTING_SEASONS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
         .where(PLANTING_SEASONS.END_DATE.lt(localDateInSiteTimezone()))
         .and(PLANTING_SEASONS.STATUS_ID.eq(PlantingSeasonStatus.Active))
         .fetch()
