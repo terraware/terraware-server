@@ -1,3 +1,4 @@
+52e326eb Move season and notification logic out of PlantingSiteStore (#4504)
 d4233c90 SW-7792 Add tree crown diameter to recorded trees (#4503)
 5eca3969 SW-8372 Migrate simple planting seasons to named planting seasons (#4501)
 d3b040ce SW-8369 Don't allow closed planting seasons to be edited in any way (#4502)
