@@ -2692,6 +2692,16 @@
                                         <td>recorded_trees_trunk_number_check</td>
                                         <td>(trunk_number &gt;&#61; 1)</td>
                                     </tr>
+                                    <tr>
+                                        <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
+                                        <td>tree_crown_diameter_positive</td>
+                                        <td>(tree_crown_diameter_cm &gt;&#61; 0)</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/recorded_trees.html'>recorded_trees</a></td>
+                                        <td>tree_crown_diameter_requires_tree</td>
+                                        <td>((tree_growth_form_id &#61; ANY (ARRAY[1, 3])) OR (tree_crown_diameter_cm IS NULL))</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>
