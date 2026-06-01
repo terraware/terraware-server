@@ -82,12 +82,8 @@ typealias PlantingSeasonUpdatedEvent = PlantingSeasonUpdatedEventV1
 
 typealias PlantingSeasonUpdatedEventValues = PlantingSeasonUpdatedEventV1.Values
 
-data class PlantingSeasonSpeciesTargetDeletedEventV1(
-    override val organizationId: OrganizationId,
-    override val plantingSeasonId: PlantingSeasonId,
-    override val plantingSiteId: PlantingSiteId,
+data class PlantingSeasonSpeciesTargetDeletedEvent(
+    val plantingSeasonId: PlantingSeasonId,
     val speciesId: SpeciesId,
     val substratumId: SubstratumId,
-) : EntityDeletedPersistentEvent, PlantingSeasonPersistentEvent
-
-typealias PlantingSeasonSpeciesTargetDeletedEvent = PlantingSeasonSpeciesTargetDeletedEventV1
+)

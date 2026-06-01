@@ -3,7 +3,6 @@ package com.terraformation.backend.plantingmanagement.db
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
-import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
@@ -28,7 +27,7 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonSpeciesTargetsStore by lazy {
-    PlantingSeasonSpeciesTargetsStore(clock, dslContext, eventPublisher, ParentStore(dslContext))
+    PlantingSeasonSpeciesTargetsStore(clock, dslContext, eventPublisher)
   }
 
   private lateinit var plantingSeasonId: PlantingSeasonId
@@ -274,9 +273,7 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
 
       eventPublisher.assertEventPublished(
           PlantingSeasonSpeciesTargetDeletedEvent(
-              organizationId = inserted.organizationId,
               plantingSeasonId = plantingSeasonId,
-              plantingSiteId = inserted.plantingSiteId,
               speciesId = speciesId,
               substratumId = substratumId,
           )

@@ -107,8 +107,6 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
 
       store.on(
           PlantingSeasonSpeciesTargetDeletedEvent(
-              organizationId = inserted.organizationId,
-              plantingSiteId = inserted.plantingSiteId,
               plantingSeasonId = plantingSeasonId,
               speciesId = speciesId,
               substratumId = substratumId1,
@@ -136,8 +134,6 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
 
       store.on(
           PlantingSeasonSpeciesTargetDeletedEvent(
-              organizationId = inserted.organizationId,
-              plantingSiteId = inserted.plantingSiteId,
               plantingSeasonId = plantingSeasonId,
               speciesId = speciesId,
               substratumId = substratumId1,
