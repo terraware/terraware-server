@@ -424,6 +424,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "observed_site_species_totals" to setOf(ALL, TRACKING),
                   "observed_stratum_species_totals" to setOf(ALL, TRACKING),
                   "observed_substratum_species_totals" to setOf(ALL, TRACKING),
+                  "planting_season_allocated_species" to setOf(ALL, TRACKING),
                   "planting_season_statuses" to setOf(ALL, TRACKING),
                   "planting_seasons" to setOf(ALL, TRACKING),
                   "planting_season_species_targets" to setOf(ALL, TRACKING),
