@@ -127,6 +127,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         substratumId = substratumId3,
         quantity = 14,
     )
+    insertPlantingSeasonAllocatedSpecies(speciesId = speciesId1, quantity = 15)
+    insertPlantingSeasonAllocatedSpecies(speciesId = speciesId2, quantity = 16)
 
     val plantingSeasonId2 =
         insertPlantingSeason(
@@ -136,6 +138,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
             status = PlantingSeasonStatus.Upcoming,
         )
     insertPlantingSeasonSpeciesTarget(quantity = 12)
+    insertPlantingSeasonAllocatedSpecies(speciesId = speciesId1, quantity = 17)
 
     insertFacility(type = FacilityType.Nursery)
 
@@ -609,6 +612,17 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "endDate" to "1970-02-15",
                                 "id" to "$plantingSeasonId1",
                                 "name" to "Season 1",
+                                "allocatedSpecies" to
+                                    listOf(
+                                        mapOf(
+                                            "quantity" to "15",
+                                            "species" to mapOf("scientificName" to "Species 1"),
+                                        ),
+                                        mapOf(
+                                            "quantity" to "16",
+                                            "species" to mapOf("scientificName" to "Species 2"),
+                                        ),
+                                    ),
                                 "scheduledDates" to
                                     listOf(
                                         mapOf(
@@ -657,6 +671,13 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "endDate" to "1970-06-05",
                                 "id" to "$plantingSeasonId2",
                                 "name" to "Season 2",
+                                "allocatedSpecies" to
+                                    listOf(
+                                        mapOf(
+                                            "quantity" to "17",
+                                            "species" to mapOf("scientificName" to "Species 1"),
+                                        ),
+                                    ),
                                 "speciesTargets" to
                                     listOf(
                                         mapOf(
@@ -1001,6 +1022,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingSeasons.name",
                 "plantingSeasons.startDate",
                 "plantingSeasons.status",
+                "plantingSeasons.allocatedSpecies.quantity",
+                "plantingSeasons.allocatedSpecies.species.scientificName",
                 "plantingSeasons.speciesTargets.quantity",
                 "plantingSeasons.speciesTargets.species.scientificName",
                 "plantingSeasons.speciesTargets.substratum.name",
