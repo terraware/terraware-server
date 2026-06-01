@@ -9,16 +9,19 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class PlantingSeasonSpeciesTargetsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   fun fetchList(plantingSeasonId: PlantingSeasonId): List<PlantingSeasonSpeciesTargetModel> {
     requirePermissions { readPlantingSeason(plantingSeasonId) }
@@ -119,6 +122,14 @@ class PlantingSeasonSpeciesTargetsStore(
           .and(SUBSTRATUM_ID.eq(substratumId))
           .and(SPECIES_ID.eq(speciesId))
           .execute()
+
+      eventPublisher.publishEvent(
+          PlantingSeasonSpeciesTargetDeletedEvent(
+              plantingSeasonId = plantingSeasonId,
+              speciesId = speciesId,
+              substratumId = substratumId,
+          )
+      )
     }
   }
 

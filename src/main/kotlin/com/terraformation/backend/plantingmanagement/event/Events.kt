@@ -1,9 +1,11 @@
 package com.terraformation.backend.plantingmanagement.event
 
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
@@ -79,3 +81,9 @@ data class PlantingSeasonUpdatedEventV1(
 typealias PlantingSeasonUpdatedEvent = PlantingSeasonUpdatedEventV1
 
 typealias PlantingSeasonUpdatedEventValues = PlantingSeasonUpdatedEventV1.Values
+
+data class PlantingSeasonSpeciesTargetDeletedEvent(
+    val plantingSeasonId: PlantingSeasonId,
+    val speciesId: SpeciesId,
+    val substratumId: SubstratumId,
+)
