@@ -18,10 +18,16 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEventValues
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.event.PlantingSeasonPastEndDateEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonStartedEvent
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.time.Instant
 import java.time.InstantSource
@@ -44,6 +50,9 @@ class PlantingSeasonStore(
   fun create(newModel: NewPlantingSeasonModel): PlantingSeasonId {
     requirePermissions { createPlantingSeason(newModel.plantingSiteId) }
 
+    val organizationId =
+        parentStore.getOrganizationId(newModel.plantingSiteId)
+            ?: throw PlantingSiteNotFoundException(newModel.plantingSiteId)
     val userId = currentUser().userId
     val now = clock.instant()
     val status = calculateStatus(newModel.startDate, newModel.endDate, newModel.plantingSiteId)
@@ -72,6 +81,18 @@ class PlantingSeasonStore(
               plantingSiteId = newModel.plantingSiteId,
               startDate = newModel.startDate,
               endDate = newModel.endDate,
+          )
+      )
+
+      eventPublisher.publishEvent(
+          PlantingSeasonCreatedEvent(
+              endDate = newModel.endDate,
+              name = newModel.name,
+              organizationId = organizationId,
+              plantingSeasonId = newSeasonId,
+              plantingSiteId = newModel.plantingSiteId,
+              startDate = newModel.startDate,
+              status = status,
           )
       )
 
@@ -112,75 +133,128 @@ class PlantingSeasonStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    val existingSeason =
-        fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
-            ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+    withLockedPlantingSeason(plantingSeasonId) {
+      val existingSeason =
+          fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
+              ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+      val organizationId =
+          parentStore.getOrganizationId(plantingSeasonId)
+              ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
 
-    if (existingSeason.status == PlantingSeasonStatus.Closed) {
-      throw PlantingSeasonClosedException(plantingSeasonId)
-    }
+      if (existingSeason.status == PlantingSeasonStatus.Closed) {
+        throw PlantingSeasonClosedException(plantingSeasonId)
+      }
 
-    val now = clock.instant()
-    val status =
-        if (existingSeason.startDate == startDate && existingSeason.endDate == endDate)
-            existingSeason.status
-        else calculateStatus(startDate, endDate, existingSeason.plantingSiteId)
+      val now = clock.instant()
+      val status =
+          if (existingSeason.startDate == startDate && existingSeason.endDate == endDate)
+              existingSeason.status
+          else calculateStatus(startDate, endDate, existingSeason.plantingSiteId)
 
-    val rowsUpdated =
-        with(PLANTING_SEASONS) {
-          dslContext
-              .update(PLANTING_SEASONS)
-              .set(NAME, name)
-              .set(START_DATE, startDate)
-              .set(END_DATE, endDate)
-              .set(
-                  STATUS_ID,
-                  DSL.`when`(
-                          STATUS_ID.eq(PlantingSeasonStatus.Closed),
-                          PlantingSeasonStatus.Closed,
-                      )
-                      .else_(status),
-              )
-              .set(MODIFIED_BY, currentUser().userId)
-              .set(MODIFIED_TIME, now)
-              .where(ID.eq(plantingSeasonId))
-              .execute()
-        }
+      val rowsUpdated =
+          with(PLANTING_SEASONS) {
+            dslContext
+                .update(PLANTING_SEASONS)
+                .set(NAME, name)
+                .set(START_DATE, startDate)
+                .set(END_DATE, endDate)
+                .set(STATUS_ID, status)
+                .set(MODIFIED_BY, currentUser().userId)
+                .set(MODIFIED_TIME, now)
+                .where(ID.eq(plantingSeasonId))
+                .execute()
+          }
 
-    if (rowsUpdated == 0) {
-      throw PlantingSeasonNotFoundException(plantingSeasonId)
-    }
+      if (rowsUpdated == 0) {
+        throw PlantingSeasonNotFoundException(plantingSeasonId)
+      }
 
-    if (existingSeason.startDate != startDate || existingSeason.endDate != endDate) {
-      eventPublisher.publishEvent(
-          PlantingSeasonRescheduledEvent(
-              plantingSeasonId = existingSeason.id,
-              plantingSiteId = existingSeason.plantingSiteId,
-              oldStartDate = existingSeason.startDate,
-              oldEndDate = existingSeason.endDate,
-              newStartDate = startDate,
-              newEndDate = endDate,
-          )
-      )
+      if (existingSeason.startDate != startDate || existingSeason.endDate != endDate) {
+        eventPublisher.publishEvent(
+            PlantingSeasonRescheduledEvent(
+                plantingSeasonId = existingSeason.id,
+                plantingSiteId = existingSeason.plantingSiteId,
+                oldStartDate = existingSeason.startDate,
+                oldEndDate = existingSeason.endDate,
+                newStartDate = startDate,
+                newEndDate = endDate,
+            )
+        )
+      }
+
+      if (
+          existingSeason.endDate != endDate ||
+              existingSeason.name != name ||
+              existingSeason.startDate != startDate ||
+              existingSeason.status != status
+      ) {
+        eventPublisher.publishEvent(
+            PlantingSeasonUpdatedEvent(
+                changedFrom =
+                    PlantingSeasonUpdatedEventValues(
+                        endDate = existingSeason.endDate.nullIfEquals(endDate),
+                        name = existingSeason.name.nullIfEquals(name),
+                        startDate = existingSeason.startDate.nullIfEquals(startDate),
+                        status = existingSeason.status.nullIfEquals(status),
+                    ),
+                changedTo =
+                    PlantingSeasonUpdatedEventValues(
+                        endDate = endDate.nullIfEquals(existingSeason.endDate),
+                        name = name.nullIfEquals(existingSeason.name),
+                        startDate = startDate.nullIfEquals(existingSeason.startDate),
+                        status = status.nullIfEquals(existingSeason.status),
+                    ),
+                organizationId = organizationId,
+                plantingSeasonId = plantingSeasonId,
+                plantingSiteId = existingSeason.plantingSiteId,
+            )
+        )
+      }
     }
   }
 
   fun close(plantingSeasonId: PlantingSeasonId) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    with(PLANTING_SEASONS) {
-      dslContext
-          .update(PLANTING_SEASONS)
-          .set(STATUS_ID, PlantingSeasonStatus.Closed)
-          .set(MODIFIED_BY, currentUser().userId)
-          .set(MODIFIED_TIME, clock.instant())
-          .where(ID.eq(plantingSeasonId))
-          .execute()
+    withLockedPlantingSeason(plantingSeasonId) {
+      val existingSeason =
+          fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
+              ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+      val organizationId =
+          parentStore.getOrganizationId(plantingSeasonId)
+              ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+
+      with(PLANTING_SEASONS) {
+        dslContext
+            .update(PLANTING_SEASONS)
+            .set(STATUS_ID, PlantingSeasonStatus.Closed)
+            .set(MODIFIED_BY, currentUser().userId)
+            .set(MODIFIED_TIME, clock.instant())
+            .where(ID.eq(plantingSeasonId))
+            .execute()
+      }
+
+      if (existingSeason.status != PlantingSeasonStatus.Closed) {
+        eventPublisher.publishEvent(
+            PlantingSeasonUpdatedEvent(
+                changedFrom = PlantingSeasonUpdatedEventValues(status = existingSeason.status),
+                changedTo = PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.Closed),
+                organizationId = organizationId,
+                plantingSeasonId = plantingSeasonId,
+                plantingSiteId = existingSeason.plantingSiteId,
+            )
+        )
+      }
     }
   }
 
   fun delete(id: PlantingSeasonId) {
     requirePermissions { deletePlantingSeason(id) }
+
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(id) ?: throw PlantingSeasonNotFoundException(id)
+    val organizationId =
+        parentStore.getOrganizationId(id) ?: throw PlantingSeasonNotFoundException(id)
 
     val rowsDeleted =
         dslContext.deleteFrom(PLANTING_SEASONS).where(PLANTING_SEASONS.ID.eq(id)).execute()
@@ -188,6 +262,14 @@ class PlantingSeasonStore(
     if (rowsDeleted == 0) {
       throw PlantingSeasonNotFoundException(id)
     }
+
+    eventPublisher.publishEvent(
+        PlantingSeasonDeletedEvent(
+            organizationId = organizationId,
+            plantingSeasonId = id,
+            plantingSiteId = plantingSiteId,
+        )
+    )
   }
 
   private fun calculateStatus(
@@ -417,5 +499,18 @@ class PlantingSeasonStore(
             )
         )
         .execute()
+  }
+
+  private fun <T> withLockedPlantingSeason(plantingSeasonId: PlantingSeasonId, func: () -> T): T {
+    return dslContext.transactionResult { _ ->
+      dslContext
+          .selectOne()
+          .from(PLANTING_SEASONS)
+          .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
+          .forUpdate()
+          .fetchOne() ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+
+      func()
+    }
   }
 }

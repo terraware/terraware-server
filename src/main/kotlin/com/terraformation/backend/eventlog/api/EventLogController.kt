@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.EventLogPayloadTransformer
 import com.terraformation.backend.eventlog.db.EventLogStore
@@ -39,6 +40,7 @@ class EventLogController(
                 payload.monitoringPlotId,
                 payload.observationId,
                 payload.organizationId,
+                payload.plantingSeasonId,
                 payload.plantingSiteId,
                 payload.projectId,
             ),
@@ -65,6 +67,7 @@ data class ListEventLogEntriesRequestPayload(
     val monitoringPlotId: MonitoringPlotId? = null,
     val observationId: ObservationId? = null,
     val organizationId: OrganizationId,
+    val plantingSeasonId: PlantingSeasonId? = null,
     val plantingSiteId: PlantingSiteId? = null,
     val projectId: ProjectId? = null,
     @Schema(

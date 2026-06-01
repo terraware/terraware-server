@@ -16,12 +16,16 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EventLogPayloadContext
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.file.api.MediaKind
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
@@ -335,6 +339,42 @@ data class OrganizationSubjectPayload(
   }
 }
 
+@JsonTypeName("PlantingSeason")
+data class PlantingSeasonSubjectPayload(
+    override val fullText: String,
+    val plantingSeasonId: PlantingSeasonId,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingSeasonPersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlantingSeasonSubjectPayload {
+      val name = getPreviousName(event, context)
+
+      return PlantingSeasonSubjectPayload(
+          fullText = context.subjectFullText<PlantingSeasonSubjectPayload>(name),
+          plantingSeasonId = event.plantingSeasonId,
+          shortText = context.subjectShortText<PlantingSeasonSubjectPayload>(),
+      )
+    }
+
+    fun getPreviousName(
+        event: PlantingSeasonPersistentEvent,
+        context: EventLogPayloadContext,
+    ): String {
+      val lastRename =
+          context.lastEventBefore<PlantingSeasonUpdatedEvent>(event) {
+            it.plantingSeasonId == event.plantingSeasonId && it.changedTo.name != null
+          }
+      return lastRename?.changedTo?.name
+          ?: context
+              .first<PlantingSeasonCreatedEvent> { it.plantingSeasonId == event.plantingSeasonId }
+              .name
+    }
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -426,6 +466,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   ObservationPlot(ObservationPlotPersistentEvent::class),
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
   Organization(OrganizationPersistentEvent::class),
+  PlantingSeason(PlantingSeasonPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
 }

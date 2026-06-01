@@ -16,6 +16,10 @@ import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonsReco
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.NewPlantingSeasonModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEventValues
 import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import com.terraformation.backend.tracking.event.PlantingSeasonRescheduledEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonScheduledEvent
@@ -78,6 +82,18 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = clock.instant,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
+          )
+      )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonCreatedEvent(
+              endDate = endDate,
+              name = "Spring 2025",
+              organizationId = organizationId,
+              plantingSeasonId = id,
+              plantingSiteId = plantingSiteId,
+              startDate = startDate,
+              status = PlantingSeasonStatus.Upcoming,
           )
       )
     }
@@ -497,11 +513,13 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class Update {
     @Test
     fun `updates all fields and recalculates status`() {
+      val oldStart = LocalDate.of(2025, 1, 1)
+      val oldEnd = LocalDate.of(2025, 3, 31)
       val id =
           insertPlantingSeason(
               name = "Old Name",
-              startDate = LocalDate.of(2025, 1, 1),
-              endDate = LocalDate.of(2025, 3, 31),
+              startDate = oldStart,
+              endDate = oldEnd,
               status = PlantingSeasonStatus.PastEndDate,
           )
       val newStart = LocalDate.of(2025, 6, 1)
@@ -522,6 +540,28 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
+          )
+      )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonUpdatedEvent(
+              changedFrom =
+                  PlantingSeasonUpdatedEventValues(
+                      endDate = oldEnd,
+                      name = "Old Name",
+                      startDate = oldStart,
+                      status = PlantingSeasonStatus.PastEndDate,
+                  ),
+              changedTo =
+                  PlantingSeasonUpdatedEventValues(
+                      endDate = newEnd,
+                      name = "New Name",
+                      startDate = newStart,
+                      status = PlantingSeasonStatus.Upcoming,
+                  ),
+              organizationId = organizationId,
+              plantingSeasonId = id,
+              plantingSiteId = plantingSiteId,
           )
       )
     }
@@ -566,6 +606,24 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               oldEndDate = oldEndDate,
               newStartDate = newStartDate,
               newEndDate = newEndDate,
+          )
+      )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonUpdatedEvent(
+              changedFrom =
+                  PlantingSeasonUpdatedEventValues(
+                      endDate = oldEndDate,
+                      status = PlantingSeasonStatus.Upcoming,
+                  ),
+              changedTo =
+                  PlantingSeasonUpdatedEventValues(
+                      endDate = newEndDate,
+                      status = PlantingSeasonStatus.Active,
+                  ),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
           )
       )
     }
@@ -652,7 +710,7 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           )
       )
 
-      eventPublisher.assertNoEventsPublished()
+      eventPublisher.assertEventNotPublished<PlantingSeasonRescheduledEvent>()
     }
 
     @Test
@@ -685,6 +743,14 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.delete(id)
 
       assertThrows<PlantingSeasonNotFoundException> { store.fetchById(id) }
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonDeletedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = id,
+              plantingSiteId = plantingSiteId,
+          )
+      )
     }
 
     @Test
@@ -725,6 +791,22 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
+          )
+      )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonUpdatedEvent(
+              changedFrom =
+                  PlantingSeasonUpdatedEventValues(
+                      status = PlantingSeasonStatus.Upcoming,
+                  ),
+              changedTo =
+                  PlantingSeasonUpdatedEventValues(
+                      status = PlantingSeasonStatus.Closed,
+                  ),
+              organizationId = organizationId,
+              plantingSeasonId = id,
+              plantingSiteId = plantingSiteId,
           )
       )
     }
