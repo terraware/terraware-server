@@ -1,5 +1,6 @@
 package com.terraformation.backend.search.table
 
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
@@ -35,6 +36,10 @@ class PlantingSeasonsTable(private val tables: SearchTables) : SearchTable() {
           plantingSeasonScheduledDates.asMultiValueSublist(
               "scheduledDates",
               PLANTING_SEASONS.ID.eq(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID),
+          ),
+          nurseryWithdrawals.asMultiValueSublist(
+              "withdrawals",
+              PLANTING_SEASONS.ID.eq(WITHDRAWAL_SUMMARIES.PLANTING_SEASON_ID),
           ),
       )
     }

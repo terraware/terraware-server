@@ -643,11 +643,13 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
           readyQuantityWithdrawn = 4,
       )
 
+      val plantingSeasonId1 = insertPlantingSeason()
       val outplantWithdrawalId =
           insertNurseryWithdrawal(
               facilityId = facilityId,
               purpose = WithdrawalPurpose.OutPlant,
               withdrawnDate = LocalDate.of(2023, 3, 3),
+              plantingSeasonId = plantingSeasonId1,
           )
 
       insertBatchWithdrawal(
@@ -707,6 +709,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                   "stratumNames",
                   "substratumShortNames",
                   "substratumNames",
+                  "plantingSeason_name",
                   "purpose",
                   "totalWithdrawn",
                   "withdrawnDate",
@@ -772,6 +775,7 @@ internal class NurserySearchTest : DatabaseTest(), RunsAsUser {
                       "stratumNames" to "S1 (S1, S2)",
                       "substratumNames" to "S1-1 (S1-2, S2-3)",
                       "substratumShortNames" to "1 (2, 3)",
+                      "plantingSeason_name" to "Season 1",
                       "purpose" to WithdrawalPurpose.OutPlant.getDisplayName(Locale.ENGLISH),
                       "totalWithdrawn" to number(24),
                       "withdrawnDate" to "2023-03-03",
