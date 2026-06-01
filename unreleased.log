@@ -1,3 +1,4 @@
+9b0f2dc5 SW-8418 Add planting season allocated species to search api (#4515)
 10fa7225 SW-8418 Add endpoint to upsert allocated species for a planting season (#4514)
 b84c611c SW-8417 Create table for season allocated species (#4513)
 78bd3275 Update database dependencies (#4509)
