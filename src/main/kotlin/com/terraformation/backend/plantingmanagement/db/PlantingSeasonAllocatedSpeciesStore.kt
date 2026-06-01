@@ -66,7 +66,8 @@ class PlantingSeasonAllocatedSpeciesStore(
     with(PLANTING_SEASON_ALLOCATED_SPECIES) {
       dslContext
           .deleteFrom(PLANTING_SEASON_ALLOCATED_SPECIES)
-          .where(PLANTING_SEASON_ID.eq(plantingSeasonId).and(SPECIES_ID.eq(speciesId)))
+          .where(PLANTING_SEASON_ID.eq(plantingSeasonId))
+          .and(SPECIES_ID.eq(speciesId))
           .execute()
     }
   }
