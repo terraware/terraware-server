@@ -1,3 +1,4 @@
+78bd3275 Update database dependencies (#4509)
 3547a23c SW-8427 Persistent events for planting season CUD (#4512)
 0d5f4747 Update dependency software.amazon.awssdk:bom to v2.45.0 (#4510)
 6d2b4fc2 Update plugin com.diffplug.spotless to v8.6.0 (#4508)
