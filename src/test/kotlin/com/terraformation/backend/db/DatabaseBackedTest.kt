@@ -458,6 +458,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationStratumResu
 import com.terraformation.backend.db.tracking.tables.daos.ObservationSubstratumResultsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonAllocatedSpeciesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonSpeciesTargetsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteHistoriesDao
@@ -503,6 +504,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinat
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonAllocatedSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonSpeciesTargetsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
@@ -739,6 +741,7 @@ abstract class DatabaseBackedTest {
   protected val participantProjectSpeciesDao: ParticipantProjectSpeciesDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
+  protected val plantingSeasonAllocatedSpeciesDao: PlantingSeasonAllocatedSpeciesDao by lazyDao()
   protected val plantingSeasonSpeciesTargetsDao: PlantingSeasonSpeciesTargetsDao by lazyDao()
   protected val plantingSiteHistoriesDao: PlantingSiteHistoriesDao by lazyDao()
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
@@ -2307,6 +2310,30 @@ abstract class DatabaseBackedTest {
     plantingSeasonsDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.plantingSeasonIds.add(it) }
+  }
+
+  fun insertPlantingSeasonAllocatedSpecies(
+      row: PlantingSeasonAllocatedSpeciesRow = PlantingSeasonAllocatedSpeciesRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
+      quantity: Int = row.quantity ?: 1,
+      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            plantingSeasonId = plantingSeasonId,
+            quantity = quantity,
+            speciesId = speciesId,
+        )
+
+    plantingSeasonAllocatedSpeciesDao.insert(rowWithDefaults)
   }
 
   fun insertPlantingSeasonSpeciesTarget(
