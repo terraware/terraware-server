@@ -1,6 +1,7 @@
 package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -9,16 +10,21 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEventV1
+import com.terraformation.backend.tracking.db.PlantingSiteNotFoundException
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class PlantingSeasonSpeciesTargetsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
+    private val parentStore: ParentStore,
 ) {
   fun fetchList(plantingSeasonId: PlantingSeasonId): List<PlantingSeasonSpeciesTargetModel> {
     requirePermissions { readPlantingSeason(plantingSeasonId) }
@@ -112,6 +118,14 @@ class PlantingSeasonSpeciesTargetsStore(
 
     validateSeasonNotClosed(plantingSeasonId)
 
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(plantingSeasonId)
+            ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId)
+            ?: throw PlantingSiteNotFoundException(plantingSiteId)
+
     with(PLANTING_SEASON_SPECIES_TARGETS) {
       dslContext
           .deleteFrom(PLANTING_SEASON_SPECIES_TARGETS)
@@ -119,6 +133,16 @@ class PlantingSeasonSpeciesTargetsStore(
           .and(SUBSTRATUM_ID.eq(substratumId))
           .and(SPECIES_ID.eq(speciesId))
           .execute()
+
+      eventPublisher.publishEvent(
+          PlantingSeasonSpeciesTargetDeletedEventV1(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              speciesId = speciesId,
+              substratumId = substratumId,
+          )
+      )
     }
   }
 

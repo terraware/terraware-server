@@ -7,9 +7,12 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
+import org.springframework.context.event.EventListener
 
 @Named
 class PlantingSeasonAllocatedSpeciesStore(
@@ -40,6 +43,30 @@ class PlantingSeasonAllocatedSpeciesStore(
           .set(QUANTITY, quantity)
           .set(MODIFIED_BY, userId)
           .set(MODIFIED_TIME, now)
+          .execute()
+    }
+  }
+
+  @EventListener
+  fun on(event: PlantingSeasonSpeciesTargetDeletedEvent) {
+    val remainingSpeciesTargets =
+        dslContext
+            .selectCount()
+            .from(PLANTING_SEASON_SPECIES_TARGETS)
+            .where(PLANTING_SEASON_SPECIES_TARGETS.PLANTING_SEASON_ID.eq(event.plantingSeasonId))
+            .and(PLANTING_SEASON_SPECIES_TARGETS.SPECIES_ID.eq(event.speciesId))
+            .fetchOne(0, Int::class.java) ?: 0
+
+    if (remainingSpeciesTargets == 0) {
+      delete(event.plantingSeasonId, event.speciesId)
+    }
+  }
+
+  private fun delete(plantingSeasonId: PlantingSeasonId, speciesId: SpeciesId) {
+    with(PLANTING_SEASON_ALLOCATED_SPECIES) {
+      dslContext
+          .deleteFrom(PLANTING_SEASON_ALLOCATED_SPECIES)
+          .where(PLANTING_SEASON_ID.eq(plantingSeasonId).and(SPECIES_ID.eq(speciesId)))
           .execute()
     }
   }

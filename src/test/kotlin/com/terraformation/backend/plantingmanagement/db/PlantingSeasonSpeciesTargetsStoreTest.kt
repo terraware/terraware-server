@@ -2,6 +2,8 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
@@ -11,6 +13,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonSpeciesTargetsRecord
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -23,8 +26,9 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonSpeciesTargetsStore by lazy {
-    PlantingSeasonSpeciesTargetsStore(clock, dslContext)
+    PlantingSeasonSpeciesTargetsStore(clock, dslContext, eventPublisher, ParentStore(dslContext))
   }
 
   private lateinit var plantingSeasonId: PlantingSeasonId
@@ -265,6 +269,16 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
+          )
+      )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonSpeciesTargetDeletedEvent(
+              organizationId = inserted.organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = inserted.plantingSiteId,
+              speciesId = speciesId,
+              substratumId = substratumId,
           )
       )
     }
