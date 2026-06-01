@@ -109,7 +109,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           description = "Activity 2",
       )
       insertPublishedActivityObservation()
-      val activity2FileId = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
+      val activity2FileId = insertFile()
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
       insertPublishedActivityObservationMediaFile()
@@ -170,7 +170,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           PublishedActivityMediaModel(
                               activityId = activityId2,
                               caption = null,
-                              capturedLocalTime = LocalDate.EPOCH.atStartOfDay(),
+                              capturedLocalTime = null,
                               fileId = activity2FileId,
                               fileName = "2",
                               geolocation = null,

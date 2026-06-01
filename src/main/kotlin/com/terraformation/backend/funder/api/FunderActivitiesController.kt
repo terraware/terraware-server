@@ -106,7 +106,7 @@ data class FunderObservationActivityMediaFilePayload(
 
 data class FunderActivityMediaFilePayload(
     val caption: String?,
-    val capturedDate: LocalDate,
+    val capturedDate: LocalDate?,
     val fileId: FileId,
     val fileName: String,
     val geolocation: Point?,

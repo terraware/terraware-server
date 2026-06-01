@@ -125,7 +125,7 @@ data class AdminActivityObservationMediaFilePayload(
 
 data class AdminActivityMediaFilePayload(
     val caption: String?,
-    val capturedDate: LocalDate,
+    val capturedDate: LocalDate?,
     val createdBy: UserId,
     val createdTime: Instant,
     val fileId: FileId,
