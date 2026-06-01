@@ -13,8 +13,9 @@ SELECT
         'plantingSeasonId' VALUE seasons.id,
         'plantingSiteId' VALUE sites.id,
         'startDate' VALUE seasons.start_date,
-        'status' VALUE seasons.status_id
+        'status' VALUE pss.name
         ABSENT ON NULL
     )::JSONB
 FROM tracking.planting_seasons seasons
-JOIN tracking.planting_sites sites ON seasons.planting_site_id = sites.id;
+JOIN tracking.planting_sites sites ON seasons.planting_site_id = sites.id
+JOIN tracking.planting_season_statuses pss ON seasons.status_id = pss.id;
