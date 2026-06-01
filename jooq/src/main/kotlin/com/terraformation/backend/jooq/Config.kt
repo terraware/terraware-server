@@ -664,6 +664,10 @@ val EMBEDDABLES =
             .withTables("public.organization_users")
             .withColumns("organization_id", "user_id"),
         EmbeddableDefinitionType()
+            .withName("planting_season_allocated_species_id")
+            .withTables("tracking.planting_season_allocated_species")
+            .withColumns("planting_season_id", "species_id"),
+        EmbeddableDefinitionType()
             .withName("planting_season_species_targets_id")
             .withTables("tracking.planting_season_species_targets")
             .withColumns("planting_season_id", "species_id", "substratum_id"),

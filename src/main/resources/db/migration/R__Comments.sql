@@ -509,6 +509,8 @@ COMMENT ON TABLE tracking.observed_stratum_species_totals IS 'Aggregated per-str
 COMMENT ON COLUMN tracking.observed_stratum_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
 COMMENT ON COLUMN tracking.observed_stratum_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the stratum, in either the current observation or in previous ones, that have survived since the t0 point.';
 
+COMMENT ON TABLE tracking.planting_season_allocated_species IS 'Quantities of each species allocated for a planting season.';
+
 COMMENT ON TABLE tracking.planting_season_species_targets IS 'Target quantities of each species to plant in each substratum for a planting season.';
 
 COMMENT ON TABLE tracking.planting_season_statuses IS '(Enum) Possible statuses of a planting season.';
