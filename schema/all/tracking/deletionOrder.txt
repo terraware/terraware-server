@@ -14,6 +14,7 @@ observed_plot_coordinates
 observation_plot_results
 stratum_t0_temp_densities
 plot_t0_densities
+planting_season_allocated_species
 scheduled_planting_date_species
 observation_substratum_results
 observation_stratum_results

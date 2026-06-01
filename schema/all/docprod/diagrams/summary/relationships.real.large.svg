@@ -1388,9 +1388,9 @@
 <ellipse fill="none" stroke="black" cx="1110.8" cy="-1521.77" rx="3.2" ry="3.2"/>
 </g>
 <!-- variable_select_options -->
-<g id="node21" class="node">
+<g id="node22" class="node">
 <title>variable_select_options</title>
-<g id="a_node21"><a xlink:href="../../tables/variable_select_options.html" xlink:title="variable_select_options" target="_top">
+<g id="a_node22"><a xlink:href="../../tables/variable_select_options.html" xlink:title="variable_select_options" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="863,-1303.68 863,-1497.68 1046,-1497.68 1046,-1303.68 863,-1303.68"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="863.5,-1475.68 863.5,-1497.68 1046.5,-1497.68 1046.5,-1475.68 863.5,-1475.68"/>
 <polygon fill="none" stroke="black" points="863.5,-1475.68 863.5,-1497.68 1046.5,-1497.68 1046.5,-1475.68 863.5,-1475.68"/>
@@ -1643,38 +1643,10 @@
 <polygon fill="black" stroke="black" points="580.55,-1419.82 588.11,-1424.26 584.52,-1420.25 588.5,-1420.68 588.5,-1420.68 588.5,-1420.68 584.52,-1420.25 588.89,-1417.1 580.55,-1419.82 580.55,-1419.82"/>
 <ellipse fill="none" stroke="black" cx="577.37" cy="-1419.47" rx="3.2" ry="3.2"/>
 </g>
-<!-- variable_select_options&#45;&gt;variable_selects -->
-<g id="edge69" class="edge">
-<title>variable_select_options:w&#45;&gt;variable_selects:e</title>
-<path fill="none" stroke="black" d="M848.08,-1442.68C800.06,-1442.68 782.94,-1442.68 728.5,-1442.68"/>
-<polygon fill="black" stroke="black" points="854.5,-1442.68 862.5,-1446.28 858.5,-1442.68 862.5,-1442.68 862.5,-1442.68 862.5,-1442.68 858.5,-1442.68 862.5,-1439.08 854.5,-1442.68 854.5,-1442.68"/>
-<ellipse fill="none" stroke="black" cx="851.3" cy="-1442.68" rx="3.2" ry="3.2"/>
-</g>
-<!-- variable_select_options&#45;&gt;variable_selects -->
-<g id="edge71" class="edge">
-<title>variable_select_options:w&#45;&gt;variable_selects:e</title>
-<path fill="none" stroke="black" d="M848.08,-1420.68C800.06,-1420.68 782.94,-1420.68 728.5,-1420.68"/>
-<polygon fill="black" stroke="black" points="854.5,-1420.68 862.5,-1424.28 858.5,-1420.68 862.5,-1420.68 862.5,-1420.68 862.5,-1420.68 858.5,-1420.68 862.5,-1417.08 854.5,-1420.68 854.5,-1420.68"/>
-<ellipse fill="none" stroke="black" cx="851.3" cy="-1420.68" rx="3.2" ry="3.2"/>
-</g>
-<!-- variable_select_options&#45;&gt;variable_types -->
-<g id="edge72" class="edge">
-<title>variable_select_options:w&#45;&gt;variable_types:e</title>
-<path fill="none" stroke="black" d="M848.76,-1415.46C756.48,-1338.98 874.6,-447.45 794,-369.68 749.46,-326.71 285.59,-331.35 237,-369.68 133.65,-451.19 299.62,-657.68 168,-657.68"/>
-<polygon fill="black" stroke="black" points="855.02,-1417.84 861.22,-1424.05 858.76,-1419.26 862.5,-1420.68 862.5,-1420.68 862.5,-1420.68 858.76,-1419.26 863.78,-1417.32 855.02,-1417.84 855.02,-1417.84"/>
-<ellipse fill="none" stroke="black" cx="852.03" cy="-1416.7" rx="3.2" ry="3.2"/>
-</g>
-<!-- variable_select_options&#45;&gt;variables -->
-<g id="edge70" class="edge">
-<title>variable_select_options:w&#45;&gt;variables:e</title>
-<path fill="none" stroke="black" d="M847.92,-1440.23C818.84,-1428.78 830.65,-1380.27 794,-1359.68 687.91,-1300.08 625.96,-1385.54 523,-1320.68 485.45,-1297.03 511.88,-1237.68 467.5,-1237.68"/>
-<polygon fill="black" stroke="black" points="854.61,-1441.35 861.9,-1446.23 858.56,-1442.02 862.5,-1442.68 862.5,-1442.68 862.5,-1442.68 858.56,-1442.02 863.1,-1439.13 854.61,-1441.35 854.61,-1441.35"/>
-<ellipse fill="none" stroke="black" cx="851.45" cy="-1440.82" rx="3.2" ry="3.2"/>
-</g>
 <!-- variable_value_table_rows -->
-<g id="node22" class="node">
+<g id="node21" class="node">
 <title>variable_value_table_rows</title>
-<g id="a_node22"><a xlink:href="../../tables/variable_value_table_rows.html" xlink:title="variable_value_table_rows" target="_top">
+<g id="a_node21"><a xlink:href="../../tables/variable_value_table_rows.html" xlink:title="variable_value_table_rows" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="854.5,-2673.68 854.5,-2779.68 1054.5,-2779.68 1054.5,-2673.68 854.5,-2673.68"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="854.5,-2757.68 854.5,-2779.68 1054.5,-2779.68 1054.5,-2757.68 854.5,-2757.68"/>
 <polygon fill="none" stroke="black" points="854.5,-2757.68 854.5,-2779.68 1054.5,-2779.68 1054.5,-2757.68 854.5,-2757.68"/>
@@ -1716,6 +1688,34 @@
 <path fill="none" stroke="black" d="M839.33,-2720.39C827.92,-2710.62 833.38,-2685.88 827,-2663.68 799.83,-2569.07 846.94,-2527.66 794,-2444.68 774.94,-2414.8 762.94,-2400.68 727.5,-2400.68"/>
 <polygon fill="black" stroke="black" points="845.84,-2722.36 852.46,-2728.13 849.67,-2723.52 853.5,-2724.68 853.5,-2724.68 853.5,-2724.68 849.67,-2723.52 854.54,-2721.24 845.84,-2722.36 845.84,-2722.36"/>
 <ellipse fill="none" stroke="black" cx="842.78" cy="-2721.43" rx="3.2" ry="3.2"/>
+</g>
+<!-- variable_select_options&#45;&gt;variable_selects -->
+<g id="edge69" class="edge">
+<title>variable_select_options:w&#45;&gt;variable_selects:e</title>
+<path fill="none" stroke="black" d="M848.08,-1442.68C800.06,-1442.68 782.94,-1442.68 728.5,-1442.68"/>
+<polygon fill="black" stroke="black" points="854.5,-1442.68 862.5,-1446.28 858.5,-1442.68 862.5,-1442.68 862.5,-1442.68 862.5,-1442.68 858.5,-1442.68 862.5,-1439.08 854.5,-1442.68 854.5,-1442.68"/>
+<ellipse fill="none" stroke="black" cx="851.3" cy="-1442.68" rx="3.2" ry="3.2"/>
+</g>
+<!-- variable_select_options&#45;&gt;variable_selects -->
+<g id="edge71" class="edge">
+<title>variable_select_options:w&#45;&gt;variable_selects:e</title>
+<path fill="none" stroke="black" d="M848.08,-1420.68C800.06,-1420.68 782.94,-1420.68 728.5,-1420.68"/>
+<polygon fill="black" stroke="black" points="854.5,-1420.68 862.5,-1424.28 858.5,-1420.68 862.5,-1420.68 862.5,-1420.68 862.5,-1420.68 858.5,-1420.68 862.5,-1417.08 854.5,-1420.68 854.5,-1420.68"/>
+<ellipse fill="none" stroke="black" cx="851.3" cy="-1420.68" rx="3.2" ry="3.2"/>
+</g>
+<!-- variable_select_options&#45;&gt;variable_types -->
+<g id="edge72" class="edge">
+<title>variable_select_options:w&#45;&gt;variable_types:e</title>
+<path fill="none" stroke="black" d="M848.76,-1415.46C756.48,-1338.98 874.6,-447.45 794,-369.68 749.46,-326.71 285.59,-331.35 237,-369.68 133.65,-451.19 299.62,-657.68 168,-657.68"/>
+<polygon fill="black" stroke="black" points="855.02,-1417.84 861.22,-1424.05 858.76,-1419.26 862.5,-1420.68 862.5,-1420.68 862.5,-1420.68 858.76,-1419.26 863.78,-1417.32 855.02,-1417.84 855.02,-1417.84"/>
+<ellipse fill="none" stroke="black" cx="852.03" cy="-1416.7" rx="3.2" ry="3.2"/>
+</g>
+<!-- variable_select_options&#45;&gt;variables -->
+<g id="edge70" class="edge">
+<title>variable_select_options:w&#45;&gt;variables:e</title>
+<path fill="none" stroke="black" d="M847.92,-1440.23C818.84,-1428.78 830.65,-1380.27 794,-1359.68 687.91,-1300.08 625.96,-1385.54 523,-1320.68 485.45,-1297.03 511.88,-1237.68 467.5,-1237.68"/>
+<polygon fill="black" stroke="black" points="854.61,-1441.35 861.9,-1446.23 858.56,-1442.02 862.5,-1442.68 862.5,-1442.68 862.5,-1442.68 858.56,-1442.02 863.1,-1439.13 854.61,-1441.35 854.61,-1441.35"/>
+<ellipse fill="none" stroke="black" cx="851.45" cy="-1440.82" rx="3.2" ry="3.2"/>
 </g>
 <!-- variable_tables&#45;&gt;variable_table_styles -->
 <g id="edge81" class="edge">

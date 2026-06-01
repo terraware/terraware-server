@@ -31,6 +31,7 @@ simplified_planting_site_histories
 plot_t0_densities
 planting_site_populations
 planting_site_notifications
+planting_season_allocated_species
 scheduled_planting_dates
 observation_biomass_quadrat_details
 deliveries

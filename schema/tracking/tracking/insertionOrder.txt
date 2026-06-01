@@ -27,6 +27,7 @@ observation_biomass_species
 deliveries
 observation_biomass_quadrat_details
 scheduled_planting_dates
+planting_season_allocated_species
 planting_site_notifications
 planting_site_populations
 plot_t0_densities

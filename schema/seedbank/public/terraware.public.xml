@@ -174,6 +174,7 @@
             <child column="species_id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
             <child column="species_id" foreignKey="observed_stratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_stratum_species_totals"/>
             <child column="species_id" foreignKey="observed_substratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_substratum_species_totals"/>
+            <child column="species_id" foreignKey="planting_season_allocated_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_allocated_species"/>
             <child column="species_id" foreignKey="planting_season_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_species_targets"/>
             <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
             <child column="species_id" foreignKey="plantings_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="plantings"/>

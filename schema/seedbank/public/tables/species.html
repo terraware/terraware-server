@@ -171,6 +171,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="planting_season_allocated_species.species_id references species.id via planting_season_allocated_species_species_id_fkey"><a href='../../tracking/tables/planting_season_allocated_species.html'>planting_season_allocated_species</a><span class='relatedKey'>.species_id</span></td>
+                                                <td class="constraint detail">planting_season_allocated_species_species_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="planting_season_species_targets.species_id references species.id via planting_season_species_targets_species_id_fkey"><a href='../../tracking/tables/planting_season_species_targets.html'>planting_season_species_targets</a><span class='relatedKey'>.species_id</span></td>
                                                 <td class="constraint detail">planting_season_species_targets_species_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>

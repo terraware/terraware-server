@@ -1,3 +1,5 @@
+10fa7225 SW-8418 Add endpoint to upsert allocated species for a planting season (#4514)
+b84c611c SW-8417 Create table for season allocated species (#4513)
 78bd3275 Update database dependencies (#4509)
 3547a23c SW-8427 Persistent events for planting season CUD (#4512)
 0d5f4747 Update dependency software.amazon.awssdk:bom to v2.45.0 (#4510)
