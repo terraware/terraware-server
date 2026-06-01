@@ -583,9 +583,9 @@
 </g>
 </g>
 <!-- scheduled_planting_dates -->
-<g id="node13" class="node">
+<g id="node12" class="node">
 <title>scheduled_planting_dates</title>
-<g id="a_node13"><a xlink:href="../../tables/scheduled_planting_dates.html" xlink:title="scheduled_planting_dates" target="_top">
+<g id="a_node12"><a xlink:href="../../tables/scheduled_planting_dates.html" xlink:title="scheduled_planting_dates" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="767.5,-739.96 767.5,-907.96 964.5,-907.96 964.5,-739.96 767.5,-739.96"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="768,-885.96 768,-907.96 965,-907.96 965,-885.96 768,-885.96"/>
 <polygon fill="none" stroke="black" points="768,-885.96 768,-907.96 965,-907.96 965,-885.96 768,-885.96"/>
@@ -1356,10 +1356,31 @@
 <polyline fill="none" stroke="black" points="1346.5,-982.96 1342.51,-983.22 "/>
 <ellipse fill="none" stroke="black" cx="1339.31" cy="-983.42" rx="3.2" ry="3.2"/>
 </g>
+<!-- scheduled_planting_dates&#45;&gt;planting_seasons -->
+<g id="edge175" class="edge">
+<title>scheduled_planting_dates:w&#45;&gt;planting_seasons:e</title>
+<path fill="none" stroke="black" d="M752.62,-853.9C600.01,-875.13 846.04,-1249.96 669.5,-1249.96"/>
+<polygon fill="black" stroke="black" points="759.02,-853.48 767.23,-856.55 763.01,-853.22 767,-852.96 767,-852.96 767,-852.96 763.01,-853.22 766.77,-849.37 759.02,-853.48 759.02,-853.48"/>
+<ellipse fill="none" stroke="black" cx="755.82" cy="-853.69" rx="3.2" ry="3.2"/>
+</g>
+<!-- scheduled_planting_dates&#45;&gt;public.users -->
+<g id="edge173" class="edge">
+<title>scheduled_planting_dates:w&#45;&gt;public.users:e</title>
+<path fill="none" stroke="black" d="M752.83,-811.58C664.74,-847.37 779.6,-1239.08 704,-1316.96 684.92,-1336.61 235.44,-1354.91 214,-1371.96 114.98,-1450.67 95.85,-1615.2 92.27,-1685.72"/>
+<polygon fill="black" stroke="black" points="759.13,-810.41 767.65,-812.5 763.07,-809.69 767,-808.96 767,-808.96 767,-808.96 763.07,-809.69 766.35,-805.42 759.13,-810.41 759.13,-810.41"/>
+<ellipse fill="none" stroke="black" cx="755.99" cy="-811" rx="3.2" ry="3.2"/>
+</g>
+<!-- scheduled_planting_dates&#45;&gt;public.users -->
+<g id="edge174" class="edge">
+<title>scheduled_planting_dates:w&#45;&gt;public.users:e</title>
+<path fill="none" stroke="black" d="M752.59,-789.69C665.22,-826.16 780.03,-1216.96 704,-1293.96 684.78,-1313.43 235.31,-1325.8 214,-1342.96 106.77,-1429.27 92.36,-1611.03 91.16,-1685.78"/>
+<polygon fill="black" stroke="black" points="759.14,-788.45 767.67,-790.5 763.07,-787.7 767,-786.96 767,-786.96 767,-786.96 763.07,-787.7 766.33,-783.42 759.14,-788.45 759.14,-788.45"/>
+<ellipse fill="none" stroke="black" cx="756" cy="-789.04" rx="3.2" ry="3.2"/>
+</g>
 <!-- simplified_strata -->
-<g id="node12" class="node">
+<g id="node13" class="node">
 <title>simplified_strata</title>
-<g id="a_node12"><a xlink:href="../../tables/simplified_strata.html" xlink:title="simplified_strata" target="_top">
+<g id="a_node13"><a xlink:href="../../tables/simplified_strata.html" xlink:title="simplified_strata" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="794,-1188.96 794,-1268.96 938,-1268.96 938,-1188.96 794,-1188.96"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="794,-1246.96 794,-1268.96 938,-1268.96 938,-1246.96 794,-1246.96"/>
 <polygon fill="none" stroke="black" points="794,-1246.96 794,-1268.96 938,-1268.96 938,-1246.96 794,-1246.96"/>
@@ -1434,27 +1455,6 @@
 <polygon fill="black" stroke="black" points="791.92,-1232.02 792.48,-1240 790.88,-1240.12 790.33,-1232.13 791.92,-1232.02"/>
 <polyline fill="none" stroke="black" points="793,-1235.96 789.01,-1236.24 "/>
 <ellipse fill="none" stroke="black" cx="785.82" cy="-1236.46" rx="3.2" ry="3.2"/>
-</g>
-<!-- scheduled_planting_dates&#45;&gt;planting_seasons -->
-<g id="edge175" class="edge">
-<title>scheduled_planting_dates:w&#45;&gt;planting_seasons:e</title>
-<path fill="none" stroke="black" d="M752.62,-853.9C600.01,-875.13 846.04,-1249.96 669.5,-1249.96"/>
-<polygon fill="black" stroke="black" points="759.02,-853.48 767.23,-856.55 763.01,-853.22 767,-852.96 767,-852.96 767,-852.96 763.01,-853.22 766.77,-849.37 759.02,-853.48 759.02,-853.48"/>
-<ellipse fill="none" stroke="black" cx="755.82" cy="-853.69" rx="3.2" ry="3.2"/>
-</g>
-<!-- scheduled_planting_dates&#45;&gt;public.users -->
-<g id="edge173" class="edge">
-<title>scheduled_planting_dates:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M752.83,-811.58C664.74,-847.37 779.6,-1239.08 704,-1316.96 684.92,-1336.61 235.44,-1354.91 214,-1371.96 114.98,-1450.67 95.85,-1615.2 92.27,-1685.72"/>
-<polygon fill="black" stroke="black" points="759.13,-810.41 767.65,-812.5 763.07,-809.69 767,-808.96 767,-808.96 767,-808.96 763.07,-809.69 766.35,-805.42 759.13,-810.41 759.13,-810.41"/>
-<ellipse fill="none" stroke="black" cx="755.99" cy="-811" rx="3.2" ry="3.2"/>
-</g>
-<!-- scheduled_planting_dates&#45;&gt;public.users -->
-<g id="edge174" class="edge">
-<title>scheduled_planting_dates:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M752.59,-789.69C665.22,-826.16 780.03,-1216.96 704,-1293.96 684.78,-1313.43 235.31,-1325.8 214,-1342.96 106.77,-1429.27 92.36,-1611.03 91.16,-1685.78"/>
-<polygon fill="black" stroke="black" points="759.14,-788.45 767.67,-790.5 763.07,-787.7 767,-786.96 767,-786.96 767,-786.96 763.07,-787.7 766.33,-783.42 759.14,-788.45 759.14,-788.45"/>
-<ellipse fill="none" stroke="black" cx="756" cy="-789.04" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_site_histories&#45;&gt;planting_sites -->
 <g id="edge128" class="edge">
