@@ -18,6 +18,7 @@ import com.terraformation.backend.eventlog.api.MonitoringSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotSubjectPayload
 import com.terraformation.backend.eventlog.api.OrganizationSubjectPayload
+import com.terraformation.backend.eventlog.api.PlantingSeasonScheduledDateSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonSubjectPayload
 import com.terraformation.backend.eventlog.api.ProjectSubjectPayload
 import com.terraformation.backend.eventlog.api.RecordedTreeSubjectPayload
@@ -26,6 +27,7 @@ import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDatePersistentEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
@@ -100,6 +102,8 @@ class EventLogPayloadTransformer(
       is ObservationPlotPersistentEvent -> ObservationPlotSubjectPayload.forEvent(event, context)
       is OrganizationPersistentEvent -> OrganizationSubjectPayload.forEvent(event, context)
       is PlantingSeasonPersistentEvent -> PlantingSeasonSubjectPayload.forEvent(event, context)
+      is PlantingSeasonScheduledDatePersistentEvent ->
+          PlantingSeasonScheduledDateSubjectPayload.forEvent(event, context)
       is ProjectPersistentEvent -> ProjectSubjectPayload.forEvent(event, context)
       is RecordedTreePersistentEvent -> RecordedTreeSubjectPayload.forEvent(event, context)
       else -> {
