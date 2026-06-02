@@ -691,11 +691,8 @@ class BatchStore(
     }
     if (
         withdrawal.plantingSeasonId != null &&
-            !listOf(
-                    WithdrawalPurpose.OutPlant,
-                    WithdrawalPurpose.Undo,
-                )
-                .contains(withdrawal.purpose)
+            withdrawal.purpose != WithdrawalPurpose.OutPlant &&
+            withdrawal.purpose != WithdrawalPurpose.Undo
     ) {
       throw IllegalArgumentException(
           "Planting season may only be specified for out-plant or undo withdrawals"
