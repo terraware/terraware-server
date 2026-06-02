@@ -1,6 +1,7 @@
 package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
@@ -11,16 +12,24 @@ import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTI
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEventValues
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 
 @Named
 class PlantingSeasonScheduledDatesStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
+    private val parentStore: ParentStore,
 ) {
   fun fetchList(
       plantingSeasonId: PlantingSeasonId
@@ -49,6 +58,12 @@ class PlantingSeasonScheduledDatesStore(
 
     validateSeasonNotClosed(model.plantingSeasonId)
 
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(model.plantingSeasonId)
+            ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId)
+            ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
     val userId = currentUser().userId
     val now = clock.instant()
 
@@ -94,6 +109,16 @@ class PlantingSeasonScheduledDatesStore(
         insertQuery.execute()
       }
 
+      eventPublisher.publishEvent(
+          PlantingSeasonScheduledDateCreatedEvent(
+              date = model.date,
+              organizationId = organizationId,
+              plantingSeasonId = model.plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = newScheduledDateId,
+          )
+      )
+
       newScheduledDateId
     }
 
@@ -107,6 +132,14 @@ class PlantingSeasonScheduledDatesStore(
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
     validateSeasonNotClosed(model.plantingSeasonId)
+
+    val oldModel = fetch(model.plantingSeasonId, scheduledDateId)
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(model.plantingSeasonId)
+            ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId)
+            ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
 
     dslContext.transaction { _ ->
       val updatedCount =
@@ -151,6 +184,25 @@ class PlantingSeasonScheduledDatesStore(
 
         insertQuery.execute()
       }
+
+      if (oldModel.date != model.date) {
+        eventPublisher.publishEvent(
+            PlantingSeasonScheduledDateUpdatedEvent(
+                changedFrom =
+                    PlantingSeasonScheduledDateUpdatedEventValues(
+                        date = oldModel.date.nullIfEquals(model.date),
+                    ),
+                changedTo =
+                    PlantingSeasonScheduledDateUpdatedEventValues(
+                        date = model.date.nullIfEquals(oldModel.date),
+                    ),
+                organizationId = organizationId,
+                plantingSeasonId = model.plantingSeasonId,
+                plantingSiteId = plantingSiteId,
+                scheduledPlantingDateId = scheduledDateId,
+            )
+        )
+      }
     }
   }
 
@@ -161,6 +213,13 @@ class PlantingSeasonScheduledDatesStore(
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
     validateSeasonNotClosed(plantingSeasonId)
+
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(plantingSeasonId)
+            ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+    val organizationId =
+        parentStore.getOrganizationId(plantingSiteId)
+            ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
 
     with(SCHEDULED_PLANTING_DATES) {
       val rowsDeleted =
@@ -174,6 +233,15 @@ class PlantingSeasonScheduledDatesStore(
         throw PlantingSeasonScheduledDateNotFoundException(scheduledDateId)
       }
     }
+
+    eventPublisher.publishEvent(
+        PlantingSeasonScheduledDateDeletedEvent(
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            scheduledPlantingDateId = scheduledDateId,
+        )
+    )
   }
 
   private fun fetchByCondition(

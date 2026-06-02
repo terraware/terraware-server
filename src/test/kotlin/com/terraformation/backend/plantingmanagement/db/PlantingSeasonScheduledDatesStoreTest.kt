@@ -2,12 +2,16 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDateSpeciesRecord
@@ -17,6 +21,10 @@ import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTI
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEventValues
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,18 +38,21 @@ import org.springframework.security.access.AccessDeniedException
 internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonScheduledDatesStore by lazy {
-    PlantingSeasonScheduledDatesStore(clock, dslContext)
+    PlantingSeasonScheduledDatesStore(clock, dslContext, eventPublisher, ParentStore(dslContext))
   }
 
+  private lateinit var organizationId: OrganizationId
   private lateinit var plantingSeasonId: PlantingSeasonId
+  private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var substratumId: SubstratumId
   private lateinit var speciesId: SpeciesId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
-    insertPlantingSite()
+    organizationId = insertOrganization()
+    plantingSiteId = insertPlantingSite()
     insertOrganizationUser(role = Role.Manager)
     insertStratum()
     plantingSeasonId = insertPlantingSeason()
@@ -221,7 +232,7 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
               date = LocalDate.EPOCH,
           )
 
-      store.create(model)
+      val scheduledPlantingDateId = store.create(model)
 
       assertTableEquals(
           ScheduledPlantingDatesRecord(
@@ -235,6 +246,16 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
       )
 
       assertTableEmpty(SCHEDULED_PLANTING_DATE_SPECIES)
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonScheduledDateCreatedEvent(
+              date = LocalDate.EPOCH,
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+          )
+      )
     }
 
     @Test
@@ -411,6 +432,17 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
       )
 
       assertTableEmpty(SCHEDULED_PLANTING_DATE_SPECIES)
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonScheduledDateUpdatedEvent(
+              changedFrom = PlantingSeasonScheduledDateUpdatedEventValues(date = LocalDate.EPOCH),
+              changedTo = PlantingSeasonScheduledDateUpdatedEventValues(date = newDate),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledDateId,
+          )
+      )
     }
 
     @Test
@@ -595,6 +627,15 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
 
       assertTableEmpty(SCHEDULED_PLANTING_DATES)
       assertTableEmpty(SCHEDULED_PLANTING_DATE_SPECIES)
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonScheduledDateDeletedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledDateId,
+          )
+      )
     }
 
     @Test
