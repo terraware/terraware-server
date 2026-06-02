@@ -25,6 +25,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
@@ -233,6 +234,7 @@ data class NurseryWithdrawalPayload(
     val facilityId: FacilityId,
     val id: WithdrawalId,
     val notes: String?,
+    val plantingSeasonId: PlantingSeasonId?,
     val purpose: WithdrawalPurpose,
     val withdrawnDate: LocalDate,
     @Schema(description = "If purpose is \"Undo\", the ID of the withdrawal this one undoes.")
@@ -248,6 +250,7 @@ data class NurseryWithdrawalPayload(
       model.facilityId,
       model.id,
       model.notes,
+      model.plantingSeasonId,
       model.purpose,
       model.withdrawnDate,
       model.undoesWithdrawalId,
@@ -290,6 +293,12 @@ data class CreateNurseryWithdrawalRequestPayload(
     val notes: String? = null,
     @Schema(
         description =
+            "If purpose is \"Out Plant\", the ID of the planting season to which the seedlings " +
+                "were intentioned."
+    )
+    val plantingSeasonId: PlantingSeasonId? = null,
+    @Schema(
+        description =
             "If purpose is \"Out Plant\", the ID of the planting site to which the seedlings " +
                 "were delivered."
     )
@@ -319,6 +328,7 @@ data class CreateNurseryWithdrawalRequestPayload(
           facilityId = facilityId,
           id = null,
           notes = notes,
+          plantingSeasonId = plantingSeasonId,
           purpose = purpose.purpose,
           withdrawnDate = withdrawnDate,
       )

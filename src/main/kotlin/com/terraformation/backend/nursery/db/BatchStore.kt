@@ -689,6 +689,18 @@ class BatchStore(
     } else if (withdrawal.destinationFacilityId != null) {
       throw IllegalArgumentException("Only nursery transfers may include destination facility ID")
     }
+    if (
+        withdrawal.plantingSeasonId != null &&
+            !listOf(
+                    WithdrawalPurpose.OutPlant,
+                    WithdrawalPurpose.Undo,
+                )
+                .contains(withdrawal.purpose)
+    ) {
+      throw IllegalArgumentException(
+          "Planting season may only be specified for out-plant or undo withdrawals"
+      )
+    }
 
     return dslContext.transactionResult { _ ->
       val withdrawalsRow =
@@ -700,6 +712,7 @@ class BatchStore(
               modifiedBy = currentUser().userId,
               modifiedTime = clock.instant(),
               notes = withdrawal.notes,
+              plantingSeasonId = withdrawal.plantingSeasonId,
               purposeId = withdrawal.purpose,
               withdrawnDate = withdrawal.withdrawnDate,
               undoesWithdrawalId = withdrawal.undoesWithdrawalId,
@@ -835,6 +848,7 @@ class BatchStore(
             batchWithdrawals = batchWithdrawals,
             facilityId = withdrawalToUndo.facilityId,
             id = null,
+            plantingSeasonId = withdrawalToUndo.plantingSeasonId,
             purpose = WithdrawalPurpose.Undo,
             withdrawnDate = todayAtNursery,
             undoesWithdrawalId = withdrawalId,
