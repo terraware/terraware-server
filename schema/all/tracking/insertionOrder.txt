@@ -12,6 +12,7 @@ planting_types
 recorded_plant_statuses
 tree_growth_forms
 observations
+planting_seasons
 planting_site_histories
 planting_sites
 strata
@@ -22,7 +23,6 @@ substratum_histories
 monitoring_plot_histories
 observation_plots
 observation_biomass_details
-planting_seasons
 observation_biomass_species
 deliveries
 observation_biomass_quadrat_details

@@ -219,6 +219,11 @@
                                         <td>withdrawals_notes_check</td>
                                         <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                     </tr>
+                                    <tr>
+                                        <td><a href='tables/withdrawals.html'>withdrawals</a></td>
+                                        <td>withdrawals_season_only_for_planting</td>
+                                        <td>((planting_season_id IS NULL) OR (purpose_id &#61; ANY (ARRAY[3, 5])))</td>
+                                    </tr>
                                 </tbody>
                             </table>
                         </div>

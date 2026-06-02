@@ -131,6 +131,11 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="withdrawals.planting_season_id references planting_seasons.id via withdrawals_planting_season_id_fkey"><a href='../../nursery/tables/withdrawals.html'>withdrawals</a><span class='relatedKey'>.planting_season_id</span></td>
+                                                <td class="constraint detail">withdrawals_planting_season_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="planting_season_allocated_species.planting_season_id references planting_seasons.id via planting_season_allocated_species_planting_season_id_fkey"><a href='planting_season_allocated_species.html'>planting_season_allocated_species</a><span class='relatedKey'>.planting_season_id</span></td>
                                                 <td class="constraint detail">planting_season_allocated_species_planting_season_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
