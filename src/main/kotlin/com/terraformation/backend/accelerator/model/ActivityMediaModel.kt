@@ -48,9 +48,9 @@ data class ActivityMediaModel(
     fun of(
         record: Record,
         geolocationField: Field<Geometry?> = FILES.GEOLOCATION,
+        plotBoundaryField: Field<Geometry?> = MONITORING_PLOTS.BOUNDARY,
     ): ActivityMediaModel {
-      val geolocation =
-          record[geolocationField] as? Point? ?: record[MONITORING_PLOTS.BOUNDARY]?.centroid
+      val geolocation = record[geolocationField] as? Point? ?: record[plotBoundaryField]?.centroid
 
       return ActivityMediaModel(
           activityId = record[ACTIVITY_MEDIA_FILES.ACTIVITY_ID]!!,

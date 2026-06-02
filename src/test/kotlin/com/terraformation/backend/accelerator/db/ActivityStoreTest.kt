@@ -314,6 +314,9 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertFile()
       insertActivityMediaFile()
 
+      val plotCenter =
+          monitoringPlotsDao.fetchOneById(inserted.monitoringPlotId)!!.boundary!!.centroid
+
       val expected =
           ExistingActivityModel(
               activityDate = LocalDate.of(2024, 2, 20),
@@ -334,7 +337,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                           createdTime = Instant.EPOCH,
                           fileId = fileId1,
                           fileName = "my-file.jpg",
-                          geolocation = null,
+                          geolocation = plotCenter,
                           isCoverPhoto = true,
                           isHiddenOnMap = false,
                           listPosition = 1,
