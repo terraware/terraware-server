@@ -277,9 +277,9 @@
 </g>
 </g>
 <!-- planting_sites -->
-<g id="node17" class="node">
+<g id="node18" class="node">
 <title>planting_sites</title>
-<g id="a_node17"><a xlink:href="../../tables/planting_sites.html" xlink:title="planting_sites" target="_top">
+<g id="a_node18"><a xlink:href="../../tables/planting_sites.html" xlink:title="planting_sites" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="222,-2512.07 222,-2746.07 446,-2746.07 446,-2512.07 222,-2512.07"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="222,-2724.07 222,-2746.07 446,-2746.07 446,-2724.07 222,-2724.07"/>
 <polygon fill="none" stroke="black" points="222,-2724.07 222,-2746.07 446,-2746.07 446,-2724.07 222,-2724.07"/>
@@ -1729,6 +1729,126 @@
 <polygon fill="black" stroke="black" points="1358.18,-2676.29 1366.95,-2676.37 1361.84,-2674.68 1365.5,-2673.07 1365.5,-2673.07 1365.5,-2673.07 1361.84,-2674.68 1364.05,-2669.78 1358.18,-2676.29 1358.18,-2676.29"/>
 <ellipse fill="none" stroke="black" cx="1355.25" cy="-2677.58" rx="3.2" ry="3.2"/>
 </g>
+<!-- recorded_plants -->
+<g id="node17" class="node">
+<title>recorded_plants</title>
+<g id="a_node17"><a xlink:href="../../tables/recorded_plants.html" xlink:title="recorded_plants" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2512.07 2028.5,-2702.07 2168.5,-2702.07 2168.5,-2512.07 2028.5,-2512.07"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="2028.5,-2680.07 2028.5,-2702.07 2168.5,-2702.07 2168.5,-2680.07 2028.5,-2680.07"/>
+<polygon fill="none" stroke="black" points="2028.5,-2680.07 2028.5,-2702.07 2168.5,-2702.07 2168.5,-2680.07 2028.5,-2680.07"/>
+<text text-anchor="start" x="2033.5" y="-2689.27" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">recorded_plants</text>
+<text text-anchor="start" x="2129.5" y="-2688.27" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="2028.5,-2658.07 2028.5,-2680.07 2168.5,-2680.07 2168.5,-2658.07 2028.5,-2658.07"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2675.07"/>
+<text text-anchor="start" x="2052.5" y="-2666.27" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2636.07 2028.5,-2658.07 2168.5,-2658.07 2168.5,-2636.07 2028.5,-2636.07"/>
+<polygon fill="none" stroke="black" points="2028.5,-2636.07 2028.5,-2658.07 2168.5,-2658.07 2168.5,-2636.07 2028.5,-2636.07"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2653.07"/>
+<text text-anchor="start" x="2052.5" y="-2644.27" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2614.07 2028.5,-2636.07 2168.5,-2636.07 2168.5,-2614.07 2028.5,-2614.07"/>
+<polygon fill="none" stroke="black" points="2028.5,-2614.07 2028.5,-2636.07 2168.5,-2636.07 2168.5,-2614.07 2028.5,-2614.07"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2631.07"/>
+<text text-anchor="start" x="2052.5" y="-2622.27" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
+<polygon fill="none" stroke="black" points="2028.5,-2592.07 2028.5,-2614.07 2168.5,-2614.07 2168.5,-2592.07 2028.5,-2592.07"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2609.07"/>
+<text text-anchor="start" x="2052.5" y="-2600.27" font-family="Helvetica,sans-Serif" font-size="11.00">certainty_id</text>
+<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2570.07 2028.5,-2592.07 2168.5,-2592.07 2168.5,-2570.07 2028.5,-2570.07"/>
+<polygon fill="none" stroke="black" points="2028.5,-2570.07 2028.5,-2592.07 2168.5,-2592.07 2168.5,-2570.07 2028.5,-2570.07"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2587.07"/>
+<text text-anchor="start" x="2052.5" y="-2578.27" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
+<polygon fill="none" stroke="black" points="2028.5,-2548.07 2028.5,-2570.07 2168.5,-2570.07 2168.5,-2548.07 2028.5,-2548.07"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2565.07"/>
+<text text-anchor="start" x="2052.5" y="-2556.27" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
+<polygon fill="none" stroke="black" points="2028.5,-2530.07 2028.5,-2548.07 2168.5,-2548.07 2168.5,-2530.07 2028.5,-2530.07"/>
+<text text-anchor="start" x="2031.5" y="-2536.27" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2512.07 2028.5,-2530.07 2096.5,-2530.07 2096.5,-2512.07 2028.5,-2512.07"/>
+<polygon fill="none" stroke="black" points="2028.5,-2512.07 2028.5,-2530.07 2096.5,-2530.07 2096.5,-2512.07 2028.5,-2512.07"/>
+<text text-anchor="start" x="2031.5" y="-2518.27" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 7</text>
+<polygon fill="#ffffff" stroke="transparent" points="2096.5,-2512.07 2096.5,-2530.07 2132.5,-2530.07 2132.5,-2512.07 2096.5,-2512.07"/>
+<polygon fill="none" stroke="black" points="2096.5,-2512.07 2096.5,-2530.07 2132.5,-2530.07 2132.5,-2512.07 2096.5,-2512.07"/>
+<text text-anchor="start" x="2122.5" y="-2518.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="2132.5,-2512.07 2132.5,-2530.07 2168.5,-2530.07 2168.5,-2512.07 2132.5,-2512.07"/>
+<polygon fill="none" stroke="black" points="2132.5,-2512.07 2132.5,-2530.07 2168.5,-2530.07 2168.5,-2512.07 2132.5,-2512.07"/>
+<text text-anchor="start" x="2158.5" y="-2518.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- recorded_plants&#45;&gt;observation_plots -->
+<g id="edge164" class="edge">
+<title>recorded_plants:w&#45;&gt;observation_plots:e</title>
+<path fill="none" stroke="black" d="M2013.04,-2625.75C1962.35,-2630.77 1946.56,-2663.38 1918,-2713.07 1875.22,-2787.5 1946.35,-3095.07 1860.5,-3095.07"/>
+<polygon fill="black" stroke="black" points="2019.51,-2625.45 2027.67,-2628.67 2023.5,-2625.26 2027.5,-2625.07 2027.5,-2625.07 2027.5,-2625.07 2023.5,-2625.26 2027.33,-2621.48 2019.51,-2625.45 2019.51,-2625.45"/>
+<ellipse fill="none" stroke="black" cx="2016.31" cy="-2625.6" rx="3.2" ry="3.2"/>
+</g>
+<!-- recorded_plants&#45;&gt;observation_plots -->
+<g id="edge165" class="edge">
+<title>recorded_plants:w&#45;&gt;observation_plots:e</title>
+<path fill="none" stroke="black" d="M2013.01,-2647.53C1966.77,-2650.65 1946.55,-2669.95 1918,-2713.07 1867.93,-2788.68 1951.18,-3117.07 1860.5,-3117.07"/>
+<polygon fill="black" stroke="black" points="2019.5,-2647.33 2027.61,-2650.67 2023.5,-2647.2 2027.5,-2647.07 2027.5,-2647.07 2027.5,-2647.07 2023.5,-2647.2 2027.39,-2643.47 2019.5,-2647.33 2019.5,-2647.33"/>
+<ellipse fill="none" stroke="black" cx="2016.31" cy="-2647.43" rx="3.2" ry="3.2"/>
+</g>
+<!-- recorded_plants&#45;&gt;recorded_species_certainties -->
+<g id="edge162" class="edge">
+<title>recorded_plants:w&#45;&gt;recorded_species_certainties:e</title>
+<path fill="none" stroke="black" d="M2013.33,-2599.86C1853,-2527.05 1751.44,-1240.2 1621,-1141.07 1516.61,-1061.75 1424.06,-1054.04 1326,-1141.07 1269.21,-1191.48 1345.43,-1478.07 1269.5,-1478.07"/>
+<polygon fill="black" stroke="black" points="2019.7,-2601.3 2026.7,-2606.58 2023.6,-2602.19 2027.5,-2603.07 2027.5,-2603.07 2027.5,-2603.07 2023.6,-2602.19 2028.3,-2599.56 2019.7,-2601.3 2019.7,-2601.3"/>
+<ellipse fill="none" stroke="black" cx="2016.58" cy="-2600.6" rx="3.2" ry="3.2"/>
+</g>
+<!-- recorded_plants&#45;&gt;monitoring_plots -->
+<g id="edge163" class="edge">
+<title>recorded_plants:w&#45;&gt;monitoring_plots:e</title>
+<path fill="none" stroke="black" d="M2012.87,-2625.64C1957.43,-2630.17 1944.28,-2660.7 1885,-2682.07 1769.04,-2723.88 1741.39,-2740.6 1621,-2767.07 1556.5,-2781.26 1374.08,-2757.79 1326,-2803.07 1161.86,-2957.66 1459.98,-3302.07 1234.5,-3302.07"/>
+<polygon fill="black" stroke="black" points="2019.51,-2625.38 2027.64,-2628.67 2023.5,-2625.23 2027.5,-2625.07 2027.5,-2625.07 2027.5,-2625.07 2023.5,-2625.23 2027.36,-2621.48 2019.51,-2625.38 2019.51,-2625.38"/>
+<ellipse fill="none" stroke="black" cx="2016.31" cy="-2625.51" rx="3.2" ry="3.2"/>
+</g>
+<!-- recorded_plants&#45;&gt;observations -->
+<g id="edge166" class="edge">
+<title>recorded_plants:w&#45;&gt;observations:e</title>
+<path fill="none" stroke="black" d="M2013.03,-2647.81C1953.44,-2654.16 1946.32,-2700.35 1885,-2730.07 1771.52,-2785.08 1741.38,-2796.5 1621,-2834.07 1492.46,-2874.19 1412.8,-2800.14 1326,-2903.07 1274.27,-2964.41 1350.74,-3623.07 1270.5,-3623.07"/>
+<polygon fill="black" stroke="black" points="2019.51,-2647.48 2027.68,-2650.67 2023.51,-2647.28 2027.5,-2647.07 2027.5,-2647.07 2027.5,-2647.07 2023.51,-2647.28 2027.32,-2643.48 2019.51,-2647.48 2019.51,-2647.48"/>
+<ellipse fill="none" stroke="black" cx="2016.31" cy="-2647.64" rx="3.2" ry="3.2"/>
+</g>
+<!-- recorded_plant_statuses -->
+<g id="node50" class="node">
+<title>recorded_plant_statuses</title>
+<g id="a_node50"><a xlink:href="../../tables/recorded_plant_statuses.html" xlink:title="recorded_plant_statuses" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="1675,-958.07 1675,-1042.07 1864,-1042.07 1864,-958.07 1675,-958.07"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="1675.5,-1020.07 1675.5,-1042.07 1864.5,-1042.07 1864.5,-1020.07 1675.5,-1020.07"/>
+<polygon fill="none" stroke="black" points="1675.5,-1020.07 1675.5,-1042.07 1864.5,-1042.07 1864.5,-1020.07 1675.5,-1020.07"/>
+<text text-anchor="start" x="1680.5" y="-1029.27" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">recorded_plant_statuses</text>
+<text text-anchor="start" x="1825.5" y="-1028.27" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="1675.5,-998.07 1675.5,-1020.07 1864.5,-1020.07 1864.5,-998.07 1675.5,-998.07"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1680.5" y="-1015.07"/>
+<text text-anchor="start" x="1707.5" y="-1006.27" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="1675.5,-976.07 1675.5,-998.07 1864.5,-998.07 1864.5,-976.07 1675.5,-976.07"/>
+<polygon fill="none" stroke="black" points="1675.5,-976.07 1675.5,-998.07 1864.5,-998.07 1864.5,-976.07 1675.5,-976.07"/>
+<text text-anchor="start" x="1707.5" y="-984.27" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="1675.5,-958.07 1675.5,-976.07 1758.5,-976.07 1758.5,-958.07 1675.5,-958.07"/>
+<polygon fill="none" stroke="black" points="1675.5,-958.07 1675.5,-976.07 1758.5,-976.07 1758.5,-958.07 1675.5,-958.07"/>
+<text text-anchor="start" x="1678.5" y="-964.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1758.5,-958.07 1758.5,-976.07 1806.5,-976.07 1806.5,-958.07 1758.5,-958.07"/>
+<polygon fill="none" stroke="black" points="1758.5,-958.07 1758.5,-976.07 1806.5,-976.07 1806.5,-958.07 1758.5,-958.07"/>
+<text text-anchor="start" x="1796.5" y="-964.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1806.5,-958.07 1806.5,-976.07 1864.5,-976.07 1864.5,-958.07 1806.5,-958.07"/>
+<polygon fill="none" stroke="black" points="1806.5,-958.07 1806.5,-976.07 1864.5,-976.07 1864.5,-958.07 1806.5,-958.07"/>
+<text text-anchor="start" x="1845.5" y="-964.27" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- recorded_plants&#45;&gt;recorded_plant_statuses -->
+<g id="edge168" class="edge">
+<title>recorded_plants:w&#45;&gt;recorded_plant_statuses:e</title>
+<path fill="none" stroke="black" d="M2012.84,-2558.09C1696.54,-2514 2206.75,-1009.07 1865.5,-1009.07"/>
+<polygon fill="black" stroke="black" points="2019.52,-2558.54 2027.26,-2562.66 2023.51,-2558.8 2027.5,-2559.07 2027.5,-2559.07 2027.5,-2559.07 2023.51,-2558.8 2027.74,-2555.48 2019.52,-2558.54 2019.52,-2558.54"/>
+<ellipse fill="none" stroke="black" cx="2016.33" cy="-2558.32" rx="3.2" ry="3.2"/>
+</g>
+<!-- recorded_plants&#45;&gt;public.species -->
+<g id="edge167" class="edge">
+<title>recorded_plants:w&#45;&gt;public.species:e</title>
+<path fill="none" stroke="black" d="M2012.99,-2580.19C1727.99,-2544.54 2066.16,-1436.34 1885,-1190.07 1771.74,-1036.11 1169.31,-988.38 1028,-1117.07 979.78,-1160.99 1017.47,-1198.84 995,-1260.07 965.46,-1340.59 915.58,-1428.32 887.61,-1474.8"/>
+<polygon fill="black" stroke="black" points="2019.51,-2580.59 2027.28,-2584.67 2023.51,-2580.83 2027.5,-2581.07 2027.5,-2581.07 2027.5,-2581.07 2023.51,-2580.83 2027.72,-2577.48 2019.51,-2580.59 2019.51,-2580.59"/>
+<ellipse fill="none" stroke="black" cx="2016.32" cy="-2580.4" rx="3.2" ry="3.2"/>
+</g>
 <!-- public.time_zones -->
 <g id="node65" class="node">
 <title>public.time_zones</title>
@@ -1862,126 +1982,6 @@
 <path fill="none" stroke="black" d="M206.43,-2559.07C193.85,-2559.07 180.94,-2559.07 168.54,-2559.07"/>
 <polygon fill="black" stroke="black" points="213,-2559.07 221,-2562.67 217,-2559.07 221,-2559.07 221,-2559.07 221,-2559.07 217,-2559.07 221,-2555.47 213,-2559.07 213,-2559.07"/>
 <ellipse fill="none" stroke="black" cx="209.8" cy="-2559.07" rx="3.2" ry="3.2"/>
-</g>
-<!-- recorded_plants -->
-<g id="node18" class="node">
-<title>recorded_plants</title>
-<g id="a_node18"><a xlink:href="../../tables/recorded_plants.html" xlink:title="recorded_plants" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2512.07 2028.5,-2702.07 2168.5,-2702.07 2168.5,-2512.07 2028.5,-2512.07"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="2028.5,-2680.07 2028.5,-2702.07 2168.5,-2702.07 2168.5,-2680.07 2028.5,-2680.07"/>
-<polygon fill="none" stroke="black" points="2028.5,-2680.07 2028.5,-2702.07 2168.5,-2702.07 2168.5,-2680.07 2028.5,-2680.07"/>
-<text text-anchor="start" x="2033.5" y="-2689.27" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">recorded_plants</text>
-<text text-anchor="start" x="2129.5" y="-2688.27" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="2028.5,-2658.07 2028.5,-2680.07 2168.5,-2680.07 2168.5,-2658.07 2028.5,-2658.07"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2675.07"/>
-<text text-anchor="start" x="2052.5" y="-2666.27" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2636.07 2028.5,-2658.07 2168.5,-2658.07 2168.5,-2636.07 2028.5,-2636.07"/>
-<polygon fill="none" stroke="black" points="2028.5,-2636.07 2028.5,-2658.07 2168.5,-2658.07 2168.5,-2636.07 2028.5,-2636.07"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2653.07"/>
-<text text-anchor="start" x="2052.5" y="-2644.27" font-family="Helvetica,sans-Serif" font-size="11.00">observation_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2614.07 2028.5,-2636.07 2168.5,-2636.07 2168.5,-2614.07 2028.5,-2614.07"/>
-<polygon fill="none" stroke="black" points="2028.5,-2614.07 2028.5,-2636.07 2168.5,-2636.07 2168.5,-2614.07 2028.5,-2614.07"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2631.07"/>
-<text text-anchor="start" x="2052.5" y="-2622.27" font-family="Helvetica,sans-Serif" font-size="11.00">monitoring_plot_id</text>
-<polygon fill="none" stroke="black" points="2028.5,-2592.07 2028.5,-2614.07 2168.5,-2614.07 2168.5,-2592.07 2028.5,-2592.07"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2609.07"/>
-<text text-anchor="start" x="2052.5" y="-2600.27" font-family="Helvetica,sans-Serif" font-size="11.00">certainty_id</text>
-<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2570.07 2028.5,-2592.07 2168.5,-2592.07 2168.5,-2570.07 2028.5,-2570.07"/>
-<polygon fill="none" stroke="black" points="2028.5,-2570.07 2028.5,-2592.07 2168.5,-2592.07 2168.5,-2570.07 2028.5,-2570.07"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2587.07"/>
-<text text-anchor="start" x="2052.5" y="-2578.27" font-family="Helvetica,sans-Serif" font-size="11.00">species_id</text>
-<polygon fill="none" stroke="black" points="2028.5,-2548.07 2028.5,-2570.07 2168.5,-2570.07 2168.5,-2548.07 2028.5,-2548.07"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="2033.5" y="-2565.07"/>
-<text text-anchor="start" x="2052.5" y="-2556.27" font-family="Helvetica,sans-Serif" font-size="11.00">status_id</text>
-<polygon fill="none" stroke="black" points="2028.5,-2530.07 2028.5,-2548.07 2168.5,-2548.07 2168.5,-2530.07 2028.5,-2530.07"/>
-<text text-anchor="start" x="2031.5" y="-2536.27" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="2028.5,-2512.07 2028.5,-2530.07 2096.5,-2530.07 2096.5,-2512.07 2028.5,-2512.07"/>
-<polygon fill="none" stroke="black" points="2028.5,-2512.07 2028.5,-2530.07 2096.5,-2530.07 2096.5,-2512.07 2028.5,-2512.07"/>
-<text text-anchor="start" x="2031.5" y="-2518.27" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 7</text>
-<polygon fill="#ffffff" stroke="transparent" points="2096.5,-2512.07 2096.5,-2530.07 2132.5,-2530.07 2132.5,-2512.07 2096.5,-2512.07"/>
-<polygon fill="none" stroke="black" points="2096.5,-2512.07 2096.5,-2530.07 2132.5,-2530.07 2132.5,-2512.07 2096.5,-2512.07"/>
-<text text-anchor="start" x="2122.5" y="-2518.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="2132.5,-2512.07 2132.5,-2530.07 2168.5,-2530.07 2168.5,-2512.07 2132.5,-2512.07"/>
-<polygon fill="none" stroke="black" points="2132.5,-2512.07 2132.5,-2530.07 2168.5,-2530.07 2168.5,-2512.07 2132.5,-2512.07"/>
-<text text-anchor="start" x="2158.5" y="-2518.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- recorded_plants&#45;&gt;observation_plots -->
-<g id="edge164" class="edge">
-<title>recorded_plants:w&#45;&gt;observation_plots:e</title>
-<path fill="none" stroke="black" d="M2013.04,-2625.75C1962.35,-2630.77 1946.56,-2663.38 1918,-2713.07 1875.22,-2787.5 1946.35,-3095.07 1860.5,-3095.07"/>
-<polygon fill="black" stroke="black" points="2019.51,-2625.45 2027.67,-2628.67 2023.5,-2625.26 2027.5,-2625.07 2027.5,-2625.07 2027.5,-2625.07 2023.5,-2625.26 2027.33,-2621.48 2019.51,-2625.45 2019.51,-2625.45"/>
-<ellipse fill="none" stroke="black" cx="2016.31" cy="-2625.6" rx="3.2" ry="3.2"/>
-</g>
-<!-- recorded_plants&#45;&gt;observation_plots -->
-<g id="edge165" class="edge">
-<title>recorded_plants:w&#45;&gt;observation_plots:e</title>
-<path fill="none" stroke="black" d="M2013.01,-2647.53C1966.77,-2650.65 1946.55,-2669.95 1918,-2713.07 1867.93,-2788.68 1951.18,-3117.07 1860.5,-3117.07"/>
-<polygon fill="black" stroke="black" points="2019.5,-2647.33 2027.61,-2650.67 2023.5,-2647.2 2027.5,-2647.07 2027.5,-2647.07 2027.5,-2647.07 2023.5,-2647.2 2027.39,-2643.47 2019.5,-2647.33 2019.5,-2647.33"/>
-<ellipse fill="none" stroke="black" cx="2016.31" cy="-2647.43" rx="3.2" ry="3.2"/>
-</g>
-<!-- recorded_plants&#45;&gt;recorded_species_certainties -->
-<g id="edge162" class="edge">
-<title>recorded_plants:w&#45;&gt;recorded_species_certainties:e</title>
-<path fill="none" stroke="black" d="M2013.33,-2599.86C1853,-2527.05 1751.44,-1240.2 1621,-1141.07 1516.61,-1061.75 1424.06,-1054.04 1326,-1141.07 1269.21,-1191.48 1345.43,-1478.07 1269.5,-1478.07"/>
-<polygon fill="black" stroke="black" points="2019.7,-2601.3 2026.7,-2606.58 2023.6,-2602.19 2027.5,-2603.07 2027.5,-2603.07 2027.5,-2603.07 2023.6,-2602.19 2028.3,-2599.56 2019.7,-2601.3 2019.7,-2601.3"/>
-<ellipse fill="none" stroke="black" cx="2016.58" cy="-2600.6" rx="3.2" ry="3.2"/>
-</g>
-<!-- recorded_plants&#45;&gt;monitoring_plots -->
-<g id="edge163" class="edge">
-<title>recorded_plants:w&#45;&gt;monitoring_plots:e</title>
-<path fill="none" stroke="black" d="M2012.87,-2625.64C1957.43,-2630.17 1944.28,-2660.7 1885,-2682.07 1769.04,-2723.88 1741.39,-2740.6 1621,-2767.07 1556.5,-2781.26 1374.08,-2757.79 1326,-2803.07 1161.86,-2957.66 1459.98,-3302.07 1234.5,-3302.07"/>
-<polygon fill="black" stroke="black" points="2019.51,-2625.38 2027.64,-2628.67 2023.5,-2625.23 2027.5,-2625.07 2027.5,-2625.07 2027.5,-2625.07 2023.5,-2625.23 2027.36,-2621.48 2019.51,-2625.38 2019.51,-2625.38"/>
-<ellipse fill="none" stroke="black" cx="2016.31" cy="-2625.51" rx="3.2" ry="3.2"/>
-</g>
-<!-- recorded_plants&#45;&gt;observations -->
-<g id="edge166" class="edge">
-<title>recorded_plants:w&#45;&gt;observations:e</title>
-<path fill="none" stroke="black" d="M2013.03,-2647.81C1953.44,-2654.16 1946.32,-2700.35 1885,-2730.07 1771.52,-2785.08 1741.38,-2796.5 1621,-2834.07 1492.46,-2874.19 1412.8,-2800.14 1326,-2903.07 1274.27,-2964.41 1350.74,-3623.07 1270.5,-3623.07"/>
-<polygon fill="black" stroke="black" points="2019.51,-2647.48 2027.68,-2650.67 2023.51,-2647.28 2027.5,-2647.07 2027.5,-2647.07 2027.5,-2647.07 2023.51,-2647.28 2027.32,-2643.48 2019.51,-2647.48 2019.51,-2647.48"/>
-<ellipse fill="none" stroke="black" cx="2016.31" cy="-2647.64" rx="3.2" ry="3.2"/>
-</g>
-<!-- recorded_plant_statuses -->
-<g id="node50" class="node">
-<title>recorded_plant_statuses</title>
-<g id="a_node50"><a xlink:href="../../tables/recorded_plant_statuses.html" xlink:title="recorded_plant_statuses" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1675,-958.07 1675,-1042.07 1864,-1042.07 1864,-958.07 1675,-958.07"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="1675.5,-1020.07 1675.5,-1042.07 1864.5,-1042.07 1864.5,-1020.07 1675.5,-1020.07"/>
-<polygon fill="none" stroke="black" points="1675.5,-1020.07 1675.5,-1042.07 1864.5,-1042.07 1864.5,-1020.07 1675.5,-1020.07"/>
-<text text-anchor="start" x="1680.5" y="-1029.27" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">recorded_plant_statuses</text>
-<text text-anchor="start" x="1825.5" y="-1028.27" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="1675.5,-998.07 1675.5,-1020.07 1864.5,-1020.07 1864.5,-998.07 1675.5,-998.07"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1680.5" y="-1015.07"/>
-<text text-anchor="start" x="1707.5" y="-1006.27" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="1675.5,-976.07 1675.5,-998.07 1864.5,-998.07 1864.5,-976.07 1675.5,-976.07"/>
-<polygon fill="none" stroke="black" points="1675.5,-976.07 1675.5,-998.07 1864.5,-998.07 1864.5,-976.07 1675.5,-976.07"/>
-<text text-anchor="start" x="1707.5" y="-984.27" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="1675.5,-958.07 1675.5,-976.07 1758.5,-976.07 1758.5,-958.07 1675.5,-958.07"/>
-<polygon fill="none" stroke="black" points="1675.5,-958.07 1675.5,-976.07 1758.5,-976.07 1758.5,-958.07 1675.5,-958.07"/>
-<text text-anchor="start" x="1678.5" y="-964.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1758.5,-958.07 1758.5,-976.07 1806.5,-976.07 1806.5,-958.07 1758.5,-958.07"/>
-<polygon fill="none" stroke="black" points="1758.5,-958.07 1758.5,-976.07 1806.5,-976.07 1806.5,-958.07 1758.5,-958.07"/>
-<text text-anchor="start" x="1796.5" y="-964.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1806.5,-958.07 1806.5,-976.07 1864.5,-976.07 1864.5,-958.07 1806.5,-958.07"/>
-<polygon fill="none" stroke="black" points="1806.5,-958.07 1806.5,-976.07 1864.5,-976.07 1864.5,-958.07 1806.5,-958.07"/>
-<text text-anchor="start" x="1845.5" y="-964.27" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
-<!-- recorded_plants&#45;&gt;recorded_plant_statuses -->
-<g id="edge168" class="edge">
-<title>recorded_plants:w&#45;&gt;recorded_plant_statuses:e</title>
-<path fill="none" stroke="black" d="M2012.84,-2558.09C1696.54,-2514 2206.75,-1009.07 1865.5,-1009.07"/>
-<polygon fill="black" stroke="black" points="2019.52,-2558.54 2027.26,-2562.66 2023.51,-2558.8 2027.5,-2559.07 2027.5,-2559.07 2027.5,-2559.07 2023.51,-2558.8 2027.74,-2555.48 2019.52,-2558.54 2019.52,-2558.54"/>
-<ellipse fill="none" stroke="black" cx="2016.33" cy="-2558.32" rx="3.2" ry="3.2"/>
-</g>
-<!-- recorded_plants&#45;&gt;public.species -->
-<g id="edge167" class="edge">
-<title>recorded_plants:w&#45;&gt;public.species:e</title>
-<path fill="none" stroke="black" d="M2012.99,-2580.19C1727.99,-2544.54 2066.16,-1436.34 1885,-1190.07 1771.74,-1036.11 1169.31,-988.38 1028,-1117.07 979.78,-1160.99 1017.47,-1198.84 995,-1260.07 965.46,-1340.59 915.58,-1428.32 887.61,-1474.8"/>
-<polygon fill="black" stroke="black" points="2019.51,-2580.59 2027.28,-2584.67 2023.51,-2580.83 2027.5,-2581.07 2027.5,-2581.07 2027.5,-2581.07 2023.51,-2580.83 2027.72,-2577.48 2019.51,-2580.59 2019.51,-2580.59"/>
-<ellipse fill="none" stroke="black" cx="2016.32" cy="-2580.4" rx="3.2" ry="3.2"/>
 </g>
 <!-- mangrove_tides -->
 <g id="node19" class="node">

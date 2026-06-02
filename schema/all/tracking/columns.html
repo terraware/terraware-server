@@ -128,15 +128,15 @@
         "tableName": "planting_sites",
         "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "modified_time",
-        "type": "timestamptz",
-        "length": 35,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
-        "autoUpdated": "",
+        "autoUpdated": "√",
         "defaultValue": "null",
-        "comments": "<p>When the planting site was most recently modified.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_substratum_results",
@@ -153,18 +153,18 @@
         "comments": ""
     },
     {
-        "tableName": "planting_sites",
-        "tableFileName": "planting_sites",
+        "tableName": "recorded_plants",
+        "tableFileName": "recorded_plants",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
         "type": "int8",
         "length": 19,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user created the planting site.<\/p>"
+        "comments": "<p>If certainty is &ldquo;Known,&rdquo; the ID of the plant&rsquo;s species. Null for other certainty values.<\/p>"
     },
     {
         "tableName": "strata",
@@ -534,15 +534,15 @@
         "tableName": "planting_sites",
         "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "survival_rate_includes_temp_plots",
-        "type": "bool",
-        "length": 1,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>modified_by",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "false",
-        "comments": ""
+        "defaultValue": "null",
+        "comments": "<p>Which user most recently modified the planting site.<\/p>"
     },
     {
         "tableName": "draft_planting_sites",
@@ -1178,15 +1178,15 @@
         "tableName": "planting_sites",
         "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>country_code",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "created_time",
+        "type": "timestamptz",
+        "length": 35,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>When the planting site was originally created.<\/p>"
     },
     {
         "tableName": "observed_stratum_species_totals",
@@ -1665,18 +1665,18 @@
         "comments": "<p>Which substratum this monitoring plot is currently part of, if any. May be null if the substratum was edited or removed after the plot was created, or if the plot was created outside the site boundary.<\/p>"
     },
     {
-        "tableName": "planting_sites",
-        "tableFileName": "planting_sites",
+        "tableName": "recorded_plants",
+        "tableFileName": "recorded_plants",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Short name of this planting site. Must be unique within the organization.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "substrata",
@@ -2393,18 +2393,18 @@
         "comments": ""
     },
     {
-        "tableName": "planting_sites",
-        "tableFileName": "planting_sites",
+        "tableName": "recorded_plants",
+        "tableFileName": "recorded_plants",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "boundary",
+        "name": "gps_coordinates",
         "type": "geometry",
         "length": 2147483647,
-        "nullable": "√",
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Boundary of the entire planting site. strata will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_stratum_results",
@@ -2547,32 +2547,32 @@
         "comments": ""
     },
     {
-        "tableName": "recorded_plants",
-        "tableFileName": "recorded_plants",
+        "tableName": "planting_sites",
+        "tableFileName": "planting_sites",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
-        "autoUpdated": "",
-        "defaultValue": "null",
-        "comments": ""
-    },
-    {
-        "tableName": "recorded_plants",
-        "tableFileName": "recorded_plants",
-        "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "species_name",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>time_zone",
         "type": "text",
         "length": 2147483647,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If certainty is &ldquo;Other,&rdquo; the user-supplied name of the plant&rsquo;s species. Null for other certainty values.<\/p>"
+        "comments": ""
+    },
+    {
+        "tableName": "planting_sites",
+        "tableFileName": "planting_sites",
+        "tableType": "Table",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>country_code",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
+        "autoUpdated": "",
+        "defaultValue": "null",
+        "comments": ""
     },
     {
         "tableName": "observed_plot_coordinates",
@@ -2617,18 +2617,18 @@
         "comments": "<p>When the stratum&rsquo;s boundary was most recently modified.<\/p>"
     },
     {
-        "tableName": "planting_sites",
-        "tableFileName": "planting_sites",
+        "tableName": "recorded_plants",
+        "tableFileName": "recorded_plants",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "description",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>certainty_id",
+        "type": "int4",
+        "length": 10,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Optional user-supplied description of the planting site.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_biomass_species",
@@ -2743,18 +2743,18 @@
         "comments": ""
     },
     {
-        "tableName": "recorded_plants",
-        "tableFileName": "recorded_plants",
+        "tableName": "planting_sites",
+        "tableFileName": "planting_sites",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "gps_coordinates",
+        "name": "exclusion",
         "type": "geometry",
         "length": 2147483647,
-        "nullable": "",
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Optional area to exclude from a site. No monitoring plots will be located in this area.<\/p>"
     },
     {
         "tableName": "draft_planting_sites",
@@ -2860,13 +2860,13 @@
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>time_zone",
-        "type": "text",
-        "length": 2147483647,
-        "nullable": "√",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>organization_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Which organization owns this planting site.<\/p>"
     },
     {
         "tableName": "observation_biomass_quadrat_details",
@@ -2914,26 +2914,26 @@
         "tableName": "planting_sites",
         "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "area_ha",
-        "type": "numeric",
-        "length": 0,
-        "nullable": "√",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Short name of this planting site. Must be unique within the organization.<\/p>"
     },
     {
-        "tableName": "recorded_plants",
-        "tableFileName": "recorded_plants",
+        "tableName": "planting_sites",
+        "tableFileName": "planting_sites",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>certainty_id",
-        "type": "int4",
-        "length": 10,
-        "nullable": "",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>project_id",
+        "type": "int8",
+        "length": 19,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -3219,15 +3219,15 @@
         "comments": ""
     },
     {
-        "tableName": "recorded_plants",
-        "tableFileName": "recorded_plants",
+        "tableName": "planting_sites",
+        "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>monitoring_plot_id",
-        "type": "int8",
-        "length": 19,
-        "nullable": "",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "area_ha",
+        "type": "numeric",
+        "length": 0,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
@@ -3793,18 +3793,18 @@
         "comments": ""
     },
     {
-        "tableName": "planting_sites",
-        "tableFileName": "planting_sites",
+        "tableName": "recorded_plants",
+        "tableFileName": "recorded_plants",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>organization_id",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>observation_id",
         "type": "int8",
         "length": 19,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which organization owns this planting site.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "observation_biomass_quadrat_species",
@@ -4619,8 +4619,8 @@
         "comments": "<p>Acidity of water in pH. Must only exists if forest type is &ldquo;Mangrove&rdquo;.<\/p>"
     },
     {
-        "tableName": "planting_sites",
-        "tableFileName": "planting_sites",
+        "tableName": "recorded_plants",
+        "tableFileName": "recorded_plants",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
@@ -4633,32 +4633,32 @@
         "comments": ""
     },
     {
-        "tableName": "planting_sites",
-        "tableFileName": "planting_sites",
+        "tableName": "recorded_plants",
+        "tableFileName": "recorded_plants",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "created_time",
-        "type": "timestamptz",
-        "length": 35,
-        "nullable": "",
+        "name": "species_name",
+        "type": "text",
+        "length": 2147483647,
+        "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>When the planting site was originally created.<\/p>"
+        "comments": "<p>If certainty is &ldquo;Other,&rdquo; the user-supplied name of the plant&rsquo;s species. Null for other certainty values.<\/p>"
     },
     {
         "tableName": "planting_sites",
         "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>project_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "description",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Optional user-supplied description of the planting site.<\/p>"
     },
     {
         "tableName": "recorded_trees",
@@ -4703,17 +4703,17 @@
         "comments": ""
     },
     {
-        "tableName": "recorded_plants",
-        "tableFileName": "recorded_plants",
+        "tableName": "planting_sites",
+        "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>status_id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "survival_rate_includes_temp_plots",
+        "type": "bool",
+        "length": 1,
         "nullable": "",
         "autoUpdated": "",
-        "defaultValue": "null",
+        "defaultValue": "false",
         "comments": ""
     },
     {
@@ -4857,18 +4857,18 @@
         "comments": ""
     },
     {
-        "tableName": "recorded_plants",
-        "tableFileName": "recorded_plants",
+        "tableName": "planting_sites",
+        "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "modified_time",
+        "type": "timestamptz",
+        "length": 35,
         "nullable": "",
-        "autoUpdated": "√",
+        "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>When the planting site was most recently modified.<\/p>"
     },
     {
         "tableName": "recorded_trees",
@@ -5473,18 +5473,18 @@
         "comments": "<p>ID of the newer monitoring plot.<\/p>"
     },
     {
-        "tableName": "planting_sites",
-        "tableFileName": "planting_sites",
+        "tableName": "recorded_plants",
+        "tableFileName": "recorded_plants",
         "tableType": "Table",
         "keyClass": "foreignKey",
         "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>modified_by",
-        "type": "int8",
-        "length": 19,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>status_id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Which user most recently modified the planting site.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "substratum_histories",
@@ -5532,15 +5532,15 @@
         "tableName": "planting_sites",
         "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "grid_origin",
-        "type": "geometry",
-        "length": 2147483647,
-        "nullable": "√",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>created_by",
+        "type": "int8",
+        "length": 19,
+        "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Coordinates of the origin point of the grid of monitoring plots. Monitoring plot corners have X and Y coordinates that are multiples of 25 meters from the origin point.<\/p>"
+        "comments": "<p>Which user created the planting site.<\/p>"
     },
     {
         "tableName": "strata",
@@ -5898,13 +5898,13 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "exclusion",
+        "name": "boundary",
         "type": "geometry",
         "length": 2147483647,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Optional area to exclude from a site. No monitoring plots will be located in this area.<\/p>"
+        "comments": "<p>Boundary of the entire planting site. strata will generally fall inside this boundary. This will typically be a single polygon but may be multiple polygons if a planting site has several disjoint areas. Coordinates always use SRID 4326 (WGS 84 latitude/longitude).<\/p>"
     },
     {
         "tableName": "deliveries",
@@ -5921,18 +5921,18 @@
         "comments": ""
     },
     {
-        "tableName": "recorded_plants",
-        "tableFileName": "recorded_plants",
+        "tableName": "planting_sites",
+        "tableFileName": "planting_sites",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>species_id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "grid_origin",
+        "type": "geometry",
+        "length": 2147483647,
         "nullable": "√",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>If certainty is &ldquo;Known,&rdquo; the ID of the plant&rsquo;s species. Null for other certainty values.<\/p>"
+        "comments": "<p>Coordinates of the origin point of the grid of monitoring plots. Monitoring plot corners have X and Y coordinates that are multiples of 25 meters from the origin point.<\/p>"
     },
     {
         "tableName": "tree_growth_forms",
