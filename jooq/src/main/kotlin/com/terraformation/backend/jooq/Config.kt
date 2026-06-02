@@ -280,10 +280,6 @@ val ENUM_TABLES =
                 ),
                 EnumTable("mangrove_tides", listOf("observation_biomass_details\\.tide_id")),
                 EnumTable(
-                    "planting_date_request_statuses",
-                    listOf("planting_date_requests\\.status_id"),
-                ),
-                EnumTable(
                     "observable_conditions",
                     listOf("observation_plot_conditions\\.condition_id"),
                 ),
@@ -313,6 +309,10 @@ val ENUM_TABLES =
                     isLocalizable = false,
                 ),
                 EnumTable("observation_types", listOf("observations\\.observation_type_id")),
+                EnumTable(
+                    "planting_date_request_statuses",
+                    listOf("planting_date_requests\\.status_id"),
+                ),
                 EnumTable("planting_season_statuses", listOf("planting_seasons\\.status_id")),
                 EnumTable("planting_types"),
                 EnumTable(
@@ -529,6 +529,10 @@ val ID_WRAPPERS =
                     listOf("observation_types\\.id", ".*\\.observation_type_id"),
                 ),
                 IdWrapper("ObservedPlotCoordinatesId", listOf("observed_plot_coordinates\\.id")),
+                IdWrapper(
+                    "PlantingDateRequestId",
+                    listOf("planting_date_requests\\.id", ".*\\.planting_date_request_id"),
+                ),
                 IdWrapper("PlantingId", listOf("plantings\\.id")),
                 IdWrapper(
                     "PlantingSeasonId",
@@ -667,6 +671,10 @@ val EMBEDDABLES =
             .withName("organization_user_id")
             .withTables("public.organization_users")
             .withColumns("organization_id", "user_id"),
+        EmbeddableDefinitionType()
+            .withName("planting_date_request_species_id")
+            .withTables("tracking.planting_date_request_species")
+            .withColumns("planting_date_request_id", "substratum_id", "species_id"),
         EmbeddableDefinitionType()
             .withName("planting_season_allocated_species_id")
             .withTables("tracking.planting_season_allocated_species")
