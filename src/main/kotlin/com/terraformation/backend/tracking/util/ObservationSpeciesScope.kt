@@ -250,6 +250,15 @@ class ObservationSpeciesSite(
           .where(OBSERVATIONS.ID.eq(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID)),
   )
 
+  constructor(
+      plantingSiteId: PlantingSiteId
+  ) : this(
+      DSL.select(DSL.inline(plantingSiteId)),
+      DSL.select(OBSERVATIONS.PLANTING_SITE_HISTORY_ID)
+          .from(OBSERVATIONS)
+          .where(OBSERVATIONS.ID.eq(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID)),
+  )
+
   override val scopeId = siteSelect
 
   override val scopeHistoryId = siteHistorySelect
