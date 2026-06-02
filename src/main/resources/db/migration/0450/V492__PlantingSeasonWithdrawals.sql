@@ -3,7 +3,7 @@ ALTER TABLE nursery.withdrawals
 
 ALTER TABLE nursery.withdrawals
     ADD CONSTRAINT withdrawals_season_only_for_planting
-        CHECK (planting_season_id IS NULL OR purpose_id = 3);
+        CHECK (planting_season_id IS NULL OR purpose_id in (3, 5));
 
 -- Previous version was in V471
 CREATE OR REPLACE VIEW nursery.withdrawal_summaries AS
