@@ -294,7 +294,7 @@ data class CreateNurseryWithdrawalRequestPayload(
     @Schema(
         description =
             "If purpose is \"Out Plant\", the ID of the planting season to which the seedlings " +
-                "were intentioned."
+                "were intended. For \"Undo\" withdrawals, this is inherited from the original withdrawal."
     )
     val plantingSeasonId: PlantingSeasonId? = null,
     @Schema(
