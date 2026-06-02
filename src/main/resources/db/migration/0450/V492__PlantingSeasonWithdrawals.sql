@@ -35,7 +35,7 @@ SELECT withdrawals.id,
                 FROM tracking.plantings p
                 WHERE p.delivery_id = deliveries.id
                   AND p.planting_type_id = 2))        AS has_reassignments,
-    withdrawals.planting_season_id
+       withdrawals.planting_season_id
 FROM nursery.withdrawals withdrawals
          JOIN facilities ON withdrawals.facility_id = facilities.id
          LEFT JOIN tracking.deliveries deliveries
