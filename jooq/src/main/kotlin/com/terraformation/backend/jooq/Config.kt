@@ -280,6 +280,10 @@ val ENUM_TABLES =
                 ),
                 EnumTable("mangrove_tides", listOf("observation_biomass_details\\.tide_id")),
                 EnumTable(
+                    "planting_date_request_statuses",
+                    listOf("planting_date_requests\\.status_id"),
+                ),
+                EnumTable(
                     "observable_conditions",
                     listOf("observation_plot_conditions\\.condition_id"),
                 ),

@@ -393,6 +393,7 @@ COMMENT ON COLUMN nursery.withdrawals.facility_id IS 'Nursery from which the see
 COMMENT ON COLUMN nursery.withdrawals.modified_by IS 'Which user most recently modified the withdrawal.';
 COMMENT ON COLUMN nursery.withdrawals.modified_time IS 'When the withdrawal was most recently modified.';
 COMMENT ON COLUMN nursery.withdrawals.notes IS 'User-supplied freeform text describing the withdrawal.';
+COMMENT ON COLUMN nursery.withdrawals.planting_date_request_id IS 'If the withdrawal is being used to fulfill a scheduled planting date request for a planting season..';
 COMMENT ON COLUMN nursery.withdrawals.planting_season_id IS 'Optional planting season for which the seedlings were withdrawn for planting.';
 COMMENT ON COLUMN nursery.withdrawals.purpose_id IS 'Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)';
 COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when the seedlings were withdrawn.';
@@ -509,6 +510,12 @@ COMMENT ON COLUMN tracking.observed_substratum_species_totals.survival_rate IS '
 COMMENT ON TABLE tracking.observed_stratum_species_totals IS 'Aggregated per-stratum, per-species totals of plants recorded during observations.';
 COMMENT ON COLUMN tracking.observed_stratum_species_totals.permanent_live IS 'The number of live and existing plants observed in permanent monitoring plots.';
 COMMENT ON COLUMN tracking.observed_stratum_species_totals.survival_rate IS 'Percentage of plants of the species observed in permanent monitoring plots in the stratum, in either the current observation or in previous ones, that have survived since the t0 point.';
+
+COMMENT ON TABLE tracking.planting_date_request_statuses IS '(Enum) Possible statuses of a planting date request.';
+
+COMMENT ON TABLE tracking.planting_date_requests IS 'Requested planting date for a planting season.';
+
+COMMENT ON TABLE tracking.planting_date_request_species IS 'Quantities of each species requested for a planting date.';
 
 COMMENT ON TABLE tracking.planting_season_allocated_species IS 'Quantities of each species allocated for a planting season.';
 
