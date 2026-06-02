@@ -7,6 +7,7 @@ import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tracking.DeliveryId
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import java.time.LocalDate
 
 /**
@@ -44,6 +45,7 @@ data class WithdrawalModel<ID : WithdrawalId?>(
     val facilityId: FacilityId,
     val id: ID,
     val notes: String? = null,
+    val plantingSeasonId: PlantingSeasonId? = null,
     val purpose: WithdrawalPurpose,
     val withdrawnDate: LocalDate,
     val undoesWithdrawalId: WithdrawalId? = null,
@@ -89,6 +91,7 @@ fun WithdrawalsRow.toModel(
         facilityId = facilityId!!,
         id = id!!,
         notes = notes,
+        plantingSeasonId = plantingSeasonId,
         purpose = purposeId!!,
         withdrawnDate = withdrawnDate!!,
         undoesWithdrawalId = undoesWithdrawalId,

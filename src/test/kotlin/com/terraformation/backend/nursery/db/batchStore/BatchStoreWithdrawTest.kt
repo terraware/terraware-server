@@ -10,7 +10,9 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRo
 import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
+import com.terraformation.backend.db.nursery.tables.records.WithdrawalsRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.nursery.db.BatchInventoryInsufficientException
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
@@ -27,6 +29,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
 import org.junit.jupiter.api.assertThrows
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.security.access.AccessDeniedException
 
 internal class BatchStoreWithdrawTest : BatchStoreTest() {
@@ -1272,6 +1275,98 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               id = null,
               purpose = WithdrawalPurpose.NurseryTransfer,
               withdrawnDate = LocalDate.EPOCH,
+          )
+      )
+    }
+  }
+
+  @Test
+  fun `stores plantingSeasonId in withdrawal`() {
+    insertPlantingSite()
+    val plantingSeasonId = insertPlantingSeason()
+
+    store.withdraw(
+        NewWithdrawalModel(
+            facilityId = facilityId,
+            id = null,
+            purpose = WithdrawalPurpose.OutPlant,
+            withdrawnDate = LocalDate.EPOCH,
+            plantingSeasonId = plantingSeasonId,
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        batchId = species1Batch1Id,
+                        germinatingQuantityWithdrawn = 1,
+                        activeGrowthQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 0,
+                        hardeningOffQuantityWithdrawn = 0,
+                    )
+                ),
+        )
+    )
+
+    assertTableEquals(
+        WithdrawalsRecord(
+            facilityId = facilityId,
+            purposeId = WithdrawalPurpose.OutPlant,
+            withdrawnDate = LocalDate.EPOCH,
+            plantingSeasonId = plantingSeasonId,
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+        )
+    )
+  }
+
+  @Test
+  fun `throws exception if planting season id is specified but not found`() {
+    assertThrows<DataIntegrityViolationException> {
+      store.withdraw(
+          NewWithdrawalModel(
+              batchWithdrawals =
+                  listOf(
+                      BatchWithdrawalModel(
+                          batchId = species1Batch1Id,
+                          germinatingQuantityWithdrawn = 1,
+                          activeGrowthQuantityWithdrawn = 0,
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0,
+                      )
+                  ),
+              facilityId = facilityId,
+              id = null,
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.EPOCH,
+              plantingSeasonId = PlantingSeasonId(99999L),
+          )
+      )
+    }
+  }
+
+  @Test
+  fun `throws exception if planting season id and purpose is not OutPlant`() {
+    insertPlantingSite()
+    val plantingSeasonId = insertPlantingSeason()
+
+    assertThrows<IllegalArgumentException> {
+      store.withdraw(
+          NewWithdrawalModel(
+              batchWithdrawals =
+                  listOf(
+                      BatchWithdrawalModel(
+                          batchId = species1Batch1Id,
+                          germinatingQuantityWithdrawn = 1,
+                          activeGrowthQuantityWithdrawn = 0,
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0,
+                      )
+                  ),
+              facilityId = facilityId,
+              id = null,
+              purpose = WithdrawalPurpose.Other,
+              withdrawnDate = LocalDate.EPOCH,
+              plantingSeasonId = plantingSeasonId,
           )
       )
     }

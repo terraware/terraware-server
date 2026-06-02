@@ -7,6 +7,7 @@ import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.nursery.db.UndoOfNurseryTransferNotAllowedException
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.nursery.db.WithdrawalAlreadyUndoneException
@@ -26,6 +27,7 @@ import org.springframework.security.access.AccessDeniedException
 internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
   private lateinit var batch1Id: BatchId
   private lateinit var batch2Id: BatchId
+  private lateinit var plantingSeasonId: PlantingSeasonId
 
   @BeforeEach
   fun insertInitialBatches() {
@@ -51,6 +53,9 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
             totalLost = 0,
             totalLossCandidates = 50 + 60 + 70,
         )
+
+    insertPlantingSite()
+    plantingSeasonId = insertPlantingSeason()
 
     every { user.canReadWithdrawal(any()) } returns true
   }
@@ -81,7 +86,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                         activeGrowthQuantityWithdrawn = 5,
                         readyQuantityWithdrawn = 6,
                     ),
-                )
+                ),
+            plantingSeasonId = plantingSeasonId,
         )
 
     clock.instant = clock.instant.plus(2, ChronoUnit.DAYS)
@@ -125,6 +131,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                 ),
             facilityId = facilityId,
             id = undoWithdrawal.id,
+            plantingSeasonId = plantingSeasonId,
             purpose = WithdrawalPurpose.Undo,
             withdrawnDate = LocalDate.ofInstant(clock.instant, ZoneOffset.UTC),
             undoesWithdrawalId = withdrawalId,
@@ -224,7 +231,8 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
               )
           ),
       destinationFacilityId: FacilityId? = null,
-      purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
+      plantingSeasonId: PlantingSeasonId? = null,
+      purpose: WithdrawalPurpose = WithdrawalPurpose.OutPlant,
       withdrawnDate: LocalDate = LocalDate.EPOCH,
   ): WithdrawalId {
     return store
@@ -234,6 +242,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                 destinationFacilityId = destinationFacilityId,
                 facilityId = facilityId,
                 id = null,
+                plantingSeasonId = plantingSeasonId,
                 purpose = purpose,
                 withdrawnDate = withdrawnDate,
             )

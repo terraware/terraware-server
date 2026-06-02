@@ -4,7 +4,9 @@ import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.nursery.BatchSubstrate
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
+import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
+import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
@@ -97,20 +99,74 @@ internal class BatchStoreFetchTest : BatchStoreTest() {
   }
 
   @Test
-  fun `fetchWithdrawalById populates undo fields`() {
+  fun `fetchWithdrawalById populates all fields for withdrawal and undo withdrawal`() {
+    insertPlantingSite()
+    val plantingSeasonId = insertPlantingSeason()
+
     every { user.canReadWithdrawal(any()) } returns true
 
     insertBatch()
-    val withdrawalId = insertNurseryWithdrawal(purpose = WithdrawalPurpose.Other)
+    val withdrawalId =
+        insertNurseryWithdrawal(
+            purpose = WithdrawalPurpose.OutPlant,
+            plantingSeasonId = plantingSeasonId,
+        )
     insertBatchWithdrawal(readyQuantityWithdrawn = 1)
     val undoWithdrawalId =
-        insertNurseryWithdrawal(purpose = WithdrawalPurpose.Undo, undoesWithdrawalId = withdrawalId)
+        insertNurseryWithdrawal(
+            purpose = WithdrawalPurpose.Undo,
+            undoesWithdrawalId = withdrawalId,
+            plantingSeasonId = plantingSeasonId,
+        )
     insertBatchWithdrawal(readyQuantityWithdrawn = -1)
 
     val withdrawal = store.fetchWithdrawalById(withdrawalId)
-    assertEquals(undoWithdrawalId, withdrawal.undoneByWithdrawalId, "Undone by")
+    assertEquals(
+        ExistingWithdrawalModel(
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        batchId = inserted.batchId,
+                        germinatingQuantityWithdrawn = 0,
+                        activeGrowthQuantityWithdrawn = 0,
+                        hardeningOffQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 1,
+                    )
+                ),
+            facilityId = facilityId,
+            id = withdrawalId,
+            plantingSeasonId = plantingSeasonId,
+            purpose = WithdrawalPurpose.OutPlant,
+            withdrawnDate = LocalDate.EPOCH,
+            undoneByWithdrawalId = undoWithdrawalId,
+        ),
+        withdrawal,
+        "Initial Withdrawal",
+    )
 
     val undoWithdrawal = store.fetchWithdrawalById(undoWithdrawalId)
     assertEquals(withdrawalId, undoWithdrawal.undoesWithdrawalId, "Undoes")
+    assertEquals(
+        ExistingWithdrawalModel(
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        batchId = inserted.batchId,
+                        germinatingQuantityWithdrawn = 0,
+                        activeGrowthQuantityWithdrawn = 0,
+                        hardeningOffQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = -1,
+                    )
+                ),
+            facilityId = facilityId,
+            id = undoWithdrawalId,
+            plantingSeasonId = plantingSeasonId,
+            purpose = WithdrawalPurpose.Undo,
+            withdrawnDate = LocalDate.EPOCH,
+            undoesWithdrawalId = withdrawalId,
+        ),
+        undoWithdrawal,
+        "Undo Withdrawal",
+    )
   }
 }
