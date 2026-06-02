@@ -19,12 +19,16 @@ import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EventLogPayloadContext
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDatePersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
@@ -375,6 +379,63 @@ data class PlantingSeasonSubjectPayload(
   }
 }
 
+@JsonTypeName("PlantingSeasonScheduledDate")
+data class PlantingSeasonScheduledDateSubjectPayload(
+    override val fullText: String,
+    val plantingSeasonId: PlantingSeasonId,
+    val plantingSiteId: PlantingSiteId,
+    val scheduledPlantingDateId: ScheduledPlantingDateId,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingSeasonScheduledDatePersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlantingSeasonScheduledDateSubjectPayload {
+      // Since the IDs are meaningless to users, we want the full subject to include the scheduled
+      // date. For events that change the date of a scheduled planting date, we want the subject to
+      // list the "changed from" date so it shows up like "Scheduled date 2026-01-01 date changed to
+      // 2026-01-05." But for other events, we want whichever date was the active one before that
+      // event.
+      val date =
+          when (event) {
+            is PlantingSeasonScheduledDateCreatedEvent -> event.date
+
+            is PlantingSeasonScheduledDateUpdatedEvent if event.changedFrom.date != null -> {
+              event.changedFrom.date
+            }
+
+            else -> {
+              val activeDate =
+                  context
+                      .lastEventBefore<PlantingSeasonScheduledDateUpdatedEvent>(event) {
+                        it.scheduledPlantingDateId == event.scheduledPlantingDateId &&
+                            it.changedTo.date != null
+                      }
+                      ?.changedTo
+                      ?.date
+
+              activeDate
+                  ?: context
+                      .lastEventBefore<PlantingSeasonScheduledDateCreatedEvent>(event) {
+                        it.scheduledPlantingDateId == event.scheduledPlantingDateId
+                      }
+                      ?.date
+            }
+          }
+      val name = date?.toString() ?: event.scheduledPlantingDateId.toString()
+
+      return PlantingSeasonScheduledDateSubjectPayload(
+          fullText = context.subjectFullText<PlantingSeasonScheduledDateSubjectPayload>(name),
+          plantingSeasonId = event.plantingSeasonId,
+          plantingSiteId = event.plantingSiteId,
+          scheduledPlantingDateId = event.scheduledPlantingDateId,
+          shortText = context.subjectShortText<PlantingSeasonScheduledDateSubjectPayload>(),
+      )
+    }
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -467,6 +528,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
   Organization(OrganizationPersistentEvent::class),
   PlantingSeason(PlantingSeasonPersistentEvent::class),
+  PlantingSeasonScheduledDate(PlantingSeasonScheduledDatePersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
 }
