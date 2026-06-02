@@ -22,6 +22,7 @@ import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
@@ -151,6 +152,17 @@ class PublishedActivityStore(
       condition: Condition,
       includeMedia: Boolean,
   ): List<PublishedActivityModel> {
+    val monitoringPlotNumberField =
+        DSL.field(
+            DSL.select(MONITORING_PLOTS.PLOT_NUMBER)
+                .from(MONITORING_PLOTS)
+                .join(OBSERVATION_PLOTS)
+                .on(MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+                .where(OBSERVATIONS.IS_AD_HOC)
+                .and(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                .limit(1)
+        )
+
     return with(PUBLISHED_ACTIVITIES) {
       if (includeMedia) {
         dslContext
@@ -158,7 +170,10 @@ class PublishedActivityStore(
                 asterisk(),
                 PUBLISHED_ACTIVITY_OBSERVATIONS.asterisk(),
                 OBSERVATIONS.COMPLETED_TIME,
+                OBSERVATIONS.IS_AD_HOC,
+                OBSERVATIONS.OBSERVATION_TYPE_ID,
                 mediaMultiset,
+                monitoringPlotNumberField,
             )
             .from(PUBLISHED_ACTIVITIES)
             .leftJoin(PUBLISHED_ACTIVITY_OBSERVATIONS)
@@ -167,13 +182,16 @@ class PublishedActivityStore(
             .on(PUBLISHED_ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
             .where(condition)
             .orderBy(ACTIVITY_DATE, ACTIVITY_ID)
-            .fetch { PublishedActivityModel.of(it, mediaMultiset) }
+            .fetch { PublishedActivityModel.of(it, mediaMultiset, monitoringPlotNumberField) }
       } else {
         dslContext
             .select(
                 asterisk(),
                 PUBLISHED_ACTIVITY_OBSERVATIONS.asterisk(),
                 OBSERVATIONS.COMPLETED_TIME,
+                OBSERVATIONS.IS_AD_HOC,
+                OBSERVATIONS.OBSERVATION_TYPE_ID,
+                monitoringPlotNumberField,
             )
             .from(PUBLISHED_ACTIVITIES)
             .leftJoin(PUBLISHED_ACTIVITY_OBSERVATIONS)
@@ -182,7 +200,7 @@ class PublishedActivityStore(
             .on(PUBLISHED_ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
             .where(condition)
             .orderBy(ACTIVITY_DATE, ACTIVITY_ID)
-            .fetch { PublishedActivityModel.of(it, null) }
+            .fetch { PublishedActivityModel.of(it, null, monitoringPlotNumberField) }
       }
     }
   }

@@ -261,9 +261,17 @@ data class ActivityMediaFilePayload(
 }
 
 data class ActivityObservationPayload(
+    @Schema(
+        description =
+            "If this was an ad-hoc observation, its plot number. Not set for assigned " +
+                "observations because they can include multiple plots."
+    )
+    val monitoringPlotNumber: Long?,
     val observationId: ObservationId,
 ) {
-  constructor(model: ExistingActivityModel.Observation) : this(model.observationId)
+  constructor(
+      model: ExistingActivityModel.Observation
+  ) : this(model.monitoringPlotNumber, model.observationId)
 }
 
 data class ActivityPayload(

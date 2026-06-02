@@ -9,6 +9,8 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import java.time.Instant
 import java.time.LocalDate
 import org.jooq.Field
@@ -34,15 +36,29 @@ data class ExistingActivityModel(
     val verifiedTime: Instant? = null,
 ) {
   data class Observation(
+      val isAdHoc: Boolean,
+      val monitoringPlotNumber: Long?,
       val observationId: ObservationId,
+      val observationType: ObservationType,
   )
 
   companion object {
     fun of(
         record: Record,
         mediaField: Field<List<ActivityMediaModel>>?,
+        monitoringPlotNumberField: Field<Long?>,
     ): ExistingActivityModel {
       return with(ACTIVITIES) {
+        val observation =
+            record[ACTIVITY_OBSERVATIONS.OBSERVATION_ID]?.let { observationId ->
+              Observation(
+                  isAdHoc = record[OBSERVATIONS.IS_AD_HOC]!!,
+                  monitoringPlotNumber = record[monitoringPlotNumberField],
+                  observationId = observationId,
+                  observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID]!!,
+              )
+            }
+
         ExistingActivityModel(
             activityDate = record[ACTIVITY_DATE]!!,
             activityStatus = record[ACTIVITY_STATUS_ID]!!,
@@ -55,7 +71,7 @@ data class ExistingActivityModel(
             media = mediaField?.let { record[it] } ?: emptyList(),
             modifiedBy = record[MODIFIED_BY]!!,
             modifiedTime = record[MODIFIED_TIME]!!,
-            observation = record[ACTIVITY_OBSERVATIONS.OBSERVATION_ID]?.let { Observation(it) },
+            observation = observation,
             projectId = record[PROJECT_ID]!!,
             publishedBy = record[PUBLISHED_ACTIVITIES.PUBLISHED_BY],
             publishedTime = record[PUBLISHED_ACTIVITIES.PUBLISHED_TIME],

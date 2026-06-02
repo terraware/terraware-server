@@ -26,6 +26,7 @@ import com.terraformation.backend.db.funder.tables.records.PublishedActivityObse
 import com.terraformation.backend.db.funder.tables.references.FUNDING_ENTITY_PROJECTS
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.funder.model.PublishedActivityMediaModel
 import com.terraformation.backend.funder.model.PublishedActivityModel
@@ -95,9 +96,9 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertPlantingSite(x = 0, width = 10)
       insertStratum()
       insertSubstratum()
-      insertMonitoringPlot(plotNumber = 123)
+      insertMonitoringPlot(plotNumber = 123, isAdHoc = true)
       val completedTime = Instant.ofEpochSecond(12345)
-      val observationId = insertObservation(completedTime = completedTime)
+      val observationId = insertObservation(completedTime = completedTime, isAdHoc = true)
       insertObservationPlot(completedBy = user.userId)
 
       val activityId2 =
@@ -188,9 +189,12 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                       ),
                   observation =
                       PublishedActivityModel.Observation(
+                          isAdHoc = true,
                           livePlants = 100,
                           completedTime = completedTime,
+                          monitoringPlotNumber = 123,
                           observationId = observationId,
+                          observationType = ObservationType.Monitoring,
                           plantDensity = 20,
                           survivalRate = 90,
                       ),

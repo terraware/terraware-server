@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITY_OBSERVATIONS
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import java.time.Instant
 import java.time.LocalDate
@@ -26,20 +27,29 @@ data class PublishedActivityModel(
     val publishedTime: Instant? = null,
 ) {
   data class Observation(
-      val observationId: ObservationId,
       val completedTime: Instant,
+      val isAdHoc: Boolean,
       val livePlants: Int?,
+      val monitoringPlotNumber: Long?,
+      val observationId: ObservationId,
+      val observationType: ObservationType,
       val plantDensity: Int?,
       val survivalRate: Int?,
   ) {
     companion object {
-      fun ofOrNull(record: Record): Observation? {
+      fun ofOrNull(
+          record: Record,
+          monitoringPlotNumberField: Field<Long?>,
+      ): Observation? {
         return with(PUBLISHED_ACTIVITY_OBSERVATIONS) {
           record[OBSERVATION_ID]?.let { observationId ->
             Observation(
-                observationId = observationId,
                 completedTime = record[OBSERVATIONS.COMPLETED_TIME]!!,
+                isAdHoc = record[OBSERVATIONS.IS_AD_HOC]!!,
                 livePlants = record[LIVE_PLANTS],
+                monitoringPlotNumber = record[monitoringPlotNumberField],
+                observationId = observationId,
+                observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID]!!,
                 plantDensity = record[PLANT_DENSITY],
                 survivalRate = record[SURVIVAL_RATE],
             )
@@ -53,6 +63,7 @@ data class PublishedActivityModel(
     fun of(
         record: Record,
         mediaField: Field<List<PublishedActivityMediaModel>>?,
+        monitoringPlotNumberField: Field<Long?>,
     ): PublishedActivityModel {
       return with(PUBLISHED_ACTIVITIES) {
         PublishedActivityModel(
@@ -62,7 +73,7 @@ data class PublishedActivityModel(
             id = record[ACTIVITY_ID]!!,
             isHighlight = record[IS_HIGHLIGHT]!!,
             media = mediaField?.let { record[it] } ?: emptyList(),
-            observation = Observation.ofOrNull(record),
+            observation = Observation.ofOrNull(record, monitoringPlotNumberField),
             projectId = record[PROJECT_ID]!!,
             publishedBy = record[PUBLISHED_ACTIVITIES.PUBLISHED_BY],
             publishedTime = record[PUBLISHED_ACTIVITIES.PUBLISHED_TIME],
