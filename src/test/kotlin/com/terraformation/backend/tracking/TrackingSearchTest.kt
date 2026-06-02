@@ -6,6 +6,7 @@ import com.terraformation.backend.assertJsonEquals
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservableCondition
@@ -142,9 +143,17 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
 
     insertFacility(type = FacilityType.Nursery)
 
-    insertNurseryWithdrawal()
+    val withdrawalId1 =
+        insertNurseryWithdrawal(
+            purpose = WithdrawalPurpose.OutPlant,
+            plantingSeasonId = plantingSeasonId1,
+        )
     val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId)
-    insertNurseryWithdrawal()
+    val withdrawalId2 =
+        insertNurseryWithdrawal(
+            purpose = WithdrawalPurpose.OutPlant,
+            plantingSeasonId = plantingSeasonId1,
+        )
 
     val plantingId1 =
         insertPlanting(
@@ -666,6 +675,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                     ),
                                 "startDate" to "1970-01-01",
                                 "status" to "Active",
+                                "withdrawals" to
+                                    listOf(
+                                        mapOf("id" to "$withdrawalId1"),
+                                        mapOf("id" to "$withdrawalId2"),
+                                    ),
                             ),
                             mapOf(
                                 "endDate" to "1970-06-05",
@@ -1031,6 +1045,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingSeasons.scheduledDates.scheduledDateSpecies.quantity",
                 "plantingSeasons.scheduledDates.scheduledDateSpecies.species.scientificName",
                 "plantingSeasons.scheduledDates.scheduledDateSpecies.substratum.name",
+                "plantingSeasons.withdrawals.id",
                 "strata.boundary",
                 "strata.boundaryModifiedTime",
                 "strata.createdTime",
