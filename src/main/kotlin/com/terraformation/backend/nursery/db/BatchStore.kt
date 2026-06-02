@@ -689,15 +689,6 @@ class BatchStore(
     } else if (withdrawal.destinationFacilityId != null) {
       throw IllegalArgumentException("Only nursery transfers may include destination facility ID")
     }
-    if (
-        withdrawal.plantingSeasonId != null &&
-            withdrawal.purpose != WithdrawalPurpose.OutPlant &&
-            withdrawal.purpose != WithdrawalPurpose.Undo
-    ) {
-      throw IllegalArgumentException(
-          "Planting season may only be specified for out-plant or undo withdrawals"
-      )
-    }
 
     return dslContext.transactionResult { _ ->
       val withdrawalsRow =
