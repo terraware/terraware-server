@@ -230,7 +230,7 @@ data class ActivityObservationMediaFilePayload(
 
 data class ActivityMediaFilePayload(
     val caption: String?,
-    val capturedDate: LocalDate,
+    val capturedDate: LocalDate?,
     val fileId: FileId,
     val fileName: String,
     val geolocation: Point?,

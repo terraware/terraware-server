@@ -19,7 +19,7 @@ import org.locationtech.jts.geom.Point
 data class PublishedActivityMediaModel(
     val activityId: ActivityId,
     val caption: String?,
-    val capturedLocalTime: LocalDateTime,
+    val capturedLocalTime: LocalDateTime?,
     val fileId: FileId,
     val fileName: String,
     val geolocation: Point?,
@@ -29,8 +29,8 @@ data class PublishedActivityMediaModel(
     val observation: Observation? = null,
     val type: ActivityMediaType,
 ) {
-  val capturedDate: LocalDate
-    get() = capturedLocalTime.toLocalDate()
+  val capturedDate: LocalDate?
+    get() = capturedLocalTime?.toLocalDate()
 
   data class Observation(
       val monitoringPlotNumber: Long,
@@ -61,7 +61,7 @@ data class PublishedActivityMediaModel(
         PublishedActivityMediaModel(
             activityId = record[ACTIVITY_ID]!!,
             caption = record[CAPTION],
-            capturedLocalTime = record[FILES.CAPTURED_LOCAL_TIME]!!,
+            capturedLocalTime = record[FILES.CAPTURED_LOCAL_TIME],
             fileId = record[FILE_ID]!!,
             fileName = record[FILES.STORAGE_URL]!!.toString().substringAfterLast('/'),
             geolocation = record[geolocationField] as? Point,

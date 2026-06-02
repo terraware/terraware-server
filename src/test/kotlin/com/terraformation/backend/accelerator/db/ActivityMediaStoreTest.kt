@@ -94,6 +94,33 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           files.map { it.observation },
       )
     }
+
+    @Test
+    fun `returns files without captured times`() {
+      insertFile()
+      insertActivityMediaFile()
+
+      val files = store.fetchByActivityId(activityId)
+      assertEquals(
+          listOf(
+              ActivityMediaModel(
+                  activityId = activityId,
+                  caption = null,
+                  capturedLocalTime = null,
+                  createdBy = user.userId,
+                  createdTime = Instant.EPOCH,
+                  fileId = inserted.fileId,
+                  fileName = "1",
+                  geolocation = null,
+                  isCoverPhoto = false,
+                  isHiddenOnMap = false,
+                  listPosition = 1,
+                  type = ActivityMediaType.Photo,
+              )
+          ),
+          files,
+      )
+    }
   }
 
   @Nested
