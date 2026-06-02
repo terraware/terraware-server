@@ -394,9 +394,9 @@ data class PlantingSeasonScheduledDateSubjectPayload(
     ): PlantingSeasonScheduledDateSubjectPayload {
       // Since the IDs are meaningless to users, we want the full subject to include the scheduled
       // date. For events that change the date of a scheduled planting date, we want the subject to
-      // list the "changed from" date so it shows up like "Scheduled date 2026-01-01 date changed to
-      // 2026-01-05." But for other events, we want whichever date was the active one before that
-      // event.
+      // list the "changed from" date (there is no "date" field on update events) so it shows up
+      // like "Scheduled date 2026-01-01 date changed to 2026-01-05." But for other events, we want
+      // whichever date was the active one before that event.
       val date =
           when (event) {
             is PlantingSeasonScheduledDateCreatedEvent -> event.date
