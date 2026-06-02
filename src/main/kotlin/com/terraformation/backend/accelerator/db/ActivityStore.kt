@@ -228,6 +228,7 @@ class ActivityStore(
   }
 
   private val geolocationField = FILES.GEOLOCATION.forMultiset()
+  private val plotBoundaryField = MONITORING_PLOTS.BOUNDARY.forMultiset()
 
   private fun mediaMultiset(condition: Condition) =
       DSL.multiset(
@@ -247,6 +248,7 @@ class ActivityStore(
                       OBSERVATION_MEDIA_FILES.OBSERVATION_ID,
                       OBSERVATION_MEDIA_FILES.POSITION_ID,
                       OBSERVATION_MEDIA_FILES.TYPE_ID,
+                      plotBoundaryField,
                       MONITORING_PLOTS.PLOT_NUMBER,
                   )
                   .from(ACTIVITY_MEDIA_FILES)
@@ -260,7 +262,9 @@ class ActivityStore(
                   .and(condition)
                   .orderBy(ACTIVITY_MEDIA_FILES.LIST_POSITION)
           )
-          .convertFrom { result -> result.map { ActivityMediaModel.of(it, geolocationField) } }
+          .convertFrom { result ->
+            result.map { ActivityMediaModel.of(it, geolocationField, plotBoundaryField) }
+          }
 
   private fun fetchByCondition(
       condition: Condition,
