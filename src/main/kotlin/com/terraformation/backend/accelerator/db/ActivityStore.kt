@@ -247,6 +247,7 @@ class ActivityStore(
                       OBSERVATION_MEDIA_FILES.OBSERVATION_ID,
                       OBSERVATION_MEDIA_FILES.POSITION_ID,
                       OBSERVATION_MEDIA_FILES.TYPE_ID,
+                      MONITORING_PLOTS.BOUNDARY,
                       MONITORING_PLOTS.PLOT_NUMBER,
                   )
                   .from(ACTIVITY_MEDIA_FILES)

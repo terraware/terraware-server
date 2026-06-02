@@ -93,6 +93,15 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           ),
           files.map { it.observation },
       )
+
+      val plotCenter =
+          monitoringPlotsDao.fetchOneById(inserted.monitoringPlotId)!!.boundary!!.centroid
+
+      assertEquals(
+          listOf(plotCenter),
+          files.map { it.geolocation },
+          "Geolocation should use plot center as a fallback",
+      )
     }
 
     @Test

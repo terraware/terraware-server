@@ -49,6 +49,9 @@ data class ActivityMediaModel(
         record: Record,
         geolocationField: Field<Geometry?> = FILES.GEOLOCATION,
     ): ActivityMediaModel {
+      val geolocation =
+          record[geolocationField] as? Point? ?: record[MONITORING_PLOTS.BOUNDARY]?.centroid
+
       return ActivityMediaModel(
           activityId = record[ACTIVITY_MEDIA_FILES.ACTIVITY_ID]!!,
           caption = record[ACTIVITY_MEDIA_FILES.CAPTION],
@@ -57,7 +60,7 @@ data class ActivityMediaModel(
           createdTime = record[FILES.CREATED_TIME]!!,
           fileId = record[ACTIVITY_MEDIA_FILES.FILE_ID]!!,
           fileName = record[FILES.STORAGE_URL]!!.toString().substringAfterLast('/'),
-          geolocation = record[geolocationField] as? Point,
+          geolocation = geolocation,
           isCoverPhoto = record[ACTIVITY_MEDIA_FILES.IS_COVER_PHOTO]!!,
           isHiddenOnMap = record[ACTIVITY_MEDIA_FILES.IS_HIDDEN_ON_MAP]!!,
           listPosition = record[ACTIVITY_MEDIA_FILES.LIST_POSITION]!!,
