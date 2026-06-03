@@ -23,8 +23,13 @@ import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDate
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEventValues
+import com.terraformation.backend.rectangle
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -256,11 +261,17 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
               scheduledPlantingDateId = scheduledPlantingDateId,
           )
       )
+
+      eventPublisher.assertEventNotPublished<PlantingSeasonScheduledDateSpeciesCreatedEvent>()
     }
 
     @Test
     fun `inserts a new scheduled date with species`() {
-      val substratumId2 = insertSubstratum()
+      insertPlantingSiteHistory(boundary = rectangle(1))
+      insertStratumHistory()
+      val substratum1HistoryId = insertSubstratumHistory(substratumId = substratumId)
+      val substratumId2 = insertSubstratum(insertHistory = false)
+      val substratum2HistoryId = insertSubstratumHistory(substratumId = substratumId2)
       val speciesId2 = insertSpecies()
 
       val model =
@@ -330,6 +341,50 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
                   scheduledPlantingDateId = scheduledDateId,
                   speciesId = speciesId2,
                   substratumId = substratumId2,
+              ),
+          )
+      )
+
+      val speciesCreatedEvent =
+          PlantingSeasonScheduledDateSpeciesCreatedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              quantity = 5,
+              scheduledPlantingDateId = scheduledDateId,
+              speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = substratum1HistoryId,
+              substratumId = substratumId,
+              substratumName = "1",
+          )
+
+      eventPublisher.assertEventsPublished(
+          listOf(
+              PlantingSeasonScheduledDateCreatedEvent(
+                  date = LocalDate.EPOCH.plusDays(1),
+                  organizationId = organizationId,
+                  plantingSeasonId = plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+                  scheduledPlantingDateId = scheduledDateId,
+              ),
+              speciesCreatedEvent,
+              speciesCreatedEvent.copy(
+                  quantity = 10,
+                  speciesId = speciesId2,
+              ),
+              speciesCreatedEvent.copy(
+                  quantity = 15,
+                  substratumHistoryId = substratum2HistoryId,
+                  substratumId = substratumId2,
+                  substratumName = "2",
+              ),
+              speciesCreatedEvent.copy(
+                  quantity = 20,
+                  speciesId = speciesId2,
+                  substratumHistoryId = substratum2HistoryId,
+                  substratumId = substratumId2,
+                  substratumName = "2",
               ),
           )
       )
@@ -447,8 +502,12 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
 
     @Test
     fun `updates the species for the scheduled date`() {
+      insertPlantingSiteHistory(boundary = rectangle(1))
+      insertStratumHistory()
+      val sub1HistoryId = insertSubstratumHistory(substratumId = substratumId)
       val speciesId2 = insertSpecies()
-      val substratumId2 = insertSubstratum()
+      val substratumId2 = insertSubstratum(insertHistory = false)
+      val sub2HistoryId = insertSubstratumHistory(substratumId = substratumId2)
       val scheduledDateId = insertPlantingSeasonScheduledDate()
       insertScheduledPlantingDateSpecies(
           quantity = 5,
@@ -510,13 +569,87 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
               ),
           )
       )
+
+      eventPublisher.assertEventsPublished(
+          setOf(
+              PlantingSeasonScheduledDateSpeciesDeletedEvent(
+                  organizationId = organizationId,
+                  plantingSeasonId = plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+                  scheduledPlantingDateId = scheduledDateId,
+                  speciesId = speciesId,
+                  stratumName = "S1",
+                  substratumHistoryId = sub1HistoryId,
+                  substratumId = substratumId,
+                  substratumName = "1",
+              ),
+              PlantingSeasonScheduledDateSpeciesCreatedEvent(
+                  organizationId = organizationId,
+                  plantingSeasonId = plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+                  quantity = 15,
+                  scheduledPlantingDateId = scheduledDateId,
+                  speciesId = speciesId2,
+                  stratumName = "S1",
+                  substratumHistoryId = sub1HistoryId,
+                  substratumId = substratumId,
+                  substratumName = "1",
+              ),
+              PlantingSeasonScheduledDateSpeciesUpdatedEvent(
+                  changedFrom = PlantingSeasonScheduledDateSpeciesUpdatedEventValues(quantity = 10),
+                  changedTo = PlantingSeasonScheduledDateSpeciesUpdatedEventValues(quantity = 11),
+                  organizationId = organizationId,
+                  plantingSeasonId = plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+                  scheduledPlantingDateId = scheduledDateId,
+                  speciesId = speciesId2,
+                  stratumName = "S1",
+                  substratumHistoryId = sub2HistoryId,
+                  substratumId = substratumId2,
+                  substratumName = "2",
+              ),
+          )
+      )
     }
 
     @Test
-    fun `throws DuplicateKeyException when same species-substratum combination is added twice`() {
+    fun `does not publish species events when species list is unchanged`() {
+      insertPlantingSiteHistory(boundary = rectangle(1))
+      insertStratumHistory()
+      insertSubstratumHistory(substratumId = substratumId)
+      val scheduledDateId = insertPlantingSeasonScheduledDate()
+      insertScheduledPlantingDateSpecies(
+          quantity = 7,
+          speciesId = speciesId,
+          substratumId = substratumId,
+      )
+
+      store.update(
+          scheduledDateId,
+          PlantingSeasonScheduledDateModel(
+              plantingSeasonId = plantingSeasonId,
+              date = LocalDate.EPOCH,
+              species =
+                  listOf(
+                      PlantingSeasonScheduledDateSpecies(
+                          quantity = 7,
+                          speciesId = speciesId,
+                          substratumId = substratumId,
+                      )
+                  ),
+          ),
+      )
+
+      eventPublisher.assertEventNotPublished<PlantingSeasonScheduledDateSpeciesCreatedEvent>()
+      eventPublisher.assertEventNotPublished<PlantingSeasonScheduledDateSpeciesDeletedEvent>()
+      eventPublisher.assertEventNotPublished<PlantingSeasonScheduledDateSpeciesUpdatedEvent>()
+    }
+
+    @Test
+    fun `throws exception when same species-substratum combination is added twice`() {
       val scheduledDate = insertPlantingSeasonScheduledDate()
 
-      assertThrows<DuplicateKeyException> {
+      assertThrows<IllegalArgumentException> {
         store.update(
             scheduledDate,
             PlantingSeasonScheduledDateModel(

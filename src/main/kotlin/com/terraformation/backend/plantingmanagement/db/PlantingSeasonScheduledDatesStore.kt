@@ -3,19 +3,30 @@ package com.terraformation.backend.plantingmanagement.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEventValues
+import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.time.InstantSource
@@ -109,6 +120,8 @@ class PlantingSeasonScheduledDatesStore(
         insertQuery.execute()
       }
 
+      val substratumInfo = fetchSubstratumInfo(model.species.map { it.substratumId }.toSet())
+
       eventPublisher.publishEvent(
           PlantingSeasonScheduledDateCreatedEvent(
               date = model.date,
@@ -118,6 +131,26 @@ class PlantingSeasonScheduledDatesStore(
               scheduledPlantingDateId = newScheduledDateId,
           )
       )
+
+      model.species.forEach { species ->
+        val info =
+            substratumInfo[species.substratumId]
+                ?: throw IllegalStateException("Substratum ${species.substratumId} not found")
+        eventPublisher.publishEvent(
+            PlantingSeasonScheduledDateSpeciesCreatedEvent(
+                organizationId = organizationId,
+                plantingSeasonId = model.plantingSeasonId,
+                plantingSiteId = plantingSiteId,
+                quantity = species.quantity,
+                scheduledPlantingDateId = newScheduledDateId,
+                speciesId = species.speciesId,
+                stratumName = info.stratumName,
+                substratumHistoryId = info.substratumHistoryId,
+                substratumId = species.substratumId,
+                substratumName = info.substratumName,
+            )
+        )
+      }
 
       newScheduledDateId
     }
@@ -133,15 +166,19 @@ class PlantingSeasonScheduledDatesStore(
 
     validateSeasonNotClosed(model.plantingSeasonId)
 
-    val oldModel = fetch(model.plantingSeasonId, scheduledDateId)
-    val plantingSiteId =
-        parentStore.getPlantingSiteId(model.plantingSeasonId)
-            ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
-    val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
-            ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
+    if (model.species.size != model.species.distinctBy { it.substratumId to it.speciesId }.size) {
+      throw IllegalArgumentException("Species listed multiple times for substratum")
+    }
 
-    dslContext.transaction { _ ->
+    withLockedDate(scheduledDateId) {
+      val oldModel = fetch(model.plantingSeasonId, scheduledDateId)
+      val plantingSiteId =
+          parentStore.getPlantingSiteId(model.plantingSeasonId)
+              ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
+      val organizationId =
+          parentStore.getOrganizationId(plantingSiteId)
+              ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
+
       val updatedCount =
           with(SCHEDULED_PLANTING_DATES) {
             dslContext
@@ -156,33 +193,6 @@ class PlantingSeasonScheduledDatesStore(
 
       if (updatedCount == 0) {
         throw PlantingSeasonScheduledDateNotFoundException(scheduledDateId)
-      }
-
-      with(SCHEDULED_PLANTING_DATE_SPECIES) {
-        dslContext
-            .deleteFrom(SCHEDULED_PLANTING_DATE_SPECIES)
-            .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledDateId))
-            .execute()
-
-        val insertQuery =
-            dslContext.insertInto(
-                SCHEDULED_PLANTING_DATE_SPECIES,
-                SCHEDULED_PLANTING_DATE_ID,
-                SPECIES_ID,
-                SUBSTRATUM_ID,
-                QUANTITY,
-            )
-
-        model.species.forEach { species ->
-          insertQuery.values(
-              scheduledDateId,
-              species.speciesId,
-              species.substratumId,
-              species.quantity,
-          )
-        }
-
-        insertQuery.execute()
       }
 
       if (oldModel.date != model.date) {
@@ -202,6 +212,110 @@ class PlantingSeasonScheduledDatesStore(
                 scheduledPlantingDateId = scheduledDateId,
             )
         )
+      }
+
+      with(SCHEDULED_PLANTING_DATE_SPECIES) {
+        // We want to diff the old and new species lists using (substratum, species) keys so we can
+        // tell which species have been added, removed, or updated in which substrata.
+        val oldByIds = oldModel.species.associateBy { it.substratumId to it.speciesId }
+        val newByIds = model.species.associateBy { it.substratumId to it.speciesId }
+
+        val removedKeys = oldByIds.keys - newByIds.keys
+        val addedKeys = newByIds.keys - oldByIds.keys
+        val commonKeys = oldByIds.keys intersect newByIds.keys
+        val touchedSubstrata = (removedKeys + addedKeys + commonKeys).map { it.first }.toSet()
+        val substrataInfo = fetchSubstratumInfo(touchedSubstrata)
+
+        removedKeys.forEach { (substratumId, speciesId) ->
+          val substratumInfo = substrataInfo.getValue(substratumId)
+
+          dslContext
+              .deleteFrom(SCHEDULED_PLANTING_DATE_SPECIES)
+              .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledDateId))
+              .and(SUBSTRATUM_ID.eq(substratumId))
+              .and(SPECIES_ID.eq(speciesId))
+              .execute()
+
+          eventPublisher.publishEvent(
+              PlantingSeasonScheduledDateSpeciesDeletedEvent(
+                  organizationId = organizationId,
+                  plantingSeasonId = model.plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+                  scheduledPlantingDateId = scheduledDateId,
+                  speciesId = speciesId,
+                  stratumName = substratumInfo.stratumName,
+                  substratumHistoryId = substratumInfo.substratumHistoryId,
+                  substratumId = substratumId,
+                  substratumName = substratumInfo.substratumName,
+              )
+          )
+        }
+
+        addedKeys.forEach { key ->
+          val species = newByIds.getValue(key)
+          val substratumInfo = substrataInfo.getValue(species.substratumId)
+
+          dslContext
+              .insertInto(SCHEDULED_PLANTING_DATE_SPECIES)
+              .set(SCHEDULED_PLANTING_DATE_ID, scheduledDateId)
+              .set(SUBSTRATUM_ID, species.substratumId)
+              .set(SPECIES_ID, species.speciesId)
+              .set(QUANTITY, species.quantity)
+              .execute()
+
+          eventPublisher.publishEvent(
+              PlantingSeasonScheduledDateSpeciesCreatedEvent(
+                  organizationId = organizationId,
+                  plantingSeasonId = model.plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+                  quantity = species.quantity,
+                  scheduledPlantingDateId = scheduledDateId,
+                  speciesId = species.speciesId,
+                  stratumName = substratumInfo.stratumName,
+                  substratumHistoryId = substratumInfo.substratumHistoryId,
+                  substratumId = species.substratumId,
+                  substratumName = substratumInfo.substratumName,
+              )
+          )
+        }
+
+        commonKeys.forEach { key ->
+          val oldSpecies = oldByIds.getValue(key)
+          val newSpecies = newByIds.getValue(key)
+          val substratumInfo = substrataInfo.getValue(newSpecies.substratumId)
+
+          if (oldSpecies.quantity != newSpecies.quantity) {
+            dslContext
+                .update(SCHEDULED_PLANTING_DATE_SPECIES)
+                .set(QUANTITY, newSpecies.quantity)
+                .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledDateId))
+                .and(SUBSTRATUM_ID.eq(newSpecies.substratumId))
+                .and(SPECIES_ID.eq(newSpecies.speciesId))
+                .execute()
+
+            eventPublisher.publishEvent(
+                PlantingSeasonScheduledDateSpeciesUpdatedEvent(
+                    changedFrom =
+                        PlantingSeasonScheduledDateSpeciesUpdatedEventValues(
+                            quantity = oldSpecies.quantity,
+                        ),
+                    changedTo =
+                        PlantingSeasonScheduledDateSpeciesUpdatedEventValues(
+                            quantity = newSpecies.quantity,
+                        ),
+                    organizationId = organizationId,
+                    plantingSeasonId = model.plantingSeasonId,
+                    plantingSiteId = plantingSiteId,
+                    scheduledPlantingDateId = scheduledDateId,
+                    speciesId = newSpecies.speciesId,
+                    stratumName = substratumInfo.stratumName,
+                    substratumHistoryId = substratumInfo.substratumHistoryId,
+                    substratumId = newSpecies.substratumId,
+                    substratumName = substratumInfo.substratumName,
+                )
+            )
+          }
+        }
       }
     }
   }
@@ -295,6 +409,63 @@ class PlantingSeasonScheduledDatesStore(
       if (status == PlantingSeasonStatus.Closed) {
         throw PlantingSeasonClosedException(plantingSeasonId)
       }
+    }
+  }
+
+  private data class SubstratumInfo(
+      val stratumName: String,
+      val substratumName: String,
+      val substratumHistoryId: SubstratumHistoryId,
+  )
+
+  private fun fetchSubstratumInfo(
+      substratumIds: Collection<SubstratumId>
+  ): Map<SubstratumId, SubstratumInfo> {
+    if (substratumIds.isEmpty()) return emptyMap()
+
+    val latestHistoryIdField =
+        DSL.field(
+            DSL.select(DSL.max(SUBSTRATUM_HISTORIES.ID))
+                .from(SUBSTRATUM_HISTORIES)
+                .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
+        )
+
+    val substrata =
+        dslContext
+            .select(SUBSTRATA.ID, SUBSTRATA.NAME, STRATA.NAME, latestHistoryIdField)
+            .from(SUBSTRATA)
+            .join(STRATA)
+            .on(SUBSTRATA.STRATUM_ID.eq(STRATA.ID))
+            .where(SUBSTRATA.ID.`in`(substratumIds))
+            .fetchMap(SUBSTRATA.ID.asNonNullable()) { record ->
+              SubstratumInfo(
+                  stratumName = record.value3()!!,
+                  substratumName = record[SUBSTRATA.NAME]!!,
+                  substratumHistoryId = record.value4()!!,
+              )
+            }
+
+    substratumIds.forEach { id ->
+      if (id !in substrata) {
+        throw SubstratumNotFoundException(id)
+      }
+    }
+
+    return substrata
+  }
+
+  private fun <T> withLockedDate(
+      scheduledDateId: ScheduledPlantingDateId,
+      func: () -> T,
+  ): T {
+    return dslContext.transactionResult { _ ->
+      dslContext
+          .selectOne()
+          .from(SCHEDULED_PLANTING_DATES)
+          .where(SCHEDULED_PLANTING_DATES.ID.eq(scheduledDateId))
+          .forUpdate()
+          .fetchOne() ?: throw PlantingSeasonScheduledDateNotFoundException(scheduledDateId)
+      func()
     }
   }
 }
