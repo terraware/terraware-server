@@ -25,8 +25,8 @@ CREATE TABLE tracking.planting_date_request_species (
     PRIMARY KEY (scheduled_planting_date_id, substratum_id, species_id)
 );
 
-CREATE INDEX ON tracking.scheduled_planting_date_species (substratum_id);
-CREATE INDEX ON tracking.scheduled_planting_date_species (species_id);
+CREATE INDEX ON tracking.planting_date_request_species (substratum_id);
+CREATE INDEX ON tracking.planting_date_request_species (species_id);
 
 ALTER TABLE nursery.withdrawals
     ADD COLUMN scheduled_planting_date_request_id BIGINT REFERENCES tracking.planting_date_requests (scheduled_planting_date_id) ON DELETE CASCADE;
