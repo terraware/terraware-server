@@ -20,6 +20,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.funder.db.PublishedActivityStore
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -156,9 +157,19 @@ data class AdminActivityMediaFilePayload(
 }
 
 data class AdminActivityObservationPayload(
+    val isAdHoc: Boolean,
+    val monitoringPlotNumber: Long?,
     val observationId: ObservationId,
+    val observationType: ObservationType,
 ) {
-  constructor(model: ExistingActivityModel.Observation) : this(model.observationId)
+  constructor(
+      model: ExistingActivityModel.Observation
+  ) : this(
+      isAdHoc = model.isAdHoc,
+      monitoringPlotNumber = model.monitoringPlotNumber,
+      observationId = model.observationId,
+      observationType = model.observationType,
+  )
 }
 
 data class AdminActivityPayload(
