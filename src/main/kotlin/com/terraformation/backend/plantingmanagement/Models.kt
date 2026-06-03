@@ -45,6 +45,9 @@ data class PlantingSeasonScheduledDateModel(
 ) {
   init {
     require(species.all { it.quantity >= 0 }) { "All quantities must be >= 0" }
+    require(species.size == species.distinctBy { it.substratumId to it.speciesId }.size) {
+      "Species listed multiple times for substratum"
+    }
   }
 }
 
