@@ -87,7 +87,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSitesRow(
-                  areaHa = BigDecimal("2.251"),
+                  areaHa = BigDecimal("2.265"),
                   boundary = boundary,
                   createdBy = user.userId,
                   createdTime = Instant.EPOCH,
@@ -193,7 +193,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertGeometryEquals(gridOrigin, plantingSitesRow.gridOrigin, "Planting site grid origin")
       assertEquals(
           PlantingSitesRow(
-              areaHa = BigDecimal("3.001"),
+              areaHa = BigDecimal("2.996"),
               countryCode = "GB",
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
@@ -210,7 +210,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
 
       val commonStrataRow =
           StrataRow(
-              areaHa = BigDecimal("1.500"),
+              areaHa = BigDecimal("1.498"),
               boundaryModifiedBy = user.userId,
               boundaryModifiedTime = Instant.EPOCH,
               createdBy = user.userId,
@@ -263,7 +263,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
 
       val commonSubstrataRow =
           SubstrataRow(
-              areaHa = BigDecimal("0.750"),
+              areaHa = BigDecimal("0.749"),
               createdBy = user.userId,
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
@@ -346,7 +346,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSiteHistoriesRow(
-                  areaHa = BigDecimal("2.241"),
+                  areaHa = BigDecimal("2.255"),
                   boundary = boundary,
                   createdBy = user.userId,
                   createdTime = clock.instant,
@@ -399,7 +399,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               PlantingSiteHistoriesRow(
-                  areaHa = BigDecimal("3.999"),
+                  areaHa = BigDecimal("4.024"),
                   boundary = siteBoundary,
                   createdBy = user.userId,
                   createdTime = clock.instant,
@@ -417,7 +417,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               StratumHistoriesRow(
-                  areaHa = BigDecimal("3.995"),
+                  areaHa = BigDecimal("4.020"),
                   boundary = stratumBoundary,
                   name = "stratum",
                   plantingSiteHistoryId = model.historyId,
@@ -432,7 +432,7 @@ internal class PlantingSiteStoreCreateSiteTest : BasePlantingSiteStoreTest() {
       assertEquals(
           listOf(
               SubstratumHistoriesRow(
-                  areaHa = BigDecimal("3.991"),
+                  areaHa = BigDecimal("4.016"),
                   boundary = substratumBoundary,
                   fullName = "stratum-substratum",
                   name = "substratum",
