@@ -26,6 +26,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
 import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.file.model.FileMetadata
@@ -261,9 +262,24 @@ data class ActivityMediaFilePayload(
 }
 
 data class ActivityObservationPayload(
+    val isAdHoc: Boolean,
+    @Schema(
+        description =
+            "If this was an ad-hoc observation, its plot number. Not set for assigned " +
+                "observations because they can include multiple plots."
+    )
+    val monitoringPlotNumber: Long?,
     val observationId: ObservationId,
+    val observationType: ObservationType,
 ) {
-  constructor(model: ExistingActivityModel.Observation) : this(model.observationId)
+  constructor(
+      model: ExistingActivityModel.Observation
+  ) : this(
+      isAdHoc = model.isAdHoc,
+      monitoringPlotNumber = model.monitoringPlotNumber,
+      observationId = model.observationId,
+      observationType = model.observationType,
+  )
 }
 
 data class ActivityPayload(

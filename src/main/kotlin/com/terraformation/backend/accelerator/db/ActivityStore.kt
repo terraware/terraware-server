@@ -19,7 +19,9 @@ import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.db.funder.tables.references.PUBLISHED_ACTIVITIES
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -283,22 +285,38 @@ class ActivityStore(
             null
           }
 
+      val monitoringPlotNumberField =
+          DSL.field(
+              DSL.select(MONITORING_PLOTS.PLOT_NUMBER)
+                  .from(MONITORING_PLOTS)
+                  .join(OBSERVATION_PLOTS)
+                  .on(MONITORING_PLOTS.ID.eq(OBSERVATION_PLOTS.MONITORING_PLOT_ID))
+                  .where(OBSERVATIONS.IS_AD_HOC)
+                  .and(OBSERVATIONS.ID.eq(OBSERVATION_PLOTS.OBSERVATION_ID))
+                  .limit(1)
+          )
+
       dslContext
           .select(
               asterisk(),
               ACTIVITY_OBSERVATIONS.OBSERVATION_ID,
+              OBSERVATIONS.IS_AD_HOC,
+              OBSERVATIONS.OBSERVATION_TYPE_ID,
               PUBLISHED_ACTIVITIES.PUBLISHED_BY,
               PUBLISHED_ACTIVITIES.PUBLISHED_TIME,
               mediaField ?: DSL.one(),
+              monitoringPlotNumberField,
           )
           .from(ACTIVITIES)
           .leftJoin(ACTIVITY_OBSERVATIONS)
           .on(ID.eq(ACTIVITY_OBSERVATIONS.ACTIVITY_ID))
+          .leftJoin(OBSERVATIONS)
+          .on(ACTIVITY_OBSERVATIONS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
           .leftJoin(PUBLISHED_ACTIVITIES)
           .on(ID.eq(PUBLISHED_ACTIVITIES.ACTIVITY_ID))
           .where(condition)
           .orderBy(ID)
-          .fetch { ExistingActivityModel.of(it, mediaField) }
+          .fetch { ExistingActivityModel.of(it, mediaField, monitoringPlotNumberField) }
     }
   }
 

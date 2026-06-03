@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.point
 import java.time.Instant
 import java.time.LocalDate
@@ -374,7 +375,13 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   ),
               modifiedBy = user.userId,
               modifiedTime = Instant.EPOCH,
-              observation = ExistingActivityModel.Observation(observationId),
+              observation =
+                  ExistingActivityModel.Observation(
+                      isAdHoc = false,
+                      monitoringPlotNumber = null,
+                      observationId = observationId,
+                      observationType = ObservationType.Monitoring,
+                  ),
               projectId = projectId,
           )
 

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.funder.PublishedActivityService
 import com.terraformation.backend.funder.db.PublishedActivityStore
@@ -134,7 +135,15 @@ data class FunderActivityMediaFilePayload(
 
 data class FunderActivityObservationPayload(
     val completedTime: Instant,
+    val isAdHoc: Boolean,
     val livePlants: Int?,
+    @Schema(
+        description =
+            "If this was an ad-hoc observation, its plot number. Not set for assigned " +
+                "observations because they can include multiple plots."
+    )
+    val monitoringPlotNumber: Long?,
+    val observationType: ObservationType,
     val plantDensity: Int?,
     val survivalRate: Int?,
 ) {
@@ -142,7 +151,10 @@ data class FunderActivityObservationPayload(
       model: PublishedActivityModel.Observation
   ) : this(
       completedTime = model.completedTime,
+      isAdHoc = model.isAdHoc,
       livePlants = model.livePlants,
+      monitoringPlotNumber = model.monitoringPlotNumber,
+      observationType = model.observationType,
       plantDensity = model.plantDensity,
       survivalRate = model.survivalRate,
   )
