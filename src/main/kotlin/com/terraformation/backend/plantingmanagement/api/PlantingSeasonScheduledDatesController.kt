@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
+import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDatesService
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.validation.Valid
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class PlantingSeasonScheduledDatesController(
+    private val plantingSeasonScheduledDatesService: PlantingSeasonScheduledDatesService,
     private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore,
 ) {
   @ApiResponse200
@@ -68,7 +70,7 @@ class PlantingSeasonScheduledDatesController(
       @PathVariable plantingSeasonId: PlantingSeasonId,
       @RequestBody @Valid payload: ScheduledPlantingDateRequestPayload,
   ): SimpleSuccessResponsePayload {
-    plantingSeasonScheduledDatesStore.create(payload.toModel(plantingSeasonId))
+    plantingSeasonScheduledDatesService.create(payload.toModel(plantingSeasonId))
 
     return SimpleSuccessResponsePayload()
   }
@@ -122,13 +124,17 @@ data class ScheduledPlantingDateSpeciesPayload(
 }
 
 data class ScheduledPlantingDateRequestPayload(
+    val createNurseryRequest: Boolean? = false,
     val date: LocalDate,
+    val nurseryRequestNotes: String? = null,
     val species: List<ScheduledPlantingDateSpeciesPayload>,
 ) {
   fun toModel(plantingSeasonId: PlantingSeasonId): PlantingSeasonScheduledDateModel =
       PlantingSeasonScheduledDateModel(
-          plantingSeasonId = plantingSeasonId,
+          createNurseryRequest = createNurseryRequest,
           date = date,
+          nurseryRequestNotes = nurseryRequestNotes,
+          plantingSeasonId = plantingSeasonId,
           species = species.map { it.toModel() },
       )
 }

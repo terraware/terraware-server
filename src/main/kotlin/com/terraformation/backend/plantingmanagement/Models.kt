@@ -39,7 +39,9 @@ data class PlantingSeasonScheduledDateSpecies(
 )
 
 data class PlantingSeasonScheduledDateModel(
+    val createNurseryRequest: Boolean? = false,
     val date: LocalDate,
+    val nurseryRequestNotes: String? = null,
     val plantingSeasonId: PlantingSeasonId,
     val species: List<PlantingSeasonScheduledDateSpecies> = emptyList(),
 ) {
@@ -47,6 +49,11 @@ data class PlantingSeasonScheduledDateModel(
     require(species.all { it.quantity >= 0 }) { "All quantities must be >= 0" }
     require(species.size == species.distinctBy { it.substratumId to it.speciesId }.size) {
       "Species listed multiple times for substratum"
+    }
+    require(
+        (nurseryRequestNotes != null && createNurseryRequest == true) || nurseryRequestNotes == null
+    ) {
+      "createNurseryRequest must be true if nurseryRequestNotes are specified"
     }
   }
 }
