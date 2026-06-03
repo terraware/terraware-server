@@ -1,15 +1,21 @@
 package com.terraformation.backend.tracking.db.plantingSiteStore
 
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.db.NumericIdentifierType
 import com.terraformation.backend.db.StableId
 import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.StratumHistoriesRow
 import com.terraformation.backend.db.tracking.tables.records.MonitoringPlotHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.records.SubstratumHistoriesRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
+import com.terraformation.backend.db.tracking.tables.references.STRATA
+import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesDeletedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.tracking.edit.MonitoringPlotEdit
@@ -19,6 +25,7 @@ import com.terraformation.backend.tracking.edit.PlantingSiteEditCalculatorTest
 import com.terraformation.backend.tracking.edit.StratumEdit
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
+import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.NewPlantingSiteModel
@@ -149,6 +156,91 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               },
           desired = newSite(width = 500),
       )
+    }
+
+    @Test
+    fun `publishes species deleted events when substratum has scheduled date species`() {
+      val plantingSeasonScheduledDatesStore =
+          PlantingSeasonScheduledDatesStore(
+              clock,
+              dslContext,
+              eventPublisher,
+              ParentStore(dslContext),
+          )
+      eventPublisher.register<SubstratumDeletionStartedEvent> {
+        plantingSeasonScheduledDatesStore.publishSpeciesDeletedEvents(it.substratumId)
+      }
+
+      val initial =
+          newSite(width = 750) {
+            stratum(width = 750) {
+              substratum(width = 500)
+              substratum()
+            }
+          }
+      val desired = newSite(width = 500)
+
+      val existing = createSite(initial)
+      val deletedSubstratum = existing.strata[0].substrata[1]
+      val deletedSubstratumId = deletedSubstratum.id
+
+      val speciesId = insertSpecies()
+      val plantingSeasonId = insertPlantingSeason(plantingSiteId = existing.id)
+      val scheduledDateId = insertPlantingSeasonScheduledDate(plantingSeasonId = plantingSeasonId)
+      insertScheduledPlantingDateSpecies(
+          quantity = 42,
+          scheduledPlantingDateId = scheduledDateId,
+          speciesId = speciesId,
+          substratumId = deletedSubstratumId,
+      )
+
+      val (stratumName, substratumName, substratumHistoryId) =
+          substratumInfoFromDb(deletedSubstratumId)
+
+      val plantingSiteEdit = calculateSiteEdit(existing, desired)
+
+      clock.instant = editTime
+      store.applyPlantingSiteEdit(plantingSiteEdit)
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonScheduledDateSpeciesDeletedEvent(
+              organizationId = existing.organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = existing.id,
+              scheduledPlantingDateId = scheduledDateId,
+              speciesId = speciesId,
+              stratumName = stratumName,
+              substratumHistoryId = substratumHistoryId,
+              substratumId = deletedSubstratumId,
+              substratumName = substratumName,
+          )
+      )
+    }
+
+    private fun substratumInfoFromDb(
+        substratumId: SubstratumId
+    ): Triple<String, String, SubstratumHistoryId> {
+      val sub =
+          dslContext
+              .select(SUBSTRATA.NAME, SUBSTRATA.STRATUM_ID)
+              .from(SUBSTRATA)
+              .where(SUBSTRATA.ID.eq(substratumId))
+              .fetchOne()!!
+      val stratumName =
+          dslContext
+              .select(STRATA.NAME)
+              .from(STRATA)
+              .where(STRATA.ID.eq(sub[SUBSTRATA.STRATUM_ID]!!))
+              .fetchOne(STRATA.NAME)!!
+      val historyId =
+          dslContext
+              .select(SUBSTRATUM_HISTORIES.ID)
+              .from(SUBSTRATUM_HISTORIES)
+              .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(substratumId))
+              .orderBy(SUBSTRATUM_HISTORIES.ID.desc())
+              .limit(1)
+              .fetchOne(SUBSTRATUM_HISTORIES.ID)!!
+      return Triple(stratumName, sub[SUBSTRATA.NAME]!!, historyId)
     }
 
     @Test

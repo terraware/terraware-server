@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonSpeciesTargetsRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonSpeciesTargetsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
 import java.time.Instant
@@ -27,6 +28,9 @@ internal class PlantingSeasonServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val parentStore: ParentStore by lazy { ParentStore(dslContext) }
+  private val plantingSeasonScheduledDatesStore by lazy {
+    PlantingSeasonScheduledDatesStore(clock, dslContext, eventPublisher, parentStore)
+  }
   private val plantingSeasonSpeciesTargetsStore: PlantingSeasonSpeciesTargetsStore by lazy {
     PlantingSeasonSpeciesTargetsStore(clock, dslContext, eventPublisher)
   }
@@ -34,7 +38,12 @@ internal class PlantingSeasonServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     PlantingSeasonStore(clock, dslContext, eventPublisher, parentStore)
   }
   private val service: PlantingSeasonService by lazy {
-    PlantingSeasonService(dslContext, plantingSeasonStore, plantingSeasonSpeciesTargetsStore)
+    PlantingSeasonService(
+        dslContext,
+        plantingSeasonStore,
+        plantingSeasonScheduledDatesStore,
+        plantingSeasonSpeciesTargetsStore,
+    )
   }
 
   private lateinit var plantingSeasonId: PlantingSeasonId

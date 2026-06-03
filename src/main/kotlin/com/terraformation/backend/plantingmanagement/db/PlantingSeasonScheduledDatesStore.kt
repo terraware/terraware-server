@@ -354,6 +354,59 @@ class PlantingSeasonScheduledDatesStore(
     )
   }
 
+  /**
+   * Publishes "species deleted" events for all the scheduled planting date species associated with
+   * a substratum. This is called when a substratum is about to be deleted.
+   */
+  fun publishSpeciesDeletedEvents(substratumId: SubstratumId) {
+    val speciesForSubstratum =
+        dslContext
+            .select(
+                SCHEDULED_PLANTING_DATES.ID,
+                SCHEDULED_PLANTING_DATE_SPECIES.SPECIES_ID,
+                PLANTING_SEASONS.ID,
+                PLANTING_SEASONS.PLANTING_SITE_ID,
+            )
+            .from(SCHEDULED_PLANTING_DATE_SPECIES)
+            .join(SCHEDULED_PLANTING_DATES)
+            .on(
+                SCHEDULED_PLANTING_DATE_SPECIES.SCHEDULED_PLANTING_DATE_ID.eq(
+                    SCHEDULED_PLANTING_DATES.ID
+                )
+            )
+            .join(PLANTING_SEASONS)
+            .on(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID))
+            .where(SCHEDULED_PLANTING_DATE_SPECIES.SUBSTRATUM_ID.eq(substratumId))
+            .fetch()
+    if (speciesForSubstratum.isEmpty()) {
+      return
+    }
+
+    val plantingSiteId =
+        parentStore.getPlantingSiteId(substratumId)
+            ?: throw SubstratumNotFoundException(substratumId)
+    val organizationId =
+        parentStore.getOrganizationId(substratumId)
+            ?: throw SubstratumNotFoundException(substratumId)
+    val substratumInfo = fetchSubstratumInfo(listOf(substratumId)).getValue(substratumId)
+
+    speciesForSubstratum.forEach { record ->
+      eventPublisher.publishEvent(
+          PlantingSeasonScheduledDateSpeciesDeletedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = record[PLANTING_SEASONS.ID]!!,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = record[SCHEDULED_PLANTING_DATES.ID]!!,
+              speciesId = record[SCHEDULED_PLANTING_DATE_SPECIES.SPECIES_ID]!!,
+              stratumName = substratumInfo.stratumName,
+              substratumHistoryId = substratumInfo.substratumHistoryId,
+              substratumId = substratumId,
+              substratumName = substratumInfo.substratumName,
+          )
+      )
+    }
+  }
+
   private fun fetchByCondition(
       condition: Condition
   ): List<ExistingPlantingSeasonScheduledDateModel> {
