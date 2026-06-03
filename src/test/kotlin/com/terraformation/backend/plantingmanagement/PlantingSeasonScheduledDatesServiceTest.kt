@@ -12,9 +12,11 @@ import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestsRecord
+import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDatesRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.plantingmanagement.db.PlantingDateRequestsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
+import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -89,6 +91,100 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
               notes = "Notes",
+          )
+      )
+    }
+  }
+
+  @Nested
+  inner class Update {
+    @Test
+    fun `creates a new request if one doesn't exist and request is true`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      service.update(
+          scheduledPlantingDateId,
+          PlantingSeasonScheduledDateModel(
+              createNurseryRequest = true,
+              date = LocalDate.EPOCH,
+              plantingSeasonId = plantingSeasonId,
+          ),
+      )
+
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              date = LocalDate.EPOCH,
+              statusId = PlantingDateRequestStatus.Pending,
+              createdBy = user.userId,
+              createdTime = clock.instant,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `updates request if one exist and request is true`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate(date = LocalDate.EPOCH)
+      insertPlantingDateRequest(date = LocalDate.EPOCH)
+
+      clock.instant = Instant.ofEpochSecond(100)
+      service.update(
+          scheduledPlantingDateId,
+          PlantingSeasonScheduledDateModel(
+              createNurseryRequest = true,
+              date = LocalDate.EPOCH.plusDays(1),
+              plantingSeasonId = plantingSeasonId,
+          ),
+      )
+
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              date = LocalDate.EPOCH.plusDays(1),
+              statusId = PlantingDateRequestStatus.Pending,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+          )
+      )
+    }
+
+    @Test
+    fun `does not update request if createNurseryRequest is false`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate(date = LocalDate.EPOCH)
+      insertPlantingDateRequest(date = LocalDate.EPOCH)
+
+      service.update(
+          scheduledPlantingDateId,
+          PlantingSeasonScheduledDateModel(
+              createNurseryRequest = false,
+              date = LocalDate.EPOCH.plusDays(1),
+              plantingSeasonId = plantingSeasonId,
+          ),
+      )
+
+      assertTableEquals(
+          ScheduledPlantingDatesRecord(
+              date = LocalDate.EPOCH.plusDays(1),
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              plantingSeasonId = plantingSeasonId,
+          )
+      )
+
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              date = LocalDate.EPOCH,
+              statusId = PlantingDateRequestStatus.Pending,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
           )
       )
     }

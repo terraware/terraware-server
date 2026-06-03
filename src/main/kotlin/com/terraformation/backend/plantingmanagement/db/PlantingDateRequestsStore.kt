@@ -21,6 +21,15 @@ class PlantingDateRequestsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
 ) {
+  fun fetchId(scheduledPlantingDateId: ScheduledPlantingDateId): PlantingDateRequestId? =
+      with(PLANTING_DATE_REQUESTS) {
+        dslContext
+            .select(ID)
+            .from(PLANTING_DATE_REQUESTS)
+            .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+            .fetchOne(ID)
+      }
+
   fun create(
       scheduledPlantingDateId: ScheduledPlantingDateId,
       plantingSeasonId: PlantingSeasonId,
@@ -60,6 +69,50 @@ class PlantingDateRequestsStore(
       }
 
       insertRequestSpecies(scheduledPlantingDateId)
+    }
+  }
+
+  fun update(
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+      plantingSeasonId: PlantingSeasonId,
+      plantingDateRequestId: PlantingDateRequestId,
+      notes: String? = null,
+  ) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    validateSeasonNotClosed(plantingSeasonId)
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    dslContext.transaction { _ ->
+      val updatedCount =
+          with(PLANTING_DATE_REQUESTS) {
+            dslContext
+                .update(PLANTING_DATE_REQUESTS)
+                .set(
+                    DATE,
+                    DSL.select(SCHEDULED_PLANTING_DATES.DATE)
+                        .from(SCHEDULED_PLANTING_DATES)
+                        .where(SCHEDULED_PLANTING_DATES.ID.eq(scheduledPlantingDateId)),
+                )
+                .set(NOTES, notes)
+                .set(MODIFIED_BY, userId)
+                .set(MODIFIED_TIME, now)
+                .where(ID.eq(plantingDateRequestId))
+                .execute()
+          }
+
+      if (updatedCount == 0) {
+        throw PlantingSeasonDateRequestNotFoundException(plantingDateRequestId)
+      }
+
+      dslContext
+          .deleteFrom(PLANTING_DATE_REQUEST_SPECIES)
+          .where(PLANTING_DATE_REQUEST_SPECIES.PLANTING_DATE_REQUEST_ID.eq(plantingDateRequestId))
+          .execute()
+
+      insertRequestSpecies(plantingDateRequestId, scheduledPlantingDateId)
     }
   }
 

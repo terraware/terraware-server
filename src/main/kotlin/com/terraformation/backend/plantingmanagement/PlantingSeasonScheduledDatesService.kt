@@ -32,4 +32,32 @@ class PlantingSeasonScheduledDatesService(
       scheduledPlantingDateId
     }
   }
+
+  fun update(
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+      model: PlantingSeasonScheduledDateModel,
+  ) {
+    dslContext.transaction { _ ->
+      plantingSeasonScheduledDatesStore.update(scheduledPlantingDateId, model)
+
+      val plantingDateRequestId = plantingDateRequestsStore.fetchId(scheduledPlantingDateId)
+
+      if (model.createNurseryRequest == true) {
+        if (plantingDateRequestId != null) {
+          plantingDateRequestsStore.update(
+              scheduledPlantingDateId,
+              model.plantingSeasonId,
+              plantingDateRequestId,
+              model.nurseryRequestNotes,
+          )
+        } else {
+          plantingDateRequestsStore.create(
+              scheduledPlantingDateId,
+              model.plantingSeasonId,
+              model.nurseryRequestNotes,
+          )
+        }
+      }
+    }
+  }
 }

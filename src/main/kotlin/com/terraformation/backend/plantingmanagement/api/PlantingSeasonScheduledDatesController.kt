@@ -90,7 +90,7 @@ class PlantingSeasonScheduledDatesController(
       @PathVariable scheduledPlantingDateId: ScheduledPlantingDateId,
       @RequestBody @Valid payload: ScheduledPlantingDateRequestPayload,
   ): SimpleSuccessResponsePayload {
-    plantingSeasonScheduledDatesStore.update(
+    plantingSeasonScheduledDatesService.update(
         scheduledPlantingDateId,
         payload.toModel(plantingSeasonId),
     )

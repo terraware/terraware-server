@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.PlantingDateRequestId
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
@@ -13,6 +14,7 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestsRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
+import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -158,6 +160,90 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
         store.create(
             scheduledPlantingDateId,
             plantingSeasonId,
+        )
+      }
+    }
+  }
+
+  @Nested
+  inner class Update {
+    @Test
+    fun `updates the request and species`() {
+      val oldDate = LocalDate.EPOCH
+      val newDate = LocalDate.EPOCH.plusDays(1)
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate(date = newDate)
+      insertScheduledPlantingDateSpecies(quantity = 10)
+      val plantingDateRequestId = insertPlantingDateRequest(date = oldDate, notes = "old notes")
+      insertPlantingDateRequestSpecies(quantity = 5)
+
+      clock.instant = Instant.ofEpochSecond(100)
+      store.update(scheduledPlantingDateId, plantingSeasonId, plantingDateRequestId, "new notes")
+
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              date = newDate,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              notes = "new notes",
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              statusId = PlantingDateRequestStatus.Pending,
+          )
+      )
+
+      assertTableEquals(
+          PlantingDateRequestSpeciesRecord(
+              plantingDateRequestId = plantingDateRequestId,
+              substratumId = substratumId,
+              speciesId = speciesId,
+              quantity = 10,
+          )
+      )
+    }
+
+    @Test
+    fun `deletes species no longer in scheduled planting date`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      val plantingDateRequestId = insertPlantingDateRequest()
+      insertPlantingDateRequestSpecies()
+
+      store.update(scheduledPlantingDateId, plantingSeasonId, plantingDateRequestId)
+
+      assertTableEmpty(PLANTING_DATE_REQUEST_SPECIES)
+    }
+
+    @Test
+    fun `throws PlantingSeasonClosedException if season is closed`() {
+      val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      val plantingDateRequestId = insertPlantingDateRequest()
+      assertThrows<PlantingSeasonClosedException> {
+        store.update(scheduledPlantingDateId, plantingSeasonId, plantingDateRequestId)
+      }
+    }
+
+    @Test
+    fun `throws AccessDeniedException when user lacks permission`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      val plantingDateRequestId = insertPlantingDateRequest()
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        store.update(scheduledPlantingDateId, plantingSeasonId, plantingDateRequestId)
+      }
+    }
+
+    @Test
+    fun `throws PlantingSeasonDateRequestNotFoundException when request doesn't exist`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+
+      assertThrows<PlantingSeasonDateRequestNotFoundException> {
+        store.update(
+            scheduledPlantingDateId,
+            plantingSeasonId,
+            PlantingDateRequestId(99999L),
         )
       }
     }

@@ -36,3 +36,6 @@ class PlantingSeasonDateRequestExistsException(
     MismatchedStateException(
         "Date request already exists for scheduled planting date $scheduledPlantingDateId"
     )
+
+class PlantingSeasonDateRequestNotFoundException(plantingDateRequestId: PlantingDateRequestId) :
+    EntityNotFoundException("Planting date request $plantingDateRequestId not found")
