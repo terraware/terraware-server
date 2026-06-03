@@ -261,10 +261,36 @@
 <polyline fill="none" stroke="black" points="577,-3051 573.03,-3050.5 "/>
 <ellipse fill="none" stroke="black" cx="569.86" cy="-3050.11" rx="3.2" ry="3.2"/>
 </g>
-<!-- devices -->
+<!-- timeseries_types -->
 <g id="node6" class="node">
+<title>timeseries_types</title>
+<g id="a_node6"><a xlink:href="../../tables/timeseries_types.html" xlink:title="timeseries_types" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="586,-37 586,-121 730,-121 730,-37 586,-37"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="586,-99 586,-121 730,-121 730,-99 586,-99"/>
+<polygon fill="none" stroke="black" points="586,-99 586,-121 730,-121 730,-99 586,-99"/>
+<text text-anchor="start" x="591" y="-108.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries_types</text>
+<text text-anchor="start" x="691" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="586,-77 586,-99 730,-99 730,-77 586,-77"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="591" y="-94"/>
+<text text-anchor="start" x="618" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="586,-55 586,-77 730,-77 730,-55 586,-55"/>
+<text text-anchor="start" x="618" y="-63.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="586,-37 586,-55 647,-55 647,-37 586,-37"/>
+<polygon fill="none" stroke="black" points="586,-37 586,-55 647,-55 647,-37 586,-37"/>
+<text text-anchor="start" x="589" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="647,-37 647,-55 684,-55 684,-37 647,-37"/>
+<polygon fill="none" stroke="black" points="647,-37 647,-55 684,-55 684,-37 647,-37"/>
+<text text-anchor="start" x="674" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="684,-37 684,-55 730,-55 730,-37 684,-37"/>
+<polygon fill="none" stroke="black" points="684,-37 684,-55 730,-55 730,-37 684,-37"/>
+<text text-anchor="start" x="711" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- devices -->
+<g id="node7" class="node">
 <title>devices</title>
-<g id="a_node6"><a xlink:href="../../tables/devices.html" xlink:title="devices" target="_top">
+<g id="a_node7"><a xlink:href="../../tables/devices.html" xlink:title="devices" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="611.5,-2520 611.5,-2890 704.5,-2890 704.5,-2520 611.5,-2520"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="612,-2868 612,-2890 705,-2890 705,-2868 612,-2868"/>
 <polygon fill="none" stroke="black" points="612,-2868 612,-2890 705,-2890 705,-2868 612,-2868"/>
@@ -328,32 +354,6 @@
 <path fill="none" stroke="black" d="M602.18,-2625.94C541.78,-2703.74 547.21,-2907 658.5,-2907 775.5,-2907 775.5,-2898.33 705,-2857"/>
 <polygon fill="black" stroke="black" points="606.66,-2620.96 614.68,-2617.4 609.33,-2617.98 612,-2615 612,-2615 612,-2615 609.33,-2617.98 609.32,-2612.6 606.66,-2620.96 606.66,-2620.96"/>
 <ellipse fill="none" stroke="black" cx="604.52" cy="-2623.34" rx="3.2" ry="3.2"/>
-</g>
-<!-- timeseries_types -->
-<g id="node7" class="node">
-<title>timeseries_types</title>
-<g id="a_node7"><a xlink:href="../../tables/timeseries_types.html" xlink:title="timeseries_types" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="586,-37 586,-121 730,-121 730,-37 586,-37"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="586,-99 586,-121 730,-121 730,-99 586,-99"/>
-<polygon fill="none" stroke="black" points="586,-99 586,-121 730,-121 730,-99 586,-99"/>
-<text text-anchor="start" x="591" y="-108.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">timeseries_types</text>
-<text text-anchor="start" x="691" y="-107.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="586,-77 586,-99 730,-99 730,-77 586,-77"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="591" y="-94"/>
-<text text-anchor="start" x="618" y="-85.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="586,-55 586,-77 730,-77 730,-55 586,-55"/>
-<text text-anchor="start" x="618" y="-63.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="586,-37 586,-55 647,-55 647,-37 586,-37"/>
-<polygon fill="none" stroke="black" points="586,-37 586,-55 647,-55 647,-37 586,-37"/>
-<text text-anchor="start" x="589" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="647,-37 647,-55 684,-55 684,-37 647,-37"/>
-<polygon fill="none" stroke="black" points="647,-37 647,-55 684,-55 684,-37 647,-37"/>
-<text text-anchor="start" x="674" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="684,-37 684,-55 730,-55 730,-37 684,-37"/>
-<polygon fill="none" stroke="black" points="684,-37 684,-55 730,-55 730,-37 684,-37"/>
-<text text-anchor="start" x="711" y="-43.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
 </g>
 <!-- device_templates -->
 <g id="node8" class="node">
@@ -568,19 +568,19 @@
 <polygon fill="black" stroke="black" points="871.51,-2795.38 879.67,-2798.6 875.5,-2795.19 879.5,-2795 879.5,-2795 879.5,-2795 875.5,-2795.19 879.33,-2791.4 871.51,-2795.38 871.51,-2795.38"/>
 <ellipse fill="none" stroke="black" cx="868.31" cy="-2795.54" rx="3.2" ry="3.2"/>
 </g>
-<!-- timeseries&#45;&gt;devices -->
-<g id="edge14" class="edge">
-<title>timeseries:w&#45;&gt;devices:e</title>
-<path fill="none" stroke="black" d="M871.59,-1296.15C754.72,-1369.04 817.24,-2380.05 796,-2509 770.04,-2666.63 865.76,-2857 706,-2857"/>
-<polygon fill="black" stroke="black" points="877.83,-1294.29 886.53,-1295.45 881.67,-1293.14 885.5,-1292 885.5,-1292 885.5,-1292 881.67,-1293.14 884.47,-1288.55 877.83,-1294.29 877.83,-1294.29"/>
-<ellipse fill="none" stroke="black" cx="874.77" cy="-1295.2" rx="3.2" ry="3.2"/>
-</g>
 <!-- timeseries&#45;&gt;timeseries_types -->
 <g id="edge15" class="edge">
 <title>timeseries:w&#45;&gt;timeseries_types:e</title>
 <path fill="none" stroke="black" d="M871.46,-1309.46C761.73,-1233.93 860.2,-240.34 796,-131 778.46,-101.13 765.64,-88 731,-88"/>
 <polygon fill="black" stroke="black" points="877.89,-1311.54 884.39,-1317.43 881.69,-1312.77 885.5,-1314 885.5,-1314 885.5,-1314 881.69,-1312.77 886.61,-1310.57 877.89,-1311.54 877.89,-1311.54"/>
 <ellipse fill="none" stroke="black" cx="874.84" cy="-1310.55" rx="3.2" ry="3.2"/>
+</g>
+<!-- timeseries&#45;&gt;devices -->
+<g id="edge14" class="edge">
+<title>timeseries:w&#45;&gt;devices:e</title>
+<path fill="none" stroke="black" d="M871.59,-1296.15C754.72,-1369.04 817.24,-2380.05 796,-2509 770.04,-2666.63 865.76,-2857 706,-2857"/>
+<polygon fill="black" stroke="black" points="877.83,-1294.29 886.53,-1295.45 881.67,-1293.14 885.5,-1292 885.5,-1292 885.5,-1292 881.67,-1293.14 884.47,-1288.55 877.83,-1294.29 877.83,-1294.29"/>
+<ellipse fill="none" stroke="black" cx="874.77" cy="-1295.2" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.batches -->
 <g id="node12" class="node">

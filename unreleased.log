@@ -1,3 +1,4 @@
+a67ac869 SW-8427 Publish species deletion events when substratum deleted (#4528)
 3e5b9841 SW-8427 Publish events for scheduled date species (#4527)
 43cf404a SW-8427 Persistent events for scheduled date species (#4526)
 15717a78 SW-8427 Publish events for scheduled date writes (#4524)
