@@ -37,7 +37,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDatabaseUser {
@@ -391,8 +390,8 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
     }
 
     @Test
-    fun `throws DuplicateKeyException when same species-substratum combination is added twice`() {
-      assertThrows<DuplicateKeyException> {
+    fun `throws exception when same species-substratum combination is added twice`() {
+      assertThrows<IllegalArgumentException> {
         store.create(
             PlantingSeasonScheduledDateModel(
                 plantingSeasonId = plantingSeasonId,
@@ -688,11 +687,6 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
                     listOf(
                         PlantingSeasonScheduledDateSpecies(
                             quantity = 5,
-                            speciesId = speciesId,
-                            substratumId = substratumId,
-                        ),
-                        PlantingSeasonScheduledDateSpecies(
-                            quantity = 10,
                             speciesId = speciesId,
                             substratumId = substratumId,
                         ),

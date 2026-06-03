@@ -166,10 +166,6 @@ class PlantingSeasonScheduledDatesStore(
 
     validateSeasonNotClosed(model.plantingSeasonId)
 
-    if (model.species.size != model.species.distinctBy { it.substratumId to it.speciesId }.size) {
-      throw IllegalArgumentException("Species listed multiple times for substratum")
-    }
-
     withLockedDate(scheduledDateId) {
       val oldModel = fetch(model.plantingSeasonId, scheduledDateId)
       val plantingSiteId =
