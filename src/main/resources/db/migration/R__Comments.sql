@@ -393,7 +393,7 @@ COMMENT ON COLUMN nursery.withdrawals.facility_id IS 'Nursery from which the see
 COMMENT ON COLUMN nursery.withdrawals.modified_by IS 'Which user most recently modified the withdrawal.';
 COMMENT ON COLUMN nursery.withdrawals.modified_time IS 'When the withdrawal was most recently modified.';
 COMMENT ON COLUMN nursery.withdrawals.notes IS 'User-supplied freeform text describing the withdrawal.';
-COMMENT ON COLUMN nursery.withdrawals.planting_date_request_id IS 'If the withdrawal is being used to fulfill a scheduled planting date request for a planting season..';
+COMMENT ON COLUMN nursery.withdrawals.scheduled_planting_date_request_id IS 'If the withdrawal is being used to fulfill a scheduled planting date request for a planting season.';
 COMMENT ON COLUMN nursery.withdrawals.planting_season_id IS 'Optional planting season for which the seedlings were withdrawn for planting.';
 COMMENT ON COLUMN nursery.withdrawals.purpose_id IS 'Purpose of the withdrawal (nursery transfer, dead seedlings, etc.)';
 COMMENT ON COLUMN nursery.withdrawals.withdrawn_date IS 'User-supplied date when the seedlings were withdrawn.';

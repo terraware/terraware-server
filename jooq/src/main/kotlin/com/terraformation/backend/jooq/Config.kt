@@ -529,10 +529,6 @@ val ID_WRAPPERS =
                     listOf("observation_types\\.id", ".*\\.observation_type_id"),
                 ),
                 IdWrapper("ObservedPlotCoordinatesId", listOf("observed_plot_coordinates\\.id")),
-                IdWrapper(
-                    "PlantingDateRequestId",
-                    listOf("planting_date_requests\\.id", ".*\\.planting_date_request_id"),
-                ),
                 IdWrapper("PlantingId", listOf("plantings\\.id")),
                 IdWrapper(
                     "PlantingSeasonId",
@@ -555,7 +551,11 @@ val ID_WRAPPERS =
                 IdWrapper("RecordedTreeId", listOf("recorded_trees\\.id")),
                 IdWrapper(
                     "ScheduledPlantingDateId",
-                    listOf("scheduled_planting_dates\\.id", ".*\\.scheduled_planting_date_id"),
+                    listOf(
+                        "scheduled_planting_dates\\.id",
+                        ".*\\.scheduled_planting_date_id",
+                        "nursery\\.withdrawals\\.scheduled_planting_date_request_id",
+                    ),
                 ),
                 IdWrapper(
                     "SubstratumHistoryId",
