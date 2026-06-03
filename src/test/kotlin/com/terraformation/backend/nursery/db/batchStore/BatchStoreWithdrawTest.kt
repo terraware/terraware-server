@@ -1378,8 +1378,8 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     insertStratum()
     insertSubstratum()
     insertPlantingSeason()
-    insertPlantingSeasonScheduledDate()
-    val plantingDateRequestId = insertPlantingDateRequest()
+    val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+    insertPlantingDateRequest()
     insertPlantingDateRequestSpecies()
 
     assertThrows<IllegalArgumentException> {
@@ -1397,7 +1397,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   ),
               facilityId = facilityId,
               id = null,
-              plantingDateRequestId = plantingDateRequestId,
+              scheduledPlantingDateRequestId = scheduledPlantingDateId,
               purpose = WithdrawalPurpose.OutPlant,
               withdrawnDate = LocalDate.EPOCH,
           )

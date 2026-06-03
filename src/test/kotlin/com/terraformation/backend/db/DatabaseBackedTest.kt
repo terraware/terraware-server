@@ -422,7 +422,6 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
-import com.terraformation.backend.db.tracking.PlantingDateRequestId
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
@@ -2426,7 +2425,7 @@ abstract class DatabaseBackedTest {
       scheduledPlantingDateId: ScheduledPlantingDateId =
           row.scheduledPlantingDateId ?: inserted.scheduledPlantingDateId,
       status: PlantingDateRequestStatus = PlantingDateRequestStatus.Pending,
-  ): PlantingDateRequestId {
+  ) {
     val rowWithDefaults =
         row.copy(
             createdBy = createdBy,
@@ -2440,21 +2439,19 @@ abstract class DatabaseBackedTest {
         )
 
     plantingDateRequestsDao.insert(rowWithDefaults)
-
-    return rowWithDefaults.id!!.also { inserted.plantingDateRequestIds.add(it) }
   }
 
   fun insertPlantingDateRequestSpecies(
       row: PlantingDateRequestSpeciesRow = PlantingDateRequestSpeciesRow(),
-      plantingDateRequestId: PlantingDateRequestId =
-          row.plantingDateRequestId ?: inserted.plantingDateRequestId,
+      scheduledPlantingDateId: ScheduledPlantingDateId =
+          row.scheduledPlantingDateId ?: inserted.scheduledPlantingDateId,
       quantity: Int = row.quantity ?: 1,
       speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
       substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
   ) {
     val rowWithDefaults =
         row.copy(
-            plantingDateRequestId = plantingDateRequestId,
+            scheduledPlantingDateId = scheduledPlantingDateId,
             quantity = quantity,
             speciesId = speciesId,
             substratumId = substratumId,
@@ -5994,7 +5991,6 @@ abstract class DatabaseBackedTest {
     val observationIds = mutableListOf<ObservationId>()
     val organizationIds = mutableListOf<OrganizationId>()
     val participantProjectSpeciesIds = mutableListOf<ParticipantProjectSpeciesId>()
-    val plantingDateRequestIds = mutableListOf<PlantingDateRequestId>()
     val plantingIds = mutableListOf<PlantingId>()
     val plantingSeasonIds = mutableListOf<PlantingSeasonId>()
     val plantingSiteHistoryIds = mutableListOf<PlantingSiteHistoryId>()
@@ -6117,9 +6113,6 @@ abstract class DatabaseBackedTest {
 
     val participantProjectSpeciesId
       get() = participantProjectSpeciesIds.last()
-
-    val plantingDateRequestId
-      get() = plantingDateRequestIds.last()
 
     val plantingId
       get() = plantingIds.last()
