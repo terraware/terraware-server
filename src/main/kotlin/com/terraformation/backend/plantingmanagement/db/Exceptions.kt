@@ -2,7 +2,6 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
-import com.terraformation.backend.db.tracking.PlantingDateRequestId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
