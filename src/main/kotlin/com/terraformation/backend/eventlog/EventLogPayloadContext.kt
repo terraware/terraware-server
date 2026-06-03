@@ -30,6 +30,7 @@ class EventLogPayloadContext(
 
   private val biomassSpeciesNames = mutableMapOf<BiomassSpeciesId, BiomassSpecies>()
   private val speciesNames = mutableMapOf<ObservationStore.RecordedSpeciesKey, String>()
+  private val speciesScientificNames = mutableMapOf<SpeciesId, String>()
 
   /**
    * Returns the name of a biomass species, possibly looking it up from the database the first time
@@ -86,6 +87,16 @@ class EventLogPayloadContext(
       }
     }
   }
+
+  /**
+   * Returns the scientific name of a species, possibly looking it up from the database the first
+   * time it's requested. Used by subjects whose entities reference a `SpeciesId` directly. Returns
+   * the species ID as a string if the species can't be found (e.g., it was hard-deleted).
+   */
+  fun getSpeciesScientificName(speciesId: SpeciesId): String =
+      speciesScientificNames.getOrPut(speciesId) {
+        dslContext.fetchValue(SPECIES.SCIENTIFIC_NAME, SPECIES.ID.eq(speciesId)) ?: "$speciesId"
+      }
 
   /** Returns the localized short text for a subject. */
   fun subjectShortText(kClass: KClass<out EventSubjectPayload>, args: Array<out Any>) =

@@ -20,6 +20,8 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EventLogPayloadContext
 import com.terraformation.backend.eventlog.PersistentEvent
@@ -28,6 +30,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreated
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDatePersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
@@ -436,6 +439,64 @@ data class PlantingSeasonScheduledDateSubjectPayload(
   }
 }
 
+@JsonTypeName("PlantingSeasonScheduledDateSpecies")
+data class PlantingSeasonScheduledDateSpeciesSubjectPayload(
+    override val fullText: String,
+    val plantingSeasonId: PlantingSeasonId,
+    val plantingSiteId: PlantingSiteId,
+    val scheduledPlantingDateId: ScheduledPlantingDateId,
+    val scientificName: String?,
+    override val shortText: String,
+    val speciesId: SpeciesId,
+    val stratumName: String,
+    val substratumHistoryId: SubstratumHistoryId,
+    val substratumId: SubstratumId,
+    val substratumName: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingSeasonScheduledDateSpeciesPersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlantingSeasonScheduledDateSpeciesSubjectPayload {
+      val scientificName = context.getSpeciesScientificName(event.speciesId)
+      val activeDate =
+          context
+              .lastEventBefore<PlantingSeasonScheduledDateUpdatedEvent>(event) {
+                it.scheduledPlantingDateId == event.scheduledPlantingDateId &&
+                    it.changedTo.date != null
+              }
+              ?.changedTo
+              ?.date
+              ?: context
+                  .lastEventBefore<PlantingSeasonScheduledDateCreatedEvent>(event) {
+                    it.scheduledPlantingDateId == event.scheduledPlantingDateId
+                  }
+                  ?.date
+      val dateText = activeDate?.toString() ?: event.scheduledPlantingDateId.toString()
+
+      return PlantingSeasonScheduledDateSpeciesSubjectPayload(
+          fullText =
+              context.subjectFullText<PlantingSeasonScheduledDateSpeciesSubjectPayload>(
+                  scientificName,
+                  event.stratumName,
+                  event.substratumName,
+                  dateText,
+              ),
+          plantingSeasonId = event.plantingSeasonId,
+          plantingSiteId = event.plantingSiteId,
+          scheduledPlantingDateId = event.scheduledPlantingDateId,
+          scientificName = scientificName,
+          shortText = context.subjectShortText<PlantingSeasonScheduledDateSpeciesSubjectPayload>(),
+          speciesId = event.speciesId,
+          stratumName = event.stratumName,
+          substratumHistoryId = event.substratumHistoryId,
+          substratumId = event.substratumId,
+          substratumName = event.substratumName,
+      )
+    }
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -529,6 +590,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   Organization(OrganizationPersistentEvent::class),
   PlantingSeason(PlantingSeasonPersistentEvent::class),
   PlantingSeasonScheduledDate(PlantingSeasonScheduledDatePersistentEvent::class),
+  PlantingSeasonScheduledDateSpecies(PlantingSeasonScheduledDateSpeciesPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
 }
