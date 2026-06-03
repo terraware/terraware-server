@@ -2,7 +2,6 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.tracking.PlantingDateRequestId
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
@@ -26,7 +25,7 @@ class PlantingDateRequestsStore(
       scheduledPlantingDateId: ScheduledPlantingDateId,
       plantingSeasonId: PlantingSeasonId,
       notes: String? = null,
-  ): PlantingDateRequestId {
+  ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
     validateSeasonNotClosed(plantingSeasonId)
@@ -34,8 +33,8 @@ class PlantingDateRequestsStore(
     val userId = currentUser().userId
     val now = clock.instant()
 
-    return dslContext.transactionResult { _ ->
-      val newRequestId =
+    dslContext.transaction { _ ->
+      val rowsInserted =
           with(PLANTING_DATE_REQUESTS) {
             dslContext
                 .insertInto(PLANTING_DATE_REQUESTS)
@@ -53,27 +52,24 @@ class PlantingDateRequestsStore(
                 .set(MODIFIED_TIME, now)
                 .set(STATUS_ID, PlantingDateRequestStatus.Pending)
                 .onConflictDoNothing()
-                .returning(ID)
-                .fetchOne(ID)
-                ?: throw PlantingSeasonDateRequestExistsException(scheduledPlantingDateId)
+                .execute()
           }
 
-      insertRequestSpecies(newRequestId, scheduledPlantingDateId)
+      if (rowsInserted == 0) {
+        throw PlantingSeasonDateRequestExistsException(scheduledPlantingDateId)
+      }
 
-      newRequestId
+      insertRequestSpecies(scheduledPlantingDateId)
     }
   }
 
-  private fun insertRequestSpecies(
-      plantingDateRequestId: PlantingDateRequestId,
-      scheduledPlantingDateId: ScheduledPlantingDateId,
-  ) {
+  private fun insertRequestSpecies(scheduledPlantingDateId: ScheduledPlantingDateId) {
     with(SCHEDULED_PLANTING_DATE_SPECIES) {
       dslContext
           .insertInto(PLANTING_DATE_REQUEST_SPECIES)
           .select(
               DSL.select(
-                      DSL.`val`(plantingDateRequestId),
+                      DSL.`val`(scheduledPlantingDateId),
                       SUBSTRATUM_ID,
                       SPECIES_ID,
                       QUANTITY,

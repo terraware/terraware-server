@@ -74,7 +74,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       val speciesId2 = insertSpecies()
       insertScheduledPlantingDateSpecies(quantity = 10)
 
-      val newRequestId = store.create(scheduledPlantingDateId, plantingSeasonId)
+      store.create(scheduledPlantingDateId, plantingSeasonId)
 
       assertTableEquals(
           PlantingDateRequestsRecord(
@@ -91,13 +91,13 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       assertTableEquals(
           listOf(
               PlantingDateRequestSpeciesRecord(
-                  plantingDateRequestId = newRequestId,
+                  scheduledPlantingDateId = scheduledPlantingDateId,
                   substratumId = substratumId,
                   speciesId = speciesId,
                   quantity = 5,
               ),
               PlantingDateRequestSpeciesRecord(
-                  plantingDateRequestId = newRequestId,
+                  scheduledPlantingDateId = scheduledPlantingDateId,
                   substratumId = substratumId,
                   speciesId = speciesId2,
                   quantity = 10,
