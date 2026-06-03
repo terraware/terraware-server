@@ -70,6 +70,7 @@ import com.terraformation.backend.tracking.event.PlantingSiteDeletionStartedEven
 import com.terraformation.backend.tracking.event.PlantingSiteHistoryCreatedEvent
 import com.terraformation.backend.tracking.event.PlantingSiteMapEditedEvent
 import com.terraformation.backend.tracking.event.RateLimitedT0DataAssignedEvent
+import com.terraformation.backend.tracking.event.SubstratumDeletionStartedEvent
 import com.terraformation.backend.tracking.model.AnyPlantingSiteModel
 import com.terraformation.backend.tracking.model.AnyStratumModel
 import com.terraformation.backend.tracking.model.AnySubstratumModel
@@ -960,9 +961,13 @@ class PlantingSiteStore(
         }
       }
       is SubstratumEdit.Delete -> {
+        val substratumIdToDelete = edit.existingModel.id
+
+        eventPublisher.publishEvent(SubstratumDeletionStartedEvent(substratumIdToDelete))
+
         // Plots will be deleted by ON DELETE CASCADE. This may legitimately delete 0 rows if the
         // parent stratum has already been deleted.
-        dslContext.deleteFrom(SUBSTRATA).where(SUBSTRATA.ID.eq(edit.existingModel.id)).execute()
+        dslContext.deleteFrom(SUBSTRATA).where(SUBSTRATA.ID.eq(substratumIdToDelete)).execute()
 
         replacementResults.add(
             ReplacementResult(emptySet(), edit.existingModel.monitoringPlots.map { it.id }.toSet())

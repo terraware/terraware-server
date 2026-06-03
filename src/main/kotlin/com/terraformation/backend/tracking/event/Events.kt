@@ -21,6 +21,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
@@ -109,6 +110,8 @@ data class ObservationStateUpdatedEvent(
 )
 
 data class PlantingSiteDeletionStartedEvent(val plantingSiteId: PlantingSiteId)
+
+data class SubstratumDeletionStartedEvent(val substratumId: SubstratumId)
 
 data class PlantingSeasonRescheduledEvent(
     val plantingSeasonId: PlantingSeasonId,
