@@ -11,9 +11,7 @@ CREATE TABLE tracking.planting_date_requests (
     modified_by BIGINT NOT NULL REFERENCES users,
     modified_time TIMESTAMP WITH TIME ZONE NOT NULL,
     notes TEXT,
-    status_id INTEGER NOT NULL REFERENCES tracking.planting_date_request_statuses,
-
-    UNIQUE (scheduled_planting_date_id)
+    status_id INTEGER NOT NULL REFERENCES tracking.planting_date_request_statuses
 );
 
 CREATE TABLE tracking.planting_date_request_species (
