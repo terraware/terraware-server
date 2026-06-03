@@ -2188,59 +2188,24 @@ class ObservationStore(
   @EventListener
   fun on(event: T0PlotDataAssignedEvent) {
     val plantingSiteId = parentStore.getPlantingSiteId(event.monitoringPlotId) ?: return
-
-    withLockedSurvivalRateCalculation(plantingSiteId) {
-      val calculationInProgress = survivalRateCalculationInProgress(plantingSiteId)
-
-      if (!calculationInProgress) {
-        insertSurvivalRateCalculation(plantingSiteId)
-        jobScheduler.enqueue<ObservationStore> {
-          // Do the survival rate recalculation asynchronously to avoid delays on a T0 settings
-          // change.
-          runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
-        }
-      } else {
-        setSurvivalRateAdditionalCalculationRequested(plantingSiteId, true)
-      }
+    enqueueSurvivalRateCalculation(plantingSiteId) {
+      runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
     }
   }
 
   @EventListener
   fun on(event: T0StratumDataAssignedEvent) {
     val plantingSiteId = parentStore.getPlantingSiteId(event.stratumId) ?: return
-    withLockedSurvivalRateCalculation(plantingSiteId) {
-      val calculationInProgress = survivalRateCalculationInProgress(plantingSiteId)
-
-      if (!calculationInProgress) {
-        insertSurvivalRateCalculation(plantingSiteId)
-        jobScheduler.enqueue<ObservationStore> {
-          // Do the survival rate recalculation asynchronously to avoid delays on a T0 settings
-          // change.
-          runRecalculateSurvivalRates(plantingSiteId, event.stratumId)
-        }
-      } else {
-        setSurvivalRateAdditionalCalculationRequested(plantingSiteId, true)
-      }
+    enqueueSurvivalRateCalculation(plantingSiteId) {
+      runRecalculateSurvivalRates(plantingSiteId, event.stratumId)
     }
   }
 
   @EventListener
   fun on(event: MonitoringSpeciesTotalsEditedEvent) {
     val plantingSiteId = event.plantingSiteId
-
-    withLockedSurvivalRateCalculation(plantingSiteId) {
-      val calculationInProgress = survivalRateCalculationInProgress(plantingSiteId)
-
-      if (!calculationInProgress) {
-        insertSurvivalRateCalculation(plantingSiteId)
-        jobScheduler.enqueue<ObservationStore> {
-          // Do the survival rate recalculation asynchronously to avoid delays on species total
-          // edit.
-          runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
-        }
-      } else {
-        setSurvivalRateAdditionalCalculationRequested(plantingSiteId, true)
-      }
+    enqueueSurvivalRateCalculation(plantingSiteId) {
+      runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
     }
   }
 
@@ -2300,6 +2265,27 @@ class ObservationStore(
           }
         }
       }
+
+  /**
+   * Immediately enqueue an async recalculation jobs, or set the existing job to rerun on
+   * completion.
+   */
+  private fun enqueueSurvivalRateCalculation(plantingSiteId: PlantingSiteId, func: () -> Unit) {
+    withLockedSurvivalRateCalculation(plantingSiteId) {
+      val calculationInProgress = survivalRateCalculationInProgress(plantingSiteId)
+
+      if (!calculationInProgress) {
+        insertSurvivalRateCalculation(plantingSiteId)
+        jobScheduler.enqueue<ObservationStore> {
+          // The recalculation job is often long-running and is run asynchronously to prevent client
+          // call from blocking and timing-out
+          func()
+        }
+      } else {
+        setSurvivalRateAdditionalCalculationRequested(plantingSiteId, true)
+      }
+    }
+  }
 
   private fun deleteObservation(observationId: ObservationId) {
     dslContext.transaction { _ ->
@@ -3230,7 +3216,7 @@ class ObservationStore(
             .select(ADDITIONAL_CALCULATION_REQUESTED)
             .from(this)
             .where(PLANTING_SITE_ID.eq(plantingSiteId))
-            .fetchOne { it[ADDITIONAL_CALCULATION_REQUESTED] } ?: false
+            .fetchOne(ADDITIONAL_CALCULATION_REQUESTED) ?: false
       }
 
   private fun insertSurvivalRateCalculation(plantingSiteId: PlantingSiteId) =
