@@ -6,7 +6,6 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.tracking.PlantingDateRequestId
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
@@ -173,11 +172,11 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       val newDate = LocalDate.EPOCH.plusDays(1)
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate(date = newDate)
       insertScheduledPlantingDateSpecies(quantity = 10)
-      val plantingDateRequestId = insertPlantingDateRequest(date = oldDate, notes = "old notes")
+      insertPlantingDateRequest(date = oldDate, notes = "old notes")
       insertPlantingDateRequestSpecies(quantity = 5)
 
       clock.instant = Instant.ofEpochSecond(100)
-      store.update(scheduledPlantingDateId, plantingSeasonId, plantingDateRequestId, "new notes")
+      store.update(scheduledPlantingDateId, plantingSeasonId, "new notes")
 
       assertTableEquals(
           PlantingDateRequestsRecord(
@@ -194,7 +193,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
 
       assertTableEquals(
           PlantingDateRequestSpeciesRecord(
-              plantingDateRequestId = plantingDateRequestId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
               substratumId = substratumId,
               speciesId = speciesId,
               quantity = 10,
@@ -205,10 +204,10 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
     @Test
     fun `deletes species no longer in scheduled planting date`() {
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
-      val plantingDateRequestId = insertPlantingDateRequest()
+      insertPlantingDateRequest()
       insertPlantingDateRequestSpecies()
 
-      store.update(scheduledPlantingDateId, plantingSeasonId, plantingDateRequestId)
+      store.update(scheduledPlantingDateId, plantingSeasonId)
 
       assertTableEmpty(PLANTING_DATE_REQUEST_SPECIES)
     }
@@ -217,21 +216,21 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
     fun `throws PlantingSeasonClosedException if season is closed`() {
       val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
-      val plantingDateRequestId = insertPlantingDateRequest()
+      insertPlantingDateRequest()
       assertThrows<PlantingSeasonClosedException> {
-        store.update(scheduledPlantingDateId, plantingSeasonId, plantingDateRequestId)
+        store.update(scheduledPlantingDateId, plantingSeasonId)
       }
     }
 
     @Test
     fun `throws AccessDeniedException when user lacks permission`() {
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
-      val plantingDateRequestId = insertPlantingDateRequest()
+      insertPlantingDateRequest()
       deleteOrganizationUser()
       insertOrganizationUser(role = Role.Contributor)
 
       assertThrows<AccessDeniedException> {
-        store.update(scheduledPlantingDateId, plantingSeasonId, plantingDateRequestId)
+        store.update(scheduledPlantingDateId, plantingSeasonId)
       }
     }
 
@@ -240,11 +239,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
 
       assertThrows<PlantingSeasonDateRequestNotFoundException> {
-        store.update(
-            scheduledPlantingDateId,
-            plantingSeasonId,
-            PlantingDateRequestId(99999L),
-        )
+        store.update(scheduledPlantingDateId, plantingSeasonId)
       }
     }
   }

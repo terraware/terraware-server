@@ -2,7 +2,6 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.MismatchedStateException
-import com.terraformation.backend.db.tracking.PlantingDateRequestId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
@@ -38,5 +37,7 @@ class PlantingSeasonDateRequestExistsException(
         "Date request already exists for scheduled planting date $scheduledPlantingDateId"
     )
 
-class PlantingSeasonDateRequestNotFoundException(plantingDateRequestId: PlantingDateRequestId) :
-    EntityNotFoundException("Planting date request $plantingDateRequestId not found")
+class PlantingSeasonDateRequestNotFoundException(scheduledPlantingDateId: ScheduledPlantingDateId) :
+    EntityNotFoundException(
+        "Planting date request for scheduled planting date $scheduledPlantingDateId not found"
+    )

@@ -1,6 +1,7 @@
 package com.terraformation.backend.plantingmanagement
 
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.plantingmanagement.db.PlantingDateRequestsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import jakarta.inject.Named
@@ -40,14 +41,17 @@ class PlantingSeasonScheduledDatesService(
     dslContext.transaction { _ ->
       plantingSeasonScheduledDatesStore.update(scheduledPlantingDateId, model)
 
-      val plantingDateRequestId = plantingDateRequestsStore.fetchId(scheduledPlantingDateId)
+      val requestExists =
+          dslContext.fetchExists(
+              PLANTING_DATE_REQUESTS,
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId),
+          )
 
       if (model.createNurseryRequest == true) {
-        if (plantingDateRequestId != null) {
+        if (requestExists) {
           plantingDateRequestsStore.update(
               scheduledPlantingDateId,
               model.plantingSeasonId,
-              plantingDateRequestId,
               model.nurseryRequestNotes,
           )
         } else {
