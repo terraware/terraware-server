@@ -674,7 +674,7 @@ val EMBEDDABLES =
         EmbeddableDefinitionType()
             .withName("planting_date_request_species_id")
             .withTables("tracking.planting_date_request_species")
-            .withColumns("planting_date_request_id", "substratum_id", "species_id"),
+            .withColumns("scheduled_planting_date_id", "substratum_id", "species_id"),
         EmbeddableDefinitionType()
             .withName("planting_season_allocated_species_id")
             .withTables("tracking.planting_season_allocated_species")
