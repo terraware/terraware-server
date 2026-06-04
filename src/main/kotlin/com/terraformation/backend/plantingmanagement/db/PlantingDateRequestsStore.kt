@@ -4,13 +4,12 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
-import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
+import com.terraformation.backend.plantingmanagement.util.validateSeasonNotClosed
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -29,7 +28,7 @@ class PlantingDateRequestsStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(plantingSeasonId)
+    validateSeasonNotClosed(dslContext, plantingSeasonId)
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -71,7 +70,7 @@ class PlantingDateRequestsStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(plantingSeasonId)
+    validateSeasonNotClosed(dslContext, plantingSeasonId)
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -124,21 +123,6 @@ class PlantingDateRequestsStore(
                   .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
           )
           .execute()
-    }
-  }
-
-  private fun validateSeasonNotClosed(plantingSeasonId: PlantingSeasonId) {
-    with(PLANTING_SEASONS) {
-      val status =
-          dslContext
-              .select(STATUS_ID)
-              .from(PLANTING_SEASONS)
-              .where(ID.eq(plantingSeasonId))
-              .fetchOne(STATUS_ID) ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
-
-      if (status == PlantingSeasonStatus.Closed) {
-        throw PlantingSeasonClosedException(plantingSeasonId)
-      }
     }
   }
 }

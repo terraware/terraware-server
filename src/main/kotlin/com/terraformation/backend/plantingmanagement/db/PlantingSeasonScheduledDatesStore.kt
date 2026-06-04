@@ -5,11 +5,9 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.PlantingSeasonId
-import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
@@ -26,6 +24,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSchedul
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEventValues
+import com.terraformation.backend.plantingmanagement.util.validateSeasonNotClosed
 import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
@@ -67,7 +66,7 @@ class PlantingSeasonScheduledDatesStore(
   fun create(model: PlantingSeasonScheduledDateModel): ScheduledPlantingDateId {
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
-    validateSeasonNotClosed(model.plantingSeasonId)
+    validateSeasonNotClosed(dslContext, model.plantingSeasonId)
 
     val plantingSiteId =
         parentStore.getPlantingSiteId(model.plantingSeasonId)
@@ -164,7 +163,7 @@ class PlantingSeasonScheduledDatesStore(
   ) {
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
-    validateSeasonNotClosed(model.plantingSeasonId)
+    validateSeasonNotClosed(dslContext, model.plantingSeasonId)
 
     withLockedDate(scheduledDateId) {
       val oldModel = fetch(model.plantingSeasonId, scheduledDateId)
@@ -322,7 +321,7 @@ class PlantingSeasonScheduledDatesStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(plantingSeasonId)
+    validateSeasonNotClosed(dslContext, plantingSeasonId)
 
     val plantingSiteId =
         parentStore.getPlantingSiteId(plantingSeasonId)
@@ -443,21 +442,6 @@ class PlantingSeasonScheduledDatesStore(
                 species = record[speciesMultiset],
             )
           }
-    }
-  }
-
-  private fun validateSeasonNotClosed(plantingSeasonId: PlantingSeasonId) {
-    with(PLANTING_SEASONS) {
-      val status =
-          dslContext
-              .select(STATUS_ID)
-              .from(PLANTING_SEASONS)
-              .where(ID.eq(plantingSeasonId))
-              .fetchOne(STATUS_ID) ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
-
-      if (status == PlantingSeasonStatus.Closed) {
-        throw PlantingSeasonClosedException(plantingSeasonId)
-      }
     }
   }
 

@@ -4,11 +4,10 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
-import com.terraformation.backend.db.tracking.PlantingSeasonStatus
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
+import com.terraformation.backend.plantingmanagement.util.validateSeasonNotClosed
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -23,7 +22,7 @@ class PlantingSeasonAllocatedSpeciesStore(
     require(quantity >= 0) { "Quantity must be >= 0" }
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(plantingSeasonId)
+    validateSeasonNotClosed(dslContext, plantingSeasonId)
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -69,21 +68,6 @@ class PlantingSeasonAllocatedSpeciesStore(
           .where(PLANTING_SEASON_ID.eq(plantingSeasonId))
           .and(SPECIES_ID.eq(speciesId))
           .execute()
-    }
-  }
-
-  private fun validateSeasonNotClosed(plantingSeasonId: PlantingSeasonId) {
-    with(PLANTING_SEASONS) {
-      val status =
-          dslContext
-              .select(STATUS_ID)
-              .from(PLANTING_SEASONS)
-              .where(ID.eq(plantingSeasonId))
-              .fetchOne(STATUS_ID) ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
-
-      if (status == PlantingSeasonStatus.Closed) {
-        throw PlantingSeasonClosedException(plantingSeasonId)
-      }
     }
   }
 }
