@@ -1,5 +1,6 @@
 package com.terraformation.backend.util
 
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.tracking.model.HECTARES_SCALE
 import freemarker.template.Template
 import java.io.StringWriter
@@ -13,17 +14,21 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Optional
+import kotlin.math.absoluteValue
 import kotlin.math.ceil
 import kotlin.math.log10
+import net.sf.geographiclib.Geodesic
+import net.sf.geographiclib.PolygonArea
 import org.geotools.api.referencing.FactoryException
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem
 import org.geotools.geometry.jts.JTS
 import org.geotools.referencing.CRS
+import org.geotools.referencing.crs.DefaultGeographicCRS
 import org.jooq.Field
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.GeometryCollection
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.LinearRing
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.util.GeometryFixer
@@ -184,25 +189,59 @@ fun Geometry.fixIfNeeded(): Geometry {
 }
 
 /**
- * Calculates the approximate area of a geometry in hectares. If this feature isn't already in a UTM
- * coordinate system, converts it to the appropriate one first.
- *
- * @throws FactoryException The geometry couldn't be converted to UTM.
+ * Returns the area of a geometry in square meters. The geometry must already be in the WGS84
+ * coordinate system.
  */
-fun Geometry.calculateAreaHectares(originalCrs: CoordinateReferenceSystem? = null): BigDecimal {
+private fun Geometry.calculateAreaSquareMeters(): Double {
+  return when (this) {
+    is MultiPolygon -> {
+      (0..<numGeometries).map { getGeometryN(it) }.sumOf { it.calculateAreaSquareMeters() }
+    }
+    is Polygon -> {
+      val holesTotal =
+          (0..<numInteriorRing)
+              .map { getInteriorRingN(it) }
+              .sumOf { it.calculateAreaSquareMeters() }
+      exteriorRing.calculateAreaSquareMeters() - holesTotal
+    }
+    is LinearRing -> {
+      val polygonArea = PolygonArea(Geodesic.WGS84, false)
+      coordinates.forEach { coord -> polygonArea.AddPoint(coord.y, coord.x) }
+
+      // absoluteValue is because Compute() returns negative areas for counterclockwise polygons.
+      polygonArea.Compute().area.absoluteValue
+    }
+    else -> {
+      throw IllegalArgumentException("Area calculation not supported for ${javaClass.simpleName}")
+    }
+  }
+}
+
+/**
+ * Calculates the approximate area of a geometry in hectares.
+ *
+ * @throws FactoryException The geometry couldn't be converted to WGS84.
+ */
+fun Geometry.calculateAreaHectares(): BigDecimal {
   if (isEmpty) {
     return BigDecimal.ZERO.setScale(HECTARES_SCALE)
   }
 
-  val crs = originalCrs ?: CRS.decode("EPSG:$srid", true)
+  val wgs84Geometry =
+      if (srid == SRID.LONG_LAT) {
+        this
+      } else {
+        JTS.transform(
+            this,
+            CRS.findMathTransform(
+                CRS.decode("EPSG:${this.srid}", true),
+                DefaultGeographicCRS.WGS84,
+            ),
+        )
+      }
 
-  // Transform to Equal Earth coordinates for consistent area calculations.
-  val equalEarthCrs = CRS.decode("EPSG:8857", true)
-  val equalEarthGeometry = JTS.transform(this, CRS.findMathTransform(crs, equalEarthCrs))
-  val hectares = equalEarthGeometry.area / SQUARE_METERS_PER_HECTARE
+  val hectares = wgs84Geometry.calculateAreaSquareMeters() / SQUARE_METERS_PER_HECTARE
 
-  // Use a default number of decimal places unless the area is very small, in which case use as
-  // many decimal places as needed to capture the first significant digit.
   val scale =
       if (hectares > 0 && hectares < 0.1) {
         ceil(-log10(hectares)).toInt()

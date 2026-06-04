@@ -251,17 +251,17 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               newSite { exclusion = rectangle(width = 200, height = 500) },
           )
 
-      assertEquals(BigDecimal("20.135"), existing.areaHa, "Site area before edit")
-      assertEquals(BigDecimal("15.101"), edited.areaHa, "Site area after edit")
-      assertEquals(BigDecimal("20.135"), existing.strata[0].areaHa, "Stratum area before edit")
-      assertEquals(BigDecimal("15.101"), edited.strata[0].areaHa, "Stratum area after edit")
+      assertEquals(BigDecimal("20.000"), existing.areaHa, "Site area before edit")
+      assertEquals(BigDecimal("15.000"), edited.areaHa, "Site area after edit")
+      assertEquals(BigDecimal("20.000"), existing.strata[0].areaHa, "Stratum area before edit")
+      assertEquals(BigDecimal("15.000"), edited.strata[0].areaHa, "Stratum area after edit")
       assertEquals(
-          BigDecimal("20.135"),
+          BigDecimal("20.000"),
           existing.strata[0].substrata[0].areaHa,
           "Substratum area before edit",
       )
       assertEquals(
-          BigDecimal("15.101"),
+          BigDecimal("15.000"),
           edited.strata[0].substrata[0].areaHa,
           "Substratum area after edit",
       )

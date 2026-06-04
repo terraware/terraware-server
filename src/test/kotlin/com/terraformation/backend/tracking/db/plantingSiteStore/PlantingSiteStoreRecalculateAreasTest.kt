@@ -39,10 +39,10 @@ internal class PlantingSiteStoreRecalculateAreasTest : BasePlantingSiteStoreTest
             boundary = siteBoundary,
             exclusion = exclusion,
             gridOrigin = gridOrigin,
-            areaHa = BigDecimal("2.0"),
+            areaHa = BigDecimal("3.0"),
         )
-    val stratumId = insertStratum(boundary = siteBoundary, areaHa = BigDecimal("2.0"))
-    val substratumId = insertSubstratum(boundary = siteBoundary, areaHa = BigDecimal("2.0"))
+    val stratumId = insertStratum(boundary = siteBoundary, areaHa = BigDecimal("3.0"))
+    val substratumId = insertSubstratum(boundary = siteBoundary, areaHa = BigDecimal("3.0"))
 
     store.recalculatePlantingSiteAreas(successMessages::add, failureMessages::add)
 

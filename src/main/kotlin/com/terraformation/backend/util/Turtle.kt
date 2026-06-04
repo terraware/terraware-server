@@ -13,6 +13,7 @@ import org.geotools.referencing.CRS
 import org.geotools.referencing.GeodeticCalculator
 import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.GeometryFactory
+import org.locationtech.jts.geom.LinearRing
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
 import org.locationtech.jts.geom.Polygon
@@ -61,6 +62,16 @@ class Turtle(
    */
   fun makeMultiPolygon(func: Turtle.() -> Unit): MultiPolygon {
     return geometryFactory.createMultiPolygon(arrayOf(makePolygon(func)))
+  }
+
+  /**
+   * Returns the linear ring formed by a series of turtle moves from a starting point. Automatically
+   * closes the ring; you don't need to move back to the starting point explicitly.
+   */
+  fun makeLinearRing(func: Turtle.() -> Unit): LinearRing {
+    this.func()
+    moveTo(startPosition)
+    return geometryFactory.createLinearRing(coordinates.toTypedArray())
   }
 
   fun north(meters: Number) {
