@@ -45,7 +45,7 @@ class ExtensionsTest {
               )
           )
 
-      assertEquals(BigDecimal("101.816"), geometry.calculateAreaHectares())
+      assertEquals(BigDecimal("101.858"), geometry.calculateAreaHectares())
     }
 
     @Test
@@ -66,7 +66,55 @@ class ExtensionsTest {
               )
           )
 
-      assertEquals(BigDecimal("101.816"), geometry.calculateAreaHectares())
+      assertEquals(BigDecimal("101.858"), geometry.calculateAreaHectares())
+    }
+
+    @Test
+    fun `calculates total area of disjoint regions`() {
+      val factory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+      val geometry =
+          factory.createMultiPolygon(
+              arrayOf(
+                  factory.createPolygon(
+                      arrayOf(
+                          CoordinateXY(-76.13567116641384, 5.989357251936355),
+                          CoordinateXY(-76.12762679268639, 5.989357251773201),
+                          CoordinateXY(-76.12762679270281, 5.979015683955292),
+                          CoordinateXY(-76.13567116598097, 5.979015684419131),
+                          CoordinateXY(-76.13567116641384, 5.989357251936355),
+                      )
+                  ),
+                  factory.createPolygon(
+                      arrayOf(
+                          CoordinateXY(-77.13567116641384, 5.989357251936355),
+                          CoordinateXY(-77.12762679268639, 5.989357251773201),
+                          CoordinateXY(-77.12762679270281, 5.979015683955292),
+                          CoordinateXY(-77.13567116598097, 5.979015684419131),
+                          CoordinateXY(-77.13567116641384, 5.989357251936355),
+                      )
+                  ),
+              )
+          )
+
+      assertEquals(BigDecimal("203.715"), geometry.calculateAreaHectares())
+    }
+
+    @Test
+    fun `calculates area of geometry with holes`() {
+      val startingPoint = point(-76, 5)
+      val shell = Turtle(startingPoint).makeLinearRing { rectangle(1000, 1000) }
+      val hole =
+          Turtle(startingPoint).makeLinearRing {
+            east(25)
+            north(20)
+            rectangle(500, 500)
+          }
+
+      val factory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+      val geometry =
+          factory.createMultiPolygon(arrayOf(factory.createPolygon(shell, arrayOf(hole))))
+
+      assertEquals(BigDecimal("74.999"), geometry.calculateAreaHectares())
     }
 
     @Test
@@ -87,7 +135,7 @@ class ExtensionsTest {
               )
           )
 
-      assertEquals(BigDecimal("101.816"), geometry.calculateAreaHectares())
+      assertEquals(BigDecimal("101.858"), geometry.calculateAreaHectares())
     }
 
     @Test
