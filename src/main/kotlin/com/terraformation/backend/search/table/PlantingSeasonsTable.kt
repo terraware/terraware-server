@@ -2,6 +2,7 @@ package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
@@ -24,6 +25,12 @@ class PlantingSeasonsTable(private val tables: SearchTables) : SearchTable() {
           plantingSeasonAllocatedSpeciesTable.asMultiValueSublist(
               "allocatedSpecies",
               PLANTING_SEASONS.ID.eq(PLANTING_SEASON_ALLOCATED_SPECIES.PLANTING_SEASON_ID),
+          ),
+          plantingDateRequests.asMultiValueSublist(
+              "plantingDateRequests",
+              PLANTING_SEASONS.ID.eq(
+                  PLANTING_DATE_REQUESTS.scheduledPlantingDates.PLANTING_SEASON_ID
+              ),
           ),
           plantingSites.asSingleValueSublist(
               "plantingSite",

@@ -141,6 +141,9 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertPlantingSeasonSpeciesTarget(quantity = 12)
     insertPlantingSeasonAllocatedSpecies(speciesId = speciesId1, quantity = 17)
 
+    insertPlantingDateRequest(date = LocalDate.of(1970, 1, 19), notes = "some notes")
+    insertPlantingDateRequestSpecies(speciesId = speciesId1, quantity = 18)
+
     insertFacility(type = FacilityType.Nursery)
 
     val withdrawalId1 =
@@ -621,6 +624,20 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                 "endDate" to "1970-02-15",
                                 "id" to "$plantingSeasonId1",
                                 "name" to "Season 1",
+                                "plantingDateRequests" to
+                                    listOf(
+                                        mapOf(
+                                            "date" to "1970-01-19",
+                                            "notes" to "some notes",
+                                            "plantingDateRequestSpecies" to
+                                                listOf(
+                                                    mapOf(
+                                                        "quantity" to "18",
+                                                        "species_scientificName" to "Species 1",
+                                                    )
+                                                ),
+                                        )
+                                    ),
                                 "allocatedSpecies" to
                                     listOf(
                                         mapOf(
@@ -1046,6 +1063,10 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingSeasons.scheduledDates.scheduledDateSpecies.species.scientificName",
                 "plantingSeasons.scheduledDates.scheduledDateSpecies.substratum.name",
                 "plantingSeasons.withdrawals.id",
+                "plantingSeasons.plantingDateRequests.date",
+                "plantingSeasons.plantingDateRequests.notes",
+                "plantingSeasons.plantingDateRequests.plantingDateRequestSpecies.quantity",
+                "plantingSeasons.plantingDateRequests.plantingDateRequestSpecies.species_scientificName",
                 "strata.boundary",
                 "strata.boundaryModifiedTime",
                 "strata.createdTime",
