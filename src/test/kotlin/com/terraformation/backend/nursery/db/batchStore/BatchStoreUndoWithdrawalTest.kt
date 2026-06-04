@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.nursery.db.UndoOfNurseryTransferNotAllowedException
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.nursery.db.WithdrawalAlreadyUndoneException
+import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
@@ -217,6 +218,10 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
         ),
         undoWithdrawal,
         "Should store scheduled planting date request id in undo withdrawal",
+    )
+
+    eventPublisher.assertEventPublished(
+        WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId)
     )
   }
 
