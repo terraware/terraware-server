@@ -554,7 +554,7 @@ val ID_WRAPPERS =
                     listOf(
                         "scheduled_planting_dates\\.id",
                         ".*\\.scheduled_planting_date_id",
-                        "nursery\\.withdrawals\\.scheduled_planting_date_request_id",
+                        "nursery\\.withdrawal.*\\.scheduled_planting_date_request_id",
                     ),
                 ),
                 IdWrapper(
