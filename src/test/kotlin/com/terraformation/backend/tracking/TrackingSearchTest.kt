@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
@@ -141,7 +142,11 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
     insertPlantingSeasonSpeciesTarget(quantity = 12)
     insertPlantingSeasonAllocatedSpecies(speciesId = speciesId1, quantity = 17)
 
-    insertPlantingDateRequest(date = LocalDate.of(1970, 1, 19), notes = "some notes")
+    insertPlantingDateRequest(
+        date = LocalDate.of(1970, 1, 19),
+        notes = "some notes",
+        status = PlantingDateRequestStatus.Partial,
+    )
     insertPlantingDateRequestSpecies(speciesId = speciesId1, quantity = 18)
 
     insertFacility(type = FacilityType.Nursery)
@@ -636,6 +641,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                         "species_scientificName" to "Species 1",
                                                     )
                                                 ),
+                                            "status" to "Partial",
                                         )
                                     ),
                                 "allocatedSpecies" to
@@ -1065,6 +1071,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingSeasons.withdrawals.id",
                 "plantingSeasons.plantingDateRequests.date",
                 "plantingSeasons.plantingDateRequests.notes",
+                "plantingSeasons.plantingDateRequests.status",
                 "plantingSeasons.plantingDateRequests.plantingDateRequestSpecies.quantity",
                 "plantingSeasons.plantingDateRequests.plantingDateRequestSpecies.species_scientificName",
                 "strata.boundary",
