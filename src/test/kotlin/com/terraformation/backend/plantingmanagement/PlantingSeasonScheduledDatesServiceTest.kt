@@ -27,9 +27,7 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
   override lateinit var user: TerrawareUser
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val seasonHelper: SeasonHelper by lazy {
-    SeasonHelper(dslContext)
-  }
+  private val seasonHelper: SeasonHelper by lazy { SeasonHelper(dslContext) }
   private val service: PlantingSeasonScheduledDatesService by lazy {
     PlantingSeasonScheduledDatesService(
         dslContext,
