@@ -801,4 +801,30 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
       assertThrows<AccessDeniedException> { store.delete(plantingSeasonId, scheduledDateId) }
     }
   }
+
+  @Nested
+  inner class Model {
+    @Test
+    fun `throws IllegalArgumentException when a quantity is negative`() {
+      assertThrows<IllegalArgumentException> {
+        PlantingSeasonScheduledDateModel(
+            plantingSeasonId = plantingSeasonId,
+            date = LocalDate.EPOCH,
+            species =
+                listOf(
+                    PlantingSeasonScheduledDateSpecies(
+                        quantity = 5,
+                        speciesId = speciesId,
+                        substratumId = substratumId,
+                    ),
+                    PlantingSeasonScheduledDateSpecies(
+                        quantity = -1,
+                        speciesId = speciesId,
+                        substratumId = substratumId,
+                    ),
+                ),
+        )
+      }
+    }
+  }
 }

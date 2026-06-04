@@ -29,3 +29,10 @@ class PlantingSeasonScheduledDateNotFoundException(
 
 class PlantingSeasonClosedException(val plantingSeasonId: PlantingSeasonId) :
     MismatchedStateException("Planting season $plantingSeasonId already closed")
+
+class PlantingSeasonDateRequestExistsException(
+    scheduledPlantingDateId: ScheduledPlantingDateId,
+) :
+    MismatchedStateException(
+        "Date request already exists for scheduled planting date $scheduledPlantingDateId"
+    )
