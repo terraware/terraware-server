@@ -21,6 +21,7 @@ class PlantingDateRequestsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
 ) {
+
   fun create(
       scheduledPlantingDateId: ScheduledPlantingDateId,
       plantingSeasonId: PlantingSeasonId,
@@ -58,6 +59,51 @@ class PlantingDateRequestsStore(
       if (rowsInserted == 0) {
         throw PlantingSeasonDateRequestExistsException(scheduledPlantingDateId)
       }
+
+      insertRequestSpecies(scheduledPlantingDateId)
+    }
+  }
+
+  fun update(
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+      plantingSeasonId: PlantingSeasonId,
+      notes: String? = null,
+  ) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    validateSeasonNotClosed(plantingSeasonId)
+
+    val userId = currentUser().userId
+    val now = clock.instant()
+
+    dslContext.transaction { _ ->
+      val updatedCount =
+          with(PLANTING_DATE_REQUESTS) {
+            dslContext
+                .update(PLANTING_DATE_REQUESTS)
+                .set(
+                    DATE,
+                    DSL.select(SCHEDULED_PLANTING_DATES.DATE)
+                        .from(SCHEDULED_PLANTING_DATES)
+                        .where(SCHEDULED_PLANTING_DATES.ID.eq(scheduledPlantingDateId)),
+                )
+                .set(NOTES, notes)
+                .set(MODIFIED_BY, userId)
+                .set(MODIFIED_TIME, now)
+                .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+                .execute()
+          }
+
+      if (updatedCount == 0) {
+        throw PlantingSeasonDateRequestNotFoundException(scheduledPlantingDateId)
+      }
+
+      dslContext
+          .deleteFrom(PLANTING_DATE_REQUEST_SPECIES)
+          .where(
+              PLANTING_DATE_REQUEST_SPECIES.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId)
+          )
+          .execute()
 
       insertRequestSpecies(scheduledPlantingDateId)
     }

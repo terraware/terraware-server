@@ -1,6 +1,7 @@
 package com.terraformation.backend.plantingmanagement
 
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.plantingmanagement.db.PlantingDateRequestsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
 import jakarta.inject.Named
@@ -30,6 +31,39 @@ class PlantingSeasonScheduledDatesService(
       }
 
       scheduledPlantingDateId
+    }
+  }
+
+  fun update(
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+      model: PlantingSeasonScheduledDateModel,
+      createNurseryRequest: Boolean,
+      nurseryRequestNotes: String? = null,
+  ) {
+    dslContext.transaction { _ ->
+      plantingSeasonScheduledDatesStore.update(scheduledPlantingDateId, model)
+
+      val requestExists =
+          dslContext.fetchExists(
+              PLANTING_DATE_REQUESTS,
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId),
+          )
+
+      if (createNurseryRequest) {
+        if (requestExists) {
+          plantingDateRequestsStore.update(
+              scheduledPlantingDateId,
+              model.plantingSeasonId,
+              nurseryRequestNotes,
+          )
+        } else {
+          plantingDateRequestsStore.create(
+              scheduledPlantingDateId,
+              model.plantingSeasonId,
+              nurseryRequestNotes,
+          )
+        }
+      }
     }
   }
 }
