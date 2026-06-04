@@ -1,3 +1,4 @@
+c61f9df4 SW-8446 Use WGS84 spheroid for area calculation (#4534)
 7e85e890 SW-8439 Update search api for planting date requests (#4536)
 f952db11 SW-8442 Update planting date request (#4532)
 249f8bb8 SW-8442 Create planting date request with scheduled planting date (#4531)
