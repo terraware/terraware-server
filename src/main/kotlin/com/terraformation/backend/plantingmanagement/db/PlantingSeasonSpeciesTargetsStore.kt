@@ -4,9 +4,7 @@ import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
-import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.SubstratumId
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
@@ -22,6 +20,7 @@ class PlantingSeasonSpeciesTargetsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val seasonHelper: SeasonHelper,
 ) {
   fun fetchList(plantingSeasonId: PlantingSeasonId): List<PlantingSeasonSpeciesTargetModel> {
     requirePermissions { readPlantingSeason(plantingSeasonId) }
@@ -38,7 +37,7 @@ class PlantingSeasonSpeciesTargetsStore(
     require(quantity >= 0) { "Quantity must be >= 0" }
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -113,7 +112,7 @@ class PlantingSeasonSpeciesTargetsStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     with(PLANTING_SEASON_SPECIES_TARGETS) {
       dslContext
@@ -141,21 +140,6 @@ class PlantingSeasonSpeciesTargetsStore(
             speciesId = record[SPECIES_ID]!!,
             quantity = record[QUANTITY]!!,
         )
-      }
-    }
-  }
-
-  private fun validateSeasonNotClosed(plantingSeasonId: PlantingSeasonId) {
-    with(PLANTING_SEASONS) {
-      val status =
-          dslContext
-              .select(STATUS_ID)
-              .from(PLANTING_SEASONS)
-              .where(ID.eq(plantingSeasonId))
-              .fetchOne(STATUS_ID) ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
-
-      if (status == PlantingSeasonStatus.Closed) {
-        throw PlantingSeasonClosedException(plantingSeasonId)
       }
     }
   }

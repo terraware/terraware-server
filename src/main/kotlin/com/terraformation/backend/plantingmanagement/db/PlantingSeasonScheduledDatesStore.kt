@@ -5,7 +5,6 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.PlantingSeasonId
-import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -41,6 +40,7 @@ class PlantingSeasonScheduledDatesStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val parentStore: ParentStore,
+    private val seasonHelper: SeasonHelper,
 ) {
   fun fetchList(
       plantingSeasonId: PlantingSeasonId
@@ -67,7 +67,7 @@ class PlantingSeasonScheduledDatesStore(
   fun create(model: PlantingSeasonScheduledDateModel): ScheduledPlantingDateId {
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
-    validateSeasonNotClosed(model.plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(model.plantingSeasonId)
 
     val plantingSiteId =
         parentStore.getPlantingSiteId(model.plantingSeasonId)
@@ -164,7 +164,7 @@ class PlantingSeasonScheduledDatesStore(
   ) {
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
-    validateSeasonNotClosed(model.plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(model.plantingSeasonId)
 
     withLockedDate(scheduledDateId) {
       val oldModel = fetch(model.plantingSeasonId, scheduledDateId)
@@ -322,7 +322,7 @@ class PlantingSeasonScheduledDatesStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     val plantingSiteId =
         parentStore.getPlantingSiteId(plantingSeasonId)
@@ -443,21 +443,6 @@ class PlantingSeasonScheduledDatesStore(
                 species = record[speciesMultiset],
             )
           }
-    }
-  }
-
-  private fun validateSeasonNotClosed(plantingSeasonId: PlantingSeasonId) {
-    with(PLANTING_SEASONS) {
-      val status =
-          dslContext
-              .select(STATUS_ID)
-              .from(PLANTING_SEASONS)
-              .where(ID.eq(plantingSeasonId))
-              .fetchOne(STATUS_ID) ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
-
-      if (status == PlantingSeasonStatus.Closed) {
-        throw PlantingSeasonClosedException(plantingSeasonId)
-      }
     }
   }
 

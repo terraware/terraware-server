@@ -25,7 +25,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
   override lateinit var user: TerrawareUser
   private val clock = TestClock()
   private val store: PlantingDateRequestsStore by lazy {
-    PlantingDateRequestsStore(clock, dslContext)
+    PlantingDateRequestsStore(clock, dslContext, SeasonHelper(dslContext))
   }
 
   private lateinit var plantingSeasonId: PlantingSeasonId

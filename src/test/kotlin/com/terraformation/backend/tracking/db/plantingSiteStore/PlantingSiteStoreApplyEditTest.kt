@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
+import com.terraformation.backend.plantingmanagement.db.SeasonHelper
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesDeletedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
@@ -166,6 +167,7 @@ internal class PlantingSiteStoreApplyEditTest : BasePlantingSiteStoreTest() {
               dslContext,
               eventPublisher,
               ParentStore(dslContext),
+              SeasonHelper(dslContext),
           )
       eventPublisher.register<SubstratumDeletionStartedEvent> {
         plantingSeasonScheduledDatesStore.publishSpeciesDeletedEvents(it.substratumId)
