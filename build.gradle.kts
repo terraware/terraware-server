@@ -206,6 +206,8 @@ testing {
                     "-Djava.awt.headless=true",
                     "-Duser.country=US",
                     "-Xmx5120m",
+                    // For MockK, which needs to stub out final fields.
+                    "--enable-final-field-mutation=ALL-UNNAMED",
                 )
                 systemProperty("java.locale.providers", "SPI,CLDR")
                 testLogging { exceptionFormat = TestExceptionFormat.FULL }
@@ -288,8 +290,8 @@ sourceSets.main { java.srcDir("build/generated/kotlin") }
 sourceSets.test { java.srcDir("build/generated-test/kotlin") }
 
 java {
-  toolchain { languageVersion = JavaLanguageVersion.of(25) }
-  targetCompatibility = JavaVersion.VERSION_25
+  toolchain { languageVersion = JavaLanguageVersion.of(26) }
+  targetCompatibility = JavaVersion.VERSION_26
 }
 
 node {
@@ -301,7 +303,7 @@ node {
 tasks.withType<KotlinCompile> {
   compilerOptions {
     // Kotlin and Java target compatibility must be the same.
-    jvmTarget = JvmTarget.JVM_25
+    jvmTarget = JvmTarget.JVM_26
     allWarningsAsErrors = true
     extraWarnings = true
 
@@ -311,9 +313,6 @@ tasks.withType<KotlinCompile> {
     // jOOQ generated code has redundant modifiers
     freeCompilerArgs.add("-Xwarning-level=REDUNDANT_MODALITY_MODIFIER:disabled")
     freeCompilerArgs.add("-Xwarning-level=REDUNDANT_VISIBILITY_MODIFIER:disabled")
-
-    // Opt into future behavior of annotations on properties
-    freeCompilerArgs.add("-Xannotation-default-target=param-property")
   }
 
   dependsOn(generateVersionFile)
