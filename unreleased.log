@@ -1,3 +1,4 @@
+b970ab08 Upgrade to Kotlin 2.4.0, Java 26 (#4538)
 571e9a34 SW-8399 Run survival rate recalculation asynchronously after species totals edits (#4463)
 01e3450c SW-8399 Run T0 survival rate recalculations asynchronously via JobRunr (#4458)
 663c1074 Move duplicated function to utils file (#4537)
