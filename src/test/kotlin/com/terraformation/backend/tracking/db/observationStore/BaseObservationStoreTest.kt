@@ -4,6 +4,7 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -13,6 +14,8 @@ import com.terraformation.backend.tracking.db.ObservationLocker
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.ObservationTestHelper
 import io.mockk.every
+import io.mockk.mockk
+import org.jobrunr.scheduling.JobScheduler
 import org.junit.jupiter.api.BeforeEach
 
 abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
@@ -20,17 +23,21 @@ abstract class BaseObservationStoreTest : DatabaseTest(), RunsAsUser {
 
   protected val clock = TestClock()
   protected val eventPublisher = TestEventPublisher()
+  protected val jobScheduler: JobScheduler = mockk()
+  protected val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   protected val store: ObservationStore by lazy {
     ObservationStore(
         clock,
         dslContext,
         eventPublisher,
+        jobScheduler,
         ObservationLocker(dslContext),
         observationsDao,
         observationPlotConditionsDao,
         observationPlotsDao,
         observationRequestedSubstrataDao,
         ParentStore(dslContext),
+        systemUser,
     )
   }
   protected val helper: ObservationTestHelper by lazy {
