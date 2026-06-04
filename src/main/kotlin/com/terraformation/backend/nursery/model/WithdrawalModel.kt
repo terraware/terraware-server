@@ -8,6 +8,7 @@ import com.terraformation.backend.db.nursery.tables.pojos.BatchWithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.tracking.DeliveryId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import java.time.LocalDate
 
 /**
@@ -45,6 +46,7 @@ data class WithdrawalModel<ID : WithdrawalId?>(
     val facilityId: FacilityId,
     val id: ID,
     val notes: String? = null,
+    val scheduledPlantingDateRequestId: ScheduledPlantingDateId? = null,
     val plantingSeasonId: PlantingSeasonId? = null,
     val purpose: WithdrawalPurpose,
     val withdrawnDate: LocalDate,
@@ -61,6 +63,22 @@ data class WithdrawalModel<ID : WithdrawalId?>(
             undoesWithdrawalId == null && purpose == WithdrawalPurpose.Undo
     ) {
       throw IllegalArgumentException("Must specify original withdrawal ID if purpose is Undo")
+    }
+
+    if (
+        plantingSeasonId != null &&
+            purpose != WithdrawalPurpose.OutPlant &&
+            purpose != WithdrawalPurpose.Undo
+    ) {
+      throw IllegalArgumentException(
+          "Planting season may only be specified for out-plant or undo withdrawals"
+      )
+    }
+
+    if (scheduledPlantingDateRequestId != null && plantingSeasonId == null) {
+      throw IllegalArgumentException(
+          "Must specify planting season ID if planting date request ID is specified"
+      )
     }
   }
 }
@@ -91,6 +109,7 @@ fun WithdrawalsRow.toModel(
         facilityId = facilityId!!,
         id = id!!,
         notes = notes,
+        scheduledPlantingDateRequestId = scheduledPlantingDateRequestId,
         plantingSeasonId = plantingSeasonId,
         purpose = purposeId!!,
         withdrawnDate = withdrawnDate!!,

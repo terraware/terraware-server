@@ -27,6 +27,7 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.model.FileMetadata
@@ -234,6 +235,7 @@ data class NurseryWithdrawalPayload(
     val facilityId: FacilityId,
     val id: WithdrawalId,
     val notes: String?,
+    val scheduledPlantingDateRequestId: ScheduledPlantingDateId?,
     val plantingSeasonId: PlantingSeasonId?,
     val purpose: WithdrawalPurpose,
     val withdrawnDate: LocalDate,
@@ -250,6 +252,7 @@ data class NurseryWithdrawalPayload(
       model.facilityId,
       model.id,
       model.notes,
+      model.scheduledPlantingDateRequestId,
       model.plantingSeasonId,
       model.purpose,
       model.withdrawnDate,

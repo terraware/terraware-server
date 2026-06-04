@@ -422,6 +422,7 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
+import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
@@ -458,6 +459,8 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservationStratumResu
 import com.terraformation.backend.db.tracking.tables.daos.ObservationSubstratumResultsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinatesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingDateRequestSpeciesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingDateRequestsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonAllocatedSpeciesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonSpeciesTargetsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
@@ -504,6 +507,8 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotCoordinat
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingDateRequestSpeciesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingDateRequestsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonAllocatedSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonSpeciesTargetsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
@@ -739,6 +744,8 @@ abstract class DatabaseBackedTest {
   protected val organizationsDao: OrganizationsDao by lazyDao()
   protected val organizationUsersDao: OrganizationUsersDao by lazyDao()
   protected val participantProjectSpeciesDao: ParticipantProjectSpeciesDao by lazyDao()
+  protected val plantingDateRequestsDao: PlantingDateRequestsDao by lazyDao()
+  protected val plantingDateRequestSpeciesDao: PlantingDateRequestSpeciesDao by lazyDao()
   protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
   protected val plantingSeasonAllocatedSpeciesDao: PlantingSeasonAllocatedSpeciesDao by lazyDao()
@@ -2405,6 +2412,52 @@ abstract class DatabaseBackedTest {
         )
 
     scheduledPlantingDateSpeciesDao.insert(rowWithDefaults)
+  }
+
+  fun insertPlantingDateRequest(
+      row: PlantingDateRequestsRow = PlantingDateRequestsRow(),
+      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      date: LocalDate = LocalDate.EPOCH,
+      modifiedBy: UserId = row.modifiedBy ?: createdBy,
+      modifiedTime: Instant = row.modifiedTime ?: createdTime,
+      notes: String? = null,
+      scheduledPlantingDateId: ScheduledPlantingDateId =
+          row.scheduledPlantingDateId ?: inserted.scheduledPlantingDateId,
+      status: PlantingDateRequestStatus = PlantingDateRequestStatus.Pending,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+            date = date,
+            modifiedBy = modifiedBy,
+            modifiedTime = modifiedTime,
+            notes = notes,
+            scheduledPlantingDateId = scheduledPlantingDateId,
+            statusId = status,
+        )
+
+    plantingDateRequestsDao.insert(rowWithDefaults)
+  }
+
+  fun insertPlantingDateRequestSpecies(
+      row: PlantingDateRequestSpeciesRow = PlantingDateRequestSpeciesRow(),
+      scheduledPlantingDateId: ScheduledPlantingDateId =
+          row.scheduledPlantingDateId ?: inserted.scheduledPlantingDateId,
+      quantity: Int = row.quantity ?: 1,
+      speciesId: SpeciesId = row.speciesId ?: inserted.speciesId,
+      substratumId: SubstratumId = row.substratumId ?: inserted.substratumId,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            scheduledPlantingDateId = scheduledPlantingDateId,
+            quantity = quantity,
+            speciesId = speciesId,
+            substratumId = substratumId,
+        )
+
+    plantingDateRequestSpeciesDao.insert(rowWithDefaults)
   }
 
   var nextPlantingSiteNumber: Int = 1

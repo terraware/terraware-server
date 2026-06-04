@@ -1364,9 +1364,42 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
                   ),
               facilityId = facilityId,
               id = null,
+              plantingSeasonId = plantingSeasonId,
               purpose = WithdrawalPurpose.Other,
               withdrawnDate = LocalDate.EPOCH,
-              plantingSeasonId = plantingSeasonId,
+          )
+      )
+    }
+  }
+
+  @Test
+  fun `throws exception if planting date request id and no planting season id`() {
+    insertPlantingSite()
+    insertStratum()
+    insertSubstratum()
+    insertPlantingSeason()
+    val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+    insertPlantingDateRequest()
+    insertPlantingDateRequestSpecies()
+
+    assertThrows<IllegalArgumentException> {
+      store.withdraw(
+          NewWithdrawalModel(
+              batchWithdrawals =
+                  listOf(
+                      BatchWithdrawalModel(
+                          batchId = species1Batch1Id,
+                          germinatingQuantityWithdrawn = 1,
+                          activeGrowthQuantityWithdrawn = 0,
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0,
+                      )
+                  ),
+              facilityId = facilityId,
+              id = null,
+              scheduledPlantingDateRequestId = scheduledPlantingDateId,
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.EPOCH,
           )
       )
     }
