@@ -7,7 +7,6 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
-import com.terraformation.backend.plantingmanagement.util.validateSeasonNotClosed
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -17,12 +16,13 @@ import org.springframework.context.event.EventListener
 class PlantingSeasonAllocatedSpeciesStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val seasonHelper: SeasonHelper,
 ) {
   fun upsert(plantingSeasonId: PlantingSeasonId, speciesId: SpeciesId, quantity: Int) {
     require(quantity >= 0) { "Quantity must be >= 0" }
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(dslContext, plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     val userId = currentUser().userId
     val now = clock.instant()

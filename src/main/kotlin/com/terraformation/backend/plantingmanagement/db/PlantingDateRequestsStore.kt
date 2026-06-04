@@ -9,7 +9,6 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_RE
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
-import com.terraformation.backend.plantingmanagement.util.validateSeasonNotClosed
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -19,6 +18,7 @@ import org.jooq.impl.DSL
 class PlantingDateRequestsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val seasonHelper: SeasonHelper,
 ) {
 
   fun create(
@@ -28,7 +28,7 @@ class PlantingDateRequestsStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(dslContext, plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -70,7 +70,7 @@ class PlantingDateRequestsStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(dslContext, plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     val userId = currentUser().userId
     val now = clock.instant()

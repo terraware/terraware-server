@@ -23,7 +23,7 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
 
   private val clock = TestClock()
   private val store: PlantingSeasonAllocatedSpeciesStore by lazy {
-    PlantingSeasonAllocatedSpeciesStore(clock, dslContext)
+    PlantingSeasonAllocatedSpeciesStore(clock, dslContext, SeasonHelper(dslContext))
   }
 
   private lateinit var plantingSeasonId: PlantingSeasonId

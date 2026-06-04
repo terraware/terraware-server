@@ -16,6 +16,7 @@ import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDa
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.plantingmanagement.db.PlantingDateRequestsStore
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDatesStore
+import com.terraformation.backend.plantingmanagement.db.SeasonHelper
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
@@ -26,15 +27,19 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
   override lateinit var user: TerrawareUser
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
+  private val seasonHelper: SeasonHelper by lazy {
+    SeasonHelper(dslContext)
+  }
   private val service: PlantingSeasonScheduledDatesService by lazy {
     PlantingSeasonScheduledDatesService(
         dslContext,
-        PlantingDateRequestsStore(clock, dslContext),
+        PlantingDateRequestsStore(clock, dslContext, seasonHelper),
         PlantingSeasonScheduledDatesStore(
             clock,
             dslContext,
             eventPublisher,
             ParentStore(dslContext),
+            seasonHelper,
         ),
     )
   }

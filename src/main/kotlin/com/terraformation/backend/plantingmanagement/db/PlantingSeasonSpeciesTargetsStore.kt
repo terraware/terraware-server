@@ -8,7 +8,6 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
-import com.terraformation.backend.plantingmanagement.util.validateSeasonNotClosed
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.Condition
@@ -21,6 +20,7 @@ class PlantingSeasonSpeciesTargetsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val seasonHelper: SeasonHelper,
 ) {
   fun fetchList(plantingSeasonId: PlantingSeasonId): List<PlantingSeasonSpeciesTargetModel> {
     requirePermissions { readPlantingSeason(plantingSeasonId) }
@@ -37,7 +37,7 @@ class PlantingSeasonSpeciesTargetsStore(
     require(quantity >= 0) { "Quantity must be >= 0" }
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(dslContext, plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     val userId = currentUser().userId
     val now = clock.instant()
@@ -112,7 +112,7 @@ class PlantingSeasonSpeciesTargetsStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(dslContext, plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     with(PLANTING_SEASON_SPECIES_TARGETS) {
       dslContext

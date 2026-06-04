@@ -25,7 +25,6 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSchedul
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEventValues
-import com.terraformation.backend.plantingmanagement.util.validateSeasonNotClosed
 import com.terraformation.backend.tracking.db.SubstratumNotFoundException
 import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
@@ -41,6 +40,7 @@ class PlantingSeasonScheduledDatesStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val parentStore: ParentStore,
+    private val seasonHelper: SeasonHelper,
 ) {
   fun fetchList(
       plantingSeasonId: PlantingSeasonId
@@ -67,7 +67,7 @@ class PlantingSeasonScheduledDatesStore(
   fun create(model: PlantingSeasonScheduledDateModel): ScheduledPlantingDateId {
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
-    validateSeasonNotClosed(dslContext, model.plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(model.plantingSeasonId)
 
     val plantingSiteId =
         parentStore.getPlantingSiteId(model.plantingSeasonId)
@@ -164,7 +164,7 @@ class PlantingSeasonScheduledDatesStore(
   ) {
     requirePermissions { updatePlantingSeason(model.plantingSeasonId) }
 
-    validateSeasonNotClosed(dslContext, model.plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(model.plantingSeasonId)
 
     withLockedDate(scheduledDateId) {
       val oldModel = fetch(model.plantingSeasonId, scheduledDateId)
@@ -322,7 +322,7 @@ class PlantingSeasonScheduledDatesStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    validateSeasonNotClosed(dslContext, plantingSeasonId)
+    seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
     val plantingSiteId =
         parentStore.getPlantingSiteId(plantingSeasonId)
