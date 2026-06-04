@@ -309,6 +309,10 @@ val ENUM_TABLES =
                     isLocalizable = false,
                 ),
                 EnumTable("observation_types", listOf("observations\\.observation_type_id")),
+                EnumTable(
+                    "planting_date_request_statuses",
+                    listOf("planting_date_requests\\.status_id"),
+                ),
                 EnumTable("planting_season_statuses", listOf("planting_seasons\\.status_id")),
                 EnumTable("planting_types"),
                 EnumTable(
@@ -547,7 +551,11 @@ val ID_WRAPPERS =
                 IdWrapper("RecordedTreeId", listOf("recorded_trees\\.id")),
                 IdWrapper(
                     "ScheduledPlantingDateId",
-                    listOf("scheduled_planting_dates\\.id", ".*\\.scheduled_planting_date_id"),
+                    listOf(
+                        "scheduled_planting_dates\\.id",
+                        ".*\\.scheduled_planting_date_id",
+                        "nursery\\.withdrawals\\.scheduled_planting_date_request_id",
+                    ),
                 ),
                 IdWrapper(
                     "SubstratumHistoryId",
@@ -663,6 +671,10 @@ val EMBEDDABLES =
             .withName("organization_user_id")
             .withTables("public.organization_users")
             .withColumns("organization_id", "user_id"),
+        EmbeddableDefinitionType()
+            .withName("planting_date_request_species_id")
+            .withTables("tracking.planting_date_request_species")
+            .withColumns("scheduled_planting_date_id", "substratum_id", "species_id"),
         EmbeddableDefinitionType()
             .withName("planting_season_allocated_species_id")
             .withTables("tracking.planting_season_allocated_species")
