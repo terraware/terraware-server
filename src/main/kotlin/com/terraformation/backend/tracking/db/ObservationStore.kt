@@ -1370,7 +1370,8 @@ class ObservationStore(
             isPermanent,
             plantCountAdjustments,
         )
-        recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
+        // Propagate the new totals from species to aggregate totals
+        updateObservationResults(observationId, observation.plantingSiteId)
 
         // Aggregation from substratum to stratum (and then to site) works by adding up the most
         // recent data for each substratum at the time of the observation in question.
@@ -1459,7 +1460,7 @@ class ObservationStore(
               isPermanent = isPermanent,
               plantCountsBySpecies = plantCountAdjustments,
           )
-          recalculateSurvivalRateResults(laterObservationId, observation.plantingSiteId)
+          updateObservationResults(laterObservationId, observation.plantingSiteId)
         }
 
         eventPublisher.publishEvent(
@@ -2152,6 +2153,14 @@ class ObservationStore(
     jobScheduler.enqueue<ObservationStore> {
       // Do the survival rate recalculation asynchronously to avoid delays on a T0 settings change.
       runRecalculateSurvivalRates(event.stratumId)
+    }
+  }
+
+  @EventListener
+  fun on(event: MonitoringSpeciesTotalsEditedEvent) {
+    jobScheduler.enqueue<ObservationStore> {
+      // Do the survival rate recalculation asynchronously to avoid delays on species total edit.
+      runRecalculateSurvivalRates(event.monitoringPlotId)
     }
   }
 
