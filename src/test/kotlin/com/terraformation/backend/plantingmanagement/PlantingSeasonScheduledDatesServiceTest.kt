@@ -104,10 +104,10 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
       service.update(
           scheduledPlantingDateId,
           PlantingSeasonScheduledDateModel(
-              createNurseryRequest = true,
               date = LocalDate.EPOCH,
               plantingSeasonId = plantingSeasonId,
           ),
+          createNurseryRequest = true,
       )
 
       assertTableEquals(
@@ -126,16 +126,17 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
     @Test
     fun `updates request if one exist and request is true`() {
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate(date = LocalDate.EPOCH)
-      insertPlantingDateRequest(date = LocalDate.EPOCH)
+      insertPlantingDateRequest(date = LocalDate.EPOCH, notes = "old notes")
 
       clock.instant = Instant.ofEpochSecond(100)
       service.update(
           scheduledPlantingDateId,
           PlantingSeasonScheduledDateModel(
-              createNurseryRequest = true,
               date = LocalDate.EPOCH.plusDays(1),
               plantingSeasonId = plantingSeasonId,
           ),
+          createNurseryRequest = true,
+          nurseryRequestNotes = "new notes",
       )
 
       assertTableEquals(
@@ -147,6 +148,7 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
+              notes = "new notes",
           )
       )
     }
@@ -159,10 +161,10 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
       service.update(
           scheduledPlantingDateId,
           PlantingSeasonScheduledDateModel(
-              createNurseryRequest = false,
               date = LocalDate.EPOCH.plusDays(1),
               plantingSeasonId = plantingSeasonId,
           ),
+          createNurseryRequest = false,
       )
 
       assertTableEquals(

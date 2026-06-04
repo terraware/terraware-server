@@ -93,6 +93,8 @@ class PlantingSeasonScheduledDatesController(
     plantingSeasonScheduledDatesService.update(
         scheduledPlantingDateId,
         payload.toModel(plantingSeasonId),
+        payload.createNurseryRequest == true,
+        payload.nurseryRequestNotes,
     )
 
     return SimpleSuccessResponsePayload()

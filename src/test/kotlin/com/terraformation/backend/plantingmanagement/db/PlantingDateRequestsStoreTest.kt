@@ -217,6 +217,7 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       val plantingSeasonId = insertPlantingSeason(status = PlantingSeasonStatus.Closed)
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
       insertPlantingDateRequest()
+
       assertThrows<PlantingSeasonClosedException> {
         store.update(scheduledPlantingDateId, plantingSeasonId)
       }

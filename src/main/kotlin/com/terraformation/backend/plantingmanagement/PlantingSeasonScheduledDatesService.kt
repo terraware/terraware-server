@@ -37,6 +37,8 @@ class PlantingSeasonScheduledDatesService(
   fun update(
       scheduledPlantingDateId: ScheduledPlantingDateId,
       model: PlantingSeasonScheduledDateModel,
+      createNurseryRequest: Boolean,
+      nurseryRequestNotes: String? = null,
   ) {
     dslContext.transaction { _ ->
       plantingSeasonScheduledDatesStore.update(scheduledPlantingDateId, model)
@@ -47,18 +49,18 @@ class PlantingSeasonScheduledDatesService(
               PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId),
           )
 
-      if (model.createNurseryRequest == true) {
+      if (createNurseryRequest) {
         if (requestExists) {
           plantingDateRequestsStore.update(
               scheduledPlantingDateId,
               model.plantingSeasonId,
-              model.nurseryRequestNotes,
+              nurseryRequestNotes,
           )
         } else {
           plantingDateRequestsStore.create(
               scheduledPlantingDateId,
               model.plantingSeasonId,
-              model.nurseryRequestNotes,
+              nurseryRequestNotes,
           )
         }
       }

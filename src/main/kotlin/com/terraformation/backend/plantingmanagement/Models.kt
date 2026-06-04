@@ -39,9 +39,7 @@ data class PlantingSeasonScheduledDateSpecies(
 )
 
 data class PlantingSeasonScheduledDateModel(
-    val createNurseryRequest: Boolean? = false,
     val date: LocalDate,
-    val nurseryRequestNotes: String? = null,
     val plantingSeasonId: PlantingSeasonId,
     val species: List<PlantingSeasonScheduledDateSpecies> = emptyList(),
 ) {
