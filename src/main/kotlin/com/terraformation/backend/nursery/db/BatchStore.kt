@@ -56,6 +56,7 @@ import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
+import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingBatchModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
@@ -702,12 +703,21 @@ class BatchStore(
               notes = withdrawal.notes,
               plantingSeasonId = withdrawal.plantingSeasonId,
               purposeId = withdrawal.purpose,
+              scheduledPlantingDateRequestId = withdrawal.scheduledPlantingDateRequestId,
               withdrawnDate = withdrawal.withdrawnDate,
               undoesWithdrawalId = withdrawal.undoesWithdrawalId,
           )
 
       withdrawalsDao.insert(withdrawalsRow)
       val withdrawalId = withdrawalsRow.id!!
+
+      if (withdrawal.scheduledPlantingDateRequestId != null) {
+        eventPublisher.publishEvent(
+            WithdrawalAssociatedWithPlantingDateRequestEvent(
+                withdrawal.scheduledPlantingDateRequestId
+            )
+        )
+      }
 
       val destinationBatchIds: Map<BatchId, BatchId> =
           createDestinationBatches(withdrawalId, withdrawal, readyByDate)
@@ -838,6 +848,7 @@ class BatchStore(
             id = null,
             plantingSeasonId = withdrawalToUndo.plantingSeasonId,
             purpose = WithdrawalPurpose.Undo,
+            scheduledPlantingDateRequestId = withdrawalToUndo.scheduledPlantingDateRequestId,
             withdrawnDate = todayAtNursery,
             undoesWithdrawalId = withdrawalId,
         ),

@@ -2181,6 +2181,7 @@ abstract class DatabaseBackedTest {
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
       plantingSeasonId: PlantingSeasonId? = row.plantingSeasonId,
       purpose: WithdrawalPurpose = WithdrawalPurpose.Other,
+      scheduledPlantingDateRequestId: ScheduledPlantingDateId? = row.scheduledPlantingDateRequestId,
       undoesWithdrawalId: WithdrawalId? = row.undoesWithdrawalId,
       withdrawnDate: LocalDate = row.withdrawnDate ?: LocalDate.EPOCH,
   ): WithdrawalId {
@@ -2194,6 +2195,7 @@ abstract class DatabaseBackedTest {
             modifiedTime = modifiedTime,
             plantingSeasonId = plantingSeasonId,
             purposeId = purpose,
+            scheduledPlantingDateRequestId = scheduledPlantingDateRequestId,
             undoesWithdrawalId = undoesWithdrawalId,
             withdrawnDate = withdrawnDate,
         )

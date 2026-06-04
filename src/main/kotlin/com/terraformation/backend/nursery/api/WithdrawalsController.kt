@@ -317,6 +317,13 @@ data class CreateNurseryWithdrawalRequestPayload(
     val readyByDate: LocalDate? = null,
     @Schema(
         description =
+            "The ID of the planting date request's scheduled planting date, if this withdrawal " +
+                "should be associated with a request. Planting season id must be specified if this " +
+                "is specified."
+    )
+    val scheduledPlantingDateRequestId: ScheduledPlantingDateId? = null,
+    @Schema(
+        description =
             "If purpose is \"Out Plant\", the ID of the substratum to which the seedlings " +
                 "were delivered. Must be specified if the planting site has substrata, " +
                 "but must be omitted or set to null if the planting site has no substrata."
@@ -333,6 +340,7 @@ data class CreateNurseryWithdrawalRequestPayload(
           notes = notes,
           plantingSeasonId = plantingSeasonId,
           purpose = purpose.purpose,
+          scheduledPlantingDateRequestId = scheduledPlantingDateRequestId,
           withdrawnDate = withdrawnDate,
       )
 }
