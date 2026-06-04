@@ -186,16 +186,16 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(plantingSiteId: PlantingSiteId): OrganizationId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.ORGANIZATION_ID)
 
-  fun getOrganizationId(plantingSubzoneId: SubstratumId): OrganizationId? =
+  fun getOrganizationId(substratumId: SubstratumId): OrganizationId? =
       fetchFieldById(
-          plantingSubzoneId,
+          substratumId,
           SUBSTRATA.ID,
           SUBSTRATA.plantingSites.ORGANIZATION_ID,
       )
 
-  fun getOrganizationId(plantingZoneId: StratumId): OrganizationId? =
+  fun getOrganizationId(stratumId: StratumId): OrganizationId? =
       fetchFieldById(
-          plantingZoneId,
+          stratumId,
           STRATA.ID,
           STRATA.plantingSites.ORGANIZATION_ID,
       )
@@ -267,15 +267,15 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getProjectId(plantingSiteId: PlantingSiteId): ProjectId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.PROJECT_ID)
 
-  fun getProjectId(plantingSubzoneId: SubstratumId): ProjectId? =
+  fun getProjectId(substratumId: SubstratumId): ProjectId? =
       fetchFieldById(
-          plantingSubzoneId,
+          substratumId,
           SUBSTRATA.ID,
           SUBSTRATA.plantingSites.PROJECT_ID,
       )
 
-  fun getProjectId(plantingZoneId: StratumId): ProjectId? =
-      fetchFieldById(plantingZoneId, STRATA.ID, STRATA.plantingSites.PROJECT_ID)
+  fun getProjectId(stratumId: StratumId): ProjectId? =
+      fetchFieldById(stratumId, STRATA.ID, STRATA.plantingSites.PROJECT_ID)
 
   fun getProjectId(reportId: ReportId): ProjectId? =
       fetchFieldById(reportId, REPORTS.ID, REPORTS.PROJECT_ID)

@@ -39,11 +39,11 @@ class BatchService(
       newWithdrawal: NewWithdrawalModel,
       readyByDate: LocalDate? = null,
       plantingSiteId: PlantingSiteId? = null,
-      plantingSubzoneId: SubstratumId? = null,
+      substratumId: SubstratumId? = null,
   ): ExistingWithdrawalModel {
     return when {
       newWithdrawal.purpose == WithdrawalPurpose.OutPlant && plantingSiteId != null ->
-          withdrawToPlantingSite(newWithdrawal, plantingSiteId, plantingSubzoneId)
+          withdrawToPlantingSite(newWithdrawal, plantingSiteId, substratumId)
       newWithdrawal.purpose == WithdrawalPurpose.OutPlant ->
           throw IllegalArgumentException("Planting site ID is required for outplanting withdrawals")
       else -> batchStore.withdraw(newWithdrawal, readyByDate)
@@ -53,7 +53,7 @@ class BatchService(
   private fun withdrawToPlantingSite(
       newWithdrawal: NewWithdrawalModel,
       plantingSiteId: PlantingSiteId,
-      plantingSubzoneId: SubstratumId? = null,
+      substratumId: SubstratumId? = null,
   ): ExistingWithdrawalModel {
     return dslContext.transactionResult { _ ->
       val withdrawal = batchStore.withdraw(newWithdrawal)
@@ -67,7 +67,7 @@ class BatchService(
           deliveryStore.createDelivery(
               withdrawal.id,
               plantingSiteId,
-              plantingSubzoneId,
+              substratumId,
               quantitiesBySpecies,
           )
 
