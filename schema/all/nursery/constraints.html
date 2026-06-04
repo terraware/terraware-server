@@ -80,7 +80,7 @@
                     <div class="box box-primary">
                         <div class="box-header with-border">
                             <i class="ion ion-key"></i>
-                            <h3 class="box-title">42 Foreign Key Constraints</h3>
+                            <h3 class="box-title">43 Foreign Key Constraints</h3>
                             <div class="box-tools pull-right">
                                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
                                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
@@ -512,6 +512,24 @@
                                         <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
                                     </tr>
                                     <tr>
+                                        <td>withdrawals_scheduled_planting_date_request_id_fkey</td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/withdrawals.html'>withdrawals</a><span>.scheduled_planting_date_request_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td>
+                                            <table border='0' cellspacing='0' cellpadding='0'>
+                                                <tr>
+                                                    <td><a href='tables/planting_date_requests.html'>planting_date_requests</a><span>.scheduled_planting_date_id</span></td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>Null on delete</span></td>
+                                    </tr>
+                                    <tr>
                                         <td>withdrawals_modified_by_fkey</td>
                                         <td>
                                             <table border='0' cellspacing='0' cellpadding='0'>
@@ -934,6 +952,11 @@
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
                                         <td>withdrawals_notes_check</td>
                                         <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/withdrawals.html'>withdrawals</a></td>
+                                        <td>withdrawals_planting_date_request_season</td>
+                                        <td>((scheduled_planting_date_request_id IS NULL) OR (planting_season_id IS NOT NULL))</td>
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>

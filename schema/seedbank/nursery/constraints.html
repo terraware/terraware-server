@@ -221,6 +221,11 @@
                                     </tr>
                                     <tr>
                                         <td><a href='tables/withdrawals.html'>withdrawals</a></td>
+                                        <td>withdrawals_planting_date_request_season</td>
+                                        <td>((scheduled_planting_date_request_id IS NULL) OR (planting_season_id IS NOT NULL))</td>
+                                    </tr>
+                                    <tr>
+                                        <td><a href='tables/withdrawals.html'>withdrawals</a></td>
                                         <td>withdrawals_season_only_for_planting</td>
                                         <td>((planting_season_id IS NULL) OR (purpose_id &#61; ANY (ARRAY[3, 5])))</td>
                                     </tr>

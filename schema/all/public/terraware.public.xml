@@ -1199,6 +1199,7 @@
             <child column="species_id" foreignKey="observed_site_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_site_species_totals"/>
             <child column="species_id" foreignKey="observed_stratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_stratum_species_totals"/>
             <child column="species_id" foreignKey="observed_substratum_species_totals_species_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observed_substratum_species_totals"/>
+            <child column="species_id" foreignKey="planting_date_request_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_date_request_species"/>
             <child column="species_id" foreignKey="planting_season_allocated_species_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_allocated_species"/>
             <child column="species_id" foreignKey="planting_season_species_targets_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_season_species_targets"/>
             <child column="species_id" foreignKey="planting_site_populations_species_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_site_populations"/>
@@ -1853,6 +1854,8 @@
             <child column="completed_by" foreignKey="observation_plots_completed_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <child column="created_by" foreignKey="observation_plots_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
             <child column="modified_by" foreignKey="observation_plots_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="observation_plots"/>
+            <child column="created_by" foreignKey="planting_date_requests_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_date_requests"/>
+            <child column="modified_by" foreignKey="planting_date_requests_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_date_requests"/>
             <child column="created_by" foreignKey="planting_season_allocated_species_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_allocated_species"/>
             <child column="modified_by" foreignKey="planting_season_allocated_species_modified_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_allocated_species"/>
             <child column="created_by" foreignKey="planting_season_species_targets_created_by_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_species_targets"/>

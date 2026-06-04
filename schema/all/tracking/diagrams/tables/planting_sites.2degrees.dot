@@ -4,6 +4,7 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funder.published_activity_observation_media_files":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "funder.published_activity_observations":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "nursery.withdrawals":"elipses":w -> "planting_seasons":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "nursery.withdrawals":"elipses":w -> "planting_date_requests":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "deliveries":"created_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "deliveries":"modified_by":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "deliveries":"planting_site_id":w -> "planting_sites":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -106,6 +107,12 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observed_substratum_species_totals":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_substratum_species_totals":"elipses":w -> "substratum_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_substratum_species_totals":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_date_request_species":"elipses":w -> "planting_date_requests":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_date_request_species":"elipses":w -> "public.species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_date_request_species":"elipses":w -> "substrata":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_date_requests":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_date_requests":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "planting_date_requests":"elipses":w -> "scheduled_planting_dates":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
   "planting_season_allocated_species":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_season_allocated_species":"elipses":w -> "public.users":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "planting_season_allocated_species":"elipses":w -> "planting_seasons":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -229,7 +236,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="124" HEIGHT="16"><B>nursery.withdrawals</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
     </TABLE>>
     URL="../../../nursery/tables/withdrawals.html"
     target="_top"
@@ -284,7 +291,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="83" HEIGHT="16"><B>public.species</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">15 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">16 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/species.html"
     target="_top"
@@ -306,7 +313,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="72" HEIGHT="16"><B>public.users</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">35 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">37 &gt;</TD></TR>
     </TABLE>>
     URL="../../../public/tables/users.html"
     target="_top"
@@ -587,6 +594,28 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="observed_substratum_species_totals"
   ];
+  "planting_date_request_species" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="181" HEIGHT="16"><B>planting_date_request_species</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+    </TABLE>>
+    URL="../../tables/planting_date_request_species.html"
+    target="_top"
+    tooltip="planting_date_request_species"
+  ];
+  "planting_date_requests" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="139" HEIGHT="16"><B>planting_date_requests</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/planting_date_requests.html"
+    target="_top"
+    tooltip="planting_date_requests"
+  ];
   "planting_season_allocated_species" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
@@ -789,7 +818,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="153" HEIGHT="16"><B>scheduled_planting_dates</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">2 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/scheduled_planting_dates.html"
     target="_top"
@@ -889,7 +918,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="57" HEIGHT="16"><B>substrata</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">12 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">13 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/substrata.html"
     target="_top"

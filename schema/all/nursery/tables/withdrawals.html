@@ -385,6 +385,28 @@
                                     </td>
                                     <td><p>Optional planting season for which the seedlings were withdrawn for planting.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="scheduled_planting_date_request_id">scheduled_planting_date_request_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="withdrawals.scheduled_planting_date_request_id references tracking.planting_date_requests.scheduled_planting_date_id via withdrawals_scheduled_planting_date_request_id_fkey"><a href='../../tracking/tables/planting_date_requests.html'>planting_date_requests</a><span class='relatedKey'>.scheduled_planting_date_id</span></td>
+                                                <td class="constraint detail">withdrawals_scheduled_planting_date_request_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td><p>If the withdrawal is being used to fulfill a scheduled planting date request for a planting season.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -468,12 +490,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>withdrawals_notes_check</td>
-                                    <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
-                                </tr>
-                                <tr>
                                     <td>undo_requires_withdrawal_id</td>
                                     <td>(((purpose_id &#61; 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL)))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_notes_check</td>
+                                    <td>(notes !~ similar_to_escape(&#39; *&#39;::text))</td>
                                 </tr>
                                 <tr>
                                     <td>withdrawals_season_only_for_planting</td>
@@ -482,6 +504,10 @@
                                 <tr>
                                     <td>withdrawals_destination_only_for_transfers</td>
                                     <td>((destination_facility_id IS NULL) OR (purpose_id &#61; 1))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_planting_date_request_season</td>
+                                    <td>((scheduled_planting_date_request_id IS NULL) OR (planting_season_id IS NOT NULL))</td>
                                 </tr>
                                 </tbody>
                             </table>

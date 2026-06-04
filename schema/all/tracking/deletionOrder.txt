@@ -16,6 +16,7 @@ stratum_t0_temp_densities
 plot_t0_densities
 planting_season_allocated_species
 scheduled_planting_date_species
+planting_date_request_species
 observation_substratum_results
 observation_stratum_results
 observation_site_results
@@ -32,7 +33,6 @@ simplified_stratum_histories
 simplified_strata
 simplified_planting_sites
 simplified_planting_site_histories
-scheduled_planting_dates
 observation_biomass_quadrat_details
 deliveries
 observation_biomass_species
@@ -45,6 +45,8 @@ monitoring_plots
 substrata
 strata
 planting_sites
+planting_date_requests
+scheduled_planting_dates
 planting_site_histories
 planting_seasons
 observations
@@ -52,6 +54,7 @@ tree_growth_forms
 recorded_plant_statuses
 planting_types
 planting_season_statuses
+planting_date_request_statuses
 observation_types
 observation_states
 observation_plot_statuses

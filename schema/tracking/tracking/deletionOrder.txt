@@ -17,6 +17,7 @@ observation_site_results
 observation_plot_conditions
 scheduled_planting_date_species
 planting_season_species_targets
+planting_date_request_species
 observation_requested_substrata
 monitoring_plot_overlaps
 substratum_populations
@@ -32,15 +33,16 @@ plot_t0_densities
 planting_site_populations
 planting_site_notifications
 planting_season_allocated_species
-scheduled_planting_dates
 observation_biomass_quadrat_details
 deliveries
 observation_biomass_species
 observation_biomass_details
 observation_plots
 monitoring_plot_histories
+planting_date_requests
 substratum_histories
 monitoring_plots
+scheduled_planting_dates
 stratum_histories
 substrata
 observations
@@ -51,6 +53,7 @@ tree_growth_forms
 recorded_plant_statuses
 planting_types
 planting_season_statuses
+planting_date_request_statuses
 observation_types
 observation_states
 observation_plot_statuses

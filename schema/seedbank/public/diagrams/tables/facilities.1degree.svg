@@ -303,44 +303,44 @@
 <g id="node6" class="node">
 <title>nursery.withdrawals</title>
 <g id="a_node6"><a xlink:href="../../../nursery/tables/withdrawals.html" xlink:title="nursery.withdrawals" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="590,-543.05 590,-645.05 758,-645.05 758,-543.05 590,-543.05"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="590,-623.05 590,-645.05 758,-645.05 758,-623.05 590,-623.05"/>
-<polygon fill="none" stroke="black" points="590,-623.05 590,-645.05 758,-645.05 758,-623.05 590,-623.05"/>
-<text text-anchor="start" x="595" y="-632.25" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.withdrawals</text>
-<text text-anchor="start" x="719" y="-631.25" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="590,-601.05 590,-623.05 758,-623.05 758,-601.05 590,-601.05"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="595" y="-618.045"/>
-<text text-anchor="start" x="617" y="-609.25" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
-<polygon fill="none" stroke="black" points="590,-579.05 590,-601.05 758,-601.05 758,-579.05 590,-579.05"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="595" y="-596.045"/>
-<text text-anchor="start" x="617" y="-587.25" font-family="Helvetica,sans-Serif" font-size="11.00">destination_facility_id</text>
-<polygon fill="none" stroke="black" points="590,-561.05 590,-579.05 758,-579.05 758,-561.05 590,-561.05"/>
-<text text-anchor="start" x="593" y="-567.25" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="590,-543.05 590,-561.05 658,-561.05 658,-543.05 590,-543.05"/>
-<polygon fill="none" stroke="black" points="590,-543.05 590,-561.05 658,-561.05 658,-543.05 590,-543.05"/>
-<text text-anchor="start" x="593" y="-549.25" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="658,-543.05 658,-561.05 721,-561.05 721,-543.05 658,-543.05"/>
-<polygon fill="none" stroke="black" points="658,-543.05 658,-561.05 721,-561.05 721,-543.05 658,-543.05"/>
-<text text-anchor="start" x="684" y="-549.25" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="721,-543.05 721,-561.05 758,-561.05 758,-543.05 721,-543.05"/>
-<polygon fill="none" stroke="black" points="721,-543.05 721,-561.05 758,-561.05 758,-543.05 721,-543.05"/>
-<text text-anchor="start" x="748" y="-549.25" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="556,-543.05 556,-645.05 792,-645.05 792,-543.05 556,-543.05"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="556,-623.05 556,-645.05 792,-645.05 792,-623.05 556,-623.05"/>
+<polygon fill="none" stroke="black" points="556,-623.05 556,-645.05 792,-645.05 792,-623.05 556,-623.05"/>
+<text text-anchor="start" x="561" y="-632.25" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">nursery.withdrawals</text>
+<text text-anchor="start" x="753" y="-631.25" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="556,-601.05 556,-623.05 792,-623.05 792,-601.05 556,-601.05"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="561" y="-618.045"/>
+<text text-anchor="start" x="576" y="-609.25" font-family="Helvetica,sans-Serif" font-size="11.00">facility_id</text>
+<polygon fill="none" stroke="black" points="556,-579.05 556,-601.05 792,-601.05 792,-579.05 556,-579.05"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="561" y="-596.045"/>
+<text text-anchor="start" x="576" y="-587.25" font-family="Helvetica,sans-Serif" font-size="11.00">destination_facility_id</text>
+<polygon fill="none" stroke="black" points="556,-561.05 556,-579.05 792,-579.05 792,-561.05 556,-561.05"/>
+<text text-anchor="start" x="559" y="-567.25" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="556,-543.05 556,-561.05 658,-561.05 658,-543.05 556,-543.05"/>
+<polygon fill="none" stroke="black" points="556,-543.05 556,-561.05 658,-561.05 658,-543.05 556,-543.05"/>
+<text text-anchor="start" x="559" y="-549.25" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="658,-543.05 658,-561.05 738,-561.05 738,-543.05 658,-543.05"/>
+<polygon fill="none" stroke="black" points="658,-543.05 658,-561.05 738,-561.05 738,-543.05 658,-543.05"/>
+<text text-anchor="start" x="701" y="-549.25" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="738,-543.05 738,-561.05 792,-561.05 792,-543.05 738,-543.05"/>
+<polygon fill="none" stroke="black" points="738,-543.05 738,-561.05 792,-561.05 792,-543.05 738,-543.05"/>
+<text text-anchor="start" x="782" y="-549.25" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
 <!-- nursery.withdrawals&#45;&gt;facilities -->
 <g id="edge6" class="edge">
 <title>nursery.withdrawals:w&#45;&gt;facilities:e</title>
-<path fill="none" stroke="black" d="M574.53,-590.05C543.64,-590.05 530.94,-590.05 494,-590.05"/>
-<polygon fill="black" stroke="black" points="581,-590.05 589,-593.65 585,-590.05 589,-590.05 589,-590.05 589,-590.05 585,-590.05 589,-586.45 581,-590.05 581,-590.05"/>
-<ellipse fill="none" stroke="black" cx="577.8" cy="-590.05" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M540.18,-590.05C524.12,-590.05 515.39,-590.05 494,-590.05"/>
+<polygon fill="black" stroke="black" points="547,-590.05 555,-593.65 551,-590.05 555,-590.05 555,-590.05 555,-590.05 551,-590.05 555,-586.45 547,-590.05 547,-590.05"/>
+<ellipse fill="none" stroke="black" cx="543.8" cy="-590.05" rx="3.2" ry="3.2"/>
 </g>
 <!-- nursery.withdrawals&#45;&gt;facilities -->
 <g id="edge7" class="edge">
 <title>nursery.withdrawals:w&#45;&gt;facilities:e</title>
-<path fill="none" stroke="black" d="M574.25,-611.1C543.03,-606.89 531.92,-590.05 494,-590.05"/>
-<polygon fill="black" stroke="black" points="581.02,-611.53 588.77,-615.64 585.01,-611.79 589,-612.05 589,-612.05 589,-612.05 585.01,-611.79 589.23,-608.45 581.02,-611.53 581.02,-611.53"/>
-<ellipse fill="none" stroke="black" cx="577.82" cy="-611.33" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M540.65,-609.86C523.9,-604.29 517.19,-590.05 494,-590.05"/>
+<polygon fill="black" stroke="black" points="547.09,-610.84 554.46,-615.6 551.05,-611.44 555,-612.05 555,-612.05 555,-612.05 551.05,-611.44 555.54,-608.49 547.09,-610.84 547.09,-610.84"/>
+<ellipse fill="none" stroke="black" cx="543.93" cy="-610.36" rx="3.2" ry="3.2"/>
 </g>
 <!-- seedbank.accessions -->
 <g id="node7" class="node">
