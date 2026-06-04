@@ -8,9 +8,11 @@ import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.nursery.db.UndoOfNurseryTransferNotAllowedException
 import com.terraformation.backend.nursery.db.UndoOfUndoNotAllowedException
 import com.terraformation.backend.nursery.db.WithdrawalAlreadyUndoneException
+import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.ExistingWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
@@ -182,6 +184,48 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
   }
 
   @Test
+  fun `stores scheduled planting date request id in undo withdrawal`() {
+    val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+    insertPlantingDateRequest()
+
+    val withdrawalId =
+        makeInitialWithdrawal(
+            plantingSeasonId = plantingSeasonId,
+            scheduledPlantingDateRequestId = scheduledPlantingDateId,
+        )
+
+    val undoWithdrawal = store.undoWithdrawal(withdrawalId)
+
+    assertEquals(
+        ExistingWithdrawalModel(
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        batchId = batch1Id,
+                        germinatingQuantityWithdrawn = -1,
+                        activeGrowthQuantityWithdrawn = -2,
+                        readyQuantityWithdrawn = -3,
+                        hardeningOffQuantityWithdrawn = -4,
+                    )
+                ),
+            facilityId = facilityId,
+            id = undoWithdrawal.id,
+            plantingSeasonId = plantingSeasonId,
+            purpose = WithdrawalPurpose.Undo,
+            scheduledPlantingDateRequestId = scheduledPlantingDateId,
+            withdrawnDate = LocalDate.ofInstant(clock.instant, ZoneOffset.UTC),
+            undoesWithdrawalId = withdrawalId,
+        ),
+        undoWithdrawal,
+        "Should store scheduled planting date request id in undo withdrawal",
+    )
+
+    eventPublisher.assertEventPublished(
+        WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId)
+    )
+  }
+
+  @Test
   fun `throws exception if undoing nursery transfer`() {
     val otherFacilityId = insertFacility(type = FacilityType.Nursery)
 
@@ -232,6 +276,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
           ),
       destinationFacilityId: FacilityId? = null,
       plantingSeasonId: PlantingSeasonId? = null,
+      scheduledPlantingDateRequestId: ScheduledPlantingDateId? = null,
       purpose: WithdrawalPurpose = WithdrawalPurpose.OutPlant,
       withdrawnDate: LocalDate = LocalDate.EPOCH,
   ): WithdrawalId {
@@ -244,6 +289,7 @@ internal class BatchStoreUndoWithdrawalTest : BatchStoreTest() {
                 id = null,
                 plantingSeasonId = plantingSeasonId,
                 purpose = purpose,
+                scheduledPlantingDateRequestId = scheduledPlantingDateRequestId,
                 withdrawnDate = withdrawnDate,
             )
         )

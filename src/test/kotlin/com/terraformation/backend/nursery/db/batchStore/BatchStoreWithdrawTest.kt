@@ -13,8 +13,10 @@ import com.terraformation.backend.db.nursery.tables.pojos.WithdrawalsRow
 import com.terraformation.backend.db.nursery.tables.records.WithdrawalsRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.nursery.db.BatchInventoryInsufficientException
 import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNotAllowedException
+import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import io.mockk.every
@@ -1367,6 +1369,112 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
               plantingSeasonId = plantingSeasonId,
               purpose = WithdrawalPurpose.Other,
               withdrawnDate = LocalDate.EPOCH,
+          )
+      )
+    }
+  }
+
+  @Test
+  fun `stores scheduledPlantingDateRequestId in withdrawal`() {
+    insertPlantingSite()
+    val plantingSeasonId = insertPlantingSeason()
+    val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+    insertPlantingDateRequest()
+
+    store.withdraw(
+        NewWithdrawalModel(
+            facilityId = facilityId,
+            id = null,
+            purpose = WithdrawalPurpose.OutPlant,
+            withdrawnDate = LocalDate.EPOCH,
+            plantingSeasonId = plantingSeasonId,
+            scheduledPlantingDateRequestId = scheduledPlantingDateId,
+            batchWithdrawals =
+                listOf(
+                    BatchWithdrawalModel(
+                        batchId = species1Batch1Id,
+                        germinatingQuantityWithdrawn = 1,
+                        activeGrowthQuantityWithdrawn = 0,
+                        readyQuantityWithdrawn = 0,
+                        hardeningOffQuantityWithdrawn = 0,
+                    )
+                ),
+        )
+    )
+
+    assertTableEquals(
+        WithdrawalsRecord(
+            facilityId = facilityId,
+            purposeId = WithdrawalPurpose.OutPlant,
+            withdrawnDate = LocalDate.EPOCH,
+            plantingSeasonId = plantingSeasonId,
+            createdBy = user.userId,
+            createdTime = clock.instant(),
+            modifiedBy = user.userId,
+            modifiedTime = clock.instant(),
+            scheduledPlantingDateRequestId = scheduledPlantingDateId,
+        )
+    )
+
+    eventPublisher.assertEventPublished(
+        WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId)
+    )
+  }
+
+  @Test
+  fun `throws exception if scheduled planting date id is specified but not found`() {
+    insertPlantingSite()
+    val plantingSeasonId = insertPlantingSeason()
+
+    assertThrows<DataIntegrityViolationException> {
+      store.withdraw(
+          NewWithdrawalModel(
+              batchWithdrawals =
+                  listOf(
+                      BatchWithdrawalModel(
+                          batchId = species1Batch1Id,
+                          germinatingQuantityWithdrawn = 1,
+                          activeGrowthQuantityWithdrawn = 0,
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0,
+                      )
+                  ),
+              facilityId = facilityId,
+              id = null,
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.EPOCH,
+              plantingSeasonId = plantingSeasonId,
+              scheduledPlantingDateRequestId = ScheduledPlantingDateId(99999L),
+          )
+      )
+    }
+  }
+
+  @Test
+  fun `throws exception if scheduled planting date id is not associated with request`() {
+    insertPlantingSite()
+    val plantingSeasonId = insertPlantingSeason()
+    val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+
+    assertThrows<DataIntegrityViolationException> {
+      store.withdraw(
+          NewWithdrawalModel(
+              batchWithdrawals =
+                  listOf(
+                      BatchWithdrawalModel(
+                          batchId = species1Batch1Id,
+                          germinatingQuantityWithdrawn = 1,
+                          activeGrowthQuantityWithdrawn = 0,
+                          readyQuantityWithdrawn = 0,
+                          hardeningOffQuantityWithdrawn = 0,
+                      )
+                  ),
+              facilityId = facilityId,
+              id = null,
+              purpose = WithdrawalPurpose.OutPlant,
+              withdrawnDate = LocalDate.EPOCH,
+              plantingSeasonId = plantingSeasonId,
+              scheduledPlantingDateRequestId = scheduledPlantingDateId,
           )
       )
     }
