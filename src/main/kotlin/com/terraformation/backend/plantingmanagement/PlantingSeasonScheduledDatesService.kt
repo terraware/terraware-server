@@ -13,15 +13,19 @@ class PlantingSeasonScheduledDatesService(
     private val plantingSeasonScheduledDatesStore: PlantingSeasonScheduledDatesStore,
 ) {
 
-  fun create(model: PlantingSeasonScheduledDateModel): ScheduledPlantingDateId {
+  fun create(
+      model: PlantingSeasonScheduledDateModel,
+      createNurseryRequest: Boolean,
+      nurseryRequestNotes: String? = null,
+  ): ScheduledPlantingDateId {
     return dslContext.transactionResult { _ ->
       val scheduledPlantingDateId = plantingSeasonScheduledDatesStore.create(model)
 
-      if (model.createNurseryRequest == true) {
+      if (createNurseryRequest) {
         plantingDateRequestsStore.create(
             scheduledPlantingDateId,
             model.plantingSeasonId,
-            model.nurseryRequestNotes,
+            nurseryRequestNotes,
         )
       }
 

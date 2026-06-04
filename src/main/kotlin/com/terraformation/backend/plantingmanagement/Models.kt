@@ -50,11 +50,6 @@ data class PlantingSeasonScheduledDateModel(
     require(species.size == species.distinctBy { it.substratumId to it.speciesId }.size) {
       "Species listed multiple times for substratum"
     }
-    require(
-        (nurseryRequestNotes != null && createNurseryRequest == true) || nurseryRequestNotes == null
-    ) {
-      "createNurseryRequest must be true if nurseryRequestNotes are specified"
-    }
   }
 }
 

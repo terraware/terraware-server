@@ -58,10 +58,10 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
     fun `does not insert request if createNurseryRequest is false`() {
       service.create(
           PlantingSeasonScheduledDateModel(
-              createNurseryRequest = false,
               date = LocalDate.EPOCH,
               plantingSeasonId = plantingSeasonId,
-          )
+          ),
+          createNurseryRequest = false,
       )
 
       assertTableEmpty(PLANTING_DATE_REQUESTS)
@@ -72,10 +72,11 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
       val scheduledPlantingDateId =
           service.create(
               PlantingSeasonScheduledDateModel(
-                  createNurseryRequest = true,
                   date = LocalDate.EPOCH,
                   plantingSeasonId = plantingSeasonId,
-              )
+              ),
+              createNurseryRequest = true,
+              nurseryRequestNotes = "Notes",
           )
 
       assertTableEquals(
@@ -87,6 +88,7 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
               createdTime = clock.instant,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
+              notes = "Notes",
           )
       )
     }

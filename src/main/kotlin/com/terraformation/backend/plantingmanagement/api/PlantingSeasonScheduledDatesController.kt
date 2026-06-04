@@ -70,7 +70,11 @@ class PlantingSeasonScheduledDatesController(
       @PathVariable plantingSeasonId: PlantingSeasonId,
       @RequestBody @Valid payload: ScheduledPlantingDateRequestPayload,
   ): SimpleSuccessResponsePayload {
-    plantingSeasonScheduledDatesService.create(payload.toModel(plantingSeasonId))
+    plantingSeasonScheduledDatesService.create(
+        payload.toModel(plantingSeasonId),
+        payload.createNurseryRequest == true,
+        payload.nurseryRequestNotes,
+    )
 
     return SimpleSuccessResponsePayload()
   }
@@ -131,9 +135,7 @@ data class ScheduledPlantingDateRequestPayload(
 ) {
   fun toModel(plantingSeasonId: PlantingSeasonId): PlantingSeasonScheduledDateModel =
       PlantingSeasonScheduledDateModel(
-          createNurseryRequest = createNurseryRequest,
           date = date,
-          nurseryRequestNotes = nurseryRequestNotes,
           plantingSeasonId = plantingSeasonId,
           species = species.map { it.toModel() },
       )
