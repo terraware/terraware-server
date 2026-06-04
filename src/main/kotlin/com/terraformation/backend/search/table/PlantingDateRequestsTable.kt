@@ -37,6 +37,7 @@ class PlantingDateRequestsTable(private val tables: SearchTables) : SearchTable(
       listOf(
           dateField("date", PLANTING_DATE_REQUESTS.DATE),
           textField("notes", PLANTING_DATE_REQUESTS.NOTES),
+          enumField("status", PLANTING_DATE_REQUESTS.STATUS_ID),
       )
 
   override val defaultOrderFields: List<OrderField<*>>
