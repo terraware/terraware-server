@@ -3688,6 +3688,7 @@ abstract class DatabaseBackedTest {
       totalExisting: Int = row.totalExisting ?: 0,
       permanentLive: Int = row.permanentLive ?: 0,
       survivalRate: Int? = row.survivalRate,
+      survivalRateArea: Number? = row.survivalRateArea,
       survivalRateStdDev: Int? = row.survivalRateStdDev,
       plantDensity: Int? = row.plantDensity,
       plantDensityStdDev: Int? = row.plantDensityStdDev,
@@ -3695,16 +3696,17 @@ abstract class DatabaseBackedTest {
     observationSiteResultsDao.insert(
         row.copy(
             observationId = observationId,
-            plantingSiteId = plantingSiteId,
-            plantingSiteHistoryId = plantingSiteHistoryId,
-            totalLive = totalLive,
-            totalDead = totalDead,
-            totalExisting = totalExisting,
             permanentLive = permanentLive,
-            survivalRate = survivalRate,
-            survivalRateStdDev = survivalRateStdDev,
             plantDensity = plantDensity,
             plantDensityStdDev = plantDensityStdDev,
+            plantingSiteHistoryId = plantingSiteHistoryId,
+            plantingSiteId = plantingSiteId,
+            survivalRate = survivalRate,
+            survivalRateArea = survivalRateArea?.toBigDecimal(),
+            survivalRateStdDev = survivalRateStdDev,
+            totalDead = totalDead,
+            totalExisting = totalExisting,
+            totalLive = totalLive,
         )
     )
   }
