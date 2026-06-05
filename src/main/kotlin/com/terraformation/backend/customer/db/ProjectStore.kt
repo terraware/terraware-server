@@ -191,6 +191,7 @@ class ProjectStore(
             .set(PROJECT_INTERNAL_ROLE_ID, DSL.excluded(PROJECT_INTERNAL_ROLE_ID))
             .set(ROLE_NAME, DSL.excluded(ROLE_NAME))
             .set(MODIFIED_BY, DSL.excluded(MODIFIED_BY))
+            .set(MODIFIED_TIME, now)
             .execute()
 
         users.forEach { user ->
