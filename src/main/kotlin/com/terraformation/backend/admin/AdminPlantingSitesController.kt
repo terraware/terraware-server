@@ -6,7 +6,6 @@ import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.OrganizationStore
 import com.terraformation.backend.customer.model.SystemUser
-import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -611,18 +610,39 @@ class AdminPlantingSitesController(
     return redirectToPlantingSite(plantingSiteId)
   }
 
+  @RequireGlobalRole([GlobalRole.SuperAdmin])
   @PostMapping("/recalculateSurvivalRates")
-  fun recalculateMortalityRates(
-      @RequestParam observationId: ObservationId,
-      @RequestParam plantingSiteId: PlantingSiteId,
+  fun recalculateSurvivalRates(
+      @RequestParam(required = false) observationId: ObservationId?,
+      @RequestParam(required = false) plantingSiteId: PlantingSiteId?,
       redirectAttributes: RedirectAttributes,
   ): String {
-    requirePermissions { manageObservation(observationId) }
-
     try {
-      observationStore.recalculateSurvivalRates(observationId, plantingSiteId)
-      redirectAttributes.successMessage =
-          "Recalculated survival rates for observation $observationId."
+      when {
+        observationId != null -> {
+          val siteId =
+              plantingSiteId ?: observationStore.fetchObservationById(observationId).plantingSiteId
+          observationStore.recalculateSurvivalRates(observationId, siteId)
+          redirectAttributes.successMessage =
+              "Recalculated survival rates for observation $observationId."
+        }
+        plantingSiteId != null -> {
+          observationStore.recalculateSurvivalRates(plantingSiteId)
+          redirectAttributes.successMessage =
+              "Recalculated survival rates for planting site $plantingSiteId."
+        }
+        else -> {
+          val failures = observationStore.recalculateAllSurvivalRates()
+          if (failures.isEmpty()) {
+            redirectAttributes.successMessage =
+                "Recalculated survival rates for all planting sites."
+          } else {
+            redirectAttributes.failureMessage =
+                "Failed to recalculate survival rates for some planting sites."
+            redirectAttributes.failureDetails = failures.map { (id, message) -> "$id: $message" }
+          }
+        }
+      }
     } catch (e: Exception) {
       log.warn("Survival rate recalculation failed", e)
       redirectAttributes.failureMessage = "Failed to recalculate survival rates: ${e.message}"

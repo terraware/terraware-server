@@ -248,9 +248,10 @@
         <h3>Recalculate Survival Rates</h3>
 
         <p>
-            This updates the stratum- and site-level survival rates for a partial observation of a
-            planting site to take into account plants from substrata that weren't observed this
-            time.
+            This updates the stratum- and site-level survival rates using the latest survival
+            rate logic. Both fields are optional: specify an observation to recalculate just that
+            observation, a planting site to recalculate all of its observations, or leave both
+            blank to recalculate every planting site.
         </p>
 
         <form method="POST" action="/admin/recalculateSurvivalRates">
