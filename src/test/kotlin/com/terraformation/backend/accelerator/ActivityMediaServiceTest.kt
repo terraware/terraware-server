@@ -25,7 +25,6 @@ import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.file.FileService
 import com.terraformation.backend.file.InMemoryFileStore
 import com.terraformation.backend.file.SizedInputStream
@@ -90,16 +89,14 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val pngMetadata = NewFileMetadata("image/png", "test.png", null, 95L, null)
 
   private lateinit var activityId: ActivityId
-  private lateinit var createdBy: UserId
   private lateinit var organizationId: OrganizationId
   private lateinit var projectId: ProjectId
 
   @BeforeEach
   fun setUp() {
-    createdBy = insertUser()
     organizationId = insertOrganization()
     projectId = insertProject(organizationId)
-    activityId = insertActivity(createdBy = createdBy, projectId = projectId)
+    activityId = insertActivity(projectId = projectId)
 
     insertOrganizationUser(role = Role.Admin)
   }

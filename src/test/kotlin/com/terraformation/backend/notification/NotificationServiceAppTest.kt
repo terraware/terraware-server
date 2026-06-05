@@ -1263,7 +1263,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
     val eventId = insertEvent(moduleId = moduleId)
     val projectId = insertProject()
 
-    insertOrganizationUser(role = Role.Admin)
+    insertOrganizationUser(userId = user.userId, role = Role.Admin)
     // Other user in same org
     insertOrganizationUser(otherUserId, role = Role.Manager)
     // Contributor in same org; shouldn't be notified

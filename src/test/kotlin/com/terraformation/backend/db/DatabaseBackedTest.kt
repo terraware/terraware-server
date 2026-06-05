@@ -8,7 +8,6 @@ import com.terraformation.backend.accelerator.model.SustainableDevelopmentGoal
 import com.terraformation.backend.api.ArbitraryJsonObject
 import com.terraformation.backend.api.ControllerIntegrationTest
 import com.terraformation.backend.auth.CurrentUserHolder
-import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.AutomationModel
 import com.terraformation.backend.customer.model.InternalTagIds
@@ -884,7 +883,7 @@ abstract class DatabaseBackedTest {
       name: String = "Organization ${nextOrganizationNumber++}",
       countryCode: String? = null,
       countrySubdivisionCode: String? = null,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       timeZone: ZoneId? = null,
   ): OrganizationId {
     return with(ORGANIZATIONS) {
@@ -910,7 +909,7 @@ abstract class DatabaseBackedTest {
       organizationId: OrganizationId = inserted.organizationId,
       name: String = "Facility $nextFacilityNumber",
       description: String? = "Description $nextFacilityNumber",
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       type: FacilityType = FacilityType.SeedBank,
       maxIdleMinutes: Int = 30,
       lastTimeseriesTime: Instant? = null,
@@ -966,7 +965,7 @@ abstract class DatabaseBackedTest {
   protected fun insertProject(
       organizationId: OrganizationId = inserted.organizationId,
       name: String = "Project ${nextProjectNumber++}",
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
       phase: AcceleratorPhase? = null,
@@ -1060,9 +1059,9 @@ abstract class DatabaseBackedTest {
       userId: UserId = row.userId ?: inserted.userId,
       role: ProjectInternalRole? = row.projectInternalRoleId,
       roleName: String? = row.roleName,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
-      modifiedBy: UserId = currentUser().userId,
+      modifiedBy: UserId = inserted.userId,
       modifiedTime: Instant = Instant.EPOCH,
   ): ProjectInternalUsersRow {
     val rowWithDefaults =
@@ -1107,7 +1106,7 @@ abstract class DatabaseBackedTest {
       sdgList: Set<SustainableDevelopmentGoal> = emptySet(),
       carbonCertifications: Set<CarbonCertification> = emptySet(),
       landUseModelHectares: Map<LandUseModelType, Number?> = emptyMap(),
-      publishedBy: UserId = currentUser().userId,
+      publishedBy: UserId = inserted.userId,
       publishedTime: Instant = Instant.EPOCH,
   ): PublishedProjectDetailsRow {
     val rowWithDefaults =
@@ -1251,7 +1250,7 @@ abstract class DatabaseBackedTest {
       detailsUrl: URI? = null,
       overallScore: Double? = null,
       summary: String? = null,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
     val row =
@@ -1275,7 +1274,7 @@ abstract class DatabaseBackedTest {
       category: ScoreCategory = ScoreCategory.Legal,
       score: Int? = null,
       qualitative: String? = null,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
     val row =
@@ -1302,7 +1301,7 @@ abstract class DatabaseBackedTest {
   private var nextDeliverableNumber: Int = 1
 
   protected fun insertDeliverable(
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       deliverableCategoryId: DeliverableCategory = DeliverableCategory.FinancialViability,
       deliverableTypeId: DeliverableType = DeliverableType.Document,
@@ -1386,7 +1385,7 @@ abstract class DatabaseBackedTest {
   protected fun insertDevice(
       facilityId: FacilityId = inserted.facilityId,
       name: String = "device ${nextDeviceNumber++}",
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       type: String = "type",
   ): DeviceId {
     return with(DEVICES) {
@@ -1460,7 +1459,7 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = Instant.EPOCH,
       facilityId: FacilityId? = null,
       refreshedTime: Instant = Instant.EPOCH,
-      userId: UserId? = if (facilityId != null) currentUser().userId else null,
+      userId: UserId? = if (facilityId != null) inserted.userId else null,
   ): DeviceManagersRow {
     val balenaId = BalenaDeviceId(nextBalenaId.getAndIncrement())
 
@@ -1492,7 +1491,7 @@ abstract class DatabaseBackedTest {
       timeseriesName: String? = "timeseries",
       lowerThreshold: Double? = 10.0,
       upperThreshold: Double? = 20.0,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
   ): AutomationId {
     return with(AUTOMATIONS) {
       dslContext
@@ -1518,7 +1517,7 @@ abstract class DatabaseBackedTest {
 
   fun insertSpecies(
       scientificName: String = "Species ${nextSpeciesNumber++}",
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedTime: Instant = createdTime,
       organizationId: OrganizationId = inserted.organizationId,
@@ -1626,7 +1625,7 @@ abstract class DatabaseBackedTest {
   private var nextSubmissionNumber = 1
 
   fun insertSubmissionDocument(
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
       documentStore: DocumentStore = DocumentStore.Google,
@@ -1727,7 +1726,7 @@ abstract class DatabaseBackedTest {
   fun insertUserInternalInterest(
       internalInterest: InternalInterest,
       userId: UserId = inserted.userId,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
     userInternalInterestsDao.insert(
@@ -1741,7 +1740,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertUserGlobalRole(
-      userId: UserId = currentUser().userId,
+      userId: UserId = inserted.userId,
       role: GlobalRole,
   ) {
     userGlobalRolesDao.insert(UserGlobalRolesRow(globalRoleId = role, userId = userId))
@@ -1770,7 +1769,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun deleteUserGlobalRole(
-      userId: UserId = currentUser().userId,
+      userId: UserId = inserted.userId,
       role: GlobalRole,
   ) {
     with(USER_GLOBAL_ROLES) {
@@ -1786,10 +1785,10 @@ abstract class DatabaseBackedTest {
 
   /** Adds a user to an organization. */
   fun insertOrganizationUser(
-      userId: UserId = currentUser().userId,
+      userId: UserId = inserted.userId,
       organizationId: OrganizationId = inserted.organizationId,
       role: Role = Role.Contributor,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
     with(ORGANIZATION_USERS) {
@@ -1813,7 +1812,7 @@ abstract class DatabaseBackedTest {
 
   /** Removes a user from an organization. */
   fun deleteOrganizationUser(
-      userId: UserId = currentUser().userId,
+      userId: UserId = inserted.userId,
       organizationId: OrganizationId = inserted.organizationId,
   ) {
     with(ORGANIZATION_USERS) {
@@ -1833,7 +1832,7 @@ abstract class DatabaseBackedTest {
   fun insertSubLocation(
       facilityId: FacilityId = inserted.facilityId,
       name: String = "Location ${nextSubLocationNumber++}",
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
   ): SubLocationId {
     val insertedId =
         with(SUB_LOCATIONS) {
@@ -1860,7 +1859,7 @@ abstract class DatabaseBackedTest {
       contentType: String = row.contentType ?: "image/jpeg",
       size: Long = row.size ?: 1,
       capturedLocalTime: LocalDateTime? = row.capturedLocalTime,
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       geolocation: Point? = row.geolocation?.centroid,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -1893,7 +1892,7 @@ abstract class DatabaseBackedTest {
       fileName: String = "${nextUploadNumber}.csv",
       storageUrl: URI = URI.create("file:///${nextUploadNumber}.csv"),
       contentType: String = "text/csv",
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       status: UploadStatus = UploadStatus.Receiving,
       organizationId: OrganizationId? = null,
@@ -1922,7 +1921,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertNotification(
-      userId: UserId = currentUser().userId,
+      userId: UserId = inserted.userId,
       type: NotificationType = NotificationType.FacilityIdle,
       organizationId: OrganizationId? = null,
       title: String = "",
@@ -1961,7 +1960,7 @@ abstract class DatabaseBackedTest {
    */
   fun insertAccession(
       row: AccessionsRow = AccessionsRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       dataSourceId: DataSource = row.dataSourceId ?: DataSource.Web,
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
@@ -2077,7 +2076,7 @@ abstract class DatabaseBackedTest {
       row: BatchesRow = BatchesRow(),
       activeGrowthQuantity: Int = row.activeGrowthQuantity ?: 0,
       addedDate: LocalDate = row.addedDate ?: LocalDate.EPOCH,
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
       germinatingQuantity: Int = row.germinatingQuantity ?: 0,
@@ -2177,7 +2176,7 @@ abstract class DatabaseBackedTest {
 
   fun insertNurseryWithdrawal(
       row: WithdrawalsRow = WithdrawalsRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       destinationFacilityId: FacilityId? = row.destinationFacilityId,
       facilityId: FacilityId = row.facilityId ?: inserted.facilityId,
@@ -2225,10 +2224,10 @@ abstract class DatabaseBackedTest {
 
   fun insertSeedbankWithdrawal(
       row: SeedbankWithdrawalsRow = SeedbankWithdrawalsRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       updatedTime: Instant = row.createdTime ?: Instant.EPOCH,
-      withdrawnBy: UserId = row.withdrawnBy ?: currentUser().userId,
+      withdrawnBy: UserId = row.withdrawnBy ?: inserted.userId,
       date: LocalDate = row.date ?: LocalDate.EPOCH,
       accessionId: AccessionId = row.accessionId ?: inserted.accessionId,
       purpose: SeedbankWithdrawalPurpose? = row.purposeId,
@@ -2299,7 +2298,7 @@ abstract class DatabaseBackedTest {
 
   fun insertPlantingSeason(
       row: PlantingSeasonsRow = PlantingSeasonsRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       endDate: LocalDate = LocalDate.EPOCH.plusDays(1),
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -2329,7 +2328,7 @@ abstract class DatabaseBackedTest {
 
   fun insertPlantingSeasonAllocatedSpecies(
       row: PlantingSeasonAllocatedSpeciesRow = PlantingSeasonAllocatedSpeciesRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -2353,7 +2352,7 @@ abstract class DatabaseBackedTest {
 
   fun insertPlantingSeasonSpeciesTarget(
       row: PlantingSeasonSpeciesTargetsRow = PlantingSeasonSpeciesTargetsRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -2379,7 +2378,7 @@ abstract class DatabaseBackedTest {
 
   fun insertPlantingSeasonScheduledDate(
       row: ScheduledPlantingDatesRow = ScheduledPlantingDatesRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       date: LocalDate = LocalDate.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -2422,7 +2421,7 @@ abstract class DatabaseBackedTest {
 
   fun insertPlantingDateRequest(
       row: PlantingDateRequestsRow = PlantingDateRequestsRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       date: LocalDate = LocalDate.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
@@ -2477,7 +2476,7 @@ abstract class DatabaseBackedTest {
       width: Number = 3,
       height: Number = 2,
       boundary: Geometry? = row.boundary,
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       exclusion: Geometry? = row.exclusion,
       gridOrigin: Geometry? = row.gridOrigin,
@@ -2693,7 +2692,7 @@ abstract class DatabaseBackedTest {
                   x.toDouble() * MONITORING_PLOT_SIZE,
                   y.toDouble() * MONITORING_PLOT_SIZE,
               ),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       errorMargin: BigDecimal = row.errorMargin ?: StratumModel.DEFAULT_ERROR_MARGIN,
       plantingSiteId: PlantingSiteId = row.plantingSiteId ?: inserted.plantingSiteId,
@@ -2788,7 +2787,7 @@ abstract class DatabaseBackedTest {
                   x.toDouble() * MONITORING_PLOT_SIZE,
                   y.toDouble() * MONITORING_PLOT_SIZE,
               ),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       observedTime: Instant? = row.observedTime,
       plantingCompletedTime: Instant? = row.plantingCompletedTime,
@@ -2866,7 +2865,7 @@ abstract class DatabaseBackedTest {
   private var nextModuleNumber: Int = 1
 
   fun insertModule(
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       name: String = "Module $nextModuleNumber",
       position: Int = nextModuleNumber,
@@ -2919,7 +2918,7 @@ abstract class DatabaseBackedTest {
                   x.toDouble() * sizeMeters.toDouble(),
                   y.toDouble() * sizeMeters.toDouble(),
               ),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isAdHoc: Boolean = row.isAdHoc ?: false,
       isAvailable: Boolean = row.isAvailable ?: true,
@@ -3025,7 +3024,7 @@ abstract class DatabaseBackedTest {
 
   fun insertDraftPlantingSite(
       row: DraftPlantingSitesRow = DraftPlantingSitesRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       data: ArbitraryJsonObject = row.data ?: JSONB.valueOf("{}"),
       description: String? = row.description,
@@ -3061,7 +3060,7 @@ abstract class DatabaseBackedTest {
 
   fun insertDelivery(
       row: DeliveriesRow = DeliveriesRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -3085,7 +3084,7 @@ abstract class DatabaseBackedTest {
 
   fun insertPlanting(
       row: PlantingsRow = PlantingsRow(),
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       deliveryId: DeliveryId = row.deliveryId ?: inserted.deliveryId,
       numPlants: Int = row.numPlants ?: 1,
@@ -3486,7 +3485,7 @@ abstract class DatabaseBackedTest {
       assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
       originPosition: CoordinateModel? = null,
       cameraPosition: CoordinateModel? = null,
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       organizationId: OrganizationId = row.organizationId ?: inserted.organizationId,
       splatStorageUrl: URI = row.splatStorageUrl ?: URI("s3://bucket/splat"),
@@ -3524,7 +3523,7 @@ abstract class DatabaseBackedTest {
       row: BirdnetResultsRow = BirdnetResultsRow(),
       fileId: FileId = row.fileId ?: inserted.fileId,
       assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Ready,
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       resultsStorageUrl: URI? = row.resultsStorageUrl,
       errorMessage: String? = row.errorMessage,
@@ -3554,7 +3553,7 @@ abstract class DatabaseBackedTest {
       label: String? = row.label,
       position: CoordinateModel = CoordinateModel(1.0, 2.0, 3.0),
       cameraPosition: CoordinateModel? = null,
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -3589,7 +3588,7 @@ abstract class DatabaseBackedTest {
           row.completedTime ?: if (completedBy != null) Instant.EPOCH else null,
       claimedBy: UserId? = row.claimedBy ?: completedBy,
       claimedTime: Instant? = row.claimedTime ?: if (claimedBy != null) Instant.EPOCH else null,
-      createdBy: UserId = row.createdBy ?: currentUser().userId,
+      createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isPermanent: Boolean = row.isPermanent ?: false,
       monitoringPlotHistoryId: MonitoringPlotHistoryId =
@@ -4238,7 +4237,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
-      modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
+      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
     val rowWithDefaults =
@@ -4264,7 +4263,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
-      modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
+      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
     val rowWithDefaults =
@@ -4293,7 +4292,7 @@ abstract class DatabaseBackedTest {
       projectsComments: String? = row.projectsComments,
       progressNotes: String? = row.progressNotes,
       status: ReportIndicatorStatus? = row.statusId,
-      modifiedBy: UserId = row.modifiedBy ?: currentUser().userId,
+      modifiedBy: UserId = row.modifiedBy ?: inserted.userId,
       modifiedTime: Instant = row.modifiedTime ?: Instant.EPOCH,
   ) {
     val rowWithDefaults =
@@ -4545,7 +4544,7 @@ abstract class DatabaseBackedTest {
       startDate: LocalDate = LocalDate.of(2025, 1, 1),
       endDate: LocalDate = LocalDate.of(2025, 3, 31),
       quarter: ReportQuarter? = ReportQuarter.Q1,
-      publishedBy: UserId = currentUser().userId,
+      publishedBy: UserId = inserted.userId,
       publishedTime: Instant = Instant.EPOCH,
       additionalComments: String? = null,
       financialSummaries: String? = null,
@@ -4687,7 +4686,7 @@ abstract class DatabaseBackedTest {
   protected fun insertActivity(
       activityDate: LocalDate = LocalDate.EPOCH,
       activityType: ActivityType = ActivityType.Planting,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       description: String? = "Activity",
       isHighlight: Boolean = false,
@@ -4771,7 +4770,7 @@ abstract class DatabaseBackedTest {
       description: String = "Activity",
       isHighlight: Boolean = false,
       projectId: ProjectId = inserted.projectId,
-      publishedBy: UserId = currentUser().userId,
+      publishedBy: UserId = inserted.userId,
       publishedTime: Instant = Instant.EPOCH,
   ) {
     val row =
@@ -4864,7 +4863,7 @@ abstract class DatabaseBackedTest {
   protected fun insertInternalTag(
       name: String = "Tag ${nextInternalTagNumber++}",
       description: String? = null,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ): InternalTagId {
     val row =
@@ -4888,7 +4887,7 @@ abstract class DatabaseBackedTest {
       tagId: InternalTagId =
           if (inserted.internalTagIds.isEmpty()) InternalTagIds.Reporter
           else inserted.internalTagId,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ) {
     organizationInternalTagsDao.insert(
@@ -4904,7 +4903,7 @@ abstract class DatabaseBackedTest {
   fun insertApplication(
       boundary: Geometry? = null,
       countryCode: String? = null,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       feedback: String? = null,
       internalComment: String? = null,
@@ -4939,7 +4938,7 @@ abstract class DatabaseBackedTest {
       boundary: Geometry? = null,
       feedback: String? = null,
       internalComment: String? = null,
-      modifiedBy: UserId = currentUser().userId,
+      modifiedBy: UserId = inserted.userId,
       modifiedTime: Instant = Instant.EPOCH,
       status: ApplicationStatus = ApplicationStatus.NotSubmitted,
   ): ApplicationHistoryId {
@@ -4975,7 +4974,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertParticipantProjectSpecies(
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       feedback: String? = null,
       internalComment: String? = null,
@@ -5039,7 +5038,7 @@ abstract class DatabaseBackedTest {
       revision: Int = 1,
       startTime: Instant = Instant.EPOCH.plusSeconds(3600),
       endTime: Instant = startTime.plusSeconds(3600),
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ): EventId {
     val row =
@@ -5078,10 +5077,10 @@ abstract class DatabaseBackedTest {
   fun insertVote(
       projectId: ProjectId = inserted.projectId,
       phase: AcceleratorPhase = AcceleratorPhase.Phase0DueDiligence,
-      user: UserId = currentUser().userId,
+      user: UserId = inserted.userId,
       voteOption: VoteOption? = null,
       conditionalInfo: String? = null,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ): ProjectVotesRow {
     val row =
@@ -5708,7 +5707,7 @@ abstract class DatabaseBackedTest {
       internalComment: String? = null,
       status: VariableWorkflowStatus = VariableWorkflowStatus.NotSubmitted,
       maxVariableValueId: VariableValueId = inserted.variableValueId,
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
   ): VariableWorkflowHistoryId {
     val row =
@@ -5748,7 +5747,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertFundingEntity(
       name: String = "TestFundingEntity ${UUID.randomUUID()}",
-      createdBy: UserId = currentUser().userId,
+      createdBy: UserId = inserted.userId,
       createdTime: Instant = Instant.EPOCH,
       modifiedBy: UserId = createdBy,
       modifiedTime: Instant = createdTime,
@@ -5839,7 +5838,7 @@ abstract class DatabaseBackedTest {
     return stableIds.mapValues { (stableId, type) -> insertStableVariable(stableId, type) }
   }
 
-  protected fun clearCachedPermissions(updatedUserId: UserId = currentUser().userId) {
+  protected fun clearCachedPermissions(updatedUserId: UserId = inserted.userId) {
     if (updatedUserId == CurrentUserHolder.getCurrentUser()?.userId && this is RunsAsDatabaseUser) {
       user.clearCachedPermissions()
     }

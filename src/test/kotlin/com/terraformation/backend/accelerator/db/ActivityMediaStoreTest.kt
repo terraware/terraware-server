@@ -15,7 +15,6 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_MEDI
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
-import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -38,15 +37,13 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private lateinit var activityId: ActivityId
-  private lateinit var createdBy: UserId
   private lateinit var organizationId: OrganizationId
 
   @BeforeEach
   fun setUp() {
-    createdBy = insertUser()
     organizationId = insertOrganization()
     val projectId = insertProject(organizationId)
-    activityId = insertActivity(createdBy = createdBy, projectId = projectId)
+    activityId = insertActivity(projectId = projectId)
 
     insertOrganizationUser(role = Role.Admin)
   }
@@ -136,8 +133,7 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class UpdateMedia {
     @Test
     fun `updates writable fields`() {
-      val fileId =
-          insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay(), createdBy = createdBy)
+      val fileId = insertFile(capturedLocalTime = LocalDate.EPOCH.atStartOfDay())
       insertActivityMediaFile()
 
       val activitiesBefore = dslContext.fetchSingle(ACTIVITIES)

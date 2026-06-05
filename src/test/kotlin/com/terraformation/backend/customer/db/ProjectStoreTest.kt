@@ -584,7 +584,11 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertEquals(
           listOf(
               createProjectInternalRow(role = ProjectInternalRole.ProjectLead),
-              createProjectInternalRow(userId = userId2, roleName = "Rock Star"),
+              createProjectInternalRow(
+                  userId = userId2,
+                  roleName = "Rock Star",
+                  createdBy = userId2,
+              ),
           ),
           store.fetchInternalUsers(projectId),
           "Should have 2 internal users",
@@ -600,7 +604,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertProjectInternalUser(roleName = "Rock Star")
 
       assertEquals(
-          listOf(createProjectInternalRow(userId = userId2, role = ProjectInternalRole.CarbonLead)),
+          listOf(
+              createProjectInternalRow(
+                  userId = userId2,
+                  role = ProjectInternalRole.CarbonLead,
+                  createdBy = userId2,
+              )
+          ),
           store.fetchInternalUsers(projectId, ProjectInternalRole.CarbonLead),
       )
     }
@@ -623,15 +633,17 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       role: ProjectInternalRole? = null,
       roleName: String? = null,
       userId: UserId = user.userId,
+      createdBy: UserId = user.userId,
+      modifiedBy: UserId = createdBy,
   ) =
       ProjectInternalUsersRow(
           projectId = projectId,
           projectInternalRoleId = role,
           roleName = roleName,
           userId = userId,
-          createdBy = user.userId,
+          createdBy = createdBy,
           createdTime = clock.instant,
-          modifiedBy = user.userId,
+          modifiedBy = modifiedBy,
           modifiedTime = clock.instant,
       )
 
