@@ -17,7 +17,13 @@ import jakarta.inject.Named
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.NoSuchFileException
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
+@ConditionalOnProperty(
+    "terraware.google-drive.use-local-store",
+    havingValue = "false",
+    matchIfMissing = true,
+)
 @Named
 @Priority(10) // Preferred over LocalGoogleDriveWriter when both beans are present.
 class RemoteGoogleDriveWriter(

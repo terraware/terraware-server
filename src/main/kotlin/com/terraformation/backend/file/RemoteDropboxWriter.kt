@@ -13,6 +13,7 @@ import jakarta.annotation.Priority
 import jakarta.inject.Named
 import java.io.InputStream
 import java.net.URI
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
 /**
  * Writes files to Dropbox. API credentials must be configured in [TerrawareServerConfig]. The
@@ -22,6 +23,11 @@ import java.net.URI
  * - sharing.read
  * - sharing.write
  */
+@ConditionalOnProperty(
+    "terraware.dropbox.use-local-store",
+    havingValue = "false",
+    matchIfMissing = true,
+)
 @Named
 @Priority(10) // Preferred over LocalDropboxWriter when both beans are present.
 class RemoteDropboxWriter(
