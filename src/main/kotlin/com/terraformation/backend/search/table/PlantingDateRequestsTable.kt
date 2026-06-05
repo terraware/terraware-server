@@ -1,5 +1,6 @@
 package com.terraformation.backend.search.table
 
+import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
@@ -19,14 +20,20 @@ class PlantingDateRequestsTable(private val tables: SearchTables) : SearchTable(
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
-          plantingSeasonScheduledDates.asSingleValueSublist(
-              "scheduledPlantingDate",
-              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(SCHEDULED_PLANTING_DATES.ID),
-          ),
           plantingDateRequestSpecies.asMultiValueSublist(
               "plantingDateRequestSpecies",
               PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(
                   PLANTING_DATE_REQUEST_SPECIES.SCHEDULED_PLANTING_DATE_ID
+              ),
+          ),
+          plantingSeasonScheduledDates.asSingleValueSublist(
+              "scheduledPlantingDate",
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(SCHEDULED_PLANTING_DATES.ID),
+          ),
+          nurseryWithdrawals.asMultiValueSublist(
+              "withdrawals",
+              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(
+                  WITHDRAWAL_SUMMARIES.SCHEDULED_PLANTING_DATE_REQUEST_ID
               ),
           ),
       )
