@@ -30,6 +30,7 @@ simplified_strata
 simplified_planting_sites
 simplified_planting_site_histories
 plot_t0_densities
+planting_site_survival_rate_calculations
 planting_site_populations
 planting_site_notifications
 planting_season_allocated_species
