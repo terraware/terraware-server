@@ -21,7 +21,6 @@ import com.terraformation.backend.tracking.model.SiteT0DataModel
 import com.terraformation.backend.tracking.model.SpeciesDensityModel
 import com.terraformation.backend.tracking.model.StratumT0TempDataModel
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.media.Schema
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
@@ -112,14 +111,7 @@ class T0Controller(
   fun assignT0TempSiteData(
       @RequestBody payload: AssignSiteT0TempDataRequestPayload
   ): SimpleSuccessResponsePayload {
-    require(payload.strata != null || payload.zones != null) {
-      "Must specify either strata or zones"
-    }
-    if (payload.strata != null) {
-      t0Service.assignT0TempStratumData(payload.strata.map { it.toModel() })
-    } else if (payload.zones != null) {
-      t0Service.assignT0TempStratumData(payload.zones.map { it.toModel() })
-    }
+    t0Service.assignT0TempStratumData(payload.strata.map { it.toModel() })
 
     return SimpleSuccessResponsePayload()
   }
@@ -163,24 +155,6 @@ data class PlotT0DataPayload(
       )
 }
 
-data class ZoneT0DataPayload(
-    val plantingZoneId: StratumId,
-    val densityData: List<SpeciesDensityPayload> = emptyList(),
-) {
-  constructor(
-      model: StratumT0TempDataModel
-  ) : this(
-      plantingZoneId = model.stratumId,
-      densityData = model.densityData.map { SpeciesDensityPayload(it) },
-  )
-
-  fun toModel() =
-      StratumT0TempDataModel(
-          stratumId = plantingZoneId,
-          densityData = densityData.map { it.toModel() },
-      )
-}
-
 data class StratumT0DataPayload(
     val stratumId: StratumId,
     val densityData: List<SpeciesDensityPayload> = emptyList(),
@@ -203,7 +177,6 @@ data class SiteT0DataResponsePayload(
     val plantingSiteId: PlantingSiteId,
     val survivalRateIncludesTempPlots: Boolean = false,
     val plots: List<PlotT0DataPayload> = emptyList(),
-    val zones: List<ZoneT0DataPayload> = emptyList(),
     val strata: List<StratumT0DataPayload> = emptyList(),
 ) {
   constructor(
@@ -212,7 +185,6 @@ data class SiteT0DataResponsePayload(
       plantingSiteId = model.plantingSiteId,
       survivalRateIncludesTempPlots = model.survivalRateIncludesTempPlots,
       plots = model.plots.map { PlotT0DataPayload(it) },
-      zones = model.strata.map { ZoneT0DataPayload(it) },
       strata = model.strata.map { StratumT0DataPayload(it) },
   )
 }
@@ -275,10 +247,7 @@ data class AssignSiteT0DataRequestPayload(
 
 data class AssignSiteT0TempDataRequestPayload(
     val plantingSiteId: PlantingSiteId,
-    @Schema(description = "Use strata instead", deprecated = true)
-    val zones: List<ZoneT0DataPayload>?,
-    // make non-nullable once FE is no longer using zones
-    val strata: List<StratumT0DataPayload>?,
+    val strata: List<StratumT0DataPayload>,
 )
 
 data class PlotObservationSpeciesDensityPayload(
