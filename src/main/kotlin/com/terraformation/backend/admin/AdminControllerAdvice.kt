@@ -2,6 +2,8 @@ package com.terraformation.backend.admin
 
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import org.springframework.beans.propertyeditors.StringTrimmerEditor
 import org.springframework.web.bind.WebDataBinder
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -21,6 +23,8 @@ class AdminControllerAdvice {
     listOf(
             String::class.java,
             FacilityId::class.java,
+            ObservationId::class.java,
+            PlantingSiteId::class.java,
             UserId::class.java,
         )
         .forEach { clazz -> binder.registerCustomEditor(clazz, stringTrimmerEditor) }

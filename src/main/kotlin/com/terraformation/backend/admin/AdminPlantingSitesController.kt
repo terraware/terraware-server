@@ -610,6 +610,7 @@ class AdminPlantingSitesController(
     return redirectToPlantingSite(plantingSiteId)
   }
 
+  @RequireGlobalRole([GlobalRole.SuperAdmin])
   @PostMapping("/recalculateSurvivalRates")
   fun recalculateSurvivalRates(
       @RequestParam(required = false) observationId: ObservationId?,
