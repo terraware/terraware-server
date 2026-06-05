@@ -155,6 +155,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
         insertNurseryWithdrawal(
             purpose = WithdrawalPurpose.OutPlant,
             plantingSeasonId = plantingSeasonId1,
+            scheduledPlantingDateRequestId = inserted.scheduledPlantingDateId,
         )
     val deliveryId1 = insertDelivery(plantingSiteId = plantingSiteId)
     val withdrawalId2 =
@@ -642,6 +643,8 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                                                     )
                                                 ),
                                             "status" to "Partial",
+                                            "withdrawals" to
+                                                listOf(mapOf("id" to "$withdrawalId1")),
                                         )
                                     ),
                                 "allocatedSpecies" to
@@ -1072,6 +1075,7 @@ class TrackingSearchTest : DatabaseTest(), RunsAsUser {
                 "plantingSeasons.plantingDateRequests.date",
                 "plantingSeasons.plantingDateRequests.notes",
                 "plantingSeasons.plantingDateRequests.status",
+                "plantingSeasons.plantingDateRequests.withdrawals.id",
                 "plantingSeasons.plantingDateRequests.plantingDateRequestSpecies.quantity",
                 "plantingSeasons.plantingDateRequests.plantingDateRequestSpecies.species_scientificName",
                 "strata.boundary",
