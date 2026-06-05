@@ -1,3 +1,4 @@
+15bacd02 SW-8440 Update request status when a withdrawal is recorded against request (#4541)
 6a10de61 SW-8439 Include planting date requests in the nursery withdrawals search table (#4540)
 e32aa42b SW-8439 Add planting date request status to search table (#4542)
 d83faef8 SW-8440 Record scheduled planting date request id with withdrawal when specified (#4539)
