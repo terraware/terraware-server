@@ -9,6 +9,7 @@ import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_PHOTOS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMARIES
 import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
@@ -45,6 +46,12 @@ class NurseryWithdrawalsTable(private val tables: SearchTables) : SearchTable() 
           plantingSeasons.asSingleValueSublist(
               "plantingSeason",
               WITHDRAWAL_SUMMARIES.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID),
+          ),
+          plantingDateRequests.asSingleValueSublist(
+              "plantingDateRequest",
+              WITHDRAWAL_SUMMARIES.SCHEDULED_PLANTING_DATE_REQUEST_ID.eq(
+                  PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID
+              ),
           ),
           organizations.asSingleValueSublist(
               "organization",
