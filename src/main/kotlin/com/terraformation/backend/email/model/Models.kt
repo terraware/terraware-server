@@ -495,6 +495,14 @@ class FunderAddedToFundingEntity(
     get() = "funder/addedToFundingEntity"
 }
 
+class AcceleratorAdminInvited(
+    config: TerrawareServerConfig,
+    val acceleratorConsoleRegistrationUrl: String,
+) : EmailTemplateModel(config) {
+  override val templateDir: String
+    get() = "acceleratorAdmin/invited"
+}
+
 class AcceleratorReportUpcoming(
     config: TerrawareServerConfig,
     val reportPrefix: String,

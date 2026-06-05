@@ -30,6 +30,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.event.AcceleratorAdminInvitedEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -727,6 +728,25 @@ internal class NotificationServiceEmailTest {
     assertBodyContains(adminUser.fullName!!, "Admin name")
     assertBodyContains(webAppUrls.fullOrganizationHome(organization.id), "Link URL")
     assertSubjectContains("You've")
+    assertRecipientsEqual(setOf(user.email))
+  }
+
+  @Test
+  fun acceleratorAdminInvited() {
+    service.on(
+        AcceleratorAdminInvitedEvent(
+            userId = user.userId,
+            email = user.email,
+            invitedBy = adminUser.userId,
+        )
+    )
+
+    assertBodyContains(
+        webAppUrls.acceleratorAdminRegistrationUrl(user.email),
+        "Registration URL",
+        hasTextPlain = false,
+    )
+    assertSubjectContains("You've been invited to be an admin on Terraware")
     assertRecipientsEqual(setOf(user.email))
   }
 

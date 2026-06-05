@@ -25,6 +25,7 @@ import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.db.ProjectStore
 import com.terraformation.backend.customer.db.UserInternalInterestsStore
 import com.terraformation.backend.customer.db.UserStore
+import com.terraformation.backend.customer.event.AcceleratorAdminInvitedEvent
 import com.terraformation.backend.customer.event.FacilityAlertRequestedEvent
 import com.terraformation.backend.customer.event.FacilityIdleEvent
 import com.terraformation.backend.customer.event.UserAddedToOrganizationEvent
@@ -66,6 +67,7 @@ import com.terraformation.backend.documentproducer.event.CompletedSectionVariabl
 import com.terraformation.backend.documentproducer.event.QuestionsDeliverableStatusUpdatedEvent
 import com.terraformation.backend.email.EmailService
 import com.terraformation.backend.email.WebAppUrls
+import com.terraformation.backend.email.model.AcceleratorAdminInvited
 import com.terraformation.backend.email.model.AcceleratorReportPublished
 import com.terraformation.backend.email.model.AcceleratorReportSubmitted
 import com.terraformation.backend.email.model.AcceleratorReportUpcoming
@@ -1342,6 +1344,19 @@ class NotificationService(
         emailContent,
         roles = setOf(Role.Admin, Role.Owner),
         additionalUserIds = setOf(event.uploadedByUserId),
+    )
+  }
+
+  @EventListener
+  fun on(event: AcceleratorAdminInvitedEvent) {
+    val registrationUrl = webAppUrls.acceleratorAdminRegistrationUrl(event.email).toString()
+
+    emailService.sendLocaleEmails(
+        AcceleratorAdminInvited(
+            config = config,
+            acceleratorConsoleRegistrationUrl = registrationUrl,
+        ),
+        listOf(event.email),
     )
   }
 
