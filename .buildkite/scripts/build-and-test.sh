@@ -13,16 +13,16 @@ fi
 ./gradlew downloadDependencies yarn
 
 echo "--- :gradle: Generate jOOQ classes"
-./gradlew generateJooqClasses
+./gradlew generateJooqClasses --offline
 
 echo "--- :gradle: Check code style"
-./gradlew spotlessCheck
+./gradlew spotlessCheck --offline
 
 echo "--- :gradle: Compile main"
-./gradlew classes
+./gradlew classes --offline
 
 echo "--- :openapi: Generate OpenAPI docs to test that server can start up"
-./gradlew generateOpenApiDocs
+./gradlew generateOpenApiDocs --offline
 
 echo "--- :openapi: Diff OpenAPI docs against staging"
 if curl -f -s https://staging.terraware.io/v3/api-docs.yaml > staging.yaml; then
@@ -40,7 +40,7 @@ else
 fi
 
 echo "--- :gradle: Compile tests"
-./gradlew testClasses
+./gradlew testClasses --offline
 
 echo "--- :junit: Run tests"
 
@@ -48,7 +48,7 @@ echo "--- :junit: Run tests"
 # the test results.
 export LOGGING_LEVEL_COM_TERRAFORMATION_BACKEND_SEARCH=INFO
 
-./gradlew test
+./gradlew test --offline
 
 # We don't run the tests that depend on external services here. We want failures in that test suite
 # to show up as soft failures in the build status, which requires that we run them in a separate
