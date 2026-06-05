@@ -3,23 +3,28 @@ set -euo pipefail
 
 .buildkite/scripts/install-deps.sh --java --tools --node
 
-echo "--- :gradle: Download dependencies"
+#echo "--- :gradle: Download dependencies"
 
 # We don't care about build caches from previous runs.
 if [ -d "$GRADLE_USER_HOME/caches/build-cache-1" ]; then
     rm -rf "$GRADLE_USER_HOME/caches/build-cache-1"
 fi
 
-./gradlew downloadDependencies yarn
+#./gradlew downloadDependencies yarn
 
-echo "--- :gradle: Generate jOOQ classes"
-./gradlew generateJooqClasses
+#echo "--- :gradle: Generate jOOQ classes"
+#./gradlew generateJooqClasses
 
 echo "--- :gradle: Check code style"
 ./gradlew spotlessCheck
 
-echo "--- :gradle: Compile main"
-./gradlew classes
+echo "--- :junit: Run tests"
+
+# Suppress some debug log messages that add up to megabytes of test output and slow down annotating
+# the test results.
+export LOGGING_LEVEL_COM_TERRAFORMATION_BACKEND_SEARCH=INFO
+
+./gradlew test
 
 echo "--- :openapi: Generate OpenAPI docs to test that server can start up"
 ./gradlew generateOpenApiDocs
@@ -38,17 +43,6 @@ if curl -f -s https://staging.terraware.io/v3/api-docs.yaml > staging.yaml; then
 else
   echo "Unable to fetch OpenAPI schema from staging"
 fi
-
-echo "--- :gradle: Compile tests"
-./gradlew testClasses
-
-echo "--- :junit: Run tests"
-
-# Suppress some debug log messages that add up to megabytes of test output and slow down annotating
-# the test results.
-export LOGGING_LEVEL_COM_TERRAFORMATION_BACKEND_SEARCH=INFO
-
-./gradlew test
 
 # We don't run the tests that depend on external services here. We want failures in that test suite
 # to show up as soft failures in the build status, which requires that we run them in a separate
