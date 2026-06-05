@@ -4,6 +4,7 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.config.TerrawareServerConfig.AtlassianConfig
 import com.terraformation.backend.config.TerrawareServerConfig.DropboxConfig
 import com.terraformation.backend.config.TerrawareServerConfig.GeoServerConfig
+import com.terraformation.backend.config.TerrawareServerConfig.GoogleDriveConfig
 import com.terraformation.backend.config.TerrawareServerConfig.KeycloakConfig
 import com.terraformation.backend.config.TerrawareServerConfig.MapboxConfig
 import java.net.URI
@@ -12,6 +13,7 @@ fun dummyTerrawareServerConfig(
     atlassian: AtlassianConfig = AtlassianConfig(),
     dropbox: DropboxConfig = DropboxConfig(),
     geoServer: GeoServerConfig = GeoServerConfig(),
+    googleDrive: GoogleDriveConfig = GoogleDriveConfig(),
     keycloak: KeycloakConfig =
         KeycloakConfig(
             apiClientId = "dummy",
@@ -25,6 +27,7 @@ fun dummyTerrawareServerConfig(
       atlassian = atlassian,
       dropbox = dropbox,
       geoServer = geoServer,
+      googleDrive = googleDrive,
       keycloak = keycloak,
       mapbox = mapbox,
       webAppUrl = webAppUrl,

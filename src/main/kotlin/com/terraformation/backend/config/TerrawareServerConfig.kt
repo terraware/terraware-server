@@ -108,6 +108,9 @@ class TerrawareServerConfig(
     /** Configures how terraware-server interacts with GeoServer. */
     val geoServer: GeoServerConfig = GeoServerConfig(),
 
+    /** Configures how the server interacts with Google Drive. */
+    val googleDrive: GoogleDriveConfig = GoogleDriveConfig(),
+
     /** Configures how the server interacts with HubSpot. */
     val hubSpot: HubSpotConfig = HubSpotConfig(),
 
@@ -133,6 +136,15 @@ class TerrawareServerConfig(
   class AcceleratorConfig(
       /** File ID of parent folder to use when creating new folders for application documents. */
       val applicationGoogleFolderId: String? = null,
+  )
+
+  class GoogleDriveConfig(
+      /**
+       * If true, store deliverable documents that would normally go to Google Drive in the local
+       * [FileStore] instead of talking to Google Drive. Intended for test and development
+       * environments.
+       */
+      @DefaultValue("false") val useLocalStore: Boolean = false,
   )
 
   class AtlassianConfig(
@@ -327,6 +339,11 @@ class TerrawareServerConfig(
       @DefaultValue("terraware-server") val clientId: String? = "terraware-server",
       @DefaultValue("false") val enabled: Boolean = false,
       val refreshToken: String? = null,
+      /**
+       * If true, store deliverable documents that would normally go to Dropbox in the local
+       * [FileStore] instead of talking to Dropbox. Intended for test and development environments.
+       */
+      @DefaultValue("false") val useLocalStore: Boolean = false,
   ) {
     init {
       if (enabled) {
