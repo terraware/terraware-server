@@ -2053,6 +2053,7 @@ class ObservationStore(
         )
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
+    val survivalRateAreaField = table.field("survival_rate_area", BigDecimal::class.java)
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
     val latestLiveField = updateScope.latestLiveField
 
@@ -2078,6 +2079,16 @@ class ObservationStore(
                     survivalRateValue.isNotNull,
                     getSurvivalRateWeightedStandardDeviation(updateScope),
                     DSL.castNull(SQLDataType.INTEGER),
+                ),
+            )
+          }
+          survivalRateAreaField?.let {
+            this.set(
+                it,
+                DSL.if_(
+                    survivalRateValue.isNotNull,
+                    updateScope.survivalRateAreaValue(observationIdField),
+                    DSL.castNull(SQLDataType.NUMERIC),
                 ),
             )
           }
@@ -2163,6 +2174,7 @@ class ObservationStore(
         )
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
+    val survivalRateAreaField = table.field("survival_rate_area", BigDecimal::class.java)
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
     val latestLiveField = updateScope.latestLiveField
 
@@ -2199,6 +2211,16 @@ class ObservationStore(
                       survivalRateValue.isNotNull,
                       getSurvivalRateWeightedStandardDeviation(updateScope),
                       DSL.castNull(SQLDataType.INTEGER),
+                  ),
+              )
+            }
+            survivalRateAreaField?.let {
+              this.set(
+                  it,
+                  DSL.if_(
+                      survivalRateValue.isNotNull,
+                      updateScope.survivalRateAreaValue(DSL.value(observationId)),
+                      DSL.castNull(SQLDataType.NUMERIC),
                   ),
               )
             }

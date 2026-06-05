@@ -1,5 +1,6 @@
 package com.terraformation.backend.tracking.db.observationStore
 
+import com.terraformation.backend.assertEqualsIgnoreScale
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
@@ -112,6 +113,64 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(plantingSiteId to mapOf(speciesId to null)),
         ),
         "All survival rates should be null",
+    )
+  }
+
+  @Test
+  fun `survival rate area is stored at substratum, stratum, and site levels`() {
+    // Already have a stratum, substratum (area 1), and plot. Add another substratum of area 2
+    // and then a second stratum with a substratum of area 4 so we can easily check that the
+    // substratum areas are added at the stratum and site levels.
+    val speciesId = insertSpecies()
+    insertPlotT0Density(plotDensity = BigDecimal.TEN.toPlantsPerHectare())
+
+    insertSubstratum(areaHa = BigDecimal(2))
+    insertObservationRequestedSubstratum()
+    val plotId2 = insertMonitoringPlot()
+    insertObservationPlot(claimedBy = inserted.userId, isPermanent = true)
+    insertPlotT0Density(plotDensity = BigDecimal.TEN.toPlantsPerHectare())
+
+    insertStratum()
+    insertSubstratum(areaHa = BigDecimal(4))
+    insertObservationRequestedSubstratum()
+    val plotId3 = insertMonitoringPlot()
+    insertObservationPlot(claimedBy = inserted.userId, isPermanent = true)
+    insertPlotT0Density(plotDensity = BigDecimal.TEN.toPlantsPerHectare())
+
+    // Substratum that doesn't contribute to survival rate; we shouldn't include its area in totals.
+    insertSubstratum(areaHa = BigDecimal(8))
+
+    val recordedPlants =
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = speciesId,
+                statusId = RecordedPlantStatus.Live,
+            ),
+        )
+
+    listOf(plotId, plotId2, plotId3).forEach { plotIdToComplete ->
+      observationStore.completePlot(
+          observationId,
+          plotIdToComplete,
+          emptySet(),
+          "Notes",
+          observedTime,
+          recordedPlants,
+      )
+    }
+
+    val substratumRow = observationSubstratumResultsDao.fetchBySubstratumId(substratumId).single()
+    val stratumRow = observationStratumResultsDao.fetchByStratumId(stratumId).single()
+    val siteRow = observationSiteResultsDao.fetchOneByObservationId(observationId)!!
+
+    assertAll(
+        {
+          assertEqualsIgnoreScale(BigDecimal(1), substratumRow.survivalRateArea, "Substratum area")
+        },
+        { assertEqualsIgnoreScale(BigDecimal(3), stratumRow.survivalRateArea, "Stratum area") },
+        { assertEqualsIgnoreScale(BigDecimal(7), siteRow.survivalRateArea, "Site area") },
     )
   }
 

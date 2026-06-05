@@ -459,12 +459,15 @@ COMMENT ON COLUMN tracking.observation_plots.observed_time IS 'Client-supplied o
 COMMENT ON TABLE tracking.observation_requested_substrata IS 'If an observation should only cover a specific set of substrata, the substratum IDs are stored here. If an observation is of the entire site (the default), there will be no rows for that observation in this table.';
 
 COMMENT ON TABLE tracking.observation_site_results IS 'Observation results for a planting site.';
+COMMENT ON COLUMN tracking.observation_site_results.survival_rate_area IS 'Total area in hectares of substrata whose observation results contributed to the survival rate.';
 
 COMMENT ON TABLE tracking.observation_states IS '(Enum) Where in the observation lifecycle a particular observation is.';
 
 COMMENT ON TABLE tracking.observation_stratum_results IS 'Observation results for a stratum.';
+COMMENT ON COLUMN tracking.observation_stratum_results.survival_rate_area IS 'Total area in hectares of substrata whose observation results contributed to the survival rate.';
 
 COMMENT ON TABLE tracking.observation_substratum_results IS 'Observation results for a substratum.';
+COMMENT ON COLUMN tracking.observation_substratum_results.survival_rate_area IS 'This substratum''s area in hectares at the time of the observation.';
 
 COMMENT ON TABLE tracking.observation_types IS '(Enum) Type of observation, currently only used for ad hoc observations.';
 
