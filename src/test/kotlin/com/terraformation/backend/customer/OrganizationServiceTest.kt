@@ -139,7 +139,7 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
   fun `deleteOrganization removes Terraformation Contact user from organization`() {
     val tfContactUserId = insertUser(email = "tfcontact@terraformation.com")
     val organizationId = insertOrganization()
-    insertOrganizationUser(role = Role.Owner)
+    insertOrganizationUser(userId = user.userId, role = Role.Owner)
     insertOrganizationUser(userId = tfContactUserId, role = Role.TerraformationContact)
 
     service.deleteOrganization(organizationId)
@@ -184,8 +184,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                 Role.Contributor,
                 Instant.EPOCH,
                 Instant.EPOCH,
-                user.userId,
-                user.userId,
+                otherUserId,
+                otherUserId,
             ),
             OrganizationUsersRow(
                 otherUserId,
@@ -193,8 +193,8 @@ internal class OrganizationServiceTest : DatabaseTest(), RunsAsUser {
                 Role.Owner,
                 Instant.EPOCH,
                 Instant.EPOCH,
-                user.userId,
-                user.userId,
+                otherUserId,
+                otherUserId,
             ),
         )
 

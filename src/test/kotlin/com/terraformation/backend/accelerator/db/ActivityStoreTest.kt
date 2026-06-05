@@ -674,7 +674,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               activityDate = LocalDate.of(2024, 2, 1),
               activityStatusId = ActivityStatus.NotVerified,
               activityTypeId = ActivityType.Planting,
-              createdBy = user.userId,
+              createdBy = otherUserId,
               createdTime = Instant.EPOCH,
               description = "Updated description",
               id = activityId,
@@ -716,7 +716,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               activityDate = LocalDate.of(2024, 1, 1),
               activityStatusId = ActivityStatus.Verified,
               activityTypeId = ActivityType.SeedCollection,
-              createdBy = user.userId,
+              createdBy = otherUserId,
               createdTime = Instant.EPOCH,
               description = "Original description",
               id = activityId,
@@ -900,6 +900,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       store.updateForAdmin(activityId) { it.copy(description = "New Description") }
 
+      record.modifiedBy = currentUser().userId
       record.modifiedTime = updateTime
       record.description = "New Description"
 

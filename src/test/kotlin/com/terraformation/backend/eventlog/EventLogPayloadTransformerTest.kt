@@ -55,7 +55,7 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     knownUserId = insertUser(firstName = "Known", lastName = "User")
 
     insertOrganization()
-    insertOrganizationUser()
+    insertOrganizationUser(userId = user.userId)
     insertOrganizationUser(userId = knownUserId)
   }
 

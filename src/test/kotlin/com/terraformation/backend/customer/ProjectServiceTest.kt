@@ -350,9 +350,9 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
                   projectId = projectId,
                   userId = userToKeep,
                   projectInternalRoleId = ProjectInternalRole.ProjectFinanceLead,
-                  createdBy = user.userId,
+                  createdBy = userToKeep,
                   createdTime = clock.instant,
-                  modifiedBy = user.userId,
+                  modifiedBy = userToKeep,
                   modifiedTime = clock.instant,
               ),
               ProjectInternalUsersRecord(
