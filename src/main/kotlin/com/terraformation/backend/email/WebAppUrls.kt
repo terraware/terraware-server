@@ -55,6 +55,10 @@ class WebAppUrls(
     return buildRegistrationUrl(fullFunderPortalHome(), email, mapOf("funderLogin" to "true"))
   }
 
+  fun acceleratorAdminRegistrationUrl(email: String): URI {
+    return buildRegistrationUrl(fullAcceleratorConsoleHome(), email)
+  }
+
   fun fullAccession(accessionId: AccessionId, organizationId: OrganizationId): URI {
     return UriBuilder.fromUri(config.webAppUrl)
         .path("/accessions/${accessionId.value}")
@@ -366,6 +370,10 @@ class WebAppUrls(
     additionalParams.forEach { (key, value) -> builder.queryParam(key, value) }
 
     return builder.build()
+  }
+
+  private fun fullAcceleratorConsoleHome(): URI {
+    return UriBuilder.fromUri(config.webAppUrl).path("/accelerator").build()
   }
 
   private fun fullFunderPortalHome(): URI {

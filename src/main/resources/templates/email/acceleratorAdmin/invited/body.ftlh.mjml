@@ -1,0 +1,29 @@
+<!-- <#-- @ftlvariable name="" type="com.terraformation.backend.email.model.AcceleratorAdminInvited" --> -->
+<mjml>
+    <mj-include path="../../head.ftlh.mjml"/>
+
+    <mj-body mj-class="body-gray">
+        <mj-include path="../../logo-welcome.ftlh.mjml"/>
+
+        <mj-section padding="0px">
+            <mj-column mj-class="body-wrapper-welcome">
+                <mj-text mj-class="text-headline06-bold-green" padding-left="0px"
+                         padding-right="0px">
+                ${strings("notification.acceleratorAdmin.invited.email.body.1")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                ${strings("notification.acceleratorAdmin.invited.email.body.2")}
+                </mj-text>
+                <mj-text mj-class="text-body03">
+                ${strings("notification.acceleratorAdmin.invited.email.body.3")}
+                </mj-text>
+                <mj-button mj-class="btn-productive-primary-md"
+                           href="${acceleratorConsoleRegistrationUrl?no_esc}"
+                >${strings("notification.acceleratorAdmin.invited.email.buttonLabel")}
+                </mj-button>
+            </mj-column>
+        </mj-section>
+
+        <mj-include path="../../footer-welcome.ftlh.mjml"/>
+    </mj-body>
+</mjml>
