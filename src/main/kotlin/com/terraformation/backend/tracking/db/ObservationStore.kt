@@ -1947,6 +1947,30 @@ class ObservationStore(
     recalculateSurvivalRateResults(ObservationResultsSite(plantingSiteId))
   }
 
+  /**
+   * Recalculates survival rates for all planting sites. Returns a map of error messages by planting
+   * site ID for any sites that failed.
+   */
+  fun recalculateAllSurvivalRates(): Map<PlantingSiteId, String?> {
+    val plantingSiteIds =
+        with(PLANTING_SITES) {
+          dslContext.select(ID).from(PLANTING_SITES).orderBy(ID).fetch(ID.asNonNullable())
+        }
+
+    val failures = mutableMapOf<PlantingSiteId, String?>()
+
+    plantingSiteIds.forEach { id ->
+      try {
+        recalculateSurvivalRates(id)
+      } catch (e: Exception) {
+        log.warn("Failed to recalculate survival rates for planting site $id", e)
+        failures[id] = e.message
+      }
+    }
+
+    return failures
+  }
+
   private fun <ID : Any, HistoryId : Any> recalculateSurvivalRate(
       updateScope: ObservationSpeciesScope<ID, HistoryId>
   ) {
