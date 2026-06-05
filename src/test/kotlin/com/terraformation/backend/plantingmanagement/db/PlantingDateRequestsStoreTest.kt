@@ -6,15 +6,20 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.WithdrawalId
+import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestsRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
+import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import java.time.Instant
 import java.time.LocalDate
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -242,6 +247,159 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       assertThrows<PlantingSeasonDateRequestNotFoundException> {
         store.update(scheduledPlantingDateId, plantingSeasonId)
       }
+    }
+  }
+
+  @Nested
+  inner class UpdateRequestStatus {
+    private lateinit var scheduledPlantingDateId: ScheduledPlantingDateId
+
+    @BeforeEach
+    fun setUp() {
+      insertFacility()
+      scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      insertPlantingDateRequest(status = PlantingDateRequestStatus.Pending)
+    }
+
+    @Test
+    fun `marks request Fulfilled when every species is fully withdrawn`() {
+      val speciesId2 = insertSpecies()
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+      insertPlantingDateRequestSpecies(speciesId = speciesId2, quantity = 10)
+
+      withdraw(species = speciesId, readyQuantity = 5)
+      withdraw(species = speciesId2, readyQuantity = 10)
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Fulfilled, statusOf())
+    }
+
+    @Test
+    fun `marks request Pending when no species has positive net withdrawn`() {
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Pending, statusOf())
+    }
+
+    @Test
+    fun `marks request Partial when one species is met but another is untouched`() {
+      val speciesId2 = insertSpecies()
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+      insertPlantingDateRequestSpecies(speciesId = speciesId2, quantity = 10)
+
+      withdraw(species = speciesId, readyQuantity = 5)
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Partial, statusOf())
+    }
+
+    @Test
+    fun `marks request Partial when a species is partially withdrawn`() {
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 10)
+
+      withdraw(species = speciesId, readyQuantity = 4)
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Partial, statusOf())
+    }
+
+    @Test
+    fun `marks request Fulfilled when a species is over-withdrawn`() {
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+
+      withdraw(species = speciesId, readyQuantity = 8)
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Fulfilled, statusOf())
+    }
+
+    @Test
+    fun `sums requested quantities across substrata per species`() {
+      val substratumId2 = insertSubstratum()
+      insertPlantingDateRequestSpecies(
+          speciesId = speciesId,
+          substratumId = substratumId,
+          quantity = 3,
+      )
+      insertPlantingDateRequestSpecies(
+          speciesId = speciesId,
+          substratumId = substratumId2,
+          quantity = 4,
+      )
+
+      withdraw(species = speciesId, readyQuantity = 7)
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Fulfilled, statusOf())
+    }
+
+    @Test
+    fun `treats an undo withdrawal as subtracting from the net withdrawn quantity`() {
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+
+      val originalWithdrawalId = withdraw(species = speciesId, readyQuantity = 5)
+      withdraw(
+          species = speciesId,
+          readyQuantity = -5,
+          purpose = WithdrawalPurpose.Undo,
+          undoesWithdrawalId = originalWithdrawalId,
+      )
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Pending, statusOf())
+    }
+
+    @Test
+    fun `ignores withdrawn species that are not part of the request`() {
+      val unrequestedSpeciesId = insertSpecies()
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+
+      withdraw(species = unrequestedSpeciesId, readyQuantity = 5)
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Pending, statusOf())
+    }
+
+    @Test
+    fun `marks a request with no species Pending`() {
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      assertEquals(PlantingDateRequestStatus.Pending, statusOf())
+    }
+
+    private fun statusOf(id: ScheduledPlantingDateId = scheduledPlantingDateId) =
+        plantingDateRequestsDao.fetchOneByScheduledPlantingDateId(id)!!.statusId
+
+    /** Inserts a batch + withdrawal + batch withdrawal tied to the request under test. */
+    private fun withdraw(
+        species: SpeciesId,
+        readyQuantity: Int,
+        purpose: WithdrawalPurpose = WithdrawalPurpose.OutPlant,
+        undoesWithdrawalId: WithdrawalId? = null,
+    ): WithdrawalId {
+      val batchId = insertBatch(speciesId = species)
+      val withdrawalId =
+          insertNurseryWithdrawal(
+              plantingSeasonId = plantingSeasonId,
+              scheduledPlantingDateRequestId = scheduledPlantingDateId,
+              purpose = purpose,
+              undoesWithdrawalId = undoesWithdrawalId,
+          )
+      insertBatchWithdrawal(
+          batchId = batchId,
+          withdrawalId = withdrawalId,
+          readyQuantityWithdrawn = readyQuantity,
+      )
+      return withdrawalId
     }
   }
 }

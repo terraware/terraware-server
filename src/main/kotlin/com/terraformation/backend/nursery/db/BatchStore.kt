@@ -53,6 +53,8 @@ import com.terraformation.backend.db.nursery.tables.references.INVENTORIES
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
+import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.nursery.event.BatchDeletionStartedEvent
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
@@ -67,6 +69,8 @@ import com.terraformation.backend.nursery.model.NurseryStats
 import com.terraformation.backend.nursery.model.SpeciesSummary
 import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonDateRequestNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDateNotFoundException
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import jakarta.inject.Named
 import java.time.Clock
@@ -689,6 +693,39 @@ class BatchStore(
       }
     } else if (withdrawal.destinationFacilityId != null) {
       throw IllegalArgumentException("Only nursery transfers may include destination facility ID")
+    }
+    if (withdrawal.scheduledPlantingDateRequestId != null) {
+      val (plantingDateExists, requestExists) =
+          dslContext
+              .select(
+                  DSL.exists(
+                      DSL.selectOne()
+                          .from(SCHEDULED_PLANTING_DATES)
+                          .where(
+                              SCHEDULED_PLANTING_DATES.ID.eq(
+                                  withdrawal.scheduledPlantingDateRequestId
+                              )
+                          )
+                  ),
+                  DSL.exists(
+                      DSL.selectOne()
+                          .from(PLANTING_DATE_REQUESTS)
+                          .where(
+                              PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(
+                                  withdrawal.scheduledPlantingDateRequestId
+                              )
+                          )
+                  ),
+              )
+              .fetchOne()!!
+
+      if (!plantingDateExists) {
+        throw PlantingSeasonScheduledDateNotFoundException(
+            withdrawal.scheduledPlantingDateRequestId
+        )
+      } else if (!requestExists) {
+        throw PlantingSeasonDateRequestNotFoundException(withdrawal.scheduledPlantingDateRequestId)
+      }
     }
 
     return dslContext.transactionResult { _ ->

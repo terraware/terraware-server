@@ -19,6 +19,8 @@ import com.terraformation.backend.nursery.db.CrossOrganizationNurseryTransferNot
 import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonDateRequestNotFoundException
+import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDateNotFoundException
 import io.mockk.every
 import java.time.Instant
 import java.time.LocalDate
@@ -1426,7 +1428,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     insertPlantingSite()
     val plantingSeasonId = insertPlantingSeason()
 
-    assertThrows<DataIntegrityViolationException> {
+    assertThrows<PlantingSeasonScheduledDateNotFoundException> {
       store.withdraw(
           NewWithdrawalModel(
               batchWithdrawals =
@@ -1456,7 +1458,7 @@ internal class BatchStoreWithdrawTest : BatchStoreTest() {
     val plantingSeasonId = insertPlantingSeason()
     val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
 
-    assertThrows<DataIntegrityViolationException> {
+    assertThrows<PlantingSeasonDateRequestNotFoundException> {
       store.withdraw(
           NewWithdrawalModel(
               batchWithdrawals =
