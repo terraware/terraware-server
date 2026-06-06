@@ -164,9 +164,9 @@
 <ellipse fill="none" stroke="black" cx="2086.3" cy="-591.89" rx="3.2" ry="3.2"/>
 </g>
 <!-- observations -->
-<g id="node52" class="node">
+<g id="node51" class="node">
 <title>observations</title>
-<g id="a_node52"><a xlink:href="../../tables/observations.html" xlink:title="observations" target="_top">
+<g id="a_node51"><a xlink:href="../../tables/observations.html" xlink:title="observations" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1130.5,-2438 1130.5,-2606 1348.5,-2606 1348.5,-2438 1130.5,-2438"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1130.5,-2584 1130.5,-2606 1348.5,-2606 1348.5,-2584 1130.5,-2584"/>
 <polygon fill="none" stroke="black" points="1130.5,-2584 1130.5,-2606 1348.5,-2606 1348.5,-2584 1130.5,-2584"/>
@@ -610,9 +610,9 @@
 </g>
 </g>
 <!-- scheduled_planting_dates -->
-<g id="node13" class="node">
+<g id="node14" class="node">
 <title>scheduled_planting_dates</title>
-<g id="a_node13"><a xlink:href="../../tables/scheduled_planting_dates.html" xlink:title="scheduled_planting_dates" target="_top">
+<g id="a_node14"><a xlink:href="../../tables/scheduled_planting_dates.html" xlink:title="scheduled_planting_dates" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="846.5,-2579 846.5,-2747 1043.5,-2747 1043.5,-2579 846.5,-2579"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="847,-2725 847,-2747 1044,-2747 1044,-2725 847,-2725"/>
 <polygon fill="none" stroke="black" points="847,-2725 847,-2747 1044,-2747 1044,-2725 847,-2725"/>
@@ -1383,31 +1383,10 @@
 <polyline fill="none" stroke="black" points="1434.5,-1523 1430.51,-1523.34 "/>
 <ellipse fill="none" stroke="black" cx="1427.33" cy="-1523.62" rx="3.2" ry="3.2"/>
 </g>
-<!-- scheduled_planting_dates&#45;&gt;planting_seasons -->
-<g id="edge189" class="edge">
-<title>scheduled_planting_dates:w&#45;&gt;planting_seasons:e</title>
-<path fill="none" stroke="black" d="M831.56,-2694.67C807.79,-2705.6 822.56,-2748.09 816,-2785 751.68,-3146.73 849.33,-3249.63 783,-3611 764.3,-3712.88 812.58,-3832 709,-3832"/>
-<polygon fill="black" stroke="black" points="838.13,-2693.45 846.65,-2695.54 842.07,-2692.73 846,-2692 846,-2692 846,-2692 842.07,-2692.73 845.35,-2688.46 838.13,-2693.45 838.13,-2693.45"/>
-<ellipse fill="none" stroke="black" cx="834.99" cy="-2694.04" rx="3.2" ry="3.2"/>
-</g>
-<!-- scheduled_planting_dates&#45;&gt;public.users -->
-<g id="edge187" class="edge">
-<title>scheduled_planting_dates:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M831.34,-2647.79C513.56,-2638.8 213.69,-2341.15 120.86,-2240.15"/>
-<polygon fill="black" stroke="black" points="838,-2647.89 845.95,-2651.6 842,-2647.94 846,-2648 846,-2648 846,-2648 842,-2647.94 846.05,-2644.4 838,-2647.89 838,-2647.89"/>
-<ellipse fill="none" stroke="black" cx="834.8" cy="-2647.84" rx="3.2" ry="3.2"/>
-</g>
-<!-- scheduled_planting_dates&#45;&gt;public.users -->
-<g id="edge188" class="edge">
-<title>scheduled_planting_dates:w&#45;&gt;public.users:e</title>
-<path fill="none" stroke="black" d="M831.59,-2623.8C802.67,-2613.48 813.26,-2569.15 783,-2541 656.18,-2422.99 610.06,-2407.19 454,-2332 354.15,-2283.89 230.84,-2245.48 156.83,-2224.51"/>
-<polygon fill="black" stroke="black" points="838.09,-2624.79 845.46,-2629.56 842.05,-2625.4 846,-2626 846,-2626 846,-2626 842.05,-2625.4 846.54,-2622.44 838.09,-2624.79 838.09,-2624.79"/>
-<ellipse fill="none" stroke="black" cx="834.93" cy="-2624.31" rx="3.2" ry="3.2"/>
-</g>
 <!-- simplified_strata -->
-<g id="node14" class="node">
+<g id="node13" class="node">
 <title>simplified_strata</title>
-<g id="a_node14"><a xlink:href="../../tables/simplified_strata.html" xlink:title="simplified_strata" target="_top">
+<g id="a_node13"><a xlink:href="../../tables/simplified_strata.html" xlink:title="simplified_strata" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="873,-1325 873,-1405 1017,-1405 1017,-1325 873,-1325"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="873,-1383 873,-1405 1017,-1405 1017,-1383 873,-1383"/>
 <polygon fill="none" stroke="black" points="873,-1383 873,-1405 1017,-1405 1017,-1383 873,-1383"/>
@@ -1482,6 +1461,27 @@
 <polygon fill="black" stroke="black" points="870.83,-1368.09 871.58,-1376.06 869.98,-1376.21 869.24,-1368.24 870.83,-1368.09"/>
 <polyline fill="none" stroke="black" points="872,-1372 868.02,-1372.37 "/>
 <ellipse fill="none" stroke="black" cx="864.83" cy="-1372.67" rx="3.2" ry="3.2"/>
+</g>
+<!-- scheduled_planting_dates&#45;&gt;planting_seasons -->
+<g id="edge189" class="edge">
+<title>scheduled_planting_dates:w&#45;&gt;planting_seasons:e</title>
+<path fill="none" stroke="black" d="M831.56,-2694.67C807.79,-2705.6 822.56,-2748.09 816,-2785 751.68,-3146.73 849.33,-3249.63 783,-3611 764.3,-3712.88 812.58,-3832 709,-3832"/>
+<polygon fill="black" stroke="black" points="838.13,-2693.45 846.65,-2695.54 842.07,-2692.73 846,-2692 846,-2692 846,-2692 842.07,-2692.73 845.35,-2688.46 838.13,-2693.45 838.13,-2693.45"/>
+<ellipse fill="none" stroke="black" cx="834.99" cy="-2694.04" rx="3.2" ry="3.2"/>
+</g>
+<!-- scheduled_planting_dates&#45;&gt;public.users -->
+<g id="edge187" class="edge">
+<title>scheduled_planting_dates:w&#45;&gt;public.users:e</title>
+<path fill="none" stroke="black" d="M831.34,-2647.79C513.56,-2638.8 213.69,-2341.15 120.86,-2240.15"/>
+<polygon fill="black" stroke="black" points="838,-2647.89 845.95,-2651.6 842,-2647.94 846,-2648 846,-2648 846,-2648 842,-2647.94 846.05,-2644.4 838,-2647.89 838,-2647.89"/>
+<ellipse fill="none" stroke="black" cx="834.8" cy="-2647.84" rx="3.2" ry="3.2"/>
+</g>
+<!-- scheduled_planting_dates&#45;&gt;public.users -->
+<g id="edge188" class="edge">
+<title>scheduled_planting_dates:w&#45;&gt;public.users:e</title>
+<path fill="none" stroke="black" d="M831.59,-2623.8C802.67,-2613.48 813.26,-2569.15 783,-2541 656.18,-2422.99 610.06,-2407.19 454,-2332 354.15,-2283.89 230.84,-2245.48 156.83,-2224.51"/>
+<polygon fill="black" stroke="black" points="838.09,-2624.79 845.46,-2629.56 842.05,-2625.4 846,-2626 846,-2626 846,-2626 842.05,-2625.4 846.54,-2622.44 838.09,-2624.79 838.09,-2624.79"/>
+<ellipse fill="none" stroke="black" cx="834.93" cy="-2624.31" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_site_histories&#45;&gt;planting_sites -->
 <g id="edge141" class="edge">
@@ -3121,10 +3121,65 @@
 <polyline fill="none" stroke="black" points="1457.5,-3502 1453.51,-3501.66 "/>
 <ellipse fill="none" stroke="black" cx="1450.33" cy="-3501.38" rx="3.2" ry="3.2"/>
 </g>
+<!-- observations&#45;&gt;planting_site_histories -->
+<g id="edge92" class="edge">
+<title>observations:w&#45;&gt;planting_site_histories:e</title>
+<path fill="none" stroke="black" d="M1115.39,-2503.8C1094.49,-2492.13 1104.44,-2451.71 1074,-2437 1022.38,-2412.05 860.34,-2400.65 816,-2437 656.52,-2567.75 931.23,-2892 725,-2892"/>
+<polygon fill="black" stroke="black" points="1121.7,-2505.23 1128.7,-2510.51 1125.6,-2506.12 1129.5,-2507 1129.5,-2507 1129.5,-2507 1125.6,-2506.12 1130.3,-2503.49 1121.7,-2505.23 1121.7,-2505.23"/>
+<ellipse fill="none" stroke="black" cx="1118.58" cy="-2504.53" rx="3.2" ry="3.2"/>
+</g>
+<!-- observations&#45;&gt;planting_sites -->
+<g id="edge93" class="edge">
+<title>observations:w&#45;&gt;planting_sites:e</title>
+<path fill="none" stroke="black" d="M1114.81,-2552.45C1046.76,-2567.73 1142.2,-2699.79 1074,-2758 986.31,-2832.85 901.92,-2708.12 816,-2785 764.81,-2830.81 812.65,-2874.03 783,-2936 692.41,-3125.34 575.82,-3113.82 487,-3304 467.73,-3345.26 492.54,-3505 447,-3505"/>
+<polygon fill="black" stroke="black" points="1121.54,-2551.79 1129.85,-2554.58 1125.52,-2551.39 1129.5,-2551 1129.5,-2551 1129.5,-2551 1125.52,-2551.39 1129.15,-2547.42 1121.54,-2551.79 1121.54,-2551.79"/>
+<ellipse fill="none" stroke="black" cx="1118.35" cy="-2552.1" rx="3.2" ry="3.2"/>
+</g>
+<!-- observations&#45;&gt;observation_types -->
+<g id="edge91" class="edge">
+<title>observations:w&#45;&gt;observation_types:e</title>
+<path fill="none" stroke="black" d="M1115,-2482.52C1091.8,-2473.06 1097.34,-2438.49 1074,-2413 1053.18,-2390.27 1053.82,-2366 1023,-2366"/>
+<polygon fill="black" stroke="black" points="1121.61,-2483.65 1128.89,-2488.55 1125.56,-2484.33 1129.5,-2485 1129.5,-2485 1129.5,-2485 1125.56,-2484.33 1130.11,-2481.45 1121.61,-2483.65 1121.61,-2483.65"/>
+<ellipse fill="none" stroke="black" cx="1118.46" cy="-2483.11" rx="3.2" ry="3.2"/>
+</g>
+<!-- observation_states -->
+<g id="node63" class="node">
+<title>observation_states</title>
+<g id="a_node63"><a xlink:href="../../tables/observation_states.html" xlink:title="observation_states" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="866.5,-2447 866.5,-2531 1023.5,-2531 1023.5,-2447 866.5,-2447"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="867,-2509 867,-2531 1024,-2531 1024,-2509 867,-2509"/>
+<polygon fill="none" stroke="black" points="867,-2509 867,-2531 1024,-2531 1024,-2509 867,-2509"/>
+<text text-anchor="start" x="872" y="-2518.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_states</text>
+<text text-anchor="start" x="985" y="-2517.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="867,-2487 867,-2509 1024,-2509 1024,-2487 867,-2487"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="872" y="-2504"/>
+<text text-anchor="start" x="899" y="-2495.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="867,-2465 867,-2487 1024,-2487 1024,-2465 867,-2465"/>
+<polygon fill="none" stroke="black" points="867,-2465 867,-2487 1024,-2487 1024,-2465 867,-2465"/>
+<text text-anchor="start" x="899" y="-2473.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="867,-2447 867,-2465 934,-2465 934,-2447 867,-2447"/>
+<polygon fill="none" stroke="black" points="867,-2447 867,-2465 934,-2465 934,-2447 867,-2447"/>
+<text text-anchor="start" x="870" y="-2453.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="934,-2447 934,-2465 974,-2465 974,-2447 934,-2447"/>
+<polygon fill="none" stroke="black" points="934,-2447 934,-2465 974,-2465 974,-2447 934,-2447"/>
+<text text-anchor="start" x="964" y="-2453.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="974,-2447 974,-2465 1024,-2465 1024,-2447 974,-2447"/>
+<polygon fill="none" stroke="black" points="974,-2447 974,-2465 1024,-2465 1024,-2447 974,-2447"/>
+<text text-anchor="start" x="1005" y="-2453.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
+</g>
+<!-- observations&#45;&gt;observation_states -->
+<g id="edge94" class="edge">
+<title>observations:w&#45;&gt;observation_states:e</title>
+<path fill="none" stroke="black" d="M1114.96,-2527.97C1078.9,-2522.59 1068.15,-2498 1025,-2498"/>
+<polygon fill="black" stroke="black" points="1121.52,-2528.43 1129.25,-2532.59 1125.51,-2528.72 1129.5,-2529 1129.5,-2529 1129.5,-2529 1125.51,-2528.72 1129.75,-2525.41 1121.52,-2528.43 1121.52,-2528.43"/>
+<ellipse fill="none" stroke="black" cx="1118.33" cy="-2528.21" rx="3.2" ry="3.2"/>
+</g>
 <!-- observed_plot_coordinates -->
-<g id="node51" class="node">
+<g id="node52" class="node">
 <title>observed_plot_coordinates</title>
-<g id="a_node51"><a xlink:href="../../tables/observed_plot_coordinates.html" xlink:title="observed_plot_coordinates" target="_top">
+<g id="a_node52"><a xlink:href="../../tables/observed_plot_coordinates.html" xlink:title="observed_plot_coordinates" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="2076,-646 2076,-792 2279,-792 2279,-646 2076,-646"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="2076.5,-770 2076.5,-792 2279.5,-792 2279.5,-770 2076.5,-770"/>
 <polygon fill="none" stroke="black" points="2076.5,-770 2076.5,-792 2279.5,-792 2279.5,-770 2076.5,-770"/>
@@ -3193,61 +3248,6 @@
 <path fill="none" stroke="black" d="M2061.15,-735.68C2008.83,-725.2 2021.88,-655.37 1964,-628 1857.29,-577.54 1817.86,-605.45 1700,-599 1634.54,-595.42 1451.78,-553.08 1405,-599 1326.71,-675.85 1459.21,-2573 1349.5,-2573"/>
 <polygon fill="black" stroke="black" points="2067.53,-736.26 2075.17,-740.58 2071.52,-736.63 2075.5,-737 2075.5,-737 2075.5,-737 2071.52,-736.63 2075.83,-733.42 2067.53,-736.26 2067.53,-736.26"/>
 <ellipse fill="none" stroke="black" cx="2064.35" cy="-735.97" rx="3.2" ry="3.2"/>
-</g>
-<!-- observations&#45;&gt;planting_site_histories -->
-<g id="edge92" class="edge">
-<title>observations:w&#45;&gt;planting_site_histories:e</title>
-<path fill="none" stroke="black" d="M1115.39,-2503.8C1094.49,-2492.13 1104.44,-2451.71 1074,-2437 1022.38,-2412.05 860.34,-2400.65 816,-2437 656.52,-2567.75 931.23,-2892 725,-2892"/>
-<polygon fill="black" stroke="black" points="1121.7,-2505.23 1128.7,-2510.51 1125.6,-2506.12 1129.5,-2507 1129.5,-2507 1129.5,-2507 1125.6,-2506.12 1130.3,-2503.49 1121.7,-2505.23 1121.7,-2505.23"/>
-<ellipse fill="none" stroke="black" cx="1118.58" cy="-2504.53" rx="3.2" ry="3.2"/>
-</g>
-<!-- observations&#45;&gt;planting_sites -->
-<g id="edge93" class="edge">
-<title>observations:w&#45;&gt;planting_sites:e</title>
-<path fill="none" stroke="black" d="M1114.81,-2552.45C1046.76,-2567.73 1142.2,-2699.79 1074,-2758 986.31,-2832.85 901.92,-2708.12 816,-2785 764.81,-2830.81 812.65,-2874.03 783,-2936 692.41,-3125.34 575.82,-3113.82 487,-3304 467.73,-3345.26 492.54,-3505 447,-3505"/>
-<polygon fill="black" stroke="black" points="1121.54,-2551.79 1129.85,-2554.58 1125.52,-2551.39 1129.5,-2551 1129.5,-2551 1129.5,-2551 1125.52,-2551.39 1129.15,-2547.42 1121.54,-2551.79 1121.54,-2551.79"/>
-<ellipse fill="none" stroke="black" cx="1118.35" cy="-2552.1" rx="3.2" ry="3.2"/>
-</g>
-<!-- observations&#45;&gt;observation_types -->
-<g id="edge91" class="edge">
-<title>observations:w&#45;&gt;observation_types:e</title>
-<path fill="none" stroke="black" d="M1115,-2482.52C1091.8,-2473.06 1097.34,-2438.49 1074,-2413 1053.18,-2390.27 1053.82,-2366 1023,-2366"/>
-<polygon fill="black" stroke="black" points="1121.61,-2483.65 1128.89,-2488.55 1125.56,-2484.33 1129.5,-2485 1129.5,-2485 1129.5,-2485 1125.56,-2484.33 1130.11,-2481.45 1121.61,-2483.65 1121.61,-2483.65"/>
-<ellipse fill="none" stroke="black" cx="1118.46" cy="-2483.11" rx="3.2" ry="3.2"/>
-</g>
-<!-- observation_states -->
-<g id="node63" class="node">
-<title>observation_states</title>
-<g id="a_node63"><a xlink:href="../../tables/observation_states.html" xlink:title="observation_states" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="866.5,-2447 866.5,-2531 1023.5,-2531 1023.5,-2447 866.5,-2447"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="867,-2509 867,-2531 1024,-2531 1024,-2509 867,-2509"/>
-<polygon fill="none" stroke="black" points="867,-2509 867,-2531 1024,-2531 1024,-2509 867,-2509"/>
-<text text-anchor="start" x="872" y="-2518.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_states</text>
-<text text-anchor="start" x="985" y="-2517.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="867,-2487 867,-2509 1024,-2509 1024,-2487 867,-2487"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="872" y="-2504"/>
-<text text-anchor="start" x="899" y="-2495.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="867,-2465 867,-2487 1024,-2487 1024,-2465 867,-2465"/>
-<polygon fill="none" stroke="black" points="867,-2465 867,-2487 1024,-2487 1024,-2465 867,-2465"/>
-<text text-anchor="start" x="899" y="-2473.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="867,-2447 867,-2465 934,-2465 934,-2447 867,-2447"/>
-<polygon fill="none" stroke="black" points="867,-2447 867,-2465 934,-2465 934,-2447 867,-2447"/>
-<text text-anchor="start" x="870" y="-2453.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="934,-2447 934,-2465 974,-2465 974,-2447 934,-2447"/>
-<polygon fill="none" stroke="black" points="934,-2447 934,-2465 974,-2465 974,-2447 934,-2447"/>
-<text text-anchor="start" x="964" y="-2453.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="974,-2447 974,-2465 1024,-2465 1024,-2447 974,-2447"/>
-<polygon fill="none" stroke="black" points="974,-2447 974,-2465 1024,-2465 1024,-2447 974,-2447"/>
-<text text-anchor="start" x="1005" y="-2453.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
-<!-- observations&#45;&gt;observation_states -->
-<g id="edge94" class="edge">
-<title>observations:w&#45;&gt;observation_states:e</title>
-<path fill="none" stroke="black" d="M1114.96,-2527.97C1078.9,-2522.59 1068.15,-2498 1025,-2498"/>
-<polygon fill="black" stroke="black" points="1121.52,-2528.43 1129.25,-2532.59 1125.51,-2528.72 1129.5,-2529 1129.5,-2529 1129.5,-2529 1125.51,-2528.72 1129.75,-2525.41 1121.52,-2528.43 1121.52,-2528.43"/>
-<ellipse fill="none" stroke="black" cx="1118.33" cy="-2528.21" rx="3.2" ry="3.2"/>
 </g>
 <!-- observed_site_species_totals -->
 <g id="node54" class="node">
