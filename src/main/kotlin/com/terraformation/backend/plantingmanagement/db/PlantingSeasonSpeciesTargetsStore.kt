@@ -119,25 +119,28 @@ class PlantingSeasonSpeciesTargetsStore(
     val substratumInfo = seasonHelper.fetchSubstratumInfo(substratumId)
 
     with(PLANTING_SEASON_SPECIES_TARGETS) {
-      dslContext
-          .deleteFrom(PLANTING_SEASON_SPECIES_TARGETS)
-          .where(PLANTING_SEASON_ID.eq(plantingSeasonId))
-          .and(SUBSTRATUM_ID.eq(substratumId))
-          .and(SPECIES_ID.eq(speciesId))
-          .execute()
+      val rowsDeleted =
+          dslContext
+              .deleteFrom(PLANTING_SEASON_SPECIES_TARGETS)
+              .where(PLANTING_SEASON_ID.eq(plantingSeasonId))
+              .and(SUBSTRATUM_ID.eq(substratumId))
+              .and(SPECIES_ID.eq(speciesId))
+              .execute()
 
-      eventPublisher.publishEvent(
-          PlantingSeasonSpeciesTargetDeletedEvent(
-              organizationId = organizationId,
-              plantingSeasonId = plantingSeasonId,
-              plantingSiteId = plantingSiteId,
-              speciesId = speciesId,
-              stratumName = substratumInfo.stratumName,
-              substratumHistoryId = substratumInfo.substratumHistoryId,
-              substratumId = substratumId,
-              substratumName = substratumInfo.substratumName,
-          )
-      )
+      if (rowsDeleted > 0) {
+        eventPublisher.publishEvent(
+            PlantingSeasonSpeciesTargetDeletedEvent(
+                organizationId = organizationId,
+                plantingSeasonId = plantingSeasonId,
+                plantingSiteId = plantingSiteId,
+                speciesId = speciesId,
+                stratumName = substratumInfo.stratumName,
+                substratumHistoryId = substratumInfo.substratumHistoryId,
+                substratumId = substratumId,
+                substratumName = substratumInfo.substratumName,
+            )
+        )
+      }
     }
   }
 
