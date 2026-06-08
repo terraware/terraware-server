@@ -1,10 +1,12 @@
 package com.terraformation.backend.file
 
 import jakarta.ws.rs.core.MediaType
+import java.nio.file.NoSuchFileException
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class LocalGoogleDriveWriterTest {
   private val fileStore = InMemoryFileStore()
@@ -101,7 +103,22 @@ class LocalGoogleDriveWriterTest {
 
     writer.deleteFile(fileId)
 
-    org.junit.jupiter.api.assertThrows<java.nio.file.NoSuchFileException> {
+    assertThrows<NoSuchFileException> {
+      writer.downloadFile(fileId)
+    }
+  }
+
+  @Test
+  fun `deleteFile on a folder removes all contained files`() {
+    val folderId = writer.findOrCreateFolders("drive", parentFolderId, listOf("Internal"))
+    val fileId =
+        writer.uploadFile(folderId, "doc.txt", MediaType.TEXT_PLAIN, "data".byteInputStream())
+    val fileUrl = writer.shareFile(fileId)
+
+    writer.deleteFile(folderId)
+
+    fileStore.assertFileWasDeleted(fileUrl)
+    assertThrows<NoSuchFileException> {
       writer.downloadFile(fileId)
     }
   }
