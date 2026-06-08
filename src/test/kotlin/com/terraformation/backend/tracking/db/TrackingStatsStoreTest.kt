@@ -38,11 +38,12 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // Project 1: Sites 1 and 2
       // Project 2: Sites 3 and 4
       //
-      // Observation 1: Site 1, site-level survival rate 90, area 5
-      // Observation 2: Site 1, site-level survival rate 70, area 10
-      // Observation 3: Site 2, site-level survival rate 50, area 20
-      // Observation 4: Site 3, site-level survival rate 10, area 40
-      // Observation 5: Site 4, no survival rate
+      // Observation 1: Site 1, survival rate 90, area 5
+      // Observation 2: Site 1, survival rate 70, area 10
+      // Observation 3: Site 2, survival rate 50, area 20
+      // Observation 4: Site 3, survival rate 10, area 40
+      // Observation 5: Site 4, survival rate 30, area 80
+      // Observation 6: Site 4, no survival rate or area (causes site 4 to be omitted)
       //
       // So the project-level survival rate for project 1 should be
       //
@@ -53,28 +54,35 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       // (70 * 10 + 50 * 20 + 10 * 40) / (10 + 20 + 40) = 30
 
       insertPlantingSite(projectId = projectId1, x = 0)
+      insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(100))
-      insertObservationSiteResult(survivalRate = 90, survivalRateArea = 5)
+      insertObservationStratumResult(survivalRate = 90, survivalRateArea = 5)
       insertObservation(completedTime = Instant.ofEpochSecond(200))
-      insertObservationSiteResult(survivalRate = 70, survivalRateArea = 10)
+      insertObservationStratumResult(survivalRate = 70, survivalRateArea = 10)
 
       insertPlantingSite(projectId = projectId1, x = 0)
+      insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(300))
-      insertObservationSiteResult(survivalRate = 50, survivalRateArea = 20)
+      insertObservationStratumResult(survivalRate = 50, survivalRateArea = 20)
 
       insertPlantingSite(projectId = projectId2, x = 0)
+      insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(400))
-      insertObservationSiteResult(survivalRate = 10, survivalRateArea = 40)
+      insertObservationStratumResult(survivalRate = 10, survivalRateArea = 40)
 
       insertPlantingSite(projectId = projectId2, x = 0)
+      insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(500))
-      insertObservationSiteResult()
+      insertObservationStratumResult(survivalRate = 30, survivalRateArea = 80)
+      insertObservation(completedTime = Instant.ofEpochSecond(600))
+      insertObservationStratumResult()
 
       // Other organization's site should be ignored
       insertOrganization()
       insertPlantingSite(x = 0)
+      insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(600))
-      insertObservationSiteResult(survivalRate = 30, survivalRateArea = 80)
+      insertObservationStratumResult(survivalRate = 30, survivalRateArea = 80)
 
       assertEquals(57, store.getSurvivalRate(projectId1), "Project survival rate")
       assertEquals(30, store.getSurvivalRate(organizationId), "Organization survival rate")
@@ -84,8 +92,9 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `returns null if no sites in scope have survival rates`() {
       val projectId = insertProject()
       insertPlantingSite(projectId = projectId, x = 0)
+      insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(100))
-      insertObservationSiteResult()
+      insertObservationStratumResult()
 
       assertNull(store.getSurvivalRate(projectId), "Project survival rate")
       assertNull(store.getSurvivalRate(organizationId), "Organization survival rate")

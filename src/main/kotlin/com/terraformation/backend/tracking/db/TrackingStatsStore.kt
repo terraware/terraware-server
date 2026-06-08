@@ -4,7 +4,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
-import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import jakarta.inject.Named
 import java.math.BigDecimal
@@ -44,23 +44,22 @@ class TrackingStatsStore(
 
     val resultsPartitionedBySite =
         DSL.select(
-                OBSERVATION_SITE_RESULTS.SURVIVAL_RATE.`as`(survivalRateField),
-                OBSERVATION_SITE_RESULTS.SURVIVAL_RATE_AREA.`as`(survivalRateAreaField),
+                OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.`as`(survivalRateField),
+                OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_AREA.`as`(survivalRateAreaField),
                 DSL.rowNumber()
                     .over(
-                        DSL.partitionBy(OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID)
+                        DSL.partitionBy(OBSERVATION_STRATUM_RESULTS.STRATUM_ID)
                             .orderBy(OBSERVATIONS.COMPLETED_TIME.desc())
                     )
                     .`as`(rowNumField),
             )
-            .from(OBSERVATION_SITE_RESULTS)
+            .from(OBSERVATION_STRATUM_RESULTS)
             .join(OBSERVATIONS)
-            .on(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
+            .on(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
             .join(PLANTING_SITES)
             .on(OBSERVATIONS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
             .where(OBSERVATIONS.COMPLETED_TIME.isNotNull)
-            .and(OBSERVATION_SITE_RESULTS.SURVIVAL_RATE.isNotNull)
-            .and(OBSERVATION_SITE_RESULTS.SURVIVAL_RATE_AREA.isNotNull)
+            .and(OBSERVATION_STRATUM_RESULTS.STRATUM_ID.isNotNull)
             .and(plantingSitesCondition)
 
     val aggregateSurvivalRate =
@@ -71,6 +70,8 @@ class TrackingStatsStore(
             )
             .from(resultsPartitionedBySite)
             .where(rowNumField.eq(1))
+            .and(survivalRateField.isNotNull)
+            .and(survivalRateAreaField.isNotNull)
             .fetchOne()
             ?.value1()
 
