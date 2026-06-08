@@ -92,7 +92,7 @@ class PlantingSeasonSpeciesTargetsStore(
                   substratumName = substratumInfo.substratumName,
               )
           )
-        } else {
+        } else if (oldQuantity != quantity) {
           eventPublisher.publishEvent(
               PlantingSeasonSpeciesTargetUpdatedEvent(
                   changedFrom =
