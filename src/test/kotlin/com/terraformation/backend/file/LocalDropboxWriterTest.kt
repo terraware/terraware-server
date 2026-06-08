@@ -63,4 +63,17 @@ class LocalDropboxWriterTest {
     fileStore.assertFileWasDeleted(url)
     assertThrows<NoSuchFileException> { writer.shareFile("$folder/doc.txt") }
   }
+
+  @Test
+  fun `delete folder removes all contained files`() {
+    val fileUrl =
+        writer.shareFile(
+            writer.uploadFile(folder, "doc.txt", "data".byteInputStream()).let { "$folder/$it" }
+        )
+
+    writer.delete(folder)
+
+    fileStore.assertFileWasDeleted(fileUrl)
+    assertThrows<NoSuchFileException> { writer.shareFile("$folder/doc.txt") }
+  }
 }

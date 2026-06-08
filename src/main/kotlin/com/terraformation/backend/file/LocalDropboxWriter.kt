@@ -54,8 +54,16 @@ class LocalDropboxWriter(private val fileStore: FileStore) : DropboxWriter {
   }
 
   override fun delete(path: String) {
-    val url = pathToUrl.remove(path) ?: throw NoSuchFileException(path)
-    fileStore.delete(url)
+    val url = pathToUrl.remove(path)
+    url?.let { fileStore.delete(it) }
+
+    val folderPrefix = "$path/"
+    val children = pathToUrl.keys.filter { it.startsWith(folderPrefix) }
+    children.forEach { childPath -> pathToUrl.remove(childPath)?.let { fileStore.delete(it) } }
+
+    if (url == null && children.isEmpty()) {
+      throw NoSuchFileException(path)
+    }
   }
 
   override fun shareFile(path: String): URI = pathToUrl[path] ?: throw NoSuchFileException(path)
