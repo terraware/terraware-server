@@ -56,7 +56,7 @@ internal class PlantingSeasonServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    plantingSiteId = insertPlantingSite()
+    plantingSiteId = insertPlantingSite(x = 0)
     insertOrganizationUser(role = Role.Manager)
     insertStratum()
     plantingSeasonId = insertPlantingSeason()
