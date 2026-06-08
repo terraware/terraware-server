@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.tracking.db.TrackingStatsStore
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.ws.rs.BadRequestException
 import org.springframework.web.bind.annotation.GetMapping
@@ -22,7 +23,9 @@ class TrackingStatsController(
   @GetMapping
   @Operation(summary = "Gets aggregated statistics about planting sites.")
   fun getAggregatedTrackingStats(
-      @RequestParam organizationId: OrganizationId? = null,
+      @RequestParam
+      @Parameter(description = "Organization ID to summarize. Ignored if projectId is supplied.")
+      organizationId: OrganizationId? = null,
       @RequestParam projectId: ProjectId? = null,
   ): TrackingStatsResponsePayload {
     val survivalRate =
