@@ -116,9 +116,7 @@ class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWrit
     val entry = entries.remove(googleFileId) ?: return
     entry.storageUrl?.let { fileStore.delete(it) }
 
-    entries.values
-        .filter { it.parentId == googleFileId }
-        .forEach { child -> deleteFile(child.id) }
+    entries.values.filter { it.parentId == googleFileId }.forEach { child -> deleteFile(child.id) }
   }
 
   override fun shareFile(googleFileId: String): URI {

@@ -103,9 +103,7 @@ class LocalGoogleDriveWriterTest {
 
     writer.deleteFile(fileId)
 
-    assertThrows<NoSuchFileException> {
-      writer.downloadFile(fileId)
-    }
+    assertThrows<NoSuchFileException> { writer.downloadFile(fileId) }
   }
 
   @Test
@@ -118,8 +116,6 @@ class LocalGoogleDriveWriterTest {
     writer.deleteFile(folderId)
 
     fileStore.assertFileWasDeleted(fileUrl)
-    assertThrows<NoSuchFileException> {
-      writer.downloadFile(fileId)
-    }
+    assertThrows<NoSuchFileException> { writer.downloadFile(fileId) }
   }
 }
