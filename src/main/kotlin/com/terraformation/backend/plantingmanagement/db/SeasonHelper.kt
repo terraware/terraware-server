@@ -81,6 +81,19 @@ class SeasonHelper(private val dslContext: DSLContext) {
         ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
   }
 
+  fun <T> withLockedPlantingSeason(plantingSeasonId: PlantingSeasonId, func: () -> T): T {
+    return dslContext.transactionResult { _ ->
+      dslContext
+          .selectOne()
+          .from(PLANTING_SEASONS)
+          .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
+          .forUpdate()
+          .fetchOne() ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+
+      func()
+    }
+  }
+
   fun validateSeasonNotClosed(plantingSeasonId: PlantingSeasonId) {
     with(PLANTING_SEASONS) {
       val status =

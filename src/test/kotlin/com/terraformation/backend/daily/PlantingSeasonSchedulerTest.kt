@@ -13,6 +13,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonStore
+import com.terraformation.backend.plantingmanagement.db.SeasonHelper
 import com.terraformation.backend.tracking.db.PlantingSiteNotificationStore
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledNotificationEvent
 import com.terraformation.backend.tracking.event.PlantingSeasonNotScheduledSupportNotificationEvent
@@ -36,7 +37,13 @@ class PlantingSeasonSchedulerTest : DatabaseTest(), RunsAsUser {
     PlantingSeasonScheduler(
         config,
         eventPublisher,
-        PlantingSeasonStore(clock, dslContext, eventPublisher, ParentStore(dslContext)),
+        PlantingSeasonStore(
+            clock,
+            dslContext,
+            eventPublisher,
+            ParentStore(dslContext),
+            SeasonHelper(dslContext),
+        ),
         PlantingSiteNotificationStore(clock, dslContext),
         SystemUser(usersDao),
     )

@@ -39,7 +39,13 @@ internal class PlantingSeasonStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonStore by lazy {
-    PlantingSeasonStore(clock, dslContext, eventPublisher, ParentStore(dslContext))
+    PlantingSeasonStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        ParentStore(dslContext),
+        SeasonHelper(dslContext),
+    )
   }
 
   private lateinit var organizationId: OrganizationId
