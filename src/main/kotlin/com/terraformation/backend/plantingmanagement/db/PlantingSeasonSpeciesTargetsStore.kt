@@ -114,6 +114,10 @@ class PlantingSeasonSpeciesTargetsStore(
 
     seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
+    val (plantingSiteId, organizationId) =
+        seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
+    val substratumInfo = seasonHelper.fetchSubstratumInfo(substratumId)
+
     with(PLANTING_SEASON_SPECIES_TARGETS) {
       dslContext
           .deleteFrom(PLANTING_SEASON_SPECIES_TARGETS)
@@ -124,9 +128,14 @@ class PlantingSeasonSpeciesTargetsStore(
 
       eventPublisher.publishEvent(
           PlantingSeasonSpeciesTargetDeletedEvent(
+              organizationId = organizationId,
               plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
               speciesId = speciesId,
+              stratumName = substratumInfo.stratumName,
+              substratumHistoryId = substratumInfo.substratumHistoryId,
               substratumId = substratumId,
+              substratumName = substratumInfo.substratumName,
           )
       )
     }

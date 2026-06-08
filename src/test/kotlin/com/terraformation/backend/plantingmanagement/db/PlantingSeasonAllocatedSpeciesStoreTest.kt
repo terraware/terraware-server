@@ -33,7 +33,7 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(role = Role.Manager)
-    insertPlantingSite()
+    insertPlantingSite(x = 0)
     plantingSeasonId = insertPlantingSeason()
     speciesId = insertSpecies()
   }
@@ -107,9 +107,14 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
 
       store.on(
           PlantingSeasonSpeciesTargetDeletedEvent(
+              organizationId = inserted.organizationId,
               plantingSeasonId = plantingSeasonId,
+              plantingSiteId = inserted.plantingSiteId,
               speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = inserted.substratumHistoryId,
               substratumId = substratumId1,
+              substratumName = "1",
           )
       )
 
@@ -134,9 +139,14 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
 
       store.on(
           PlantingSeasonSpeciesTargetDeletedEvent(
+              organizationId = inserted.organizationId,
               plantingSeasonId = plantingSeasonId,
+              plantingSiteId = inserted.plantingSiteId,
               speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = inserted.substratumHistoryId,
               substratumId = substratumId1,
+              substratumName = "1",
           )
       )
 
