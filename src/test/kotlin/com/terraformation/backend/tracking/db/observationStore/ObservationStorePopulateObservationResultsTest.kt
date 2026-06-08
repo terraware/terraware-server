@@ -138,6 +138,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
             permanentLive = 27,
             survivalRate = null,
             survivalRateStdDev = null,
+            survivalRateArea = null,
             plantDensity = 150,
             plantDensityStdDev = 71,
         ),

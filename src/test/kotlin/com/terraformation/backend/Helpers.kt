@@ -10,6 +10,7 @@ import com.terraformation.backend.db.GeometryModule
 import com.terraformation.backend.db.SRID
 import com.terraformation.backend.seedbank.db.AccessionImporterTest
 import com.terraformation.backend.util.Turtle
+import com.terraformation.backend.util.equalsIgnoreScale
 import com.terraformation.backend.util.equalsOrBothNull
 import com.terraformation.backend.util.toMultiPolygon
 import java.math.BigDecimal
@@ -80,6 +81,13 @@ fun <T> assertSetEquals(expected: Set<T>, actual: Set<T>, message: String? = nul
         actual,
         "Sets are not equal, but their items' string representations are the same",
     )
+  }
+}
+
+/** Asserts that two BigDecimal values are equal, ignoring their scales. */
+fun assertEqualsIgnoreScale(expected: BigDecimal, actual: BigDecimal?, message: String? = null) {
+  if (actual == null || !expected.equalsIgnoreScale(actual)) {
+    assertEquals(expected, actual, message)
   }
 }
 

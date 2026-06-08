@@ -101,6 +101,17 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
                       permanentLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator),
                   ),
           )
+
+  /**
+   * Returns the SQL expression for this scope's "survival rate area": the total hectares used as
+   * the weight when this scope's survival rate is rolled up into its parent, or SQL NULL for scopes
+   * that don't store one (plots). The value is the geographic area and is only stored when a
+   * survival rate was computed for this scope. Substratum = its own area; stratum = sum of its
+   * observed-at-or-before substratum areas; site = sum of its strata's survival rate areas where
+   * the stratum survival rate is set.
+   */
+  fun survivalRateAreaValue(observationIdField: Field<ObservationId?>): Field<BigDecimal?> =
+      DSL.castNull(SQLDataType.NUMERIC)
 }
 
 class ObservationResultsPlot(
@@ -284,6 +295,17 @@ class ObservationResultsSubstratum(
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
       permPlotsTable.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID.`in`(substratumHistorySelect)
+
+  override fun survivalRateAreaValue(
+      observationIdField: Field<ObservationId?>
+  ): Field<BigDecimal?> =
+      DSL.field(
+          DSL.select(SUBSTRATUM_HISTORIES.AREA_HA)
+              .from(SUBSTRATUM_HISTORIES)
+              .where(
+                  SUBSTRATUM_HISTORIES.ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID)
+              )
+      )
 }
 
 class ObservationResultsStratum(
@@ -453,6 +475,25 @@ class ObservationResultsStratum(
                   )
               )
       )
+
+  override fun survivalRateAreaValue(
+      observationIdField: Field<ObservationId?>
+  ): Field<BigDecimal?> =
+      DSL.field(
+          DSL.select(DSL.sum(SUBSTRATUM_HISTORIES.AREA_HA))
+              .from(SUBSTRATUM_HISTORIES)
+              .where(
+                  SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(
+                      OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
+                  )
+              )
+              .and(
+                  substratumObservedAtOrBefore(
+                      SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+                      observationIdField,
+                  )
+              )
+      )
 }
 
 class ObservationResultsSite(
@@ -563,8 +604,9 @@ class ObservationResultsSite(
 
   /**
    * Returns the site-level survival rate as an area-weighted average of the stratum-level survival
-   * rates. Substrata that weren't observed in or before this observation don't count toward the
-   * areas of their strata in the weighting formula.
+   * rates, weighting each stratum by its stored [OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_AREA].
+   * That area already excludes substrata that weren't observed in or before this observation, so
+   * those substrata don't count toward the weighting formula.
    */
   override fun survivalRateValue(
       observationIdField: Field<ObservationId?>,
@@ -635,4 +677,21 @@ class ObservationResultsSite(
 
   override fun t0DensityCondition(permPlotsTable: ObservationPlots) =
       PLOT_T0_DENSITIES.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect)
+
+  override fun survivalRateAreaValue(
+      observationIdField: Field<ObservationId?>
+  ): Field<BigDecimal?> =
+      DSL.field(
+          DSL.select(DSL.sum(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_AREA))
+              .from(OBSERVATION_STRATUM_RESULTS)
+              .join(STRATUM_HISTORIES)
+              .on(STRATUM_HISTORIES.ID.eq(OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID))
+              .where(
+                  STRATUM_HISTORIES.PLANTING_SITE_HISTORY_ID.eq(
+                      OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID
+                  )
+              )
+              .and(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationIdField))
+              .and(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE.isNotNull)
+      )
 }
