@@ -1,11 +1,14 @@
 package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
@@ -62,6 +65,20 @@ class SeasonHelper(private val dslContext: DSLContext) {
   fun fetchSubstratumInfo(substratumId: SubstratumId): SubstratumInfo {
     return fetchSubstrataInfo(listOf(substratumId))[substratumId]
         ?: throw SubstratumNotFoundException(substratumId)
+  }
+
+  fun fetchPlantingSiteAndOrganization(
+      plantingSeasonId: PlantingSeasonId
+  ): Pair<PlantingSiteId, OrganizationId> {
+    return dslContext
+        .select(PLANTING_SITES.ID.asNonNullable(), PLANTING_SITES.ORGANIZATION_ID.asNonNullable())
+        .from(PLANTING_SEASONS)
+        .join(PLANTING_SITES)
+        .on(PLANTING_SEASONS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+        .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
+        .fetchOne()
+        ?.let { it.value1() to it.value2() }
+        ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
   }
 
   fun validateSeasonNotClosed(plantingSeasonId: PlantingSeasonId) {
