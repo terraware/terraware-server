@@ -32,6 +32,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSchedul
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDatePersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
@@ -497,6 +498,47 @@ data class PlantingSeasonScheduledDateSpeciesSubjectPayload(
   }
 }
 
+@JsonTypeName("PlantingSeasonSpeciesTarget")
+data class PlantingSeasonSpeciesTargetSubjectPayload(
+    override val fullText: String,
+    val plantingSeasonId: PlantingSeasonId,
+    val plantingSiteId: PlantingSiteId,
+    val scientificName: String?,
+    override val shortText: String,
+    val speciesId: SpeciesId,
+    val stratumName: String,
+    val substratumHistoryId: SubstratumHistoryId,
+    val substratumId: SubstratumId,
+    val substratumName: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingSeasonSpeciesTargetPersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlantingSeasonSpeciesTargetSubjectPayload {
+      val scientificName = context.getSpeciesScientificName(event.speciesId)
+
+      return PlantingSeasonSpeciesTargetSubjectPayload(
+          fullText =
+              context.subjectFullText<PlantingSeasonSpeciesTargetSubjectPayload>(
+                  scientificName,
+                  event.stratumName,
+                  event.substratumName,
+              ),
+          plantingSeasonId = event.plantingSeasonId,
+          plantingSiteId = event.plantingSiteId,
+          scientificName = scientificName,
+          shortText = context.subjectShortText<PlantingSeasonSpeciesTargetSubjectPayload>(),
+          speciesId = event.speciesId,
+          stratumName = event.stratumName,
+          substratumHistoryId = event.substratumHistoryId,
+          substratumId = event.substratumId,
+          substratumName = event.substratumName,
+      )
+    }
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -591,6 +633,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlantingSeason(PlantingSeasonPersistentEvent::class),
   PlantingSeasonScheduledDate(PlantingSeasonScheduledDatePersistentEvent::class),
   PlantingSeasonScheduledDateSpecies(PlantingSeasonScheduledDateSpeciesPersistentEvent::class),
+  PlantingSeasonSpeciesTarget(PlantingSeasonSpeciesTargetPersistentEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
 }
