@@ -100,6 +100,43 @@ class EventLogStore(
     return fetchByCondition(condition, requestedConcreteClasses)
   }
 
+  /**
+   * Fetches events matching any of the given IDs, where each ID has its own lower bound on the
+   * event log ID. An event is returned if it matches one of the [sinceEventLogIds] keys and was
+   * logged after that key's associated event log ID. This is the union of a separate "since" query
+   * per ID, which lets callers track a different watermark for each ID (for example, the last
+   * notification each planting season dismissed). A null value means there is no lower bound for
+   * that ID, so all of its events are returned.
+   */
+  fun <T : PersistentEvent> fetchByIdsSince(
+      sinceEventLogIds: Map<out LongIdWrapper<*>, EventLogId?>,
+      requestedClasses: Collection<KClass<out T>>? = null,
+  ): List<EventLogEntry<T>> {
+    require(sinceEventLogIds.isNotEmpty()) { "No IDs specified" }
+
+    val requestedConcreteClasses = requestedClasses?.let { getConcreteClasses(it) }
+    val classConditions = requestedConcreteClasses?.let { getLikeConditions(it) } ?: emptyList()
+
+    val idConditions = sinceEventLogIds.map { (id, sinceEventLogId) ->
+      DSL.and(
+          listOfNotNull(
+              payloadField(id.eventLogPropertyName, SQLDataType.BIGINT).eq(id.value),
+              sinceEventLogId?.let { EVENT_LOG.ID.gt(it) },
+          )
+      )
+    }
+
+    val condition =
+        DSL.and(
+            listOfNotNull(
+                DSL.or(idConditions),
+                if (classConditions.isNotEmpty()) DSL.or(classConditions) else null,
+            )
+        )
+
+    return fetchByCondition(condition, requestedConcreteClasses)
+  }
+
   fun <T : PersistentEvent> fetchLastByIds(
       ids: Collection<LongIdWrapper<*>>,
       requestedClasses: Collection<KClass<out T>>? = null,
