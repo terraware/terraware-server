@@ -6,7 +6,7 @@ import jakarta.inject.Named
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.NoSuchFileException
-import java.util.UUID
+import java.security.MessageDigest
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -15,10 +15,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
  * Stores documents that would normally go to Dropbox in the local [FileStore] instead. Selected
  * when `terraware.dropbox.use-local-store` is true.
  *
- * Dropbox addresses files by path (`/folder/name`). This class stores the bytes under opaque UUID
- * keys in the [FileStore] and keeps an in-memory map from Dropbox path to storage URL, so that
- * arbitrary filenames (including ones with spaces) are handled safely. The map is not persisted,
- * which is acceptable for tests and dev usage.
+ * Dropbox addresses files by path (`/folder/name`). This class stores the bytes under storage URLs
+ * derived from a hash of the full Dropbox path and keeps an in-memory map from Dropbox path to
+ * storage URL. Because the URLs are deterministic, file data will survive JVM restarts as long as
+ * the underlying [FileStore] is persistent. The map is not persisted and is not shared across
+ * instances, so rename, folder-delete, and shareFile will not work correctly when running multiple
+ * server instances or after a restart.
  */
 @ConditionalOnProperty("terraware.dropbox.use-local-store", havingValue = "true")
 @Named
@@ -36,7 +38,8 @@ class LocalDropboxWriter(private val fileStore: FileStore) : DropboxWriter {
     }
 
     val fullPath = "$folderPath/$finalName"
-    val storageUrl = fileStore.getUrl(Path("/dropbox/${UUID.randomUUID()}"))
+    val storageUrl =
+        fileStore.getUrl(Path("/dropbox/${sha256Hex(fullPath).take(16)}${extensionOf(finalName)}"))
     fileStore.write(storageUrl, inputStream)
     pathToUrl[fullPath] = storageUrl
 
@@ -67,6 +70,16 @@ class LocalDropboxWriter(private val fileStore: FileStore) : DropboxWriter {
   }
 
   override fun shareFile(path: String): URI = pathToUrl[path] ?: throw NoSuchFileException(path)
+
+  private fun extensionOf(name: String): String {
+    val dot = name.lastIndexOf('.')
+    return if (dot > 0) name.substring(dot) else ""
+  }
+
+  private fun sha256Hex(input: String): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    return digest.digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
+  }
 
   private fun suffixedName(name: String, attempt: Int): String {
     val dot = name.lastIndexOf('.')

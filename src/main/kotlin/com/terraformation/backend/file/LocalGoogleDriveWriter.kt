@@ -8,8 +8,7 @@ import jakarta.inject.Named
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.NoSuchFileException
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
+import java.security.MessageDigest
 import kotlin.io.path.Path
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 
@@ -17,11 +16,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
  * Stores documents that would normally go to Google Drive in the local [FileStore] instead.
  * Selected when `terraware.google-drive.use-local-store` is true.
  *
- * Google Drive identifies files and folders by opaque string IDs and exposes folders via URLs like
- * `https://drive.google.com/drive/folders/<id>`. This class emulates that model over [FileStore]:
- * generated UUID strings stand in for Google file IDs, file bytes live in the [FileStore], and an
- * in-memory map tracks the metadata needed for lookups, overwrites, renames, and moves. The map is
- * not persisted, which is acceptable for tests and dev usage.
+ * File IDs are derived from a SHA-256 hash of the drive ID, parent folder ID, and filename, so
+ * storage URLs are deterministic. File data persists across server restarts as long as the
+ * underlying [FileStore] is persistent. Folder semantics are simplified: folders have no backing
+ * storage and folder contents are not tracked, so operations like [renameFile] and [moveFile] are
+ * no-ops.
  */
 @ConditionalOnProperty("terraware.google-drive.use-local-store", havingValue = "true")
 @Named
@@ -29,13 +28,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWriter {
   private val log = perClassLogger()
 
-  private val entries = ConcurrentHashMap<String, Entry>()
-
   override fun findOrCreateFolders(
       driveId: String,
       parentFolderId: String,
       names: List<String>,
-  ): String = names.fold(parentFolderId) { parent, name -> findOrCreateFolder(parent, name) }
+  ): String =
+      names.fold(parentFolderId) { parent, name -> sha256Hex("$driveId/$parent/$name").take(16) }
 
   override fun uploadFile(
       parentFolderId: String,
@@ -48,36 +46,22 @@ class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWrit
       inputStreamContentType: String,
       overwriteExistingFile: Boolean,
   ): String {
-    val existingId =
-        if (overwriteExistingFile) findFileId(parentFolderId, filename, fileId) else null
-    val id = existingId ?: UUID.randomUUID().toString()
+    val id = sha256Hex("$driveId/$parentFolderId/$filename").take(16) + extensionOf(filename)
     val storageUrl = storageUrlFor(id)
-
-    if (existingId != null) {
+    try {
       fileStore.delete(storageUrl)
+    } catch (_: NoSuchFileException) {
+      // File doesn't exist yet; nothing to delete.
     }
     fileStore.write(storageUrl, inputStream)
-
-    entries[id] =
-        Entry(
-            id = id,
-            name = filename,
-            parentId = parentFolderId,
-            contentType = contentType,
-            storageUrl = storageUrl,
-            terrawareFileId = fileId,
-            isFolder = false,
-        )
-
     log.info("Stored local Google Drive file $filename as $id")
     return id
   }
 
-  override fun getFileContentType(googleFileId: String): String? =
-      entries[googleFileId]?.contentType
+  override fun getFileContentType(googleFileId: String): String? = null
 
   override fun downloadFile(googleFileId: String): InputStream =
-      fileStore.read(entry(googleFileId).storageUrl ?: throw NoSuchFileException(googleFileId))
+      fileStore.read(storageUrlFor(googleFileId))
 
   override fun copyFile(
       driveId: String,
@@ -109,82 +93,46 @@ class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWrit
   }
 
   override fun renameFile(googleFileId: String, newName: String) {
-    entries.computeIfPresent(googleFileId) { _, entry -> entry.copy(name = newName) }
+    // No-op: file is still accessible via its original ID.
   }
 
   override fun deleteFile(googleFileId: String) {
-    val entry = entries.remove(googleFileId) ?: return
-    entry.storageUrl?.let { fileStore.delete(it) }
-
-    entries.values.filter { it.parentId == googleFileId }.forEach { child -> deleteFile(child.id) }
+    try {
+      fileStore.delete(storageUrlFor(googleFileId))
+    } catch (_: NoSuchFileException) {
+      // Folder ID or already deleted; nothing to do.
+    }
   }
 
   override fun shareFile(googleFileId: String): URI {
-    val entry = entries[googleFileId]
-    return if (entry != null && !entry.isFolder && entry.storageUrl != null) {
-      entry.storageUrl
-    } else {
+    return try {
+      fileStore.size(storageUrlFor(googleFileId))
+      storageUrlFor(googleFileId)
+    } catch (_: NoSuchFileException) {
       folderUrl(googleFileId)
     }
   }
 
   override fun moveFile(googleFileId: String, parentFileId: String) {
-    entries.computeIfPresent(googleFileId) { _, entry -> entry.copy(parentId = parentFileId) }
+    // No-op: file is still accessible via its original ID.
   }
-
-  private fun findOrCreateFolder(parentFolderId: String, name: String): String {
-    val existing =
-        entries.values.firstOrNull {
-          it.isFolder && it.parentId == parentFolderId && it.name == name
-        }
-    if (existing != null) {
-      return existing.id
-    }
-
-    val id = UUID.randomUUID().toString()
-    entries[id] =
-        Entry(
-            id = id,
-            name = name,
-            parentId = parentFolderId,
-            contentType = FOLDER_CONTENT_TYPE,
-            storageUrl = null,
-            terrawareFileId = null,
-            isFolder = true,
-        )
-    return id
-  }
-
-  private fun findFileId(parentFolderId: String, filename: String, fileId: FileId?): String? =
-      entries.values
-          .firstOrNull {
-            !it.isFolder &&
-                it.parentId == parentFolderId &&
-                it.name == filename &&
-                (fileId == null || it.terrawareFileId == fileId)
-          }
-          ?.id
-
-  private fun entry(googleFileId: String): Entry =
-      entries[googleFileId] ?: throw NoSuchFileException(googleFileId)
 
   private fun storageUrlFor(id: String): URI = fileStore.getUrl(Path("/google-drive/$id"))
 
   private fun folderUrl(folderId: String): URI =
       URI("https://drive.google.com/drive/folders/$folderId")
 
-  private data class Entry(
-      val id: String,
-      val name: String,
-      val parentId: String,
-      val contentType: String,
-      val storageUrl: URI?,
-      val terrawareFileId: FileId?,
-      val isFolder: Boolean,
-  )
+  private fun extensionOf(name: String): String {
+    val dot = name.lastIndexOf('.')
+    return if (dot > 0) name.substring(dot) else ""
+  }
+
+  private fun sha256Hex(input: String): String {
+    val digest = MessageDigest.getInstance("SHA-256")
+    return digest.digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
+  }
 
   companion object {
     private const val LOCAL_DRIVE_ID = "local-drive"
-    private const val FOLDER_CONTENT_TYPE = "application/vnd.google-apps.folder"
   }
 }
