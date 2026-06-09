@@ -619,6 +619,22 @@ VALUES (1, 'Soak'),
        (6, 'Light')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.soil_types (id, name)
+VALUES (1, 'Clay'),
+       (2, 'SandyClay'),
+       (3, 'SandyClayLoam'),
+       (4, 'ClayLoam'),
+       (5, 'SiltyClay'),
+       (6, 'SiltyClayLoam'),
+       (7, 'SandyLoam'),
+       (8, 'LoamySand'),
+       (9, 'Sand'),
+       (10, 'Loam'),
+       (11, 'SiltLoam'),
+       (12, 'Silt'),
+       (13, 'Unknown')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO species_native_categories (id, name)
 VALUES (1, 'Native'),
        (2, 'Non-native')

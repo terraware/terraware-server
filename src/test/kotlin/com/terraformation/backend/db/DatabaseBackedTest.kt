@@ -434,6 +434,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
@@ -3350,6 +3351,7 @@ abstract class DatabaseBackedTest {
       smallTreesCountHigh: Int = row.smallTreesCountHigh ?: 0,
       herbaceousCoverPercent: Int = row.herbaceousCoverPercent ?: 0,
       soilAssessment: String = row.soilAssessment ?: "Soil Assessment",
+      soilType: SoilType? = row.soilTypeId,
       waterDepthCm: Int? = row.waterDepthCm,
       salinityPpt: BigDecimal? = row.salinityPpt,
       ph: BigDecimal? = row.ph,
@@ -3366,6 +3368,7 @@ abstract class DatabaseBackedTest {
             smallTreesCountHigh = smallTreesCountHigh,
             herbaceousCoverPercent = herbaceousCoverPercent,
             soilAssessment = soilAssessment,
+            soilTypeId = soilType,
             waterDepthCm = waterDepthCm,
             salinityPpt = salinityPpt,
             ph = ph,

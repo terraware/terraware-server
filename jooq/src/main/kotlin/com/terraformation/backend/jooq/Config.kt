@@ -326,6 +326,7 @@ val ENUM_TABLES =
                     "RecordedSpeciesCertainty",
                     isLocalizable = false,
                 ),
+                EnumTable("soil_types", listOf("observation_biomass_details\\.soil_type_id")),
                 EnumTable("tree_growth_forms", listOf("recorded_trees\\.tree_growth_form_id")),
             ),
     )

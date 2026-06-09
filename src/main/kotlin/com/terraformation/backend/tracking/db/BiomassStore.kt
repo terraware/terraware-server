@@ -138,6 +138,7 @@ class BiomassStore(
                   smallTreesCountHigh = model.smallTreeCountRange.second,
                   herbaceousCoverPercent = model.herbaceousCoverPercent,
                   soilAssessment = model.soilAssessment,
+                  soilTypeId = model.soilType,
                   waterDepthCm =
                       if (model.forestType == BiomassForestType.Mangrove) model.waterDepthCm
                       else null,
@@ -167,6 +168,7 @@ class BiomassStore(
               smallTreesCountHigh = model.smallTreeCountRange.second,
               smallTreesCountLow = model.smallTreeCountRange.first,
               soilAssessment = model.soilAssessment,
+              soilType = model.soilType,
               tide = observationBiomassDetailsRecord.tideId,
               tideTime = observationBiomassDetailsRecord.tideTime,
               waterDepthCm = observationBiomassDetailsRecord.waterDepthCm,
@@ -501,6 +503,7 @@ class BiomassStore(
               .set(SMALL_TREES_COUNT_LOW, updated.smallTreeCountRange.first)
               .set(SMALL_TREES_COUNT_HIGH, updated.smallTreeCountRange.second)
               .set(SOIL_ASSESSMENT, updated.soilAssessment)
+              .set(SOIL_TYPE_ID, updated.soilType)
               .set(TIDE_ID, updated.tide)
               .set(TIDE_TIME, updated.tideTime)
               .set(WATER_DEPTH_CM, updated.waterDepthCm)

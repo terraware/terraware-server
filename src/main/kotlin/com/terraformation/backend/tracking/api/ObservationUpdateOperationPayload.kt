@@ -9,6 +9,7 @@ import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.tracking.model.EditableBiomassDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratDetailsModel
 import com.terraformation.backend.tracking.model.EditableBiomassQuadratSpeciesModel
@@ -80,6 +81,7 @@ data class BiomassUpdateOperationPayload(
     val smallTreeCountLow: Int?,
     val smallTreeCountHigh: Int?,
     val soilAssessment: String?,
+    val soilType: Optional<SoilType>?,
     val tide: Optional<MangroveTide>?,
     val tideTime: Optional<Instant>?,
     val waterDepth: Optional<Int>?,
@@ -95,6 +97,7 @@ data class BiomassUpdateOperationPayload(
             (smallTreeCountLow ?: model.smallTreeCountRange.first) to
                 (smallTreeCountHigh ?: model.smallTreeCountRange.second),
         soilAssessment = soilAssessment ?: model.soilAssessment,
+        soilType = soilType.patchNullable(model.soilType),
         tide = tide.patchNullable(model.tide),
         tideTime = tideTime.patchNullable(model.tideTime),
         waterDepthCm = waterDepth.patchNullable(model.waterDepthCm),

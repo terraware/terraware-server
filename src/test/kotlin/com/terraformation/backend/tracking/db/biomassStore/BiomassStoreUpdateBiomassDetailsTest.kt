@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db.biomassStore
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsUpdatedEventValues
@@ -28,6 +29,7 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
         smallTreesCountLow = 1,
         smallTreesCountHigh = 4,
         soilAssessment = "Original soil assessment",
+        soilType = SoilType.Loam,
     )
   }
 
@@ -43,6 +45,7 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
           salinityPpt = BigDecimal.ONE,
           smallTreeCountRange = 5 to 9,
           soilAssessment = "New soil assessment",
+          soilType = SoilType.LoamySand,
           tide = MangroveTide.Low,
           tideTime = Instant.EPOCH,
           waterDepthCm = 1,
@@ -57,6 +60,7 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
           smallTreesCountLow = 5
           smallTreesCountHigh = 9
           soilAssessment = "New soil assessment"
+          soilTypeId = SoilType.LoamySand
         }
 
     assertTableEquals(expected)
@@ -69,6 +73,7 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
                     herbaceousCoverPercent = 10,
                     smallTreeCountRange = 1 to 4,
                     soilAssessment = "Original soil assessment",
+                    soilType = SoilType.Loam,
                 ),
             changedTo =
                 BiomassDetailsUpdatedEventValues(
@@ -76,6 +81,7 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
                     herbaceousCoverPercent = 13,
                     smallTreeCountRange = 5 to 9,
                     soilAssessment = "New soil assessment",
+                    soilType = SoilType.LoamySand,
                 ),
             monitoringPlotId = inserted.monitoringPlotId,
             observationId = inserted.observationId,

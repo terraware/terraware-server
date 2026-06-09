@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_TREES
 import com.terraformation.backend.tracking.event.RecordedTreeUpdatedEventValues
@@ -156,6 +157,7 @@ data class BiomassDetailsModel<
     val salinityPpt: BigDecimal? = null,
     val smallTreeCountRange: Pair<Int, Int>,
     val soilAssessment: String,
+    val soilType: SoilType? = null,
     val species: Set<BiomassSpeciesModel> = emptySet(),
     val plotId: PlotId,
     val tide: MangroveTide? = null,

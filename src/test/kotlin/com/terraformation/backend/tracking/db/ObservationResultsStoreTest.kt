@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDetailsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratDetailsRow
@@ -481,6 +482,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
               smallTreesCountHigh = 10,
               smallTreesCountLow = 0,
               soilAssessment = "soil",
+              soilTypeId = SoilType.SiltyClayLoam,
               tideId = MangroveTide.High,
               tideTime = Instant.ofEpochSecond(123),
               waterDepthCm = 2,
@@ -738,6 +740,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
               salinityPpt = BigDecimal.valueOf(20),
               smallTreeCountRange = 0 to 10,
               soilAssessment = "soil",
+              soilType = SoilType.SiltyClayLoam,
               species =
                   setOf(
                       BiomassSpeciesModel(

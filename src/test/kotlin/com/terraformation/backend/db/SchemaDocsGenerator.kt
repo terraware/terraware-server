@@ -452,6 +452,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "simplified_stratum_histories" to setOf(ALL, TRACKING),
                   "simplified_substrata" to setOf(ALL, TRACKING),
                   "simplified_substratum_histories" to setOf(ALL, TRACKING),
+                  "soil_types" to setOf(ALL, TRACKING),
                   "strata" to setOf(ALL, TRACKING),
                   "stratum_histories" to setOf(ALL, TRACKING),
                   "stratum_populations" to setOf(ALL, TRACKING),

@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.model
 import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservableCondition
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_DETAILS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_BIOMASS_QUADRAT_SPECIES
@@ -29,6 +30,7 @@ data class EditableBiomassDetailsModel(
     val salinityPpt: BigDecimal?,
     val smallTreeCountRange: Pair<Int, Int>,
     val soilAssessment: String,
+    val soilType: SoilType?,
     val tide: MangroveTide?,
     val tideTime: Instant?,
     val waterDepthCm: Int?,
@@ -43,6 +45,7 @@ data class EditableBiomassDetailsModel(
           salinity = salinityPpt.nullIfEquals(other.salinityPpt),
           smallTreeCountRange = smallTreeCountRange.nullIfEquals(other.smallTreeCountRange),
           soilAssessment = soilAssessment.nullIfEquals(other.soilAssessment),
+          soilType = soilType.nullIfEquals(other.soilType),
           tide = tide.nullIfEquals(other.tide),
           tideTime = tideTime.nullIfEquals(other.tideTime),
           waterDepth = waterDepthCm.nullIfEquals(other.waterDepthCm),
@@ -74,6 +77,7 @@ data class EditableBiomassDetailsModel(
             smallTreeCountRange =
                 record[SMALL_TREES_COUNT_LOW]!! to record[SMALL_TREES_COUNT_HIGH]!!,
             soilAssessment = record[SOIL_ASSESSMENT]!!,
+            soilType = record[SOIL_TYPE_ID],
             tide = record[TIDE_ID],
             tideTime = record[TIDE_TIME],
             waterDepthCm = record[WATER_DEPTH_CM],
