@@ -1991,11 +1991,8 @@ class ObservationStore(
             observationIdField,
         )
     val survivalRateDenominator =
-        DSL.coalesce(
-            survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
-            survivalRatePermanentDenominator,
-            survivalRateTempDenominator,
-        )
+        DSL.coalesce(survivalRatePermanentDenominator, BigDecimal.ZERO)
+            .plus(DSL.coalesce(survivalRateTempDenominator, BigDecimal.ZERO))
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val permanentLiveField = table.field("permanent_live", Int::class.java)!!
     val totalLiveField = table.field("total_live", Int::class.java)!!
@@ -2005,24 +2002,10 @@ class ObservationStore(
         .set(
             survivalRateField,
             DSL.case_()
-                .`when`(
-                    survivalRateDenominator.eq(BigDecimal.ZERO),
-                    DSL.castNull(SQLDataType.INTEGER),
-                )
-                .else_(
-                    DSL.case_()
-                        .`when`(
-                            updateScope.observedTotalsPlantingSiteTempCondition,
-                            (totalLiveField
-                                .mul(BigDecimal.valueOf(100))
-                                .div(survivalRateDenominator)),
-                        )
-                        .else_(
-                            (permanentLiveField
-                                .mul(BigDecimal.valueOf(100))
-                                .div(survivalRateDenominator)),
-                        )
-                ),
+                .`when`(updateScope.observedTotalsPlantingSiteTempCondition, totalLiveField)
+                .else_(permanentLiveField)
+                .mul(BigDecimal.valueOf(100))
+                .div(DSL.nullif(survivalRateDenominator, BigDecimal.ZERO)),
         )
         .where(updateScope.observedTotalsCondition)
         .execute()
@@ -2046,11 +2029,8 @@ class ObservationStore(
             observationIdField,
         )
     val survivalRateDenominator =
-        DSL.coalesce(
-            survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
-            survivalRatePermanentDenominator,
-            survivalRateTempDenominator,
-        )
+        DSL.coalesce(survivalRatePermanentDenominator, BigDecimal.ZERO)
+            .plus(DSL.coalesce(survivalRateTempDenominator, BigDecimal.ZERO))
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
     val survivalRateAreaField = table.field("survival_rate_area", BigDecimal::class.java)
@@ -2065,44 +2045,49 @@ class ObservationStore(
             permanentLiveField,
         )
 
-    dslContext
-        .update(table)
-        .set(
-            survivalRateField,
-            survivalRateValue,
-        )
-        .apply {
-          survivalRateStdDevField?.let {
-            this.set(
-                it,
-                DSL.if_(
-                    survivalRateValue.isNotNull,
-                    getSurvivalRateWeightedStandardDeviation(updateScope),
-                    DSL.castNull(SQLDataType.INTEGER),
-                ),
-            )
-          }
-          survivalRateAreaField?.let {
-            this.set(
-                it,
-                DSL.if_(
-                    survivalRateValue.isNotNull,
-                    updateScope.survivalRateAreaValue(observationIdField),
-                    DSL.castNull(SQLDataType.NUMERIC),
-                ),
-            )
-          }
-        }
-        .where(updateScope.survivalRateRecalculationCondition)
-        .and(
+    val recalculationCondition =
+        DSL.and(
+            updateScope.survivalRateRecalculationCondition,
             DSL.notExists(
                 DSL.selectOne()
                     .from(OBSERVATION_PLOTS)
                     .where(updateScope.observationPlotsCondition(observationIdField))
                     .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
-            )
+            ),
         )
+
+    dslContext
+        .update(table)
+        .set(survivalRateField, survivalRateValue)
+        .where(recalculationCondition)
         .execute()
+
+    // Standard deviation and area are stored only for scopes that aggregate plots (substratum,
+    // stratum, site). They depend on the survival rate just computed above, so they're set in a
+    // separate statement that reads the stored value instead of recomputing the (large) survival
+    // rate expression for each column.
+    if (survivalRateStdDevField != null && survivalRateAreaField != null) {
+      dslContext
+          .update(table)
+          .set(
+              survivalRateStdDevField,
+              DSL.if_(
+                  survivalRateField.isNotNull,
+                  getSurvivalRateWeightedStandardDeviation(updateScope),
+                  DSL.castNull(SQLDataType.INTEGER),
+              ),
+          )
+          .set(
+              survivalRateAreaField,
+              DSL.if_(
+                  survivalRateField.isNotNull,
+                  updateScope.survivalRateAreaValue(observationIdField),
+                  DSL.castNull(SQLDataType.NUMERIC),
+              ),
+          )
+          .where(recalculationCondition)
+          .execute()
+    }
   }
 
   private fun recalculateSurvivalRateResults(
@@ -2167,11 +2152,8 @@ class ObservationStore(
             DSL.value(observationId),
         )
     val survivalRateDenominator =
-        DSL.coalesce(
-            survivalRatePermanentDenominator.plus(survivalRateTempDenominator),
-            survivalRatePermanentDenominator,
-            survivalRateTempDenominator,
-        )
+        DSL.coalesce(survivalRatePermanentDenominator, BigDecimal.ZERO)
+            .plus(DSL.coalesce(survivalRateTempDenominator, BigDecimal.ZERO))
     val survivalRateField = table.field("survival_rate", Int::class.java)!!
     val survivalRateStdDevField = table.field("survival_rate_std_dev", Int::class.java)
     val survivalRateAreaField = table.field("survival_rate_area", BigDecimal::class.java)
@@ -2197,37 +2179,40 @@ class ObservationStore(
             .not()
 
     if (allPlotsCompleted) {
+      val recalculationCondition =
+          DSL.and(updateScope.observedTotalsCondition, observationIdField.eq(observationId))
+
       dslContext
           .update(table)
-          .set(
-              survivalRateField,
-              survivalRateValue,
-          )
-          .apply {
-            survivalRateStdDevField?.let {
-              this.set(
-                  it,
-                  DSL.if_(
-                      survivalRateValue.isNotNull,
-                      getSurvivalRateWeightedStandardDeviation(updateScope),
-                      DSL.castNull(SQLDataType.INTEGER),
-                  ),
-              )
-            }
-            survivalRateAreaField?.let {
-              this.set(
-                  it,
-                  DSL.if_(
-                      survivalRateValue.isNotNull,
-                      updateScope.survivalRateAreaValue(DSL.value(observationId)),
-                      DSL.castNull(SQLDataType.NUMERIC),
-                  ),
-              )
-            }
-          }
-          .where(updateScope.observedTotalsCondition)
-          .and(observationIdField.eq(observationId))
+          .set(survivalRateField, survivalRateValue)
+          .where(recalculationCondition)
           .execute()
+
+      // See the comment in the no-argument overload: std dev and area depend on the survival rate
+      // computed above and are set in a separate statement that reads the stored value rather than
+      // recomputing the survival rate expression once per column.
+      if (survivalRateStdDevField != null && survivalRateAreaField != null) {
+        dslContext
+            .update(table)
+            .set(
+                survivalRateStdDevField,
+                DSL.if_(
+                    survivalRateField.isNotNull,
+                    getSurvivalRateWeightedStandardDeviation(updateScope),
+                    DSL.castNull(SQLDataType.INTEGER),
+                ),
+            )
+            .set(
+                survivalRateAreaField,
+                DSL.if_(
+                    survivalRateField.isNotNull,
+                    updateScope.survivalRateAreaValue(DSL.value(observationId)),
+                    DSL.castNull(SQLDataType.NUMERIC),
+                ),
+            )
+            .where(recalculationCondition)
+            .execute()
+      }
     }
   }
 
