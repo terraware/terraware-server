@@ -5,14 +5,19 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonSpeciesTargetsRecord
 import com.terraformation.backend.plantingmanagement.PlantingSeasonSpeciesTargetModel
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -35,14 +40,16 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
     )
   }
 
+  private lateinit var organizationId: OrganizationId
   private lateinit var plantingSeasonId: PlantingSeasonId
+  private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var substratumId: SubstratumId
   private lateinit var speciesId: SpeciesId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
-    insertPlantingSite(x = 0)
+    organizationId = insertOrganization()
+    plantingSiteId = insertPlantingSite(x = 0)
     insertOrganizationUser(role = Role.Manager)
     insertStratum()
     plantingSeasonId = insertPlantingSeason()
@@ -138,12 +145,27 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
               modifiedTime = clock.instant,
           )
       )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonSpeciesTargetCreatedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              quantity = 5,
+              speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = inserted.substratumHistoryId,
+              substratumId = substratumId,
+              substratumName = "1",
+          )
+      )
     }
 
     @Test
     fun `updates quantity when row already exists`() {
       store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 5)
       clock.instant = Instant.ofEpochSecond(100)
+      eventPublisher.clear()
       store.upsert(plantingSeasonId, substratumId, speciesId, quantity = 20)
 
       assertTableEquals(
@@ -156,6 +178,21 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
               createdTime = Instant.EPOCH,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
+          )
+      )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonSpeciesTargetUpdatedEvent(
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5),
+              changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 20),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = inserted.substratumHistoryId,
+              substratumId = substratumId,
+              substratumName = "1",
           )
       )
     }
@@ -249,6 +286,26 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
                   modifiedBy = user.userId,
                   modifiedTime = laterTime,
               ),
+          )
+      )
+
+      val createdEvent =
+          PlantingSeasonSpeciesTargetCreatedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              quantity = 0,
+              speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = inserted.substratumHistoryId,
+              substratumId = substratumId,
+              substratumName = "1",
+          )
+
+      eventPublisher.assertEventsPublished(
+          setOf(
+              createdEvent,
+              createdEvent.copy(speciesId = speciesId2),
           )
       )
     }
