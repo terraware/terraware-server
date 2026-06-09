@@ -1,3 +1,4 @@
+e003e424 SW-8420 Add method to query since an id to EventLogStore (#4565)
 feab9135 Improve survival rate calculation performance (#4566)
 09730924 SW-7636 Add soil type to biomass details (#4564)
 e4cc93fe SW-8427 Publish events for target create/update (#4563)
