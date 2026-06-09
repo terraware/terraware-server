@@ -87,19 +87,12 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
               anyChildHasNullSurvivalRateCondition(observationIdField),
               DSL.castNull(SQLDataType.INTEGER),
           )
-          .`when`(
-              survivalRateDenominator.eq(BigDecimal.ZERO),
-              DSL.castNull(SQLDataType.INTEGER),
-          )
           .else_(
               DSL.case_()
-                  .`when`(
-                      observedTotalsPlantingSiteTempCondition,
-                      latestLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator),
-                  )
-                  .else_(
-                      permanentLiveField.mul(BigDecimal.valueOf(100)).div(survivalRateDenominator),
-                  ),
+                  .`when`(observedTotalsPlantingSiteTempCondition, latestLiveField)
+                  .else_(permanentLiveField)
+                  .mul(BigDecimal.valueOf(100))
+                  .div(DSL.nullif(survivalRateDenominator, BigDecimal.ZERO)),
           )
 
   /**
