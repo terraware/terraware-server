@@ -44,6 +44,7 @@ class PlantingSeasonStore(
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
     private val parentStore: ParentStore,
+    private val seasonHelper: SeasonHelper,
 ) {
   private val log = perClassLogger()
 
@@ -133,7 +134,7 @@ class PlantingSeasonStore(
   ) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    withLockedPlantingSeason(plantingSeasonId) {
+    seasonHelper.withLockedPlantingSeason(plantingSeasonId) {
       val existingSeason =
           fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
               ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
@@ -216,7 +217,7 @@ class PlantingSeasonStore(
   fun close(plantingSeasonId: PlantingSeasonId) {
     requirePermissions { updatePlantingSeason(plantingSeasonId) }
 
-    withLockedPlantingSeason(plantingSeasonId) {
+    seasonHelper.withLockedPlantingSeason(plantingSeasonId) {
       val existingSeason =
           fetchByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId)).firstOrNull()
               ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
@@ -499,18 +500,5 @@ class PlantingSeasonStore(
             )
         )
         .execute()
-  }
-
-  private fun <T> withLockedPlantingSeason(plantingSeasonId: PlantingSeasonId, func: () -> T): T {
-    return dslContext.transactionResult { _ ->
-      dslContext
-          .selectOne()
-          .from(PLANTING_SEASONS)
-          .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
-          .forUpdate()
-          .fetchOne() ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
-
-      func()
-    }
   }
 }
