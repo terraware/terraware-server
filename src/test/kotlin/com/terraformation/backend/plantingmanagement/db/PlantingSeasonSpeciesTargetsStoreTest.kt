@@ -27,7 +27,12 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonSpeciesTargetsStore by lazy {
-    PlantingSeasonSpeciesTargetsStore(clock, dslContext, eventPublisher, SeasonHelper(dslContext))
+    PlantingSeasonSpeciesTargetsStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        SeasonHelper(dslContext),
+    )
   }
 
   private lateinit var plantingSeasonId: PlantingSeasonId
@@ -37,7 +42,7 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
   @BeforeEach
   fun setUp() {
     insertOrganization()
-    insertPlantingSite()
+    insertPlantingSite(x = 0)
     insertOrganizationUser(role = Role.Manager)
     insertStratum()
     plantingSeasonId = insertPlantingSeason()
@@ -273,9 +278,14 @@ internal class PlantingSeasonSpeciesTargetsStoreTest : DatabaseTest(), RunsAsDat
 
       eventPublisher.assertEventPublished(
           PlantingSeasonSpeciesTargetDeletedEvent(
+              organizationId = inserted.organizationId,
               plantingSeasonId = plantingSeasonId,
+              plantingSiteId = inserted.plantingSiteId,
               speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = inserted.substratumHistoryId,
               substratumId = substratumId,
+              substratumName = "1",
           )
       )
     }

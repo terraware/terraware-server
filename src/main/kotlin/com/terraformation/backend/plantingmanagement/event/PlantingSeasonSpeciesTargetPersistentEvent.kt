@@ -49,6 +49,8 @@ data class PlantingSeasonSpeciesTargetDeletedEventV1(
     override val substratumName: String,
 ) : EntityDeletedPersistentEvent, PlantingSeasonSpeciesTargetPersistentEvent
 
+typealias PlantingSeasonSpeciesTargetDeletedEvent = PlantingSeasonSpeciesTargetDeletedEventV1
+
 data class PlantingSeasonSpeciesTargetUpdatedEventV1(
     val changedFrom: Values,
     val changedTo: Values,
