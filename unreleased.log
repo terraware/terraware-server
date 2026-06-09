@@ -1,3 +1,4 @@
+ab9a3bef Move substratum lookup to SeasonHelper (#4559)
 216a234a SW-8427 Define events for planting season targets (#4558)
 0a3c7b4b SW-8450 Add endpoint for aggregated tracking stats (#4557)
 7117aedf SW-8450 Use stratum survival rate areas in site (#4553)
