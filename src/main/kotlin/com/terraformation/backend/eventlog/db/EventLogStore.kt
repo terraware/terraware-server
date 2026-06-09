@@ -105,10 +105,11 @@ class EventLogStore(
    * event log ID. An event is returned if it matches one of the [sinceEventLogIds] keys and was
    * logged after that key's associated event log ID. This is the union of a separate "since" query
    * per ID, which lets callers track a different watermark for each ID (for example, the last
-   * notification each planting season dismissed).
+   * notification each planting season dismissed). A null value means there is no lower bound for
+   * that ID, so all of its events are returned.
    */
   fun <T : PersistentEvent> fetchByIdsSince(
-      sinceEventLogIds: Map<out LongIdWrapper<*>, EventLogId>,
+      sinceEventLogIds: Map<out LongIdWrapper<*>, EventLogId?>,
       requestedClasses: Collection<KClass<out T>>? = null,
   ): List<EventLogEntry<T>> {
     require(sinceEventLogIds.isNotEmpty()) { "No IDs specified" }
@@ -118,8 +119,10 @@ class EventLogStore(
 
     val idConditions = sinceEventLogIds.map { (id, sinceEventLogId) ->
       DSL.and(
-          payloadField(id.eventLogPropertyName, SQLDataType.BIGINT).eq(id.value),
-          EVENT_LOG.ID.gt(sinceEventLogId),
+          listOfNotNull(
+              payloadField(id.eventLogPropertyName, SQLDataType.BIGINT).eq(id.value),
+              sinceEventLogId?.let { EVENT_LOG.ID.gt(it) },
+          )
       )
     }
 

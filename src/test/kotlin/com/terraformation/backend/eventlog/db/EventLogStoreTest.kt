@@ -190,6 +190,36 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     }
 
     @Test
+    fun `returns all events for an id when its bound is null`() {
+      assertEquals(
+          listOf(
+              EventLogEntry(user.userId, Instant.EPOCH, org1Event1, org1Event1Id),
+              EventLogEntry(user.userId, Instant.EPOCH, org1Event2, org1Event2Id),
+              EventLogEntry(user.userId, Instant.EPOCH, org1Project1Event, org1Project1EventId),
+          ),
+          store.fetchByIdsSince<PersistentEvent>(mapOf(OrganizationId(1) to null)),
+      )
+    }
+
+    @Test
+    fun `applies bounds per id when some bounds are null`() {
+      assertEquals(
+          listOf(
+              EventLogEntry(user.userId, Instant.EPOCH, org1Event1, org1Event1Id),
+              EventLogEntry(user.userId, Instant.EPOCH, org1Event2, org1Event2Id),
+              EventLogEntry(user.userId, Instant.EPOCH, org2Event2, org2Event2Id),
+              EventLogEntry(user.userId, Instant.EPOCH, org1Project1Event, org1Project1EventId),
+          ),
+          store.fetchByIdsSince<PersistentEvent>(
+              mapOf(
+                  OrganizationId(1) to null,
+                  OrganizationId(2) to org2Event1Id,
+              )
+          ),
+      )
+    }
+
+    @Test
     fun `only returns events of requested classes`() {
       assertEquals(
           listOf(
