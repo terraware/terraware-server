@@ -1,3 +1,4 @@
+2e2c9521 Move withLockedPlantingSeason to SeasonHelper (#4561)
 d6e1a2bc Move planting site/org lookup to SeasonHelper (#4560)
 ab9a3bef Move substratum lookup to SeasonHelper (#4559)
 216a234a SW-8427 Define events for planting season targets (#4558)
