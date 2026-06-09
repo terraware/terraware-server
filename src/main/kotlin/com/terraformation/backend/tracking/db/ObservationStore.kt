@@ -2908,13 +2908,13 @@ class ObservationStore(
     // Survival-rate denominators depend only on the scope, species, observation, and which plots
     // have completed observations; none of those change while we're writing the per-species totals
     // rows below. Compute them all up front.
-    val permanentDenominators: Map<SpeciesId, Double> =
+    val permanentDenominators: Map<SpeciesId, BigDecimal> =
         if (speciesIds.isNotEmpty() && (includesTempPlots || isPermanent)) {
           getSurvivalRateDenominatorsBySpecies(updateScope, speciesIds, observationIdValue)
         } else {
           emptyMap()
         }
-    val tempDenominators: Map<SpeciesId, Double> =
+    val tempDenominators: Map<SpeciesId, BigDecimal> =
         if (speciesIds.isNotEmpty() && includesTempPlots) {
           getSurvivalRateTempDenominatorsBySpecies(updateScope, speciesIds, observationIdValue)
         } else {
@@ -3026,7 +3026,7 @@ class ObservationStore(
       updateScope: ObservationSpeciesScope<ID, HistoryId>,
       speciesIds: Set<SpeciesId>,
       observationIdField: Field<ObservationId?>,
-  ): Map<SpeciesId, Double> {
+  ): Map<SpeciesId, BigDecimal> {
     val opPerm = OBSERVATION_PLOTS.`as`("opPerm")
     val denominatorField =
         DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT))
@@ -3058,7 +3058,7 @@ class ObservationStore(
         .fetch()
         .mapNotNull { record ->
           val speciesId = record.value1()
-          val denominator = record.value2()?.toDouble()
+          val denominator = record.value2()
           if (speciesId != null && denominator != null) speciesId to denominator else null
         }
         .toMap()
@@ -3073,7 +3073,7 @@ class ObservationStore(
       updateScope: ObservationSpeciesScope<ID, HistoryId>,
       speciesIds: Set<SpeciesId>,
       observationIdField: Field<ObservationId?>,
-  ): Map<SpeciesId, Double> {
+  ): Map<SpeciesId, BigDecimal> {
     val opTemp = OBSERVATION_PLOTS.`as`("opTemp")
     return with(STRATUM_T0_TEMP_DENSITIES) {
       val denominatorField = DSL.sum(STRATUM_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT))
@@ -3106,7 +3106,7 @@ class ObservationStore(
           .fetch()
           .mapNotNull { record ->
             val speciesId = record.value1()
-            val denominator = record.value2()?.toDouble()
+            val denominator = record.value2()
             if (speciesId != null && denominator != null) speciesId to denominator else null
           }
           .toMap()
@@ -3117,12 +3117,12 @@ class ObservationStore(
    * Returns the survival-rate column expression using a precomputed denominator. Returns SQL null
    * if [denominator] is null.
    */
-  private fun survivalRateValue(numerator: Field<Int>, denominator: Double?): Field<Int> =
+  private fun survivalRateValue(numerator: Field<Int>, denominator: BigDecimal?): Field<Int> =
       if (denominator == null) {
         DSL.castNull(SQLDataType.INTEGER)
       } else {
         DSL.if_(
-            DSL.value(denominator).eq(0.0),
+            DSL.value(denominator).eq(BigDecimal.ZERO),
             DSL.zero(),
             numerator.mul(100).div(DSL.value(denominator)),
         )
