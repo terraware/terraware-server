@@ -1,3 +1,4 @@
+5f4b4417 Fix jOOQ static type registry warnings (#4567)
 815f1c81 Fix intermittent T0StoreTest failures (#4568)
 e003e424 SW-8420 Add method to query since an id to EventLogStore (#4565)
 feab9135 Improve survival rate calculation performance (#4566)
