@@ -142,6 +142,73 @@ class EventLogStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Nested
+  inner class FetchByIdsSince {
+    val org1Event1 = TestOrganizationCreatedEventV1(OrganizationId(1), "Org 1 a")
+    val org2Event1 = TestOrganizationCreatedEventV1(OrganizationId(2), "Org 2 a")
+    val org1Event2 = TestOrganizationCreatedEventV1(OrganizationId(1), "Org 1 b")
+    val org2Event2 = TestOrganizationCreatedEventV1(OrganizationId(2), "Org 2 b")
+    val org1Project1Event = TestProjectCreatedEventV1(OrganizationId(1), ProjectId(1), "Project 1")
+
+    lateinit var org1Event1Id: EventLogId
+    lateinit var org2Event1Id: EventLogId
+    lateinit var org1Event2Id: EventLogId
+    lateinit var org2Event2Id: EventLogId
+    lateinit var org1Project1EventId: EventLogId
+
+    @BeforeEach
+    fun setUp() {
+      org1Event1Id = store.insertEvent(org1Event1)
+      org2Event1Id = store.insertEvent(org2Event1)
+      org1Event2Id = store.insertEvent(org1Event2)
+      org2Event2Id = store.insertEvent(org2Event2)
+      org1Project1EventId = store.insertEvent(org1Project1Event)
+    }
+
+    @Test
+    fun `applies a separate event log id bound for each id`() {
+      assertEquals(
+          listOf(
+              EventLogEntry(user.userId, Instant.EPOCH, org1Event2, org1Event2Id),
+              EventLogEntry(user.userId, Instant.EPOCH, org2Event2, org2Event2Id),
+              EventLogEntry(user.userId, Instant.EPOCH, org1Project1Event, org1Project1EventId),
+          ),
+          store.fetchByIdsSince<PersistentEvent>(
+              mapOf(
+                  OrganizationId(1) to org1Event1Id,
+                  OrganizationId(2) to org2Event1Id,
+              )
+          ),
+      )
+    }
+
+    @Test
+    fun `excludes the event whose id equals the bound`() {
+      assertEquals(
+          emptyList<EventLogEntry<PersistentEvent>>(),
+          store.fetchByIdsSince<PersistentEvent>(mapOf(OrganizationId(2) to org2Event2Id)),
+      )
+    }
+
+    @Test
+    fun `only returns events of requested classes`() {
+      assertEquals(
+          listOf(
+              EventLogEntry(user.userId, Instant.EPOCH, org1Project1Event, org1Project1EventId),
+          ),
+          store.fetchByIdsSince(
+              mapOf(OrganizationId(1) to org1Event1Id),
+              listOf(TestProjectEvent::class),
+          ),
+      )
+    }
+
+    @Test
+    fun `throws exception when no IDs specified`() {
+      assertThrows<IllegalArgumentException> { store.fetchByIdsSince<PersistentEvent>(emptyMap()) }
+    }
+  }
+
+  @Nested
   inner class FetchByIntegerField {
     @Test
     fun `can fetch by organization id`() {
