@@ -3,17 +3,12 @@ package com.terraformation.backend.plantingmanagement.db
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.requirePermissions
-import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
-import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
-import com.terraformation.backend.db.tracking.tables.references.STRATA
-import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
-import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
@@ -120,7 +115,8 @@ class PlantingSeasonScheduledDatesStore(
         insertQuery.execute()
       }
 
-      val substratumInfo = fetchSubstratumInfo(model.species.map { it.substratumId }.toSet())
+      val substratumInfo =
+          seasonHelper.fetchSubstrataInfo(model.species.map { it.substratumId }.toSet())
 
       eventPublisher.publishEvent(
           PlantingSeasonScheduledDateCreatedEvent(
@@ -220,7 +216,7 @@ class PlantingSeasonScheduledDatesStore(
         val addedKeys = newByIds.keys - oldByIds.keys
         val commonKeys = oldByIds.keys intersect newByIds.keys
         val touchedSubstrata = (removedKeys + addedKeys + commonKeys).map { it.first }.toSet()
-        val substrataInfo = fetchSubstratumInfo(touchedSubstrata)
+        val substrataInfo = seasonHelper.fetchSubstrataInfo(touchedSubstrata)
 
         removedKeys.forEach { (substratumId, speciesId) ->
           val substratumInfo = substrataInfo.getValue(substratumId)
@@ -388,7 +384,8 @@ class PlantingSeasonScheduledDatesStore(
     val organizationId =
         parentStore.getOrganizationId(substratumId)
             ?: throw SubstratumNotFoundException(substratumId)
-    val substratumInfo = fetchSubstratumInfo(listOf(substratumId)).getValue(substratumId)
+    val substratumInfo =
+        seasonHelper.fetchSubstrataInfo(listOf(substratumId)).getValue(substratumId)
 
     speciesForSubstratum.forEach { record ->
       eventPublisher.publishEvent(
@@ -444,48 +441,6 @@ class PlantingSeasonScheduledDatesStore(
             )
           }
     }
-  }
-
-  private data class SubstratumInfo(
-      val stratumName: String,
-      val substratumName: String,
-      val substratumHistoryId: SubstratumHistoryId,
-  )
-
-  private fun fetchSubstratumInfo(
-      substratumIds: Collection<SubstratumId>
-  ): Map<SubstratumId, SubstratumInfo> {
-    if (substratumIds.isEmpty()) return emptyMap()
-
-    val latestHistoryIdField =
-        DSL.field(
-            DSL.select(DSL.max(SUBSTRATUM_HISTORIES.ID))
-                .from(SUBSTRATUM_HISTORIES)
-                .where(SUBSTRATUM_HISTORIES.SUBSTRATUM_ID.eq(SUBSTRATA.ID))
-        )
-
-    val substrata =
-        dslContext
-            .select(SUBSTRATA.ID, SUBSTRATA.NAME, STRATA.NAME, latestHistoryIdField)
-            .from(SUBSTRATA)
-            .join(STRATA)
-            .on(SUBSTRATA.STRATUM_ID.eq(STRATA.ID))
-            .where(SUBSTRATA.ID.`in`(substratumIds))
-            .fetchMap(SUBSTRATA.ID.asNonNullable()) { record ->
-              SubstratumInfo(
-                  stratumName = record.value3()!!,
-                  substratumName = record[SUBSTRATA.NAME]!!,
-                  substratumHistoryId = record.value4()!!,
-              )
-            }
-
-    substratumIds.forEach { id ->
-      if (id !in substrata) {
-        throw SubstratumNotFoundException(id)
-      }
-    }
-
-    return substrata
   }
 
   private fun <T> withLockedDate(
