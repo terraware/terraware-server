@@ -37,6 +37,7 @@ import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Known
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Other
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty.Unknown
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.embeddables.pojos.ObservationPlotId
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotsRow
@@ -2735,6 +2736,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               observationId = null,
               smallTreeCountRange = 0 to 0,
               soilAssessment = "Basic soil assessment",
+              soilType = SoilType.ClayLoam,
               plotId = null,
           )
 
@@ -2827,6 +2829,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               smallTreesCountLow = 0,
               smallTreesCountHigh = 0,
               soilAssessment = "Basic soil assessment",
+              soilTypeId = SoilType.ClayLoam,
           ),
           "Biomass details table",
       )

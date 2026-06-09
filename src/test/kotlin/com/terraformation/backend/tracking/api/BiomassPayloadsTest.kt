@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
@@ -218,6 +219,7 @@ class BiomassPayloadsTest {
                   ),
               smallTreeCountRange = 0 to 10,
               soilAssessment = "soil",
+              soilType = SoilType.Loam,
               species =
                   setOf(
                       BiomassSpeciesModel(
@@ -401,6 +403,7 @@ class BiomassPayloadsTest {
               smallTreeCountLow = 0,
               smallTreeCountHigh = 10,
               soilAssessment = "soil",
+              soilType = SoilType.Loam,
               tide = null,
               tideTime = null,
               treeSpeciesCount = 3,

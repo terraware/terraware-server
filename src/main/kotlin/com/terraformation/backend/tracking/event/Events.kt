@@ -20,6 +20,7 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
@@ -389,6 +390,7 @@ data class BiomassDetailsCreatedEventV1(
     val smallTreesCountHigh: Int,
     val smallTreesCountLow: Int,
     val soilAssessment: String,
+    val soilType: SoilType? = null,
     val tide: MangroveTide? = null,
     val tideTime: Instant? = null,
     val waterDepthCm: Int? = null,
@@ -412,6 +414,7 @@ data class BiomassDetailsUpdatedEventV1(
       val salinity: BigDecimal? = null,
       val smallTreeCountRange: Pair<Int, Int>? = null,
       val soilAssessment: String? = null,
+      val soilType: SoilType? = null,
       val tide: MangroveTide? = null,
       val tideTime: Instant? = null,
       val waterDepth: Int? = null,
@@ -449,6 +452,11 @@ data class BiomassDetailsUpdatedEventV1(
               "soilAssessment",
               changedFrom.soilAssessment,
               changedTo.soilAssessment,
+          ),
+          createUpdatedField(
+              "soilType",
+              changedFrom.soilType?.getDisplayName(currentLocale()),
+              changedTo.soilType?.getDisplayName(currentLocale()),
           ),
           createUpdatedField(
               "tide",

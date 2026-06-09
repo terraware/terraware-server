@@ -83,6 +83,7 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
           integerField("smallTreesCountLow", OBSERVATION_BIOMASS_DETAILS.SMALL_TREES_COUNT_LOW),
           bigDecimalField("salinity", OBSERVATION_BIOMASS_DETAILS.SALINITY_PPT),
           textField("soilAssessment", OBSERVATION_BIOMASS_DETAILS.SOIL_ASSESSMENT),
+          enumField("soilType", OBSERVATION_BIOMASS_DETAILS.SOIL_TYPE_ID),
           enumField("tide", OBSERVATION_BIOMASS_DETAILS.TIDE_ID),
           timestampField("tideTime", OBSERVATION_BIOMASS_DETAILS.TIDE_TIME),
           integerField("waterDepth", OBSERVATION_BIOMASS_DETAILS.WATER_DEPTH_CM),

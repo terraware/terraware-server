@@ -8,6 +8,7 @@ import com.terraformation.backend.db.tracking.BiomassForestType
 import com.terraformation.backend.db.tracking.MangroveTide
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.RecordedTreeId
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.tracking.model.BiomassQuadratModel
 import com.terraformation.backend.tracking.model.BiomassQuadratSpeciesModel
@@ -298,6 +299,7 @@ data class ExistingBiomassMeasurementPayload(
     val smallTreeCountLow: Int,
     val smallTreeCountHigh: Int,
     val soilAssessment: String,
+    val soilType: SoilType?,
     @Schema(description = "Low or high tide.") //
     val tide: MangroveTide?,
     @Schema(description = "Time when ide is observed.") //
@@ -340,6 +342,7 @@ data class ExistingBiomassMeasurementPayload(
           smallTreeCountLow = model.smallTreeCountRange.first,
           smallTreeCountHigh = model.smallTreeCountRange.second,
           soilAssessment = model.soilAssessment,
+          soilType = model.soilType,
           tide = model.tide,
           tideTime = model.tideTime,
           treeSpeciesCount = treeSpecies.size,
@@ -365,6 +368,7 @@ data class NewBiomassMeasurementPayload(
     @Schema(minimum = "smallTreeCountLow") //
     val smallTreeCountHigh: Int,
     val soilAssessment: String,
+    val soilType: SoilType?,
     @Schema(description = "Low or high tide. Required for Mangrove forest.")
     val tide: MangroveTide?,
     @Schema(description = "Time when ide is observed. Required for Mangrove forest.")
@@ -391,6 +395,7 @@ data class NewBiomassMeasurementPayload(
         salinityPpt = salinity,
         smallTreeCountRange = smallTreeCountLow to smallTreeCountHigh,
         soilAssessment = soilAssessment,
+        soilType = soilType,
         species = species.map { it.toModel() }.toSet(),
         plotId = null,
         tide = tide,

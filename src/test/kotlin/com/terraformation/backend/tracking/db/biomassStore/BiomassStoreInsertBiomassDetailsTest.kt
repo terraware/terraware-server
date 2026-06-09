@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
 import com.terraformation.backend.db.tracking.ObservationType
+import com.terraformation.backend.db.tracking.SoilType
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassDetailsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationBiomassQuadratDetailsRecord
@@ -111,6 +112,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             salinityPpt = BigDecimal.valueOf(20),
             smallTreeCountRange = 0 to 10,
             soilAssessment = "soil",
+            soilType = SoilType.Sand,
             species =
                 setOf(
                     BiomassSpeciesModel(
@@ -218,6 +220,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             smallTreesCountHigh = 10,
             smallTreesCountLow = 0,
             soilAssessment = "soil",
+            soilTypeId = SoilType.Sand,
             tideId = MangroveTide.High,
             tideTime = Instant.ofEpochSecond(123),
             waterDepthCm = 2,
@@ -239,6 +242,7 @@ class BiomassStoreInsertBiomassDetailsTest : BaseBiomassStoreTest() {
             smallTreesCountHigh = 10,
             smallTreesCountLow = 0,
             soilAssessment = "soil",
+            soilType = SoilType.Sand,
             tide = MangroveTide.High,
             tideTime = Instant.ofEpochSecond(123),
             waterDepthCm = 2,

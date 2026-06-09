@@ -138,6 +138,7 @@ internal val biomassDetailsMultiset =
                       SMALL_TREES_COUNT_LOW,
                       SMALL_TREES_COUNT_HIGH,
                       SOIL_ASSESSMENT,
+                      SOIL_TYPE_ID,
                       MONITORING_PLOT_ID,
                       TIDE_ID,
                       TIDE_TIME,
@@ -170,6 +171,7 @@ internal val biomassDetailsMultiset =
                   smallTreeCountRange =
                       record[SMALL_TREES_COUNT_LOW]!! to record[SMALL_TREES_COUNT_HIGH]!!,
                   soilAssessment = record[SOIL_ASSESSMENT]!!,
+                  soilType = record[SOIL_TYPE_ID],
                   species = record[biomassSpeciesMultiset],
                   plotId = record[MONITORING_PLOT_ID]!!,
                   tide = record[TIDE_ID],

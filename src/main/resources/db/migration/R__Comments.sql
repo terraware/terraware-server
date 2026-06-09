@@ -568,6 +568,8 @@ COMMENT ON TABLE tracking.simplified_substrata IS 'Simplified boundary geometrie
 
 COMMENT ON TABLE tracking.simplified_substratum_histories IS 'Simplified boundary geometries for substratum versions.';
 
+COMMENT ON TABLE tracking.soil_types IS '(Enum) Types of soil that can be noted in observations.';
+
 COMMENT ON TABLE tracking.substratum_histories IS 'Versions of substratum maps over time. Each time a planting site map changes, its substrata'' maps are inserted into this table.';
 
 COMMENT ON TABLE tracking.substratum_populations IS 'Total number of plants of each species in each substratum.';
