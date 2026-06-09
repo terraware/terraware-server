@@ -64,12 +64,8 @@ class PlantingSeasonScheduledDatesStore(
 
     seasonHelper.validateSeasonNotClosed(model.plantingSeasonId)
 
-    val plantingSiteId =
-        parentStore.getPlantingSiteId(model.plantingSeasonId)
-            ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
-    val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
-            ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
+    val (plantingSiteId, organizationId) =
+        seasonHelper.fetchPlantingSiteAndOrganization(model.plantingSeasonId)
     val userId = currentUser().userId
     val now = clock.instant()
 
@@ -164,12 +160,8 @@ class PlantingSeasonScheduledDatesStore(
 
     withLockedDate(scheduledDateId) {
       val oldModel = fetch(model.plantingSeasonId, scheduledDateId)
-      val plantingSiteId =
-          parentStore.getPlantingSiteId(model.plantingSeasonId)
-              ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
-      val organizationId =
-          parentStore.getOrganizationId(plantingSiteId)
-              ?: throw PlantingSeasonNotFoundException(model.plantingSeasonId)
+      val (plantingSiteId, organizationId) =
+          seasonHelper.fetchPlantingSiteAndOrganization(model.plantingSeasonId)
 
       val updatedCount =
           with(SCHEDULED_PLANTING_DATES) {
@@ -320,12 +312,8 @@ class PlantingSeasonScheduledDatesStore(
 
     seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
-    val plantingSiteId =
-        parentStore.getPlantingSiteId(plantingSeasonId)
-            ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
-    val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
-            ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+    val (plantingSiteId, organizationId) =
+        seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
 
     with(SCHEDULED_PLANTING_DATES) {
       val rowsDeleted =
