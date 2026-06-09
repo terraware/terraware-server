@@ -201,6 +201,7 @@ class T0Store(
                   OBSERVED_PLOT_SPECIES_TOTALS.TOTAL_DEAD.gt(0),
               )
           )
+          .orderBy(MONITORING_PLOT_ID, OBSERVATION_ID, SPECIES_ID)
           .fetchGroups(MONITORING_PLOT_ID.asNonNullable())
           .map { (monitoringPlotId, plotRecords) ->
             PlotObservationSpeciesDensityModel(
