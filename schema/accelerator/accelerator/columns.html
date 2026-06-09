@@ -195,14 +195,14 @@
         "comments": ""
     },
     {
-        "tableName": "deliverable_categories",
-        "tableFileName": "deliverable_categories",
+        "tableName": "event_statuses",
+        "tableFileName": "event_statuses",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
-        "type": "text",
-        "length": 2147483647,
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int4",
+        "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
@@ -811,18 +811,18 @@
         "comments": ""
     },
     {
-        "tableName": "deliverable_categories",
-        "tableFileName": "deliverable_categories",
+        "tableName": "event_statuses",
+        "tableFileName": "event_statuses",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>internal_interest_id",
-        "type": "int4",
-        "length": 10,
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>name",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Internal interest enum that the deliverable category corresponds to.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "activity_media_files",
@@ -1276,15 +1276,15 @@
         "tableName": "deliverable_categories",
         "tableFileName": "deliverable_categories",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>internal_interest_id",
         "type": "int4",
         "length": 10,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Internal interest enum that the deliverable category corresponds to.<\/p>"
     },
     {
         "tableName": "submissions",
@@ -2323,8 +2323,8 @@
         "comments": ""
     },
     {
-        "tableName": "event_statuses",
-        "tableFileName": "event_statuses",
+        "tableName": "deliverable_categories",
+        "tableFileName": "deliverable_categories",
         "tableType": "Table",
         "keyClass": "indexedColumn",
         "keyTitle": "Indexed",
@@ -2841,8 +2841,8 @@
         "comments": ""
     },
     {
-        "tableName": "event_statuses",
-        "tableFileName": "event_statuses",
+        "tableName": "deliverable_categories",
+        "tableFileName": "deliverable_categories",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
