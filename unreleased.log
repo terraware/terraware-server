@@ -1,3 +1,4 @@
+09730924 SW-7636 Add soil type to biomass details (#4564)
 e4cc93fe SW-8427 Publish events for target create/update (#4563)
 3b1dbe7a SW-8427 Use new persistent event for target deletion (#4562)
 2e2c9521 Move withLockedPlantingSeason to SeasonHelper (#4561)

@@ -52,6 +52,7 @@ planting_site_histories
 planting_seasons
 observations
 tree_growth_forms
+soil_types
 recorded_plant_statuses
 planting_types
 planting_season_statuses

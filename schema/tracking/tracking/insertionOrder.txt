@@ -12,6 +12,7 @@ planting_date_request_statuses
 planting_season_statuses
 planting_types
 recorded_plant_statuses
+soil_types
 tree_growth_forms
 strata
 planting_site_histories

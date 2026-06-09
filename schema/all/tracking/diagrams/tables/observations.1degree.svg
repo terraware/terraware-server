@@ -317,7 +317,7 @@
 <g id="node4" class="node">
 <title>observation_biomass_details</title>
 <g id="a_node4"><a xlink:href="../../tables/observation_biomass_details.html" xlink:title="observation_biomass_details" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="1207,-940 1207,-1086 1422,-1086 1422,-940 1207,-940"/>
+<polygon fill="#ffffff" stroke="transparent" points="1207,-918 1207,-1086 1422,-1086 1422,-918 1207,-918"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1207.5,-1064 1207.5,-1086 1422.5,-1086 1422.5,-1064 1207.5,-1064"/>
 <polygon fill="none" stroke="black" points="1207.5,-1064 1207.5,-1086 1422.5,-1086 1422.5,-1064 1207.5,-1064"/>
 <text text-anchor="start" x="1212.5" y="-1073.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">observation_biomass_details</text>
@@ -334,17 +334,20 @@
 <polygon fill="none" stroke="black" points="1207.5,-976 1207.5,-998 1422.5,-998 1422.5,-976 1207.5,-976"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1212.5" y="-993"/>
 <text text-anchor="start" x="1239.5" y="-984.2" font-family="Helvetica,sans-Serif" font-size="11.00">tide_id</text>
-<polygon fill="none" stroke="black" points="1207.5,-958 1207.5,-976 1422.5,-976 1422.5,-958 1207.5,-958"/>
-<text text-anchor="start" x="1210.5" y="-964.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="1207.5,-940 1207.5,-958 1308.5,-958 1308.5,-940 1207.5,-940"/>
-<polygon fill="none" stroke="black" points="1207.5,-940 1207.5,-958 1308.5,-958 1308.5,-940 1207.5,-940"/>
-<text text-anchor="start" x="1210.5" y="-946.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 6</text>
-<polygon fill="#ffffff" stroke="transparent" points="1308.5,-940 1308.5,-958 1360.5,-958 1360.5,-940 1308.5,-940"/>
-<polygon fill="none" stroke="black" points="1308.5,-940 1308.5,-958 1360.5,-958 1360.5,-940 1308.5,-940"/>
-<text text-anchor="start" x="1350.5" y="-946.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="1360.5,-940 1360.5,-958 1422.5,-958 1422.5,-940 1360.5,-940"/>
-<polygon fill="none" stroke="black" points="1360.5,-940 1360.5,-958 1422.5,-958 1422.5,-940 1360.5,-940"/>
-<text text-anchor="start" x="1403.5" y="-946.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 &gt;</text>
+<polygon fill="none" stroke="black" points="1207.5,-954 1207.5,-976 1422.5,-976 1422.5,-954 1207.5,-954"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="1212.5" y="-971"/>
+<text text-anchor="start" x="1239.5" y="-962.2" font-family="Helvetica,sans-Serif" font-size="11.00">soil_type_id</text>
+<polygon fill="none" stroke="black" points="1207.5,-936 1207.5,-954 1422.5,-954 1422.5,-936 1207.5,-936"/>
+<text text-anchor="start" x="1210.5" y="-942.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="1207.5,-918 1207.5,-936 1308.5,-936 1308.5,-918 1207.5,-918"/>
+<polygon fill="none" stroke="black" points="1207.5,-918 1207.5,-936 1308.5,-936 1308.5,-918 1207.5,-918"/>
+<text text-anchor="start" x="1210.5" y="-924.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 7</text>
+<polygon fill="#ffffff" stroke="transparent" points="1308.5,-918 1308.5,-936 1360.5,-936 1360.5,-918 1308.5,-918"/>
+<polygon fill="none" stroke="black" points="1308.5,-918 1308.5,-936 1360.5,-936 1360.5,-918 1308.5,-918"/>
+<text text-anchor="start" x="1350.5" y="-924.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="1360.5,-918 1360.5,-936 1422.5,-936 1422.5,-918 1360.5,-918"/>
+<polygon fill="none" stroke="black" points="1360.5,-918 1360.5,-936 1422.5,-936 1422.5,-918 1360.5,-918"/>
+<text text-anchor="start" x="1403.5" y="-924.2" font-family="Helvetica,sans-Serif" font-size="11.00">4 &gt;</text>
 </a>
 </g>
 </g>
