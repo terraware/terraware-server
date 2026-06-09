@@ -452,7 +452,13 @@ val ID_WRAPPERS =
                 IdWrapper("DeviceManagerId", listOf("device_managers\\.id")),
                 IdWrapper("DeviceTemplateId", listOf("device_templates\\.id")),
                 IdWrapper("DisclaimerId", listOf("disclaimers\\.id", ".*\\.disclaimer_id")),
-                IdWrapper("EventLogId", listOf("event_log\\.id")),
+                IdWrapper(
+                    "EventLogId",
+                    listOf(
+                        "event_log\\.id",
+                        "planting_season_notifications\\.last_dismissed_event_log_id",
+                    ),
+                ),
                 IdWrapper(
                     "FacilityId",
                     listOf("facilities\\.id", ".*\\.destination_facility_id", ".*\\.facility_id"),
