@@ -520,7 +520,7 @@ COMMENT ON TABLE tracking.planting_date_requests IS 'Requested planting date for
 
 COMMENT ON TABLE tracking.planting_date_request_species IS 'Quantities of each species requested for a planting date.';
 
-COMMENT ON TABLE tracking.planting_season_notifications IS 'Stores the last dismissed time for each planting season in order to look up all events since.';
+COMMENT ON TABLE tracking.planting_season_notifications IS 'Stores the last dismissed event log id for each planting season in order to look up all events since.';
 
 COMMENT ON TABLE tracking.planting_season_allocated_species IS 'Quantities of each species allocated for a planting season.';
 
