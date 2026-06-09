@@ -1,3 +1,4 @@
+3b1dbe7a SW-8427 Use new persistent event for target deletion (#4562)
 2e2c9521 Move withLockedPlantingSeason to SeasonHelper (#4561)
 d6e1a2bc Move planting site/org lookup to SeasonHelper (#4560)
 ab9a3bef Move substratum lookup to SeasonHelper (#4559)
