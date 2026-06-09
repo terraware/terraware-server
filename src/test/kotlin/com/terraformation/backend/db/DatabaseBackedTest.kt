@@ -138,6 +138,7 @@ import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.EcosystemType
+import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -462,6 +463,7 @@ import com.terraformation.backend.db.tracking.tables.daos.ObservedPlotCoordinate
 import com.terraformation.backend.db.tracking.tables.daos.PlantingDateRequestSpeciesDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingDateRequestsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonAllocatedSpeciesDao
+import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonNotificationsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonSpeciesTargetsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSeasonsDao
 import com.terraformation.backend.db.tracking.tables.daos.PlantingSiteHistoriesDao
@@ -511,6 +513,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpe
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingDateRequestSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingDateRequestsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonAllocatedSpeciesRow
+import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonNotificationsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonSpeciesTargetsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSeasonsRow
 import com.terraformation.backend.db.tracking.tables.pojos.PlantingSiteHistoriesRow
@@ -751,6 +754,7 @@ abstract class DatabaseBackedTest {
   protected val plantingsDao: PlantingsDao by lazyDao()
   protected val plantingSeasonsDao: PlantingSeasonsDao by lazyDao()
   protected val plantingSeasonAllocatedSpeciesDao: PlantingSeasonAllocatedSpeciesDao by lazyDao()
+  protected val plantingSeasonNotificationsDao: PlantingSeasonNotificationsDao by lazyDao()
   protected val plantingSeasonSpeciesTargetsDao: PlantingSeasonSpeciesTargetsDao by lazyDao()
   protected val plantingSiteHistoriesDao: PlantingSiteHistoriesDao by lazyDao()
   protected val plantingSiteNotificationsDao: PlantingSiteNotificationsDao by lazyDao()
@@ -2349,6 +2353,20 @@ abstract class DatabaseBackedTest {
         )
 
     plantingSeasonAllocatedSpeciesDao.insert(rowWithDefaults)
+  }
+
+  fun insertPlantingSeasonNotification(
+      row: PlantingSeasonNotificationsRow = PlantingSeasonNotificationsRow(),
+      plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
+      lastDismissedEventLogId: EventLogId,
+  ) {
+    val rowWithDefaults =
+        row.copy(
+            plantingSeasonId = plantingSeasonId,
+            lastDismissedEventLogId = lastDismissedEventLogId,
+        )
+
+    plantingSeasonNotificationsDao.insert(rowWithDefaults)
   }
 
   fun insertPlantingSeasonSpeciesTarget(
