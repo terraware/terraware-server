@@ -8,13 +8,12 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
-import com.terraformation.backend.db.default_schema.SpeciesIdConverter
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.tracking.MonitoringPlotHistoryId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservableCondition
 import com.terraformation.backend.db.tracking.ObservationId
-import com.terraformation.backend.db.tracking.ObservationIdConverter
 import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.ObservationType
@@ -22,7 +21,6 @@ import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
-import com.terraformation.backend.db.tracking.RecordedSpeciesCertaintyConverter
 import com.terraformation.backend.db.tracking.StratumHistoryId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
@@ -1699,7 +1697,7 @@ class ObservationStore(
               .and(
                   OBSERVATION_ID.eq(
                       latestObservationForSubstratumField(
-                          DSL.inline(observationId),
+                          DSL.inline(observationId, OBSERVATIONS.ID.dataType),
                           OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID,
                       )
                   )
@@ -1748,13 +1746,13 @@ class ObservationStore(
               getSurvivalRateDenominator(
                   updateScope,
                   PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
-                  DSL.value(observationId),
+                  DSL.value(observationId, OBSERVATIONS.ID.dataType),
               )
           val survivalRateTempDenominator =
               getSurvivalRateTempDenominator(
                   updateScope,
                   STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
-                  DSL.value(observationId),
+                  DSL.value(observationId, OBSERVATIONS.ID.dataType),
               )
           val survivalRateDenominator =
               DSL.coalesce(
@@ -1806,13 +1804,13 @@ class ObservationStore(
             getSurvivalRateDenominator(
                 updateScope,
                 PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
-                DSL.value(observationId),
+                DSL.value(observationId, OBSERVATIONS.ID.dataType),
             )
         val survivalRateTempDenominator =
             getSurvivalRateTempDenominator(
                 updateScope,
                 STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
-                DSL.value(observationId),
+                DSL.value(observationId, OBSERVATIONS.ID.dataType),
             )
         val survivalRateDenominator =
             DSL.coalesce(
@@ -1975,8 +1973,7 @@ class ObservationStore(
       updateScope: ObservationSpeciesScope<ID, HistoryId>
   ) {
     val table = updateScope.observedTotalsTable
-    val speciesIdField =
-        table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
+    val speciesIdField = table.field("species_id", SPECIES.ID.dataType)
     val observationIdField = table.field("observation_id", ObservationId::class.java)!!
     val survivalRatePermanentDenominator =
         getSurvivalRateDenominator(
@@ -2138,18 +2135,18 @@ class ObservationStore(
       observationId: ObservationId,
   ) {
     val table = updateScope.observedTotalsTable
-    val observationIdField = table.field("observation_id", ObservationId::class.java)!!
+    val observationIdField = table.field("observation_id", OBSERVATIONS.ID.dataType)!!
     val survivalRatePermanentDenominator =
         getSurvivalRateDenominator(
             updateScope,
             DSL.trueCondition(),
-            DSL.value(observationId),
+            DSL.value(observationId, OBSERVATIONS.ID.dataType),
         )
     val survivalRateTempDenominator =
         getSurvivalRateTempDenominator(
             updateScope,
             DSL.trueCondition(),
-            DSL.value(observationId),
+            DSL.value(observationId, OBSERVATIONS.ID.dataType),
         )
     val survivalRateDenominator =
         DSL.coalesce(survivalRatePermanentDenominator, BigDecimal.ZERO)
@@ -2162,7 +2159,7 @@ class ObservationStore(
 
     val survivalRateValue =
         updateScope.survivalRateValue(
-            DSL.value(observationId),
+            DSL.value(observationId, OBSERVATIONS.ID.dataType),
             survivalRateDenominator,
             latestLiveField,
             permanentLiveField,
@@ -2173,7 +2170,11 @@ class ObservationStore(
             .fetchExists(
                 DSL.selectOne()
                     .from(OBSERVATION_PLOTS)
-                    .where(updateScope.observationPlotsCondition(DSL.value(observationId)))
+                    .where(
+                        updateScope.observationPlotsCondition(
+                            DSL.value(observationId, OBSERVATIONS.ID.dataType)
+                        )
+                    )
                     .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
             )
             .not()
@@ -2206,7 +2207,9 @@ class ObservationStore(
                 survivalRateAreaField,
                 DSL.if_(
                     survivalRateField.isNotNull,
-                    updateScope.survivalRateAreaValue(DSL.value(observationId)),
+                    updateScope.survivalRateAreaValue(
+                        DSL.value(observationId, OBSERVATIONS.ID.dataType)
+                    ),
                     DSL.castNull(SQLDataType.NUMERIC),
                 ),
             )
@@ -2510,8 +2513,7 @@ class ObservationStore(
     val resultsTable = scope.observedTotalsTable
     val rollupTable = scope.rollupSpeciesTable
 
-    val resultsObservationIdField =
-        resultsTable.field("observation_id", ObservationId::class.java)!!
+    val resultsObservationIdField = resultsTable.field("observation_id", OBSERVATIONS.ID.dataType)!!
     val resultsTotalLiveField = resultsTable.field("total_live", Int::class.java)!!
     val resultsTotalDeadField = resultsTable.field("total_dead", Int::class.java)!!
     val resultsTotalExistingField = resultsTable.field("total_existing", Int::class.java)!!
@@ -2520,7 +2522,7 @@ class ObservationStore(
     val resultsPlantDensityStdDevField =
         resultsTable.field("plant_density_std_dev", Int::class.java)
 
-    val rollupObservationIdField = rollupTable.field("observation_id", ObservationId::class.java)!!
+    val rollupObservationIdField = rollupTable.field("observation_id", OBSERVATIONS.ID.dataType)!!
     val rollupTotalLiveField = rollupTable.field("total_live", Int::class.java)!!
     val rollupTotalDeadField = rollupTable.field("total_dead", Int::class.java)!!
     val rollupTotalExistingField = rollupTable.field("total_existing", Int::class.java)!!
@@ -2889,18 +2891,9 @@ class ObservationStore(
       updateScope: ObservationSpeciesScope<ID, HistoryId>,
   ) {
     val table = updateScope.observedTotalsTable
-    val observationIdField =
-        table.field(
-            "observation_id",
-            SQLDataType.BIGINT.asConvertedDataType(ObservationIdConverter()),
-        )!!
-    val certaintyField =
-        table.field(
-            "certainty_id",
-            SQLDataType.INTEGER.asConvertedDataType(RecordedSpeciesCertaintyConverter()),
-        )!!
-    val speciesIdField =
-        table.field("species_id", SQLDataType.BIGINT.asConvertedDataType(SpeciesIdConverter()))!!
+    val observationIdField = table.field("observation_id", OBSERVATIONS.ID.dataType)!!
+    val certaintyField = table.field("certainty_id", RECORDED_PLANTS.CERTAINTY_ID.dataType)!!
+    val speciesIdField = table.field("species_id", SPECIES.ID.dataType)!!
     val speciesNameField = table.field("species_name", String::class.java)!!
     val totalLiveField = table.field("total_live", Int::class.java)!!
     val totalDeadField = table.field("total_dead", Int::class.java)!!
@@ -2924,13 +2917,13 @@ class ObservationStore(
             getSurvivalRateDenominator(
                 updateScope,
                 PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
-                DSL.value(observationId),
+                DSL.value(observationId, OBSERVATIONS.ID.dataType),
             )
         val survivalRateTempDenominator =
             getSurvivalRateTempDenominator(
                 updateScope,
                 STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
-                DSL.value(observationId),
+                DSL.value(observationId, OBSERVATIONS.ID.dataType),
             )
         val survivalRateDenominator =
             DSL.coalesce(
