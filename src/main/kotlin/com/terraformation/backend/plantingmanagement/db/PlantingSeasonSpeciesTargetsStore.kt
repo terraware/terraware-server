@@ -114,10 +114,6 @@ class PlantingSeasonSpeciesTargetsStore(
 
     seasonHelper.validateSeasonNotClosed(plantingSeasonId)
 
-    val (plantingSiteId, organizationId) =
-        seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
-    val substratumInfo = seasonHelper.fetchSubstratumInfo(substratumId)
-
     with(PLANTING_SEASON_SPECIES_TARGETS) {
       val rowsDeleted =
           dslContext
@@ -128,6 +124,10 @@ class PlantingSeasonSpeciesTargetsStore(
               .execute()
 
       if (rowsDeleted > 0) {
+        val (plantingSiteId, organizationId) =
+            seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
+        val substratumInfo = seasonHelper.fetchSubstratumInfo(substratumId)
+
         eventPublisher.publishEvent(
             PlantingSeasonSpeciesTargetDeletedEvent(
                 organizationId = organizationId,
