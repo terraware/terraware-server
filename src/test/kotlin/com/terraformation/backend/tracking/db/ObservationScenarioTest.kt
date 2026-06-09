@@ -1158,7 +1158,10 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
       dslContext
           .insertInto(OBSERVATION_REQUESTED_SUBSTRATA, OBSERVATION_ID, SUBSTRATUM_ID)
           .select(
-              DSL.selectDistinct(DSL.value(observationId), MONITORING_PLOTS.SUBSTRATUM_ID)
+              DSL.selectDistinct(
+                      DSL.value(observationId, OBSERVATION_ID.dataType),
+                      MONITORING_PLOTS.SUBSTRATUM_ID,
+                  )
                   .from(MONITORING_PLOTS)
                   .where(MONITORING_PLOTS.PLOT_NUMBER.`in`(observedPlotNames.map { it.toLong() }))
           )
