@@ -29,10 +29,15 @@ fun latestObservationForSubstratumField(
         .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID))
         .where(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(substratumIdField))
         .and(
-            OBSERVATIONS.COMPLETED_TIME.le(
-                DSL.select(OBSERVATIONS.COMPLETED_TIME)
-                    .from(OBSERVATIONS)
-                    .where(OBSERVATIONS.ID.eq(observationIdField))
+            DSL.or(
+                // Always consider the reference observation itself, even while it is still in
+                // progress and so has no completed time to compare against yet.
+                OBSERVATIONS.ID.eq(observationIdField),
+                OBSERVATIONS.COMPLETED_TIME.le(
+                    DSL.select(OBSERVATIONS.COMPLETED_TIME)
+                        .from(OBSERVATIONS)
+                        .where(OBSERVATIONS.ID.eq(observationIdField))
+                ),
             )
         )
         .and(OBSERVATIONS.IS_AD_HOC.isFalse)

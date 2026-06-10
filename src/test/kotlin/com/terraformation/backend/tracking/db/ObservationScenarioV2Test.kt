@@ -621,6 +621,7 @@ class ObservationScenarioV2Test : ObservationScenarioTest() {
       insertStratum()
       insertSubstratum()
       insertObservation()
+      insertObservationRequestedSubstratum()
 
       val completePlotId = insertMonitoringPlot()
       insertObservationPlot(claimedBy = user.userId)

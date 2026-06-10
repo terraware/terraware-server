@@ -301,6 +301,13 @@ data class ObservationStratumResultsPayload(
     val name: String,
     @Schema(
         description =
+            "Planting density for the stratum based only on the plots observed in this observation, " +
+                "without carrying forward last-observed data for substrata that weren't observed. " +
+                "In contrast to plantingDensity, which uses each substratum's most recent observation."
+    )
+    val observedDensity: Int?,
+    @Schema(
+        description =
             "Estimated planting density for the stratum based on the observed planting densities " +
                 "of monitoring plots."
     )
@@ -340,6 +347,7 @@ data class ObservationStratumResultsPayload(
       completedTime = model.completedTime,
       estimatedPlants = model.estimatedPlants,
       name = model.name,
+      observedDensity = model.observedDensity,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       stratumId = model.stratumId,
@@ -376,6 +384,13 @@ data class ObservationResultsPayload(
     val observationId: ObservationId,
     @Schema(
         description =
+            "Planting density for the site based only on the plots observed in this observation, " +
+                "without carrying forward last-observed data for substrata that weren't observed. " +
+                "In contrast to plantingDensity, which uses each substratum's most recent observation."
+    )
+    val observedDensity: Int?,
+    @Schema(
+        description =
             "Estimated planting density for the site, based on the observed planting densities " +
                 "of monitoring plots."
     )
@@ -404,6 +419,7 @@ data class ObservationResultsPayload(
       estimatedPlants = model.estimatedPlants,
       isAdHoc = model.isAdHoc,
       observationId = model.observationId,
+      observedDensity = model.observedDensity,
       plantingDensity = model.plantingDensity,
       plantingDensityStdDev = model.plantingDensityStdDev,
       plantingSiteHistoryId = model.plantingSiteHistoryId,

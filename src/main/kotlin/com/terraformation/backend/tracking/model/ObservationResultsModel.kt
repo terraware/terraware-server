@@ -211,6 +211,12 @@ data class ObservationStratumResultsModel(
     val completedTime: Instant?,
     override val estimatedPlants: Int?,
     val name: String,
+    /**
+     * Plant density based only on the plots observed in this observation, without carrying forward
+     * last-observed data for substrata that weren't observed. In contrast to [plantingDensity],
+     * which uses each substratum's most recent observation.
+     */
+    val observedDensity: Int? = null,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,
@@ -232,6 +238,12 @@ data class ObservationResultsModel(
     val isAdHoc: Boolean,
     val observationId: ObservationId,
     val observationType: ObservationType,
+    /**
+     * Plant density based only on the plots observed in this observation, without carrying forward
+     * last-observed data for substrata that weren't observed. In contrast to [plantingDensity],
+     * which uses each substratum's most recent observation.
+     */
+    val observedDensity: Int? = null,
     override val plantingCompleted: Boolean,
     override val plantingDensity: Int?,
     override val plantingDensityStdDev: Int?,

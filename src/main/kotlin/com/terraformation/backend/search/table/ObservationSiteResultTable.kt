@@ -59,6 +59,7 @@ class ObservationSiteResultTable(private val tables: SearchTables) : SearchTable
 
   override val fields: List<SearchField> =
       listOf(
+          integerField("observedDensity", OBSERVATION_SITE_RESULTS.OBSERVED_DENSITY),
           integerField("permanentLive", OBSERVATION_SITE_RESULTS.PERMANENT_LIVE),
           integerField("plantDensity", OBSERVATION_SITE_RESULTS.PLANT_DENSITY),
           integerField("plantDensityStdDev", OBSERVATION_SITE_RESULTS.PLANT_DENSITY_STD_DEV),

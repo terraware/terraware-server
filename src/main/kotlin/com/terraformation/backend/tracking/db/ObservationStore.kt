@@ -2273,6 +2273,68 @@ class ObservationStore(
     }
   }
 
+  @EventListener
+  fun on(event: MonitoringSpeciesTotalsEditedEvent) {
+    val plantingSiteId = event.plantingSiteId
+    enqueueSurvivalRateCalculation(plantingSiteId) {
+      jobScheduler.enqueue<ObservationStore> {
+        runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
+      }
+    }
+    // Editing species totals changes plant density (it derives from live plant counts), so
+    // recompute density for the edited observation and any later ones that roll its data forward.
+    // T0 density edits do not affect plant density, so the T0 event handlers deliberately don't do
+    // this. This is enqueued separately from the survival rate calculation so that a survival-rate
+    // rerun triggered by a T0 edit never recomputes density.
+    jobScheduler.enqueue<ObservationStore> {
+      runRecalculatePlantDensities(plantingSiteId, event.observationId)
+    }
+  }
+
+  fun runRecalculatePlantDensities(
+      plantingSiteId: PlantingSiteId,
+      fromObservationId: ObservationId,
+  ) {
+    systemUser.run {
+      try {
+        recalculatePlantDensities(plantingSiteId, fromObservationId)
+      } catch (e: Exception) {
+        log.error("Plant density recalculation failed for planting site $plantingSiteId", e)
+      }
+    }
+  }
+
+  /**
+   * Recomputes plant density (and its standard deviation) for [fromObservationId] and every later
+   * completed, non-ad-hoc observation of the planting site. Only observations completed at or after
+   * [fromObservationId] can roll its data forward via [latestObservationForSubstratumField], so
+   * earlier observations are left untouched. Observations are processed in chronological order so
+   * each one's plot densities are refreshed before any later observation rolls them up.
+   */
+  private fun recalculatePlantDensities(
+      plantingSiteId: PlantingSiteId,
+      fromObservationId: ObservationId,
+  ) {
+    val observationIds =
+        dslContext
+            .select(OBSERVATIONS.ID.asNonNullable())
+            .from(OBSERVATIONS)
+            .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(OBSERVATIONS.IS_AD_HOC.isFalse)
+            .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
+            .and(
+                OBSERVATIONS.COMPLETED_TIME.ge(
+                    DSL.select(OBSERVATIONS.COMPLETED_TIME)
+                        .from(OBSERVATIONS)
+                        .where(OBSERVATIONS.ID.eq(fromObservationId))
+                )
+            )
+            .orderBy(OBSERVATIONS.COMPLETED_TIME, OBSERVATIONS.ID)
+            .fetch(OBSERVATIONS.ID.asNonNullable())
+
+    observationIds.forEach { updateObservationResults(it, plantingSiteId) }
+  }
+
   fun runRecalculateSurvivalRates(
       plantingSiteId: PlantingSiteId,
       monitoringPlotId: MonitoringPlotId,
@@ -2558,6 +2620,7 @@ class ObservationStore(
     val resultsPlantDensityField = resultsTable.field("plant_density", Int::class.java)!!
     val resultsPlantDensityStdDevField =
         resultsTable.field("plant_density_std_dev", Int::class.java)
+    val resultsObservedDensityField = resultsTable.field("observed_density", Int::class.java)
 
     val rollupObservationIdField = rollupTable.field("observation_id", OBSERVATIONS.ID.dataType)!!
     val rollupTotalLiveField = rollupTable.field("total_live", Int::class.java)!!
@@ -2599,25 +2662,19 @@ class ObservationStore(
                   .where(MONITORING_PLOTS.ID.eq(scope.plotId))
           )
         } else {
-          DSL.field(
-              DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
-                  .from(OBSERVATION_PLOT_RESULTS)
-                  .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-                  .and(scope.plotResultsCondition)
-          )
+          scope.latestPlantDensityField(DSL.value(observationId, OBSERVATIONS.ID.dataType))
         }
 
     val plantDensityStdDevField: Field<Int?>? =
         if (resultsPlantDensityStdDevField != null) {
-          DSL.field(
-              DSL.select(
-                      DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY)
-                          .cast(SQLDataType.INTEGER)
-                  )
-                  .from(OBSERVATION_PLOT_RESULTS)
-                  .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
-                  .and(scope.plotResultsCondition)
-          )
+          scope.latestPlantDensityStdDevField(DSL.value(observationId, OBSERVATIONS.ID.dataType))
+        } else {
+          null
+        }
+
+    val observedDensityField: Field<Int?>? =
+        if (resultsObservedDensityField != null) {
+          scope.observedPlantDensityField(DSL.value(observationId, OBSERVATIONS.ID.dataType))
         } else {
           null
         }
@@ -2637,6 +2694,11 @@ class ObservationStore(
             set(resultsPlantDensityStdDevField, plantDensityStdDevField)
           }
         }
+        .apply {
+          if (resultsObservedDensityField != null && observedDensityField != null) {
+            set(resultsObservedDensityField, observedDensityField)
+          }
+        }
         .onDuplicateKeyUpdate()
         .set(scope.observedTotalsScopeHistoryField, scope.scopeHistoryId)
         .set(resultsTotalLiveField, totalLive)
@@ -2647,6 +2709,11 @@ class ObservationStore(
         .apply {
           if (resultsPlantDensityStdDevField != null && plantDensityStdDevField != null) {
             set(resultsPlantDensityStdDevField, plantDensityStdDevField)
+          }
+        }
+        .apply {
+          if (resultsObservedDensityField != null && observedDensityField != null) {
+            set(resultsObservedDensityField, observedDensityField)
           }
         }
         .execute()
@@ -2841,7 +2908,14 @@ class ObservationStore(
             )
             .join(SUBSTRATUM_HISTORIES)
             .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
-            .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+            .where(
+                OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(
+                    latestObservationForSubstratumField(
+                        DSL.value(observationId, OBSERVATIONS.ID.dataType),
+                        SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+                    )
+                )
+            )
             .groupBy(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
             .asTable("stratum_densities")
 
@@ -2855,6 +2929,28 @@ class ObservationStore(
     val sdStratumPlantDensityStdDev =
         stratumDensities.field("plant_density_std_dev", Int::class.java)
 
+    // Observed density ignores last-observed carry-forward: just this observation's plots in the
+    // stratum.
+    val sdStratumObservedDensity =
+        DSL.field(
+            DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
+                .from(OBSERVATION_PLOT_RESULTS)
+                .join(MONITORING_PLOT_HISTORIES)
+                .on(
+                    MONITORING_PLOT_HISTORIES.ID.eq(
+                        OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID
+                    )
+                )
+                .join(SUBSTRATUM_HISTORIES)
+                .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+                .where(
+                    SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID.eq(
+                        OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
+                    )
+                )
+                .and(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+        )
+
     dslContext
         .update(OBSERVATION_STRATUM_RESULTS)
         .set(OBSERVATION_STRATUM_RESULTS.TOTAL_LIVE, sTotalLive)
@@ -2863,6 +2959,7 @@ class ObservationStore(
         .set(OBSERVATION_STRATUM_RESULTS.PERMANENT_LIVE, sPermanentLive)
         .set(OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY, sdStratumPlantDensity)
         .set(OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY_STD_DEV, sdStratumPlantDensityStdDev)
+        .set(OBSERVATION_STRATUM_RESULTS.OBSERVED_DENSITY, sdStratumObservedDensity)
         .from(stratumTotals, stratumDensities)
         .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationId))
         .and(OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(sdStratumId))
@@ -2891,7 +2988,23 @@ class ObservationStore(
                     .`as`("plant_density_std_dev"),
             )
             .from(OBSERVATION_PLOT_RESULTS)
-            .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+            .join(MONITORING_PLOTS)
+            .on(MONITORING_PLOTS.ID.eq(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_ID))
+            .join(MONITORING_PLOT_HISTORIES)
+            .on(
+                MONITORING_PLOT_HISTORIES.ID.eq(OBSERVATION_PLOT_RESULTS.MONITORING_PLOT_HISTORY_ID)
+            )
+            .join(SUBSTRATUM_HISTORIES)
+            .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
+            .where(MONITORING_PLOTS.PLANTING_SITE_ID.eq(plantingSiteId))
+            .and(
+                OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(
+                    latestObservationForSubstratumField(
+                        DSL.value(observationId, OBSERVATIONS.ID.dataType),
+                        SUBSTRATUM_HISTORIES.SUBSTRATUM_ID,
+                    )
+                )
+            )
             .asTable("site_densities")
 
     val siTotalLive = siteTotals.field("total_live", Int::class.java)!!
@@ -2901,6 +3014,14 @@ class ObservationStore(
     val siPlantDensity = siteDensities.field("plant_density", Int::class.java)
     val siPlantDensityStdDev = siteDensities.field("plant_density_std_dev", Int::class.java)
 
+    // Observed density ignores last-observed carry-forward: just this observation's plots.
+    val siObservedDensity =
+        DSL.field(
+            DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
+                .from(OBSERVATION_PLOT_RESULTS)
+                .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+        )
+
     dslContext
         .update(OBSERVATION_SITE_RESULTS)
         .set(OBSERVATION_SITE_RESULTS.TOTAL_LIVE, siTotalLive)
@@ -2909,6 +3030,7 @@ class ObservationStore(
         .set(OBSERVATION_SITE_RESULTS.PERMANENT_LIVE, siPermanentLive)
         .set(OBSERVATION_SITE_RESULTS.PLANT_DENSITY, siPlantDensity)
         .set(OBSERVATION_SITE_RESULTS.PLANT_DENSITY_STD_DEV, siPlantDensityStdDev)
+        .set(OBSERVATION_SITE_RESULTS.OBSERVED_DENSITY, siObservedDensity)
         .from(siteTotals, siteDensities)
         .where(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(observationId))
         .execute()

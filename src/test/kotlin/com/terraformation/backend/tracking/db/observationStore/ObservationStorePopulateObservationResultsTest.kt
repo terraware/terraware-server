@@ -32,6 +32,8 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
         )
     val plantingSiteHistoryId = inserted.plantingSiteHistoryId
 
+    insertObservationRequestedSubstratum(substratumId = substratumId)
+
     insertObservationPlot(
         monitoringPlotId = plotId1,
         monitoringPlotHistoryId = plotHistoryId1,
@@ -158,6 +160,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
             survivalRateStdDev = null,
             plantDensity = 150,
             plantDensityStdDev = 71,
+            observedDensity = 150,
         ),
         "observation_stratum_results",
     )
@@ -175,6 +178,7 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
             survivalRateStdDev = null,
             plantDensity = 150,
             plantDensityStdDev = 71,
+            observedDensity = 150,
         ),
         "observation_site_results",
     )
