@@ -34,6 +34,8 @@ plugins {
   id("com.github.jk1.dependency-license-report") version "3.1.2"
 
   id("terraware-jooq")
+  id("org.sonarqube") version "7.3.0.8198"
+
 }
 
 buildscript {
