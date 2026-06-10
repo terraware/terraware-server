@@ -8,14 +8,21 @@ import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
+import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonDeletedEvent
-import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonRelatedPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEventValues
 import java.time.LocalDate
@@ -39,14 +46,22 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
   private lateinit var organizationId: OrganizationId
   private lateinit var plantingSiteId: PlantingSiteId
+  private lateinit var stratumId1: StratumId
+  private lateinit var substratumId1: SubstratumId
   private lateinit var plantingSeasonId: PlantingSeasonId
+  private lateinit var speciesId1: SpeciesId
+  private lateinit var speciesId2: SpeciesId
 
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Manager)
     plantingSiteId = insertPlantingSite()
+    stratumId1 = insertStratum()
+    substratumId1 = insertSubstratum()
     plantingSeasonId = insertPlantingSeason()
+    speciesId1 = insertSpecies()
+    speciesId2 = insertSpecies()
   }
 
   @Nested
@@ -108,7 +123,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       insertPlantingSeasonNotification(lastDismissedEventLogId = dismissed.id)
 
       assertEquals(
-          emptyList<EventLogEntry<PlantingSeasonPersistentEvent>>(),
+          emptyList<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>(),
           service.getNotifications(plantingSeasonId),
       )
     }
@@ -182,7 +197,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val emptyOrganizationId = insertOrganization()
 
       assertEquals(
-          emptyMap<PlantingSeasonId, List<EventLogEntry<PlantingSeasonPersistentEvent>>>(),
+          emptyMap<PlantingSeasonId, List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>>(),
           service.getNotifications(emptyOrganizationId),
       )
     }
@@ -266,13 +281,145 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
     }
   }
 
+  @Nested
+  inner class CombineSpeciesTargetEvents {
+    @Test
+    fun `groups season and species target events together`() {
+      val seasonCreated = insertCreatedEvent()
+      val targetCreated = insertSpeciesTargetCreatedEvent()
+
+      assertEquals(listOf(seasonCreated, targetCreated), service.getNotifications(plantingSeasonId))
+    }
+
+    @Test
+    fun `combines updates to the same species and substratum keeping earliest changedFrom and latest changedTo`() {
+      insertSpeciesTargetUpdatedEvent(
+          speciesId = speciesId1,
+          changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5),
+          changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
+      )
+      clock.instant = clock.instant.plusSeconds(1)
+      val second =
+          insertSpeciesTargetUpdatedEvent(
+              speciesId = speciesId1,
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
+              changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 9),
+          )
+
+      val combined =
+          second.copy(
+              event =
+                  (second.event as PlantingSeasonSpeciesTargetUpdatedEvent).copy(
+                      changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5)
+                  )
+          )
+
+      assertEquals(listOf(combined), service.getNotifications(plantingSeasonId))
+    }
+
+    @Test
+    fun `does not combine updates for different species`() {
+      val first =
+          insertSpeciesTargetUpdatedEvent(
+              speciesId = speciesId1,
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5),
+              changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
+          )
+      clock.instant = clock.instant.plusSeconds(1)
+      val second =
+          insertSpeciesTargetUpdatedEvent(
+              speciesId = speciesId2,
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 0),
+              changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 3),
+          )
+
+      assertEquals(listOf(first, second), service.getNotifications(plantingSeasonId))
+    }
+
+    @Test
+    fun `does not combine updates for different substrata`() {
+      val otherSubstratumId = insertSubstratum()
+      val first =
+          insertSpeciesTargetUpdatedEvent(
+              substratumId = substratumId1,
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5),
+              changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
+          )
+      clock.instant = clock.instant.plusSeconds(1)
+      val second =
+          insertSpeciesTargetUpdatedEvent(
+              substratumId = otherSubstratumId,
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 1),
+              changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 4),
+          )
+
+      assertEquals(listOf(first, second), service.getNotifications(plantingSeasonId))
+    }
+
+    @Test
+    fun `leaves a single species target update unchanged`() {
+      val update =
+          insertSpeciesTargetUpdatedEvent(
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5),
+              changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
+          )
+
+      assertEquals(listOf(update), service.getNotifications(plantingSeasonId))
+    }
+
+    @Test
+    fun `combines each event type independently within a season`() {
+      insertUpdatedEvent(
+          changedFrom = PlantingSeasonUpdatedEventValues(name = "A"),
+          changedTo = PlantingSeasonUpdatedEventValues(name = "B"),
+      )
+      insertSpeciesTargetUpdatedEvent(
+          speciesId = speciesId1,
+          changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5),
+          changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
+      )
+      clock.instant = clock.instant.plusSeconds(1)
+      val seasonUpdate2 =
+          insertUpdatedEvent(
+              changedFrom = PlantingSeasonUpdatedEventValues(name = "B"),
+              changedTo = PlantingSeasonUpdatedEventValues(name = "C"),
+          )
+      val targetUpdate2 =
+          insertSpeciesTargetUpdatedEvent(
+              speciesId = speciesId1,
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
+              changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 9),
+          )
+
+      val combinedSeason =
+          seasonUpdate2.copy(
+              event =
+                  (seasonUpdate2.event as PlantingSeasonUpdatedEvent).copy(
+                      changedFrom = PlantingSeasonUpdatedEventValues(name = "A")
+                  )
+          )
+      val combinedTarget =
+          targetUpdate2.copy(
+              event =
+                  (targetUpdate2.event as PlantingSeasonSpeciesTargetUpdatedEvent).copy(
+                      changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5)
+                  )
+          )
+
+      assertEquals(
+          listOf(combinedSeason, combinedTarget),
+          service.getNotifications(plantingSeasonId),
+      )
+    }
+  }
+
   private fun insertUpdatedEvent(
       changedFrom: PlantingSeasonUpdatedEventValues = PlantingSeasonUpdatedEventValues(),
       changedTo: PlantingSeasonUpdatedEventValues = PlantingSeasonUpdatedEventValues(),
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSiteId: PlantingSiteId = this.plantingSiteId,
       organizationId: OrganizationId = this.organizationId,
-  ): EventLogEntry<PlantingSeasonPersistentEvent> {
+  ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
     val event =
         PlantingSeasonUpdatedEvent(
             changedFrom = changedFrom,
@@ -290,7 +437,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       name: String = "Season",
       plantingSiteId: PlantingSiteId = this.plantingSiteId,
       organizationId: OrganizationId = this.organizationId,
-  ): EventLogEntry<PlantingSeasonPersistentEvent> {
+  ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
     val event =
         PlantingSeasonCreatedEvent(
             endDate = LocalDate.EPOCH.plusDays(1),
@@ -309,12 +456,64 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSiteId: PlantingSiteId = this.plantingSiteId,
       organizationId: OrganizationId = this.organizationId,
-  ): EventLogEntry<PlantingSeasonPersistentEvent> {
+  ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
     val event =
         PlantingSeasonDeletedEvent(
             organizationId = organizationId,
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
+        )
+
+    return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
+  }
+
+  private fun insertSpeciesTargetCreatedEvent(
+      speciesId: SpeciesId = speciesId1,
+      quantity: Int = 1,
+      substratumId: SubstratumId = substratumId1,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      organizationId: OrganizationId = this.organizationId,
+  ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
+    val event =
+        PlantingSeasonSpeciesTargetCreatedEvent(
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            quantity = quantity,
+            speciesId = speciesId,
+            stratumName = "Stratum",
+            substratumHistoryId = SubstratumHistoryId(substratumId.value),
+            substratumId = substratumId,
+            substratumName = "Substratum",
+        )
+
+    return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
+  }
+
+  private fun insertSpeciesTargetUpdatedEvent(
+      speciesId: SpeciesId = speciesId1,
+      changedFrom: PlantingSeasonSpeciesTargetUpdatedEventValues =
+          PlantingSeasonSpeciesTargetUpdatedEventValues(),
+      changedTo: PlantingSeasonSpeciesTargetUpdatedEventValues =
+          PlantingSeasonSpeciesTargetUpdatedEventValues(),
+      substratumId: SubstratumId = substratumId1,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      organizationId: OrganizationId = this.organizationId,
+  ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
+    val event =
+        PlantingSeasonSpeciesTargetUpdatedEvent(
+            changedFrom = changedFrom,
+            changedTo = changedTo,
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            speciesId = speciesId,
+            stratumName = "Stratum",
+            substratumHistoryId = SubstratumHistoryId(substratumId.value),
+            substratumId = substratumId,
+            substratumName = "Substratum",
         )
 
     return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))

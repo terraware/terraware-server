@@ -7,15 +7,14 @@ import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
-import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.currentLocale
 import java.time.LocalDate
 
-sealed interface PlantingSeasonPersistentEvent : PersistentEvent {
-  val organizationId: OrganizationId
-  val plantingSeasonId: PlantingSeasonId
-  val plantingSiteId: PlantingSiteId
+sealed interface PlantingSeasonPersistentEvent : PlantingSeasonRelatedPersistentEvent {
+  override val organizationId: OrganizationId
+  override val plantingSeasonId: PlantingSeasonId
+  override val plantingSiteId: PlantingSiteId
 }
 
 data class PlantingSeasonCreatedEventV1(

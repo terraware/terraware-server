@@ -10,6 +10,9 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonRelatedPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEventValues
 import jakarta.inject.Named
@@ -21,6 +24,11 @@ class PlantingSeasonNotificationsService(
     private val dslContext: DSLContext,
     private val eventLogStore: EventLogStore,
 ) {
+  private val notificationEventClasses =
+      listOf(
+          PlantingSeasonPersistentEvent::class,
+          PlantingSeasonSpeciesTargetPersistentEvent::class,
+      )
 
   /**
    * Returns the undismissed events for every planting season in an organization, grouped by
@@ -29,7 +37,7 @@ class PlantingSeasonNotificationsService(
    */
   fun getNotifications(
       organizationId: OrganizationId
-  ): Map<PlantingSeasonId, List<EventLogEntry<PlantingSeasonPersistentEvent>>> {
+  ): Map<PlantingSeasonId, List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>> {
     val dismissedEventIds =
         fetchLastDismissedEventLogIdsByCondition(
             PLANTING_SEASONS.plantingSites.ORGANIZATION_ID.eq(organizationId)
@@ -42,7 +50,10 @@ class PlantingSeasonNotificationsService(
     }
 
     return eventLogStore
-        .fetchByIdsSince(dismissedEventIds, listOf(PlantingSeasonPersistentEvent::class))
+        .fetchByIdsSince(
+            dismissedEventIds,
+            notificationEventClasses,
+        )
         .groupBy { it.event.plantingSeasonId }
         .mapValues { (_, events) -> combineEvents(events) }
   }
@@ -53,7 +64,7 @@ class PlantingSeasonNotificationsService(
    */
   fun getNotifications(
       plantingSeasonId: PlantingSeasonId
-  ): List<EventLogEntry<PlantingSeasonPersistentEvent>> {
+  ): List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>> {
     requirePermissions { readPlantingSeason(plantingSeasonId) }
 
     val dismissedEventIds =
@@ -62,31 +73,39 @@ class PlantingSeasonNotificationsService(
     return combineEvents(
         eventLogStore.fetchByIdsSince(
             dismissedEventIds,
-            listOf(PlantingSeasonPersistentEvent::class),
+            notificationEventClasses,
         )
     )
   }
 
   /**
-   * Collapses the update events for a planting season into a single event, so that the result
-   * contains at most one update notification. For every field, the combined event keeps the
-   * [changedFrom][PlantingSeasonUpdatedEvent.changedFrom] value from the earliest update that
-   * changed it and the [changedTo][PlantingSeasonUpdatedEvent.changedTo] value from the latest
-   * update that changed it.
-   *
-   * Updates that change the status to [PlantingSeasonStatus.Closed] are excluded from the combined
-   * event and remain as separate events in the result. Non-update events are also left untouched.
+   * Collapses the update events for a planting season into at most one update notification per kind
+   * of update. Non-update events are left untouched.
    *
    * [entries] is expected to be ordered by the time each event was logged, which is the order
    * returned by [EventLogStore.fetchByIdsSince].
    */
   private fun combineEvents(
-      entries: List<EventLogEntry<PlantingSeasonPersistentEvent>>
-  ): List<EventLogEntry<PlantingSeasonPersistentEvent>> {
+      entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>
+  ): List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>> {
+    return combineSpeciesTargetUpdates(combineSeasonUpdates(entries))
+  }
+
+  /**
+   * Collapses the [PlantingSeasonUpdatedEvent]s for a season into a single event. For every field,
+   * the combined event keeps the [changedFrom][PlantingSeasonUpdatedEvent.changedFrom] value from
+   * the earliest update that changed it and the [changedTo][PlantingSeasonUpdatedEvent.changedTo]
+   * value from the latest update that changed it.
+   *
+   * Updates that change the status to [PlantingSeasonStatus.Closed] are excluded from the combined
+   * event and remain as separate events in the result.
+   */
+  private fun combineSeasonUpdates(
+      entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>
+  ): List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>> {
     require(entries.mapTo(mutableSetOf()) { it.event.plantingSeasonId }.size <= 1) {
       "combineEvents must be called with entries for a single planting season"
     }
-
     val combinableUpdates = entries.filter {
       val event = it.event
       event is PlantingSeasonUpdatedEvent && event.changedTo.status != PlantingSeasonStatus.Closed
@@ -125,6 +144,53 @@ class PlantingSeasonNotificationsService(
         event.changedTo.status == PlantingSeasonStatus.Closed -> entry
         entry.id == lastUpdateEntry.id -> combinedEntry
         else -> null
+      }
+    }
+  }
+
+  /**
+   * Collapses the [PlantingSeasonSpeciesTargetUpdatedEvent]s for each species target into a single
+   * event, keeping the [changedFrom][PlantingSeasonSpeciesTargetUpdatedEvent.changedFrom] of the
+   * earliest update and the [changedTo][PlantingSeasonSpeciesTargetUpdatedEvent.changedTo] of the
+   * latest update. Only updates to the same species and substratum are combined; the combined event
+   * keeps that target's last update as a representative.
+   */
+  private fun combineSpeciesTargetUpdates(
+      entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>
+  ): List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>> {
+    val updatesByTarget =
+        entries
+            .filter { it.event is PlantingSeasonSpeciesTargetUpdatedEvent }
+            .groupBy {
+              val event = it.event as PlantingSeasonSpeciesTargetUpdatedEvent
+              event.speciesId to event.substratumId
+            }
+
+    val combinedByLastId =
+        mutableMapOf<EventLogId, EventLogEntry<PlantingSeasonRelatedPersistentEvent>>()
+    val combinedIds = mutableSetOf<EventLogId>()
+
+    updatesByTarget.values
+        .filter { it.size >= 2 }
+        .forEach { group ->
+          val updateEvents = group.map { it.event as PlantingSeasonSpeciesTargetUpdatedEvent }
+          val lastEntry = group.last()
+          combinedByLastId[lastEntry.id] =
+              lastEntry.copy(
+                  event = updateEvents.last().copy(changedFrom = updateEvents.first().changedFrom)
+              )
+          group.forEach { combinedIds += it.id }
+        }
+
+    if (combinedByLastId.isEmpty()) {
+      return entries
+    }
+
+    return entries.mapNotNull { entry ->
+      when {
+        entry.id in combinedByLastId -> combinedByLastId[entry.id]
+        entry.id in combinedIds -> null
+        else -> entry
       }
     }
   }
