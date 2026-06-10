@@ -83,6 +83,10 @@ class PlantingSeasonNotificationsService(
   private fun combineEvents(
       entries: List<EventLogEntry<PlantingSeasonPersistentEvent>>
   ): List<EventLogEntry<PlantingSeasonPersistentEvent>> {
+    require(entries.mapTo(mutableSetOf()) { it.event.plantingSeasonId }.size <= 1) {
+      "combineEvents must be called with entries for a single planting season"
+    }
+
     val combinableUpdates = entries.filter {
       val event = it.event
       event is PlantingSeasonUpdatedEvent && event.changedTo.status != PlantingSeasonStatus.Closed
