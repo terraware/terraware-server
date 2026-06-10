@@ -26,6 +26,10 @@ import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.eventlog.EventLogPayloadContext
 import com.terraformation.backend.eventlog.PersistentEvent
 import com.terraformation.backend.file.api.MediaKind
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
@@ -347,6 +351,115 @@ data class OrganizationSubjectPayload(
   }
 }
 
+@JsonTypeName("PlantingDateRequest")
+data class PlantingDateRequestSubjectPayload(
+    override val fullText: String,
+    val plantingSeasonId: PlantingSeasonId,
+    val plantingSiteId: PlantingSiteId,
+    val scheduledPlantingDateId: ScheduledPlantingDateId,
+    override val shortText: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingDateRequestPersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlantingDateRequestSubjectPayload {
+      val date =
+          when (event) {
+            is PlantingDateRequestCreatedEvent -> event.date
+
+            is PlantingDateRequestUpdatedEvent if event.changedFrom.date != null -> {
+              event.changedFrom.date
+            }
+
+            else -> {
+              val activeDate =
+                  context
+                      .lastEventBefore<PlantingDateRequestUpdatedEvent>(event) {
+                        it.scheduledPlantingDateId == event.scheduledPlantingDateId &&
+                            it.changedTo.date != null
+                      }
+                      ?.changedTo
+                      ?.date
+              activeDate
+                  ?: context
+                      .lastEventBefore<PlantingDateRequestCreatedEvent>(event) {
+                        it.scheduledPlantingDateId == event.scheduledPlantingDateId
+                      }
+                      ?.date
+            }
+          }
+      val dateText = date?.toString() ?: event.scheduledPlantingDateId.toString()
+
+      return PlantingDateRequestSubjectPayload(
+          fullText = context.subjectFullText<PlantingDateRequestSubjectPayload>(dateText),
+          plantingSeasonId = event.plantingSeasonId,
+          plantingSiteId = event.plantingSiteId,
+          scheduledPlantingDateId = event.scheduledPlantingDateId,
+          shortText = context.subjectShortText<PlantingDateRequestSubjectPayload>(),
+      )
+    }
+  }
+}
+
+@JsonTypeName("PlantingDateRequestSpecies")
+data class PlantingDateRequestSpeciesSubjectPayload(
+    override val fullText: String,
+    val plantingSeasonId: PlantingSeasonId,
+    val plantingSiteId: PlantingSiteId,
+    val scheduledPlantingDateId: ScheduledPlantingDateId,
+    val scientificName: String?,
+    override val shortText: String,
+    val speciesId: SpeciesId,
+    val stratumName: String,
+    val substratumHistoryId: SubstratumHistoryId,
+    val substratumId: SubstratumId,
+    val substratumName: String,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingDateRequestSpeciesPersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlantingDateRequestSpeciesSubjectPayload {
+      val scientificName = context.getSpeciesScientificName(event.speciesId)
+      val activeDate =
+          context
+              .lastEventBefore<PlantingDateRequestUpdatedEvent>(event) {
+                it.scheduledPlantingDateId == event.scheduledPlantingDateId &&
+                    it.changedTo.date != null
+              }
+              ?.changedTo
+              ?.date
+              ?: context
+                  .lastEventBefore<PlantingDateRequestCreatedEvent>(event) {
+                    it.scheduledPlantingDateId == event.scheduledPlantingDateId
+                  }
+                  ?.date
+      val dateText = activeDate?.toString() ?: event.scheduledPlantingDateId.toString()
+
+      return PlantingDateRequestSpeciesSubjectPayload(
+          fullText =
+              context.subjectFullText<PlantingDateRequestSpeciesSubjectPayload>(
+                  scientificName,
+                  event.stratumName,
+                  event.substratumName,
+                  dateText,
+              ),
+          plantingSeasonId = event.plantingSeasonId,
+          plantingSiteId = event.plantingSiteId,
+          scheduledPlantingDateId = event.scheduledPlantingDateId,
+          scientificName = scientificName,
+          shortText = context.subjectShortText<PlantingDateRequestSpeciesSubjectPayload>(),
+          speciesId = event.speciesId,
+          stratumName = event.stratumName,
+          substratumHistoryId = event.substratumHistoryId,
+          substratumId = event.substratumId,
+          substratumName = event.substratumName,
+      )
+    }
+  }
+}
+
 @JsonTypeName("PlantingSeason")
 data class PlantingSeasonSubjectPayload(
     override val fullText: String,
@@ -630,6 +743,8 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   ObservationPlot(ObservationPlotPersistentEvent::class),
   ObservationPlotMedia(ObservationMediaFilePersistentEvent::class),
   Organization(OrganizationPersistentEvent::class),
+  PlantingDateRequest(PlantingDateRequestPersistentEvent::class),
+  PlantingDateRequestSpecies(PlantingDateRequestSpeciesPersistentEvent::class),
   PlantingSeason(PlantingSeasonPersistentEvent::class),
   PlantingSeasonScheduledDate(PlantingSeasonScheduledDatePersistentEvent::class),
   PlantingSeasonScheduledDateSpecies(PlantingSeasonScheduledDateSpeciesPersistentEvent::class),
