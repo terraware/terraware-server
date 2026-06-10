@@ -71,7 +71,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val created = insertCreatedEvent()
       val deleted = insertDeletedEvent()
 
-      assertEquals(listOf(created, deleted), service.getNotifications(plantingSeasonId))
+      assertEquals(listOf(created.event, deleted.event), service.getNotifications(plantingSeasonId))
     }
 
     @Test
@@ -81,7 +81,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val newest = insertDeletedEvent()
       insertPlantingSeasonNotification(lastDismissedEventLogId = dismissed.id)
 
-      assertEquals(listOf(newer, newest), service.getNotifications(plantingSeasonId))
+      assertEquals(listOf(newer.event, newest.event), service.getNotifications(plantingSeasonId))
     }
 
     @Test
@@ -98,11 +98,8 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           )
 
       val combined =
-          second.copy(
-              event =
-                  (second.event as PlantingSeasonUpdatedEvent).copy(
-                      changedFrom = PlantingSeasonUpdatedEventValues(name = "A")
-                  )
+          (second.event as PlantingSeasonUpdatedEvent).copy(
+              changedFrom = PlantingSeasonUpdatedEventValues(name = "A")
           )
 
       assertEquals(listOf(combined), service.getNotifications(plantingSeasonId))
@@ -114,7 +111,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val expected = insertCreatedEvent()
       insertCreatedEvent(plantingSeasonId = otherSeasonId)
 
-      assertEquals(listOf(expected), service.getNotifications(plantingSeasonId))
+      assertEquals(listOf(expected.event), service.getNotifications(plantingSeasonId))
     }
 
     @Test
@@ -123,7 +120,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       insertPlantingSeasonNotification(lastDismissedEventLogId = dismissed.id)
 
       assertEquals(
-          emptyList<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>(),
+          emptyList<PlantingSeasonRelatedPersistentEvent>(),
           service.getNotifications(plantingSeasonId),
       )
     }
@@ -146,8 +143,8 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
       assertEquals(
           mapOf(
-              plantingSeasonId to listOf(firstSeasonEvent),
-              otherSeasonId to listOf(otherSeasonEvent),
+              plantingSeasonId to listOf(firstSeasonEvent.event),
+              otherSeasonId to listOf(otherSeasonEvent.event),
           ),
           service.getNotifications(organizationId),
       )
@@ -166,8 +163,8 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
       assertEquals(
           mapOf(
-              plantingSeasonId to listOf(firstSeasonNewer),
-              otherSeasonId to listOf(otherSeasonEvent),
+              plantingSeasonId to listOf(firstSeasonNewer.event),
+              otherSeasonId to listOf(otherSeasonEvent.event),
           ),
           service.getNotifications(organizationId),
       )
@@ -187,7 +184,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       )
 
       assertEquals(
-          mapOf(plantingSeasonId to listOf(expected)),
+          mapOf(plantingSeasonId to listOf(expected.event)),
           service.getNotifications(organizationId),
       )
     }
@@ -197,7 +194,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val emptyOrganizationId = insertOrganization()
 
       assertEquals(
-          emptyMap<PlantingSeasonId, List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>>(),
+          emptyMap<PlantingSeasonId, List<PlantingSeasonRelatedPersistentEvent>>(),
           service.getNotifications(emptyOrganizationId),
       )
     }
@@ -246,27 +243,27 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           )
 
       val combined =
-          second.copy(
-              event =
-                  (second.event as PlantingSeasonUpdatedEvent).copy(
-                      changedFrom =
-                          PlantingSeasonUpdatedEventValues(
-                              endDate = firstEnd,
-                              name = "A",
-                              startDate = firstStart,
-                              status = PlantingSeasonStatus.Upcoming,
-                          ),
-                      changedTo =
-                          PlantingSeasonUpdatedEventValues(
-                              endDate = secondEnd,
-                              name = "B",
-                              startDate = secondStart,
-                              status = PlantingSeasonStatus.Active,
-                          ),
-                  )
+          (second.event as PlantingSeasonUpdatedEvent).copy(
+              changedFrom =
+                  PlantingSeasonUpdatedEventValues(
+                      endDate = firstEnd,
+                      name = "A",
+                      startDate = firstStart,
+                      status = PlantingSeasonStatus.Upcoming,
+                  ),
+              changedTo =
+                  PlantingSeasonUpdatedEventValues(
+                      endDate = secondEnd,
+                      name = "B",
+                      startDate = secondStart,
+                      status = PlantingSeasonStatus.Active,
+                  ),
           )
 
-      assertEquals(listOf(created, combined, third), service.getNotifications(plantingSeasonId))
+      assertEquals(
+          listOf(created.event, combined, third.event),
+          service.getNotifications(plantingSeasonId),
+      )
     }
 
     @Test
@@ -277,7 +274,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               changedTo = PlantingSeasonUpdatedEventValues(name = "B"),
           )
 
-      assertEquals(listOf(update), service.getNotifications(plantingSeasonId))
+      assertEquals(listOf(update.event), service.getNotifications(plantingSeasonId))
     }
   }
 
@@ -288,7 +285,10 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val seasonCreated = insertCreatedEvent()
       val targetCreated = insertSpeciesTargetCreatedEvent()
 
-      assertEquals(listOf(seasonCreated, targetCreated), service.getNotifications(plantingSeasonId))
+      assertEquals(
+          listOf(seasonCreated.event, targetCreated.event),
+          service.getNotifications(plantingSeasonId),
+      )
     }
 
     @Test
@@ -307,11 +307,8 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           )
 
       val combined =
-          second.copy(
-              event =
-                  (second.event as PlantingSeasonSpeciesTargetUpdatedEvent).copy(
-                      changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5)
-                  )
+          (second.event as PlantingSeasonSpeciesTargetUpdatedEvent).copy(
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5)
           )
 
       assertEquals(listOf(combined), service.getNotifications(plantingSeasonId))
@@ -333,7 +330,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 3),
           )
 
-      assertEquals(listOf(first, second), service.getNotifications(plantingSeasonId))
+      assertEquals(listOf(first.event, second.event), service.getNotifications(plantingSeasonId))
     }
 
     @Test
@@ -353,7 +350,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 4),
           )
 
-      assertEquals(listOf(first, second), service.getNotifications(plantingSeasonId))
+      assertEquals(listOf(first.event, second.event), service.getNotifications(plantingSeasonId))
     }
 
     @Test
@@ -364,7 +361,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
           )
 
-      assertEquals(listOf(update), service.getNotifications(plantingSeasonId))
+      assertEquals(listOf(update.event), service.getNotifications(plantingSeasonId))
     }
 
     @Test
@@ -392,18 +389,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           )
 
       val combinedSeason =
-          seasonUpdate2.copy(
-              event =
-                  (seasonUpdate2.event as PlantingSeasonUpdatedEvent).copy(
-                      changedFrom = PlantingSeasonUpdatedEventValues(name = "A")
-                  )
+          (seasonUpdate2.event as PlantingSeasonUpdatedEvent).copy(
+              changedFrom = PlantingSeasonUpdatedEventValues(name = "A")
           )
       val combinedTarget =
-          targetUpdate2.copy(
-              event =
-                  (targetUpdate2.event as PlantingSeasonSpeciesTargetUpdatedEvent).copy(
-                      changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5)
-                  )
+          (targetUpdate2.event as PlantingSeasonSpeciesTargetUpdatedEvent).copy(
+              changedFrom = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5)
           )
 
       assertEquals(
