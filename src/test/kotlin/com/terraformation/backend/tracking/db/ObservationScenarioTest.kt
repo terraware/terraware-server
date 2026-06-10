@@ -98,7 +98,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun initialSetUp() {
     organizationId = insertOrganization()
-    plantingSiteId = insertPlantingSite(x = 0, areaHa = BigDecimal(2500))
+    plantingSiteId = insertPlantingSite(areaHa = BigDecimal(2500))
 
     every { user.canReadObservation(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true

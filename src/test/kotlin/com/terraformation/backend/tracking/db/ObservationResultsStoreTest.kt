@@ -1230,7 +1230,7 @@ class ObservationResultsStoreTest : ObservationScenarioTest() {
     @Test
     fun `fetch observation summary with temp plots`() {
       val plantingSiteId =
-          insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
+          insertPlantingSite(areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
       every { user.canReadPlantingSite(plantingSiteId) } returns true
 
       runSummaryScenario(

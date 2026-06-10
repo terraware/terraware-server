@@ -84,7 +84,7 @@ class PublishedActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @BeforeEach
     fun setUp() {
-      insertPlantingSite(x = 0)
+      insertPlantingSite()
       insertStratum()
       insertSubstratum()
       insertMonitoringPlot()

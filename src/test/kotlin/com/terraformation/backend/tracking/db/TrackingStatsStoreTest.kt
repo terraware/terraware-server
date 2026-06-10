@@ -53,24 +53,24 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       //
       // (70 * 10 + 50 * 20 + 10 * 40) / (10 + 20 + 40) = 30
 
-      insertPlantingSite(projectId = projectId1, x = 0)
+      insertPlantingSite(projectId = projectId1)
       insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(100))
       insertObservationStratumResult(survivalRate = 90, survivalRateArea = 5)
       insertObservation(completedTime = Instant.ofEpochSecond(200))
       insertObservationStratumResult(survivalRate = 70, survivalRateArea = 10)
 
-      insertPlantingSite(projectId = projectId1, x = 0)
+      insertPlantingSite(projectId = projectId1)
       insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(300))
       insertObservationStratumResult(survivalRate = 50, survivalRateArea = 20)
 
-      insertPlantingSite(projectId = projectId2, x = 0)
+      insertPlantingSite(projectId = projectId2)
       insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(400))
       insertObservationStratumResult(survivalRate = 10, survivalRateArea = 40)
 
-      insertPlantingSite(projectId = projectId2, x = 0)
+      insertPlantingSite(projectId = projectId2)
       insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(500))
       insertObservationStratumResult(survivalRate = 30, survivalRateArea = 80)
@@ -79,7 +79,7 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       // Other organization's site should be ignored
       insertOrganization()
-      insertPlantingSite(x = 0)
+      insertPlantingSite()
       insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(600))
       insertObservationStratumResult(survivalRate = 30, survivalRateArea = 80)
@@ -91,7 +91,7 @@ class TrackingStatsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `returns null if no sites in scope have survival rates`() {
       val projectId = insertProject()
-      insertPlantingSite(projectId = projectId, x = 0)
+      insertPlantingSite(projectId = projectId)
       insertStratum()
       insertObservation(completedTime = Instant.ofEpochSecond(100))
       insertObservationStratumResult()

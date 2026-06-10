@@ -89,7 +89,7 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Admin)
-    insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
+    insertPlantingSite(gridOrigin = point(1))
     insertMonitoringPlot()
     observationId = insertObservation(state = ObservationState.InProgress)
     fileId = insertFile()

@@ -225,7 +225,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Admin)
-    plantingSiteId = insertPlantingSite(x = 0, width = 11, gridOrigin = point(1))
+    plantingSiteId = insertPlantingSite(width = 11, gridOrigin = point(1))
   }
 
   @Nested
@@ -356,7 +356,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       // In stratum 2, the service should create two permanent plots, but neither of them should be
       // included in the observation since they all lie in an unrequested substratum.
 
-      plantingSiteId = insertPlantingSite(x = 0, width = 14, gridOrigin = point(1))
+      plantingSiteId = insertPlantingSite(width = 14, gridOrigin = point(1))
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
 
@@ -503,7 +503,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       // - Substrata that are not requested are not included in the observation, meaning we only
       //   include the plots in substrata 1 and 2.
 
-      plantingSiteId = insertPlantingSite(x = 0, width = 15, gridOrigin = point(1))
+      plantingSiteId = insertPlantingSite(width = 15, gridOrigin = point(1))
       insertFacility(type = FacilityType.Nursery)
       insertSpecies()
 
@@ -2449,7 +2449,7 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       // Observation in another org the user cannot manage — skipped even with a completed plot.
       val otherOrganizationId = insertOrganization()
-      val otherPlantingSiteId = insertPlantingSite(organizationId = otherOrganizationId, x = 0)
+      val otherPlantingSiteId = insertPlantingSite(organizationId = otherOrganizationId)
       insertObservation(
           plantingSiteId = otherPlantingSiteId,
           state = ObservationState.Completed,

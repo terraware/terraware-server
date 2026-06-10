@@ -375,7 +375,7 @@ internal class ActivityMediaServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `throws exception if activity is an observation`() {
-      insertPlantingSite(x = 0, width = 10)
+      insertPlantingSite()
       insertStratum()
       insertSubstratum()
       insertMonitoringPlot()

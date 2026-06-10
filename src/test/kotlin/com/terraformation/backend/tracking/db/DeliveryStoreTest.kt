@@ -38,7 +38,7 @@ internal class DeliveryStoreTest : DatabaseTest(), RunsAsUser {
     DeliveryStore(clock, deliveriesDao, dslContext, ParentStore(dslContext), plantingsDao)
   }
 
-  private val plantingSiteId by lazy { insertPlantingSite(x = 0) }
+  private val plantingSiteId by lazy { insertPlantingSite() }
   private val stratumId by lazy { insertStratum(plantingSiteId = plantingSiteId) }
   private val substratumId by lazy { insertSubstratum(stratumId = stratumId) }
   private val speciesId1 by lazy { insertSpecies() }

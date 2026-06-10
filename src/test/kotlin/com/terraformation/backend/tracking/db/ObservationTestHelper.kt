@@ -87,7 +87,6 @@ class ObservationTestHelper(
             height = height,
             timeZone = timeZone,
             width = width,
-            x = 0,
         )
     test.insertStratum(
         height = height,

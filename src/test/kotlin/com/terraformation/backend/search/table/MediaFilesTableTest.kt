@@ -38,7 +38,7 @@ internal class MediaFilesTableTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `returns observation media files alongside organization media files`() {
-    insertPlantingSite(x = 0, width = 11)
+    insertPlantingSite()
     insertMonitoringPlot()
     insertObservation()
     insertObservationPlot()
@@ -68,7 +68,7 @@ internal class MediaFilesTableTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `exposes observation-specific fields`() {
-    insertPlantingSite(x = 0, width = 11)
+    insertPlantingSite()
     insertMonitoringPlot()
     insertObservation()
     insertObservationPlot()
@@ -112,7 +112,7 @@ internal class MediaFilesTableTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `exposes observation and monitoringPlot sublists for observation media`() {
-    insertPlantingSite(x = 0, width = 11)
+    insertPlantingSite()
     val monitoringPlotId = insertMonitoringPlot()
     val observationId = insertObservation()
     insertObservationPlot()
@@ -199,7 +199,7 @@ internal class MediaFilesTableTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `user without org role sees no media files`() {
-    insertPlantingSite(x = 0, width = 11)
+    insertPlantingSite()
     insertMonitoringPlot()
     insertObservation()
     insertObservationPlot()

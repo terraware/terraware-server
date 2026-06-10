@@ -22,7 +22,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
     fun `updates editable values`() {
       val createdTime = Instant.ofEpochSecond(1000)
       val createdBy = insertUser()
-      val plantingSiteId = insertPlantingSite(x = 0)
+      val plantingSiteId = insertPlantingSite()
 
       val initialRow =
           StrataRow(
@@ -94,7 +94,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
 
     @Test
     fun `updates full names of substrata if stratum is renamed`() {
-      insertPlantingSite(x = 0)
+      insertPlantingSite()
       val stratumId1 = insertStratum(name = "initial 1")
       val substratumId1 = insertSubstratum(name = "sub 1")
       val substratumId2 = insertSubstratum(name = "sub 2")
@@ -115,7 +115,7 @@ internal class PlantingSiteStoreUpdateStratumTest : BasePlantingSiteStoreTest() 
 
     @Test
     fun `updates stratum name in current history entry`() {
-      insertPlantingSite(x = 0)
+      insertPlantingSite()
       val stratumId = insertStratum(name = "initial")
       insertSubstratum(name = "substratum")
 

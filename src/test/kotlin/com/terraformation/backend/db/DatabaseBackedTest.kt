@@ -2472,7 +2472,7 @@ abstract class DatabaseBackedTest {
   fun insertPlantingSite(
       row: PlantingSitesRow = PlantingSitesRow(),
       areaHa: BigDecimal? = row.areaHa,
-      x: Number? = null,
+      x: Number? = 0,
       y: Number? = if (x != null) 0 else null,
       width: Number = 3,
       height: Number = 2,

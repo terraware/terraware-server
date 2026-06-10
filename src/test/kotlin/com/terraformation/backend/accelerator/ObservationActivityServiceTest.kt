@@ -141,7 +141,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     organizationId = insertOrganization()
     insertOrganizationUser(role = Role.Manager)
     projectId = insertProject(phase = AcceleratorPhase.Phase2PlanAndScale)
-    plantingSiteId = insertPlantingSite(x = 0, width = 15, projectId = projectId)
+    plantingSiteId = insertPlantingSite(projectId = projectId)
 
     observationId = insertObservation(completedTime = Instant.EPOCH)
     insertStratum()

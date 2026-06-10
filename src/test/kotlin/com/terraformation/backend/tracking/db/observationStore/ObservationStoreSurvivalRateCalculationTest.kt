@@ -474,7 +474,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
   @Test
   fun `survival rate is recalculated correctly for a substratum that has only temp plots`() {
-    val plantingSiteId = insertPlantingSite(survivalRateIncludesTempPlots = true, x = 0, y = 0)
+    val plantingSiteId = insertPlantingSite(survivalRateIncludesTempPlots = true)
     val stratumId = insertStratum()
     val substratum1 = insertSubstratum()
     val observationId1 = insertObservation()
@@ -844,7 +844,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   @Test
   fun `survival rate is calculated for a site including temp plot data`() {
     val newPlantingSiteId =
-        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
+        insertPlantingSite(areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
 
     every { user.canReadPlantingSite(newPlantingSiteId) } returns true
 
@@ -1496,7 +1496,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
   @Test
   fun `survival rate with geometry change between observations, includes temp`() {
     val newPlantingSiteId =
-        insertPlantingSite(x = 0, areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
+        insertPlantingSite(areaHa = BigDecimal(2500), survivalRateIncludesTempPlots = true)
     every { user.canReadPlantingSite(newPlantingSiteId) } returns true
 
     fun updatePlantingSite() {

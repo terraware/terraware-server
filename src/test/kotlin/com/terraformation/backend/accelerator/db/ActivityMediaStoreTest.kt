@@ -61,7 +61,7 @@ class ActivityMediaStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `returns observation metadata for observation media files`() {
-      insertPlantingSite(x = 0, width = 11)
+      insertPlantingSite()
       insertStratum()
       insertSubstratum()
       insertMonitoringPlot(plotNumber = 123)

@@ -93,7 +93,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       insertActivityMediaFile()
       insertPublishedActivityMediaFile()
 
-      insertPlantingSite(x = 0, width = 10)
+      insertPlantingSite()
       insertStratum()
       insertSubstratum()
       insertMonitoringPlot(plotNumber = 123, isAdHoc = true)
@@ -321,7 +321,7 @@ class PublishedActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       activitiesDao.update(
           activitiesDao.fetchOneById(activityId)!!.copy(activityTypeId = ActivityType.Monitoring)
       )
-      insertPlantingSite(x = 0, width = 10)
+      insertPlantingSite()
       insertStratum()
       insertSubstratum()
       val monitoringPlotId = insertMonitoringPlot()
