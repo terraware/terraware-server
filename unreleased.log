@@ -1,3 +1,4 @@
+745998b8 Tell agents not to run parallel Gradle commands (#4574)
 a4dae018 Default test planting sites to have boundaries, history (#4573)
 96f6e507 Improve plot completion performance (#4569)
 5f4b4417 Fix jOOQ static type registry warnings (#4567)
