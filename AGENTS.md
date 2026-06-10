@@ -9,6 +9,8 @@
 - Run single test: `./gradlew test --tests "com.terraformation.backend.package.ClassName"`
 - Generate API docs: `./gradlew generateOpenApiDocs`
 
+Run ./gradlew commands one at a time, serially, rather than launching multiple of them in the background. Concurrent Gradle runs can cause inconsistent results and can trigger unnecessary recompilation.
+
 ## Code Style Guidelines
 
 - See the file docs/CONVENTIONS.md for coding conventions.
