@@ -748,14 +748,6 @@ class BatchStore(
       withdrawalsDao.insert(withdrawalsRow)
       val withdrawalId = withdrawalsRow.id!!
 
-      if (withdrawal.scheduledPlantingDateRequestId != null) {
-        eventPublisher.publishEvent(
-            WithdrawalAssociatedWithPlantingDateRequestEvent(
-                withdrawal.scheduledPlantingDateRequestId
-            )
-        )
-      }
-
       val destinationBatchIds: Map<BatchId, BatchId> =
           createDestinationBatches(withdrawalId, withdrawal, readyByDate)
 
@@ -841,6 +833,14 @@ class BatchStore(
 
                 batchWithdrawalsRow
               }
+
+      if (withdrawal.scheduledPlantingDateRequestId != null) {
+        eventPublisher.publishEvent(
+            WithdrawalAssociatedWithPlantingDateRequestEvent(
+                withdrawal.scheduledPlantingDateRequestId
+            )
+        )
+      }
 
       withdrawalsRow.toModel(batchWithdrawalsRows)
     }
