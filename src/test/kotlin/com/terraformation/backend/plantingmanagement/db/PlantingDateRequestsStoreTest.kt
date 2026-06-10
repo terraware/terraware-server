@@ -2,8 +2,10 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
@@ -11,12 +13,16 @@ import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.records.PlantingDateRequestsRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
 import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesCreatedEvent
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -29,22 +35,27 @@ import org.springframework.security.access.AccessDeniedException
 internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store: PlantingDateRequestsStore by lazy {
-    PlantingDateRequestsStore(clock, dslContext, SeasonHelper(dslContext))
+    PlantingDateRequestsStore(clock, dslContext, eventPublisher, SeasonHelper(dslContext))
   }
 
+  private lateinit var organizationId: OrganizationId
   private lateinit var plantingSeasonId: PlantingSeasonId
+  private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var substratumId: SubstratumId
+  private lateinit var substratumHistoryId: SubstratumHistoryId
   private lateinit var speciesId: SpeciesId
 
   @BeforeEach
   fun setUp() {
-    insertOrganization()
-    insertPlantingSite()
+    organizationId = insertOrganization()
+    plantingSiteId = insertPlantingSite(x = 0)
     insertOrganizationUser(role = Role.Manager)
     insertStratum()
     plantingSeasonId = insertPlantingSeason()
     substratumId = insertSubstratum()
+    substratumHistoryId = inserted.substratumHistoryId
     speciesId = insertSpecies()
   }
 
@@ -153,6 +164,41 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       assertThrows<AccessDeniedException> {
         store.create(scheduledPlantingDateId, plantingSeasonId)
       }
+    }
+
+    @Test
+    fun `publishes created events for the request and its species`() {
+      val date = LocalDate.of(2026, 1, 2)
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate(date = date)
+      insertScheduledPlantingDateSpecies(quantity = 5)
+
+      store.create(scheduledPlantingDateId, plantingSeasonId, "notes")
+
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestCreatedEvent(
+              date = date,
+              notes = "notes",
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              status = PlantingDateRequestStatus.Pending,
+          )
+      )
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestSpeciesCreatedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              quantity = 5,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = substratumHistoryId,
+              substratumId = substratumId,
+              substratumName = "1",
+          )
+      )
     }
 
     @Test

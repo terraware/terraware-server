@@ -9,22 +9,27 @@ import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUEST_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
 import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesCreatedEvent
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
 import org.jooq.DSLContext
 import org.jooq.impl.DSL
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.context.event.EventListener
 
 @Named
 class PlantingDateRequestsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
     private val seasonHelper: SeasonHelper,
 ) {
 
@@ -39,19 +44,24 @@ class PlantingDateRequestsStore(
 
     val userId = currentUser().userId
     val now = clock.instant()
+    val (plantingSiteId, organizationId) =
+        seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
 
     dslContext.transaction { _ ->
+      val date =
+          dslContext
+              .select(SCHEDULED_PLANTING_DATES.DATE)
+              .from(SCHEDULED_PLANTING_DATES)
+              .where(SCHEDULED_PLANTING_DATES.ID.eq(scheduledPlantingDateId))
+              .fetchOne(SCHEDULED_PLANTING_DATES.DATE)
+              ?: throw PlantingSeasonScheduledDateNotFoundException(scheduledPlantingDateId)
+
       val rowsInserted =
           with(PLANTING_DATE_REQUESTS) {
             dslContext
                 .insertInto(PLANTING_DATE_REQUESTS)
                 .set(SCHEDULED_PLANTING_DATE_ID, scheduledPlantingDateId)
-                .set(
-                    DATE,
-                    DSL.select(SCHEDULED_PLANTING_DATES.DATE)
-                        .from(SCHEDULED_PLANTING_DATES)
-                        .where(SCHEDULED_PLANTING_DATES.ID.eq(scheduledPlantingDateId)),
-                )
+                .set(DATE, date)
                 .set(NOTES, notes)
                 .set(CREATED_BY, userId)
                 .set(CREATED_TIME, now)
@@ -67,6 +77,43 @@ class PlantingDateRequestsStore(
       }
 
       insertRequestSpecies(scheduledPlantingDateId)
+
+      eventPublisher.publishEvent(
+          PlantingDateRequestCreatedEvent(
+              date = date,
+              notes = notes,
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              status = PlantingDateRequestStatus.Pending,
+          )
+      )
+
+      val quantities = fetchRequestSpeciesQuantities(scheduledPlantingDateId)
+      if (quantities.isNotEmpty()) {
+        val substrataInfo =
+            seasonHelper.fetchSubstrataInfo(quantities.keys.map { it.first }.toSet())
+
+        quantities.forEach { (key, quantity) ->
+          val (substratumId, speciesId) = key
+          val info = substrataInfo[substratumId]!!
+          eventPublisher.publishEvent(
+              PlantingDateRequestSpeciesCreatedEvent(
+                  organizationId = organizationId,
+                  plantingSeasonId = plantingSeasonId,
+                  plantingSiteId = plantingSiteId,
+                  quantity = quantity,
+                  scheduledPlantingDateId = scheduledPlantingDateId,
+                  speciesId = speciesId,
+                  stratumName = info.stratumName,
+                  substratumHistoryId = info.substratumHistoryId,
+                  substratumId = substratumId,
+                  substratumName = info.substratumName,
+              )
+          )
+        }
+      }
     }
   }
 
@@ -137,6 +184,18 @@ class PlantingDateRequestsStore(
           .execute()
     }
   }
+
+  private fun fetchRequestSpeciesQuantities(
+      scheduledPlantingDateId: ScheduledPlantingDateId
+  ): Map<Pair<SubstratumId, SpeciesId>, Int> =
+      with(PLANTING_DATE_REQUEST_SPECIES) {
+        dslContext
+            .select(SUBSTRATUM_ID, SPECIES_ID, QUANTITY)
+            .from(PLANTING_DATE_REQUEST_SPECIES)
+            .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+            .fetch()
+            .associate { (it[SUBSTRATUM_ID]!! to it[SPECIES_ID]!!) to it[QUANTITY]!! }
+      }
 
   private fun updateRequestStatus(scheduledPlantingDateId: ScheduledPlantingDateId) {
     val requestedQuantities: Map<SpeciesId, BigDecimal> =
