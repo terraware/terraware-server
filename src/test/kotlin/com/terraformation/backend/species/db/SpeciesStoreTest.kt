@@ -614,7 +614,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
       insertSpecies(scientificName = "Unused species")
 
       insertFacility(type = FacilityType.Nursery)
-      insertPlantingSite(x = 0)
+      insertPlantingSite()
       insertStratum()
       val substratumId = insertSubstratum()
       insertMonitoringPlot()
@@ -831,7 +831,7 @@ internal class SpeciesStoreTest : DatabaseTest(), RunsAsUser {
         )
     store.createSpecies(NewSpeciesModel(organizationId = organizationId, scientificName = "unused"))
 
-    insertPlantingSite(x = 0)
+    insertPlantingSite()
     insertStratum()
     insertSubstratum()
     insertMonitoringPlot()

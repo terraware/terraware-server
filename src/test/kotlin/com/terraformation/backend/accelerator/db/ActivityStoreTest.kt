@@ -268,7 +268,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `includes activity media`() {
       insertOrganizationUser(role = Role.Admin)
-      insertPlantingSite(x = 0, width = 11)
+      insertPlantingSite()
       insertStratum()
       insertSubstratum()
       insertMonitoringPlot(plotNumber = 321)
@@ -874,7 +874,7 @@ class ActivityStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               description = "Original description",
               projectId = projectId,
           )
-      insertPlantingSite(x = 0, width = 10)
+      insertPlantingSite()
       insertObservation()
       insertActivityObservation()
 

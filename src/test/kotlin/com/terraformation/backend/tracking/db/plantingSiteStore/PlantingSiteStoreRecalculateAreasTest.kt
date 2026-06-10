@@ -60,7 +60,7 @@ internal class PlantingSiteStoreRecalculateAreasTest : BasePlantingSiteStoreTest
 
   @Test
   fun `skips sites without a boundary`() {
-    val siteId = insertPlantingSite(areaHa = null)
+    val siteId = insertPlantingSite(x = null, areaHa = null)
 
     store.recalculatePlantingSiteAreas(successMessages::add, failureMessages::add)
 

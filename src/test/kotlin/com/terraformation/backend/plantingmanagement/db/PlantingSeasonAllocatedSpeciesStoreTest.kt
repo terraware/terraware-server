@@ -33,7 +33,7 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
   fun setUp() {
     insertOrganization()
     insertOrganizationUser(role = Role.Manager)
-    insertPlantingSite(x = 0)
+    insertPlantingSite()
     plantingSeasonId = insertPlantingSeason()
     speciesId = insertSpecies()
   }

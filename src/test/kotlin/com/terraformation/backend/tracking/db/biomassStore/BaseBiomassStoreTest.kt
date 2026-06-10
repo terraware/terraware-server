@@ -27,7 +27,7 @@ abstract class BaseBiomassStoreTest : DatabaseTest(), RunsAsUser {
   @BeforeEach
   fun setUp() {
     organizationId = insertOrganization()
-    plantingSiteId = insertPlantingSite(x = 0)
+    plantingSiteId = insertPlantingSite()
 
     every { user.canCreateObservation(any()) } returns true
     every { user.canManageObservation(any()) } returns true
