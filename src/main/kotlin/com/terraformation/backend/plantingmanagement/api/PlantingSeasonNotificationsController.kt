@@ -36,9 +36,7 @@ class PlantingSeasonNotificationsController(
           PlantingSeasonNotificationType.InventoryPlanning ->
               plantingSeasonNotificationsService
                   .getInventoryPlanningNotifications(organizationId)
-                  .map {
-                    PlantingSeasonNotificationPayload(it)
-                  }
+                  .map { PlantingSeasonNotificationPayload(it) }
           PlantingSeasonNotificationType.PlantingSeasonPlanning -> emptyList()
         }
 
