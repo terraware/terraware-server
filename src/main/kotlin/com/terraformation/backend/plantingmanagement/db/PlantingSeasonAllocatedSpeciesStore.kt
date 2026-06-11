@@ -7,6 +7,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_SPECIES_TARGETS
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesDeletedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
@@ -110,12 +111,26 @@ class PlantingSeasonAllocatedSpeciesStore(
   }
 
   private fun delete(plantingSeasonId: PlantingSeasonId, speciesId: SpeciesId) {
-    with(PLANTING_SEASON_ALLOCATED_SPECIES) {
-      dslContext
-          .deleteFrom(PLANTING_SEASON_ALLOCATED_SPECIES)
-          .where(PLANTING_SEASON_ID.eq(plantingSeasonId))
-          .and(SPECIES_ID.eq(speciesId))
-          .execute()
+    val rowsDeleted =
+        with(PLANTING_SEASON_ALLOCATED_SPECIES) {
+          dslContext
+              .deleteFrom(PLANTING_SEASON_ALLOCATED_SPECIES)
+              .where(PLANTING_SEASON_ID.eq(plantingSeasonId))
+              .and(SPECIES_ID.eq(speciesId))
+              .execute()
+        }
+
+    if (rowsDeleted > 0) {
+      val (plantingSiteId, organizationId) =
+          seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
+      eventPublisher.publishEvent(
+          PlantingSeasonAllocatedSpeciesDeletedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              speciesId = speciesId,
+          )
+      )
     }
   }
 }

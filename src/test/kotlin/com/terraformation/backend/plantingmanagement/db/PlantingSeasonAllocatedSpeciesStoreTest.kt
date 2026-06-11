@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonAllocatedSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesDeletedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
@@ -105,9 +106,10 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
     @Test
     fun `does not publish an event when the quantity is unchanged`() {
       store.upsert(plantingSeasonId, speciesId, quantity = 5)
+      eventPublisher.clear()
       store.upsert(plantingSeasonId, speciesId, quantity = 5)
 
-      eventPublisher.assertEventNotPublished<PlantingSeasonAllocatedSpeciesUpdatedEvent>()
+      eventPublisher.assertNoEventsPublished()
     }
 
     @Test
@@ -185,6 +187,38 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
       )
 
       assertTableEmpty(PLANTING_SEASON_ALLOCATED_SPECIES)
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonAllocatedSpeciesDeletedEvent(
+              organizationId = inserted.organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = inserted.plantingSiteId,
+              speciesId = speciesId,
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish a deleted event when the allocation is retained`() {
+      insertStratum()
+      val substratumId1 = insertSubstratum()
+      insertPlantingSeasonSpeciesTarget(substratumId = substratumId1, quantity = 5)
+      insertPlantingSeasonAllocatedSpecies(speciesId = speciesId, quantity = 15)
+
+      store.on(
+          PlantingSeasonSpeciesTargetDeletedEvent(
+              organizationId = inserted.organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = inserted.plantingSiteId,
+              speciesId = speciesId,
+              stratumName = "S1",
+              substratumHistoryId = inserted.substratumHistoryId,
+              substratumId = substratumId1,
+              substratumName = "1",
+          )
+      )
+
+      eventPublisher.assertEventNotPublished<PlantingSeasonAllocatedSpeciesDeletedEvent>()
     }
   }
 }
