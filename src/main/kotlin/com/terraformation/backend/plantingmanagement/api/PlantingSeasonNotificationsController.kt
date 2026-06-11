@@ -7,8 +7,9 @@ import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationAlertModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotificationsService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
@@ -37,7 +38,7 @@ class PlantingSeasonNotificationsController(
           PlantingSeasonNotificationCategory.InventoryPlanning ->
               plantingSeasonNotificationsService
                   .getInventoryPlanningNotifications(organizationId)
-                  .map { PlantingSeasonNotificationPayload(it) }
+                  .map { PlantingSeasonNotificationGroupPayload(it) }
           PlantingSeasonNotificationCategory.PlantingSeasonPlanning -> emptyList()
         }
 
@@ -51,35 +52,35 @@ enum class PlantingSeasonNotificationCategory {
 }
 
 data class GetPlantingSeasonNotificationsResponsePayload(
-    val notifications: List<PlantingSeasonNotificationPayload>
+    val notifications: List<PlantingSeasonNotificationGroupPayload>
 ) : SuccessResponsePayload
 
-data class PlantingSeasonNotificationAlertPayload(
-    val type: com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType,
+data class PlantingSeasonNotificationPayload(
+    val type: PlantingSeasonNotificationType,
     val speciesScientificNames: Set<String>? = null,
 ) {
   constructor(
-      model: PlantingSeasonNotificationAlertModel
+      model: PlantingSeasonNotificationModel
   ) : this(
       type = model.type,
       speciesScientificNames = model.speciesScientificNames,
   )
 }
 
-data class PlantingSeasonNotificationPayload(
+data class PlantingSeasonNotificationGroupPayload(
     val plantingSeasonId: PlantingSeasonId,
     val plantingSeasonName: String,
     val plantingSiteName: String,
     val lastEventLogId: EventLogId,
-    val events: List<PlantingSeasonNotificationAlertPayload>,
+    val notifications: List<PlantingSeasonNotificationPayload>,
 ) {
   constructor(
-      model: PlantingSeasonNotificationModel
+      model: PlantingSeasonNotificationGroupModel
   ) : this(
       plantingSeasonId = model.plantingSeasonId,
       plantingSeasonName = model.plantingSeasonName,
       plantingSiteName = model.plantingSiteName,
       lastEventLogId = model.lastEventLogId,
-      events = model.events.map { PlantingSeasonNotificationAlertPayload(it) },
+      notifications = model.notifications.map { PlantingSeasonNotificationPayload(it) },
   )
 }

@@ -67,23 +67,23 @@ data class ExistingPlantingSeasonScheduledDateModel(
 )
 
 enum class PlantingSeasonNotificationType {
-  PLANTING_SEASON_CLOSED,
-  PLANTING_SEASON_PAST_END_DATE,
-  SPECIES_TARGETS_ADDED,
-  SPECIES_TARGETS_UPDATED,
-  ALLOCATION_QUANTITIES_UPDATED,
-  SEASON_WITHDRAWAL_RECORDED,
+  PlantingSeasonClosed,
+  PlantingSeasonPastEndDate,
+  SpeciesTargetsAdded,
+  SpeciesTargetsUpdated,
+  AllocationQuantitiesUpdated,
+  SeasonWithdrawalRecorded,
 }
 
-data class PlantingSeasonNotificationAlertModel(
+data class PlantingSeasonNotificationModel(
     val type: PlantingSeasonNotificationType,
     val speciesScientificNames: Set<String>? = null,
 )
 
-data class PlantingSeasonNotificationModel(
+data class PlantingSeasonNotificationGroupModel(
     val plantingSeasonId: PlantingSeasonId,
     val plantingSeasonName: String,
     val plantingSiteName: String,
     val lastEventLogId: EventLogId,
-    val events: List<PlantingSeasonNotificationAlertModel>,
+    val notifications: List<PlantingSeasonNotificationModel>,
 )

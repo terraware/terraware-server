@@ -11,7 +11,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_NOTIFICATIONS
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
-import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationAlertModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
@@ -43,7 +43,7 @@ class PlantingSeasonNotificationsService(
    */
   fun getInventoryPlanningNotifications(
       organizationId: OrganizationId
-  ): List<PlantingSeasonNotificationModel> {
+  ): List<PlantingSeasonNotificationGroupModel> {
     val seasonInfoById =
         fetchSeasonInfoByCondition(
             PLANTING_SEASONS.plantingSites.ORGANIZATION_ID.eq(organizationId)
@@ -83,7 +83,7 @@ class PlantingSeasonNotificationsService(
    */
   fun getInventoryPlanningNotifications(
       plantingSeasonId: PlantingSeasonId
-  ): PlantingSeasonNotificationModel? {
+  ): PlantingSeasonNotificationGroupModel? {
     requirePermissions { readPlantingSeason(plantingSeasonId) }
 
     val seasonInfoById = fetchSeasonInfoByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId))
@@ -111,29 +111,29 @@ class PlantingSeasonNotificationsService(
       entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>,
       seasonInfo: SeasonInfo,
       scientificNamesBySpeciesId: Map<SpeciesId, String>,
-  ): PlantingSeasonNotificationModel =
-      PlantingSeasonNotificationModel(
+  ): PlantingSeasonNotificationGroupModel =
+      PlantingSeasonNotificationGroupModel(
           plantingSeasonId = plantingSeasonId,
           plantingSeasonName = seasonInfo.plantingSeasonName,
           plantingSiteName = seasonInfo.plantingSiteName,
           lastEventLogId = entries.maxOf { it.id },
-          events = combineEvents(entries.map { it.event }, scientificNamesBySpeciesId),
+          notifications = combineEvents(entries.map { it.event }, scientificNamesBySpeciesId),
       )
 
   /**
-   * Collapses the events for a single planting season into at most one notification alert per
+   * Collapses the events for a single planting season into at most one notification per
    * [PlantingSeasonNotificationType]. Events that do not map to a notification type are dropped.
-   * For a species target alert, the scientific names of every species referenced by the combined
-   * events are gathered into [PlantingSeasonNotificationAlertModel.speciesScientificNames].
+   * For a species target notification, the scientific names of every species referenced by the
+   * combined events are gathered into [PlantingSeasonNotificationModel.speciesScientificNames].
    *
    * [events] is expected to be ordered by the time each event was logged, which is the order
-   * returned by [EventLogStore.fetchByIdsSince]; alerts are returned in the order their types first
-   * appear.
+   * returned by [EventLogStore.fetchByIdsSince]; notications are returned in the order their types
+   * first appear.
    */
   private fun combineEvents(
       events: List<PlantingSeasonRelatedPersistentEvent>,
       scientificNamesBySpeciesId: Map<SpeciesId, String>,
-  ): List<PlantingSeasonNotificationAlertModel> {
+  ): List<PlantingSeasonNotificationModel> {
     require(events.mapTo(mutableSetOf()) { it.plantingSeasonId }.size <= 1) {
       "combineEvents must be called with events for a single planting season"
     }
@@ -149,7 +149,7 @@ class PlantingSeasonNotificationsService(
     }
 
     return speciesNamesByType.map { (type, speciesNames) ->
-      PlantingSeasonNotificationAlertModel(
+      PlantingSeasonNotificationModel(
           type = type,
           speciesScientificNames = speciesNames.ifEmpty { null },
       )
@@ -160,14 +160,14 @@ class PlantingSeasonNotificationsService(
     get() =
         when (this) {
           is PlantingSeasonSpeciesTargetCreatedEvent ->
-              PlantingSeasonNotificationType.SPECIES_TARGETS_ADDED
+              PlantingSeasonNotificationType.SpeciesTargetsAdded
           is PlantingSeasonSpeciesTargetUpdatedEvent ->
-              PlantingSeasonNotificationType.SPECIES_TARGETS_UPDATED
+              PlantingSeasonNotificationType.SpeciesTargetsUpdated
           is PlantingSeasonUpdatedEvent ->
               if (changedTo.status == PlantingSeasonStatus.Closed) {
-                PlantingSeasonNotificationType.PLANTING_SEASON_CLOSED
+                PlantingSeasonNotificationType.PlantingSeasonClosed
               } else if (changedTo.status == PlantingSeasonStatus.PastEndDate) {
-                PlantingSeasonNotificationType.PLANTING_SEASON_PAST_END_DATE
+                PlantingSeasonNotificationType.PlantingSeasonPastEndDate
               } else {
                 null
               }

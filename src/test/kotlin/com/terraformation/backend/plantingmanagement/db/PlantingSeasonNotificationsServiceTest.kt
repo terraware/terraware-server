@@ -18,7 +18,7 @@ import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
-import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationAlertModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
@@ -75,43 +75,41 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
   private fun model(
       lastEventLogId: EventLogId,
-      events: List<PlantingSeasonNotificationAlertModel>,
+      events: List<PlantingSeasonNotificationModel>,
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSeasonName: String = this.plantingSeasonName,
       plantingSiteName: String = this.plantingSiteName,
   ) =
-      PlantingSeasonNotificationModel(
+      PlantingSeasonNotificationGroupModel(
           plantingSeasonId = plantingSeasonId,
           plantingSeasonName = plantingSeasonName,
           plantingSiteName = plantingSiteName,
           lastEventLogId = lastEventLogId,
-          events = events,
+          notifications = events,
       )
 
   private fun added(vararg speciesNames: String) =
-      PlantingSeasonNotificationAlertModel(
-          PlantingSeasonNotificationType.SPECIES_TARGETS_ADDED,
+      PlantingSeasonNotificationModel(
+          PlantingSeasonNotificationType.SpeciesTargetsAdded,
           speciesNames.toSet(),
       )
 
   private fun updated(vararg speciesNames: String) =
-      PlantingSeasonNotificationAlertModel(
-          PlantingSeasonNotificationType.SPECIES_TARGETS_UPDATED,
+      PlantingSeasonNotificationModel(
+          PlantingSeasonNotificationType.SpeciesTargetsUpdated,
           speciesNames.toSet(),
       )
 
   private val pastEndDate =
-      PlantingSeasonNotificationAlertModel(
-          PlantingSeasonNotificationType.PLANTING_SEASON_PAST_END_DATE
-      )
+      PlantingSeasonNotificationModel(PlantingSeasonNotificationType.PlantingSeasonPastEndDate)
 
   private val closed =
-      PlantingSeasonNotificationAlertModel(PlantingSeasonNotificationType.PLANTING_SEASON_CLOSED)
+      PlantingSeasonNotificationModel(PlantingSeasonNotificationType.PlantingSeasonClosed)
 
   @Nested
   inner class GetInventoryPlanningNotificationsByPlantingSeason {
     @Test
-    fun `returns all alerts when the season has never dismissed a notification`() {
+    fun `returns all notifications when the season has never dismissed a notification`() {
       insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
       clock.instant = clock.instant.plusSeconds(1)
       val updatedEvent = insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
@@ -123,7 +121,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
     }
 
     @Test
-    fun `returns only alerts for events logged after the dismissal watermark`() {
+    fun `returns only notifications for events logged after the dismissal watermark`() {
       val dismissed = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
       clock.instant = clock.instant.plusSeconds(1)
       val newer = insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
@@ -180,7 +178,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   @Nested
   inner class GetInventoryPlanningNotificationsByOrganization {
     @Test
-    fun `groups alerts by planting season`() {
+    fun `groups notifications by planting season`() {
       val otherSeasonId = insertPlantingSeason(name = "Other Season")
       val firstSeasonEvent = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
       val otherSeasonEvent =
@@ -260,7 +258,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val emptyOrganizationId = insertOrganization()
 
       assertEquals(
-          emptyList<PlantingSeasonNotificationModel>(),
+          emptyList<PlantingSeasonNotificationGroupModel>(),
           service.getInventoryPlanningNotifications(emptyOrganizationId),
       )
     }
@@ -278,7 +276,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   @Nested
   inner class CombineEvents {
     @Test
-    fun `collapses events of the same type across species into a single alert`() {
+    fun `collapses events of the same type across species into a single notification`() {
       insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
       insertSpeciesTargetUpdatedEvent(speciesId = speciesId2)
 
@@ -286,7 +284,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
       assertEquals(
           listOf(updated(speciesName1, speciesName2)),
-          notification?.events,
+          notification?.notifications,
       )
     }
 
@@ -308,12 +306,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
       assertEquals(
           listOf(updated(speciesName1, speciesName2)),
-          notification?.events,
+          notification?.notifications,
       )
     }
 
     @Test
-    fun `keeps a separate alert per notification type in first-seen order`() {
+    fun `keeps a separate notification per notification type in first-seen order`() {
       insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
       clock.instant = clock.instant.plusSeconds(1)
       insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
@@ -331,7 +329,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
     }
 
     @Test
-    fun `maps status change alerts correctly`() {
+    fun `maps status change notifications correctly`() {
       insertUpdatedEvent(
           changedFrom = PlantingSeasonUpdatedEventValues(name = "A"),
           changedTo = PlantingSeasonUpdatedEventValues(name = "B"),
