@@ -2281,58 +2281,6 @@ class ObservationStore(
         runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
       }
     }
-    // Editing species totals changes plant density (it derives from live plant counts), so
-    // recompute density for the edited observation and any later ones that roll its data forward.
-    // T0 density edits do not affect plant density, so the T0 event handlers deliberately don't do
-    // this. This is enqueued separately from the survival rate calculation so that a survival-rate
-    // rerun triggered by a T0 edit never recomputes density.
-    jobScheduler.enqueue<ObservationStore> {
-      runRecalculatePlantDensities(plantingSiteId, event.observationId)
-    }
-  }
-
-  fun runRecalculatePlantDensities(
-      plantingSiteId: PlantingSiteId,
-      fromObservationId: ObservationId,
-  ) {
-    systemUser.run {
-      try {
-        recalculatePlantDensities(plantingSiteId, fromObservationId)
-      } catch (e: Exception) {
-        log.error("Plant density recalculation failed for planting site $plantingSiteId", e)
-      }
-    }
-  }
-
-  /**
-   * Recomputes plant density (and its standard deviation) for [fromObservationId] and every later
-   * completed, non-ad-hoc observation of the planting site. Only observations completed at or after
-   * [fromObservationId] can roll its data forward via [latestObservationForSubstratumField], so
-   * earlier observations are left untouched. Observations are processed in chronological order so
-   * each one's plot densities are refreshed before any later observation rolls them up.
-   */
-  private fun recalculatePlantDensities(
-      plantingSiteId: PlantingSiteId,
-      fromObservationId: ObservationId,
-  ) {
-    val observationIds =
-        dslContext
-            .select(OBSERVATIONS.ID.asNonNullable())
-            .from(OBSERVATIONS)
-            .where(OBSERVATIONS.PLANTING_SITE_ID.eq(plantingSiteId))
-            .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-            .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
-            .and(
-                OBSERVATIONS.COMPLETED_TIME.ge(
-                    DSL.select(OBSERVATIONS.COMPLETED_TIME)
-                        .from(OBSERVATIONS)
-                        .where(OBSERVATIONS.ID.eq(fromObservationId))
-                )
-            )
-            .orderBy(OBSERVATIONS.COMPLETED_TIME, OBSERVATIONS.ID)
-            .fetch(OBSERVATIONS.ID.asNonNullable())
-
-    observationIds.forEach { updateObservationResults(it, plantingSiteId) }
   }
 
   fun runRecalculateSurvivalRates(
