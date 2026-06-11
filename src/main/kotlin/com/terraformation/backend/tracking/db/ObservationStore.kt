@@ -2273,16 +2273,6 @@ class ObservationStore(
     }
   }
 
-  @EventListener
-  fun on(event: MonitoringSpeciesTotalsEditedEvent) {
-    val plantingSiteId = event.plantingSiteId
-    enqueueSurvivalRateCalculation(plantingSiteId) {
-      jobScheduler.enqueue<ObservationStore> {
-        runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
-      }
-    }
-  }
-
   fun runRecalculateSurvivalRates(
       plantingSiteId: PlantingSiteId,
       monitoringPlotId: MonitoringPlotId,
