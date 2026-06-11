@@ -2877,7 +2877,7 @@ class ObservationStore(
     val sdStratumPlantDensityStdDev =
         stratumDensities.field("plant_density_std_dev", Int::class.java)
 
-    val sdStratumObservedDensity =
+    val stratumObservedDensity =
         DSL.field(
             DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
                 .from(OBSERVATION_PLOT_RESULTS)
@@ -2905,7 +2905,7 @@ class ObservationStore(
         .set(OBSERVATION_STRATUM_RESULTS.PERMANENT_LIVE, sPermanentLive)
         .set(OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY, sdStratumPlantDensity)
         .set(OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY_STD_DEV, sdStratumPlantDensityStdDev)
-        .set(OBSERVATION_STRATUM_RESULTS.OBSERVED_DENSITY, sdStratumObservedDensity)
+        .set(OBSERVATION_STRATUM_RESULTS.OBSERVED_DENSITY, stratumObservedDensity)
         .from(stratumTotals, stratumDensities)
         .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationId))
         .and(OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(sdStratumId))
@@ -2961,7 +2961,7 @@ class ObservationStore(
     val siPlantDensityStdDev = siteDensities.field("plant_density_std_dev", Int::class.java)
 
     // Observed density ignores last-observed carry-forward: just this observation's plots.
-    val siObservedDensity =
+    val siteObservedDensity =
         DSL.field(
             DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
                 .from(OBSERVATION_PLOT_RESULTS)
@@ -2976,7 +2976,7 @@ class ObservationStore(
         .set(OBSERVATION_SITE_RESULTS.PERMANENT_LIVE, siPermanentLive)
         .set(OBSERVATION_SITE_RESULTS.PLANT_DENSITY, siPlantDensity)
         .set(OBSERVATION_SITE_RESULTS.PLANT_DENSITY_STD_DEV, siPlantDensityStdDev)
-        .set(OBSERVATION_SITE_RESULTS.OBSERVED_DENSITY, siObservedDensity)
+        .set(OBSERVATION_SITE_RESULTS.OBSERVED_DENSITY, siteObservedDensity)
         .from(siteTotals, siteDensities)
         .where(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(observationId))
         .execute()
