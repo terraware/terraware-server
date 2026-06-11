@@ -7,11 +7,12 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
+import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateSpecies
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
-import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateDeletedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesCreatedEvent
@@ -398,17 +399,30 @@ class PlantingSeasonScheduledDatesStore(
     val speciesMultiset =
         with(SCHEDULED_PLANTING_DATE_SPECIES) {
           DSL.multiset(
-                  DSL.select(SPECIES_ID, SUBSTRATUM_ID, QUANTITY)
+                  DSL.select(
+                          SPECIES_ID,
+                          SUBSTRATUM_ID,
+                          QUANTITY,
+                          PLANTING_SEASON_ALLOCATED_SPECIES.QUANTITY,
+                      )
                       .from(SCHEDULED_PLANTING_DATE_SPECIES)
+                      .leftJoin(PLANTING_SEASON_ALLOCATED_SPECIES)
+                      .on(
+                          PLANTING_SEASON_ALLOCATED_SPECIES.PLANTING_SEASON_ID.eq(
+                                  scheduledPlantingDates.PLANTING_SEASON_ID
+                              )
+                              .and(PLANTING_SEASON_ALLOCATED_SPECIES.SPECIES_ID.eq(SPECIES_ID))
+                      )
                       .where(SCHEDULED_PLANTING_DATE_ID.eq(SCHEDULED_PLANTING_DATES.ID))
                       .orderBy(SPECIES_ID, SUBSTRATUM_ID)
               )
               .convertFrom { result ->
                 result.map { record ->
-                  PlantingSeasonScheduledDateSpecies(
+                  ExistingPlantingSeasonScheduledDateSpecies(
+                      allocatedQuantity = record[PLANTING_SEASON_ALLOCATED_SPECIES.QUANTITY] ?: 0,
+                      quantity = record[QUANTITY]!!,
                       speciesId = record[SPECIES_ID]!!,
                       substratumId = record[SUBSTRATUM_ID]!!,
-                      quantity = record[QUANTITY]!!,
                   )
                 }
               }

@@ -51,9 +51,16 @@ data class PlantingSeasonScheduledDateModel(
   }
 }
 
+data class ExistingPlantingSeasonScheduledDateSpecies(
+    val allocatedQuantity: Int,
+    val quantity: Int,
+    val speciesId: SpeciesId,
+    val substratumId: SubstratumId,
+)
+
 data class ExistingPlantingSeasonScheduledDateModel(
     val date: LocalDate,
     val plantingSeasonId: PlantingSeasonId,
     val scheduledPlantingDateId: ScheduledPlantingDateId,
-    val species: List<PlantingSeasonScheduledDateSpecies> = emptyList(),
+    val species: List<ExistingPlantingSeasonScheduledDateSpecies> = emptyList(),
 )

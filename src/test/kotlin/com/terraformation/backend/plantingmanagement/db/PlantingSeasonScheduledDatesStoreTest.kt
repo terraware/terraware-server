@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tracking.tables.records.ScheduledPlantingDa
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATE_SPECIES
 import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateModel
+import com.terraformation.backend.plantingmanagement.ExistingPlantingSeasonScheduledDateSpecies
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonScheduledDateSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
@@ -119,7 +120,8 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
                   scheduledPlantingDateId = scheduledDate2,
                   species =
                       listOf(
-                          PlantingSeasonScheduledDateSpecies(
+                          ExistingPlantingSeasonScheduledDateSpecies(
+                              allocatedQuantity = 0,
                               quantity = 20,
                               speciesId = speciesId2,
                               substratumId = substratumId,
@@ -132,7 +134,8 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
                   scheduledPlantingDateId = scheduledDate1,
                   species =
                       listOf(
-                          PlantingSeasonScheduledDateSpecies(
+                          ExistingPlantingSeasonScheduledDateSpecies(
+                              allocatedQuantity = 0,
                               quantity = 10,
                               speciesId = speciesId,
                               substratumId = substratumId,
@@ -189,12 +192,14 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
               scheduledPlantingDateId = scheduledDate,
               species =
                   listOf(
-                      PlantingSeasonScheduledDateSpecies(
+                      ExistingPlantingSeasonScheduledDateSpecies(
+                          allocatedQuantity = 0,
                           quantity = 10,
                           speciesId = speciesId,
                           substratumId = substratumId,
                       ),
-                      PlantingSeasonScheduledDateSpecies(
+                      ExistingPlantingSeasonScheduledDateSpecies(
+                          allocatedQuantity = 0,
                           quantity = 20,
                           speciesId = speciesId2,
                           substratumId = substratumId,
@@ -203,6 +208,89 @@ internal class PlantingSeasonScheduledDatesStoreTest : DatabaseTest(), RunsAsDat
           ),
           result,
           "returns correct scheduled date",
+      )
+    }
+
+    @Test
+    fun `populates allocatedQuantity from the planting season allocation for each species`() {
+      val speciesId2 = insertSpecies()
+      val substratumId2 = insertSubstratum()
+      val scheduledDate = insertPlantingSeasonScheduledDate(date = LocalDate.EPOCH)
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = scheduledDate,
+          speciesId = speciesId,
+          substratumId = substratumId,
+          quantity = 10,
+      )
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = scheduledDate,
+          speciesId = speciesId,
+          substratumId = substratumId2,
+          quantity = 20,
+      )
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = scheduledDate,
+          speciesId = speciesId2,
+          substratumId = substratumId,
+          quantity = 30,
+      )
+
+      // The allocation is per (season, species), so both substrata of speciesId share it.
+      // speciesId2
+      // has no allocation, so its allocatedQuantity is 0.
+      insertPlantingSeasonAllocatedSpecies(speciesId = speciesId, quantity = 100)
+
+      val result = store.fetch(plantingSeasonId, scheduledDate)
+
+      assertEquals(
+          listOf(
+              ExistingPlantingSeasonScheduledDateSpecies(
+                  allocatedQuantity = 100,
+                  quantity = 10,
+                  speciesId = speciesId,
+                  substratumId = substratumId,
+              ),
+              ExistingPlantingSeasonScheduledDateSpecies(
+                  allocatedQuantity = 100,
+                  quantity = 20,
+                  speciesId = speciesId,
+                  substratumId = substratumId2,
+              ),
+              ExistingPlantingSeasonScheduledDateSpecies(
+                  allocatedQuantity = 0,
+                  quantity = 30,
+                  speciesId = speciesId2,
+                  substratumId = substratumId,
+              ),
+          ),
+          result.species,
+          "Allocated quantity per species",
+      )
+    }
+
+    @Test
+    fun `does not include allocations from other planting seasons`() {
+      val scheduledDate = insertPlantingSeasonScheduledDate(date = LocalDate.EPOCH)
+      insertScheduledPlantingDateSpecies(
+          scheduledPlantingDateId = scheduledDate,
+          speciesId = speciesId,
+          substratumId = substratumId,
+          quantity = 10,
+      )
+
+      val otherSeasonId = insertPlantingSeason()
+      insertPlantingSeasonAllocatedSpecies(
+          plantingSeasonId = otherSeasonId,
+          speciesId = speciesId,
+          quantity = 100,
+      )
+
+      val result = store.fetch(plantingSeasonId, scheduledDate)
+
+      assertEquals(
+          0,
+          result.species.single().allocatedQuantity,
+          "Allocation from another season is excluded",
       )
     }
 
