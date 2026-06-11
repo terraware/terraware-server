@@ -1,5 +1,6 @@
 package com.terraformation.backend.plantingmanagement
 
+import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
@@ -63,4 +64,26 @@ data class ExistingPlantingSeasonScheduledDateModel(
     val plantingSeasonId: PlantingSeasonId,
     val scheduledPlantingDateId: ScheduledPlantingDateId,
     val species: List<ExistingPlantingSeasonScheduledDateSpecies> = emptyList(),
+)
+
+enum class PlantingSeasonNotificationType {
+  PlantingSeasonClosed,
+  PlantingSeasonPastEndDate,
+  SpeciesTargetsAdded,
+  SpeciesTargetsUpdated,
+  AllocationQuantitiesUpdated,
+  SeasonWithdrawalRecorded,
+}
+
+data class PlantingSeasonNotificationModel(
+    val type: PlantingSeasonNotificationType,
+    val speciesScientificNames: Set<String>? = null,
+)
+
+data class PlantingSeasonNotificationGroupModel(
+    val plantingSeasonId: PlantingSeasonId,
+    val plantingSeasonName: String,
+    val plantingSiteName: String,
+    val lastEventLogId: EventLogId,
+    val notifications: List<PlantingSeasonNotificationModel>,
 )
