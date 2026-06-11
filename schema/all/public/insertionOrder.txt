@@ -36,6 +36,7 @@ users
 country_subdivisions
 files
 organizations
+event_log
 species
 facilities
 sub_locations
@@ -47,7 +48,6 @@ internal_tags
 timeseries
 uploads
 device_templates
-event_log
 identifier_sequences
 organization_report_settings
 project_report_settings

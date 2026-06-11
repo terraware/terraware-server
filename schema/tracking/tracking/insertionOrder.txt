@@ -31,6 +31,7 @@ observation_biomass_species
 deliveries
 observation_biomass_quadrat_details
 planting_season_allocated_species
+planting_season_notifications
 planting_site_notifications
 planting_site_populations
 planting_site_survival_rate_calculations

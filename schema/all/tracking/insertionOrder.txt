@@ -39,6 +39,7 @@ simplified_substrata
 simplified_substratum_histories
 monitoring_plot_overlaps
 observation_requested_substrata
+planting_season_notifications
 planting_site_notifications
 planting_site_populations
 stratum_populations

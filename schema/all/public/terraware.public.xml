@@ -330,7 +330,9 @@
          </index>
       </table>
       <table name="event_log" remarks="Holds historical information about what operations were performed at what times. Events are JSON-serialized objects that may contain identifiers such as organization IDs; identifiers are not treated as foreign keys, so events may contain references to objects that were subsequently deleted." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="last_dismissed_event_log_id" foreignKey="planting_season_notifications_last_dismissed_event_log_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_notifications"/>
+         </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="created_by" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="event_log_created_by_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
          </column>
