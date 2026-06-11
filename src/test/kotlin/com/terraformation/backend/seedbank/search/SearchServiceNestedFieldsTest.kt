@@ -16,6 +16,7 @@ import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
+import com.terraformation.backend.search.field.AliasField
 import java.time.LocalDate
 import java.time.ZoneId
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -1186,23 +1187,37 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
 
   @Test
   fun `all fields are valid sort keys`() {
-    val prefix = SearchFieldPrefix(tables.organizations)
+    val rootPrefix = SearchFieldPrefix(tables.organizations)
 
-    val expected = listOf(mapOf("id" to "$organizationId"))
-    val searchFields = listOf(prefix.resolve("id"))
+    tables.organizations.getAllFieldNames().forEach { fieldName ->
+      val fullyQualifiedField = rootPrefix.resolve(fieldName)
 
-    prefix.searchTable.getAllFieldNames().forEach { fieldName ->
-      val field = prefix.resolve(fieldName)
-      val sortFields = listOf(SearchSortField(field))
       assertDoesNotThrow("Sort by $fieldName") {
-        val result =
-            searchService.search(
-                prefix,
-                searchFields,
-                mapOf(prefix to NoConditionNode()),
-                sortFields,
-            )
-        assertEquals(expected, result.results, "Sort by $fieldName")
+        if (fullyQualifiedField.searchField is AliasField) {
+          // An alias points to its target's search table, which doesn't know how to resolve the
+          // alias's name if (as is usually true) its name differs from the name of the target
+          // field.
+          val sortFields = listOf(SearchSortField(fullyQualifiedField))
+          searchService.search(
+              rootPrefix,
+              listOf(fullyQualifiedField),
+              mapOf(rootPrefix to NoConditionNode()),
+              sortFields,
+          )
+        } else {
+          // Query and sort by the field directly on its search table rather than in the form of
+          // nested sublists from the root prefix; sublists cause the search code to generate
+          // SQL with lots of nested subqueries, which slows the test down.
+          val prefix = SearchFieldPrefix(fullyQualifiedField.searchTable)
+          val field = prefix.resolve(fieldName.substringAfterLast('.'))
+          val sortFields = listOf(SearchSortField(field))
+          searchService.search(
+              prefix,
+              listOf(field),
+              mapOf(rootPrefix to NoConditionNode()),
+              sortFields,
+          )
+        }
       }
     }
   }
