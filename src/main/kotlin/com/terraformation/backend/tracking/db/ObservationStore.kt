@@ -103,6 +103,7 @@ import java.time.Instant
 import java.time.InstantSource
 import java.time.LocalDate
 import java.time.ZoneOffset
+import org.jobrunr.jobs.JobId
 import org.jobrunr.scheduling.JobScheduler
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -2223,7 +2224,9 @@ class ObservationStore(
   fun on(event: T0PlotDataAssignedEvent) {
     val plantingSiteId = parentStore.getPlantingSiteId(event.monitoringPlotId) ?: return
     enqueueSurvivalRateCalculation(plantingSiteId) {
-      runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
+      jobScheduler.enqueue<ObservationStore> {
+        runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
+      }
     }
   }
 
@@ -2231,7 +2234,9 @@ class ObservationStore(
   fun on(event: T0StratumDataAssignedEvent) {
     val plantingSiteId = parentStore.getPlantingSiteId(event.stratumId) ?: return
     enqueueSurvivalRateCalculation(plantingSiteId) {
-      runRecalculateSurvivalRates(plantingSiteId, event.stratumId)
+      jobScheduler.enqueue<ObservationStore> {
+        runRecalculateSurvivalRates(plantingSiteId, event.stratumId)
+      }
     }
   }
 
@@ -2239,7 +2244,9 @@ class ObservationStore(
   fun on(event: MonitoringSpeciesTotalsEditedEvent) {
     val plantingSiteId = event.plantingSiteId
     enqueueSurvivalRateCalculation(plantingSiteId) {
-      runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
+      jobScheduler.enqueue<ObservationStore> {
+        runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
+      }
     }
   }
 
@@ -2292,12 +2299,10 @@ class ObservationStore(
           log.info("Planting Site $plantingSiteId survival rate calculation completed.")
         } else {
           setSurvivalRateAdditionalCalculationRequested(plantingSiteId, false)
+          // Re-run recalculating survival rates asynchronously to unlock the survival rate
+          // recalculation rows. Extend scope to the entire site to handle all updates at once
           val jobId =
-              jobScheduler.enqueue<ObservationStore> {
-                // Re-run recalculating survival rates asynchronously to unlock the survival rate
-                // recalculation rows. Extend scope to the entire site to handle all updates at once
-                runRecalculateSurvivalRates(plantingSiteId)
-              }
+              jobScheduler.enqueue<ObservationStore> { runRecalculateSurvivalRates(plantingSiteId) }
           log.info(
               "Planting Site $plantingSiteId additional survival rate calculation requested. Enqueuing new job $jobId."
           )
@@ -2308,18 +2313,18 @@ class ObservationStore(
    * Immediately enqueue an async recalculation jobs, or set the existing job to rerun on
    * completion.
    */
-  private fun enqueueSurvivalRateCalculation(plantingSiteId: PlantingSiteId, func: () -> Unit) {
+  private fun enqueueSurvivalRateCalculation(
+      plantingSiteId: PlantingSiteId,
+      enqueueJob: () -> JobId,
+  ) {
     withLockedSurvivalRateCalculation(plantingSiteId) {
       val calculationInProgress = survivalRateCalculationInProgress(plantingSiteId)
 
       if (!calculationInProgress) {
         insertSurvivalRateCalculation(plantingSiteId)
-        val jobId =
-            jobScheduler.enqueue<ObservationStore> {
-              // The recalculation job is often long-running and is run asynchronously to prevent
-              // client call from blocking and timing-out
-              func()
-            }
+        // The recalculation job is often long-running and is run asynchronously to prevent
+        // client call from blocking and timing-out
+        val jobId = enqueueJob()
         log.info("Enqueuing planting Site $plantingSiteId survival rate calculation job $jobId.")
       } else {
         log.info(
