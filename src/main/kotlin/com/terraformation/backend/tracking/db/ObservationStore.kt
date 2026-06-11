@@ -2289,14 +2289,18 @@ class ObservationStore(
 
         if (!additionalCalculationRequested) {
           deleteSurvivalRateCalculation(plantingSiteId)
+          log.info("Planting Site $plantingSiteId survival rate calculation completed.")
         } else {
           setSurvivalRateAdditionalCalculationRequested(plantingSiteId, false)
-          jobScheduler.enqueue<ObservationStore> {
-            // Re-run recalculating survival rates asynchronously to unlock the survival rate
-            // recalculation rows. Extend scope to the entire site to handle all occurred updates at
-            // once
-            runRecalculateSurvivalRates(plantingSiteId)
-          }
+          val jobId =
+              jobScheduler.enqueue<ObservationStore> {
+                // Re-run recalculating survival rates asynchronously to unlock the survival rate
+                // recalculation rows. Extend scope to the entire site to handle all updates at once
+                runRecalculateSurvivalRates(plantingSiteId)
+              }
+          log.info(
+              "Planting Site $plantingSiteId additional survival rate calculation requested. Enqueuing new job $jobId."
+          )
         }
       }
 
@@ -2310,12 +2314,17 @@ class ObservationStore(
 
       if (!calculationInProgress) {
         insertSurvivalRateCalculation(plantingSiteId)
-        jobScheduler.enqueue<ObservationStore> {
-          // The recalculation job is often long-running and is run asynchronously to prevent client
-          // call from blocking and timing-out
-          func()
-        }
+        val jobId =
+            jobScheduler.enqueue<ObservationStore> {
+              // The recalculation job is often long-running and is run asynchronously to prevent
+              // client call from blocking and timing-out
+              func()
+            }
+        log.info("Enqueuing planting Site $plantingSiteId survival rate calculation job $jobId.")
       } else {
+        log.info(
+            "Planting Site $plantingSiteId survival rate calculation in-progress. Additional calculation requested."
+        )
         setSurvivalRateAdditionalCalculationRequested(plantingSiteId, true)
       }
     }
