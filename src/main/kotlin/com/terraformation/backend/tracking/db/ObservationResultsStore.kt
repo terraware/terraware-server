@@ -660,9 +660,6 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 completedTime = completedTime,
                 estimatedPlants = estimatedPlants?.roundToInt(),
                 name = record[STRATUM_HISTORIES.NAME.asNonNullable()],
-                // Observed density is this observation's density without last-observed
-                // carry-forward; applyLastObservedDensities overwrites plantingDensity but leaves
-                // this untouched.
                 observedDensity = plantingDensity?.roundToInt(),
                 plantingCompleted = plantingCompleted,
                 plantingDensity = plantingDensity?.roundToInt(),

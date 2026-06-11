@@ -2877,8 +2877,6 @@ class ObservationStore(
     val sdStratumPlantDensityStdDev =
         stratumDensities.field("plant_density_std_dev", Int::class.java)
 
-    // Observed density ignores last-observed carry-forward: just this observation's plots in the
-    // stratum.
     val sdStratumObservedDensity =
         DSL.field(
             DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
