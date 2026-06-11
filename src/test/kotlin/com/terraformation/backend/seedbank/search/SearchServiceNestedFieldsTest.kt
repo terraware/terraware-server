@@ -1211,14 +1211,12 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
           val prefix = SearchFieldPrefix(fullyQualifiedField.searchTable)
           val field = prefix.resolve(fieldName.substringAfterLast('.'))
           val sortFields = listOf(SearchSortField(field))
-          assertDoesNotThrow("Sort by $fieldName") {
-            searchService.search(
-                prefix,
-                listOf(field),
-                mapOf(rootPrefix to NoConditionNode()),
-                sortFields,
-            )
-          }
+          searchService.search(
+              prefix,
+              listOf(field),
+              mapOf(rootPrefix to NoConditionNode()),
+              sortFields,
+          )
         }
       }
     }
