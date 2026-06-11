@@ -23,6 +23,11 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_RE
 import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesUpdatedEventValues
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEventValues
 import java.time.Instant
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -250,6 +255,19 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
               quantity = 10,
           )
       )
+
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestUpdatedEvent(
+              changedFrom =
+                  PlantingDateRequestUpdatedEventValues(date = oldDate, notes = "old notes"),
+              changedTo =
+                  PlantingDateRequestUpdatedEventValues(date = newDate, notes = "new notes"),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+          )
+      )
     }
 
     @Test
@@ -261,6 +279,89 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       store.update(scheduledPlantingDateId, plantingSeasonId)
 
       assertTableEmpty(PLANTING_DATE_REQUEST_SPECIES)
+    }
+
+    @Test
+    fun `does not publish updated event when nothing changes`() {
+      val date = LocalDate.EPOCH
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate(date = date)
+      insertPlantingDateRequest(date = date, notes = "same")
+
+      store.update(scheduledPlantingDateId, plantingSeasonId, "same")
+
+      eventPublisher.assertEventNotPublished<PlantingDateRequestUpdatedEvent>()
+    }
+
+    @Test
+    fun `does not publish species updated event when quantity is unchanged`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      insertScheduledPlantingDateSpecies(speciesId = speciesId, quantity = 5)
+      insertPlantingDateRequest()
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+
+      store.update(scheduledPlantingDateId, plantingSeasonId)
+
+      eventPublisher.assertEventNotPublished<PlantingDateRequestSpeciesUpdatedEvent>()
+    }
+
+    @Test
+    fun `publishes species created, updated, and deleted events`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      val keptSpeciesId = speciesId
+      val removedSpeciesId = insertSpecies()
+      val addedSpeciesId = insertSpecies()
+
+      insertPlantingDateRequest()
+      insertPlantingDateRequestSpecies(speciesId = keptSpeciesId, quantity = 5)
+      insertPlantingDateRequestSpecies(speciesId = removedSpeciesId, quantity = 9)
+
+      insertScheduledPlantingDateSpecies(speciesId = keptSpeciesId, quantity = 7)
+      insertScheduledPlantingDateSpecies(speciesId = addedSpeciesId, quantity = 3)
+
+      store.update(scheduledPlantingDateId, plantingSeasonId)
+
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestSpeciesCreatedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              quantity = 3,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              speciesId = addedSpeciesId,
+              stratumName = "S1",
+              substratumHistoryId = substratumHistoryId,
+              substratumId = substratumId,
+              substratumName = "1",
+          )
+      )
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestSpeciesUpdatedEvent(
+              changedFrom = PlantingDateRequestSpeciesUpdatedEventValues(quantity = 5),
+              changedTo = PlantingDateRequestSpeciesUpdatedEventValues(quantity = 7),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              speciesId = keptSpeciesId,
+              stratumName = "S1",
+              substratumHistoryId = substratumHistoryId,
+              substratumId = substratumId,
+              substratumName = "1",
+          )
+      )
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestSpeciesDeletedEvent(
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              speciesId = removedSpeciesId,
+              stratumName = "S1",
+              substratumHistoryId = substratumHistoryId,
+              substratumId = substratumId,
+              substratumName = "1",
+          )
+      )
     }
 
     @Test

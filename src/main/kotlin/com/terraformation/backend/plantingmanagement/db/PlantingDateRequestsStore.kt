@@ -2,12 +2,14 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.nursery.tables.references.BATCH_WITHDRAWALS
 import com.terraformation.backend.db.nursery.tables.references.WITHDRAWALS
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_DATE_REQUESTS
@@ -17,6 +19,12 @@ import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTI
 import com.terraformation.backend.nursery.event.WithdrawalAssociatedWithPlantingDateRequestEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesDeletedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesUpdatedEventValues
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEventValues
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.InstantSource
@@ -90,30 +98,14 @@ class PlantingDateRequestsStore(
           )
       )
 
-      val quantities = fetchRequestSpeciesQuantities(scheduledPlantingDateId)
-      if (quantities.isNotEmpty()) {
-        val substrataInfo =
-            seasonHelper.fetchSubstrataInfo(quantities.keys.map { it.first }.toSet())
-
-        quantities.forEach { (key, quantity) ->
-          val (substratumId, speciesId) = key
-          val info = substrataInfo[substratumId]!!
-          eventPublisher.publishEvent(
-              PlantingDateRequestSpeciesCreatedEvent(
-                  organizationId = organizationId,
-                  plantingSeasonId = plantingSeasonId,
-                  plantingSiteId = plantingSiteId,
-                  quantity = quantity,
-                  scheduledPlantingDateId = scheduledPlantingDateId,
-                  speciesId = speciesId,
-                  stratumName = info.stratumName,
-                  substratumHistoryId = info.substratumHistoryId,
-                  substratumId = substratumId,
-                  substratumName = info.substratumName,
-              )
-          )
-        }
-      }
+      publishSpeciesDiffEvents(
+          emptyMap(),
+          fetchRequestSpeciesQuantities(scheduledPlantingDateId),
+          scheduledPlantingDateId,
+          plantingSeasonId,
+          plantingSiteId,
+          organizationId,
+      )
     }
   }
 
@@ -128,8 +120,20 @@ class PlantingDateRequestsStore(
 
     val userId = currentUser().userId
     val now = clock.instant()
+    val (plantingSiteId, organizationId) =
+        seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
 
-    dslContext.transaction { _ ->
+    seasonHelper.withLockedPlantingSeason(plantingSeasonId) {
+      val oldRequest =
+          dslContext
+              .select(PLANTING_DATE_REQUESTS.DATE, PLANTING_DATE_REQUESTS.NOTES)
+              .from(PLANTING_DATE_REQUESTS)
+              .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+              .fetchOne()
+      val oldDate = oldRequest?.value1()
+      val oldNotes = oldRequest?.value2()
+      val oldSpecies = fetchRequestSpeciesQuantities(scheduledPlantingDateId)
+
       val updatedCount =
           with(PLANTING_DATE_REQUESTS) {
             dslContext
@@ -159,6 +163,44 @@ class PlantingDateRequestsStore(
           .execute()
 
       insertRequestSpecies(scheduledPlantingDateId)
+
+      val newDate =
+          dslContext
+              .select(PLANTING_DATE_REQUESTS.DATE)
+              .from(PLANTING_DATE_REQUESTS)
+              .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+              .fetchOne(PLANTING_DATE_REQUESTS.DATE)
+      val newSpecies = fetchRequestSpeciesQuantities(scheduledPlantingDateId)
+
+      if (oldDate != newDate || oldNotes != notes) {
+        eventPublisher.publishEvent(
+            PlantingDateRequestUpdatedEvent(
+                changedFrom =
+                    PlantingDateRequestUpdatedEventValues(
+                        date = oldDate.nullIfEquals(newDate),
+                        notes = oldNotes.nullIfEquals(notes),
+                    ),
+                changedTo =
+                    PlantingDateRequestUpdatedEventValues(
+                        date = newDate.nullIfEquals(oldDate),
+                        notes = notes.nullIfEquals(oldNotes),
+                    ),
+                organizationId = organizationId,
+                plantingSeasonId = plantingSeasonId,
+                plantingSiteId = plantingSiteId,
+                scheduledPlantingDateId = scheduledPlantingDateId,
+            )
+        )
+      }
+
+      publishSpeciesDiffEvents(
+          oldSpecies,
+          newSpecies,
+          scheduledPlantingDateId,
+          plantingSeasonId,
+          plantingSiteId,
+          organizationId,
+      )
     }
   }
 
@@ -196,6 +238,77 @@ class PlantingDateRequestsStore(
             .fetch()
             .associate { (it[SUBSTRATUM_ID]!! to it[SPECIES_ID]!!) to it[QUANTITY]!! }
       }
+
+  private fun publishSpeciesDiffEvents(
+      oldSpecies: Map<Pair<SubstratumId, SpeciesId>, Int>,
+      newSpecies: Map<Pair<SubstratumId, SpeciesId>, Int>,
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+      plantingSeasonId: PlantingSeasonId,
+      plantingSiteId: PlantingSiteId,
+      organizationId: OrganizationId,
+  ) {
+    val affectedSubstrata = (oldSpecies.keys + newSpecies.keys).map { it.first }.toSet()
+    if (affectedSubstrata.isEmpty()) return
+
+    val substrataInfo = seasonHelper.fetchSubstrataInfo(affectedSubstrata)
+
+    (oldSpecies.keys + newSpecies.keys).forEach { key ->
+      val (substratumId, speciesId) = key
+      val info = substrataInfo[substratumId]!!
+      val oldQuantity = oldSpecies[key]
+      val newQuantity = newSpecies[key]
+
+      when {
+        oldQuantity == null && newQuantity != null ->
+            eventPublisher.publishEvent(
+                PlantingDateRequestSpeciesCreatedEvent(
+                    organizationId = organizationId,
+                    plantingSeasonId = plantingSeasonId,
+                    plantingSiteId = plantingSiteId,
+                    quantity = newQuantity,
+                    scheduledPlantingDateId = scheduledPlantingDateId,
+                    speciesId = speciesId,
+                    stratumName = info.stratumName,
+                    substratumHistoryId = info.substratumHistoryId,
+                    substratumId = substratumId,
+                    substratumName = info.substratumName,
+                )
+            )
+        oldQuantity != null && newQuantity == null ->
+            eventPublisher.publishEvent(
+                PlantingDateRequestSpeciesDeletedEvent(
+                    organizationId = organizationId,
+                    plantingSeasonId = plantingSeasonId,
+                    plantingSiteId = plantingSiteId,
+                    scheduledPlantingDateId = scheduledPlantingDateId,
+                    speciesId = speciesId,
+                    stratumName = info.stratumName,
+                    substratumHistoryId = info.substratumHistoryId,
+                    substratumId = substratumId,
+                    substratumName = info.substratumName,
+                )
+            )
+        oldQuantity != null && newQuantity != null && oldQuantity != newQuantity ->
+            eventPublisher.publishEvent(
+                PlantingDateRequestSpeciesUpdatedEvent(
+                    changedFrom =
+                        PlantingDateRequestSpeciesUpdatedEventValues(quantity = oldQuantity),
+                    changedTo =
+                        PlantingDateRequestSpeciesUpdatedEventValues(quantity = newQuantity),
+                    organizationId = organizationId,
+                    plantingSeasonId = plantingSeasonId,
+                    plantingSiteId = plantingSiteId,
+                    scheduledPlantingDateId = scheduledPlantingDateId,
+                    speciesId = speciesId,
+                    stratumName = info.stratumName,
+                    substratumHistoryId = info.substratumHistoryId,
+                    substratumId = substratumId,
+                    substratumName = info.substratumName,
+                )
+            )
+      }
+    }
+  }
 
   private fun updateRequestStatus(scheduledPlantingDateId: ScheduledPlantingDateId) {
     val requestedQuantities: Map<SpeciesId, BigDecimal> =
