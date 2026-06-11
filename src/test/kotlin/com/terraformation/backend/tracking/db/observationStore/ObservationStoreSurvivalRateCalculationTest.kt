@@ -26,8 +26,6 @@ import kotlin.math.roundToInt
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -49,28 +47,6 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     observationId = insertObservation()
     insertObservationRequestedSubstratum()
     insertObservationPlot(claimedBy = user.userId, isPermanent = true)
-  }
-
-  @Test
-  fun `survivalRateCalculationInProgress is false when no recalculation is pending`() {
-    val results = resultsStoreV2.fetchByPlantingSiteId(plantingSiteId)
-
-    assertFalse(
-        results.first().survivalRateCalculationInProgress,
-        "No recalculation marker row means no calculation in progress",
-    )
-  }
-
-  @Test
-  fun `survivalRateCalculationInProgress is true when a recalculation marker exists`() {
-    insertPlantingSiteSurvivalRateCalculation()
-
-    val results = resultsStoreV2.fetchByPlantingSiteId(plantingSiteId)
-
-    assertTrue(
-        results.first().survivalRateCalculationInProgress,
-        "Recalculation marker row means a calculation is in progress",
-    )
   }
 
   @Test

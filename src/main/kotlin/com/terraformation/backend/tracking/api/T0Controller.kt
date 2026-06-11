@@ -61,6 +61,18 @@ class T0Controller(
   }
 
   @Operation(
+      summary = "Get whether a survival rate recalculation is in progress for a planting site"
+  )
+  @GetMapping("/site/{plantingSiteId}/calculationInProgress")
+  fun getSurvivalRateCalculationInProgress(
+      @PathVariable plantingSiteId: PlantingSiteId
+  ): GetSurvivalRateCalculationInProgressResponsePayload {
+    val calculationInProgress = t0Store.fetchSurvivalRateCalculationInProgress(plantingSiteId)
+
+    return GetSurvivalRateCalculationInProgressResponsePayload(calculationInProgress)
+  }
+
+  @Operation(
       summary =
           "Lists all permanent plots with completed observations, and the observations' recorded species for a planting site"
   )
@@ -239,6 +251,9 @@ data class GetAllSiteT0DataSetResponsePayload(
     val allSet: Boolean,
     val plots: List<MonitoringPlotT0StatusPayload>,
 ) : SuccessResponsePayload
+
+data class GetSurvivalRateCalculationInProgressResponsePayload(val calculationInProgress: Boolean) :
+    SuccessResponsePayload
 
 data class AssignSiteT0DataRequestPayload(
     val plantingSiteId: PlantingSiteId,
