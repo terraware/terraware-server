@@ -31,7 +31,7 @@ internal class PlantingSeasonScheduledDatesServiceTest : DatabaseTest(), RunsAsD
   private val service: PlantingSeasonScheduledDatesService by lazy {
     PlantingSeasonScheduledDatesService(
         dslContext,
-        PlantingDateRequestsStore(clock, dslContext, seasonHelper),
+        PlantingDateRequestsStore(clock, dslContext, eventPublisher, seasonHelper),
         PlantingSeasonScheduledDatesStore(
             clock,
             dslContext,
