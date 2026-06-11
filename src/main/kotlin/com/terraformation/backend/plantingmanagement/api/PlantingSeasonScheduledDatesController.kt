@@ -149,10 +149,17 @@ data class ListScheduledDatesResponsePayload(val scheduledDates: List<ScheduledD
 data class GetScheduledDateResponsePayload(val scheduledDate: ScheduledDatePayload) :
     SuccessResponsePayload
 
+data class ScheduledPlantingDateSpeciesResponsePayload(
+    val allocatedQuantity: Int,
+    val quantity: Int,
+    val speciesId: SpeciesId,
+    val substratumId: SubstratumId,
+)
+
 data class ScheduledDatePayload(
     val date: LocalDate,
     val scheduledPlantingDateId: ScheduledPlantingDateId,
-    val species: List<ScheduledPlantingDateSpeciesPayload>,
+    val species: List<ScheduledPlantingDateSpeciesResponsePayload>,
 ) {
   constructor(
       model: ExistingPlantingSeasonScheduledDateModel
@@ -161,7 +168,8 @@ data class ScheduledDatePayload(
       scheduledPlantingDateId = model.scheduledPlantingDateId,
       species =
           model.species.map {
-            ScheduledPlantingDateSpeciesPayload(
+            ScheduledPlantingDateSpeciesResponsePayload(
+                allocatedQuantity = it.allocatedQuantity,
                 quantity = it.quantity,
                 speciesId = it.speciesId,
                 substratumId = it.substratumId,

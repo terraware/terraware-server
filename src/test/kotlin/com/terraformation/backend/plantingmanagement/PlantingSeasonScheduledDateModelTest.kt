@@ -36,4 +36,31 @@ class PlantingSeasonScheduledDateModelTest {
       )
     }
   }
+
+  @Test
+  fun `throws IllegalArgumentException when a species is listed twice for the same substratum`() {
+    val plantingSeasonId = PlantingSeasonId(1)
+    val speciesId = SpeciesId(2)
+    val substratumId = SubstratumId(3)
+
+    assertThrows<IllegalArgumentException> {
+      PlantingSeasonScheduledDateModel(
+          plantingSeasonId = plantingSeasonId,
+          date = LocalDate.EPOCH,
+          species =
+              listOf(
+                  PlantingSeasonScheduledDateSpecies(
+                      quantity = 5,
+                      speciesId = speciesId,
+                      substratumId = substratumId,
+                  ),
+                  PlantingSeasonScheduledDateSpecies(
+                      quantity = 10,
+                      speciesId = speciesId,
+                      substratumId = substratumId,
+                  ),
+              ),
+      )
+    }
+  }
 }
