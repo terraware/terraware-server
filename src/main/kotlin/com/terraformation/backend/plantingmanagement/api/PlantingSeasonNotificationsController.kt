@@ -29,22 +29,23 @@ class PlantingSeasonNotificationsController(
   @GetMapping("/notifications")
   fun getPlantingSeasonNotifications(
       @RequestParam("organizationId") organizationId: OrganizationId,
-      @RequestParam("notificationType") notificationType: PlantingSeasonNotificationType,
+      @RequestParam("notificationCategory")
+      notificationCategory: PlantingSeasonNotificationCategory,
   ): GetPlantingSeasonNotificationsResponsePayload {
     val notifications =
-        when (notificationType) {
-          PlantingSeasonNotificationType.InventoryPlanning ->
+        when (notificationCategory) {
+          PlantingSeasonNotificationCategory.InventoryPlanning ->
               plantingSeasonNotificationsService
                   .getInventoryPlanningNotifications(organizationId)
                   .map { PlantingSeasonNotificationPayload(it) }
-          PlantingSeasonNotificationType.PlantingSeasonPlanning -> emptyList()
+          PlantingSeasonNotificationCategory.PlantingSeasonPlanning -> emptyList()
         }
 
     return GetPlantingSeasonNotificationsResponsePayload(notifications)
   }
 }
 
-enum class PlantingSeasonNotificationType {
+enum class PlantingSeasonNotificationCategory {
   InventoryPlanning,
   PlantingSeasonPlanning,
 }
