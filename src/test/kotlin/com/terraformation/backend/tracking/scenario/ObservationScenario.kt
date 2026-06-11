@@ -122,11 +122,6 @@ class ObservationScenario(
     ): ObservationScenario {
       if (registerListeners) {
         eventPublisher.register<MonitoringSpeciesTotalsEditedEvent> { t0Store.on(it) }
-        // Recalculation runs asynchronously via JobRunr in production. In scenario tests we
-        // invoke the recalc method directly so observation results reflect the changes inline.
-        eventPublisher.register<MonitoringSpeciesTotalsEditedEvent> {
-          observationStore.recalculateSurvivalRates(it.monitoringPlotId)
-        }
         eventPublisher.register<T0PlotDataAssignedEvent> {
           observationStore.recalculateSurvivalRates(it.monitoringPlotId)
         }
