@@ -266,9 +266,9 @@ fun Geometry.coveragePercent(other: Geometry): Double {
  * in that it allows a small margin of error to account for floating-point inaccuracy.
  *
  * @param minCoveragePercent Minimum percentage of this geometry's area that needs to be covered by
- *   the other geometry. Default is 99.99%.
+ *   the other geometry. Default is 99.9%.
  */
-fun Geometry.nearlyCoveredBy(other: Geometry, minCoveragePercent: Double = 99.99): Boolean {
+fun Geometry.nearlyCoveredBy(other: Geometry, minCoveragePercent: Double = 99.9): Boolean {
   return coveredBy(other) || coveragePercent(other) >= minCoveragePercent
 }
 

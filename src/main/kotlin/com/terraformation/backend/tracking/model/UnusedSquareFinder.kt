@@ -125,7 +125,7 @@ class UnusedSquareFinder(
    * covered.
    */
   private fun coveredByStratum(polygon: Geometry): Boolean {
-    return polygon.nearlyCoveredBy(stratumGeometry, 99.9)
+    return polygon.nearlyCoveredBy(stratumGeometry)
   }
 
   /**
