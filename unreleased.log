@@ -1,3 +1,4 @@
+2438eafc Fixed NoSuchBeanException from jobRunr due to lambdas being used (#4584)
 8dea5e7e Added logging messages to survival rate recalculations (#4583)
 745998b8 Tell agents not to run parallel Gradle commands (#4574)
 a4dae018 Default test planting sites to have boundaries, history (#4573)
