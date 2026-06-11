@@ -274,6 +274,7 @@ class PlantingDateRequestsStore(
                     substratumName = info.substratumName,
                 )
             )
+
         oldQuantity != null && newQuantity == null ->
             eventPublisher.publishEvent(
                 PlantingDateRequestSpeciesDeletedEvent(
@@ -288,6 +289,7 @@ class PlantingDateRequestsStore(
                     substratumName = info.substratumName,
                 )
             )
+
         oldQuantity != null && newQuantity != null && oldQuantity != newQuantity ->
             eventPublisher.publishEvent(
                 PlantingDateRequestSpeciesUpdatedEvent(
@@ -311,48 +313,82 @@ class PlantingDateRequestsStore(
   }
 
   private fun updateRequestStatus(scheduledPlantingDateId: ScheduledPlantingDateId) {
-    val requestedQuantities: Map<SpeciesId, BigDecimal> =
-        with(PLANTING_DATE_REQUEST_SPECIES) {
+    seasonHelper.withLockedScheduledPlantingDate(scheduledPlantingDateId) {
+      val requestedQuantities: Map<SpeciesId, BigDecimal> =
+          with(PLANTING_DATE_REQUEST_SPECIES) {
+            dslContext
+                .select(SPECIES_ID, DSL.sum(QUANTITY))
+                .from(PLANTING_DATE_REQUEST_SPECIES)
+                .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+                .groupBy(SPECIES_ID)
+                .associate { it[SPECIES_ID]!! to it[DSL.sum(QUANTITY)]!! }
+          }
+
+      val withdrawnQuantities: Map<SpeciesId, BigDecimal> =
           dslContext
-              .select(SPECIES_ID, DSL.sum(QUANTITY))
-              .from(PLANTING_DATE_REQUEST_SPECIES)
-              .where(SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
-              .groupBy(SPECIES_ID)
-              .associate { it[SPECIES_ID]!! to it[DSL.sum(QUANTITY)]!! }
-        }
+              .select(BATCHES.SPECIES_ID, DSL.sum(BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))
+              .from(BATCH_WITHDRAWALS)
+              .join(BATCHES)
+              .on(BATCHES.ID.eq(BATCH_WITHDRAWALS.BATCH_ID))
+              .join(WITHDRAWALS)
+              .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
+              .where(WITHDRAWALS.SCHEDULED_PLANTING_DATE_REQUEST_ID.eq(scheduledPlantingDateId))
+              .groupBy(BATCHES.SPECIES_ID)
+              .associate {
+                it[BATCHES.SPECIES_ID]!! to
+                    it[DSL.sum(BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN)]!!
+              }
 
-    val withdrawnQuantities: Map<SpeciesId, BigDecimal> =
-        dslContext
-            .select(BATCHES.SPECIES_ID, DSL.sum(BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN))
-            .from(BATCH_WITHDRAWALS)
-            .join(BATCHES)
-            .on(BATCHES.ID.eq(BATCH_WITHDRAWALS.BATCH_ID))
-            .join(WITHDRAWALS)
-            .on(WITHDRAWALS.ID.eq(BATCH_WITHDRAWALS.WITHDRAWAL_ID))
-            .where(WITHDRAWALS.SCHEDULED_PLANTING_DATE_REQUEST_ID.eq(scheduledPlantingDateId))
-            .groupBy(BATCHES.SPECIES_ID)
-            .associate {
-              it[BATCHES.SPECIES_ID]!! to it[DSL.sum(BATCH_WITHDRAWALS.READY_QUANTITY_WITHDRAWN)]!!
-            }
+      val oldStatus =
+          dslContext
+              .select(PLANTING_DATE_REQUESTS.STATUS_ID)
+              .from(PLANTING_DATE_REQUESTS)
+              .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+              .fetchOne(PLANTING_DATE_REQUESTS.STATUS_ID)
 
-    val newStatus =
-        when {
-          requestedQuantities.isEmpty() -> PlantingDateRequestStatus.Pending
-          requestedQuantities.all { (speciesId, quantity) ->
-            (withdrawnQuantities[speciesId] ?: BigDecimal.ZERO) >= quantity
-          } -> PlantingDateRequestStatus.Fulfilled
-          requestedQuantities.keys.any {
-            (withdrawnQuantities[it] ?: BigDecimal.ZERO) > BigDecimal.ZERO
-          } -> PlantingDateRequestStatus.Partial
-          else -> PlantingDateRequestStatus.Pending
-        }
+      val newStatus =
+          when {
+            requestedQuantities.isEmpty() -> PlantingDateRequestStatus.Pending
+            requestedQuantities.all { (speciesId, quantity) ->
+              (withdrawnQuantities[speciesId] ?: BigDecimal.ZERO) >= quantity
+            } -> PlantingDateRequestStatus.Fulfilled
 
-    // This runs as an automated recompute triggered by a withdrawal event rather than a user
-    // edit, so modified_by and modified_time are intentionally left unchanged.
-    dslContext
-        .update(PLANTING_DATE_REQUESTS)
-        .set(PLANTING_DATE_REQUESTS.STATUS_ID, newStatus)
-        .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
-        .execute()
+            requestedQuantities.keys.any {
+              (withdrawnQuantities[it] ?: BigDecimal.ZERO) > BigDecimal.ZERO
+            } -> PlantingDateRequestStatus.Partial
+
+            else -> PlantingDateRequestStatus.Pending
+          }
+
+      // This runs as an automated recompute triggered by a withdrawal event rather than a user
+      // edit, so modified_by and modified_time are intentionally left unchanged.
+      dslContext
+          .update(PLANTING_DATE_REQUESTS)
+          .set(PLANTING_DATE_REQUESTS.STATUS_ID, newStatus)
+          .where(PLANTING_DATE_REQUESTS.SCHEDULED_PLANTING_DATE_ID.eq(scheduledPlantingDateId))
+          .execute()
+
+      if (oldStatus != newStatus) {
+        val plantingSeasonId =
+            dslContext
+                .select(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID)
+                .from(SCHEDULED_PLANTING_DATES)
+                .where(SCHEDULED_PLANTING_DATES.ID.eq(scheduledPlantingDateId))
+                .fetchOne(SCHEDULED_PLANTING_DATES.PLANTING_SEASON_ID)!!
+        val (plantingSiteId, organizationId) =
+            seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
+
+        eventPublisher.publishEvent(
+            PlantingDateRequestUpdatedEvent(
+                changedFrom = PlantingDateRequestUpdatedEventValues(status = oldStatus),
+                changedTo = PlantingDateRequestUpdatedEventValues(status = newStatus),
+                organizationId = organizationId,
+                plantingSeasonId = plantingSeasonId,
+                plantingSiteId = plantingSiteId,
+                scheduledPlantingDateId = scheduledPlantingDateId,
+            )
+        )
+      }
+    }
   }
 }

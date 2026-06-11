@@ -5,10 +5,12 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
+import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
@@ -89,6 +91,22 @@ class SeasonHelper(private val dslContext: DSLContext) {
           .where(PLANTING_SEASONS.ID.eq(plantingSeasonId))
           .forUpdate()
           .fetchOne() ?: throw PlantingSeasonNotFoundException(plantingSeasonId)
+
+      func()
+    }
+  }
+
+  fun <T> withLockedScheduledPlantingDate(
+      scheduledPlantingDateId: ScheduledPlantingDateId,
+      func: () -> T,
+  ): T {
+    return dslContext.transactionResult { _ ->
+      dslContext
+          .selectOne()
+          .from(SCHEDULED_PLANTING_DATES)
+          .where(SCHEDULED_PLANTING_DATES.ID.eq(scheduledPlantingDateId))
+          .forUpdate()
+          .fetchOne() ?: throw PlantingSeasonScheduledDateNotFoundException(scheduledPlantingDateId)
 
       func()
     }

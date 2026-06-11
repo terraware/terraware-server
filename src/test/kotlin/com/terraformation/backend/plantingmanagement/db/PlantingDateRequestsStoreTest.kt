@@ -464,6 +464,21 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
 
       assertEquals(PlantingDateRequestStatus.Fulfilled, statusOf())
+
+      eventPublisher.assertEventPublished(
+          PlantingDateRequestUpdatedEvent(
+              changedFrom =
+                  PlantingDateRequestUpdatedEventValues(status = PlantingDateRequestStatus.Pending),
+              changedTo =
+                  PlantingDateRequestUpdatedEventValues(
+                      status = PlantingDateRequestStatus.Fulfilled
+                  ),
+              organizationId = organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = plantingSiteId,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+          )
+      )
     }
 
     @Test
@@ -521,6 +536,15 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
       store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
 
       assertEquals(PlantingDateRequestStatus.Pending, statusOf())
+    }
+
+    @Test
+    fun `does not publish event when status is unchanged`() {
+      insertPlantingDateRequestSpecies(speciesId = speciesId, quantity = 5)
+
+      store.on(WithdrawalAssociatedWithPlantingDateRequestEvent(scheduledPlantingDateId))
+
+      eventPublisher.assertEventNotPublished<PlantingDateRequestUpdatedEvent>()
     }
 
     private fun statusOf(id: ScheduledPlantingDateId = scheduledPlantingDateId) =
