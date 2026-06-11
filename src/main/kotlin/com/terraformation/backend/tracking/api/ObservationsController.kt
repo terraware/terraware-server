@@ -831,6 +831,10 @@ class ObservationsController(
           point.y to point.x
         }
 
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      throw IllegalArgumentException("Invalid coordinate ($lng, $lat)")
+    }
+
     return geometryFactory.createPoint(Coordinate(lng, lat))
   }
 
