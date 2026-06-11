@@ -3,17 +3,23 @@ package com.terraformation.backend.plantingmanagement.db
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_NOTIFICATIONS
 import com.terraformation.backend.eventlog.db.EventLogStore
+import com.terraformation.backend.eventlog.model.EventLogEntry
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationAlertModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonRelatedPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
-import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEventValues
 import jakarta.inject.Named
 import kotlin.reflect.KClass
 import org.jooq.Condition
@@ -31,169 +37,175 @@ class PlantingSeasonNotificationsService(
       )
 
   /**
-   * Returns the undismissed events for every planting season in an organization, grouped by
-   * planting season. A season that has never dismissed a notification has all of its events
-   * returned; a season with no undismissed events is absent from the result.
+   * Returns the undismissed notifications for every planting season in an organization. A season
+   * that has never dismissed a notification has all of its events returned; a season with no
+   * undismissed events is absent from the result.
    */
-  fun getNotifications(
+  fun getInventoryPlanningNotifications(
       organizationId: OrganizationId
-  ): Map<PlantingSeasonId, List<PlantingSeasonRelatedPersistentEvent>> {
-    val dismissedEventIds =
-        fetchLastDismissedEventLogIdsByCondition(
+  ): List<PlantingSeasonNotificationModel> {
+    val seasonInfoById =
+        fetchSeasonInfoByCondition(
             PLANTING_SEASONS.plantingSites.ORGANIZATION_ID.eq(organizationId)
         )
 
-    requirePermissions { dismissedEventIds.keys.forEach { readPlantingSeason(it) } }
+    requirePermissions { seasonInfoById.keys.forEach { readPlantingSeason(it) } }
 
-    if (dismissedEventIds.isEmpty()) {
-      return emptyMap()
+    if (seasonInfoById.isEmpty()) {
+      return emptyList()
     }
 
-    return eventLogStore
-        .fetchByIdsSince(
-            dismissedEventIds,
-            notificationEventClasses,
-        )
-        .map { it.event }
-        .groupBy { it.plantingSeasonId }
-        .mapValues { (_, events) -> combineEvents(events) }
+    val entriesBySeason =
+        eventLogStore
+            .fetchByIdsSince(
+                seasonInfoById.mapValues { it.value.lastDismissedEventLogId },
+                notificationEventClasses,
+            )
+            .groupBy { it.event.plantingSeasonId }
+
+    val scientificNamesBySpeciesId =
+        fetchScientificNamesBySpeciesId(speciesIdsOf(entriesBySeason.values.flatten()))
+
+    return entriesBySeason.map { (plantingSeasonId, entries) ->
+      buildNotificationModel(
+          plantingSeasonId,
+          entries,
+          seasonInfoById.getValue(plantingSeasonId),
+          scientificNamesBySpeciesId,
+      )
+    }
   }
 
   /**
-   * Returns the undismissed events for a single planting season, ordered by the time they were
-   * logged. If the season has never dismissed a notification, all of its events are returned.
+   * Returns the undismissed notification for a single planting season, or null if the season has no
+   * undismissed events. If the season has never dismissed a notification, all of its events are
+   * returned.
    */
-  fun getNotifications(
+  fun getInventoryPlanningNotifications(
       plantingSeasonId: PlantingSeasonId
-  ): List<PlantingSeasonRelatedPersistentEvent> {
+  ): PlantingSeasonNotificationModel? {
     requirePermissions { readPlantingSeason(plantingSeasonId) }
 
-    val dismissedEventIds =
-        fetchLastDismissedEventLogIdsByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId))
+    val seasonInfoById = fetchSeasonInfoByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId))
 
-    return combineEvents(
-        eventLogStore
-            .fetchByIdsSince(
-                dismissedEventIds,
-                notificationEventClasses,
-            )
-            .map { it.event }
+    val entries =
+        eventLogStore.fetchByIdsSince(
+            seasonInfoById.mapValues { it.value.lastDismissedEventLogId },
+            notificationEventClasses,
+        )
+
+    if (entries.isEmpty()) {
+      return null
+    }
+
+    return buildNotificationModel(
+        plantingSeasonId,
+        entries,
+        seasonInfoById.getValue(plantingSeasonId),
+        fetchScientificNamesBySpeciesId(speciesIdsOf(entries)),
     )
   }
 
+  private fun buildNotificationModel(
+      plantingSeasonId: PlantingSeasonId,
+      entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>,
+      seasonInfo: SeasonInfo,
+      scientificNamesBySpeciesId: Map<SpeciesId, String>,
+  ): PlantingSeasonNotificationModel =
+      PlantingSeasonNotificationModel(
+          plantingSeasonId = plantingSeasonId,
+          plantingSeasonName = seasonInfo.plantingSeasonName,
+          plantingSiteName = seasonInfo.plantingSiteName,
+          lastEventLogId = entries.maxOf { it.id },
+          events = combineEvents(entries.map { it.event }, scientificNamesBySpeciesId),
+      )
+
   /**
-   * Collapses the update events for a planting season into at most one update notification per kind
-   * of update. Non-update events are left untouched.
+   * Collapses the events for a single planting season into at most one notification alert per
+   * [PlantingSeasonNotificationType]. Events that do not map to a notification type are dropped.
+   * For a species target alert, the scientific names of every species referenced by the combined
+   * events are gathered into [PlantingSeasonNotificationAlertModel.speciesScientificNames].
    *
    * [events] is expected to be ordered by the time each event was logged, which is the order
-   * returned by [EventLogStore.fetchByIdsSince].
+   * returned by [EventLogStore.fetchByIdsSince]; alerts are returned in the order their types first
+   * appear.
    */
   private fun combineEvents(
-      events: List<PlantingSeasonRelatedPersistentEvent>
-  ): List<PlantingSeasonRelatedPersistentEvent> {
+      events: List<PlantingSeasonRelatedPersistentEvent>,
+      scientificNamesBySpeciesId: Map<SpeciesId, String>,
+  ): List<PlantingSeasonNotificationAlertModel> {
     require(events.mapTo(mutableSetOf()) { it.plantingSeasonId }.size <= 1) {
       "combineEvents must be called with events for a single planting season"
     }
 
-    return combineSpeciesTargetUpdates(combineSeasonUpdates(events))
-  }
+    val speciesNamesByType = linkedMapOf<PlantingSeasonNotificationType, MutableSet<String>>()
 
-  /**
-   * Collapses the [PlantingSeasonUpdatedEvent]s for a season into a single event. For every field,
-   * the combined event keeps the [changedFrom][PlantingSeasonUpdatedEvent.changedFrom] value from
-   * the earliest update that changed it and the [changedTo][PlantingSeasonUpdatedEvent.changedTo]
-   * value from the latest update that changed it.
-   *
-   * Updates that change the status to [PlantingSeasonStatus.Closed] are excluded from the combined
-   * event and remain as separate events in the result.
-   */
-  private fun combineSeasonUpdates(
-      events: List<PlantingSeasonRelatedPersistentEvent>
-  ): List<PlantingSeasonRelatedPersistentEvent> {
-    val combinableUpdates =
-        events.filterIsInstance<PlantingSeasonUpdatedEvent>().filter {
-          it.changedTo.status != PlantingSeasonStatus.Closed
-        }
-
-    if (combinableUpdates.size < 2) {
-      return events
-    }
-
-    val combinedFrom =
-        PlantingSeasonUpdatedEventValues(
-            endDate = combinableUpdates.firstNotNullOfOrNull { it.changedFrom.endDate },
-            name = combinableUpdates.firstNotNullOfOrNull { it.changedFrom.name },
-            startDate = combinableUpdates.firstNotNullOfOrNull { it.changedFrom.startDate },
-            status = combinableUpdates.firstNotNullOfOrNull { it.changedFrom.status },
-        )
-    val combinedTo =
-        PlantingSeasonUpdatedEventValues(
-            endDate = combinableUpdates.lastNotNullOfOrNull { it.changedTo.endDate },
-            name = combinableUpdates.lastNotNullOfOrNull { it.changedTo.name },
-            startDate = combinableUpdates.lastNotNullOfOrNull { it.changedTo.startDate },
-            status = combinableUpdates.lastNotNullOfOrNull { it.changedTo.status },
-        )
-
-    val lastCombinable = combinableUpdates.last()
-
-    return events.mapNotNull { event ->
-      when {
-        event !is PlantingSeasonUpdatedEvent -> event
-        event.changedTo.status == PlantingSeasonStatus.Closed -> event
-        event === lastCombinable -> event.copy(changedFrom = combinedFrom, changedTo = combinedTo)
-        else -> null
+    events.forEach { event ->
+      val type = event.notificationType ?: return@forEach
+      val speciesNames = speciesNamesByType.getOrPut(type) { mutableSetOf() }
+      if (event is PlantingSeasonSpeciesTargetPersistentEvent) {
+        scientificNamesBySpeciesId[event.speciesId]?.let { speciesNames.add(it) }
       }
     }
+
+    return speciesNamesByType.map { (type, speciesNames) ->
+      PlantingSeasonNotificationAlertModel(
+          type = type,
+          speciesScientificNames = speciesNames.ifEmpty { null },
+      )
+    }
   }
 
-  /**
-   * Collapses the [PlantingSeasonSpeciesTargetUpdatedEvent]s for each species target into a single
-   * event, keeping the [changedFrom][PlantingSeasonSpeciesTargetUpdatedEvent.changedFrom] of the
-   * earliest update and the [changedTo][PlantingSeasonSpeciesTargetUpdatedEvent.changedTo] of the
-   * latest update. Only updates to the same species and substratum are combined; the combined event
-   * keeps that target's last update as a representative.
-   */
-  private fun combineSpeciesTargetUpdates(
-      events: List<PlantingSeasonRelatedPersistentEvent>
-  ): List<PlantingSeasonRelatedPersistentEvent> {
-    val updatesByTarget =
-        events
-            .filterIsInstance<PlantingSeasonSpeciesTargetUpdatedEvent>()
-            .groupBy { it.speciesId to it.substratumId }
-            .filterValues { it.size >= 2 }
-
-    if (updatesByTarget.isEmpty()) {
-      return events
-    }
-
-    return events.mapNotNull { event ->
-      if (event !is PlantingSeasonSpeciesTargetUpdatedEvent) {
-        event
-      } else {
-        val group = updatesByTarget[event.speciesId to event.substratumId]
-        when {
-          group == null -> event
-          event === group.last() -> group.last().copy(changedFrom = group.first().changedFrom)
+  private val PlantingSeasonRelatedPersistentEvent.notificationType: PlantingSeasonNotificationType?
+    get() =
+        when (this) {
+          is PlantingSeasonSpeciesTargetCreatedEvent ->
+              PlantingSeasonNotificationType.SPECIES_TARGETS_ADDED
+          is PlantingSeasonSpeciesTargetUpdatedEvent ->
+              PlantingSeasonNotificationType.SPECIES_TARGETS_UPDATED
+          is PlantingSeasonUpdatedEvent ->
+              if (changedTo.status == PlantingSeasonStatus.Closed) {
+                PlantingSeasonNotificationType.PLANTING_SEASON_CLOSED
+              } else if (changedTo.status == PlantingSeasonStatus.PastEndDate) {
+                PlantingSeasonNotificationType.PLANTING_SEASON_PAST_END_DATE
+              } else {
+                null
+              }
           else -> null
         }
-      }
+
+  private fun speciesIdsOf(
+      entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>
+  ): Set<SpeciesId> =
+      entries
+          .map { it.event }
+          .filterIsInstance<PlantingSeasonSpeciesTargetPersistentEvent>()
+          .mapTo(mutableSetOf()) { it.speciesId }
+
+  private fun fetchScientificNamesBySpeciesId(speciesIds: Set<SpeciesId>): Map<SpeciesId, String> {
+    if (speciesIds.isEmpty()) {
+      return emptyMap()
     }
+
+    return dslContext
+        .select(SPECIES.ID, SPECIES.SCIENTIFIC_NAME)
+        .from(SPECIES)
+        .where(SPECIES.ID.`in`(speciesIds))
+        .associate { it[SPECIES.ID]!! to it[SPECIES.SCIENTIFIC_NAME]!! }
   }
 
-  private fun <T, R> List<T>.lastNotNullOfOrNull(transform: (T) -> R?): R? =
-      asReversed().firstNotNullOfOrNull(transform)
-
   /**
-   * Returns the dismissal watermark for every planting season matching [condition]. Every matching
-   * season is included; the value is null for seasons that have never dismissed a notification,
-   * which means all of their events should be treated as undismissed.
+   * Returns the dismissal watermark and display names for every planting season matching
+   * [condition]. Every matching season is included; [SeasonInfo.lastDismissedEventLogId] is null
+   * for seasons that have never dismissed a notification, which means all of their events should be
+   * treated as undismissed.
    */
-  private fun fetchLastDismissedEventLogIdsByCondition(
-      condition: Condition
-  ): Map<PlantingSeasonId, EventLogId?> =
+  private fun fetchSeasonInfoByCondition(condition: Condition): Map<PlantingSeasonId, SeasonInfo> =
       dslContext
           .select(
               PLANTING_SEASONS.ID,
+              PLANTING_SEASONS.NAME,
+              PLANTING_SEASONS.plantingSites.NAME,
               PLANTING_SEASON_NOTIFICATIONS.LAST_DISMISSED_EVENT_LOG_ID,
           )
           .from(PLANTING_SEASONS)
@@ -202,6 +214,17 @@ class PlantingSeasonNotificationsService(
           .where(condition)
           .associate { record ->
             record[PLANTING_SEASONS.ID]!! to
-                record[PLANTING_SEASON_NOTIFICATIONS.LAST_DISMISSED_EVENT_LOG_ID]
+                SeasonInfo(
+                    lastDismissedEventLogId =
+                        record[PLANTING_SEASON_NOTIFICATIONS.LAST_DISMISSED_EVENT_LOG_ID],
+                    plantingSeasonName = record[PLANTING_SEASONS.NAME]!!,
+                    plantingSiteName = record[PLANTING_SEASONS.plantingSites.NAME]!!,
+                )
           }
+
+  private data class SeasonInfo(
+      val lastDismissedEventLogId: EventLogId?,
+      val plantingSeasonName: String,
+      val plantingSiteName: String,
+  )
 }
