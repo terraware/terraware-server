@@ -2387,6 +2387,28 @@ class ObservationStore(
     }
   }
 
+  fun deleteIncompletePlots(observationId: ObservationId) {
+    requirePermissions { manageObservation(observationId) }
+
+    val currentState =
+        dslContext.fetchValue(OBSERVATIONS.STATE_ID, OBSERVATIONS.ID.eq(observationId))
+            ?: throw ObservationNotFoundException(observationId)
+
+    if (currentState != ObservationState.Abandoned) {
+      throw IllegalStateException(
+          "Observation state is $currentState; can only delete plots from abandoned observations"
+      )
+    }
+
+    with(OBSERVATION_PLOTS) {
+      dslContext
+          .deleteFrom(OBSERVATION_PLOTS)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(STATUS_ID.ne(ObservationPlotStatus.Completed))
+          .execute()
+    }
+  }
+
   private fun resetPlantPopulationSinceLastObservation(plantingSiteId: PlantingSiteId) {
     dslContext
         .update(PLANTING_SITE_POPULATIONS)
