@@ -19,6 +19,7 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.tracking.PlantingSiteService
+import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
 import com.terraformation.backend.tracking.model.ExistingPlantingSiteModel
 import com.terraformation.backend.tracking.model.ExistingStratumModel
@@ -63,6 +64,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @TrackingEndpoint
 class PlantingSitesController(
+    private val observationStore: ObservationStore,
     private val plantingSiteStore: PlantingSiteStore,
     private val plantingSiteService: PlantingSiteService,
 ) {
@@ -110,6 +112,18 @@ class PlantingSitesController(
   ): GetPlantingSiteResponsePayload {
     val model = plantingSiteStore.fetchSiteById(id, PlantingSiteDepth.Plot, simplified ?: true)
     return GetPlantingSiteResponsePayload(PlantingSitePayload(model, includeZones ?: true))
+  }
+
+  @Operation(
+      summary = "Get whether a survival rate recalculation is in progress for a planting site"
+  )
+  @GetMapping("/{id}/calculationInProgress")
+  fun getSurvivalRateCalculationInProgress(
+      @PathVariable id: PlantingSiteId,
+  ): GetSurvivalRateCalculationInProgressResponsePayload {
+    val calculationInProgress = observationStore.fetchSurvivalRateCalculationInProgress(id)
+
+    return GetSurvivalRateCalculationInProgressResponsePayload(calculationInProgress)
   }
 
   @GetMapping("/{id}/history/{historyId}")
@@ -717,6 +731,9 @@ data class GetPlantingSiteResponsePayload(val site: PlantingSitePayload) : Succe
 data class GetPlantingSiteReportedPlantsResponsePayload(
     val site: PlantingSiteReportedPlantsPayload
 ) : SuccessResponsePayload
+
+data class GetSurvivalRateCalculationInProgressResponsePayload(val calculationInProgress: Boolean) :
+    SuccessResponsePayload
 
 data class ListPlantingSitesResponsePayload(val sites: List<PlantingSitePayload>) :
     SuccessResponsePayload

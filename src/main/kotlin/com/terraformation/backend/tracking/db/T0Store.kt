@@ -17,7 +17,6 @@ import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
-import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
@@ -80,14 +79,6 @@ class T0Store(
             )
           }
     } ?: throw PlantingSiteNotFoundException(plantingSiteId)
-  }
-
-  fun fetchSurvivalRateCalculationInProgress(plantingSiteId: PlantingSiteId): Boolean {
-    requirePermissions { readPlantingSite(plantingSiteId) }
-
-    return with(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS) {
-      dslContext.fetchExists(DSL.selectOne().from(this).where(PLANTING_SITE_ID.eq(plantingSiteId)))
-    }
   }
 
   fun fetchAllT0SiteDataSet(plantingSiteId: PlantingSiteId): Boolean {

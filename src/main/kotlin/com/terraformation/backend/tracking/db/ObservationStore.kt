@@ -1625,6 +1625,14 @@ class ObservationStore(
     }
   }
 
+  fun fetchSurvivalRateCalculationInProgress(plantingSiteId: PlantingSiteId): Boolean {
+    requirePermissions { readPlantingSite(plantingSiteId) }
+
+    return with(PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS) {
+      dslContext.fetchExists(DSL.selectOne().from(this).where(PLANTING_SITE_ID.eq(plantingSiteId)))
+    }
+  }
+
   /** Recalculates the stratum- and site-level survival rates for an observation. */
   fun recalculateSurvivalRates(
       observationId: ObservationId,
