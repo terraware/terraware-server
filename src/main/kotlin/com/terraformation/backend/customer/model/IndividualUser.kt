@@ -322,9 +322,7 @@ data class IndividualUser(
 
   override fun canManageNotifications() = false
 
-  override fun canManageObservation(observationId: ObservationId) =
-      isSuperAdmin() &&
-          parentStore.getPlantingSiteId(observationId)?.let { canUpdatePlantingSite(it) } == true
+  override fun canManageObservation(observationId: ObservationId) = isSuperAdmin()
 
   override fun canManageProjectReportConfigs() = isAcceleratorAdmin()
 
