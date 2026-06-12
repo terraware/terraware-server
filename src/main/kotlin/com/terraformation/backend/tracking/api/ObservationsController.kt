@@ -17,6 +17,7 @@ import com.terraformation.backend.api.getFilename
 import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.gpxResponse
 import com.terraformation.backend.api.toResponseEntity
+import com.terraformation.backend.db.SRID
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -71,8 +72,11 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import org.locationtech.jts.geom.Coordinate
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.Point
+import org.locationtech.jts.geom.PrecisionModel
 import org.springframework.core.io.InputStreamResource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -102,6 +106,8 @@ class ObservationsController(
     private val observationResultsStoreV2: ObservationResultsStoreV2,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
+  private val geometryFactory = GeometryFactory(PrecisionModel(), SRID.LONG_LAT)
+
   @GetMapping
   @Operation(summary = "Gets a list of observations of planting sites.")
   fun listObservations(
@@ -343,7 +349,7 @@ class ObservationsController(
         payload.conditions,
         payload.notes,
         payload.observedTime,
-        payload.plants.map { it.toRow() },
+        payload.plants.map { plantPayloadToRow(it, payload.lngFirst ?: false) },
     )
 
     return SimpleSuccessResponsePayload()
@@ -587,6 +593,7 @@ class ObservationsController(
   ): UploadPlotMediaResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
     val filename = file.getFilename("photo")
+    val point = createPoint(payload.gpsCoordinates, payload.lngFirst ?: false)
 
     val fileId =
         observationService.storeMediaFile(
@@ -594,7 +601,7 @@ class ObservationsController(
             monitoringPlotId = plotId,
             position = payload.position,
             data = file.inputStream,
-            metadata = FileMetadata.of(contentType, filename, file.size, payload.gpsCoordinates),
+            metadata = FileMetadata.of(contentType, filename, file.size, point),
             caption = payload.caption,
             isOriginal = true,
             type = payload.type ?: ObservationMediaType.Plot,
@@ -730,7 +737,7 @@ class ObservationsController(
             payload.observedTime,
             payload.observationType,
             payload.plantingSiteId,
-            payload.plants?.map { it.toRow() } ?: emptyList(),
+            payload.plants?.map { plantPayloadToRow(it, payload.lngFirst ?: false) } ?: emptyList(),
             payload.swCorner,
         )
 
@@ -814,6 +821,38 @@ class ObservationsController(
     observationService.mergeOtherSpecies(observationId, payload.otherSpeciesName, payload.speciesId)
 
     return SimpleSuccessResponsePayload()
+  }
+
+  private fun createPoint(point: Point, lngFirst: Boolean): Point {
+    val (lng, lat) =
+        if (lngFirst) {
+          point.x to point.y
+        } else {
+          point.y to point.x
+        }
+
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      throw IllegalArgumentException("Invalid coordinate ($lng, $lat)")
+    }
+
+    return geometryFactory.createPoint(Coordinate(lng, lat))
+  }
+
+  private fun plantPayloadToRow(
+      payload: RecordedPlantPayload,
+      lngFirst: Boolean,
+  ): RecordedPlantsRow {
+    val point = createPoint(payload.gpsCoordinates, lngFirst)
+
+    return RecordedPlantsRow(
+        certaintyId = payload.certainty,
+        gpsCoordinates = point,
+        speciesId =
+            if (payload.certainty == RecordedSpeciesCertainty.Known) payload.speciesId else null,
+        speciesName =
+            if (payload.certainty == RecordedSpeciesCertainty.Other) payload.speciesName else null,
+        statusId = payload.status,
+    )
   }
 }
 
@@ -983,16 +1022,6 @@ data class RecordedPlantPayload(
       speciesName = model.speciesName,
       status = model.status,
   )
-
-  fun toRow(): RecordedPlantsRow {
-    return RecordedPlantsRow(
-        certaintyId = certainty,
-        gpsCoordinates = gpsCoordinates,
-        speciesId = if (certainty == RecordedSpeciesCertainty.Known) speciesId else null,
-        speciesName = if (certainty == RecordedSpeciesCertainty.Other) speciesName else null,
-        statusId = status,
-    )
-  }
 }
 
 data class ObservationMonitoringPlotCoordinatesPayload(
@@ -1008,6 +1037,8 @@ data class CompleteAdHocObservationRequestPayload(
     @Schema(description = "Biomass Measurements. Required for biomass measurement observations")
     val biomassMeasurements: NewBiomassMeasurementPayload?,
     val conditions: Set<ObservableCondition>,
+    @Schema(description = "Use longitude first in coordinate system. Defaults to false.")
+    val lngFirst: Boolean?,
     val notes: String?,
     @Schema(description = "Date and time the observation was performed in the field.")
     val observedTime: Instant,
@@ -1028,6 +1059,8 @@ data class CompleteAdHocObservationResponsePayload(
 
 data class CompletePlotObservationRequestPayload(
     val conditions: Set<ObservableCondition>,
+    @Schema(description = "Use longitude first in coordinate system. Defaults to false.")
+    val lngFirst: Boolean?,
     val notes: String?,
     @Schema(description = "Date and time the observation was performed in the field.")
     val observedTime: Instant,
@@ -1201,6 +1234,8 @@ data class UploadPlotMediaRequestPayload(
 data class UploadPlotPhotoRequestPayload(
     val caption: String?,
     val gpsCoordinates: Point,
+    @Schema(description = "Use longitude first in coordinate system. Defaults to false.")
+    val lngFirst: Boolean?,
     val position: ObservationPlotPosition?,
     @Schema(
         description = "Type of observation plot photo.",
