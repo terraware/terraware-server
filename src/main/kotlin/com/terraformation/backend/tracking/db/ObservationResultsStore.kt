@@ -10,6 +10,8 @@ import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
+import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
@@ -658,6 +660,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                 completedTime = completedTime,
                 estimatedPlants = estimatedPlants?.roundToInt(),
                 name = record[STRATUM_HISTORIES.NAME.asNonNullable()],
+                observedDensity = plantingDensity?.roundToInt(),
                 plantingCompleted = plantingCompleted,
                 plantingDensity = plantingDensity?.roundToInt(),
                 plantingDensityStdDev = plantingDensityStdDev,
@@ -692,7 +695,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
     val strataField = stratumMultiset(queryDepth)
     val plantingSiteSpeciesMultisetField = plantingSiteSpeciesMultiset()
 
-    val results =
+    val fetchedResults =
         dslContext
             .select(
                 adHocPlotsField,
@@ -789,6 +792,7 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
                   observationId = record[OBSERVATIONS.ID.asNonNullable()],
                   observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID.asNonNullable()],
+                  observedDensity = plantingDensity?.roundToInt(),
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity?.roundToInt(),
                   plantingDensityStdDev = plantingDensityStdDev,
@@ -805,6 +809,8 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
                   totalSpecies = totalSpecies,
               )
             }
+
+    val results = applyLastObservedDensities(fetchedResults)
 
     return when (depth) {
       ObservationResultsDepth.Site -> results.map { site -> site.copy(strata = emptyList()) }
@@ -835,6 +841,97 @@ class ObservationResultsStore(private val dslContext: DSLContext) {
           }
       ObservationResultsDepth.Plot,
       ObservationResultsDepth.Plant -> results
+    }
+  }
+
+  /**
+   * Applies "last observed" planting density to the stratum and site levels of a set of observation
+   * results. For each substratum not observed in a given observation, its most recently observed
+   * plot densities (from an earlier observation in [results]) are pooled into that observation's
+   * stratum and site rollups, matching [ObservationResultsStoreV2].
+   *
+   * This only takes effect when [results] contains the substratum's earlier observations, i.e. when
+   * fetching all of a planting site's observations. A single-observation fetch is unaffected
+   * because there are no earlier observations to carry forward.
+   */
+  private fun applyLastObservedDensities(
+      results: List<ObservationResultsModel>
+  ): List<ObservationResultsModel> {
+    data class ObservedDensities(val completedTime: Instant, val densities: List<Int>)
+
+    val observationsBySubstratum = mutableMapOf<SubstratumId, MutableList<ObservedDensities>>()
+    val substrataByStratum = mutableMapOf<StratumId, MutableSet<SubstratumId>>()
+    val allSubstrata = mutableSetOf<SubstratumId>()
+
+    results.forEach { result ->
+      val completedTime = result.completedTime ?: return@forEach
+      result.strata.forEach { stratum ->
+        stratum.substrata.forEach { substratum ->
+          val substratumId = substratum.substratumId ?: return@forEach
+          allSubstrata.add(substratumId)
+          stratum.stratumId?.let {
+            substrataByStratum.getOrPut(it) { mutableSetOf() }.add(substratumId)
+          }
+          val densities =
+              substratum.monitoringPlots
+                  .filter { it.status == ObservationPlotStatus.Completed }
+                  .mapNotNull { it.plantingDensity }
+          if (densities.isNotEmpty()) {
+            observationsBySubstratum
+                .getOrPut(substratumId) { mutableListOf() }
+                .add(ObservedDensities(completedTime, densities))
+          }
+        }
+      }
+    }
+
+    fun pooledDensities(substrata: Collection<SubstratumId>, refTime: Instant): List<Int> =
+        substrata.flatMap { substratumId ->
+          observationsBySubstratum[substratumId]
+              ?.filter { it.completedTime <= refTime }
+              ?.maxByOrNull { it.completedTime }
+              ?.densities ?: emptyList()
+        }
+
+    return results.map { result ->
+      val refTime = result.completedTime
+      if (refTime == null) {
+        result
+      } else {
+        val newStrata =
+            result.strata.map { stratum ->
+              val stratumId = stratum.stratumId
+              if (stratumId == null) {
+                stratum
+              } else {
+                val pooled = pooledDensities(substrataByStratum[stratumId] ?: emptySet(), refTime)
+                val density = pooled.takeIf { it.isNotEmpty() }?.average()
+                stratum.copy(
+                    plantingDensity = density?.roundToInt(),
+                    plantingDensityStdDev = pooled.calculateStandardDeviation(),
+                    estimatedPlants =
+                        if (stratum.plantingCompleted && density != null) {
+                          (stratum.areaHa.toDouble() * density).roundToInt()
+                        } else {
+                          null
+                        },
+                )
+              }
+            }
+        val sitePooled = pooledDensities(allSubstrata, refTime)
+        val siteDensity = sitePooled.takeIf { it.isNotEmpty() }?.average()
+        result.copy(
+            strata = newStrata,
+            plantingDensity = siteDensity?.roundToInt(),
+            plantingDensityStdDev = sitePooled.calculateStandardDeviation(),
+            estimatedPlants =
+                if (newStrata.isNotEmpty() && newStrata.all { it.estimatedPlants != null }) {
+                  newStrata.mapNotNull { it.estimatedPlants }.sum()
+                } else {
+                  null
+                },
+        )
+      }
     }
   }
 }

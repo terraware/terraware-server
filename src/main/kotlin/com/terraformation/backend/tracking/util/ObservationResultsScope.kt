@@ -108,6 +108,46 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
    */
   fun survivalRateAreaValue(observationIdField: Field<ObservationId?>): Field<BigDecimal?> =
       DSL.castNull(SQLDataType.NUMERIC)
+
+  /**
+   * Returns the SQL expression for this scope's plant density: the average of the plant densities
+   * of the plots that belong to this scope. The default (plot and substratum scopes) uses only the
+   * plots from [observationIdField]. Stratum and site scopes override this to pull each
+   * substratum's plots from its latest observation at or before [observationIdField], so a
+   * substratum that wasn't observed in the current observation still contributes its last-observed
+   * data to the rollup, matching how survival rate uses [latestObservationForSubstratumField].
+   */
+  fun latestPlantDensityField(observationIdField: Field<ObservationId?>): Field<Int?> =
+      observedPlantDensityField(observationIdField)
+
+  /**
+   * Returns the SQL expression for this scope's plant density using only the plots observed in
+   * [observationIdField], with no last-observed carry-forward. This is the historical
+   * [latestPlantDensityField] behavior, retained as a separate "observed density" value; unlike
+   * [latestPlantDensityField], stratum and site scopes do not override it.
+   */
+  fun observedPlantDensityField(observationIdField: Field<ObservationId?>): Field<Int?> =
+      DSL.field(
+          DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
+              .from(OBSERVATION_PLOT_RESULTS)
+              .where(plotResultsCondition)
+              .and(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationIdField))
+      )
+
+  /**
+   * Standard deviation companion to [latestPlantDensityField]. Pools the individual plot densities
+   * of the same plot set (sample standard deviation), so a stratum/site std dev is computed across
+   * every contributing plot rather than across substratum averages.
+   */
+  fun latestPlantDensityStdDevField(observationIdField: Field<ObservationId?>): Field<Int?> =
+      DSL.field(
+          DSL.select(
+                  DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER)
+              )
+              .from(OBSERVATION_PLOT_RESULTS)
+              .where(plotResultsCondition)
+              .and(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationIdField))
+      )
 }
 
 class ObservationResultsPlot(
@@ -385,6 +425,43 @@ class ObservationResultsStratum(
         )
       }
 
+  private fun latestPlotDensityAggregate(
+      aggregate: Field<BigDecimal?>,
+      observationIdField: Field<ObservationId?>,
+  ): Field<Int?> =
+      DSL.field(
+          DSL.select(aggregate.cast(SQLDataType.INTEGER))
+              .from(OBSERVATION_PLOT_RESULTS)
+              .where(
+                  OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
+                      .STRATUM_HISTORY_ID
+                      .`in`(stratumHistorySelect)
+              )
+              .and(
+                  OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(
+                      latestObservationForSubstratumField(
+                          observationIdField,
+                          OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
+                              .SUBSTRATUM_ID,
+                      )
+                  )
+              )
+      )
+
+  override fun latestPlantDensityField(observationIdField: Field<ObservationId?>): Field<Int?> =
+      latestPlotDensityAggregate(
+          DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY),
+          observationIdField,
+      )
+
+  override fun latestPlantDensityStdDevField(
+      observationIdField: Field<ObservationId?>
+  ): Field<Int?> =
+      latestPlotDensityAggregate(
+          DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY),
+          observationIdField,
+      )
+
   override val observedTotalsCondition =
       OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(stratumHistorySelect)
 
@@ -580,6 +657,44 @@ class ObservationResultsSite(
                 ),
         )
       }
+
+  private fun latestPlotDensityAggregate(
+      aggregate: Field<BigDecimal?>,
+      observationIdField: Field<ObservationId?>,
+  ): Field<Int?> =
+      DSL.field(
+          DSL.select(aggregate.cast(SQLDataType.INTEGER))
+              .from(OBSERVATION_PLOT_RESULTS)
+              .where(
+                  OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
+                      .stratumHistories
+                      .PLANTING_SITE_HISTORY_ID
+                      .`in`(siteHistorySelect)
+              )
+              .and(
+                  OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(
+                      latestObservationForSubstratumField(
+                          observationIdField,
+                          OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
+                              .SUBSTRATUM_ID,
+                      )
+                  )
+              )
+      )
+
+  override fun latestPlantDensityField(observationIdField: Field<ObservationId?>): Field<Int?> =
+      latestPlotDensityAggregate(
+          DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY),
+          observationIdField,
+      )
+
+  override fun latestPlantDensityStdDevField(
+      observationIdField: Field<ObservationId?>
+  ): Field<Int?> =
+      latestPlotDensityAggregate(
+          DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY),
+          observationIdField,
+      )
 
   override val observedTotalsCondition = OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(siteSelect)
 

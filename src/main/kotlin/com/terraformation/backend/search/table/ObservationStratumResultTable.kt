@@ -64,6 +64,7 @@ class ObservationStratumResultTable(private val tables: SearchTables) : SearchTa
 
   override val fields: List<SearchField> =
       listOf(
+          integerField("observedDensity", OBSERVATION_STRATUM_RESULTS.OBSERVED_DENSITY),
           integerField("permanentLive", OBSERVATION_STRATUM_RESULTS.PERMANENT_LIVE),
           integerField("plantDensity", OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY),
           integerField("plantDensityStdDev", OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY_STD_DEV),

@@ -1127,6 +1127,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             permanentLive = 2,
             plantDensity = 22,
             plantDensityStdDev = null,
+            observedDensity = 22,
         ),
         "observation stratum results",
     )
@@ -1141,6 +1142,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             permanentLive = 2,
             plantDensity = 22,
             plantDensityStdDev = null,
+            observedDensity = 22,
         ),
         "observation site results",
     )
@@ -1216,6 +1218,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             permanentLive = 1,
             plantDensity = 11,
             plantDensityStdDev = null,
+            observedDensity = 11,
         ),
         "observation stratum results after first plot completion",
     )
@@ -1230,6 +1233,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             permanentLive = 1,
             plantDensity = 11,
             plantDensityStdDev = null,
+            observedDensity = 11,
         ),
         "observation site results after first plot completion",
     )
@@ -1300,6 +1304,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             permanentLive = 4,
             plantDensity = 22,
             plantDensityStdDev = 16,
+            observedDensity = 22,
         ),
         "observation stratum results after second plot completion",
     )
@@ -1314,6 +1319,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             permanentLive = 4,
             plantDensity = 22,
             plantDensityStdDev = 16,
+            observedDensity = 22,
         ),
         "observation site results after second plot completion",
     )
@@ -1426,6 +1432,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
+            observedDensity = 11,
         ),
         "stratum results after first plot completion",
     )
@@ -1442,6 +1449,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
+            observedDensity = 11,
         ),
         "site results after first plot completion",
     )
@@ -1518,6 +1526,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
+            observedDensity = 22,
         ),
         "stratum results after second plot completion",
     )
@@ -1534,6 +1543,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
+            observedDensity = 22,
         ),
         "site results after second plot completion",
     )
@@ -1625,6 +1635,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = 22,
             plantDensity = 37,
             plantDensityStdDev = 28,
+            observedDensity = 37,
         ),
         "stratum results after third plot completion",
     )
@@ -1642,6 +1653,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = 22,
             plantDensity = 37,
             plantDensityStdDev = 28,
+            observedDensity = 37,
         ),
         "site results after third plot completion",
     )
@@ -1763,6 +1775,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
+            observedDensity = 11,
         ),
         "stratum results after first plot completion",
     )
@@ -1779,6 +1792,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 11,
             plantDensityStdDev = null,
+            observedDensity = 11,
         ),
         "site results after first plot completion",
     )
@@ -1855,6 +1869,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
+            observedDensity = 22,
         ),
         "stratum results after second plot completion",
     )
@@ -1871,6 +1886,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 22,
             plantDensityStdDev = 16,
+            observedDensity = 22,
         ),
         "site results after second plot completion",
     )
@@ -1961,6 +1977,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = 45,
             plantDensity = 37,
             plantDensityStdDev = 28,
+            observedDensity = 37,
         ),
         "stratum results after third plot completion",
     )
@@ -1978,6 +1995,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = 45,
             plantDensity = 37,
             plantDensityStdDev = 28,
+            observedDensity = 37,
         ),
         "site results after third plot completion",
     )
@@ -2071,6 +2089,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 17,
             plantDensityStdDev = 8,
+            observedDensity = 17,
         ),
         "stratum results - survival rate std dev is null with no T0 densities",
     )
@@ -2087,6 +2106,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 17,
             plantDensityStdDev = 8,
+            observedDensity = 17,
         ),
         "site results - survival rate std dev is null with no T0 densities",
     )
@@ -2215,6 +2235,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 17,
             plantDensityStdDev = 8,
+            observedDensity = 17,
         ),
         "stratum results - plot2 excluded from std dev due to null survival rate",
     )
@@ -2231,6 +2252,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 17,
             plantDensityStdDev = 8,
+            observedDensity = 17,
         ),
         "site results - plot2 excluded from std dev due to null survival rate",
     )
@@ -2355,6 +2377,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = 0,
             plantDensity = 6,
             plantDensityStdDev = 8,
+            observedDensity = 6,
         ),
         "stratum results - zero-density plot is non-existent in std dev",
     )
@@ -2372,6 +2395,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = 0,
             plantDensity = 6,
             plantDensityStdDev = 8,
+            observedDensity = 6,
         ),
         "site results - zero-density plot is non-existent in std dev",
     )
@@ -2487,6 +2511,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 0,
             plantDensityStdDev = 0,
+            observedDensity = 0,
         ),
         "stratum results - std dev is null when all plots have zero density",
     )
@@ -2504,6 +2529,7 @@ class ObservationStoreCompletePlotTest : BaseObservationStoreTest() {
             survivalRateStdDev = null,
             plantDensity = 0,
             plantDensityStdDev = 0,
+            observedDensity = 0,
         ),
         "site results - std dev is null when all plots have zero density",
     )

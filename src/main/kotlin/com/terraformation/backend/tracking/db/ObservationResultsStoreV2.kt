@@ -368,6 +368,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                     OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_STD_DEV,
                     OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY,
                     OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY_STD_DEV,
+                    OBSERVATION_STRATUM_RESULTS.OBSERVED_DENSITY,
                 )
                 .from(STRATUM_HISTORIES)
                 .leftJoin(OBSERVATION_STRATUM_RESULTS)
@@ -448,6 +449,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
             val survivalRateStdDev = record[OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE_STD_DEV]
             val plantingDensity = record[OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY]
             val plantingDensityStdDev = record[OBSERVATION_STRATUM_RESULTS.PLANT_DENSITY_STD_DEV]
+            val observedDensity = record[OBSERVATION_STRATUM_RESULTS.OBSERVED_DENSITY]
 
             val plantingCompleted = record[stratumPlantingCompletedField]
             val estimatedPlants =
@@ -462,6 +464,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 completedTime = completedTime,
                 estimatedPlants = estimatedPlants,
                 name = record[STRATUM_HISTORIES.NAME.asNonNullable()],
+                observedDensity = observedDensity,
                 plantingCompleted = plantingCompleted,
                 plantingDensity = plantingDensity,
                 plantingDensityStdDev = plantingDensityStdDev,
@@ -539,6 +542,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                 OBSERVATION_SITE_RESULTS.SURVIVAL_RATE_STD_DEV,
                 OBSERVATION_SITE_RESULTS.PLANT_DENSITY,
                 OBSERVATION_SITE_RESULTS.PLANT_DENSITY_STD_DEV,
+                OBSERVATION_SITE_RESULTS.OBSERVED_DENSITY,
                 survivalRateCalculationInProgressField,
             )
             .from(OBSERVATIONS)
@@ -587,6 +591,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
               val survivalRateStdDev = record[OBSERVATION_SITE_RESULTS.SURVIVAL_RATE_STD_DEV]
               val plantingDensity = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY]
               val plantingDensityStdDev = record[OBSERVATION_SITE_RESULTS.PLANT_DENSITY_STD_DEV]
+              val observedDensity = record[OBSERVATION_SITE_RESULTS.OBSERVED_DENSITY]
 
               ObservationResultsModel(
                   adHocPlot = record[adHocPlotsField].firstOrNull(),
@@ -597,6 +602,7 @@ class ObservationResultsStoreV2(private val dslContext: DSLContext) {
                   isAdHoc = record[OBSERVATIONS.IS_AD_HOC.asNonNullable()],
                   observationId = record[OBSERVATIONS.ID.asNonNullable()],
                   observationType = record[OBSERVATIONS.OBSERVATION_TYPE_ID.asNonNullable()],
+                  observedDensity = observedDensity,
                   plantingCompleted = plantingCompleted,
                   plantingDensity = plantingDensity,
                   plantingDensityStdDev = plantingDensityStdDev,

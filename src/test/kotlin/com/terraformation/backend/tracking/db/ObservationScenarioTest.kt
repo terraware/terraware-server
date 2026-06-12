@@ -214,6 +214,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             { _, results ->
               listOf(
                   results.plantingDensity.toStringOrBlank(),
+                  results.observedDensity.toStringOrBlank(),
                   results.totalSpecies.toStringOrBlank(),
                   results.survivalRate.toStringOrBlank("%"),
               )
@@ -221,7 +222,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         )
 
     assertResultsMatchCsv("$prefix/SiteStats.csv", actual) { row ->
-      row.filterIndexed { index, _ -> index % 4 != 1 } // estimated plants
+      row.filterIndexed { index, _ -> index % 5 != 2 } // estimated plants
     }
   }
 
@@ -237,6 +238,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
               listOf(
                   stratum.totalPlants.toStringOrBlank(),
                   stratum.plantingDensity.toStringOrBlank(),
+                  stratum.observedDensity.toStringOrBlank(),
                   stratum.totalSpecies.toStringOrBlank(),
                   stratum.survivalRate.toStringOrBlank("%"),
               )
@@ -244,7 +246,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         )
 
     assertResultsMatchCsv("$prefix/StratumStats.csv", actual) { row ->
-      row.filterIndexed { index, _ -> (index - 1) % 5 != 4 } // estimated plants
+      row.filterIndexed { index, _ -> (index - 1) % 6 != 5 } // estimated plants
     }
   }
 
