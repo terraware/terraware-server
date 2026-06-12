@@ -1,3 +1,4 @@
+c38e3cce SW-8489 Use consistent coverage minimum for plots (#4586)
 249eabb4 SW-8298 Migrated fliiped plants coordinates, and added flag for backwards compatibility for clients (#4591)
 fc2fda69 Speed up SearchServiceNestedFieldsTest (#4590)
 d1433d06 SW-8427 Backfill events for planting date requests (#4580)
