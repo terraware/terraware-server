@@ -30,6 +30,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCr
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateCreatedEvent
@@ -496,6 +497,35 @@ data class PlantingSeasonSubjectPayload(
   }
 }
 
+@JsonTypeName("PlantingSeasonAllocatedSpecies")
+data class PlantingSeasonAllocatedSpeciesSubjectPayload(
+    override val fullText: String,
+    val plantingSeasonId: PlantingSeasonId,
+    val plantingSiteId: PlantingSiteId,
+    val scientificName: String?,
+    override val shortText: String,
+    val speciesId: SpeciesId,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingSeasonAllocatedSpeciesPersistentEvent,
+        context: EventLogPayloadContext,
+    ): PlantingSeasonAllocatedSpeciesSubjectPayload {
+      val scientificName = context.getSpeciesScientificName(event.speciesId)
+
+      return PlantingSeasonAllocatedSpeciesSubjectPayload(
+          fullText =
+              context.subjectFullText<PlantingSeasonAllocatedSpeciesSubjectPayload>(scientificName),
+          plantingSeasonId = event.plantingSeasonId,
+          plantingSiteId = event.plantingSiteId,
+          scientificName = scientificName,
+          shortText = context.subjectShortText<PlantingSeasonAllocatedSpeciesSubjectPayload>(),
+          speciesId = event.speciesId,
+      )
+    }
+  }
+}
+
 @JsonTypeName("PlantingSeasonScheduledDate")
 data class PlantingSeasonScheduledDateSubjectPayload(
     override val fullText: String,
@@ -746,6 +776,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlantingDateRequest(PlantingDateRequestPersistentEvent::class),
   PlantingDateRequestSpecies(PlantingDateRequestSpeciesPersistentEvent::class),
   PlantingSeason(PlantingSeasonPersistentEvent::class),
+  PlantingSeasonAllocatedSpecies(PlantingSeasonAllocatedSpeciesPersistentEvent::class),
   PlantingSeasonScheduledDate(PlantingSeasonScheduledDatePersistentEvent::class),
   PlantingSeasonScheduledDateSpecies(PlantingSeasonScheduledDateSpeciesPersistentEvent::class),
   PlantingSeasonSpeciesTarget(PlantingSeasonSpeciesTargetPersistentEvent::class),

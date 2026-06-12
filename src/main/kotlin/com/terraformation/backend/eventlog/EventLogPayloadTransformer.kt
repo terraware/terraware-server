@@ -20,6 +20,7 @@ import com.terraformation.backend.eventlog.api.ObservationPlotSubjectPayload
 import com.terraformation.backend.eventlog.api.OrganizationSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingDateRequestSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingDateRequestSubjectPayload
+import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonScheduledDateSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonScheduledDateSubjectPayload
 import com.terraformation.backend.eventlog.api.PlantingSeasonSpeciesTargetSubjectPayload
@@ -32,6 +33,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestSpeciesPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDatePersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateSpeciesPersistentEvent
@@ -114,6 +116,8 @@ class EventLogPayloadTransformer(
       is PlantingDateRequestSpeciesPersistentEvent ->
           PlantingDateRequestSpeciesSubjectPayload.forEvent(event, context)
       is PlantingSeasonPersistentEvent -> PlantingSeasonSubjectPayload.forEvent(event, context)
+      is PlantingSeasonAllocatedSpeciesPersistentEvent ->
+          PlantingSeasonAllocatedSpeciesSubjectPayload.forEvent(event, context)
       is PlantingSeasonScheduledDatePersistentEvent ->
           PlantingSeasonScheduledDateSubjectPayload.forEvent(event, context)
       is PlantingSeasonScheduledDateSpeciesPersistentEvent ->
