@@ -9,6 +9,8 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.rectanglePolygon
+import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.existingSite
+import com.terraformation.backend.tracking.model.PlantingSiteBuilder.Companion.newSite
 import com.terraformation.backend.util.calculateAreaHectares
 import com.terraformation.backend.util.differenceNullable
 import java.math.BigDecimal
@@ -16,6 +18,7 @@ import java.time.Instant
 import org.locationtech.jts.geom.GeometryFactory
 import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.Point
+import org.locationtech.jts.geom.Polygon
 import org.locationtech.jts.geom.PrecisionModel
 
 /**
@@ -208,12 +211,12 @@ private constructor(
       private val numTemporaryPlots: Int = StratumModel.DEFAULT_NUM_TEMPORARY_PLOTS,
       private val stableId: StableId = StableId(name),
   ) {
+    var boundary: MultiPolygon = rectangle(width, height, x, y)
     var errorMargin: BigDecimal = StratumModel.DEFAULT_ERROR_MARGIN
     var studentsT: BigDecimal = StratumModel.DEFAULT_STUDENTS_T
     var targetPlantingDensity: BigDecimal = StratumModel.DEFAULT_TARGET_PLANTING_DENSITY
     var variance: BigDecimal = StratumModel.DEFAULT_VARIANCE
 
-    private val boundary: MultiPolygon = rectangle(width, height, x, y)
     private var nextPermanentIndex = 1
     private var nextSubstratumX = x
     private val substrata = mutableListOf<ExistingSubstratumModel>()
@@ -267,12 +270,12 @@ private constructor(
         private val fullName: String,
         private val stableId: StableId = StableId(fullName),
     ) {
-      private val boundary: MultiPolygon = rectangle(width, height, x, y)
+      var boundary: MultiPolygon = rectangle(width, height, x, y)
+      var plantingCompletedTime: Instant? = null
+
       private var lastIndex: Int? = null
       private val monitoringPlots = mutableListOf<MonitoringPlotModel>()
       private var nextMonitoringPlotX: Int = x
-
-      var plantingCompletedTime: Instant? = null
 
       fun build(): ExistingSubstratumModel {
         return ExistingSubstratumModel(
@@ -296,13 +299,14 @@ private constructor(
           isAvailable: Boolean = true,
           size: Int = MONITORING_PLOT_SIZE_INT,
           plotNumber: Long = nextPlotNumber,
+          boundary: Polygon = rectanglePolygon(size, size, x, y),
       ): MonitoringPlotModel {
         lastIndex = permanentIndex
         nextMonitoringPlotX = x + size
 
         val plot =
             MonitoringPlotModel(
-                boundary = rectanglePolygon(size, size, x, y),
+                boundary = boundary,
                 elevationMeters = elevationMeters,
                 id = MonitoringPlotId(plotNumber),
                 isAdHoc = isAdHoc,
