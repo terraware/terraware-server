@@ -49,4 +49,3 @@ SET geolocation = c.corrected_geom
 FROM corrected c
 WHERE f.id = c.id
 AND f.geolocation IS DISTINCT FROM c.corrected_geom;
-
