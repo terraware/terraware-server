@@ -967,26 +967,7 @@ class ObservationStore(
         completeObservation(observationId, plantingSiteId, isAdHoc)
       } else {
         if (!isAdHoc) {
-          recalculateSurvivalRateResults(
-              ObservationResultsPlot(monitoringPlotHistoryId, monitoringPlotId),
-              observationId,
-          )
-          if (substratumHistoryId != null) {
-            recalculateSurvivalRateResults(
-                ObservationResultsSubstratum(substratumHistoryId, substratumId),
-                observationId,
-            )
-          }
-          if (stratumHistoryId != null) {
-            recalculateSurvivalRateResults(
-                ObservationResultsStratum(stratumHistoryId, stratumId),
-                observationId,
-            )
-          }
-          recalculateSurvivalRateResults(
-              ObservationResultsSite(plantingSiteHistoryId, plantingSite.id!!),
-              observationId,
-          )
+          recalculateSurvivalRateResults(observationId, monitoringPlotId)
         }
       }
     }
@@ -1372,6 +1353,7 @@ class ObservationStore(
         )
         // Propagate the new totals from species to aggregate totals
         updateObservationResults(observationId, observation.plantingSiteId)
+        recalculateSurvivalRateResults(observationId, monitoringPlotId)
 
         // Aggregation from substratum to stratum (and then to site) works by adding up the most
         // recent data for each substratum at the time of the observation in question.
@@ -1461,6 +1443,7 @@ class ObservationStore(
               plantCountsBySpecies = plantCountAdjustments,
           )
           updateObservationResults(laterObservationId, observation.plantingSiteId)
+          recalculateSurvivalRateResults(laterObservationId, observation.plantingSiteId)
         }
 
         eventPublisher.publishEvent(
@@ -2009,6 +1992,56 @@ class ObservationStore(
         .execute()
   }
 
+  private fun recalculateSurvivalRateResults(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+  ) {
+    val (
+        monitoringPlotHistoryId,
+        substratumHistoryId,
+        substratumId,
+        stratumHistoryId,
+        stratumId,
+        plantingSiteHistoryId,
+        plantingSiteId,
+    ) = dslContext
+        .select(
+            OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID.asNonNullable(),
+            OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID,
+            OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID,
+            OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID,
+            OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
+                .STRATUM_ID,
+            OBSERVATION_PLOTS.observations.PLANTING_SITE_HISTORY_ID.asNonNullable(),
+            OBSERVATION_PLOTS.observations.PLANTING_SITE_ID.asNonNullable(),
+        )
+        .from(OBSERVATION_PLOTS)
+        .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(monitoringPlotId))
+        .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
+        .fetchOne() ?: throw PlotNotInObservationException(observationId, monitoringPlotId)
+
+    recalculateSurvivalRateResults(
+        ObservationResultsPlot(monitoringPlotHistoryId, monitoringPlotId),
+        observationId,
+    )
+    if (substratumHistoryId != null) {
+      recalculateSurvivalRateResults(
+          ObservationResultsSubstratum(substratumHistoryId, substratumId),
+          observationId,
+      )
+    }
+    if (stratumHistoryId != null) {
+      recalculateSurvivalRateResults(
+          ObservationResultsStratum(stratumHistoryId, stratumId),
+          observationId,
+      )
+    }
+    recalculateSurvivalRateResults(
+        ObservationResultsSite(plantingSiteHistoryId, plantingSiteId),
+        observationId,
+    )
+  }
+
   private fun <ID : Any, HistoryId : Any> recalculateSurvivalRateResults(
       updateScope: ObservationResultsScope<ID, HistoryId>,
   ) {
@@ -2236,16 +2269,6 @@ class ObservationStore(
     enqueueSurvivalRateCalculation(plantingSiteId) {
       jobScheduler.enqueue<ObservationStore> {
         runRecalculateSurvivalRates(plantingSiteId, event.stratumId)
-      }
-    }
-  }
-
-  @EventListener
-  fun on(event: MonitoringSpeciesTotalsEditedEvent) {
-    val plantingSiteId = event.plantingSiteId
-    enqueueSurvivalRateCalculation(plantingSiteId) {
-      jobScheduler.enqueue<ObservationStore> {
-        runRecalculateSurvivalRates(plantingSiteId, event.monitoringPlotId)
       }
     }
   }
