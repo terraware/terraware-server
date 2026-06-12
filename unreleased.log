@@ -1,3 +1,4 @@
+17970886 Make monitoring species edit recalculations synchronous (#4589)
 c38e3cce SW-8489 Use consistent coverage minimum for plots (#4586)
 249eabb4 SW-8298 Migrated fliiped plants coordinates, and added flag for backwards compatibility for clients (#4591)
 fc2fda69 Speed up SearchServiceNestedFieldsTest (#4590)
