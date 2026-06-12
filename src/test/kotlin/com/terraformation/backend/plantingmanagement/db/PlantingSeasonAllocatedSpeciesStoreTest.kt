@@ -2,6 +2,7 @@ package com.terraformation.backend.plantingmanagement.db
 
 import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.TestClock
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
@@ -10,6 +11,9 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.tables.records.PlantingSeasonAllocatedSpeciesRecord
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_ALLOCATED_SPECIES
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetDeletedEvent
 import java.time.Instant
 import org.junit.jupiter.api.BeforeEach
@@ -22,8 +26,9 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
   override lateinit var user: TerrawareUser
 
   private val clock = TestClock()
+  private val eventPublisher = TestEventPublisher()
   private val store: PlantingSeasonAllocatedSpeciesStore by lazy {
-    PlantingSeasonAllocatedSpeciesStore(clock, dslContext, SeasonHelper(dslContext))
+    PlantingSeasonAllocatedSpeciesStore(clock, dslContext, eventPublisher, SeasonHelper(dslContext))
   }
 
   private lateinit var plantingSeasonId: PlantingSeasonId
@@ -41,7 +46,7 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
   @Nested
   inner class Upsert {
     @Test
-    fun `inserts a new species allocation row`() {
+    fun `inserts a new species allocation row and publishes event`() {
       store.upsert(plantingSeasonId, speciesId, 5)
 
       assertTableEquals(
@@ -55,10 +60,20 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
               modifiedTime = clock.instant,
           ),
       )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonAllocatedSpeciesCreatedEvent(
+              organizationId = inserted.organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = inserted.plantingSiteId,
+              quantity = 5,
+              speciesId = speciesId,
+          )
+      )
     }
 
     @Test
-    fun `updates quantity when row already exists`() {
+    fun `updates quantity and publishes event when row already exists`() {
       store.upsert(plantingSeasonId, speciesId, quantity = 5)
       clock.instant = Instant.ofEpochSecond(100)
       store.upsert(plantingSeasonId, speciesId, quantity = 20)
@@ -74,6 +89,25 @@ internal class PlantingSeasonAllocatedSpeciesStoreTest : DatabaseTest(), RunsAsD
               modifiedTime = clock.instant,
           )
       )
+
+      eventPublisher.assertEventPublished(
+          PlantingSeasonAllocatedSpeciesUpdatedEvent(
+              changedFrom = PlantingSeasonAllocatedSpeciesUpdatedEventValues(quantity = 5),
+              changedTo = PlantingSeasonAllocatedSpeciesUpdatedEventValues(quantity = 20),
+              organizationId = inserted.organizationId,
+              plantingSeasonId = plantingSeasonId,
+              plantingSiteId = inserted.plantingSiteId,
+              speciesId = speciesId,
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish an event when the quantity is unchanged`() {
+      store.upsert(plantingSeasonId, speciesId, quantity = 5)
+      store.upsert(plantingSeasonId, speciesId, quantity = 5)
+
+      eventPublisher.assertEventNotPublished<PlantingSeasonAllocatedSpeciesUpdatedEvent>()
     }
 
     @Test
