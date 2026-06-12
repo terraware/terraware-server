@@ -809,6 +809,20 @@ class ObservationService(
     return observationLocker.withLockedObservation(observationId) { _ -> func() }
   }
 
+  fun deleteObservation(observationId: ObservationId) {
+    requirePermissions { manageObservation(observationId) }
+
+    systemUser.run {
+      val observation = observationStore.fetchObservationById(observationId)
+
+      deleteMediaWhere(OBSERVATION_MEDIA_FILES.OBSERVATION_ID.eq(observationId))
+
+      observationStore.deleteObservation(observationId)
+
+      observationStore.recalculateSurvivalRates(observation.plantingSiteId)
+    }
+  }
+
   @EventListener
   fun on(event: PlantingSiteDeletionStartedEvent) {
     deleteMediaWhere(

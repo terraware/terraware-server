@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}"/>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<p>
+    <a href="/admin/">Home</a>
+</p>
+
+<h2>Manage Observations</h2>
+
+<h3>Delete Observation</h3>
+
+<p>
+    Completely delete an observation and all its data. This may affect aggregate statistics
+    such as survival rate in later observations.
+</p>
+
+<form method="POST" action="/admin/deleteObservation">
+    <label>
+        Observation ID
+        <input type="text" name="observationId" required/>
+    </label>
+    <input type="submit" value="Delete Observation"/>
+</form>
+
+</body>
+</html>
