@@ -1,3 +1,4 @@
+7bab08a1 SW-8427 Persistent events for allocated species (#4592)
 b814b73b SW-8360 Use last-observed data for rolled-up plant density (#4575)
 17970886 Make monitoring species edit recalculations synchronous (#4589)
 c38e3cce SW-8489 Use consistent coverage minimum for plots (#4586)
