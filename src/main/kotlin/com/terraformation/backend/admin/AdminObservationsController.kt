@@ -55,8 +55,8 @@ class AdminObservationsController(
       redirectAttributes.successMessage =
           "Deleted incomplete plots from observation $observationId."
     } catch (e: Exception) {
-      log.error("Failed to delete observation $observationId", e)
-      redirectAttributes.failureMessage = "Failed to delete observation: $e"
+      log.error("Failed to delete incomplete plots from observation $observationId", e)
+      redirectAttributes.failureMessage = "Failed to delete incomplete plots from observation: $e"
     }
 
     return redirectToObservationsHome()
