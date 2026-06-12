@@ -676,7 +676,7 @@ data class IndividualUser(
       canListNotifications(organizationId)
 
   override fun canUpdateObservation(observationId: ObservationId) =
-      isMember(parentStore.getOrganizationId(observationId))
+      isSuperAdmin() || isMember(parentStore.getOrganizationId(observationId))
 
   override fun canUpdateObservationQuantities(observationId: ObservationId) =
       isManagerOrHigher(parentStore.getOrganizationId(observationId))

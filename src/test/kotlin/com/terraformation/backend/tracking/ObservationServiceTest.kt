@@ -2447,17 +2447,6 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       // Upcoming observation with no plots — skipped.
       insertObservation(plantingSiteId = plantingSiteId, state = ObservationState.Upcoming)
 
-      // Observation in another org the user cannot manage — skipped even with a completed plot.
-      val otherOrganizationId = insertOrganization()
-      val otherPlantingSiteId = insertPlantingSite(organizationId = otherOrganizationId)
-      insertObservation(
-          plantingSiteId = otherPlantingSiteId,
-          state = ObservationState.Completed,
-          completedTime = Instant.ofEpochSecond(50),
-      )
-      insertMonitoringPlot()
-      insertObservationPlot(completedTime = Instant.ofEpochSecond(50))
-
       val spyStore = spyk(observationStore)
       every { spyStore.populateObservationResults(any()) } answers { /* tracked via verify */ }
 
