@@ -1,3 +1,4 @@
+b10c33d7 SW-8434 Add method to recalculate species totals (#4607)
 07f8a19d Update geoToolsVersion to v35 (#4606)
 57d06e4b Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.7.+ (#4605)
 969c59e4 Update plugin com.github.jk1.dependency-license-report to v3.1.4 (#4602)
