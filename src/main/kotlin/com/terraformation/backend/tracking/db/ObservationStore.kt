@@ -41,6 +41,7 @@ import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecor
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
@@ -2363,6 +2364,154 @@ class ObservationStore(
             "Planting Site $plantingSiteId survival rate calculation in-progress. Additional calculation requested."
         )
         setSurvivalRateAdditionalCalculationRequested(plantingSiteId, true)
+      }
+    }
+  }
+
+  /**
+   * Merges the observation data from a source observation to a target.
+   *
+   * You probably want `ObservationService.mergeObservations` instead of this.
+   *
+   * Moves the raw per-plot data of completed plots from the source observation to the target
+   * observation, repoints/drops t0 baselines, and deletes the source observation. Does NOT delete
+   * media (the caller handles colliding target media) and does NOT rebuild derived aggregates (call
+   * [recalculateObservationTotals] and [recalculateSurvivalRates] afterward).
+   */
+  fun mergeObservationData(
+      sourceObservationId: ObservationId,
+      targetObservationId: ObservationId,
+  ) {
+    requirePermissions {
+      manageObservation(sourceObservationId)
+      manageObservation(targetObservationId)
+    }
+
+    // Lock both observations in ID order to avoid deadlocks.
+    val idsToLock = listOf(sourceObservationId, targetObservationId).sorted()
+
+    observationLocker.withLockedObservation(idsToLock[0]) {
+      observationLocker.withLockedObservation(idsToLock[1]) {
+        val completedInSource =
+            dslContext
+                .select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+                .from(OBSERVATION_PLOTS)
+                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(sourceObservationId))
+                .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+                .fetchSet(OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable())
+
+        if (completedInSource.isNotEmpty()) {
+          val collidingPlots =
+              dslContext
+                  .select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+                  .from(OBSERVATION_PLOTS)
+                  .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(targetObservationId))
+                  .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(completedInSource))
+                  .fetchSet(OBSERVATION_PLOTS.MONITORING_PLOT_ID.asNonNullable())
+
+          if (collidingPlots.isNotEmpty()) {
+            val t0DropPlots =
+                dslContext
+                    .select(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID)
+                    .from(PLOT_T0_OBSERVATIONS)
+                    .where(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.`in`(collidingPlots))
+                    .and(PLOT_T0_OBSERVATIONS.OBSERVATION_ID.eq(targetObservationId))
+                    .fetchSet(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.asNonNullable())
+
+            dslContext
+                .deleteFrom(OBSERVATION_PLOTS)
+                .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(targetObservationId))
+                .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.`in`(collidingPlots))
+                .execute()
+
+            if (t0DropPlots.isNotEmpty()) {
+              dslContext
+                  .deleteFrom(PLOT_T0_DENSITIES)
+                  .where(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.`in`(t0DropPlots))
+                  .execute()
+            }
+          }
+
+          // Copy the source's completed observation_plots rows into the target so the composite FKs
+          // of the child tables are satisfied when we reparent them.
+          with(OBSERVATION_PLOTS) {
+            dslContext
+                .insertInto(
+                    OBSERVATION_PLOTS,
+                    OBSERVATION_ID,
+                    MONITORING_PLOT_ID,
+                    CLAIMED_BY,
+                    CLAIMED_TIME,
+                    COMPLETED_BY,
+                    COMPLETED_TIME,
+                    CREATED_BY,
+                    CREATED_TIME,
+                    IS_PERMANENT,
+                    MODIFIED_BY,
+                    MODIFIED_TIME,
+                    OBSERVED_TIME,
+                    NOTES,
+                    STATUS_ID,
+                    MONITORING_PLOT_HISTORY_ID,
+                )
+                .select(
+                    DSL.select(
+                            DSL.value(targetObservationId, OBSERVATION_ID.dataType),
+                            MONITORING_PLOT_ID,
+                            CLAIMED_BY,
+                            CLAIMED_TIME,
+                            COMPLETED_BY,
+                            COMPLETED_TIME,
+                            CREATED_BY,
+                            CREATED_TIME,
+                            IS_PERMANENT,
+                            MODIFIED_BY,
+                            MODIFIED_TIME,
+                            OBSERVED_TIME,
+                            NOTES,
+                            STATUS_ID,
+                            MONITORING_PLOT_HISTORY_ID,
+                        )
+                        .from(OBSERVATION_PLOTS)
+                        .where(OBSERVATION_ID.eq(sourceObservationId))
+                        .and(STATUS_ID.eq(ObservationPlotStatus.Completed))
+                )
+                .execute()
+          }
+
+          dslContext
+              .update(RECORDED_PLANTS)
+              .set(RECORDED_PLANTS.OBSERVATION_ID, targetObservationId)
+              .where(RECORDED_PLANTS.OBSERVATION_ID.eq(sourceObservationId))
+              .and(RECORDED_PLANTS.MONITORING_PLOT_ID.`in`(completedInSource))
+              .execute()
+          dslContext
+              .update(OBSERVATION_PLOT_CONDITIONS)
+              .set(OBSERVATION_PLOT_CONDITIONS.OBSERVATION_ID, targetObservationId)
+              .where(OBSERVATION_PLOT_CONDITIONS.OBSERVATION_ID.eq(sourceObservationId))
+              .and(OBSERVATION_PLOT_CONDITIONS.MONITORING_PLOT_ID.`in`(completedInSource))
+              .execute()
+          dslContext
+              .update(OBSERVED_PLOT_COORDINATES)
+              .set(OBSERVED_PLOT_COORDINATES.OBSERVATION_ID, targetObservationId)
+              .where(OBSERVED_PLOT_COORDINATES.OBSERVATION_ID.eq(sourceObservationId))
+              .and(OBSERVED_PLOT_COORDINATES.MONITORING_PLOT_ID.`in`(completedInSource))
+              .execute()
+          dslContext
+              .update(OBSERVATION_MEDIA_FILES)
+              .set(OBSERVATION_MEDIA_FILES.OBSERVATION_ID, targetObservationId)
+              .where(OBSERVATION_MEDIA_FILES.OBSERVATION_ID.eq(sourceObservationId))
+              .and(OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.`in`(completedInSource))
+              .execute()
+          dslContext
+              .update(PLOT_T0_OBSERVATIONS)
+              .set(PLOT_T0_OBSERVATIONS.OBSERVATION_ID, targetObservationId)
+              .where(PLOT_T0_OBSERVATIONS.OBSERVATION_ID.eq(sourceObservationId))
+              .and(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.`in`(completedInSource))
+              .execute()
+        }
+
+        dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(sourceObservationId)).execute()
       }
     }
   }

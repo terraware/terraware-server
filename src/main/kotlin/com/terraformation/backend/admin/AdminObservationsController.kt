@@ -62,5 +62,24 @@ class AdminObservationsController(
     return redirectToObservationsHome()
   }
 
+  @PostMapping("/mergeObservations")
+  fun adminMergeObservations(
+      @RequestParam sourceObservationId: ObservationId,
+      @RequestParam targetObservationId: ObservationId,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      observationService.mergeObservations(sourceObservationId, targetObservationId)
+      redirectAttributes.successMessage =
+          "Merged observation $sourceObservationId into $targetObservationId."
+    } catch (e: Exception) {
+      log.error("Failed to merge observation $sourceObservationId into $targetObservationId", e)
+      redirectAttributes.failureMessage =
+          "Failed to merge observation $sourceObservationId into $targetObservationId: $e"
+    }
+
+    return redirectToObservationsHome()
+  }
+
   private fun redirectToObservationsHome() = "redirect:/admin/observations"
 }

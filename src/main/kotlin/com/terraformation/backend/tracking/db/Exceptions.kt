@@ -68,6 +68,8 @@ class ObservationAlreadyStartedException(val observationId: ObservationId) :
 class ObservationHasNoSubstrataException(val observationId: ObservationId) :
     MismatchedStateException("No substrata were requested for observation $observationId")
 
+class ObservationMergeNotAllowedException(message: String) : MismatchedStateException(message)
+
 class ObservationNotFoundException(val observationId: ObservationId) :
     EntityNotFoundException("Observation $observationId not found")
 
