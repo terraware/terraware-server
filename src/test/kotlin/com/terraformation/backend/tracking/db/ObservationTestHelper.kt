@@ -8,10 +8,18 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotResultsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationSiteResultsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationStratumResultsRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationSubstratumResultsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedPlotSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSiteSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedStratumSpeciesTotalsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservedSubstratumSpeciesTotalsRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
@@ -61,6 +69,26 @@ class ObservationTestHelper(
             dslContext
                 .selectFrom(OBSERVED_SITE_SPECIES_TOTALS)
                 .fetchInto(ObservedSiteSpeciesTotalsRow::class.java))
+        .toSet()
+  }
+
+  /**
+   * Returns all the observation results rows (plot, substratum, stratum, site) in the database,
+   * suitable for round-trip checks of the results tables.
+   */
+  fun fetchAllResults(): Set<Any> {
+    return (dslContext
+            .selectFrom(OBSERVATION_PLOT_RESULTS)
+            .fetchInto(ObservationPlotResultsRow::class.java) +
+            dslContext
+                .selectFrom(OBSERVATION_SUBSTRATUM_RESULTS)
+                .fetchInto(ObservationSubstratumResultsRow::class.java) +
+            dslContext
+                .selectFrom(OBSERVATION_STRATUM_RESULTS)
+                .fetchInto(ObservationStratumResultsRow::class.java) +
+            dslContext
+                .selectFrom(OBSERVATION_SITE_RESULTS)
+                .fetchInto(ObservationSiteResultsRow::class.java))
         .toSet()
   }
 

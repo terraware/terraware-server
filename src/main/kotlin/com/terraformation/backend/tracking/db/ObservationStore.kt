@@ -2367,6 +2367,158 @@ class ObservationStore(
     }
   }
 
+  private fun fetchRecordedPlantCountsBySpecies(
+      observationId: ObservationId,
+      monitoringPlotId: MonitoringPlotId,
+  ): Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>> {
+    val countField = DSL.count()
+    return with(RECORDED_PLANTS) {
+      dslContext
+          .select(
+              CERTAINTY_ID,
+              SPECIES_ID,
+              SPECIES_NAME,
+              STATUS_ID,
+              countField,
+          )
+          .from(RECORDED_PLANTS)
+          .where(OBSERVATION_ID.eq(observationId))
+          .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
+          .groupBy(CERTAINTY_ID, SPECIES_ID, SPECIES_NAME, STATUS_ID)
+          .fetchGroups(
+              { record ->
+                RecordedSpeciesKey(
+                    record[CERTAINTY_ID]!!,
+                    record[SPECIES_ID],
+                    record[SPECIES_NAME],
+                )
+              },
+              { record -> record[STATUS_ID]!! to record[countField] },
+          )
+          .mapValues { (_, statusCounts) -> statusCounts.toMap() }
+    }
+  }
+
+  /**
+   * Rebuilds the observed species totals and observation results for an observation based on the
+   * observation's recorded plants. Does not recalculate survival rates; call
+   * [recalculateSurvivalRates] for that.
+   */
+  fun recalculateObservationTotals(observationId: ObservationId) {
+    requirePermissions { manageObservation(observationId) }
+
+    val observation = fetchObservationById(observationId)
+    val plantingSiteId = observation.plantingSiteId
+    val plantingSiteHistoryId =
+        observation.plantingSiteHistoryId
+            ?: throw IllegalStateException(
+                "Observation $observationId has no planting site history"
+            )
+    val plantingSite =
+        dslContext
+            .select()
+            .from(PLANTING_SITES)
+            .where(PLANTING_SITES.ID.eq(plantingSiteId))
+            .fetchOneInto(PlantingSitesRow::class.java)
+            ?: throw PlantingSiteNotFoundException(plantingSiteId)
+
+    observationLocker.withLockedObservation(observationId) {
+      dslContext
+          .deleteFrom(OBSERVED_PLOT_SPECIES_TOTALS)
+          .where(OBSERVED_PLOT_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVED_SUBSTRATUM_SPECIES_TOTALS)
+          .where(OBSERVED_SUBSTRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVED_STRATUM_SPECIES_TOTALS)
+          .where(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVED_SITE_SPECIES_TOTALS)
+          .where(OBSERVED_SITE_SPECIES_TOTALS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVATION_PLOT_RESULTS)
+          .where(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVATION_SUBSTRATUM_RESULTS)
+          .where(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVATION_STRATUM_RESULTS)
+          .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observationId))
+          .execute()
+      dslContext
+          .deleteFrom(OBSERVATION_SITE_RESULTS)
+          .where(OBSERVATION_SITE_RESULTS.OBSERVATION_ID.eq(observationId))
+          .execute()
+
+      val completedPlots =
+          with(OBSERVATION_PLOTS) {
+            dslContext
+                .select(
+                    MONITORING_PLOT_ID,
+                    MONITORING_PLOT_HISTORY_ID,
+                    IS_PERMANENT,
+                    monitoringPlotHistories.SUBSTRATUM_ID,
+                    monitoringPlotHistories.SUBSTRATUM_HISTORY_ID,
+                    monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID,
+                    monitoringPlotHistories.substratumHistories.stratumHistories.STRATUM_ID,
+                )
+                .from(OBSERVATION_PLOTS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(STATUS_ID.eq(ObservationPlotStatus.Completed))
+                .fetch()
+          }
+
+      completedPlots.forEach { record ->
+        val monitoringPlotId = record[OBSERVATION_PLOTS.MONITORING_PLOT_ID]!!
+        val monitoringPlotHistoryId = record[OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID]!!
+        val isPermanent = record[OBSERVATION_PLOTS.IS_PERMANENT]!!
+        val substratumId = record[OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_ID]
+        val substratumHistoryId =
+            record[OBSERVATION_PLOTS.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID]
+        val stratumHistoryId =
+            record[OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID]
+        val stratumId =
+            record[
+                OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
+                    .STRATUM_ID]
+
+        val plantCounts = fetchRecordedPlantCountsBySpecies(observationId, monitoringPlotId)
+
+        updateSpeciesTotals(
+            observationId,
+            plantingSite,
+            plantingSiteHistoryId,
+            stratumId,
+            stratumHistoryId,
+            substratumId,
+            substratumHistoryId,
+            monitoringPlotId,
+            monitoringPlotHistoryId,
+            isAdHoc = false,
+            isPermanent,
+            plantCounts,
+        )
+
+        updateObservationResults(
+            observationId,
+            plantingSite,
+            stratumId,
+            stratumHistoryId,
+            substratumId,
+            substratumHistoryId,
+            monitoringPlotId,
+            isAdHoc = false,
+        )
+      }
+    }
+  }
+
   fun deleteObservation(observationId: ObservationId) {
     val t0PlotIds =
         dslContext
