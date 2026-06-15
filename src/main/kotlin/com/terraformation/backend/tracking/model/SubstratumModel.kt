@@ -20,6 +20,10 @@ data class SubstratumModel<SSID : SubstratumId?>(
     val latestObservationCompletedTime: Instant? = null,
     /** The ID of the latest observation, if the substratum has completed observations */
     val latestObservationId: ObservationId? = null,
+    /**
+     * The number of plots in the latest observation, if the substratum has completed observations
+     */
+    val latestObservationNumPlots: Int? = null,
     val monitoringPlots: List<MonitoringPlotModel> = emptyList(),
     val name: String,
     val observedTime: Instant? = null,

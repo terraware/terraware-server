@@ -2,6 +2,7 @@ package com.terraformation.backend.tracking.db.plantingSiteStore
 
 import com.terraformation.backend.assertGeometryEquals
 import com.terraformation.backend.db.StableId
+import com.terraformation.backend.db.tracking.ObservationPlotStatus
 import com.terraformation.backend.multiPolygon
 import com.terraformation.backend.point
 import com.terraformation.backend.polygon
@@ -323,8 +324,14 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
           monitoringPlotId = monitoringPlotId2,
           monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId2]!!,
       )
+      // Claimed but not completed in the latest observation; must not be counted.
+      insertObservationPlot(
+          monitoringPlotId = monitoringPlotId121,
+          monitoringPlotHistoryId = plotHistoryIds[monitoringPlotId121]!!,
+          statusId = ObservationPlotStatus.Claimed,
+      )
 
-      /* (x) - for latest (o) for observed but not the latest.
+      /* (x) - for latest (o) for observed but not the latest, (c) claimed but not completed.
 
         Observations         | 1 | 2 |
         ---------------------|---|---|
@@ -334,7 +341,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
         | - - - Plot 1-1-1   | x |   |
         | - - - Plot 1-1-2   |   |   |
         | - - Substratum 1-2 | o | x |
-        | - - - Plot 1-2-1   | x |   |
+        | - - - Plot 1-2-1   | x | c |
         | - - - Plot 1-2-2   | o | x |
         | - Stratum 2        |   | x |
         | - - Substratum 1-2 |   | x |
@@ -371,6 +378,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       id = substratumId11,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(1000),
                                       latestObservationId = observationId1,
+                                      latestObservationNumPlots = 1,
                                       fullName = "S1-1",
                                       name = "1",
                                       plantingCompletedTime = null,
@@ -403,6 +411,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       id = substratumId12,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                                       latestObservationId = observationId2,
+                                      latestObservationNumPlots = 1,
                                       fullName = "S1-2",
                                       name = "2",
                                       plantingCompletedTime = null,
@@ -449,6 +458,7 @@ internal class PlantingSiteStoreFetchSiteTest : BasePlantingSiteStoreTest() {
                                       id = substratumId2,
                                       latestObservationCompletedTime = Instant.ofEpochSecond(2000),
                                       latestObservationId = observationId2,
+                                      latestObservationNumPlots = 1,
                                       fullName = "S2-1",
                                       name = "1",
                                       plantingCompletedTime = null,
