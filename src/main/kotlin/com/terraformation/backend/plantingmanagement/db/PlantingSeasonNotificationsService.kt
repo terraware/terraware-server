@@ -14,6 +14,7 @@ import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonRelatedPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetCreatedEvent
@@ -30,10 +31,17 @@ class PlantingSeasonNotificationsService(
     private val dslContext: DSLContext,
     private val eventLogStore: EventLogStore,
 ) {
-  private val notificationEventClasses: List<KClass<out PlantingSeasonRelatedPersistentEvent>> =
+  private val inventoryPlanningNotificationEventClasses:
+      List<KClass<out PlantingSeasonRelatedPersistentEvent>> =
       listOf(
           PlantingSeasonPersistentEvent::class,
           PlantingSeasonSpeciesTargetPersistentEvent::class,
+      )
+
+  private val plantingSeasonPlanningNotificationEventClasses:
+      List<KClass<out PlantingSeasonRelatedPersistentEvent>> =
+      listOf(
+          PlantingSeasonAllocatedSpeciesPersistentEvent::class,
       )
 
   /**
@@ -59,7 +67,7 @@ class PlantingSeasonNotificationsService(
         eventLogStore
             .fetchByIdsSince(
                 seasonInfoById.mapValues { it.value.lastDismissedEventLogId },
-                notificationEventClasses,
+                inventoryPlanningNotificationEventClasses,
             )
             .groupBy { it.event.plantingSeasonId }
 
@@ -83,6 +91,23 @@ class PlantingSeasonNotificationsService(
    */
   fun getInventoryPlanningNotifications(
       plantingSeasonId: PlantingSeasonId
+  ): PlantingSeasonNotificationGroupModel? =
+      getPlantingSeasonNotifications(
+          plantingSeasonId,
+          inventoryPlanningNotificationEventClasses,
+      )
+
+  fun getPlantingSeasonPlanningNotifications(
+      plantingSeasonId: PlantingSeasonId
+  ): PlantingSeasonNotificationGroupModel? =
+      getPlantingSeasonNotifications(
+          plantingSeasonId,
+          plantingSeasonPlanningNotificationEventClasses,
+      )
+
+  private fun getPlantingSeasonNotifications(
+      plantingSeasonId: PlantingSeasonId,
+      requestedClasses: List<KClass<out PlantingSeasonRelatedPersistentEvent>>,
   ): PlantingSeasonNotificationGroupModel? {
     requirePermissions { readPlantingSeason(plantingSeasonId) }
 
@@ -91,7 +116,7 @@ class PlantingSeasonNotificationsService(
     val entries =
         eventLogStore.fetchByIdsSince(
             seasonInfoById.mapValues { it.value.lastDismissedEventLogId },
-            notificationEventClasses,
+            requestedClasses,
         )
 
     if (entries.isEmpty()) {
@@ -171,6 +196,8 @@ class PlantingSeasonNotificationsService(
               } else {
                 null
               }
+          is PlantingSeasonAllocatedSpeciesPersistentEvent ->
+              PlantingSeasonNotificationType.AllocationQuantitiesUpdated
           else -> null
         }
 

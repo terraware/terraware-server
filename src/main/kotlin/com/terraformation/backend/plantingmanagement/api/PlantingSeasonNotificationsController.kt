@@ -13,6 +13,7 @@ import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationT
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotificationsService
 import io.swagger.v3.oas.annotations.Operation
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -27,8 +28,8 @@ class PlantingSeasonNotificationsController(
 
   @ApiResponse200
   @Operation(summary = "Lists all notifications for an organization")
-  @GetMapping("/notifications")
-  fun getPlantingSeasonNotifications(
+  @GetMapping("/organization-notifications")
+  fun getPlantingSeasonOrganizationNotifications(
       @RequestParam("organizationId") organizationId: OrganizationId,
       @RequestParam("notificationCategory")
       notificationCategory: PlantingSeasonNotificationCategory,
@@ -41,6 +42,30 @@ class PlantingSeasonNotificationsController(
                   .map { PlantingSeasonNotificationGroupPayload(it) }
           PlantingSeasonNotificationCategory.PlantingSeasonPlanning -> emptyList()
         }
+
+    return GetPlantingSeasonNotificationsResponsePayload(notifications)
+  }
+
+  @ApiResponse200
+  @Operation(summary = "Lists all notifications for a planting season")
+  @GetMapping("/{plantingSeasonId}/notifications")
+  fun getPlantingSeasonNotifications(
+      @PathVariable plantingSeasonId: PlantingSeasonId,
+      @RequestParam("notificationCategory")
+      notificationCategory: PlantingSeasonNotificationCategory,
+  ): GetPlantingSeasonNotificationsResponsePayload {
+    val notificationModel =
+        when (notificationCategory) {
+          PlantingSeasonNotificationCategory.InventoryPlanning ->
+              plantingSeasonNotificationsService.getInventoryPlanningNotifications(plantingSeasonId)
+          PlantingSeasonNotificationCategory.PlantingSeasonPlanning ->
+              plantingSeasonNotificationsService.getPlantingSeasonPlanningNotifications(
+                  plantingSeasonId
+              )
+        }
+
+    val notifications =
+        notificationModel?.let { listOf(PlantingSeasonNotificationGroupPayload(it)) } ?: emptyList()
 
     return GetPlantingSeasonNotificationsResponsePayload(notifications)
   }
