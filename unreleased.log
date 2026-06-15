@@ -1,3 +1,4 @@
+bc03c74b SW-8434 Delete observation from admin UI (#4597)
 4bf1c024 Allow super-admins to manage all observations (#4598)
 d8f8c844 Allow specifying region boundaries in map edit tests (#4587)
 f319ab37 Fixed the flipped coordiantes for observation media files (#4595)
