@@ -1,3 +1,4 @@
+57d06e4b Update dependency org.eclipse.jgit:org.eclipse.jgit to 7.7.+ (#4605)
 969c59e4 Update plugin com.github.jk1.dependency-license-report to v3.1.4 (#4602)
 5545585b Update buildkite plugin cache to v1.11.1 (#4596)
 1ebcb3dc SW-8434 Delete incomplete plots in admin UI (#4599)
