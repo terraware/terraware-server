@@ -42,5 +42,26 @@
     <input type="submit" value="Remove Incomplete Plots"/>
 </form>
 
+<h3>Merge Observations</h3>
+
+<p>
+    Move all the data from a source observation to a target observation, deleting the source
+    observation. If the same plot was completed in both observations, the data for that plot from
+    the target observation is deleted (that is, the merge overwrites any existing data). This will
+    affect aggregated statistics for the target observation and possibly for later observations.
+</p>
+
+<form method="POST" action="/admin/mergeObservations">
+    <label>
+        Source observation ID
+        <input type="text" name="sourceObservationId" required/>
+    </label>
+    <label>
+        Target observation ID
+        <input type="text" name="targetObservationId" required/>
+    </label>
+    <input type="submit" value="Merge Observations"/>
+</form>
+
 </body>
 </html>

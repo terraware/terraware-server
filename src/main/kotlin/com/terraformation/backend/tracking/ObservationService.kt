@@ -40,6 +40,7 @@ import com.terraformation.backend.tracking.db.InvalidObservationStartDateExcepti
 import com.terraformation.backend.tracking.db.ObservationAlreadyStartedException
 import com.terraformation.backend.tracking.db.ObservationHasNoSubstrataException
 import com.terraformation.backend.tracking.db.ObservationLocker
+import com.terraformation.backend.tracking.db.ObservationMergeNotAllowedException
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import com.terraformation.backend.tracking.db.ObservationPlotNotFoundException
 import com.terraformation.backend.tracking.db.ObservationRescheduleStateException
@@ -820,6 +821,59 @@ class ObservationService(
       observationStore.deleteObservation(observationId)
 
       observationStore.recalculateSurvivalRates(observation.plantingSiteId)
+    }
+  }
+
+  fun mergeObservations(sourceObservationId: ObservationId, targetObservationId: ObservationId) {
+    requirePermissions {
+      manageObservation(sourceObservationId)
+      manageObservation(targetObservationId)
+    }
+
+    if (sourceObservationId == targetObservationId) {
+      throw ObservationMergeNotAllowedException("Cannot merge an observation into itself")
+    }
+
+    val source = observationStore.fetchObservationById(sourceObservationId)
+    val target = observationStore.fetchObservationById(targetObservationId)
+
+    if (source.plantingSiteId != target.plantingSiteId) {
+      throw ObservationMergeNotAllowedException("Observations belong to different planting sites")
+    }
+    if (source.isAdHoc || target.isAdHoc) {
+      throw ObservationMergeNotAllowedException("Cannot merge ad-hoc observations")
+    }
+    if (
+        source.observationType != ObservationType.Monitoring ||
+            target.observationType != ObservationType.Monitoring
+    ) {
+      throw ObservationMergeNotAllowedException("Can only merge monitoring observations")
+    }
+    if (source.plantingSiteHistoryId == null || target.plantingSiteHistoryId == null) {
+      throw ObservationMergeNotAllowedException(
+          "Cannot merge observations that have not been started"
+      )
+    }
+
+    systemUser.run {
+      // Delete the target's media for any plot that an incoming completed source plot overwrites.
+      deleteMediaWhere(
+          OBSERVATION_MEDIA_FILES.OBSERVATION_ID.eq(targetObservationId)
+              .and(
+                  OBSERVATION_MEDIA_FILES.MONITORING_PLOT_ID.`in`(
+                      DSL.select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+                          .from(OBSERVATION_PLOTS)
+                          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(sourceObservationId))
+                          .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+                  )
+              )
+      )
+
+      dslContext.transaction { _ ->
+        observationStore.mergeObservationData(sourceObservationId, targetObservationId)
+        observationStore.recalculateObservationTotals(targetObservationId)
+        observationStore.recalculateSurvivalRates(source.plantingSiteId)
+      }
     }
   }
 

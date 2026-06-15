@@ -1,17 +1,28 @@
 package com.terraformation.backend.tracking.db.observationStore
 
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.tracking.MonitoringPlotId
+import com.terraformation.backend.db.tracking.ObservableCondition
+import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SUBSTRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_COORDINATES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_PLOT_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SITE_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVED_SUBSTRATUM_SPECIES_TOTALS
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.point
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -25,6 +36,169 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
   fun setUpSite() {
     helper.insertPlantedSite(numPermanentPlots = 2)
     speciesId = inserted.speciesId
+  }
+
+  @Test
+  fun `moves completed source plot data into the target and deletes the source`() {
+    val plotA = insertMonitoringPlot()
+    val plotB = insertMonitoringPlot()
+    val sourceObservationId = insertObservation()
+    val targetObservationId = insertObservation()
+
+    completePlotWith(sourceObservationId, plotA, 1)
+    completePlotWith(targetObservationId, plotB, 1)
+
+    store.mergeObservationData(sourceObservationId, targetObservationId)
+
+    assertEquals(
+        setOf(plotA, plotB),
+        dslContext
+            .select(OBSERVATION_PLOTS.MONITORING_PLOT_ID)
+            .from(OBSERVATION_PLOTS)
+            .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(targetObservationId))
+            .fetchSet(OBSERVATION_PLOTS.MONITORING_PLOT_ID),
+        "Target observation plots",
+    )
+    assertTableEmpty(OBSERVATIONS, where = OBSERVATIONS.ID.eq(sourceObservationId))
+    assertTableEmpty(
+        OBSERVATION_PLOTS,
+        where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(sourceObservationId),
+    )
+    assertTableEmpty(
+        RECORDED_PLANTS,
+        where = RECORDED_PLANTS.OBSERVATION_ID.eq(sourceObservationId),
+    )
+  }
+
+  @Test
+  fun `conflict plot overwrites target data and drops t0 when target was the t0 observation`() {
+    val plotId = insertMonitoringPlot()
+    val sourceObservationId = insertObservation()
+    val targetObservationId = insertObservation()
+
+    completePlotWith(sourceObservationId, plotId, 2)
+    val expectedRecordedPlants =
+        dslContext.fetch(RECORDED_PLANTS).onEach { it.observationId = targetObservationId }
+    completePlotWith(targetObservationId, plotId, 1)
+
+    insertPlotT0Density(monitoringPlotId = plotId)
+    insertPlotT0Observation(monitoringPlotId = plotId, observationId = targetObservationId)
+
+    store.mergeObservationData(sourceObservationId, targetObservationId)
+
+    assertTableEmpty(PLOT_T0_OBSERVATIONS)
+    assertTableEmpty(PLOT_T0_DENSITIES)
+    assertTableEquals(expectedRecordedPlants)
+  }
+
+  @Test
+  fun `repoints t0 to the target when the source was the t0 observation`() {
+    val plotId = insertMonitoringPlot()
+    val sourceObservationId = insertObservation()
+    val targetObservationId = insertObservation()
+
+    completePlotWith(sourceObservationId, plotId, 1)
+
+    insertPlotT0Density()
+    insertPlotT0Observation(observationId = sourceObservationId)
+
+    // T0 density for plot shouldn't be changed by the merge, but T0 observation should.
+    val expectedT0Density = dslContext.fetchSingle(PLOT_T0_DENSITIES)
+    val expectedT0Observations =
+        dslContext.fetchSingle(PLOT_T0_OBSERVATIONS).apply { observationId = targetObservationId }
+
+    store.mergeObservationData(sourceObservationId, targetObservationId)
+
+    assertTableEquals(expectedT0Observations)
+    assertTableEquals(expectedT0Density)
+  }
+
+  @Test
+  fun `leaves t0 untouched when a third observation is the t0 observation`() {
+    val plotId = insertMonitoringPlot()
+    val t0ObservationId = insertObservation()
+    val sourceObservationId = insertObservation()
+    val targetObservationId = insertObservation()
+
+    completePlotWith(t0ObservationId, plotId, 1)
+    completePlotWith(targetObservationId, plotId, 1)
+    completePlotWith(sourceObservationId, plotId, 1)
+
+    insertPlotT0Density()
+    insertPlotT0Observation(observationId = t0ObservationId)
+
+    val expectedT0Densities = dslContext.fetch(PLOT_T0_DENSITIES)
+    val expectedT0Observations = dslContext.fetch(PLOT_T0_OBSERVATIONS)
+
+    store.mergeObservationData(sourceObservationId, targetObservationId)
+
+    assertTableEquals(expectedT0Densities)
+    assertTableEquals(expectedT0Observations)
+  }
+
+  @Test
+  fun `reparents source child data to the target`() {
+    val plotId = insertMonitoringPlot()
+    val sourceObservationId = insertObservation()
+    val targetObservationId = insertObservation()
+    insertObservationPlot(observationId = sourceObservationId, claimedBy = user.userId)
+
+    store.completePlot(
+        sourceObservationId,
+        plotId,
+        setOf(ObservableCondition.AnimalDamage),
+        null,
+        Instant.EPOCH,
+        listOf(livePlant()),
+    )
+
+    insertFile()
+    insertObservationMediaFile(observationId = sourceObservationId)
+    insertObservedCoordinates(observationId = sourceObservationId)
+
+    val expectedObservationMediaFiles =
+        dslContext.fetchSingle(OBSERVATION_MEDIA_FILES).apply {
+          observationId = targetObservationId
+        }
+    val expectedPlotConditions =
+        dslContext.fetchSingle(OBSERVATION_PLOT_CONDITIONS).apply {
+          observationId = targetObservationId
+        }
+    val expectedPlotCoordinates =
+        dslContext.fetchSingle(OBSERVED_PLOT_COORDINATES).apply {
+          observationId = targetObservationId
+        }
+
+    store.mergeObservationData(sourceObservationId, targetObservationId)
+
+    assertTableEquals(expectedObservationMediaFiles)
+    assertTableEquals(expectedPlotConditions)
+    assertTableEquals(expectedPlotCoordinates)
+  }
+
+  @Test
+  fun `excludes incomplete source plots from the move and drops them with the source`() {
+    val completedPlot = insertMonitoringPlot()
+    val incompletePlot = insertMonitoringPlot()
+    val incompletePlotHistoryId = inserted.monitoringPlotHistoryId
+    val sourceObservationId = insertObservation()
+    val targetObservationId = insertObservation()
+
+    completePlotWith(sourceObservationId, completedPlot, 1)
+
+    val expectedObservationPlots =
+        dslContext.fetchSingle(OBSERVATION_PLOTS).apply { observationId = targetObservationId }
+
+    insertObservationPlot(
+        observationId = sourceObservationId,
+        monitoringPlotId = incompletePlot,
+        monitoringPlotHistoryId = incompletePlotHistoryId,
+    )
+
+    store.mergeObservationData(sourceObservationId, targetObservationId)
+
+    assertTableEquals(expectedObservationPlots)
+    assertTableEmpty(OBSERVATIONS, where = OBSERVATIONS.ID.eq(sourceObservationId))
   }
 
   @Test
@@ -111,4 +285,28 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
           speciesId = speciesId,
           statusId = RecordedPlantStatus.Dead,
       )
+
+  /**
+   * Adds [plotId] to [observationId] as a claimed plot and completes it with [plantCount] plants.
+   */
+  private fun completePlotWith(
+      observationId: ObservationId,
+      plotId: MonitoringPlotId,
+      plantCount: Int,
+  ) {
+    insertObservationPlot(
+        observationId = observationId,
+        monitoringPlotId = plotId,
+        claimedBy = user.userId,
+        claimedTime = Instant.EPOCH,
+    )
+    store.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        List(plantCount) { livePlant() },
+    )
+  }
 }
