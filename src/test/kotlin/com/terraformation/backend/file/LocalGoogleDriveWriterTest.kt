@@ -107,6 +107,53 @@ class LocalGoogleDriveWriterTest {
   }
 
   @Test
+  fun `metadata is reloaded by a new writer after a restart`() {
+    val fileId =
+        writer.uploadFile(
+            parentFolderId,
+            "doc.txt",
+            MediaType.TEXT_PLAIN,
+            "hello".byteInputStream(),
+        )
+    writer.renameFile(fileId, "renamed.txt")
+
+    // Simulate a restart: a fresh writer over the same persistent file store.
+    val restartedWriter = LocalGoogleDriveWriter(fileStore)
+
+    assertArrayEquals(
+        "hello".toByteArray(),
+        restartedWriter.downloadFile(fileId).readAllBytes(),
+        "downloaded bytes after restart",
+    )
+    assertEquals(
+        MediaType.TEXT_PLAIN,
+        restartedWriter.getFileContentType(fileId),
+        "content type after restart",
+    )
+
+    // The reloaded path is correct, so an overwriting upload by the renamed name reuses the file.
+    val sameId =
+        restartedWriter.uploadFile(
+            parentFolderId,
+            "renamed.txt",
+            MediaType.TEXT_PLAIN,
+            "world".byteInputStream(),
+        )
+    assertEquals(fileId, sameId, "overwrite by renamed name reuses the reloaded file")
+  }
+
+  @Test
+  fun `metadata reflects deletions after a restart`() {
+    val fileId =
+        writer.uploadFile(parentFolderId, "doc.txt", MediaType.TEXT_PLAIN, "x".byteInputStream())
+    writer.deleteFile(fileId)
+
+    val restartedWriter = LocalGoogleDriveWriter(fileStore)
+
+    assertThrows<NoSuchFileException> { restartedWriter.downloadFile(fileId) }
+  }
+
+  @Test
   fun `deleteFile on a folder removes all contained files`() {
     val folderId = writer.findOrCreateFolders("drive", parentFolderId, listOf("Internal"))
     val fileId =

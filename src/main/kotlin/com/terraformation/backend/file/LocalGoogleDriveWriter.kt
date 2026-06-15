@@ -1,10 +1,14 @@
 package com.terraformation.backend.file
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.file.model.ExistingFileMetadata
 import com.terraformation.backend.log.perClassLogger
 import jakarta.annotation.Priority
 import jakarta.inject.Named
+import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.net.URI
 import java.nio.file.NoSuchFileException
@@ -13,6 +17,8 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+
+private const val FOLDER = "/google-drive"
 
 /**
  * Stores documents that would normally go to Google Drive in the local [FileStore] instead.
@@ -24,18 +30,31 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
  * survive JVM restarts as long as the underlying [FileStore] is persistent. The path and content
  * type are needed for overwrite lookups, renames, moves, and folder deletes.
  *
- * The map is not persisted and is not shared across instances, so lookups by name, renames, moves,
- * and folder deletes will not work correctly when running multiple server instances or after a
- * restart. Folder semantics are also simplified: folders have no backing storage and only their
- * immediate file children are tracked.
+ * The map is persisted to a JSON metadata file at the top level folder in the [FileStore]. It is
+ * loaded into memory at startup and rewritten whenever the map changes (uploads, renames, moves,
+ * and deletes), so the ID-to-path mappings survive a server restart as long as the underlying
+ * [FileStore] is persistent. The map is not shared live across instances, so concurrent
+ * multi-instance use can produce stale lookups. Folder semantics are simplified: folders have no
+ * backing storage and only their immediate file children are tracked.
  */
 @ConditionalOnProperty("terraware.google-drive.use-local-store", havingValue = "true")
 @Named
 @Priority(20) // RemoteGoogleDriveWriter takes precedence when both beans are present.
-class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWriter {
+class LocalGoogleDriveWriter(
+    private val fileStore: FileStore,
+    private val objectMapper: ObjectMapper = jacksonObjectMapper(),
+) : GoogleDriveWriter {
   private val log = perClassLogger()
 
   private val entries = ConcurrentHashMap<String, Entry>()
+
+  private val persistLock = Any()
+
+  private val metadataUrl: URI = fileStore.getUrl(Path("$FOLDER/$METADATA_FILENAME"))
+
+  init {
+    loadEntries()
+  }
 
   override fun findOrCreateFolders(
       driveId: String,
@@ -70,6 +89,7 @@ class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWrit
     fileStore.write(storageUrl, inputStream)
 
     entries[id] = Entry(path, contentType)
+    persist()
 
     log.info("Stored local Google Drive file $filename as $id")
     return id
@@ -151,10 +171,12 @@ class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWrit
       fileStore.delete(oldUrl)
     }
     entries[id] = entry.copy(path = newPath)
+    persist()
   }
 
   private fun removeFile(id: String) {
     entries.remove(id)?.let {
+      persist()
       try {
         fileStore.delete(storageUrlFor(it.path))
       } catch (_: NoSuchFileException) {
@@ -163,11 +185,38 @@ class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWrit
     }
   }
 
+  /** Loads the persisted metadata into [entries] at startup. Starts empty if no file exists yet. */
+  private fun loadEntries() {
+    val bytes =
+        try {
+          fileStore.read(metadataUrl).use { it.readAllBytes() }
+        } catch (_: NoSuchFileException) {
+          return
+        }
+    if (bytes.isEmpty()) {
+      return
+    }
+    val loaded: Map<String, Entry> = objectMapper.readValue(bytes)
+    entries.putAll(loaded)
+    log.info("Loaded ${entries.size} local Google Drive metadata entries")
+  }
+
+  /** Rewrites the metadata file with the current contents of [entries]. */
+  private fun persist() {
+    synchronized(persistLock) {
+      val bytes = objectMapper.writeValueAsBytes(HashMap(entries))
+      try {
+        fileStore.delete(metadataUrl)
+      } catch (_: NoSuchFileException) {
+        // No existing metadata file to replace.
+      }
+      fileStore.write(metadataUrl, ByteArrayInputStream(bytes))
+    }
+  }
+
   private fun storageUrlFor(path: String): URI {
     val filename = path.substringAfterLast('/')
-    return fileStore.getUrl(
-        Path("/google-drive/${sha256Hex(path).take(16)}${extensionOf(filename)}")
-    )
+    return fileStore.getUrl(Path("$FOLDER/${sha256Hex(path).take(16)}${extensionOf(filename)}"))
   }
 
   private fun folderUrl(folderId: String): URI =
@@ -187,5 +236,6 @@ class LocalGoogleDriveWriter(private val fileStore: FileStore) : GoogleDriveWrit
 
   companion object {
     private const val LOCAL_DRIVE_ID = "local-drive"
+    private const val METADATA_FILENAME = "metadata.json"
   }
 }
