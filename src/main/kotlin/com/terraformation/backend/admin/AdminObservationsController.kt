@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.ObservationService
+import com.terraformation.backend.tracking.db.ObservationStore
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminObservationsController(
     private val observationService: ObservationService,
+    private val observationStore: ObservationStore,
 ) {
   private val log = perClassLogger()
 
@@ -38,6 +40,23 @@ class AdminObservationsController(
     } catch (e: Exception) {
       log.error("Failed to delete observation $observationId", e)
       redirectAttributes.failureMessage = "Failed to delete observation: $e"
+    }
+
+    return redirectToObservationsHome()
+  }
+
+  @PostMapping("/deleteIncompletePlots")
+  fun adminDeleteIncompletePlots(
+      @RequestParam observationId: ObservationId,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      observationStore.deleteIncompletePlots(observationId)
+      redirectAttributes.successMessage =
+          "Deleted incomplete plots from observation $observationId."
+    } catch (e: Exception) {
+      log.error("Failed to delete incomplete plots from observation $observationId", e)
+      redirectAttributes.failureMessage = "Failed to delete incomplete plots from observation: $e"
     }
 
     return redirectToObservationsHome()
