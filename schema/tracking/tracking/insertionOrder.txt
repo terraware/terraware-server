@@ -50,7 +50,6 @@ observation_requested_substrata
 planting_date_request_species
 planting_season_species_targets
 scheduled_planting_date_species
-observation_plot_conditions
 observation_site_results
 observation_stratum_results
 observation_substratum_results
@@ -59,6 +58,7 @@ observed_site_species_totals
 observed_stratum_species_totals
 observed_substratum_species_totals
 plot_t0_observations
+observation_plot_conditions
 observation_plot_results
 observed_plot_coordinates
 observation_media_files

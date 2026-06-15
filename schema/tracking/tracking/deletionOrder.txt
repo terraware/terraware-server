@@ -6,6 +6,7 @@ recorded_plants
 observation_media_files
 observed_plot_coordinates
 observation_plot_results
+observation_plot_conditions
 plot_t0_observations
 observed_substratum_species_totals
 observed_stratum_species_totals
@@ -14,7 +15,6 @@ observed_plot_species_totals
 observation_substratum_results
 observation_stratum_results
 observation_site_results
-observation_plot_conditions
 scheduled_planting_date_species
 planting_season_species_targets
 planting_date_request_species

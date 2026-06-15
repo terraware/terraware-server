@@ -12,6 +12,7 @@ observed_site_species_totals
 observed_plot_species_totals
 observed_plot_coordinates
 observation_plot_results
+observation_plot_conditions
 stratum_t0_temp_densities
 plot_t0_densities
 planting_season_allocated_species
@@ -20,7 +21,6 @@ planting_date_request_species
 observation_substratum_results
 observation_stratum_results
 observation_site_results
-observation_plot_conditions
 substratum_populations
 stratum_populations
 planting_site_populations

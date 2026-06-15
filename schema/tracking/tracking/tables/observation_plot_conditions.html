@@ -135,6 +135,11 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
+                                                <td title="observation_plot_conditions.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_plot_conditions_observation_id_monitoring_plot_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.observation_id</span></td>
+                                                <td class="constraint detail">observation_plot_conditions_observation_id_monitoring_plot_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="observation_plot_conditions.observation_id references observations.id via observation_plot_conditions_observation_id_fkey"><a href='observations.html'>observations</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observation_plot_conditions_observation_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -156,6 +161,11 @@
                                     </td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="observation_plot_conditions.[observation_id, monitoring_plot_id] references observation_plots.[observation_id, monitoring_plot_id] via observation_plot_conditions_observation_id_monitoring_plot_fkey"><a href='observation_plots.html'>observation_plots</a><span class='relatedKey'>.monitoring_plot_id</span></td>
+                                                <td class="constraint detail">observation_plot_conditions_observation_id_monitoring_plot_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
                                             <tr>
                                                 <td title="observation_plot_conditions.monitoring_plot_id references monitoring_plots.id via observation_plot_conditions_monitoring_plot_id_fkey"><a href='monitoring_plots.html'>monitoring_plots</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">observation_plot_conditions_monitoring_plot_id_fkey</td>

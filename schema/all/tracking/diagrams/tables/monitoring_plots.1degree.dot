@@ -32,6 +32,8 @@ digraph "oneDegreeRelationshipsDiagram" {
   "observation_media_files":"monitoring_plot_id":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_media_files":"observation_id":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_conditions":"monitoring_plot_id":w -> "monitoring_plots":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plot_conditions":"monitoring_plot_id":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plot_conditions":"observation_id":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_results":"monitoring_plot_history_id":w -> "monitoring_plot_histories":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_results":"monitoring_plot_id":w -> "monitoring_plots":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_results":"monitoring_plot_id":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -243,7 +245,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="observation_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="168" HEIGHT="16">observation_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="monitoring_plot_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="168" HEIGHT="16">monitoring_plot_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="condition_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="168" HEIGHT="16">condition_id</TD></TR></TABLE></TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
     </TABLE>>
     URL="../../tables/observation_plot_conditions.html"
     target="_top"
@@ -276,7 +278,7 @@ digraph "oneDegreeRelationshipsDiagram" {
       <TR><TD PORT="status_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16">status_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="monitoring_plot_history_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="159" HEIGHT="16">monitoring_plot_history_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">12 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">14 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/observation_plots.html"
     target="_top"

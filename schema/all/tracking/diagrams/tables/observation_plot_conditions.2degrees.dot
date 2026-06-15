@@ -16,8 +16,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "monitoring_plots":"planting_site_id":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "monitoring_plots":"substratum_id":w -> "substrata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_details":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_biomass_details":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_biomass_details":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_details":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_biomass_details":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_details":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_details":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_quadrat_details":"elipses":w -> "observation_biomass_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -36,24 +36,27 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observation_biomass_species":"elipses":w -> "observation_biomass_details":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_biomass_species":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_media_files":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_media_files":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_media_files":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_media_files":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_media_files":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_media_files":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_conditions":"condition_id":w -> "observable_conditions":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_conditions":"monitoring_plot_id":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plot_conditions":"monitoring_plot_id":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plot_conditions":"observation_id":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_conditions":"observation_id":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_results":"elipses":w -> "monitoring_plot_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_results":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plot_results":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plot_results":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plot_results":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plot_results":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_plot_results":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plots":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plots":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plots":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plots":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plots":"elipses":w -> "monitoring_plot_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plots":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observation_plots":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plots":"claimed_by":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plots":"completed_by":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plots":"created_by":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plots":"modified_by":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plots":"monitoring_plot_history_id":w -> "monitoring_plot_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plots":"monitoring_plot_id":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plots":"observation_id":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observation_plots":"status_id":w -> "observation_plot_statuses":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_requested_substrata":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_requested_substrata":"elipses":w -> "substrata":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observation_site_results":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=teeodot];
@@ -67,8 +70,8 @@ digraph "twoDegreesRelationshipsDiagram" {
   "observations":"planting_site_id":w -> "planting_sites":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observations":"state_id":w -> "observation_states":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_coordinates":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_plot_coordinates":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "observed_plot_coordinates":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_plot_coordinates":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "observed_plot_coordinates":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_coordinates":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"elipses":w -> "monitoring_plot_histories":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "observed_plot_species_totals":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -90,12 +93,12 @@ digraph "twoDegreesRelationshipsDiagram" {
   "plot_t0_observations":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_observations":"elipses":w -> "public.users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_observations":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=teeodot];
-  "plot_t0_observations":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=teeodot];
-  "plot_t0_observations":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "plot_t0_observations":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=teeodot];
+  "plot_t0_observations":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "plot_t0_observations":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_plants":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
-  "recorded_plants":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
-  "recorded_plants":"elipses":w -> "observation_plots":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
+  "recorded_plants":"elipses":w -> "observation_plots":"monitoring_plot_id":e [arrowhead=none dir=back arrowtail=crowodot];
+  "recorded_plants":"elipses":w -> "observation_plots":"observation_id":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_plants":"elipses":w -> "observations":"id":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "observation_biomass_species":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "recorded_trees":"elipses":w -> "monitoring_plots":"id":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -186,13 +189,6 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="101" HEIGHT="16"><B>monitoring_plots</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="105" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="substratum_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="105" HEIGHT="16">substratum_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="created_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="105" HEIGHT="16">created_by</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="modified_by" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="105" HEIGHT="16">modified_by</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="planting_site_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="105" HEIGHT="16">planting_site_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="organization_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="105" HEIGHT="16">organization_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="plot_number" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="105" HEIGHT="16">plot_number</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">18 &gt;</TD></TR>
     </TABLE>>
@@ -274,7 +270,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="observation_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="168" HEIGHT="16">observation_id</TD></TR></TABLE></TD><TD PORT="observation_id.type" ALIGN="LEFT">int8[19]</TD></TR>
       <TR><TD PORT="monitoring_plot_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="168" HEIGHT="16">monitoring_plot_id</TD></TR></TABLE></TD><TD PORT="monitoring_plot_id.type" ALIGN="LEFT">int8[19]</TD></TR>
       <TR><TD PORT="condition_id" COLSPAN="2" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="168" HEIGHT="16">condition_id</TD></TR></TABLE></TD><TD PORT="condition_id.type" ALIGN="LEFT">int4[10]</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 3</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">0 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/observation_plot_conditions.html"
     target="_top"
@@ -291,12 +287,23 @@ digraph "twoDegreesRelationshipsDiagram" {
     target="_top"
     tooltip="observation_plot_results"
   ];
+  "observation_plot_statuses" [
+   label=<
+    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
+      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="156" HEIGHT="16"><B>observation_plot_statuses</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
+      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">1 &gt;</TD></TR>
+    </TABLE>>
+    URL="../../tables/observation_plot_statuses.html"
+    target="_top"
+    tooltip="observation_plot_statuses"
+  ];
   "observation_plots" [
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="106" HEIGHT="16"><B>observation_plots</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">12 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 8</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">14 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/observation_plots.html"
     target="_top"
@@ -372,11 +379,6 @@ digraph "twoDegreesRelationshipsDiagram" {
    label=<
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="77" HEIGHT="16"><B>observations</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/primaryKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="planting_site_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">planting_site_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="state_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">state_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="planting_site_history_id" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">planting_site_history_id</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="observation_type_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="197" HEIGHT="16">observation_type_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
       <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 4</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">22 &gt;</TD></TR>
     </TABLE>>
