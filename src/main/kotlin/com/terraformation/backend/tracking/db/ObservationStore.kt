@@ -58,6 +58,7 @@ import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_HI
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_POPULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITE_SURVIVAL_RATE_CALCULATIONS
 import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_DENSITIES
+import com.terraformation.backend.db.tracking.tables.references.PLOT_T0_OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.RECORDED_PLANTS
 import com.terraformation.backend.db.tracking.tables.references.STRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
@@ -2366,12 +2367,21 @@ class ObservationStore(
     }
   }
 
-  private fun deleteObservation(observationId: ObservationId) {
+  fun deleteObservation(observationId: ObservationId) {
+    val t0PlotIds =
+        dslContext
+            .select(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID)
+            .from(PLOT_T0_OBSERVATIONS)
+            .where(PLOT_T0_OBSERVATIONS.OBSERVATION_ID.eq(observationId))
+            .fetch(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.asNonNullable())
+
     dslContext.transaction { _ ->
-      dslContext
-          .deleteFrom(OBSERVATION_PLOTS)
-          .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId))
-          .execute()
+      if (t0PlotIds.isNotEmpty()) {
+        dslContext
+            .deleteFrom(PLOT_T0_DENSITIES)
+            .where(PLOT_T0_DENSITIES.MONITORING_PLOT_ID.`in`(t0PlotIds))
+            .execute()
+      }
 
       dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).execute()
     }

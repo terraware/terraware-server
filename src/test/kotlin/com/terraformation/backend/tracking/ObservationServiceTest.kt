@@ -118,6 +118,7 @@ import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.spyk
+import io.mockk.verify
 import io.mockk.verifyOrder
 import java.math.BigDecimal
 import java.time.Instant
@@ -161,18 +162,20 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   private val jobScheduler: JobScheduler = mockk()
   private val systemUser: SystemUser by lazy { SystemUser(usersDao) }
   private val observationStore: ObservationStore by lazy {
-    ObservationStore(
-        clock,
-        dslContext,
-        eventPublisher,
-        jobScheduler,
-        observationLocker,
-        observationsDao,
-        observationPlotConditionsDao,
-        observationPlotsDao,
-        observationRequestedSubstrataDao,
-        parentStore,
-        systemUser,
+    spyk(
+        ObservationStore(
+            clock,
+            dslContext,
+            eventPublisher,
+            jobScheduler,
+            observationLocker,
+            observationsDao,
+            observationPlotConditionsDao,
+            observationPlotsDao,
+            observationRequestedSubstrataDao,
+            parentStore,
+            systemUser,
+        )
     )
   }
   private val plantingSiteStore: PlantingSiteStore by lazy {
@@ -1163,6 +1166,60 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             "Observation media table should only have file from other observation",
         )
       }
+    }
+  }
+
+  @Nested
+  inner class DeleteObservation {
+    private lateinit var observationId: ObservationId
+    private lateinit var plotId: MonitoringPlotId
+
+    @BeforeEach
+    fun setUp() {
+      insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+      insertStratum()
+      insertSubstratum()
+      plotId = insertMonitoringPlot()
+      observationId = insertObservation()
+      insertObservationPlot(
+          observationId = observationId,
+          monitoringPlotId = plotId,
+          statusId = ObservationPlotStatus.Completed,
+      )
+    }
+
+    @Test
+    fun `deletes the observation, its media, and recalculates survival rates`() {
+      val fileId = insertFile()
+      insertObservationMediaFile(
+          fileId = fileId,
+          observationId = observationId,
+          monitoringPlotId = plotId,
+          isOriginal = true,
+      )
+
+      service.deleteObservation(observationId)
+
+      assertTableEmpty(OBSERVATIONS)
+      assertTableEmpty(OBSERVATION_MEDIA_FILES)
+
+      eventPublisher.assertEventPublished(FileReferenceDeletedEvent(fileId))
+      eventPublisher.assertEventPublished(
+          ObservationMediaFileDeletedEvent(
+              fileId,
+              plotId,
+              observationId,
+              organizationId,
+              plantingSiteId,
+          )
+      )
+
+      verify { observationStore.recalculateSurvivalRates(plantingSiteId) }
+    }
+
+    @Test
+    fun `throws exception when the observation does not exist`() {
+      assertThrows<ObservationNotFoundException> { service.deleteObservation(ObservationId(-1)) }
     }
   }
 
