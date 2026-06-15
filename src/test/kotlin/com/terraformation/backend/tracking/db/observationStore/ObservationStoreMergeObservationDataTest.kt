@@ -29,22 +29,29 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
 
   @Test
   fun `recalculateObservationTotals reproduces the totals from scratch`() {
-    val plotId = insertMonitoringPlot()
     val observationId = insertObservation()
+    val plotId1 = insertMonitoringPlot()
+    insertObservationPlot(claimedBy = user.userId)
+    val plotId2 = insertMonitoringPlot()
+    insertObservationPlot(claimedBy = user.userId)
+    val speciesId2 = insertSpecies()
 
-    insertObservationPlot(
-        observationId = observationId,
-        monitoringPlotId = plotId,
-        claimedBy = user.userId,
-        claimedTime = Instant.EPOCH,
-    )
     store.completePlot(
         observationId,
-        plotId,
+        plotId1,
         emptySet(),
         null,
         Instant.EPOCH,
         listOf(livePlant(), deadPlant()),
+    )
+
+    store.completePlot(
+        observationId,
+        plotId2,
+        emptySet(),
+        null,
+        Instant.EPOCH,
+        listOf(livePlant(speciesId), livePlant(speciesId2), livePlant(speciesId2)),
     )
 
     val expectedTotals = helper.fetchAllTotals()
@@ -89,7 +96,7 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
     assertEquals(expectedResults, helper.fetchAllResults(), "Observation results after rebuild")
   }
 
-  private fun livePlant() =
+  private fun livePlant(speciesId: SpeciesId = this.speciesId) =
       RecordedPlantsRow(
           certaintyId = RecordedSpeciesCertainty.Known,
           gpsCoordinates = point(1),
@@ -97,7 +104,7 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
           statusId = RecordedPlantStatus.Live,
       )
 
-  private fun deadPlant() =
+  private fun deadPlant(speciesId: SpeciesId = this.speciesId) =
       RecordedPlantsRow(
           certaintyId = RecordedSpeciesCertainty.Known,
           gpsCoordinates = point(1),

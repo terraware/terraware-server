@@ -2369,13 +2369,14 @@ class ObservationStore(
 
   private fun fetchRecordedPlantCountsBySpecies(
       observationId: ObservationId,
-      monitoringPlotId: MonitoringPlotId,
-  ): Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>> {
+      monitoringPlotIds: Collection<MonitoringPlotId>,
+  ): Map<MonitoringPlotId, Map<RecordedSpeciesKey, Map<RecordedPlantStatus, Int>>> {
     val countField = DSL.count()
     return with(RECORDED_PLANTS) {
       dslContext
           .select(
               CERTAINTY_ID,
+              MONITORING_PLOT_ID,
               SPECIES_ID,
               SPECIES_NAME,
               STATUS_ID,
@@ -2383,19 +2384,28 @@ class ObservationStore(
           )
           .from(RECORDED_PLANTS)
           .where(OBSERVATION_ID.eq(observationId))
-          .and(MONITORING_PLOT_ID.eq(monitoringPlotId))
-          .groupBy(CERTAINTY_ID, SPECIES_ID, SPECIES_NAME, STATUS_ID)
-          .fetchGroups(
-              { record ->
-                RecordedSpeciesKey(
-                    record[CERTAINTY_ID]!!,
-                    record[SPECIES_ID],
-                    record[SPECIES_NAME],
-                )
-              },
-              { record -> record[STATUS_ID]!! to record[countField] },
-          )
-          .mapValues { (_, statusCounts) -> statusCounts.toMap() }
+          .and(MONITORING_PLOT_ID.`in`(monitoringPlotIds))
+          .groupBy(MONITORING_PLOT_ID, CERTAINTY_ID, SPECIES_ID, SPECIES_NAME, STATUS_ID)
+          .fetchGroups(MONITORING_PLOT_ID.asNonNullable())
+          .map { (monitoringPlotId, resultForPlot) ->
+            val resultsForStatus =
+                resultForPlot
+                    .groupBy { record ->
+                      RecordedSpeciesKey(
+                          record[CERTAINTY_ID]!!,
+                          record[SPECIES_ID],
+                          record[SPECIES_NAME],
+                      )
+                    }
+                    .map { (speciesKey, result) ->
+                      speciesKey to
+                          result.associate { record -> record[STATUS_ID]!! to record[countField] }
+                    }
+                    .toMap()
+
+            monitoringPlotId to resultsForStatus
+          }
+          .toMap()
     }
   }
 
@@ -2474,6 +2484,12 @@ class ObservationStore(
                 .fetch()
           }
 
+      val allPlantCounts =
+          fetchRecordedPlantCountsBySpecies(
+              observationId,
+              completedPlots.map { it[OBSERVATION_PLOTS.MONITORING_PLOT_ID]!! },
+          )
+
       completedPlots.forEach { record ->
         val monitoringPlotId = record[OBSERVATION_PLOTS.MONITORING_PLOT_ID]!!
         val monitoringPlotHistoryId = record[OBSERVATION_PLOTS.MONITORING_PLOT_HISTORY_ID]!!
@@ -2488,7 +2504,7 @@ class ObservationStore(
                 OBSERVATION_PLOTS.monitoringPlotHistories.substratumHistories.stratumHistories
                     .STRATUM_ID]
 
-        val plantCounts = fetchRecordedPlantCountsBySpecies(observationId, monitoringPlotId)
+        val plantCounts = allPlantCounts[monitoringPlotId] ?: emptyMap()
 
         updateSpeciesTotals(
             observationId,
