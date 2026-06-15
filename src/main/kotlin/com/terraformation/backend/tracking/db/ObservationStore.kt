@@ -2376,7 +2376,7 @@ class ObservationStore(
    * Moves the raw per-plot data of completed plots from the source observation to the target
    * observation, repoints/drops t0 baselines, and deletes the source observation. Does NOT delete
    * media (the caller handles colliding target media) and does NOT rebuild derived aggregates (call
-   * [recalculateObservationTotals] afterward).
+   * [recalculateObservationTotals] and [recalculateSurvivalRates] afterward).
    */
   fun mergeObservationData(
       sourceObservationId: ObservationId,
