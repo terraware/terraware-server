@@ -2500,7 +2500,7 @@ class ObservationStore(
             substratumHistoryId,
             monitoringPlotId,
             monitoringPlotHistoryId,
-            isAdHoc = false,
+            observation.isAdHoc,
             isPermanent,
             plantCounts,
         )
@@ -2513,7 +2513,7 @@ class ObservationStore(
             substratumId,
             substratumHistoryId,
             monitoringPlotId,
-            isAdHoc = false,
+            observation.isAdHoc,
         )
       }
     }
