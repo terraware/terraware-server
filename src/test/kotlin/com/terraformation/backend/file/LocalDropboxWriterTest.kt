@@ -65,15 +65,21 @@ class LocalDropboxWriterTest {
   }
 
   @Test
-  fun `delete folder removes all contained files`() {
-    val fileUrl =
-        writer.shareFile(
-            writer.uploadFile(folder, "doc.txt", "data".byteInputStream()).let { "$folder/$it" }
-        )
+  fun `delete throws when the path does not exist`() {
+    assertThrows<NoSuchFileException> { writer.delete("$folder/missing.txt") }
+  }
 
-    writer.delete(folder)
+  @Test
+  fun `files are addressable from a fresh writer instance after a restart`() {
+    val name = writer.uploadFile(folder, "doc.txt", "data".byteInputStream())
 
-    fileStore.assertFileWasDeleted(fileUrl)
-    assertThrows<NoSuchFileException> { writer.shareFile("$folder/doc.txt") }
+    // A new writer shares no in-memory state with the original, simulating a server restart.
+    val restartedWriter = LocalDropboxWriter(fileStore)
+
+    assertArrayEquals(
+        "data".toByteArray(),
+        fileStore.read(restartedWriter.shareFile("$folder/$name")).readAllBytes(),
+        "bytes are still addressable after restart",
+    )
   }
 }

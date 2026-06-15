@@ -7,20 +7,25 @@ import java.io.InputStream
 import java.net.URI
 import java.nio.file.NoSuchFileException
 import java.security.MessageDigest
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
+
+private const val FOLDER = "/dropbox"
 
 /**
  * Stores documents that would normally go to Dropbox in the local [FileStore] instead. Selected
  * when `terraware.dropbox.use-local-store` is true.
  *
- * Dropbox addresses files by path (`/folder/name`). This class stores the bytes under storage URLs
- * derived from a hash of the full Dropbox path and keeps an in-memory map from Dropbox path to
- * storage URL. Because the URLs are deterministic, file data will survive JVM restarts as long as
- * the underlying [FileStore] is persistent. The map is not persisted and is not shared across
- * instances, so rename, folder-delete, and shareFile will not work correctly when running multiple
- * server instances or after a restart.
+ * Dropbox addresses files by path (`/folder/name`). This class stores the bytes under a storage URL
+ * derived from a hash of the full Dropbox path, so every operation can recompute a file's storage
+ * URL from its path with no in-memory state. As a result the mapping survives JVM restarts as long
+ * as the underlying [FileStore] is persistent, and collisions are detected by checking whether the
+ * hashed storage URL already exists.
+ *
+ * Because the storage layout is flat (the folder hierarchy is collapsed into the hash), folders
+ * have no backing storage and [delete] only removes the single file at the given path; it cannot
+ * enumerate and remove a folder's children. This is sufficient for the local store because callers
+ * only ever delete individual files.
  */
 @ConditionalOnProperty("terraware.dropbox.use-local-store", havingValue = "true")
 @Named
@@ -28,22 +33,18 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 class LocalDropboxWriter(private val fileStore: FileStore) : DropboxWriter {
   private val log = perClassLogger()
 
-  private val pathToUrl = ConcurrentHashMap<String, URI>()
-
   override fun uploadFile(folderPath: String, name: String, inputStream: InputStream): String {
     var finalName = name
+    var storageUrl = storageUrlFor("$folderPath/$finalName")
     var attempt = 1
-    while (pathToUrl.containsKey("$folderPath/$finalName")) {
+    while (exists(storageUrl)) {
       finalName = suffixedName(name, attempt++)
+      storageUrl = storageUrlFor("$folderPath/$finalName")
     }
 
-    val fullPath = "$folderPath/$finalName"
-    val storageUrl =
-        fileStore.getUrl(Path("/dropbox/${sha256Hex(fullPath).take(16)}${extensionOf(finalName)}"))
     fileStore.write(storageUrl, inputStream)
-    pathToUrl[fullPath] = storageUrl
 
-    log.info("Stored local Dropbox file $fullPath")
+    log.info("Stored local Dropbox file $folderPath/$finalName")
     return finalName
   }
 
@@ -52,24 +53,38 @@ class LocalDropboxWriter(private val fileStore: FileStore) : DropboxWriter {
   }
 
   override fun rename(oldPath: String, newPath: String) {
-    val url = pathToUrl.remove(oldPath) ?: throw NoSuchFileException(oldPath)
-    pathToUrl[newPath] = url
-  }
-
-  override fun delete(path: String) {
-    val url = pathToUrl.remove(path)
-    url?.let { fileStore.delete(it) }
-
-    val folderPrefix = "$path/"
-    val children = pathToUrl.keys.filter { it.startsWith(folderPrefix) }
-    children.forEach { childPath -> pathToUrl.remove(childPath)?.let { fileStore.delete(it) } }
-
-    if (url == null && children.isEmpty()) {
-      throw NoSuchFileException(path)
+    val oldUrl = storageUrlFor(oldPath)
+    val newUrl = storageUrlFor(newPath)
+    if (newUrl != oldUrl) {
+      fileStore.read(oldUrl).use { fileStore.write(newUrl, it) }
+      fileStore.delete(oldUrl)
     }
   }
 
-  override fun shareFile(path: String): URI = pathToUrl[path] ?: throw NoSuchFileException(path)
+  override fun delete(path: String) {
+    fileStore.delete(storageUrlFor(path))
+  }
+
+  override fun shareFile(path: String): URI {
+    val url = storageUrlFor(path)
+    if (!exists(url)) {
+      throw NoSuchFileException(path)
+    }
+    return url
+  }
+
+  private fun exists(url: URI): Boolean =
+      try {
+        fileStore.size(url)
+        true
+      } catch (_: NoSuchFileException) {
+        false
+      }
+
+  private fun storageUrlFor(path: String): URI {
+    val filename = path.substringAfterLast('/')
+    return fileStore.getUrl(Path("$FOLDER/${sha256Hex(path).take(16)}${extensionOf(filename)}"))
+  }
 
   private fun extensionOf(name: String): String {
     val dot = name.lastIndexOf('.')
