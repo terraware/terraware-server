@@ -14,6 +14,7 @@ import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonRelatedPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetCreatedEvent
@@ -30,24 +31,61 @@ class PlantingSeasonNotificationsService(
     private val dslContext: DSLContext,
     private val eventLogStore: EventLogStore,
 ) {
-  private val notificationEventClasses: List<KClass<out PlantingSeasonRelatedPersistentEvent>> =
-      listOf(
-          PlantingSeasonPersistentEvent::class,
-          PlantingSeasonSpeciesTargetPersistentEvent::class,
+  private val eventClassesByNotificationType:
+      Map<PlantingSeasonNotificationType, KClass<out PlantingSeasonRelatedPersistentEvent>> =
+      mapOf(
+          PlantingSeasonNotificationType.PlantingSeasonClosed to
+              PlantingSeasonPersistentEvent::class,
+          PlantingSeasonNotificationType.PlantingSeasonPastEndDate to
+              PlantingSeasonPersistentEvent::class,
+          PlantingSeasonNotificationType.SpeciesTargetsAdded to
+              PlantingSeasonSpeciesTargetPersistentEvent::class,
+          PlantingSeasonNotificationType.SpeciesTargetsUpdated to
+              PlantingSeasonSpeciesTargetPersistentEvent::class,
+          PlantingSeasonNotificationType.AllocationQuantitiesUpdated to
+              PlantingSeasonAllocatedSpeciesPersistentEvent::class,
       )
 
   /**
-   * Returns the undismissed notifications for every planting season in an organization. A season
-   * that has never dismissed a notification has all of its events returned; a season with no
-   * undismissed events is absent from the result.
+   * Returns the undismissed notifications of the requested [types] for every planting season in
+   * [organizationId], grouped by planting season.
+   *
+   * A season that has never dismissed a notification has all of its events returned; a season with
+   * no undismissed events of the requested types is absent from the result.
    */
-  fun getInventoryPlanningNotifications(
-      organizationId: OrganizationId
+  fun getNotifications(
+      organizationId: OrganizationId,
+      types: Collection<PlantingSeasonNotificationType>,
+  ): List<PlantingSeasonNotificationGroupModel> =
+      getNotifications(
+          PLANTING_SEASONS.plantingSites.ORGANIZATION_ID.eq(organizationId),
+          types,
+      )
+
+  /**
+   * Returns the undismissed notifications of the requested [types] for [plantingSeasonId], grouped
+   * by planting season.
+   *
+   * A season that has never dismissed a notification has all of its events returned; a season with
+   * no undismissed events of the requested types is absent from the result.
+   */
+  fun getNotifications(
+      plantingSeasonId: PlantingSeasonId,
+      types: Collection<PlantingSeasonNotificationType>,
+  ): List<PlantingSeasonNotificationGroupModel> =
+      getNotifications(PLANTING_SEASONS.ID.eq(plantingSeasonId), types)
+
+  private fun getNotifications(
+      condition: Condition,
+      types: Collection<PlantingSeasonNotificationType>,
   ): List<PlantingSeasonNotificationGroupModel> {
-    val seasonInfoById =
-        fetchSeasonInfoByCondition(
-            PLANTING_SEASONS.plantingSites.ORGANIZATION_ID.eq(organizationId)
-        )
+    val requestedTypes = types.toSet()
+    val eventClasses = eventClassesToFetch(requestedTypes)
+    if (eventClasses.isEmpty()) {
+      return emptyList()
+    }
+
+    val seasonInfoById = fetchSeasonInfoByCondition(condition)
 
     requirePermissions { seasonInfoById.keys.forEach { readPlantingSeason(it) } }
 
@@ -59,72 +97,57 @@ class PlantingSeasonNotificationsService(
         eventLogStore
             .fetchByIdsSince(
                 seasonInfoById.mapValues { it.value.lastDismissedEventLogId },
-                notificationEventClasses,
+                eventClasses,
             )
             .groupBy { it.event.plantingSeasonId }
 
     val scientificNamesBySpeciesId =
         fetchScientificNamesBySpeciesId(speciesIdsOf(entriesBySeason.values.flatten()))
 
-    return entriesBySeason.map { (plantingSeasonId, entries) ->
+    return entriesBySeason.mapNotNull { (plantingSeasonId, entries) ->
       buildNotificationModel(
           plantingSeasonId,
           entries,
           seasonInfoById.getValue(plantingSeasonId),
           scientificNamesBySpeciesId,
+          requestedTypes,
       )
     }
   }
 
-  /**
-   * Returns the undismissed notification for a single planting season, or null if the season has no
-   * undismissed events. If the season has never dismissed a notification, all of its events are
-   * returned.
-   */
-  fun getInventoryPlanningNotifications(
-      plantingSeasonId: PlantingSeasonId
-  ): PlantingSeasonNotificationGroupModel? {
-    requirePermissions { readPlantingSeason(plantingSeasonId) }
-
-    val seasonInfoById = fetchSeasonInfoByCondition(PLANTING_SEASONS.ID.eq(plantingSeasonId))
-
-    val entries =
-        eventLogStore.fetchByIdsSince(
-            seasonInfoById.mapValues { it.value.lastDismissedEventLogId },
-            notificationEventClasses,
-        )
-
-    if (entries.isEmpty()) {
-      return null
-    }
-
-    return buildNotificationModel(
-        plantingSeasonId,
-        entries,
-        seasonInfoById.getValue(plantingSeasonId),
-        fetchScientificNamesBySpeciesId(speciesIdsOf(entries)),
-    )
-  }
+  private fun eventClassesToFetch(
+      types: Set<PlantingSeasonNotificationType>
+  ): List<KClass<out PlantingSeasonRelatedPersistentEvent>> =
+      types.mapNotNull { eventClassesByNotificationType[it] }.distinct()
 
   private fun buildNotificationModel(
       plantingSeasonId: PlantingSeasonId,
       entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>,
       seasonInfo: SeasonInfo,
       scientificNamesBySpeciesId: Map<SpeciesId, String>,
-  ): PlantingSeasonNotificationGroupModel =
-      PlantingSeasonNotificationGroupModel(
-          plantingSeasonId = plantingSeasonId,
-          plantingSeasonName = seasonInfo.plantingSeasonName,
-          plantingSiteName = seasonInfo.plantingSiteName,
-          lastEventLogId = entries.maxOf { it.id },
-          notifications = combineEvents(entries.map { it.event }, scientificNamesBySpeciesId),
-      )
+      requestedTypes: Set<PlantingSeasonNotificationType>,
+  ): PlantingSeasonNotificationGroupModel? {
+    val notifications =
+        combineEvents(entries.map { it.event }, scientificNamesBySpeciesId, requestedTypes)
+    if (notifications.isEmpty()) {
+      return null
+    }
+
+    return PlantingSeasonNotificationGroupModel(
+        plantingSeasonId = plantingSeasonId,
+        plantingSeasonName = seasonInfo.plantingSeasonName,
+        plantingSiteName = seasonInfo.plantingSiteName,
+        lastEventLogId = entries.maxOf { it.id },
+        notifications = notifications,
+    )
+  }
 
   /**
    * Collapses the events for a single planting season into at most one notification per
-   * [PlantingSeasonNotificationType]. Events that do not map to a notification type are dropped.
-   * For a species target notification, the scientific names of every species referenced by the
-   * combined events are gathered into [PlantingSeasonNotificationModel.speciesScientificNames].
+   * [PlantingSeasonNotificationType]. Events that do not map to a notification type, or whose type
+   * is not in [requestedTypes], are dropped. For a species target notification, the scientific
+   * names of every species referenced by the combined events are gathered into
+   * [PlantingSeasonNotificationModel.speciesScientificNames].
    *
    * [events] is expected to be ordered by the time each event was logged, which is the order
    * returned by [EventLogStore.fetchByIdsSince]; notications are returned in the order their types
@@ -133,6 +156,7 @@ class PlantingSeasonNotificationsService(
   private fun combineEvents(
       events: List<PlantingSeasonRelatedPersistentEvent>,
       scientificNamesBySpeciesId: Map<SpeciesId, String>,
+      requestedTypes: Set<PlantingSeasonNotificationType>,
   ): List<PlantingSeasonNotificationModel> {
     require(events.mapTo(mutableSetOf()) { it.plantingSeasonId }.size <= 1) {
       "combineEvents must be called with events for a single planting season"
@@ -142,6 +166,7 @@ class PlantingSeasonNotificationsService(
 
     events.forEach { event ->
       val type = event.notificationType ?: return@forEach
+      if (type !in requestedTypes) return@forEach
       val speciesNames = speciesNamesByType.getOrPut(type) { mutableSetOf() }
       if (event is PlantingSeasonSpeciesTargetPersistentEvent) {
         scientificNamesBySpeciesId[event.speciesId]?.let { speciesNames.add(it) }
@@ -171,6 +196,8 @@ class PlantingSeasonNotificationsService(
               } else {
                 null
               }
+          is PlantingSeasonAllocatedSpeciesPersistentEvent ->
+              PlantingSeasonNotificationType.AllocationQuantitiesUpdated
           else -> null
         }
 
