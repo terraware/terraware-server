@@ -36,6 +36,8 @@ class CountryDetector {
     // We don't want coordinates so precise that they run into floating-point precision errors
     // when we do calculations on them.
     val precisionModel = PrecisionModel(1000000.0)
+    val precisionReducer = GeometryPrecisionReducer(precisionModel)
+    precisionReducer.setChangePrecisionModel(true)
 
     javaClass.getResourceAsStream("/gis/countries.geojson").use { stream ->
       FeatureJSON().readFeatureCollection(stream).features().use { iterator ->
@@ -54,8 +56,7 @@ class CountryDetector {
                   GeometryFixer(border).result
                 }
 
-            val reducedPrecisionBorder =
-                GeometryPrecisionReducer.reduce(fixedBorder, precisionModel)
+            val reducedPrecisionBorder = precisionReducer.reduce(fixedBorder)
 
             // A country code can appear more than once if it has administrative regions such as
             // territories or dependencies; in that case we want to treat them as part of the
