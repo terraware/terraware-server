@@ -157,12 +157,7 @@ class PlantingSeasonSpeciesTargetsStore(
                         .from(PLANTING_SEASON_SPECIES_TARGETS)
                         .where(PLANTING_SEASON_ID.eq(fromPlantingSeasonId))
                 )
-                .returningResult(
-                    // DSL.field works around a jOOQ behavior/bug where it will add an "excluded."
-                    // prefix to the fields in the "returning" clause.
-                    DSL.field(SUBSTRATUM_ID.name, SUBSTRATUM_ID.dataType).asNonNullable(),
-                    DSL.field(SPECIES_ID.name, SPECIES_ID.dataType).asNonNullable(),
-                )
+                .returningResult(SUBSTRATUM_ID.asNonNullable(), SPECIES_ID.asNonNullable())
                 .fetch()
 
         val substrataInfo = seasonHelper.fetchSubstrataInfo(substrataAndSpecies.map { it.value1() })
