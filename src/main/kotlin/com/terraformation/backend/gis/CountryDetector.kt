@@ -4,6 +4,9 @@ import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import org.geotools.geojson.feature.FeatureJSON
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.PrecisionModel
+import org.locationtech.jts.geom.util.GeometryFixer
+import org.locationtech.jts.precision.GeometryPrecisionReducer
 
 /**
  * Detects which countries contain a given geometry.
@@ -30,6 +33,12 @@ class CountryDetector {
 
     val result = mutableMapOf<String, Geometry>()
 
+    // We don't want coordinates so precise that they run into floating-point precision errors
+    // when we do calculations on them.
+    val precisionModel = PrecisionModel(1000000.0)
+    val precisionReducer = GeometryPrecisionReducer(precisionModel)
+    precisionReducer.setChangePrecisionModel(true)
+
     javaClass.getResourceAsStream("/gis/countries.geojson").use { stream ->
       FeatureJSON().readFeatureCollection(stream).features().use { iterator ->
         while (iterator.hasNext()) {
@@ -38,10 +47,21 @@ class CountryDetector {
           val border = feature.defaultGeometryProperty.value
 
           if (countryCode != null && border is Geometry) {
+            // Some of the border geometries in the dataset are invalid, which causes failures
+            // when we try to compute intersections with them.
+            val fixedBorder =
+                if (border.isValid) {
+                  border
+                } else {
+                  GeometryFixer(border).result
+                }
+
+            val reducedPrecisionBorder = precisionReducer.reduce(fixedBorder)
+
             // A country code can appear more than once if it has administrative regions such as
             // territories or dependencies; in that case we want to treat them as part of the
             // same country.
-            result.merge(countryCode, border) { a, b -> a.union(b) }
+            result.merge(countryCode, reducedPrecisionBorder) { a, b -> a.union(b) }
           } else if (border !is Geometry) {
             log.error("Unexpected geometry type ${border?.javaClass?.name} for $countryCode")
           } else {
