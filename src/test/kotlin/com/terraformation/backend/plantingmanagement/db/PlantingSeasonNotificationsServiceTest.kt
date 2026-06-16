@@ -232,7 +232,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           listOf(model(event.id, listOf(seasonWithdrawalRecorded))),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
           ),
@@ -253,7 +252,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               )
           ),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
           ),
