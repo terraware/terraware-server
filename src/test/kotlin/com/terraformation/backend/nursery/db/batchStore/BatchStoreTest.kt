@@ -13,6 +13,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.model.NewBatchModel
+import com.terraformation.backend.plantingmanagement.db.SeasonHelper
 import io.mockk.every
 import java.time.LocalDate
 import org.junit.jupiter.api.BeforeEach
@@ -36,6 +37,7 @@ internal abstract class BatchStoreTest : DatabaseTest(), RunsAsUser {
         IdentifierGenerator(clock, dslContext),
         ParentStore(dslContext),
         projectsDao,
+        SeasonHelper(dslContext),
         subLocationsDao,
         nurseryWithdrawalsDao,
     )

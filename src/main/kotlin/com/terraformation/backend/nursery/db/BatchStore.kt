@@ -71,6 +71,8 @@ import com.terraformation.backend.nursery.model.WithdrawalModel
 import com.terraformation.backend.nursery.model.toModel
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonDateRequestNotFoundException
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonScheduledDateNotFoundException
+import com.terraformation.backend.plantingmanagement.db.SeasonHelper
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import com.terraformation.backend.seedbank.event.AccessionSpeciesChangedEvent
 import jakarta.inject.Named
 import java.time.Clock
@@ -99,6 +101,7 @@ class BatchStore(
     private val identifierGenerator: IdentifierGenerator,
     private val parentStore: ParentStore,
     private val projectsDao: ProjectsDao,
+    private val seasonHelper: SeasonHelper,
     private val subLocationsDao: SubLocationsDao,
     private val withdrawalsDao: WithdrawalsDao,
 ) {
@@ -838,6 +841,20 @@ class BatchStore(
         eventPublisher.publishEvent(
             WithdrawalAssociatedWithPlantingDateRequestEvent(
                 withdrawal.scheduledPlantingDateRequestId
+            )
+        )
+      }
+
+      withdrawalsRow.plantingSeasonId?.let { plantingSeasonId ->
+        val (plantingSiteId, organizationId) =
+            seasonHelper.fetchPlantingSiteAndOrganization(plantingSeasonId)
+
+        eventPublisher.publishEvent(
+            PlantingSeasonWithdrawalCreatedEvent(
+                organizationId = organizationId,
+                plantingSeasonId = plantingSeasonId,
+                plantingSiteId = plantingSiteId,
+                withdrawalId = withdrawalId,
             )
         )
       }
