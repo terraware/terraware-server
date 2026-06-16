@@ -1,3 +1,5 @@
+27cb242f Update database dependencies (#4600)
+861a8e3b SW-8539 Validate, reduce precision of country borders (#4611)
 e58166e4 Added number of completed plots in latest observation in a substratum (#4609)
 22250992 SW-8434 Merge observations in admin UI (#4608)
 b10c33d7 SW-8434 Add method to recalculate species totals (#4607)
