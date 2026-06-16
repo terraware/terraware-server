@@ -2226,6 +2226,14 @@ class PlantingSiteStore(
     val latestObservationCompletedTimeField =
         latestObservationField(OBSERVATIONS.COMPLETED_TIME, observationPlotCondition)
     val latestObservationIdField = latestObservationField(OBSERVATIONS.ID, observationPlotCondition)
+    val latestObservationNumPlots =
+        DSL.field(
+            DSL.selectCount()
+                .from(OBSERVATION_PLOTS)
+                .where(observationPlotCondition)
+                .and(OBSERVATION_PLOTS.OBSERVATION_ID.eq(latestObservationIdField))
+                .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+        )
 
     return DSL.multiset(
             DSL.select(
@@ -2235,6 +2243,7 @@ class PlantingSiteStore(
                     SUBSTRATA.ID,
                     latestObservationCompletedTimeField,
                     latestObservationIdField,
+                    latestObservationNumPlots,
                     monitoringPlotsField,
                     SUBSTRATA.NAME,
                     SUBSTRATA.OBSERVED_TIME,
@@ -2253,13 +2262,16 @@ class PlantingSiteStore(
         )
         .convertFrom { result ->
           result.map { record: Record ->
+            val latestObservationId = record[latestObservationIdField]
             ExistingSubstratumModel(
                 areaHa = record[SUBSTRATA.AREA_HA]!!,
                 boundary = record[boundaryField]!! as MultiPolygon,
                 fullName = record[SUBSTRATA.FULL_NAME]!!,
                 id = record[SUBSTRATA.ID]!!,
                 latestObservationCompletedTime = record[latestObservationCompletedTimeField],
-                latestObservationId = record[latestObservationIdField],
+                latestObservationId = latestObservationId,
+                latestObservationNumPlots =
+                    latestObservationId?.let { record[latestObservationNumPlots] },
                 monitoringPlots = monitoringPlotsField?.let { record[it] } ?: emptyList(),
                 name = record[SUBSTRATA.NAME]!!,
                 observedTime = record[SUBSTRATA.OBSERVED_TIME],

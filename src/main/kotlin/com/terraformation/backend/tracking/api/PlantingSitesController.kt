@@ -312,6 +312,7 @@ data class SubstratumResponsePayload(
     val id: SubstratumId,
     val latestObservationCompletedTime: Instant?,
     val latestObservationId: ObservationId?,
+    val latestObservationNumPlots: Int?,
     val monitoringPlots: List<MonitoringPlotPayload>,
     val name: String,
     @Schema(description = "When any monitoring plot in the substratum was most recently observed.")
@@ -329,6 +330,7 @@ data class SubstratumResponsePayload(
       id = model.id,
       latestObservationCompletedTime = model.latestObservationCompletedTime,
       latestObservationId = model.latestObservationId,
+      latestObservationNumPlots = model.latestObservationNumPlots,
       monitoringPlots = model.monitoringPlots.map { MonitoringPlotPayload(it) },
       name = model.name,
       observedTime = model.observedTime,
