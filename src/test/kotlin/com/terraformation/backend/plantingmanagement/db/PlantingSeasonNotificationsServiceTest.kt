@@ -18,9 +18,14 @@ import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationCategory
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonRelatedPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetCreatedEvent
@@ -30,7 +35,6 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdated
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEventValues
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -88,13 +92,13 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           notifications = events,
       )
 
-  private fun added(vararg speciesNames: String) =
+  private fun targetAdded(vararg speciesNames: String) =
       PlantingSeasonNotificationModel(
           PlantingSeasonNotificationType.SpeciesTargetsAdded,
           speciesNames.toSet(),
       )
 
-  private fun updated(vararg speciesNames: String) =
+  private fun targetUpdated(vararg speciesNames: String) =
       PlantingSeasonNotificationModel(
           PlantingSeasonNotificationType.SpeciesTargetsUpdated,
           speciesNames.toSet(),
@@ -106,8 +110,11 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   private val closed =
       PlantingSeasonNotificationModel(PlantingSeasonNotificationType.PlantingSeasonClosed)
 
+  private val allocationQuantitiesUpdated =
+      PlantingSeasonNotificationModel(PlantingSeasonNotificationType.AllocationQuantitiesUpdated)
+
   @Nested
-  inner class GetInventoryPlanningNotificationsByPlantingSeason {
+  inner class GetNotificationsBySeason {
     @Test
     fun `returns all notifications when the season has never dismissed a notification`() {
       insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
@@ -115,8 +122,17 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val updatedEvent = insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
 
       assertEquals(
-          model(updatedEvent.id, listOf(added(speciesName1), updated(speciesName1))),
-          service.getInventoryPlanningNotifications(plantingSeasonId),
+          listOf(
+              model(
+                  updatedEvent.id,
+                  listOf(targetAdded(speciesName1), targetUpdated(speciesName1)),
+              )
+          ),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+          ),
       )
     }
 
@@ -128,8 +144,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       insertPlantingSeasonNotification(lastDismissedEventLogId = dismissed.id)
 
       assertEquals(
-          model(newer.id, listOf(updated(speciesName1))),
-          service.getInventoryPlanningNotifications(plantingSeasonId),
+          listOf(model(newer.id, listOf(targetUpdated(speciesName1)))),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+          ),
       )
     }
 
@@ -140,8 +160,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       insertSpeciesTargetCreatedEvent(speciesId = speciesId1, plantingSeasonId = otherSeasonId)
 
       assertEquals(
-          model(expected.id, listOf(added(speciesName1))),
-          service.getInventoryPlanningNotifications(plantingSeasonId),
+          listOf(model(expected.id, listOf(targetAdded(speciesName1)))),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+          ),
       )
     }
 
@@ -152,17 +176,28 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val target = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
 
       assertEquals(
-          model(target.id, listOf(added(speciesName1))),
-          service.getInventoryPlanningNotifications(plantingSeasonId),
+          listOf(model(target.id, listOf(targetAdded(speciesName1)))),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+          ),
       )
     }
 
     @Test
-    fun `returns null when there are no undismissed events`() {
+    fun `returns no notifications when there are no undismissed events`() {
       val dismissed = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
       insertPlantingSeasonNotification(lastDismissedEventLogId = dismissed.id)
 
-      assertNull(service.getInventoryPlanningNotifications(plantingSeasonId))
+      assertEquals(
+          emptyList<PlantingSeasonNotificationGroupModel>(),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+          ),
+      )
     }
 
     @Test
@@ -170,13 +205,47 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       deleteOrganizationUser()
 
       assertThrows<PlantingSeasonNotFoundException> {
-        service.getInventoryPlanningNotifications(plantingSeasonId)
+        service.getNotifications(
+            null,
+            plantingSeasonId,
+            PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+        )
       }
+    }
+
+    @Test
+    fun `maps allocated species events to an allocation quantities updated notification`() {
+      val event = insertSpeciesAllocatedCreatedEvent(speciesId = speciesId1)
+
+      assertEquals(
+          listOf(model(event.id, listOf(allocationQuantitiesUpdated))),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+          ),
+      )
+    }
+
+    @Test
+    fun `combines events of the same type`() {
+      insertSpeciesAllocatedCreatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      val latest = insertSpeciesAllocatedUpdatedEvent(speciesId = speciesId2)
+
+      assertEquals(
+          listOf(model(latest.id, listOf(allocationQuantitiesUpdated))),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+          ),
+      )
     }
   }
 
   @Nested
-  inner class GetInventoryPlanningNotificationsByOrganization {
+  inner class GetNotificationsByOrganization {
     @Test
     fun `groups notifications by planting season`() {
       val otherSeasonId = insertPlantingSeason(name = "Other Season")
@@ -186,18 +255,22 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
       assertEquals(
           mapOf(
-              plantingSeasonId to model(firstSeasonEvent.id, listOf(added(speciesName1))),
+              plantingSeasonId to model(firstSeasonEvent.id, listOf(targetAdded(speciesName1))),
               otherSeasonId to
                   model(
                       otherSeasonEvent.id,
-                      listOf(added(speciesName1)),
+                      listOf(targetAdded(speciesName1)),
                       plantingSeasonId = otherSeasonId,
                       plantingSeasonName = "Other Season",
                   ),
           ),
-          service.getInventoryPlanningNotifications(organizationId).associateBy {
-            it.plantingSeasonId
-          },
+          service
+              .getNotifications(
+                  organizationId,
+                  null,
+                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              )
+              .associateBy { it.plantingSeasonId },
       )
     }
 
@@ -216,18 +289,22 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
       assertEquals(
           mapOf(
-              plantingSeasonId to model(firstSeasonNewer.id, listOf(updated(speciesName1))),
+              plantingSeasonId to model(firstSeasonNewer.id, listOf(targetUpdated(speciesName1))),
               otherSeasonId to
                   model(
                       otherSeasonEvent.id,
-                      listOf(added(speciesName1)),
+                      listOf(targetAdded(speciesName1)),
                       plantingSeasonId = otherSeasonId,
                       plantingSeasonName = "Other Season",
                   ),
           ),
-          service.getInventoryPlanningNotifications(organizationId).associateBy {
-            it.plantingSeasonId
-          },
+          service
+              .getNotifications(
+                  organizationId,
+                  null,
+                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              )
+              .associateBy { it.plantingSeasonId },
       )
     }
 
@@ -246,20 +323,14 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       )
 
       assertEquals(
-          mapOf(plantingSeasonId to model(expected.id, listOf(added(speciesName1)))),
-          service.getInventoryPlanningNotifications(organizationId).associateBy {
-            it.plantingSeasonId
-          },
-      )
-    }
-
-    @Test
-    fun `returns empty list when the organization has no planting seasons`() {
-      val emptyOrganizationId = insertOrganization()
-
-      assertEquals(
-          emptyList<PlantingSeasonNotificationGroupModel>(),
-          service.getInventoryPlanningNotifications(emptyOrganizationId),
+          mapOf(plantingSeasonId to model(expected.id, listOf(targetAdded(speciesName1)))),
+          service
+              .getNotifications(
+                  organizationId,
+                  null,
+                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              )
+              .associateBy { it.plantingSeasonId },
       )
     }
 
@@ -268,7 +339,11 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       deleteOrganizationUser()
 
       assertThrows<PlantingSeasonNotFoundException> {
-        service.getInventoryPlanningNotifications(organizationId)
+        service.getNotifications(
+            organizationId,
+            null,
+            PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+        )
       }
     }
   }
@@ -280,11 +355,19 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
       insertSpeciesTargetUpdatedEvent(speciesId = speciesId2)
 
-      val notification = service.getInventoryPlanningNotifications(plantingSeasonId)
+      val notifications =
+          service
+              .getNotifications(
+                  null,
+                  plantingSeasonId,
+                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              )
+              .single()
+              .notifications
 
       assertEquals(
-          listOf(updated(speciesName1, speciesName2)),
-          notification?.notifications,
+          listOf(targetUpdated(speciesName1, speciesName2)),
+          notifications,
       )
     }
 
@@ -302,11 +385,19 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           changedTo = PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5),
       )
 
-      val notification = service.getInventoryPlanningNotifications(plantingSeasonId)
+      val notifications =
+          service
+              .getNotifications(
+                  null,
+                  plantingSeasonId,
+                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              )
+              .single()
+              .notifications
 
       assertEquals(
-          listOf(updated(speciesName1, speciesName2)),
-          notification?.notifications,
+          listOf(targetUpdated(speciesName1, speciesName2)),
+          notifications,
       )
     }
 
@@ -323,8 +414,17 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           )
 
       assertEquals(
-          model(close.id, listOf(added(speciesName1), updated(speciesName1), closed)),
-          service.getInventoryPlanningNotifications(plantingSeasonId),
+          listOf(
+              model(
+                  close.id,
+                  listOf(targetAdded(speciesName1), targetUpdated(speciesName1), closed),
+              )
+          ),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+          ),
       )
     }
 
@@ -347,8 +447,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           )
 
       assertEquals(
-          model(closedEvent.id, listOf(pastEndDate, closed)),
-          service.getInventoryPlanningNotifications(plantingSeasonId),
+          listOf(model(closedEvent.id, listOf(pastEndDate, closed))),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+          ),
       )
     }
   }
@@ -356,9 +460,9 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   private fun insertUpdatedEvent(
       changedFrom: PlantingSeasonUpdatedEventValues = PlantingSeasonUpdatedEventValues(),
       changedTo: PlantingSeasonUpdatedEventValues = PlantingSeasonUpdatedEventValues(),
+      organizationId: OrganizationId = this.organizationId,
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSiteId: PlantingSiteId = this.plantingSiteId,
-      organizationId: OrganizationId = this.organizationId,
   ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
     val event =
         PlantingSeasonUpdatedEvent(
@@ -373,10 +477,10 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   }
 
   private fun insertCreatedEvent(
-      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       name: String = "Season",
-      plantingSiteId: PlantingSiteId = this.plantingSiteId,
       organizationId: OrganizationId = this.organizationId,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
   ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
     val event =
         PlantingSeasonCreatedEvent(
@@ -393,12 +497,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   }
 
   private fun insertSpeciesTargetCreatedEvent(
-      speciesId: SpeciesId = speciesId1,
-      quantity: Int = 1,
-      substratumId: SubstratumId = substratumId1,
+      organizationId: OrganizationId = this.organizationId,
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSiteId: PlantingSiteId = this.plantingSiteId,
-      organizationId: OrganizationId = this.organizationId,
+      quantity: Int = 1,
+      speciesId: SpeciesId = speciesId1,
+      substratumId: SubstratumId = substratumId1,
   ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
     val event =
         PlantingSeasonSpeciesTargetCreatedEvent(
@@ -417,15 +521,15 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   }
 
   private fun insertSpeciesTargetUpdatedEvent(
-      speciesId: SpeciesId = speciesId1,
       changedFrom: PlantingSeasonSpeciesTargetUpdatedEventValues =
           PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 5),
       changedTo: PlantingSeasonSpeciesTargetUpdatedEventValues =
           PlantingSeasonSpeciesTargetUpdatedEventValues(quantity = 7),
-      substratumId: SubstratumId = substratumId1,
+      organizationId: OrganizationId = this.organizationId,
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSiteId: PlantingSiteId = this.plantingSiteId,
-      organizationId: OrganizationId = this.organizationId,
+      speciesId: SpeciesId = speciesId1,
+      substratumId: SubstratumId = substratumId1,
   ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
     val event =
         PlantingSeasonSpeciesTargetUpdatedEvent(
@@ -439,6 +543,48 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
             substratumHistoryId = SubstratumHistoryId(substratumId.value),
             substratumId = substratumId,
             substratumName = "Substratum",
+        )
+
+    return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
+  }
+
+  private fun insertSpeciesAllocatedCreatedEvent(
+      organizationId: OrganizationId = this.organizationId,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      quantity: Int = 1,
+      speciesId: SpeciesId = speciesId1,
+  ): EventLogEntry<PlantingSeasonAllocatedSpeciesPersistentEvent> {
+    val event =
+        PlantingSeasonAllocatedSpeciesCreatedEvent(
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            quantity = quantity,
+            speciesId = speciesId,
+        )
+
+    return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
+  }
+
+  private fun insertSpeciesAllocatedUpdatedEvent(
+      changedFrom: PlantingSeasonAllocatedSpeciesUpdatedEventValues =
+          PlantingSeasonAllocatedSpeciesUpdatedEventValues(quantity = 5),
+      changedTo: PlantingSeasonAllocatedSpeciesUpdatedEventValues =
+          PlantingSeasonAllocatedSpeciesUpdatedEventValues(quantity = 7),
+      organizationId: OrganizationId = this.organizationId,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      speciesId: SpeciesId = speciesId1,
+  ): EventLogEntry<PlantingSeasonAllocatedSpeciesPersistentEvent> {
+    val event =
+        PlantingSeasonAllocatedSpeciesUpdatedEvent(
+            changedFrom = changedFrom,
+            changedTo = changedTo,
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            speciesId = speciesId,
         )
 
     return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))

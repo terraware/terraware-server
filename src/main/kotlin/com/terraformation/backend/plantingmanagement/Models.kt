@@ -75,6 +75,25 @@ enum class PlantingSeasonNotificationType {
   SeasonWithdrawalRecorded,
 }
 
+enum class PlantingSeasonNotificationCategory {
+  InventoryPlanning,
+  PlantingSeasonPlanning;
+
+  val notificationTypes: Set<PlantingSeasonNotificationType>
+    get() =
+        when (this) {
+          InventoryPlanning ->
+              setOf(
+                  PlantingSeasonNotificationType.PlantingSeasonClosed,
+                  PlantingSeasonNotificationType.PlantingSeasonPastEndDate,
+                  PlantingSeasonNotificationType.SpeciesTargetsAdded,
+                  PlantingSeasonNotificationType.SpeciesTargetsUpdated,
+              )
+          PlantingSeasonPlanning ->
+              setOf(PlantingSeasonNotificationType.AllocationQuantitiesUpdated)
+        }
+}
+
 data class PlantingSeasonNotificationModel(
     val type: PlantingSeasonNotificationType,
     val speciesScientificNames: Set<String>? = null,

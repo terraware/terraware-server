@@ -7,6 +7,7 @@ import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationCategory
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
@@ -26,29 +27,29 @@ class PlantingSeasonNotificationsController(
 ) {
 
   @ApiResponse200
-  @Operation(summary = "Lists all notifications for an organization")
+  @Operation(
+      summary = "Lists all planting season notifications",
+      description =
+          "If plantingSeasonId is specified, only returns notifications for that specific Planting Season.",
+  )
   @GetMapping("/notifications")
   fun getPlantingSeasonNotifications(
-      @RequestParam("organizationId") organizationId: OrganizationId,
+      @RequestParam("organizationId") organizationId: OrganizationId?,
+      @RequestParam("plantingSeasonId") plantingSeasonId: PlantingSeasonId?,
       @RequestParam("notificationCategory")
       notificationCategory: PlantingSeasonNotificationCategory,
   ): GetPlantingSeasonNotificationsResponsePayload {
     val notifications =
-        when (notificationCategory) {
-          PlantingSeasonNotificationCategory.InventoryPlanning ->
-              plantingSeasonNotificationsService
-                  .getInventoryPlanningNotifications(organizationId)
-                  .map { PlantingSeasonNotificationGroupPayload(it) }
-          PlantingSeasonNotificationCategory.PlantingSeasonPlanning -> emptyList()
-        }
+        plantingSeasonNotificationsService
+            .getNotifications(
+                organizationId,
+                plantingSeasonId,
+                notificationCategory.notificationTypes,
+            )
+            .map { PlantingSeasonNotificationGroupPayload(it) }
 
     return GetPlantingSeasonNotificationsResponsePayload(notifications)
   }
-}
-
-enum class PlantingSeasonNotificationCategory {
-  InventoryPlanning,
-  PlantingSeasonPlanning,
 }
 
 data class GetPlantingSeasonNotificationsResponsePayload(
