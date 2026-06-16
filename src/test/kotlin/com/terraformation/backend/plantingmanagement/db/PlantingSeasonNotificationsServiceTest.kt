@@ -129,7 +129,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               )
           ),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
           ),
@@ -146,7 +145,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           listOf(model(newer.id, listOf(targetUpdated(speciesName1)))),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
           ),
@@ -162,7 +160,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           listOf(model(expected.id, listOf(targetAdded(speciesName1)))),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
           ),
@@ -178,7 +175,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           listOf(model(target.id, listOf(targetAdded(speciesName1)))),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
           ),
@@ -193,7 +189,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           emptyList<PlantingSeasonNotificationGroupModel>(),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
           ),
@@ -206,7 +201,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
       assertThrows<PlantingSeasonNotFoundException> {
         service.getNotifications(
-            null,
             plantingSeasonId,
             PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
         )
@@ -220,7 +214,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           listOf(model(event.id, listOf(allocationQuantitiesUpdated))),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
           ),
@@ -236,7 +229,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           listOf(model(latest.id, listOf(allocationQuantitiesUpdated))),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
           ),
@@ -267,7 +259,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           service
               .getNotifications(
                   organizationId,
-                  null,
                   PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
               )
               .associateBy { it.plantingSeasonId },
@@ -301,7 +292,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           service
               .getNotifications(
                   organizationId,
-                  null,
                   PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
               )
               .associateBy { it.plantingSeasonId },
@@ -327,7 +317,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           service
               .getNotifications(
                   organizationId,
-                  null,
                   PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
               )
               .associateBy { it.plantingSeasonId },
@@ -341,7 +330,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertThrows<PlantingSeasonNotFoundException> {
         service.getNotifications(
             organizationId,
-            null,
             PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
         )
       }
@@ -358,7 +346,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val notifications =
           service
               .getNotifications(
-                  null,
                   plantingSeasonId,
                   PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
               )
@@ -388,7 +375,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val notifications =
           service
               .getNotifications(
-                  null,
                   plantingSeasonId,
                   PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
               )
@@ -421,7 +407,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               )
           ),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
           ),
@@ -449,7 +434,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           listOf(model(closedEvent.id, listOf(pastEndDate, closed))),
           service.getNotifications(
-              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
           ),

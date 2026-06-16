@@ -40,15 +40,25 @@ class PlantingSeasonNotificationsController(
       notificationCategory: PlantingSeasonNotificationCategory,
   ): GetPlantingSeasonNotificationsResponsePayload {
     val notifications =
-        plantingSeasonNotificationsService
-            .getNotifications(
-                organizationId,
-                plantingSeasonId,
-                notificationCategory.notificationTypes,
-            )
-            .map { PlantingSeasonNotificationGroupPayload(it) }
+        if (plantingSeasonId != null) {
+          plantingSeasonNotificationsService.getNotifications(
+              plantingSeasonId,
+              notificationCategory.notificationTypes,
+          )
+        } else if (organizationId != null) {
+          plantingSeasonNotificationsService.getNotifications(
+              organizationId,
+              notificationCategory.notificationTypes,
+          )
+        } else {
+          throw IllegalArgumentException(
+              "Either organizationId or plantingSeasonId must be specified."
+          )
+        }
 
-    return GetPlantingSeasonNotificationsResponsePayload(notifications)
+    return GetPlantingSeasonNotificationsResponsePayload(
+        notifications.map { PlantingSeasonNotificationGroupPayload(it) }
+    )
   }
 }
 

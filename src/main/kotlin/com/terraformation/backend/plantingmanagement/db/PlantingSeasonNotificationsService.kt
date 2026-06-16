@@ -47,33 +47,43 @@ class PlantingSeasonNotificationsService(
       )
 
   /**
-   * Returns the undismissed notifications of the requested [types], grouped by planting season.
-   *
-   * If [plantingSeasonId] is non-null, only that season is considered; otherwise every planting
-   * season in [organizationId] is considered. At least one of the two must be non-null, and
-   * [plantingSeasonId] takes precedence when both are supplied.
+   * Returns the undismissed notifications of the requested [types] for every planting season in
+   * [organizationId], grouped by planting season.
    *
    * A season that has never dismissed a notification has all of its events returned; a season with
    * no undismissed events of the requested types is absent from the result.
    */
   fun getNotifications(
-      organizationId: OrganizationId?,
-      plantingSeasonId: PlantingSeasonId?,
+      organizationId: OrganizationId,
+      types: Collection<PlantingSeasonNotificationType>,
+  ): List<PlantingSeasonNotificationGroupModel> =
+      getNotifications(
+          PLANTING_SEASONS.plantingSites.ORGANIZATION_ID.eq(organizationId),
+          types,
+      )
+
+  /**
+   * Returns the undismissed notifications of the requested [types] for [plantingSeasonId], grouped
+   * by planting season.
+   *
+   * A season that has never dismissed a notification has all of its events returned; a season with
+   * no undismissed events of the requested types is absent from the result.
+   */
+  fun getNotifications(
+      plantingSeasonId: PlantingSeasonId,
+      types: Collection<PlantingSeasonNotificationType>,
+  ): List<PlantingSeasonNotificationGroupModel> =
+      getNotifications(PLANTING_SEASONS.ID.eq(plantingSeasonId), types)
+
+  private fun getNotifications(
+      condition: Condition,
       types: Collection<PlantingSeasonNotificationType>,
   ): List<PlantingSeasonNotificationGroupModel> {
-    require(organizationId != null || plantingSeasonId != null) {
-      "Either organizationId or plantingSeasonId must be specified."
-    }
-
     val requestedTypes = types.toSet()
     val eventClasses = eventClassesToFetch(requestedTypes)
     if (eventClasses.isEmpty()) {
       return emptyList()
     }
-
-    val condition =
-        if (plantingSeasonId != null) PLANTING_SEASONS.ID.eq(plantingSeasonId)
-        else PLANTING_SEASONS.plantingSites.ORGANIZATION_ID.eq(organizationId)
 
     val seasonInfoById = fetchSeasonInfoByCondition(condition)
 
