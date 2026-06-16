@@ -1,3 +1,4 @@
+88e6afe6 Update Node dependencies to v6.2.11 (#4601)
 4d58ef08 Remove jOOQ bug workaround (#4613)
 6d587cef Update dependency io.swagger.core.v3:swagger-annotations to v2.2.51 (#4604)
 27cb242f Update database dependencies (#4600)
