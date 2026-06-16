@@ -90,7 +90,10 @@ enum class PlantingSeasonNotificationCategory {
                   PlantingSeasonNotificationType.SpeciesTargetsUpdated,
               )
           PlantingSeasonPlanning ->
-              setOf(PlantingSeasonNotificationType.AllocationQuantitiesUpdated)
+              setOf(
+                  PlantingSeasonNotificationType.AllocationQuantitiesUpdated,
+                  PlantingSeasonNotificationType.SeasonWithdrawalRecorded,
+              )
         }
 }
 

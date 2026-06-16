@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -33,6 +34,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEventValues
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -112,6 +114,9 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
   private val allocationQuantitiesUpdated =
       PlantingSeasonNotificationModel(PlantingSeasonNotificationType.AllocationQuantitiesUpdated)
+
+  private val seasonWithdrawalRecorded =
+      PlantingSeasonNotificationModel(PlantingSeasonNotificationType.SeasonWithdrawalRecorded)
 
   @Nested
   inner class GetNotificationsBySeason {
@@ -214,6 +219,41 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertEquals(
           listOf(model(event.id, listOf(allocationQuantitiesUpdated))),
           service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+          ),
+      )
+    }
+
+    @Test
+    fun `maps withdrawal events to a season withdrawal recorded notification`() {
+      val event = insertWithdrawalCreatedEvent()
+
+      assertEquals(
+          listOf(model(event.id, listOf(seasonWithdrawalRecorded))),
+          service.getNotifications(
+              null,
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+          ),
+      )
+    }
+
+    @Test
+    fun `combines withdrawal events with allocation events under planting season planning`() {
+      insertSpeciesAllocatedCreatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      val latest = insertWithdrawalCreatedEvent(withdrawalId = WithdrawalId(2))
+
+      assertEquals(
+          listOf(
+              model(
+                  latest.id,
+                  listOf(allocationQuantitiesUpdated, seasonWithdrawalRecorded),
+              )
+          ),
+          service.getNotifications(
+              null,
               plantingSeasonId,
               PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
           ),
@@ -546,6 +586,23 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
             plantingSiteId = plantingSiteId,
             quantity = quantity,
             speciesId = speciesId,
+        )
+
+    return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
+  }
+
+  private fun insertWithdrawalCreatedEvent(
+      organizationId: OrganizationId = this.organizationId,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      withdrawalId: WithdrawalId = WithdrawalId(1),
+  ): EventLogEntry<PlantingSeasonWithdrawalCreatedEvent> {
+    val event =
+        PlantingSeasonWithdrawalCreatedEvent(
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            withdrawalId = withdrawalId,
         )
 
     return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))

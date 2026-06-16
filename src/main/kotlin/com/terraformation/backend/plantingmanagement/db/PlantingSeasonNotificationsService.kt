@@ -21,6 +21,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import jakarta.inject.Named
 import kotlin.reflect.KClass
 import org.jooq.Condition
@@ -44,6 +45,8 @@ class PlantingSeasonNotificationsService(
               PlantingSeasonSpeciesTargetPersistentEvent::class,
           PlantingSeasonNotificationType.AllocationQuantitiesUpdated to
               PlantingSeasonAllocatedSpeciesPersistentEvent::class,
+          PlantingSeasonNotificationType.SeasonWithdrawalRecorded to
+              PlantingSeasonWithdrawalCreatedEvent::class,
       )
 
   /**
@@ -198,6 +201,8 @@ class PlantingSeasonNotificationsService(
               }
           is PlantingSeasonAllocatedSpeciesPersistentEvent ->
               PlantingSeasonNotificationType.AllocationQuantitiesUpdated
+          is PlantingSeasonWithdrawalCreatedEvent ->
+              PlantingSeasonNotificationType.SeasonWithdrawalRecorded
           else -> null
         }
 
