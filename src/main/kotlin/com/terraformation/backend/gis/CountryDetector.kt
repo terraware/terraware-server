@@ -4,6 +4,7 @@ import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import org.geotools.geojson.feature.FeatureJSON
 import org.locationtech.jts.geom.Geometry
+import org.locationtech.jts.geom.MultiPolygon
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.geom.util.GeometryFixer
 import org.locationtech.jts.precision.GeometryPrecisionReducer
@@ -89,14 +90,57 @@ class CountryDetector {
   fun getCountries(geometry: Geometry): Set<String> {
     val minCoverageArea = geometry.area * MIN_COVERAGE_PERCENT / 100.0
 
-    return countryBorders.keys.filter { intersectionArea(it, geometry) >= minCoverageArea }.toSet()
+    // For complex MultiPolygons, intersection calculations can be expensive. We only care
+    // about exceeding the minimum coverage area, so do the calculation one polygon at a time
+    // and stop once we hit the threshold.
+    val geometries =
+        if (geometry is MultiPolygon) {
+          (0..<geometry.numGeometries).map { geometry.getGeometryN(it) }
+        } else {
+          listOf(geometry)
+        }
+
+    return countryBorders
+        .mapNotNull { (countryCode, countryBorder) ->
+          val area =
+              geometries.fold(0.0) { geometrySubtotal, geometryPolygon ->
+                if (geometrySubtotal < minCoverageArea) {
+                  if (countryBorder is MultiPolygon) {
+                    (0..<countryBorder.numGeometries)
+                        .map { countryBorder.getGeometryN(it) }
+                        .fold(geometrySubtotal) { countrySubtotal, countryPolygon ->
+                          if (countrySubtotal < minCoverageArea) {
+                            countrySubtotal + intersectionArea(countryPolygon, geometryPolygon)
+                          } else {
+                            countrySubtotal
+                          }
+                        }
+                  } else {
+                    geometrySubtotal + intersectionArea(countryBorder, geometryPolygon)
+                  }
+                } else {
+                  geometrySubtotal
+                }
+              }
+
+          if (area >= minCoverageArea) {
+            countryCode
+          } else {
+            null
+          }
+        }
+        .toSet()
   }
 
   fun intersectionArea(countryCode: String, geometry: Geometry): Double {
     val countryBorder = countryBorders[countryCode] ?: return 0.0
 
-    return if (countryBorder.intersects(geometry)) {
-      countryBorder.intersection(geometry).area
+    return intersectionArea(countryBorder, geometry)
+  }
+
+  private fun intersectionArea(geometryA: Geometry, geometryB: Geometry): Double {
+    return if (geometryA.intersects(geometryB)) {
+      geometryA.intersection(geometryB).area
     } else {
       0.0
     }
