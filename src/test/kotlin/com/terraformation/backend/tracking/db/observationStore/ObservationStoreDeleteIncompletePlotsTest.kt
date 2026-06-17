@@ -6,6 +6,7 @@ import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import io.mockk.every
 import java.time.Instant
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
@@ -33,9 +34,55 @@ class ObservationStoreDeleteIncompletePlotsTest : BaseObservationStoreTest() {
     insertMonitoringPlot()
     insertObservationPlot()
 
-    store.deleteIncompletePlots(observationId)
+    store.deleteIncompletePlots(observationId, emptyList())
 
     assertTableEquals(observationPlotsWithOnlyCompletedPlot)
+  }
+
+  @Test
+  fun `retains permanent plots that also were not observed in other observations`() {
+    insertUserGlobalRole(role = GlobalRole.SuperAdmin)
+    insertStratum()
+    insertSubstratum()
+
+    // An incomplete permanent plot that wasn't observed elsewhere; it shouldn't be removed.
+    val neverObservedPlotId = insertMonitoringPlot()
+    val observationId =
+        insertObservation(completedTime = Instant.EPOCH, state = ObservationState.Abandoned)
+    insertObservationPlot(isPermanent = true, statusId = ObservationPlotStatus.NotObserved)
+
+    val observationPlotsWithOnlyRetainedPlot = dslContext.fetch(OBSERVATION_PLOTS)
+
+    // A permanent plot that was observed elsewhere; it should be removed.
+    val observedElsewherePlotId = insertMonitoringPlot()
+    insertObservationPlot(isPermanent = true, statusId = ObservationPlotStatus.NotObserved)
+
+    val otherObservationId =
+        insertObservation(
+            completedTime = Instant.ofEpochSecond(1),
+            state = ObservationState.Abandoned,
+        )
+    insertObservationPlot(
+        monitoringPlotId = neverObservedPlotId,
+        isPermanent = true,
+        statusId = ObservationPlotStatus.NotObserved,
+    )
+    insertObservationPlot(
+        monitoringPlotId = observedElsewherePlotId,
+        completedBy = user.userId,
+        isPermanent = true,
+    )
+
+    assertEquals(
+        listOf(neverObservedPlotId) to listOf(observedElsewherePlotId),
+        store.deleteIncompletePlots(observationId, listOf(otherObservationId)),
+        "Retained and deleted plot IDs",
+    )
+
+    assertTableEquals(
+        observationPlotsWithOnlyRetainedPlot,
+        where = OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationId),
+    )
   }
 
   @Test
@@ -47,7 +94,7 @@ class ObservationStoreDeleteIncompletePlotsTest : BaseObservationStoreTest() {
     val observationId = insertObservation()
     insertObservationPlot()
 
-    assertThrows<IllegalStateException> { store.deleteIncompletePlots(observationId) }
+    assertThrows<IllegalStateException> { store.deleteIncompletePlots(observationId, emptyList()) }
   }
 
   @Test
@@ -60,6 +107,6 @@ class ObservationStoreDeleteIncompletePlotsTest : BaseObservationStoreTest() {
 
     every { user.canManageObservation(observationId) } returns false
 
-    assertThrows<AccessDeniedException> { store.deleteIncompletePlots(observationId) }
+    assertThrows<AccessDeniedException> { store.deleteIncompletePlots(observationId, emptyList()) }
   }
 }
