@@ -29,15 +29,27 @@
 <h3>Remove Incomplete Plots from Abandoned Observation</h3>
 
 <p>
-    Remove all the plots in an abandoned observation that weren't completed, so they don't clutter
-    up the user's view of the observation. The observation will continue to be marked as abandoned
-    even though all its plots will be completed.
+    Remove all the plots that weren't completed in an abandoned observation. Optionally retain
+    incomplete permanent plots that weren't observed in a specific set of observations.
+    The observation will continue to be marked as abandoned even if its remaining plots are all
+    completed.
 </p>
 
 <form method="POST" action="/admin/deleteIncompletePlots">
     <label>
         Observation ID
         <input type="text" name="observationId" required/>
+    </label>
+    <label>
+        Retain permanent plots not observed in observation IDs (comma-separated)
+        <input type="text" name="retainObservationIds"/>
+    </label>
+    <label>
+        Mode
+        <select name="dryRun">
+            <option value="true" selected>Dry Run</option>
+            <option value="false">Apply Changes</option>
+        </select>
     </label>
     <input type="submit" value="Remove Incomplete Plots"/>
 </form>
