@@ -12,9 +12,11 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
+import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
@@ -24,6 +26,7 @@ import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationC
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEvent
@@ -122,6 +125,9 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
   private val seasonWithdrawalRecorded =
       PlantingSeasonNotificationModel(PlantingSeasonNotificationType.SeasonWithdrawalRecorded)
+
+  private val scheduledPlantingDateRequested =
+      PlantingSeasonNotificationModel(PlantingSeasonNotificationType.ScheduledPlantingDateRequested)
 
   @Nested
   inner class GetNotificationsBySeason {
@@ -244,21 +250,94 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
     }
 
     @Test
-    fun `returns all notification types for PlantingSeasonPlanning`() {
-      insertSpeciesAllocatedCreatedEvent(speciesId = speciesId1)
+    fun `returns all notification types for InventoryPlanning`() {
+      insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
       clock.instant = clock.instant.plusSeconds(1)
-      val latest = insertWithdrawalCreatedEvent(withdrawalId = withdrawalId)
+      insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      val latest = insertClosedEvent()
 
       assertEquals(
           listOf(
               model(
                   latest.id,
-                  listOf(allocationQuantitiesUpdated, seasonWithdrawalRecorded),
+                  listOf(targetAdded(speciesName1), targetUpdated(speciesName1), closed),
+              )
+          ),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+          ),
+      )
+    }
+
+    @Test
+    fun `returns all notification types for PlantingSeasonPlanning`() {
+      insertSpeciesAllocatedCreatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      insertWithdrawalCreatedEvent(withdrawalId = withdrawalId)
+      clock.instant = clock.instant.plusSeconds(1)
+      val latest = insertPastEndDateEvent()
+
+      assertEquals(
+          listOf(
+              model(
+                  latest.id,
+                  listOf(allocationQuantitiesUpdated, seasonWithdrawalRecorded, pastEndDate),
               )
           ),
           service.getNotifications(
               plantingSeasonId,
               PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+          ),
+      )
+    }
+
+    @Test
+    fun `returns all notification types for Inventory`() {
+      insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      insertPlantingDateRequestedEvent()
+      clock.instant = clock.instant.plusSeconds(1)
+      val latest = insertClosedEvent()
+
+      assertEquals(
+          listOf(
+              model(
+                  latest.id,
+                  listOf(
+                      targetAdded(speciesName1),
+                      targetUpdated(speciesName1),
+                      scheduledPlantingDateRequested,
+                      closed,
+                  ),
+              )
+          ),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.Inventory.notificationTypes,
+          ),
+      )
+    }
+
+    @Test
+    fun `returns all notification types for Withdrawals`() {
+      insertPlantingDateRequestedEvent()
+      clock.instant = clock.instant.plusSeconds(1)
+      val latest = insertClosedEvent()
+
+      assertEquals(
+          listOf(
+              model(
+                  latest.id,
+                  listOf(scheduledPlantingDateRequested, closed),
+              )
+          ),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.Withdrawals.notificationTypes,
           ),
       )
     }
@@ -455,33 +534,6 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           ),
       )
     }
-
-    @Test
-    fun `maps status change notifications correctly`() {
-      insertUpdatedEvent(
-          changedFrom = PlantingSeasonUpdatedEventValues(name = "A"),
-          changedTo = PlantingSeasonUpdatedEventValues(name = "B"),
-      )
-      clock.instant = clock.instant.plusSeconds(1)
-      insertUpdatedEvent(
-          changedFrom = PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.Active),
-          changedTo = PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.PastEndDate),
-      )
-      val closedEvent =
-          insertUpdatedEvent(
-              changedFrom =
-                  PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.PastEndDate),
-              changedTo = PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.Closed),
-          )
-
-      assertEquals(
-          listOf(model(closedEvent.id, listOf(pastEndDate, closed))),
-          service.getNotifications(
-              plantingSeasonId,
-              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
-          ),
-      )
-    }
   }
 
   private fun insertUpdatedEvent(
@@ -498,6 +550,39 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
             organizationId = organizationId,
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
+        )
+
+    return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
+  }
+
+  private fun insertClosedEvent() =
+      insertUpdatedEvent(
+          changedFrom = PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.Active),
+          changedTo = PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.Closed),
+      )
+
+  private fun insertPastEndDateEvent() =
+      insertUpdatedEvent(
+          changedFrom = PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.Active),
+          changedTo = PlantingSeasonUpdatedEventValues(status = PlantingSeasonStatus.PastEndDate),
+      )
+
+  private fun insertPlantingDateRequestedEvent(
+      organizationId: OrganizationId = this.organizationId,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      scheduledPlantingDateId: ScheduledPlantingDateId =
+          insertPlantingSeasonScheduledDate(plantingSeasonId = plantingSeasonId),
+  ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
+    val event =
+        PlantingDateRequestCreatedEvent(
+            date = LocalDate.EPOCH,
+            notes = null,
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            scheduledPlantingDateId = scheduledPlantingDateId,
+            status = PlantingDateRequestStatus.Pending,
         )
 
     return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))

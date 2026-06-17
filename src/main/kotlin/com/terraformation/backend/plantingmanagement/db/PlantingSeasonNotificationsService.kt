@@ -14,6 +14,7 @@ import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonRelatedPersistentEvent
@@ -35,18 +36,20 @@ class PlantingSeasonNotificationsService(
   private val eventClassesByNotificationType:
       Map<PlantingSeasonNotificationType, KClass<out PlantingSeasonRelatedPersistentEvent>> =
       mapOf(
+          PlantingSeasonNotificationType.AllocationQuantitiesUpdated to
+              PlantingSeasonAllocatedSpeciesPersistentEvent::class,
           PlantingSeasonNotificationType.PlantingSeasonClosed to
               PlantingSeasonPersistentEvent::class,
           PlantingSeasonNotificationType.PlantingSeasonPastEndDate to
               PlantingSeasonPersistentEvent::class,
+          PlantingSeasonNotificationType.ScheduledPlantingDateRequested to
+              PlantingDateRequestPersistentEvent::class,
+          PlantingSeasonNotificationType.SeasonWithdrawalRecorded to
+              PlantingSeasonWithdrawalCreatedEvent::class,
           PlantingSeasonNotificationType.SpeciesTargetsAdded to
               PlantingSeasonSpeciesTargetPersistentEvent::class,
           PlantingSeasonNotificationType.SpeciesTargetsUpdated to
               PlantingSeasonSpeciesTargetPersistentEvent::class,
-          PlantingSeasonNotificationType.AllocationQuantitiesUpdated to
-              PlantingSeasonAllocatedSpeciesPersistentEvent::class,
-          PlantingSeasonNotificationType.SeasonWithdrawalRecorded to
-              PlantingSeasonWithdrawalCreatedEvent::class,
       )
 
   /**
@@ -187,6 +190,10 @@ class PlantingSeasonNotificationsService(
   private val PlantingSeasonRelatedPersistentEvent.notificationType: PlantingSeasonNotificationType?
     get() =
         when (this) {
+          is PlantingSeasonAllocatedSpeciesPersistentEvent ->
+              PlantingSeasonNotificationType.AllocationQuantitiesUpdated
+          is PlantingDateRequestPersistentEvent ->
+              PlantingSeasonNotificationType.ScheduledPlantingDateRequested
           is PlantingSeasonSpeciesTargetCreatedEvent ->
               PlantingSeasonNotificationType.SpeciesTargetsAdded
           is PlantingSeasonSpeciesTargetUpdatedEvent ->
@@ -199,8 +206,6 @@ class PlantingSeasonNotificationsService(
               } else {
                 null
               }
-          is PlantingSeasonAllocatedSpeciesPersistentEvent ->
-              PlantingSeasonNotificationType.AllocationQuantitiesUpdated
           is PlantingSeasonWithdrawalCreatedEvent ->
               PlantingSeasonNotificationType.SeasonWithdrawalRecorded
           else -> null
