@@ -107,7 +107,7 @@ class CountryDetector {
                   .asSequence()
                   .flatMap { geometryPolygon ->
                     if (countryBorder is MultiPolygon) {
-                      (0..<countryBorder.numGeometries).asSequence().map { it ->
+                      (0..<countryBorder.numGeometries).asSequence().map {
                         countryBorder.getGeometryN(it) to geometryPolygon
                       }
                     } else {
