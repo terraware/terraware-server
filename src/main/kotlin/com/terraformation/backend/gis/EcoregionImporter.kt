@@ -9,6 +9,7 @@ import com.terraformation.backend.tracking.model.Shapefile
 import jakarta.inject.Named
 import java.net.URI
 import java.nio.file.Path
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -38,6 +39,14 @@ class EcoregionImporter(
   companion object {
     /** URL of the official distribution of the Ecoregions zip file. */
     val defaultZipFileUrl = URI("https://storage.googleapis.com/teow2016/Ecoregions2017.zip")
+
+    /**
+     * Only count an ecoregion as being in a country if the country covers more than 0.1% of the
+     * ecoregion's total area. This is needed to prevent countries being listed because their
+     * borders touch the edge of an ecoregion and inaccuracies in the geometry calculations cause
+     * there to appear to be a tiny sliver of intersection.
+     */
+    private val minCoveragePercent = 0.1
   }
 
   private val log = perClassLogger()
@@ -56,7 +65,7 @@ class EcoregionImporter(
 
     log.info("Preprocessing ecoregion geometries")
 
-    val geometriesByObjectId = mutableMapOf<String, Geometry>()
+    val geometriesByObjectId = ConcurrentHashMap<String, Geometry>()
     val precisionReducer = GeometryPrecisionReducer(PrecisionModel(1000000.0))
     precisionReducer.setChangePrecisionModel(true)
 
@@ -150,7 +159,10 @@ class EcoregionImporter(
                     val objectId = feature.properties["objectid"]!!
                     val ecoregionId = ecoregionIdsByObjectId[objectId]
                     val countries =
-                        countryDetector.getCountries(geometriesByObjectId.getValue(objectId))
+                        countryDetector.getCountries(
+                            geometriesByObjectId.getValue(objectId),
+                            minCoveragePercent,
+                        )
 
                     countries
                         .filter { it in validCountryCodes }
