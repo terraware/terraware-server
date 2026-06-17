@@ -7,9 +7,11 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -33,6 +35,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEventValues
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import java.time.LocalDate
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -57,6 +60,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   private val speciesName1 = "Species A"
   private val speciesName2 = "Species B"
 
+  private lateinit var facilityId: FacilityId
   private lateinit var organizationId: OrganizationId
   private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var stratumId1: StratumId
@@ -64,6 +68,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   private lateinit var plantingSeasonId: PlantingSeasonId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
+  private lateinit var withdrawalId: WithdrawalId
 
   @BeforeEach
   fun setUp() {
@@ -75,6 +80,8 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
     plantingSeasonId = insertPlantingSeason(name = plantingSeasonName)
     speciesId1 = insertSpecies(scientificName = speciesName1)
     speciesId2 = insertSpecies(scientificName = speciesName2)
+    facilityId = insertFacility()
+    withdrawalId = insertNurseryWithdrawal()
   }
 
   private fun model(
@@ -112,6 +119,9 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
   private val allocationQuantitiesUpdated =
       PlantingSeasonNotificationModel(PlantingSeasonNotificationType.AllocationQuantitiesUpdated)
+
+  private val seasonWithdrawalRecorded =
+      PlantingSeasonNotificationModel(PlantingSeasonNotificationType.SeasonWithdrawalRecorded)
 
   @Nested
   inner class GetNotificationsBySeason {
@@ -213,6 +223,39 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
 
       assertEquals(
           listOf(model(event.id, listOf(allocationQuantitiesUpdated))),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+          ),
+      )
+    }
+
+    @Test
+    fun `maps withdrawal events to a season withdrawal recorded notification`() {
+      val event = insertWithdrawalCreatedEvent()
+
+      assertEquals(
+          listOf(model(event.id, listOf(seasonWithdrawalRecorded))),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+          ),
+      )
+    }
+
+    @Test
+    fun `returns all notification types for PlantingSeasonPlanning`() {
+      insertSpeciesAllocatedCreatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      val latest = insertWithdrawalCreatedEvent(withdrawalId = withdrawalId)
+
+      assertEquals(
+          listOf(
+              model(
+                  latest.id,
+                  listOf(allocationQuantitiesUpdated, seasonWithdrawalRecorded),
+              )
+          ),
           service.getNotifications(
               plantingSeasonId,
               PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
@@ -546,6 +589,25 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
             plantingSiteId = plantingSiteId,
             quantity = quantity,
             speciesId = speciesId,
+        )
+
+    return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
+  }
+
+  private fun insertWithdrawalCreatedEvent(
+      organizationId: OrganizationId = this.organizationId,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      withdrawalId: WithdrawalId = this.withdrawalId,
+  ): EventLogEntry<PlantingSeasonWithdrawalCreatedEvent> {
+    val event =
+        PlantingSeasonWithdrawalCreatedEvent(
+            facilityId = facilityId,
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            withdrawalDate = LocalDate.EPOCH,
+            withdrawalId = withdrawalId,
         )
 
     return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
