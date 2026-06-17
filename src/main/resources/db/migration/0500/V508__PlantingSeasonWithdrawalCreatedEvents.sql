@@ -5,9 +5,11 @@ SELECT
     'com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEventV1',
     json_object(
         '_historical' VALUE true,
+        'facilityId' VALUE withdrawals.facility_id,
         'organizationId' VALUE sites.organization_id,
         'plantingSeasonId' VALUE seasons.id,
         'plantingSiteId' VALUE sites.id,
+        'withdrawalDate' VALUE withdrawals.withdrawn_date,
         'withdrawalId' VALUE withdrawals.id
         ABSENT ON NULL
     )::JSONB

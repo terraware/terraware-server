@@ -4,6 +4,7 @@ import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalPurpose
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.i18n.TimeZones
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
@@ -39,9 +40,11 @@ internal class BatchStoreWithdrawalSeasonEventTest : BatchStoreTest() {
 
     eventPublisher.assertEventPublished(
         PlantingSeasonWithdrawalCreatedEvent(
+            facilityId = facilityId,
             organizationId = organizationId,
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
+            withdrawalDate = LocalDate.EPOCH,
             withdrawalId = withdrawalId,
         )
     )
@@ -52,13 +55,17 @@ internal class BatchStoreWithdrawalSeasonEventTest : BatchStoreTest() {
     val withdrawalId = withdraw(plantingSeasonId = plantingSeasonId)
     eventPublisher.clear()
 
+    clock.instant = clock.instant().plusSeconds(86400)
+
     val undo = store.undoWithdrawal(withdrawalId)
 
     eventPublisher.assertEventPublished(
         PlantingSeasonWithdrawalCreatedEvent(
+            facilityId = facilityId,
             organizationId = organizationId,
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
+            withdrawalDate = LocalDate.EPOCH.plusDays(1),
             withdrawalId = undo.id,
         )
     )
@@ -92,7 +99,7 @@ internal class BatchStoreWithdrawalSeasonEventTest : BatchStoreTest() {
                   id = null,
                   plantingSeasonId = plantingSeasonId,
                   purpose = purpose,
-                  withdrawnDate = LocalDate.EPOCH,
+                  withdrawnDate = LocalDate.ofInstant(clock.instant(), TimeZones.UTC),
               )
           )
           .id

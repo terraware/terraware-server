@@ -851,9 +851,11 @@ class BatchStore(
 
         eventPublisher.publishEvent(
             PlantingSeasonWithdrawalCreatedEvent(
+                facilityId = withdrawal.facilityId,
                 organizationId = organizationId,
                 plantingSeasonId = plantingSeasonId,
                 plantingSiteId = plantingSiteId,
+                withdrawalDate = withdrawal.withdrawnDate,
                 withdrawalId = withdrawalId,
             )
         )
