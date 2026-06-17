@@ -102,28 +102,24 @@ class CountryDetector {
 
     return countryBorders
         .mapNotNull { (countryCode, countryBorder) ->
-          val area =
-              geometries.fold(0.0) { geometrySubtotal, geometryPolygon ->
-                if (geometrySubtotal < minCoverageArea) {
-                  if (countryBorder is MultiPolygon) {
-                    (0..<countryBorder.numGeometries)
-                        .map { countryBorder.getGeometryN(it) }
-                        .fold(geometrySubtotal) { countrySubtotal, countryPolygon ->
-                          if (countrySubtotal < minCoverageArea) {
-                            countrySubtotal + intersectionArea(countryPolygon, geometryPolygon)
-                          } else {
-                            countrySubtotal
-                          }
-                        }
-                  } else {
-                    geometrySubtotal + intersectionArea(countryBorder, geometryPolygon)
+          val hasMinCoverage =
+              geometries
+                  .asSequence()
+                  .flatMap { geometryPolygon ->
+                    if (countryBorder is MultiPolygon) {
+                      (0..<countryBorder.numGeometries).asSequence().map { it ->
+                        geometryPolygon to countryBorder.getGeometryN(it)
+                      }
+                    } else {
+                      sequenceOf(geometryPolygon to countryBorder)
+                    }
                   }
-                } else {
-                  geometrySubtotal
-                }
-              }
+                  .runningFold(0.0) { subtotal, (countryPolygon, geometryPolygon) ->
+                    subtotal + intersectionArea(countryPolygon, geometryPolygon)
+                  }
+                  .any { it >= minCoverageArea }
 
-          if (area >= minCoverageArea) {
+          if (hasMinCoverage) {
             countryCode
           } else {
             null
