@@ -6,6 +6,7 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
 import java.net.URI
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.zip.ZipFile
 import kotlin.io.path.deleteIfExists
@@ -20,7 +21,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequestMapping("/admin")
 @RequireGlobalRole([GlobalRole.SuperAdmin])
 @Validated
-class AdminGbifController(
+class AdminSpeciesController(
     private val gbifImporter: GbifImporter,
 ) {
   private val log = perClassLogger()
@@ -30,25 +31,33 @@ class AdminGbifController(
       @RequestParam url: URI,
       redirectAttributes: RedirectAttributes,
   ): String {
+    try {
+      withDownloadedZipFile(url) { zipFilePath ->
+        ZipFile(zipFilePath.toFile()).use { zipFile -> gbifImporter.import(zipFile) }
+      }
+
+      redirectAttributes.successMessage = "GBIF data imported successfully."
+    } catch (e: Exception) {
+      redirectAttributes.failureMessage = "Import failed: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
+  private fun withDownloadedZipFile(url: URI, func: (Path) -> Unit) {
     val tempFile = kotlin.io.path.createTempFile(suffix = ".zip")
 
     try {
-      log.info("Copying GBIF zipfile to local filesystem: $tempFile")
+      log.info("Copying $url to local filesystem: $tempFile")
 
       url.toURL().openStream().use { zipFileStream ->
         Files.copy(zipFileStream, tempFile, StandardCopyOption.REPLACE_EXISTING)
       }
 
-      ZipFile(tempFile.toFile()).use { gbifImporter.import(it) }
-
-      redirectAttributes.successMessage = "GBIF data imported successfully."
-    } catch (e: Exception) {
-      redirectAttributes.failureMessage = "Import failed: ${e.message}"
+      func(tempFile)
     } finally {
       tempFile.deleteIfExists()
     }
-
-    return redirectToAdminHome()
   }
 
   private fun redirectToAdminHome() = "redirect:/admin/"
