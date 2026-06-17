@@ -9,6 +9,7 @@ import com.terraformation.backend.customer.event.OrganizationRenamedEvent
 import com.terraformation.backend.customer.event.ProjectCreatedEvent
 import com.terraformation.backend.customer.event.ProjectPersistentEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -54,6 +55,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
 import kotlin.reflect.KClass
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -686,10 +688,12 @@ data class PlantingSeasonSpeciesTargetSubjectPayload(
 
 @JsonTypeName("PlantingSeasonWithdrawal")
 data class PlantingSeasonWithdrawalSubjectPayload(
+    val facilityId: FacilityId,
     override val fullText: String,
     val plantingSeasonId: PlantingSeasonId,
     val plantingSiteId: PlantingSiteId,
     override val shortText: String,
+    val withdrawalDate: LocalDate,
     val withdrawalId: WithdrawalId,
 ) : EventSubjectPayload {
   companion object {
@@ -698,10 +702,13 @@ data class PlantingSeasonWithdrawalSubjectPayload(
         context: EventLogPayloadContext,
     ): PlantingSeasonWithdrawalSubjectPayload {
       return PlantingSeasonWithdrawalSubjectPayload(
-          fullText = context.subjectFullText<PlantingSeasonWithdrawalSubjectPayload>(),
+          facilityId = event.facilityId,
+          fullText =
+              context.subjectFullText<PlantingSeasonWithdrawalSubjectPayload>(event.withdrawalDate),
           plantingSeasonId = event.plantingSeasonId,
           plantingSiteId = event.plantingSiteId,
           shortText = context.subjectShortText<PlantingSeasonWithdrawalSubjectPayload>(),
+          withdrawalDate = event.withdrawalDate,
           withdrawalId = event.withdrawalId,
       )
     }
