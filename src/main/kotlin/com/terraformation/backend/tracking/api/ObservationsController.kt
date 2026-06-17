@@ -238,24 +238,6 @@ class ObservationsController(
     return ListObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
   }
 
-  @GetMapping("/results/summaries")
-  @Operation(summary = "Gets the rollup observation summaries of a planting site")
-  fun listObservationSummaries(
-      @RequestParam plantingSiteId: PlantingSiteId,
-      @Parameter(
-          description =
-              "Maximum number of results to return. Results are always returned in order of " +
-                  "observations completion time, newest first, so setting this to 1 will return the " +
-                  "summaries including the most recently completed observation."
-      )
-      limit: Int? = null,
-  ): ListObservationSummariesResponsePayload {
-    val results = observationResultsStore.fetchSummariesForPlantingSite(plantingSiteId, limit)
-    return ListObservationSummariesResponsePayload(
-        results.map { PlantingSiteObservationSummaryPayload(it) }
-    )
-  }
-
   @GetMapping("/{observationId}")
   @Operation(summary = "Gets information about a single observation.")
   fun getObservation(@PathVariable observationId: ObservationId): GetObservationResponsePayload {
@@ -995,15 +977,6 @@ data class ListAssignedPlotsResponsePayload(
 
 data class ListObservationResultsResponsePayload(
     val observations: List<ObservationResultsPayload>
-) : SuccessResponsePayload
-
-data class ListObservationSummariesResponsePayload(
-    @Schema(
-        description =
-            "History of rollup summaries of planting site observations in order of observation " +
-                "time, latest first. "
-    )
-    val summaries: List<PlantingSiteObservationSummaryPayload>,
 ) : SuccessResponsePayload
 
 data class MergeOtherSpeciesRequestPayload(
