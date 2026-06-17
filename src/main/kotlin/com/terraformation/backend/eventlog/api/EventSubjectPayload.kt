@@ -9,10 +9,12 @@ import com.terraformation.backend.customer.event.OrganizationRenamedEvent
 import com.terraformation.backend.customer.event.ProjectCreatedEvent
 import com.terraformation.backend.customer.event.ProjectPersistentEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.SpeciesId
+import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
@@ -39,6 +41,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSchedul
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonScheduledDateUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpeciesTargetPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import com.terraformation.backend.tracking.event.BiomassDetailsPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratPersistentEvent
 import com.terraformation.backend.tracking.event.BiomassQuadratSpeciesPersistentEvent
@@ -52,6 +55,7 @@ import com.terraformation.backend.tracking.event.ObservationPlotPersistentEvent
 import com.terraformation.backend.tracking.event.RecordedTreeCreatedEvent
 import com.terraformation.backend.tracking.event.RecordedTreePersistentEvent
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
 import kotlin.reflect.KClass
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
@@ -682,6 +686,35 @@ data class PlantingSeasonSpeciesTargetSubjectPayload(
   }
 }
 
+@JsonTypeName("PlantingSeasonWithdrawal")
+data class PlantingSeasonWithdrawalSubjectPayload(
+    val facilityId: FacilityId,
+    override val fullText: String,
+    val plantingSeasonId: PlantingSeasonId,
+    val plantingSiteId: PlantingSiteId,
+    override val shortText: String,
+    val withdrawalDate: LocalDate,
+    val withdrawalId: WithdrawalId,
+) : EventSubjectPayload {
+  companion object {
+    fun forEvent(
+        event: PlantingSeasonWithdrawalCreatedEvent,
+        context: EventLogPayloadContext,
+    ): PlantingSeasonWithdrawalSubjectPayload {
+      return PlantingSeasonWithdrawalSubjectPayload(
+          facilityId = event.facilityId,
+          fullText =
+              context.subjectFullText<PlantingSeasonWithdrawalSubjectPayload>(event.withdrawalDate),
+          plantingSeasonId = event.plantingSeasonId,
+          plantingSiteId = event.plantingSiteId,
+          shortText = context.subjectShortText<PlantingSeasonWithdrawalSubjectPayload>(),
+          withdrawalDate = event.withdrawalDate,
+          withdrawalId = event.withdrawalId,
+      )
+    }
+  }
+}
+
 @JsonTypeName("Project")
 data class ProjectSubjectPayload(
     override val fullText: String,
@@ -780,6 +813,7 @@ enum class EventSubjectName(val eventInterface: KClass<out PersistentEvent>) {
   PlantingSeasonScheduledDate(PlantingSeasonScheduledDatePersistentEvent::class),
   PlantingSeasonScheduledDateSpecies(PlantingSeasonScheduledDateSpeciesPersistentEvent::class),
   PlantingSeasonSpeciesTarget(PlantingSeasonSpeciesTargetPersistentEvent::class),
+  PlantingSeasonWithdrawal(PlantingSeasonWithdrawalCreatedEvent::class),
   Project(ProjectPersistentEvent::class),
   RecordedTree(RecordedTreePersistentEvent::class),
 }
