@@ -44,7 +44,6 @@ import com.terraformation.backend.file.model.FileMetadata
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.BiomassStore
-import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -102,7 +101,6 @@ class ObservationsController(
     private val messages: Messages,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
-    private val observationResultsStore: ObservationResultsStore,
     private val observationResultsStoreV2: ObservationResultsStoreV2,
     private val plantingSiteStore: PlantingSiteStore,
 ) {
@@ -183,13 +181,6 @@ class ObservationsController(
       limit: Int? = null,
       @RequestParam(defaultValue = "false")
       @Parameter(
-          description =
-              "If true, read aggregated metrics from the new observation results tables instead " +
-                  "of computing them from species totals."
-      )
-      useNewTables: Boolean = false,
-      @RequestParam(defaultValue = "false")
-      @Parameter(
           description = "If true, return results of ad-hoc observations instead of scheduled ones."
       )
       isAdHoc: Boolean = false,
@@ -197,41 +188,21 @@ class ObservationsController(
     val results =
         when {
           plantingSiteId != null ->
-              if (useNewTables) {
-                observationResultsStoreV2.fetchByPlantingSiteId(
-                    plantingSiteId,
-                    depth,
-                    limit,
-                    isAdHoc = isAdHoc,
-                    states = states,
-                )
-              } else {
-                observationResultsStore.fetchByPlantingSiteId(
-                    plantingSiteId,
-                    depth,
-                    limit,
-                    isAdHoc = isAdHoc,
-                    states = states,
-                )
-              }
+              observationResultsStoreV2.fetchByPlantingSiteId(
+                  plantingSiteId,
+                  depth,
+                  limit,
+                  isAdHoc = isAdHoc,
+                  states = states,
+              )
           organizationId != null ->
-              if (useNewTables) {
-                observationResultsStoreV2.fetchByOrganizationId(
-                    organizationId,
-                    depth,
-                    limit,
-                    isAdHoc = isAdHoc,
-                    states = states,
-                )
-              } else {
-                observationResultsStore.fetchByOrganizationId(
-                    organizationId,
-                    depth,
-                    limit,
-                    isAdHoc = isAdHoc,
-                    states = states,
-                )
-              }
+              observationResultsStoreV2.fetchByOrganizationId(
+                  organizationId,
+                  depth,
+                  limit,
+                  isAdHoc = isAdHoc,
+                  states = states,
+              )
           else -> throw BadRequestException("Must specify a search criterion")
         }
 
@@ -310,20 +281,8 @@ class ObservationsController(
       @PathVariable observationId: ObservationId,
       @RequestParam(defaultValue = "Plot")
       depth: ObservationResultsDepth = ObservationResultsDepth.Plot,
-      @RequestParam(defaultValue = "false")
-      @Parameter(
-          description =
-              "If true, read aggregated metrics from the new observation results tables instead " +
-                  "of computing them from species totals."
-      )
-      useNewTables: Boolean = false,
   ): GetObservationResultsResponsePayload {
-    val results =
-        if (useNewTables) {
-          observationResultsStoreV2.fetchOneById(observationId, depth)
-        } else {
-          observationResultsStore.fetchOneById(observationId, depth)
-        }
+    val results = observationResultsStoreV2.fetchOneById(observationId, depth)
 
     return GetObservationResultsResponsePayload(ObservationResultsPayload(results))
   }

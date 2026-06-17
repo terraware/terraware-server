@@ -1591,13 +1591,13 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     // ensure that observation1 didn't change
     val observation1Expected = loadExpectedSurvivalRates(prefix, numSpecies)
+    val observation1Result =
+        resultsStoreV2.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1]
     val observation1Actual =
         ratesObjectFromResults(
-            resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1],
+            observation1Result,
             inserted.plantingSiteId,
-            resultsStoreV2
-                .fetchByPlantingSiteId(inserted.plantingSiteId, limit = 2)[1]
-                .survivalRate,
+            observation1Result.survivalRate,
         )
     assertSurvivalRates(observation1Expected, observation1Actual, "Observation 1 shouldn't change")
   }
@@ -1741,13 +1741,9 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
       expected: SurvivalRates,
       message: String,
   ) {
-    val siteResults = resultsStore.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 1)[0]
-    // The v1 store's site-level survival rate uses the legacy density-weighted formula; for the
-    // overall site rate we use the v2 store (which reads the area-weighted DB column) so that the
-    // assertion matches the same value as the raw DB column check below.
-    val siteResultsV2 = resultsStoreV2.fetchOneById(siteResults.observationId)
+    val siteResults = resultsStoreV2.fetchByPlantingSiteId(inserted.plantingSiteId, limit = 1)[0]
     val actual =
-        ratesObjectFromResults(siteResults, inserted.plantingSiteId, siteResultsV2.survivalRate)
+        ratesObjectFromResults(siteResults, inserted.plantingSiteId, siteResults.survivalRate)
     assertSurvivalRates(expected, actual, message)
     assertResultTablesSurvivalRates(expected, siteResults.observationId, message)
   }

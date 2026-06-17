@@ -37,7 +37,7 @@ class ObservationStoreDeletedEntityTest : ObservationScenarioTest() {
       val observationId = observationIds[1]!!
 
       val resultsBeforeDelete =
-          observationResultsStore.fetchOneById(observationId, ObservationResultsDepth.Plot)
+          observationResultsStoreV2.fetchOneById(observationId, ObservationResultsDepth.Plot)
 
       val stratum1Result = resultsBeforeDelete.strata.first { it.name == "1" }
       val stratum2Result = resultsBeforeDelete.strata.first { it.name == "2" }
@@ -67,7 +67,7 @@ class ObservationStoreDeletedEntityTest : ObservationScenarioTest() {
       // After deletion, observation 1's totals still exist. Stratum 1 retains its entity id;
       // stratum 2 / substratum 2 have null entity ids but their history ids are preserved.
       val resultsAfterDelete =
-          observationResultsStore.fetchOneById(observationId, ObservationResultsDepth.Plot)
+          observationResultsStoreV2.fetchOneById(observationId, ObservationResultsDepth.Plot)
 
       val stratum1AfterDelete = resultsAfterDelete.strata.first { it.name == "1" }
       val stratum2AfterDelete = resultsAfterDelete.strata.first { it.name == "2" }

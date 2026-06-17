@@ -23,7 +23,6 @@ import com.terraformation.backend.db.tracking.tables.daos.StrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.tracking.db.ObservationLocker
-import com.terraformation.backend.tracking.db.ObservationResultsStore
 import com.terraformation.backend.tracking.db.ObservationResultsStoreV2
 import com.terraformation.backend.tracking.db.ObservationStore
 import com.terraformation.backend.tracking.db.PlantingSiteStore
@@ -66,7 +65,6 @@ import org.jooq.Configuration
 class ObservationScenario(
     val clock: TestClock,
     val eventPublisher: TestEventPublisher,
-    val observationResultsStore: ObservationResultsStore,
     val observationResultsStoreV2: ObservationResultsStoreV2,
     val observationStore: ObservationStore,
     val plantingSiteStore: PlantingSiteStore,
@@ -81,7 +79,6 @@ class ObservationScenario(
         eventPublisher: TestEventPublisher = TestEventPublisher(),
         geometrySimplifier: GeometrySimplifier = GeometrySimplifier(),
         identifierGenerator: IdentifierGenerator = IdentifierGenerator(clock, test.dslContext),
-        observationResultsStore: ObservationResultsStore = ObservationResultsStore(test.dslContext),
         observationResultsStoreV2: ObservationResultsStoreV2 =
             ObservationResultsStoreV2(test.dslContext),
         observationLocker: ObservationLocker = ObservationLocker(test.dslContext),
@@ -133,7 +130,6 @@ class ObservationScenario(
       return ObservationScenario(
           clock,
           eventPublisher,
-          observationResultsStore,
           observationResultsStoreV2,
           observationStore,
           plantingSiteStore,
@@ -171,7 +167,6 @@ class ObservationScenario(
         ExpectedSiteResultStep(
             this,
             observation,
-            observationResultsStore.fetchOneById(observationId, ObservationResultsDepth.Plant),
             observationResultsStoreV2.fetchOneById(observationId, ObservationResultsDepth.Plant),
             baseline = baseline,
         ),
