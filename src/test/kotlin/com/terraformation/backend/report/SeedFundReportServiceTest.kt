@@ -42,6 +42,7 @@ import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
+import com.terraformation.backend.plantingmanagement.db.SeasonHelper
 import com.terraformation.backend.report.db.SeedFundReportStore
 import com.terraformation.backend.report.model.SeedFundReportBodyModelV1
 import com.terraformation.backend.report.model.SeedFundReportMetadata
@@ -121,6 +122,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
             mockk(),
             parentStore,
             projectsDao,
+            SeasonHelper(dslContext),
             subLocationsDao,
             nurseryWithdrawalsDao,
         ),

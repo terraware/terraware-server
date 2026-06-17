@@ -15,6 +15,7 @@ import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.nursery.db.batchStore.BatchStoreTest
 import com.terraformation.backend.nursery.model.BatchWithdrawalModel
 import com.terraformation.backend.nursery.model.NewWithdrawalModel
+import com.terraformation.backend.plantingmanagement.db.SeasonHelper
 import com.terraformation.backend.tracking.db.DeliveryStore
 import com.terraformation.backend.tracking.db.DeliveryStoreTest
 import io.mockk.every
@@ -49,6 +50,7 @@ internal class BatchServiceTest : DatabaseTest(), RunsAsUser {
             IdentifierGenerator(clock, dslContext),
             parentStore,
             projectsDao,
+            SeasonHelper(dslContext),
             subLocationsDao,
             nurseryWithdrawalsDao,
         ),

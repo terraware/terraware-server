@@ -33,6 +33,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.use
 import com.terraformation.backend.mapTo1IndexedIds
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.plantingmanagement.db.SeasonHelper
 import com.terraformation.backend.species.db.SpeciesStore
 import io.mockk.CapturingSlot
 import io.mockk.every
@@ -74,6 +75,7 @@ internal class BatchImporterTest : DatabaseTest(), RunsAsUser {
         IdentifierGenerator(clock, dslContext),
         parentStore,
         projectsDao,
+        SeasonHelper(dslContext),
         subLocationsDao,
         nurseryWithdrawalsDao,
     )
