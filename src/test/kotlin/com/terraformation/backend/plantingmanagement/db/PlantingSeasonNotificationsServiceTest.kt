@@ -7,6 +7,7 @@ import com.terraformation.backend.TestClock
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.EventLogId
+import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -59,6 +60,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   private val speciesName1 = "Species A"
   private val speciesName2 = "Species B"
 
+  private lateinit var facilityId: FacilityId
   private lateinit var organizationId: OrganizationId
   private lateinit var plantingSiteId: PlantingSiteId
   private lateinit var stratumId1: StratumId
@@ -66,6 +68,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   private lateinit var plantingSeasonId: PlantingSeasonId
   private lateinit var speciesId1: SpeciesId
   private lateinit var speciesId2: SpeciesId
+  private lateinit var withdrawalId: WithdrawalId
 
   @BeforeEach
   fun setUp() {
@@ -77,6 +80,8 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
     plantingSeasonId = insertPlantingSeason(name = plantingSeasonName)
     speciesId1 = insertSpecies(scientificName = speciesName1)
     speciesId2 = insertSpecies(scientificName = speciesName2)
+    facilityId = insertFacility()
+    withdrawalId = insertNurseryWithdrawal()
   }
 
   private fun model(
@@ -239,10 +244,10 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
     }
 
     @Test
-    fun `combines withdrawal events with allocation events under planting season planning`() {
+    fun `returns all notification types for PlantingSeasonPlanning`() {
       insertSpeciesAllocatedCreatedEvent(speciesId = speciesId1)
       clock.instant = clock.instant.plusSeconds(1)
-      val latest = insertWithdrawalCreatedEvent(withdrawalId = WithdrawalId(2))
+      val latest = insertWithdrawalCreatedEvent(withdrawalId = withdrawalId)
 
       assertEquals(
           listOf(
@@ -593,13 +598,15 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       organizationId: OrganizationId = this.organizationId,
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSiteId: PlantingSiteId = this.plantingSiteId,
-      withdrawalId: WithdrawalId = WithdrawalId(1),
+      withdrawalId: WithdrawalId = this.withdrawalId,
   ): EventLogEntry<PlantingSeasonWithdrawalCreatedEvent> {
     val event =
         PlantingSeasonWithdrawalCreatedEvent(
+            facilityId = facilityId,
             organizationId = organizationId,
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
+            withdrawalDate = LocalDate.EPOCH,
             withdrawalId = withdrawalId,
         )
 
