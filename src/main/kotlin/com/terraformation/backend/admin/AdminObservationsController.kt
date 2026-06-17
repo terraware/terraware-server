@@ -1,11 +1,15 @@
 package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
+import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
+import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.ObservationService
 import com.terraformation.backend.tracking.db.ObservationStore
+import org.jooq.DSLContext
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.GetMapping
@@ -19,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin])
 @Validated
 class AdminObservationsController(
+    private val dslContext: DSLContext,
     private val observationService: ObservationService,
     private val observationStore: ObservationStore,
 ) {
@@ -48,12 +53,41 @@ class AdminObservationsController(
   @PostMapping("/deleteIncompletePlots")
   fun adminDeleteIncompletePlots(
       @RequestParam observationId: ObservationId,
+      @RequestParam retainObservationIds: List<ObservationId>?,
+      @RequestParam dryRun: Boolean,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      observationStore.deleteIncompletePlots(observationId)
+      val (retainedPlotIds, deletedPlotIds) =
+          observationStore.deleteIncompletePlots(
+              observationId,
+              retainObservationIds ?: emptyList(),
+              dryRun,
+          )
+
+      val plotNumbersById =
+          with(MONITORING_PLOTS) {
+            dslContext
+                .select(ID, PLOT_NUMBER)
+                .from(MONITORING_PLOTS)
+                .where(ID.`in`(retainedPlotIds + deletedPlotIds))
+                .fetchMap(ID.asNonNullable(), PLOT_NUMBER.asNonNullable())
+          }
+
+      fun sortedPlotNumberList(ids: List<MonitoringPlotId>) =
+          ids.map { plotNumbersById[it] ?: -1 }.sorted().joinToString()
+
       redirectAttributes.successMessage =
-          "Deleted incomplete plots from observation $observationId."
+          if (dryRun) {
+            "Dry run results for observation $observationId"
+          } else {
+            "Deleted incomplete plots from observation $observationId"
+          }
+      redirectAttributes.successDetails =
+          listOf(
+              "Retain plots: " + sortedPlotNumberList(retainedPlotIds),
+              "Delete plots: " + sortedPlotNumberList(deletedPlotIds),
+          )
     } catch (e: Exception) {
       log.error("Failed to delete incomplete plots from observation $observationId", e)
       redirectAttributes.failureMessage = "Failed to delete incomplete plots from observation: $e"

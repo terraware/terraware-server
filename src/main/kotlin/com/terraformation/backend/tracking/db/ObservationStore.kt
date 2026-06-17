@@ -2704,7 +2704,19 @@ class ObservationStore(
     }
   }
 
-  fun deleteIncompletePlots(observationId: ObservationId) {
+  /**
+   * Deletes incomplete plots from an observation. Optionally retains permanent plots that weren't
+   * observed in a list of other observations.
+   *
+   * @param dryRun If true, calculate the lists of plot IDs that would be retained and deleted, but
+   *   don't actually delete anything.
+   * @return The list of retained plot IDs and the list of deleted plot IDs
+   */
+  fun deleteIncompletePlots(
+      observationId: ObservationId,
+      retainFromObservationIds: Collection<ObservationId>,
+      dryRun: Boolean = false,
+  ): Pair<List<MonitoringPlotId>, List<MonitoringPlotId>> {
     requirePermissions { manageObservation(observationId) }
 
     val currentState =
@@ -2717,12 +2729,50 @@ class ObservationStore(
       )
     }
 
-    with(OBSERVATION_PLOTS) {
-      dslContext
-          .deleteFrom(OBSERVATION_PLOTS)
-          .where(OBSERVATION_ID.eq(observationId))
-          .and(STATUS_ID.ne(ObservationPlotStatus.Completed))
-          .execute()
+    return observationLocker.withLockedObservation(observationId) {
+      with(OBSERVATION_PLOTS) {
+        val innerObservationPlots = OBSERVATION_PLOTS.`as`("inner")
+
+        val retainedPlotIds =
+            if (retainFromObservationIds.isNotEmpty()) {
+              dslContext
+                  .select(MONITORING_PLOT_ID)
+                  .from(OBSERVATION_PLOTS)
+                  .where(OBSERVATION_ID.eq(observationId))
+                  .and(STATUS_ID.ne(ObservationPlotStatus.Completed))
+                  .and(IS_PERMANENT.isTrue)
+                  .andNotExists(
+                      DSL.selectOne()
+                          .from(innerObservationPlots)
+                          .where(innerObservationPlots.MONITORING_PLOT_ID.eq(MONITORING_PLOT_ID))
+                          .and(innerObservationPlots.STATUS_ID.eq(ObservationPlotStatus.Completed))
+                          .and(innerObservationPlots.OBSERVATION_ID.`in`(retainFromObservationIds))
+                  )
+                  .fetch(MONITORING_PLOT_ID.asNonNullable())
+            } else {
+              emptyList()
+            }
+
+        val deletedPlotIds =
+            dslContext
+                .select(MONITORING_PLOT_ID)
+                .from(OBSERVATION_PLOTS)
+                .where(OBSERVATION_ID.eq(observationId))
+                .and(STATUS_ID.ne(ObservationPlotStatus.Completed))
+                .and(MONITORING_PLOT_ID.notIn(retainedPlotIds))
+                .fetch(MONITORING_PLOT_ID.asNonNullable())
+
+        if (!dryRun && deletedPlotIds.isNotEmpty()) {
+          dslContext
+              .deleteFrom(OBSERVATION_PLOTS)
+              .where(OBSERVATION_ID.eq(observationId))
+              .and(MONITORING_PLOT_ID.`in`(deletedPlotIds))
+              .and(STATUS_ID.ne(ObservationPlotStatus.Completed))
+              .execute()
+        }
+
+        retainedPlotIds to deletedPlotIds
+      }
     }
   }
 
