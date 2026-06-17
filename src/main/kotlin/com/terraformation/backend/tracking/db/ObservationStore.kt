@@ -2762,7 +2762,7 @@ class ObservationStore(
                 .and(MONITORING_PLOT_ID.notIn(retainedPlotIds))
                 .fetch(MONITORING_PLOT_ID.asNonNullable())
 
-        if (!dryRun && retainedPlotIds.isNotEmpty()) {
+        if (!dryRun && deletedPlotIds.isNotEmpty()) {
           dslContext
               .deleteFrom(OBSERVATION_PLOTS)
               .where(OBSERVATION_ID.eq(observationId))
