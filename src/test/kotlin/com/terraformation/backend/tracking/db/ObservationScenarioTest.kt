@@ -27,9 +27,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.rectangle
 import com.terraformation.backend.toBigDecimal
-import com.terraformation.backend.tracking.model.ObservationResultsDepth
 import com.terraformation.backend.tracking.model.ObservationResultsModel
-import com.terraformation.backend.tracking.model.ObservationRollupResultsModel
 import com.terraformation.backend.tracking.model.ObservationSpeciesResultsModel
 import com.terraformation.backend.tracking.scenario.ObservationScenario
 import com.terraformation.backend.util.calculateAreaHectares
@@ -81,7 +79,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         systemUser,
     )
   }
-  protected val resultsStore by lazy { ObservationResultsStore(dslContext) }
   protected val resultsStoreV2 by lazy { ObservationResultsStoreV2(dslContext) }
 
   protected lateinit var plotIds: MutableMap<String, MonitoringPlotId>
@@ -103,93 +100,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     every { user.canReadObservation(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
     every { user.canReadPlantingSite(plantingSiteId) } returns true
-  }
-
-  protected fun runScenario(
-      prefix: String,
-      numObservations: Int,
-      sizeMeters: Int,
-      plantingSiteId: PlantingSiteId,
-  ) {
-    importFromCsvFiles(prefix, numObservations, sizeMeters)
-    val allResults =
-        resultsStore.fetchByPlantingSiteId(plantingSiteId, ObservationResultsDepth.Plant).sortedBy {
-          it.observationId
-        }
-    assertResults(prefix, allResults)
-  }
-
-  protected fun runSummaryScenario(
-      prefix: String,
-      numObservations: Int,
-      numSpecies: Int,
-      sizeMeters: Int,
-      plantingSiteId: PlantingSiteId,
-  ) {
-    importSiteFromCsvFile(prefix, sizeMeters)
-
-    assertEquals(
-        emptyList<ObservationRollupResultsModel>(),
-        resultsStore.fetchSummariesForPlantingSite(plantingSiteId),
-        "No observations made yet.",
-    )
-
-    val hasT0DensitiesSpecified = importT0DensitiesCsv(prefix)
-    importT0StratumDensitiesCsv(prefix)
-
-    val observationTimes =
-        List(numObservations) {
-          val time = Instant.ofEpochSecond(it.toLong())
-          importObservationsCsv(prefix, numSpecies, it, time, !hasT0DensitiesSpecified)
-          time
-        }
-
-    val summaries = resultsStore.fetchSummariesForPlantingSite(plantingSiteId)
-    assertSummary(prefix, numSpecies, summaries.reversed())
-
-    assertEquals(
-        summaries.take(2),
-        resultsStore.fetchSummariesForPlantingSite(plantingSiteId, limit = 2),
-        "Partial summaries via limit should contain the latest observations.",
-    )
-
-    if (observationTimes.size > 1) {
-      assertEquals(
-          summaries.drop(1),
-          resultsStore.fetchSummariesForPlantingSite(
-              plantingSiteId,
-              maxCompletionTime = observationTimes[1],
-          ),
-          "Partial summaries via completion time should omit the more recent observations.",
-      )
-
-      assertEquals(
-          listOf(summaries[1]),
-          resultsStore.fetchSummariesForPlantingSite(
-              plantingSiteId,
-              maxCompletionTime = observationTimes[1],
-              limit = 1,
-          ),
-          "Partial summaries via limit and completion time.",
-      )
-    }
-  }
-
-  protected fun assertSummary(
-      prefix: String,
-      numSpecies: Int,
-      results: List<ObservationRollupResultsModel>,
-  ) {
-    assertAll(
-        { assertSiteSummary(prefix, results) },
-        { assertSiteSpeciesSummary(prefix, numSpecies, results) },
-        { assertStratumSummary(prefix, results) },
-        { assertStratumSpeciesSummary(prefix, numSpecies, results) },
-        { assertSubstratumSummary(prefix, results) },
-        { assertSubstratumSpeciesSummary(prefix, numSpecies, results) },
-        { assertPlotSummary(prefix, results) },
-        { assertPlotSpeciesSummary(prefix, numSpecies, results) },
-    )
   }
 
   protected fun assertResults(prefix: String, allResults: List<ObservationResultsModel>) {
@@ -356,120 +266,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
     }
   }
 
-  protected fun assertSiteSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
-    val actual =
-        makeActualCsv(
-            allResults,
-            listOf(emptyList()),
-            { _, results ->
-              listOf(
-                  results.plantingDensity.toStringOrBlank(),
-                  results.plantingDensityStdDev.toStringOrBlank(),
-                  results.estimatedPlants.toStringOrBlank(),
-                  results.totalSpecies.toStringOrBlank(),
-                  results.survivalRate.toStringOrBlank("%"),
-                  results.survivalRateStdDev.toStringOrBlank("%"),
-              )
-            },
-        )
-
-    assertResultsMatchCsv("$prefix/SiteStatsSummary.csv", actual)
-  }
-
-  protected fun assertStratumSummary(
-      prefix: String,
-      allResults: List<ObservationRollupResultsModel>,
-  ) {
-    val rowKeys = stratumIds.keys.map { listOf(it) }
-
-    val actual =
-        makeActualCsv(
-            allResults,
-            rowKeys,
-            { (stratumName), results ->
-              val stratum = results.strata.firstOrNull { it.stratumId == stratumIds[stratumName] }
-              listOf(
-                  stratum?.totalPlants.toStringOrBlank(),
-                  stratum?.plantingDensity.toStringOrBlank(),
-                  stratum?.plantingDensityStdDev.toStringOrBlank(),
-                  stratum?.totalSpecies.toStringOrBlank(),
-                  stratum?.survivalRate.toStringOrBlank("%"),
-                  stratum?.survivalRateStdDev.toStringOrBlank("%"),
-                  stratum?.estimatedPlants.toStringOrBlank(),
-              )
-            },
-        )
-
-    assertResultsMatchCsv("$prefix/StratumStatsSummary.csv", actual)
-  }
-
-  protected fun assertSubstratumSummary(
-      prefix: String,
-      allResults: List<ObservationRollupResultsModel>,
-  ) {
-    val rowKeys = substratumIds.keys.map { listOf(it) }
-
-    val actual =
-        makeActualCsv(
-            allResults,
-            rowKeys,
-            { (substratumName), results ->
-              val substratum =
-                  results.strata
-                      .flatMap { it.substrata }
-                      .firstOrNull { it.substratumId == substratumIds[substratumName] }
-              listOf(
-                  substratum?.totalPlants.toStringOrBlank(),
-                  substratum?.plantingDensity.toStringOrBlank(),
-                  substratum?.plantingDensityStdDev.toStringOrBlank(),
-                  substratum?.totalSpecies.toStringOrBlank(),
-                  substratum?.survivalRate.toStringOrBlank("%"),
-                  substratum?.survivalRateStdDev.toStringOrBlank("%"),
-                  substratum?.estimatedPlants.toStringOrBlank(),
-              )
-            },
-        )
-
-    assertResultsMatchCsv("$prefix/SubstratumStatsSummary.csv", actual)
-  }
-
-  protected fun assertPlotSummary(prefix: String, allResults: List<ObservationRollupResultsModel>) {
-    val rowKeys = plotIds.keys.map { listOf(it) }
-
-    val actual =
-        makeActualCsv(
-            allResults,
-            rowKeys,
-            { (plotNumber), results ->
-              results.strata
-                  .flatMap { stratum -> stratum.substrata }
-                  .flatMap { substratum -> substratum.monitoringPlots }
-                  .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
-                  ?.let { plot ->
-                    listOf(
-                        plot.totalPlants.toStringOrBlank(),
-                        plot.totalSpecies.toStringOrBlank(),
-                        plot.survivalRate.toStringOrBlank("%"),
-                        // Columns in original sheet that we ignore in this test (they are filtered
-                        // out of the arrays below):
-                        // 3: live plants
-                        // 4: t0 density
-                        // 5: t0 density/ha
-                        // 6: existing plants
-                        plot.plantingDensity.toStringOrBlank(),
-                    )
-                  } ?: listOf("", "", "", "")
-            },
-        )
-
-    assertResultsMatchCsv("$prefix/PlotStatsSummary.csv", actual) { row ->
-      row.filterIndexed { index, _ ->
-        val positionInColumnGroup = (index - 1) % 8
-        positionInColumnGroup !in 3..6
-      }
-    }
-  }
-
   protected fun assertSiteSpeciesResults(
       prefix: String,
       allResults: List<ObservationResultsModel>,
@@ -590,129 +386,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
         )
 
     assertResultsMatchCsv("$prefix/PlotStatsPerSpecies.csv", actual)
-  }
-
-  protected fun assertSiteSpeciesSummary(
-      prefix: String,
-      numSpecies: Int,
-      allResults: List<ObservationRollupResultsModel>,
-  ) {
-    val actual =
-        makeActualCsv(
-            allResults,
-            listOf(emptyList()),
-            { _, results -> makeCsvColumnsFromSpeciesSummary(numSpecies, results.species) },
-        )
-
-    assertResultsMatchCsv("$prefix/SiteStatsPerSpeciesSummary.csv", actual, skipRows = 3)
-  }
-
-  protected fun assertStratumSpeciesSummary(
-      prefix: String,
-      numSpecies: Int,
-      allResults: List<ObservationRollupResultsModel>,
-  ) {
-    val rowKeys = stratumIds.keys.map { listOf(it) }
-
-    val actual =
-        makeActualCsv(
-            allResults,
-            rowKeys,
-            { (stratumName), results ->
-              results.strata
-                  .firstOrNull { it.stratumId == stratumIds[stratumName] }
-                  ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                  ?: List(numSpecies * 2 + 2) { "" }
-            },
-        )
-
-    assertResultsMatchCsv("$prefix/StratumStatsPerSpeciesSummary.csv", actual, skipRows = 3)
-  }
-
-  protected fun assertSubstratumSpeciesSummary(
-      prefix: String,
-      numSpecies: Int,
-      allResults: List<ObservationRollupResultsModel>,
-  ) {
-    val rowKeys = substratumIds.keys.map { listOf(it) }
-
-    val actual =
-        makeActualCsv(
-            allResults,
-            rowKeys,
-            { (substratumName), results ->
-              results.strata
-                  .flatMap { stratum -> stratum.substrata }
-                  .firstOrNull { substratum ->
-                    substratum.substratumId == substratumIds[substratumName]
-                  }
-                  ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                  ?: List(numSpecies * 2 + 2) { "" }
-            },
-        )
-
-    assertResultsMatchCsv("$prefix/SubstratumStatsPerSpeciesSummary.csv", actual, skipRows = 3)
-  }
-
-  protected fun assertPlotSpeciesSummary(
-      prefix: String,
-      numSpecies: Int,
-      allResults: List<ObservationRollupResultsModel>,
-  ) {
-    val rowKeys = plotIds.keys.map { listOf(it) }
-
-    val actual =
-        makeActualCsv(
-            allResults,
-            rowKeys,
-            { (plotNumber), results ->
-              results.strata
-                  .flatMap { stratum -> stratum.substrata }
-                  .flatMap { substratum -> substratum.monitoringPlots }
-                  .firstOrNull { it.monitoringPlotNumber == plotNumber.toLong() }
-                  ?.let { makeCsvColumnsFromSpeciesSummary(numSpecies, it.species) }
-                  ?: List(numSpecies * 2 + 2) { "" }
-            },
-        )
-
-    assertResultsMatchCsv("$prefix/PlotStatsPerSpeciesSummary.csv", actual, skipRows = 3)
-  }
-
-  protected fun makeCsvColumnsFromSpeciesSummary(
-      numSpecies: Int,
-      speciesResults: List<ObservationSpeciesResultsModel>,
-  ): List<String> {
-    val knownSpecies =
-        List(numSpecies) { speciesNum ->
-              val speciesName = "Species $speciesNum"
-              val speciesId = speciesIds[speciesName]
-
-              if (speciesId != null) {
-                speciesResults
-                    .firstOrNull { it.speciesId == speciesId }
-                    ?.let {
-                      listOf(
-                          it.totalPlants.toStringOrBlank(),
-                          it.survivalRate.toStringOrBlank("%"),
-                      )
-                    } ?: listOf("", "")
-              } else {
-                listOf("", "")
-              }
-            }
-            .flatten()
-
-    val otherSpecies =
-        speciesResults
-            .firstOrNull { it.certainty == RecordedSpeciesCertainty.Other }
-            ?.let {
-              listOf(
-                  it.totalPlants.toStringOrBlank(),
-                  it.survivalRate.toStringOrBlank("%"),
-              )
-            } ?: listOf("", "")
-
-    return knownSpecies + otherSpecies
   }
 
   protected fun importFromCsvFiles(prefix: String, numObservations: Int, sizeMeters: Int) {
@@ -1320,7 +993,6 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
             this,
             clock = clock,
             eventPublisher = eventPublisher,
-            observationResultsStore = resultsStore,
             observationStore = observationStore,
         )
         .init()
