@@ -125,24 +125,27 @@ class ObservationsController(
                   "organizationId is not specified."
       )
       plantingSiteId: PlantingSiteId? = null,
+      @RequestParam(defaultValue = "false")
+      @Parameter(description = "If true, return ad-hoc observations instead of scheduled ones.")
+      isAdHoc: Boolean = false,
   ): ListObservationsResponsePayload {
     val observations: Collection<ExistingObservationModel>
     val plantingSites: Map<PlantingSiteId, ExistingPlantingSiteModel>
     val plotCounts: Map<ObservationId, ObservationPlotCounts>
 
     if (plantingSiteId != null) {
-      observations = observationStore.fetchObservationsByPlantingSite(plantingSiteId)
+      observations = observationStore.fetchObservationsByPlantingSite(plantingSiteId, isAdHoc)
       plantingSites =
           mapOf(
               plantingSiteId to
                   plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
           )
-      plotCounts = observationStore.countPlots(plantingSiteId)
+      plotCounts = observationStore.countPlots(plantingSiteId, isAdHoc)
     } else if (organizationId != null) {
-      observations = observationStore.fetchObservationsByOrganization(organizationId)
+      observations = observationStore.fetchObservationsByOrganization(organizationId, isAdHoc)
       plantingSites =
           plantingSiteStore.fetchSitesByOrganizationId(organizationId).associateBy { it.id }
-      plotCounts = observationStore.countPlots(organizationId)
+      plotCounts = observationStore.countPlots(organizationId, isAdHoc)
     } else {
       throw BadRequestException("Must specify organizationId or plantingSiteId")
     }
@@ -185,6 +188,11 @@ class ObservationsController(
                   "of computing them from species totals."
       )
       useNewTables: Boolean = false,
+      @RequestParam(defaultValue = "false")
+      @Parameter(
+          description = "If true, return results of ad-hoc observations instead of scheduled ones."
+      )
+      isAdHoc: Boolean = false,
   ): ListObservationResultsResponsePayload {
     val results =
         when {
@@ -194,6 +202,7 @@ class ObservationsController(
                     plantingSiteId,
                     depth,
                     limit,
+                    isAdHoc = isAdHoc,
                     states = states,
                 )
               } else {
@@ -201,6 +210,7 @@ class ObservationsController(
                     plantingSiteId,
                     depth,
                     limit,
+                    isAdHoc = isAdHoc,
                     states = states,
                 )
               }
@@ -210,6 +220,7 @@ class ObservationsController(
                     organizationId,
                     depth,
                     limit,
+                    isAdHoc = isAdHoc,
                     states = states,
                 )
               } else {
@@ -217,6 +228,7 @@ class ObservationsController(
                     organizationId,
                     depth,
                     limit,
+                    isAdHoc = isAdHoc,
                     states = states,
                 )
               }
@@ -670,60 +682,6 @@ class ObservationsController(
     return SimpleSuccessResponsePayload()
   }
 
-  @GetMapping("/adHoc")
-  @Operation(summary = "Gets a list of ad-hoc observations of planting sites.")
-  fun listAdHocObservations(
-      @RequestParam
-      @Schema(
-          description =
-              "Limit results to observations of planting sites in a specific organization. " +
-                  "Ignored if plantingSiteId is specified."
-      )
-      organizationId: OrganizationId? = null,
-      @RequestParam
-      @Schema(
-          description =
-              "Limit results to observations of a specific planting site. Required if " +
-                  "organizationId is not specified."
-      )
-      plantingSiteId: PlantingSiteId? = null,
-  ): ListAdHocObservationsResponsePayload {
-    val observations: Collection<ExistingObservationModel>
-    val plantingSites: Map<PlantingSiteId, ExistingPlantingSiteModel>
-    val plotCounts: Map<ObservationId, ObservationPlotCounts>
-
-    if (plantingSiteId != null) {
-      observations =
-          observationStore.fetchObservationsByPlantingSite(plantingSiteId, isAdHoc = true)
-      plantingSites =
-          mapOf(
-              plantingSiteId to
-                  plantingSiteStore.fetchSiteById(plantingSiteId, PlantingSiteDepth.Site)
-          )
-      plotCounts = observationStore.countPlots(plantingSiteId, true)
-    } else if (organizationId != null) {
-      observations =
-          observationStore.fetchObservationsByOrganization(organizationId, isAdHoc = true)
-      plantingSites =
-          plantingSiteStore.fetchSitesByOrganizationId(organizationId).associateBy { it.id }
-      plotCounts = observationStore.countPlots(organizationId, true)
-    } else {
-      throw BadRequestException("Must specify organizationId or plantingSiteId")
-    }
-
-    val payloads = observations.map { observation ->
-      ObservationPayload(
-          observation,
-          plotCounts[observation.id],
-          plantingSites[observation.plantingSiteId]!!.name,
-      )
-    }
-
-    return ListAdHocObservationsResponsePayload(
-        observations = payloads,
-    )
-  }
-
   @Operation(summary = "Records a new completed ad-hoc observation.")
   @PostMapping("/adHoc")
   fun completeAdHocObservation(
@@ -742,49 +700,6 @@ class ObservationsController(
         )
 
     return CompleteAdHocObservationResponsePayload(observationId, plotId)
-  }
-
-  @GetMapping("/adHoc/results")
-  @Operation(summary = "Gets a list of the results of ad-hoc observations.")
-  fun listAdHocObservationResults(
-      @RequestParam organizationId: OrganizationId?,
-      @RequestParam plantingSiteId: PlantingSiteId?,
-      @Parameter(description = "Whether to include plants in the results. Default to false")
-      includePlants: Boolean? = null,
-      @Parameter(
-          description =
-              "Maximum number of results to return. Results are always returned in order of " +
-                  "completion time, newest first, so setting this to 1 will return the results " +
-                  "of the most recently completed observation."
-      )
-      limit: Int? = null,
-  ): ListAdHocObservationResultsResponsePayload {
-    val depth =
-        if (includePlants == true) {
-          ObservationResultsDepth.Plant
-        } else {
-          ObservationResultsDepth.Plot
-        }
-    val results =
-        when {
-          plantingSiteId != null ->
-              observationResultsStore.fetchByPlantingSiteId(
-                  plantingSiteId,
-                  depth,
-                  limit,
-                  isAdHoc = true,
-              )
-          organizationId != null ->
-              observationResultsStore.fetchByOrganizationId(
-                  organizationId,
-                  depth,
-                  limit,
-                  isAdHoc = true,
-              )
-          else -> throw BadRequestException("Must specify a search criterion")
-        }
-
-    return ListAdHocObservationResultsResponsePayload(results.map { ObservationResultsPayload(it) })
   }
 
   @Operation(summary = "Schedules a new observation.")
@@ -1072,14 +987,6 @@ data class GetObservationResultsResponsePayload(val observation: ObservationResu
 
 data class GetOneAssignedPlotResponsePayload(
     val plot: AssignedPlotPayload,
-) : SuccessResponsePayload
-
-data class ListAdHocObservationsResponsePayload(
-    val observations: List<ObservationPayload>,
-) : SuccessResponsePayload
-
-data class ListAdHocObservationResultsResponsePayload(
-    val observations: List<ObservationResultsPayload>
 ) : SuccessResponsePayload
 
 data class ListAssignedPlotsResponsePayload(
