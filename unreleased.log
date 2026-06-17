@@ -1,3 +1,4 @@
+c39d98ca SW-8420 Add planting season withdrawal event (#4614)
 9179262f Speed up country detector (#4617)
 77c26a78 SW-8420 Add endpoint for single season's notifications (#4612)
 88e6afe6 Update Node dependencies to v6.2.11 (#4601)
