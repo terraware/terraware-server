@@ -1,3 +1,4 @@
+4b1c4437 Removed /summaries endpoint  (#4620)
 2b6c0f9f Folded ad-hoc endpoints to existing observations endpoint (#4619)
 15fbf88d SW-8420 Add planting season withdrawal notification (#4616)
 1848991f SW-8434 Retain some plots when deleting incomplete plots (#4618)
