@@ -32,7 +32,7 @@ class AdminSpeciesController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      withDownloadedZipFile(url) { zipFilePath ->
+      withDownloadedFile(url) { zipFilePath ->
         ZipFile(zipFilePath.toFile()).use { zipFile -> gbifImporter.import(zipFile) }
       }
 
@@ -44,14 +44,14 @@ class AdminSpeciesController(
     return redirectToAdminHome()
   }
 
-  private fun withDownloadedZipFile(url: URI, func: (Path) -> Unit) {
-    val tempFile = kotlin.io.path.createTempFile(suffix = ".zip")
+  private fun withDownloadedFile(url: URI, suffix: String = ".zip", func: (Path) -> Unit) {
+    val tempFile = kotlin.io.path.createTempFile(suffix = suffix)
 
     try {
       log.info("Copying $url to local filesystem: $tempFile")
 
-      url.toURL().openStream().use { zipFileStream ->
-        Files.copy(zipFileStream, tempFile, StandardCopyOption.REPLACE_EXISTING)
+      url.toURL().openStream().use { fileStream ->
+        Files.copy(fileStream, tempFile, StandardCopyOption.REPLACE_EXISTING)
       }
 
       func(tempFile)
