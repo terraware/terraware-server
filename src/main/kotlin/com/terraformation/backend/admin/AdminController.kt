@@ -8,6 +8,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.file.GoogleDriveWriter
+import com.terraformation.backend.gis.BotanicalCountryImporter
 import com.terraformation.backend.gis.EcoregionImporter
 import java.net.URI
 import java.util.Locale
@@ -110,6 +111,10 @@ class AdminController(
     model.addAttribute("canUpdateDefaultVoters", currentUser().canUpdateDefaultVoters())
     model.addAttribute("canUpdateDeviceTemplates", currentUser().canUpdateDeviceTemplates())
     model.addAttribute("canUpdateGlobalRoles", currentUser().canUpdateGlobalRoles())
+    model.addAttribute(
+        "defaultBotanicalCountriesUrl",
+        BotanicalCountryImporter.defaultGeoJsonUrl.toString(),
+    )
     model.addAttribute("defaultEcoregionsUrl", EcoregionImporter.defaultZipFileUrl.toString())
     model.addAttribute("organizations", organizations)
     model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })

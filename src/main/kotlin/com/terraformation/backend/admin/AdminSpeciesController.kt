@@ -2,6 +2,7 @@ package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.gis.BotanicalCountryImporter
 import com.terraformation.backend.gis.EcoregionImporter
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
@@ -11,6 +12,7 @@ import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.util.zip.ZipFile
 import kotlin.io.path.deleteIfExists
+import kotlin.io.path.inputStream
 import org.springframework.stereotype.Controller
 import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin])
 @Validated
 class AdminSpeciesController(
+    private val botanicalCountryImporter: BotanicalCountryImporter,
     private val ecoregionImporter: EcoregionImporter,
     private val gbifImporter: GbifImporter,
 ) {
@@ -40,6 +43,27 @@ class AdminSpeciesController(
 
       redirectAttributes.successMessage = "GBIF data imported successfully."
     } catch (e: Exception) {
+      redirectAttributes.failureMessage = "Import failed: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
+  @PostMapping("/importBotanicalCountries")
+  fun importBotanicalCountries(
+      @RequestParam url: URI,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      withDownloadedFile(url) { path ->
+        path.inputStream().use { inputStream ->
+          botanicalCountryImporter.importBotanicalCountries(inputStream)
+        }
+      }
+
+      redirectAttributes.successMessage = "Botanical countries imported successfully."
+    } catch (e: Exception) {
+      log.error("Botanical country import failed", e)
       redirectAttributes.failureMessage = "Import failed: ${e.message}"
     }
 
