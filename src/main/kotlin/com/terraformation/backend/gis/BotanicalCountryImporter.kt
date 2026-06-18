@@ -40,40 +40,41 @@ class BotanicalCountryImporter(
     dslContext.transaction { _ ->
       val level3Codes = mutableSetOf<String>()
 
-      val botanicalCountriesRows =
-          features
-              .asSequence()
-              .map { feature ->
-                val level3Code = feature.getProperty("LEVEL3_COD").value.toString()
-                val geometry = feature.defaultGeometryProperty.value
-                if (geometry !is Geometry) {
-                  throw IllegalStateException(
-                      "$level3Code geometry is of type ${geometry?.javaClass?.name}"
-                  )
-                }
-
-                val validGeometry =
-                    if (geometry.isValid) {
-                      geometry
-                    } else {
-                      log.debug("Geometry for $level3Code is invalid")
-                      GeometryFixer(geometry).result
-                    }
-
-                val precisionReducedGeometry = precisionReducer.reduce(validGeometry)
-                precisionReducedGeometry.srid = SRID.LONG_LAT
-
-                level3Codes.add(level3Code)
-
-                DSL.row(
-                    feature.getProperty("LEVEL3_NAM").value.toString(),
-                    level3Code,
-                    feature.getProperty("LEVEL2_COD").value.toString().toInt(),
-                    feature.getProperty("LEVEL1_COD").value.toString().toInt(),
-                    precisionReducedGeometry,
+      val botanicalCountriesRows = features.use {
+        features
+            .asSequence()
+            .map { feature ->
+              val level3Code = feature.getProperty("LEVEL3_COD").value.toString()
+              val geometry = feature.defaultGeometryProperty.value
+              if (geometry !is Geometry) {
+                throw IllegalStateException(
+                    "$level3Code geometry is of type ${geometry?.javaClass?.name}"
                 )
               }
-              .toList()
+
+              val validGeometry =
+                  if (geometry.isValid) {
+                    geometry
+                  } else {
+                    log.debug("Geometry for $level3Code is invalid")
+                    GeometryFixer(geometry).result
+                  }
+
+              val precisionReducedGeometry = precisionReducer.reduce(validGeometry)
+              precisionReducedGeometry.srid = SRID.LONG_LAT
+
+              level3Codes.add(level3Code)
+
+              DSL.row(
+                  feature.getProperty("LEVEL3_NAM").value.toString(),
+                  level3Code,
+                  feature.getProperty("LEVEL2_COD").value.toString().toInt(),
+                  feature.getProperty("LEVEL1_COD").value.toString().toInt(),
+                  precisionReducedGeometry,
+              )
+            }
+            .toList()
+      }
 
       log.info("Inserting botanical countries into database")
 
@@ -90,6 +91,7 @@ class BotanicalCountryImporter(
             .valuesOfRows(botanicalCountriesRows)
             .onConflict(LEVEL3_CODE)
             .doUpdate()
+            .set(NAME, DSL.excluded(NAME))
             .set(LEVEL2_CODE, DSL.excluded(LEVEL2_CODE))
             .set(LEVEL1_CODE, DSL.excluded(LEVEL1_CODE))
             .set(BOUNDARY, DSL.excluded(BOUNDARY))
