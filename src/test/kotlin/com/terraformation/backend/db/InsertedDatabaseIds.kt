@@ -32,6 +32,7 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.TimeseriesId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.default_schema.WcvpTaxonId
 import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.docprod.DocumentTemplateId
 import com.terraformation.backend.db.docprod.VariableId
@@ -134,6 +135,7 @@ class InsertedDatabaseIds {
   val variableWorkflowHistoryIds = mutableListOf<VariableWorkflowHistoryId>()
   val viabilityTestIds = mutableListOf<ViabilityTestId>()
   val viabilityTestResultIds = mutableListOf<ViabilityTestResultId>()
+  val wcvpTaxonIds = mutableListOf<WcvpTaxonId>()
   val withdrawalIds = mutableListOf<com.terraformation.backend.db.nursery.WithdrawalId>()
 
   val accessionId
@@ -312,6 +314,9 @@ class InsertedDatabaseIds {
 
   val viabilityTestResultId
     get() = viabilityTestResultIds.last()
+
+  val wcvpTaxonId
+    get() = wcvpTaxonIds.last()
 
   val withdrawalId
     get() = withdrawalIds.last()
