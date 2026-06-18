@@ -24,7 +24,7 @@ plugins {
 
   id("dev.monosoul.jooq-docker") version "8.0.25"
   id("com.diffplug.spotless") version "8.6.0"
-  id("org.springframework.boot") version "3.5.14"
+  id("org.springframework.boot") version "3.5.15"
   id("io.spring.dependency-management") version "1.1.7"
 
   // Add the build target to generate Swagger docs
@@ -98,7 +98,7 @@ dependencies {
   implementation(platform("io.awspring.cloud:spring-cloud-aws-dependencies:3.4.2"))
   implementation("io.awspring.cloud:spring-cloud-aws-starter-sqs")
 
-  implementation(platform("org.springframework.ai:spring-ai-bom:1.1.7"))
+  implementation(platform("org.springframework.ai:spring-ai-bom:1.1.8"))
   implementation("org.springframework.ai:spring-ai-starter-model-openai")
   implementation("org.springframework.ai:spring-ai-starter-vector-store-pgvector")
   implementation("org.springframework.ai:spring-ai-advisors-vector-store")
