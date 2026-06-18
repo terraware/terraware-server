@@ -134,9 +134,11 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_OBSE
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
+import com.terraformation.backend.db.default_schema.BotanicalCountryId
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DisclaimerId
+import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -234,6 +236,9 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ThumbnailsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
+import com.terraformation.backend.db.default_schema.tables.records.BotanicalCountriesRecord
+import com.terraformation.backend.db.default_schema.tables.records.EcoregionBotanicalCountriesRecord
+import com.terraformation.backend.db.default_schema.tables.records.EcoregionsRecord
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -5811,6 +5816,67 @@ abstract class DatabaseBackedTest {
     )
   }
 
+  private var nextBotanicalCountryLevel3Code = 1
+
+  fun insertBotanicalCountry(
+      boundary: Geometry = rectangle(1),
+      level1Code: Int = 3,
+      level2Code: Int = 555,
+      level3Code: String = "${nextBotanicalCountryLevel3Code++}",
+      name: String = "country",
+  ): BotanicalCountryId {
+    val record =
+        BotanicalCountriesRecord(
+                boundary = boundary,
+                level1Code = level1Code,
+                level2Code = level2Code,
+                level3Code = level3Code,
+                name = name,
+            )
+            .attach(dslContext)
+
+    record.insert()
+
+    return record.id!!.also { inserted.botanicalCountryIds.add(it) }
+  }
+
+  private var nextEcoregionObjectId = 1
+
+  fun insertEcoregion(
+      biomeName: String = "biome",
+      biomeNumber: String = "1",
+      boundary: Geometry = rectangle(1),
+      ecoBiomeCode: String = "code",
+      ecoId: String = "id",
+      ecoName: String = "ecoregion",
+      objectId: String = "${nextEcoregionObjectId++}",
+      realm: String = "realm",
+  ): EcoregionId {
+    val record =
+        EcoregionsRecord(
+                biomeName = biomeName,
+                biomeNumber = biomeNumber,
+                boundary = boundary,
+                ecoBiomeCode = ecoBiomeCode,
+                ecoId = ecoId,
+                ecoName = ecoName,
+                objectId = objectId,
+                realm = realm,
+            )
+            .attach(dslContext)
+
+    record.insert()
+
+    return record.id!!.also { inserted.ecoregionIds.add(it) }
+  }
+
+  fun insertEcoregionBotanicalCountry(
+      botanicalCountryId: BotanicalCountryId = inserted.botanicalCountryId,
+      ecoregionId: EcoregionId = inserted.ecoregionId,
+  ) {
+    EcoregionBotanicalCountriesRecord(ecoregionId, botanicalCountryId).attach(dslContext).insert()
+  }
+
   protected fun setupStableIdVariables(): Map<StableId, VariableId> {
     val stableIds: Map<StableId, VariableType> =
         with(StableIds) {
@@ -6013,6 +6079,7 @@ abstract class DatabaseBackedTest {
     val bagsIds = mutableListOf<BagId>()
     val batchIds = mutableListOf<BatchId>()
     val biomassSpeciesIds = mutableListOf<BiomassSpeciesId>()
+    val botanicalCountryIds = mutableListOf<BotanicalCountryId>()
     val commonIndicatorIds = mutableListOf<CommonIndicatorId>()
     val deliverableIds = mutableListOf<DeliverableId>()
     val deliveryIds = mutableListOf<DeliveryId>()
@@ -6021,6 +6088,7 @@ abstract class DatabaseBackedTest {
     val documentIds = mutableListOf<DocumentId>()
     val documentTemplateIds = mutableListOf<DocumentTemplateId>()
     val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
+    val ecoregionIds = mutableListOf<EcoregionId>()
     val eventIds = mutableListOf<EventId>()
     val facilityIds = mutableListOf<FacilityId>()
     val fileIds = mutableListOf<FileId>()
@@ -6098,6 +6166,9 @@ abstract class DatabaseBackedTest {
     val biomassSpeciesId
       get() = biomassSpeciesIds.last()
 
+    val botanicalCountryId
+      get() = botanicalCountryIds.last()
+
     val commonIndicatorId
       get() = commonIndicatorIds.last()
 
@@ -6121,6 +6192,9 @@ abstract class DatabaseBackedTest {
 
     val draftPlantingSiteId
       get() = draftPlantingSiteIds.last()
+
+    val ecoregionId
+      get() = ecoregionIds.last()
 
     val eventId
       get() = eventIds.last()
