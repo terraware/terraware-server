@@ -1,8 +1,10 @@
 package com.terraformation.backend.tracking
 
+import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.gis.CountryDetector
 import com.terraformation.backend.gis.EcoregionImporter
+import com.terraformation.backend.gis.event.EcoregionsImportedEvent
 import com.terraformation.backend.log.perClassLogger
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
@@ -21,7 +23,8 @@ import org.junit.jupiter.api.Test
  * distribution of the data is downloaded and cached in the `build` directory.
  */
 class EcoregionImporterTest : DatabaseTest() {
-  private val importer by lazy { EcoregionImporter(CountryDetector(), dslContext) }
+  private val eventPublisher = TestEventPublisher()
+  private val importer by lazy { EcoregionImporter(CountryDetector(), dslContext, eventPublisher) }
 
   @BeforeEach
   fun maybeSkipTest() {
@@ -41,5 +44,7 @@ class EcoregionImporterTest : DatabaseTest() {
     }
 
     importer.importEcoregions(path)
+
+    eventPublisher.assertEventPublished(EcoregionsImportedEvent())
   }
 }

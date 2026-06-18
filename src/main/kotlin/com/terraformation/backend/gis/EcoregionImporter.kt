@@ -4,6 +4,7 @@ import com.terraformation.backend.db.asNonNullable
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ECOREGIONS
 import com.terraformation.backend.db.default_schema.tables.references.ECOREGION_COUNTRIES
+import com.terraformation.backend.gis.event.EcoregionsImportedEvent
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.Shapefile
 import jakarta.inject.Named
@@ -20,6 +21,7 @@ import org.locationtech.jts.geom.Geometry
 import org.locationtech.jts.geom.PrecisionModel
 import org.locationtech.jts.geom.util.GeometryFixer
 import org.locationtech.jts.precision.GeometryPrecisionReducer
+import org.springframework.context.ApplicationEventPublisher
 
 /**
  * Imports the WWF/Resolve ecoregions shapefile into the database. The shapefile (which is packaged
@@ -35,6 +37,7 @@ import org.locationtech.jts.precision.GeometryPrecisionReducer
 class EcoregionImporter(
     private val countryDetector: CountryDetector,
     private val dslContext: DSLContext,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
   companion object {
     /** URL of the official distribution of the Ecoregions zip file. */
@@ -183,6 +186,8 @@ class EcoregionImporter(
           )
           .valuesOfRows(ecoregionCountriesRows)
           .execute()
+
+      eventPublisher.publishEvent(EcoregionsImportedEvent())
     }
   }
 }
