@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.gis.BotanicalCountryImporter
 import com.terraformation.backend.gis.EcoregionImporter
 import com.terraformation.backend.log.perClassLogger
+import com.terraformation.backend.species.WcvpImporter
 import com.terraformation.backend.species.db.GbifImporter
 import java.net.URI
 import java.nio.file.Files
@@ -28,6 +29,7 @@ class AdminSpeciesController(
     private val botanicalCountryImporter: BotanicalCountryImporter,
     private val ecoregionImporter: EcoregionImporter,
     private val gbifImporter: GbifImporter,
+    private val wcvpImporter: WcvpImporter,
 ) {
   private val log = perClassLogger()
 
@@ -81,6 +83,24 @@ class AdminSpeciesController(
       redirectAttributes.successMessage = "Ecoregions imported successfully."
     } catch (e: Exception) {
       log.error("Ecoregion import failed", e)
+      redirectAttributes.failureMessage = "Import failed: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
+  @PostMapping("/importWcvpSpeciesList")
+  fun importWcvpSpeciesList(
+      @RequestParam url: URI,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      withDownloadedFile(url) { zipFilePath ->
+        ZipFile(zipFilePath.toFile()).use { zipFile -> wcvpImporter.import(zipFile) }
+      }
+
+      redirectAttributes.successMessage = "WCVP species list imported successfully."
+    } catch (e: Exception) {
       redirectAttributes.failureMessage = "Import failed: ${e.message}"
     }
 

@@ -124,6 +124,7 @@ COMMENT ON TABLE gbif_name_words IS 'Inverted index of lower-cased words from sp
 COMMENT ON TABLE gbif_names IS 'Scientific and vernacular names from the GBIF backbone dataset. Names are not required to be unique.';
 
 COMMENT ON TABLE gbif_taxa IS 'Taxonomic data about species and families. A subset of the GBIF backbone dataset.';
+COMMENT ON COLUMN gbif_taxa.taxon_id IS 'GBIF-defined ID of the taxon. GBIF taxon IDs are unrelated to the WCVP taxon IDs for the same species.';
 
 COMMENT ON TABLE gbif_vernacular_names IS 'Vernacular names for species and families. Part of the GBIF backbone dataset.';
 
@@ -301,6 +302,12 @@ COMMENT ON COLUMN users.email_notifications_enabled IS 'If true, the user wants 
 COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently interacted with the system.';
 
 COMMENT ON TABLE user_disclaimers IS 'Records of user acceptance of disclaimers.';
+
+COMMENT ON TABLE wcvp_distributions IS 'World Checklist of Vascular Plants distribution data, indicating which species are found in which botanical countries.';
+COMMENT ON COLUMN wcvp_distributions.botanical_country_id IS 'ID of the TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list.';
+
+COMMENT ON TABLE wcvp_taxa IS 'World Checklist of Vascular Plants species taxonomy.';
+COMMENT ON COLUMN wcvp_taxa.taxon_id IS 'WCVP-defined ID of the taxon. WCVP taxon IDs are unrelated to the GBIF taxon IDs for the same species.';
 
 COMMENT ON TABLE wood_density_levels IS 'The taxonomic level in the at which a wood density measurement is known';
 

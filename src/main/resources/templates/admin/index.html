@@ -231,6 +231,23 @@
         </form>
     </div>
 
+    <div th:if="${canImportGlobalSpeciesData}">
+        <h3>Import WCVP species list</h3>
+
+        <p>
+            You can download the data from
+            <a href="https://www.gbif.org/dataset/f382f0ce-323a-4091-bb9f-add557f3a9a2">here</a>.
+        </p>
+
+        <form method="POST" action="importWcvpSpeciesList">
+            <label>URL of zipfile
+                <input name="url" required th:value="${defaultWcvpSpeciesListUrl}"/>
+            </label>
+            <input type="submit" value="Import">
+            (can take several minutes)
+        </form>
+    </div>
+
 </details>
 
 <details id="tracking" class="section" th:if="${canManageTracking}">

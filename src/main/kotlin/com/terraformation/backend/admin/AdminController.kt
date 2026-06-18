@@ -10,6 +10,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.file.GoogleDriveWriter
 import com.terraformation.backend.gis.BotanicalCountryImporter
 import com.terraformation.backend.gis.EcoregionImporter
+import com.terraformation.backend.species.WcvpImporter
 import java.net.URI
 import java.util.Locale
 import org.springframework.stereotype.Controller
@@ -116,6 +117,7 @@ class AdminController(
         BotanicalCountryImporter.defaultGeoJsonUrl.toString(),
     )
     model.addAttribute("defaultEcoregionsUrl", EcoregionImporter.defaultZipFileUrl.toString())
+    model.addAttribute("defaultWcvpSpeciesListUrl", WcvpImporter.defaultZipFileUrl.toString())
     model.addAttribute("organizations", organizations)
     model.addAttribute("roles", Role.entries.map { it to it.getDisplayName(Locale.ENGLISH) })
     model.addAttribute("splatterEnabled", config.splatter.enabled)

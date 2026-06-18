@@ -371,6 +371,8 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "users" to setOf(ALL, CUSTOMER),
                   "user_disclaimers" to setOf(ALL, CUSTOMER),
                   "vector_store" to setOf(ALL, ACCELERATOR),
+                  "wcvp_distributions" to setOf(ALL, SPECIES),
+                  "wcvp_taxa" to setOf(ALL, SPECIES),
                   "wood_density_levels" to setOf(ALL, SPECIES),
               ),
           "seedbank" to
