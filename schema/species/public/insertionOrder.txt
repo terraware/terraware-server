@@ -1,5 +1,6 @@
 organizations
 conservation_categories
+ecoregions
 ecosystem_types
 gbif_taxa
 plant_material_sourcing_methods
@@ -10,6 +11,7 @@ successional_groups
 wood_density_levels
 species
 gbif_names
+ecoregion_countries
 gbif_name_words
 species_growth_forms
 species_ecosystem_types

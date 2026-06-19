@@ -6,6 +6,7 @@ chat_memory_message_types
 conservation_categories
 device_template_categories
 disclaimers
+ecoregions
 ecosystem_types
 facility_connection_states
 facility_types
@@ -55,6 +56,7 @@ thumbnails
 timeseries_values
 chat_memory_messages
 device_managers
+ecoregion_countries
 file_access_tokens
 mux_assets
 organization_managed_location_types

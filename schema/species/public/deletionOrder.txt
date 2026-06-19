@@ -6,6 +6,7 @@ species_plant_material_sourcing_methods
 species_ecosystem_types
 species_growth_forms
 gbif_name_words
+ecoregion_countries
 gbif_names
 species
 wood_density_levels
@@ -16,5 +17,6 @@ species_native_categories
 plant_material_sourcing_methods
 gbif_taxa
 ecosystem_types
+ecoregions
 conservation_categories
 organizations

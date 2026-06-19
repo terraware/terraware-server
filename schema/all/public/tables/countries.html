@@ -146,6 +146,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="ecoregion_countries.country_code references countries.code via ecoregion_countries_country_code_fkey"><a href='ecoregion_countries.html'>ecoregion_countries</a><span class='relatedKey'>.country_code</span></td>
+                                                <td class="constraint detail">ecoregion_countries_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="organizations.country_code references countries.code via organizations_country_code_fkey"><a href='organizations.html'>organizations</a><span class='relatedKey'>.country_code</span></td>
                                                 <td class="constraint detail">organizations_country_code_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>

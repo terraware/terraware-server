@@ -17,6 +17,7 @@
             <child column="country_code" foreignKey="applications_country_code_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="applications"/>
             <child column="country_code" foreignKey="published_project_details_country_code_fkey" implied="false" onDeleteCascade="false" schema="funder" table="published_project_details"/>
             <child column="country_code" foreignKey="country_subdivisions_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="country_subdivisions"/>
+            <child column="country_code" foreignKey="ecoregion_countries_country_code_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregion_countries"/>
             <child column="country_code" foreignKey="organizations_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
             <child column="country_code" foreignKey="projects_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="projects"/>
             <child column="country_code" foreignKey="users_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="users"/>
@@ -111,6 +112,43 @@
          </index>
          <index name="disclaimers_effective_on_idx" unique="false">
             <column ascending="true" name="effective_on"/>
+         </index>
+      </table>
+      <table name="ecoregion_countries" remarks="Which WWF/Resolve ecoregions are present in which countries." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="ecoregion_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="ecoregion_countries_ecoregion_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="country_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="code" foreignKey="ecoregion_countries_country_code_fkey" implied="false" onDeleteCascade="true" schema="public" table="countries"/>
+         </column>
+         <primaryKey column="ecoregion_id" sequenceNumberInPK="1"/>
+         <primaryKey column="country_code" sequenceNumberInPK="2"/>
+         <index name="ecoregion_countries_pkey" unique="true">
+            <column ascending="true" name="ecoregion_id"/>
+            <column ascending="true" name="country_code"/>
+         </index>
+         <index name="ecoregion_countries_country_code_idx" unique="false">
+            <column ascending="true" name="country_code"/>
+         </index>
+      </table>
+      <table name="ecoregions" remarks="WWF/Resolve ecoregion definitions." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="ecoregion_id" foreignKey="ecoregion_countries_ecoregion_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregion_countries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="object_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="eco_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="biome_number" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="biome_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="realm" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="eco_biome_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="eco_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="boundary" nullable="false" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="ecoregions_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="ecoregions_object_id_key" unique="true">
+            <column ascending="true" name="object_id"/>
          </index>
       </table>
       <table name="facilities" remarks="Physical locations at a site. For example, each seed bank and each nursery is a facility." schema="public" type="TABLE">
