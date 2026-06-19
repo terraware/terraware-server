@@ -297,7 +297,7 @@ java {
 node {
   download = true
   version = file(".nvmrc").readText().trim()
-  yarnVersion = "1.22.17"
+  yarnVersion = "1.22.22"
 }
 
 tasks.withType<KotlinCompile> {
