@@ -272,6 +272,30 @@ fun Geometry.nearlyCoveredBy(other: Geometry, minCoveragePercent: Double = 99.9)
   return coveredBy(other) || coveragePercent(other) >= minCoveragePercent
 }
 
+/** Implementation of [intersects] that's optimized for matching pairs of MultiPolygons. */
+fun Geometry.intersectsFast(other: Geometry): Boolean {
+  val geometries =
+      if (this is MultiPolygon) {
+        (0..<numGeometries).map { getGeometryN(it) }
+      } else {
+        listOf(this)
+      }
+
+  val otherGeometries =
+      if (other is MultiPolygon) {
+        (0..<other.numGeometries).map { other.getGeometryN(it) }
+      } else {
+        listOf(other)
+      }
+
+  return geometries
+      .asSequence()
+      .flatMap { ourPolygon ->
+        otherGeometries.asSequence().map { otherPolygon -> ourPolygon to otherPolygon }
+      }
+      .any { (ourPolygon, otherPolygon) -> ourPolygon.intersects(otherPolygon) }
+}
+
 /**
  * Returns the difference between this geometry and another geometry, or this geometry if the other
  * one is null.
