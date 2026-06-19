@@ -41,6 +41,8 @@ COMMENT ON TABLE seedbank.bags IS 'Individual bags of seeds that are part of an 
 
 COMMENT ON TABLE birdnet_results IS 'Results of BirdNET detection pipeline from video files.';
 
+COMMENT ON TABLE botanical_countries IS 'Geographic areas of each of the TDWG Level 3 regions.';
+
 COMMENT ON TABLE chat_memory_conversations IS 'Information about Ask Terraware conversations.';
 
 COMMENT ON TABLE chat_memory_message_types IS '(Enum) Message types that can be stored as part of the memory of an LLM chat conversation.';
@@ -78,6 +80,8 @@ COMMENT ON TABLE device_templates IS 'Canned device configurations for use in ca
 COMMENT ON TABLE devices IS 'Hardware devices managed by the device manager at a facility.';
 
 COMMENT ON TABLE disclaimers IS 'Disclaimers content and effective dates.';
+
+COMMENT ON TABLE ecoregion_botanical_countries IS 'Which WWF/Resolve ecoregions are present in which botanical countries.';
 
 COMMENT ON TABLE ecoregion_countries IS 'Which WWF/Resolve ecoregions are present in which countries.';
 

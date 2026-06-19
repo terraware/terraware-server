@@ -214,6 +214,23 @@
         </form>
     </div>
 
+    <div th:if="${canImportGlobalSpeciesData}">
+        <h3>Import TDWG Level 3 botanical countries</h3>
+
+        <p>
+            You can download the data from
+            <a href="https://github.com/tdwg/wgsrpd/blob/master/geojson/level3.geojson">here</a>.
+        </p>
+
+        <form method="POST" action="importBotanicalCountries">
+            <label>URL of GeoJSON file
+                <input id="botanicalCountriesUrl" name="url" required th:value="${defaultBotanicalCountriesUrl}"/>
+            </label>
+            <input type="submit" value="Import">
+            (can take several minutes)
+        </form>
+    </div>
+
 </details>
 
 <details id="tracking" class="section" th:if="${canManageTracking}">
