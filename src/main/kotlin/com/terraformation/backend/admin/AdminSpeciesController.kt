@@ -2,6 +2,7 @@ package com.terraformation.backend.admin
 
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.gis.EcoregionImporter
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.db.GbifImporter
 import java.net.URI
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @RequireGlobalRole([GlobalRole.SuperAdmin])
 @Validated
 class AdminSpeciesController(
+    private val ecoregionImporter: EcoregionImporter,
     private val gbifImporter: GbifImporter,
 ) {
   private val log = perClassLogger()
@@ -38,6 +40,23 @@ class AdminSpeciesController(
 
       redirectAttributes.successMessage = "GBIF data imported successfully."
     } catch (e: Exception) {
+      redirectAttributes.failureMessage = "Import failed: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
+  @PostMapping("/importEcoregions")
+  fun importEcoregions(
+      @RequestParam url: URI,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      withDownloadedFile(url) { zipFilePath -> ecoregionImporter.importEcoregions(zipFilePath) }
+
+      redirectAttributes.successMessage = "Ecoregions imported successfully."
+    } catch (e: Exception) {
+      log.error("Ecoregion import failed", e)
       redirectAttributes.failureMessage = "Import failed: ${e.message}"
     }
 

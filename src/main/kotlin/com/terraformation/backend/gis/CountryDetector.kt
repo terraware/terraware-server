@@ -86,9 +86,15 @@ class CountryDetector {
   /**
    * Returns the 2-letter country codes for the countries that contain a geometry. If the geometry
    * falls outside any country, returns an empty set.
+   *
+   * @param minCoveragePercent A country must cover at least this percentage of [geometry] to be
+   *   included in the result.
    */
-  fun getCountries(geometry: Geometry): Set<String> {
-    val minCoverageArea = geometry.area * MIN_COVERAGE_PERCENT / 100.0
+  fun getCountries(
+      geometry: Geometry,
+      minCoveragePercent: Double = MIN_COVERAGE_PERCENT,
+  ): Set<String> {
+    val minCoverageArea = geometry.area * minCoveragePercent / 100.0
 
     // For complex MultiPolygons, intersection calculations can be expensive. We only care
     // about exceeding the minimum coverage area, so do the calculation one polygon at a time
@@ -107,7 +113,7 @@ class CountryDetector {
                   .asSequence()
                   .flatMap { geometryPolygon ->
                     if (countryBorder is MultiPolygon) {
-                      (0..<countryBorder.numGeometries).asSequence().map { it ->
+                      (0..<countryBorder.numGeometries).asSequence().map {
                         countryBorder.getGeometryN(it) to geometryPolygon
                       }
                     } else {

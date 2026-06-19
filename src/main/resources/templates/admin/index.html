@@ -72,23 +72,6 @@
         <a href="/admin/globalRoles">Manage Global Roles</a>
     </th:block>
 
-    <div th:if="${canImportGlobalSpeciesData}">
-        <h3>Import GBIF species data</h3>
-
-        <p>You can download the data
-            <a href="https://hosted-datasets.gbif.org/datasets/backbone/current/backbone.zip">here</a>.
-            Use a <code>file://</code> URL to load the data from a file on the server's local
-            filesystem.
-        </p>
-
-        <form method="POST" enctype="multipart/form-data" action="importGbif">
-            <label for="gbifUrl">URL of backbone.zip</label>
-            <input id="gbifUrl" type="url" name="url" required/>
-            <input type="submit" value="Import"/>
-            (can take several minutes)
-        </form>
-    </div>
-
     <th:block th:if="${canManageHubSpot}">
         <h3>HubSpot Integration</h3>
 
@@ -192,6 +175,45 @@
             <input type="submit" value="Delete User"/>
         </form>
     </th:block>
+</details>
+
+<details id="species" class="section">
+    <summary>Species Management</summary>
+
+    <div th:if="${canImportGlobalSpeciesData}">
+        <h3>Import GBIF species data</h3>
+
+        <p>You can download the data
+            <a href="https://hosted-datasets.gbif.org/datasets/backbone/current/backbone.zip">here</a>.
+            Use a <code>file://</code> URL to load the data from a file on the server's local
+            filesystem.
+        </p>
+
+        <form method="POST" enctype="multipart/form-data" action="importGbif">
+            <label for="gbifUrl">URL of backbone.zip</label>
+            <input id="gbifUrl" type="url" name="url" required/>
+            <input type="submit" value="Import"/>
+            (can take several minutes)
+        </form>
+    </div>
+
+    <div th:if="${canImportGlobalSpeciesData}">
+        <h3>Import WWF/Resolve ecoregions</h3>
+
+        <p>
+            You can download the data or find the download URL
+            <a href="https://ecoregions.appspot.com/">here</a>.
+            (Find the link at About / Download Shapefile.)
+        </p>
+
+        <form method="POST" action="importEcoregions">
+            <label for="ecoregionUrl">URL of ecoregions zipfile</label>
+            <input id="ecoregionUrl" name="url" required th:value="${defaultEcoregionsUrl}"/>
+            <input type="submit" value="Import">
+            (can take several minutes)
+        </form>
+    </div>
+
 </details>
 
 <details id="tracking" class="section" th:if="${canManageTracking}">
