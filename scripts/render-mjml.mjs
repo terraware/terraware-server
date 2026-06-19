@@ -53,7 +53,11 @@ for (const mjmlFile of mjmlFiles) {
   const outputPath = path.resolve(outputDir, outputRelative);
 
   const source = fs.readFileSync(inputPath, "utf8");
-  const { html, errors } = await mjml(source, { filePath: inputPath });
+  const { html, errors } = await mjml(source, {
+      filePath: inputPath,
+      ignoreIncludes: false,
+      includePath: [inputDir],
+  });
 
   const minifiedHtml = await minify(html, {
       collapseWhitespace: true,
