@@ -1,12 +1,13 @@
 time_zones
 asset_statuses
 seed_treatments
+ecoregions
 land_use_model_types
+botanical_countries
 chat_memory_message_types
 conservation_categories
 device_template_categories
 disclaimers
-ecoregions
 ecosystem_types
 facility_connection_states
 facility_types
@@ -56,6 +57,7 @@ thumbnails
 timeseries_values
 chat_memory_messages
 device_managers
+ecoregion_botanical_countries
 ecoregion_countries
 file_access_tokens
 mux_assets

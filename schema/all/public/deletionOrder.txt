@@ -27,6 +27,7 @@ organization_managed_location_types
 mux_assets
 file_access_tokens
 ecoregion_countries
+ecoregion_botanical_countries
 device_managers
 chat_memory_messages
 timeseries_values
@@ -76,12 +77,13 @@ global_roles
 facility_types
 facility_connection_states
 ecosystem_types
-ecoregions
 disclaimers
 device_template_categories
 conservation_categories
 chat_memory_message_types
+botanical_countries
 land_use_model_types
+ecoregions
 seed_treatments
 asset_statuses
 time_zones

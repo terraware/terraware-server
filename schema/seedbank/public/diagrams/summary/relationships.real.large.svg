@@ -308,36 +308,10 @@
 <polygon fill="black" stroke="black" points="265.26,-4790.97 272.09,-4796.48 269.13,-4791.98 273,-4793 273,-4793 273,-4793 269.13,-4791.98 273.91,-4789.52 265.26,-4790.97 265.26,-4790.97"/>
 <ellipse fill="none" stroke="black" cx="262.17" cy="-4790.16" rx="3.2" ry="3.2"/>
 </g>
-<!-- seed_storage_behaviors -->
-<g id="node6" class="node">
-<title>seed_storage_behaviors</title>
-<g id="a_node6"><a xlink:href="../../tables/seed_storage_behaviors.html" xlink:title="seed_storage_behaviors" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="8,-2146 8,-2230 193,-2230 193,-2146 8,-2146"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="8.5,-2208 8.5,-2230 193.5,-2230 193.5,-2208 8.5,-2208"/>
-<polygon fill="none" stroke="black" points="8.5,-2208 8.5,-2230 193.5,-2230 193.5,-2208 8.5,-2208"/>
-<text text-anchor="start" x="13.5" y="-2217.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">seed_storage_behaviors</text>
-<text text-anchor="start" x="154.5" y="-2216.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="8.5,-2186 8.5,-2208 193.5,-2208 193.5,-2186 8.5,-2186"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13.5" y="-2203"/>
-<text text-anchor="start" x="40.5" y="-2194.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="8.5,-2164 8.5,-2186 193.5,-2186 193.5,-2164 8.5,-2164"/>
-<text text-anchor="start" x="40.5" y="-2172.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
-<polygon fill="#ffffff" stroke="transparent" points="8.5,-2146 8.5,-2164 89.5,-2164 89.5,-2146 8.5,-2146"/>
-<polygon fill="none" stroke="black" points="8.5,-2146 8.5,-2164 89.5,-2164 89.5,-2146 8.5,-2146"/>
-<text text-anchor="start" x="11.5" y="-2152.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="89.5,-2146 89.5,-2164 136.5,-2164 136.5,-2146 89.5,-2146"/>
-<polygon fill="none" stroke="black" points="89.5,-2146 89.5,-2164 136.5,-2164 136.5,-2146 89.5,-2146"/>
-<text text-anchor="start" x="126.5" y="-2152.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="136.5,-2146 136.5,-2164 193.5,-2164 193.5,-2146 136.5,-2146"/>
-<polygon fill="none" stroke="black" points="136.5,-2146 136.5,-2164 193.5,-2164 193.5,-2146 136.5,-2146"/>
-<text text-anchor="start" x="174.5" y="-2152.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
 <!-- species -->
-<g id="node7" class="node">
+<g id="node6" class="node">
 <title>species</title>
-<g id="a_node7"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
+<g id="a_node6"><a xlink:href="../../tables/species.html" xlink:title="species" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="264,-1750 264,-2362 444,-2362 444,-1750 264,-1750"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="264,-2340 264,-2362 444,-2362 444,-2340 264,-2340"/>
 <polygon fill="none" stroke="black" points="264,-2340 264,-2362 444,-2362 444,-2340 264,-2340"/>
@@ -419,6 +393,32 @@
 <path fill="none" stroke="black" d="M251.11,-2315.7C160.29,-2460.25 298.18,-4358 188.5,-4358"/>
 <polygon fill="black" stroke="black" points="256.54,-2311.72 265.13,-2309.91 259.77,-2309.36 263,-2307 263,-2307 263,-2307 259.77,-2309.36 260.87,-2304.09 256.54,-2311.72 256.54,-2311.72"/>
 <ellipse fill="none" stroke="black" cx="253.96" cy="-2313.61" rx="3.2" ry="3.2"/>
+</g>
+<!-- seed_storage_behaviors -->
+<g id="node7" class="node">
+<title>seed_storage_behaviors</title>
+<g id="a_node7"><a xlink:href="../../tables/seed_storage_behaviors.html" xlink:title="seed_storage_behaviors" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="8,-2146 8,-2230 193,-2230 193,-2146 8,-2146"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="8.5,-2208 8.5,-2230 193.5,-2230 193.5,-2208 8.5,-2208"/>
+<polygon fill="none" stroke="black" points="8.5,-2208 8.5,-2230 193.5,-2230 193.5,-2208 8.5,-2208"/>
+<text text-anchor="start" x="13.5" y="-2217.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">seed_storage_behaviors</text>
+<text text-anchor="start" x="154.5" y="-2216.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="8.5,-2186 8.5,-2208 193.5,-2208 193.5,-2186 8.5,-2186"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13.5" y="-2203"/>
+<text text-anchor="start" x="40.5" y="-2194.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="8.5,-2164 8.5,-2186 193.5,-2186 193.5,-2164 8.5,-2164"/>
+<text text-anchor="start" x="40.5" y="-2172.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<polygon fill="#ffffff" stroke="transparent" points="8.5,-2146 8.5,-2164 89.5,-2164 89.5,-2146 8.5,-2146"/>
+<polygon fill="none" stroke="black" points="8.5,-2146 8.5,-2164 89.5,-2164 89.5,-2146 8.5,-2146"/>
+<text text-anchor="start" x="11.5" y="-2152.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="89.5,-2146 89.5,-2164 136.5,-2164 136.5,-2146 89.5,-2146"/>
+<polygon fill="none" stroke="black" points="89.5,-2146 89.5,-2164 136.5,-2164 136.5,-2146 89.5,-2146"/>
+<text text-anchor="start" x="126.5" y="-2152.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="136.5,-2146 136.5,-2164 193.5,-2164 193.5,-2146 136.5,-2146"/>
+<polygon fill="none" stroke="black" points="136.5,-2146 136.5,-2164 193.5,-2164 193.5,-2146 136.5,-2146"/>
+<text text-anchor="start" x="174.5" y="-2152.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
 </g>
 <!-- species&#45;&gt;seed_storage_behaviors -->
 <g id="edge25" class="edge">

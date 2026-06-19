@@ -4,6 +4,7 @@ species_problems
 species_successional_groups
 species_plant_material_sourcing_methods
 species_ecosystem_types
+ecoregion_botanical_countries
 species_growth_forms
 gbif_name_words
 ecoregion_countries
@@ -17,6 +18,7 @@ species_native_categories
 plant_material_sourcing_methods
 gbif_taxa
 ecosystem_types
-ecoregions
 conservation_categories
+botanical_countries
+ecoregions
 organizations

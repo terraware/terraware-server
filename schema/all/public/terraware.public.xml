@@ -85,6 +85,23 @@
             <column ascending="true" name="file_id"/>
          </index>
       </table>
+      <table name="botanical_countries" remarks="Geographic areas of each of the TDWG Level 3 regions." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="botanical_country_id" foreignKey="ecoregion_botanical_countries_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregion_botanical_countries"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="level3_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="level2_code" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="level1_code" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="boundary" nullable="false" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="botanical_countries_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="botanical_countries_level3_code_key" unique="true">
+            <column ascending="true" name="level3_code"/>
+         </index>
+      </table>
       <table name="chat_memory_conversations" remarks="Information about Ask Terraware conversations." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="2147483647" type="uuid" typeCode="1111">
             <child column="conversation_id" foreignKey="chat_memory_messages_conversation_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="chat_memory_messages"/>
@@ -317,6 +334,23 @@
             <column ascending="true" name="effective_on"/>
          </index>
       </table>
+      <table name="ecoregion_botanical_countries" remarks="Which WWF/Resolve ecoregions are present in which botanical countries." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="ecoregion_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="ecoregion_botanical_countries_ecoregion_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="botanical_country_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="ecoregion_botanical_countries_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="botanical_countries"/>
+         </column>
+         <primaryKey column="ecoregion_id" sequenceNumberInPK="1"/>
+         <primaryKey column="botanical_country_id" sequenceNumberInPK="2"/>
+         <index name="ecoregion_botanical_countries_pkey" unique="true">
+            <column ascending="true" name="ecoregion_id"/>
+            <column ascending="true" name="botanical_country_id"/>
+         </index>
+         <index name="ecoregion_botanical_countries_botanical_country_id_idx" unique="false">
+            <column ascending="true" name="botanical_country_id"/>
+         </index>
+      </table>
       <table name="ecoregion_countries" remarks="Which WWF/Resolve ecoregions are present in which countries." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="ecoregion_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="ecoregion_countries_ecoregion_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregions"/>
@@ -336,6 +370,7 @@
       </table>
       <table name="ecoregions" remarks="WWF/Resolve ecoregion definitions." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="ecoregion_id" foreignKey="ecoregion_botanical_countries_ecoregion_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregion_botanical_countries"/>
             <child column="ecoregion_id" foreignKey="ecoregion_countries_ecoregion_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregion_countries"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="object_id" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
