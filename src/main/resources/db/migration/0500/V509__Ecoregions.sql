@@ -16,3 +16,5 @@ CREATE TABLE ecoregion_countries (
 
     PRIMARY KEY (ecoregion_id, country_code)
 );
+
+CREATE INDEX ON ecoregion_countries (country_code);
