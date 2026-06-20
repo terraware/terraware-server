@@ -19,7 +19,7 @@ CREATE TABLE wcvp_distributions (
     establishment_means TEXT,
     occurrence_status TEXT,
     threat_status TEXT,
-    botanical_country_id BIGINT REFERENCES botanical_countries,
+    botanical_country_id BIGINT REFERENCES botanical_countries ON DELETE CASCADE,
 
     PRIMARY KEY (taxon_id, level3_code)
 );
