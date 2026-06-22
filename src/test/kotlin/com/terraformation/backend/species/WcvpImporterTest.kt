@@ -22,7 +22,8 @@ import org.junit.jupiter.api.Test
 
 /**
  * Tests the WCVP importer. Importing the data is fairly resource-intensive, so this test is skipped
- * unless you specifically ask for it by setting the `TEST_WCVP_IMPORTER` environment variable.
+ * unless you specifically ask for it by setting the `TEST_WCVP_IMPORTER` environment variable. This
+ * test is intended as a local development tool when working on the importer code.
  *
  * Since this is only expected to be run in local dev environments, a copy of the official
  * distribution of the data is downloaded and cached in the `build` directory.
