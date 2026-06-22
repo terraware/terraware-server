@@ -3,10 +3,12 @@ package com.terraformation.backend.gis
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.tables.records.EcoregionBotanicalCountriesRecord
+import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
 import com.terraformation.backend.db.default_schema.tables.references.ECOREGION_BOTANICAL_COUNTRIES
 import com.terraformation.backend.gis.event.BotanicalCountriesImportedEvent
 import com.terraformation.backend.gis.event.EcoregionsImportedEvent
 import com.terraformation.backend.rectangle
+import com.terraformation.backend.species.event.WcvpImportedEvent
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
@@ -17,6 +19,7 @@ class RegionMetadataServiceTest : DatabaseTest() {
   fun `listens for events`() {
     assertIsEventListener<BotanicalCountriesImportedEvent>(service)
     assertIsEventListener<EcoregionsImportedEvent>(service)
+    assertIsEventListener<WcvpImportedEvent>(service)
   }
 
   @Nested
@@ -60,6 +63,50 @@ class RegionMetadataServiceTest : DatabaseTest() {
               EcoregionBotanicalCountriesRecord(ecoregionId1, countryId1),
               EcoregionBotanicalCountriesRecord(ecoregionId2, countryId1),
               EcoregionBotanicalCountriesRecord(ecoregionId2, countryId2),
+          )
+      )
+    }
+  }
+
+  @Nested
+  inner class UpdateWcvpBotanicalCountryMapping {
+    @Test
+    fun `updates botanical country IDs based on level 3 codes`() {
+      val countryId1 = insertBotanicalCountry(level3Code = "AAA")
+      val countryId2 = insertBotanicalCountry(level3Code = "BBB")
+      insertBotanicalCountry(level3Code = "CCC")
+
+      val taxonId1 = insertWcvpTaxon()
+      insertWcvpDistribution(level3Code = "AAA")
+      val taxonId2 = insertWcvpTaxon()
+      insertWcvpDistribution(level3Code = "AAA")
+      insertWcvpDistribution(level3Code = "BBB")
+      val taxonId3 = insertWcvpTaxon()
+      insertWcvpDistribution(level3Code = "XXX")
+
+      service.on(WcvpImportedEvent())
+
+      assertTableEquals(
+          listOf(
+              WcvpDistributionsRecord(
+                  taxonId = taxonId1,
+                  level3Code = "AAA",
+                  botanicalCountryId = countryId1,
+              ),
+              WcvpDistributionsRecord(
+                  taxonId = taxonId2,
+                  level3Code = "AAA",
+                  botanicalCountryId = countryId1,
+              ),
+              WcvpDistributionsRecord(
+                  taxonId = taxonId2,
+                  level3Code = "BBB",
+                  botanicalCountryId = countryId2,
+              ),
+              WcvpDistributionsRecord(
+                  taxonId = taxonId3,
+                  level3Code = "XXX",
+              ),
           )
       )
     }

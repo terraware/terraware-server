@@ -173,6 +173,7 @@ import com.terraformation.backend.db.default_schema.UploadStatus
 import com.terraformation.backend.db.default_schema.UploadType
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
+import com.terraformation.backend.db.default_schema.WcvpTaxonId
 import com.terraformation.backend.db.default_schema.keys.USERS_PKEY
 import com.terraformation.backend.db.default_schema.tables.daos.AutomationsDao
 import com.terraformation.backend.db.default_schema.tables.daos.BirdnetResultsDao
@@ -239,6 +240,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRoles
 import com.terraformation.backend.db.default_schema.tables.records.BotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.EcoregionBotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.EcoregionsRecord
+import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
+import com.terraformation.backend.db.default_schema.tables.records.WcvpTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -5875,6 +5878,62 @@ abstract class DatabaseBackedTest {
       ecoregionId: EcoregionId = inserted.ecoregionId,
   ) {
     EcoregionBotanicalCountriesRecord(ecoregionId, botanicalCountryId).attach(dslContext).insert()
+  }
+
+  private var nextWcvpTaxonId: Long = 1
+
+  fun insertWcvpTaxon(
+      taxonId: Any = nextWcvpTaxonId++,
+      acceptedNameUsageId: Any? = null,
+      family: String = "family",
+      genus: String = "genus",
+      infraspecificEpithet: String? = "infra",
+      originalNameUsageId: Any? = null,
+      parentNameUsageId: Any? = null,
+      scientificName: String = "Scientific name",
+      specificEpithet: String? = "specific",
+      taxonRank: String = "Species",
+      taxonomicStatus: String = "Accepted",
+  ): WcvpTaxonId {
+    val taxonIdWrapper = WcvpTaxonId("$taxonId")
+
+    WcvpTaxaRecord(
+            acceptedNameUsageId = acceptedNameUsageId?.let { WcvpTaxonId("$it") },
+            family = family,
+            genus = genus,
+            infraspecificEpithet = infraspecificEpithet,
+            originalNameUsageId = originalNameUsageId?.let { WcvpTaxonId("$it") },
+            parentNameUsageId = parentNameUsageId?.let { WcvpTaxonId("$it") },
+            scientificName = scientificName,
+            specificEpithet = specificEpithet,
+            taxonId = taxonIdWrapper,
+            taxonomicStatus = taxonomicStatus,
+            taxonRank = taxonRank,
+        )
+        .attach(dslContext)
+        .insert()
+
+    return taxonIdWrapper.also { inserted.wcvpTaxonIds.add(it) }
+  }
+
+  fun insertWcvpDistribution(
+      botanicalCountryId: BotanicalCountryId? = null,
+      establishmentMeans: String? = null,
+      level3Code: String = "COD",
+      occurrenceStatus: String? = null,
+      taxonId: WcvpTaxonId = inserted.wcvpTaxonId,
+      threatStatus: String? = null,
+  ) {
+    WcvpDistributionsRecord(
+            botanicalCountryId = botanicalCountryId,
+            establishmentMeans = establishmentMeans,
+            level3Code = level3Code,
+            occurrenceStatus = occurrenceStatus,
+            taxonId = taxonId,
+            threatStatus = threatStatus,
+        )
+        .attach(dslContext)
+        .insert()
   }
 
   protected fun setupStableIdVariables(): Map<StableId, VariableId> {
