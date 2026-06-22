@@ -1,3 +1,5 @@
+3a6e8798 Update Node.js to v24.17.0 (#4631)
+881a84c2 Update dependency software.amazon.jdbc:aws-advanced-jdbc-wrapper to v4.1.0 (#4632)
 bcb3a22e Update database dependencies (#4633)
 26662685 Update Node dependencies (major) (#4518)
 02021759 Move DatabaseBackedTest.Inserted to top level (#4627)
