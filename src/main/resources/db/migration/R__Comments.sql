@@ -541,7 +541,9 @@ COMMENT ON TABLE tracking.planting_date_requests IS 'Requested planting date for
 
 COMMENT ON TABLE tracking.planting_date_request_species IS 'Quantities of each species requested for a planting date.';
 
-COMMENT ON TABLE tracking.planting_season_notifications IS 'Stores the last dismissed event log id for each planting season in order to look up all events since.';
+COMMENT ON TABLE tracking.planting_season_notification_pages IS '(Enum) UI pages on which planting season notifications can be displayed and dismissed.';
+
+COMMENT ON TABLE tracking.planting_season_notifications IS 'Stores the last dismissed event log id for each planting season and notification page in order to look up all events since.';
 
 COMMENT ON TABLE tracking.planting_season_allocated_species IS 'Quantities of each species allocated for a planting season.';
 

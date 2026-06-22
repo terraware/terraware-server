@@ -6,8 +6,8 @@ import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonNotificationPage
 import com.terraformation.backend.i18n.Messages
-import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationCategory
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
@@ -36,20 +36,13 @@ class PlantingSeasonNotificationsController(
   fun getPlantingSeasonNotifications(
       @RequestParam("organizationId") organizationId: OrganizationId?,
       @RequestParam("plantingSeasonId") plantingSeasonId: PlantingSeasonId?,
-      @RequestParam("notificationCategory")
-      notificationCategory: PlantingSeasonNotificationCategory,
+      @RequestParam("notificationPage") notificationPage: PlantingSeasonNotificationPage,
   ): GetPlantingSeasonNotificationsResponsePayload {
     val notifications =
         if (plantingSeasonId != null) {
-          plantingSeasonNotificationsService.getNotifications(
-              plantingSeasonId,
-              notificationCategory.notificationTypes,
-          )
+          plantingSeasonNotificationsService.getNotifications(plantingSeasonId, notificationPage)
         } else if (organizationId != null) {
-          plantingSeasonNotificationsService.getNotifications(
-              organizationId,
-              notificationCategory.notificationTypes,
-          )
+          plantingSeasonNotificationsService.getNotifications(organizationId, notificationPage)
         } else {
           throw IllegalArgumentException(
               "Either organizationId or plantingSeasonId must be specified."

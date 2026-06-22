@@ -450,6 +450,13 @@ VALUES (1, 'Pending'),
        (3, 'Fulfilled')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO tracking.planting_season_notification_pages (id, name)
+VALUES (1, 'InventoryPlanning'),
+       (2, 'PlantingSeasonPlanning'),
+       (3, 'Inventory'),
+       (4, 'Withdrawals')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO tracking.planting_season_statuses (id, name)
 VALUES (1, 'Active'),
        (2, 'Upcoming'),

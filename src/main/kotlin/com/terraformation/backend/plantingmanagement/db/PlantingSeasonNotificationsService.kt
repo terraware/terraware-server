@@ -6,6 +6,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonNotificationPage
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_NOTIFICATIONS
@@ -53,45 +54,45 @@ class PlantingSeasonNotificationsService(
       )
 
   /**
-   * Returns the undismissed notifications of the requested [types] for every planting season in
-   * [organizationId], grouped by planting season.
+   * Returns the undismissed notifications for [page] for every planting season in [organizationId],
+   * grouped by planting season.
    *
    * A season that has never dismissed a notification has all of its events returned; a season with
-   * no undismissed events of the requested types is absent from the result.
+   * no undismissed events for [page] is absent from the result.
    */
   fun getNotifications(
       organizationId: OrganizationId,
-      types: Collection<PlantingSeasonNotificationType>,
+      page: PlantingSeasonNotificationPage,
   ): List<PlantingSeasonNotificationGroupModel> =
       getNotifications(
           PLANTING_SEASONS.plantingSites.ORGANIZATION_ID.eq(organizationId),
-          types,
+          page,
       )
 
   /**
-   * Returns the undismissed notifications of the requested [types] for [plantingSeasonId], grouped
-   * by planting season.
+   * Returns the undismissed notifications for [page] for [plantingSeasonId], grouped by planting
+   * season.
    *
    * A season that has never dismissed a notification has all of its events returned; a season with
-   * no undismissed events of the requested types is absent from the result.
+   * no undismissed events for [page] is absent from the result.
    */
   fun getNotifications(
       plantingSeasonId: PlantingSeasonId,
-      types: Collection<PlantingSeasonNotificationType>,
+      page: PlantingSeasonNotificationPage,
   ): List<PlantingSeasonNotificationGroupModel> =
-      getNotifications(PLANTING_SEASONS.ID.eq(plantingSeasonId), types)
+      getNotifications(PLANTING_SEASONS.ID.eq(plantingSeasonId), page)
 
   private fun getNotifications(
       condition: Condition,
-      types: Collection<PlantingSeasonNotificationType>,
+      page: PlantingSeasonNotificationPage,
   ): List<PlantingSeasonNotificationGroupModel> {
-    val requestedTypes = types.toSet()
+    val requestedTypes = notificationTypesForPage(page)
     val eventClasses = eventClassesToFetch(requestedTypes)
     if (eventClasses.isEmpty()) {
       return emptyList()
     }
 
-    val seasonInfoById = fetchSeasonInfoByCondition(condition)
+    val seasonInfoById = fetchSeasonInfoByCondition(condition, page)
 
     requirePermissions { seasonInfoById.keys.forEach { readPlantingSeason(it) } }
 
@@ -125,6 +126,36 @@ class PlantingSeasonNotificationsService(
       types: Set<PlantingSeasonNotificationType>
   ): List<KClass<out PlantingSeasonRelatedPersistentEvent>> =
       types.mapNotNull { eventClassesByNotificationType[it] }.distinct()
+
+  private fun notificationTypesForPage(
+      page: PlantingSeasonNotificationPage
+  ): Set<PlantingSeasonNotificationType> =
+      when (page) {
+        PlantingSeasonNotificationPage.InventoryPlanning ->
+            setOf(
+                PlantingSeasonNotificationType.PlantingSeasonClosed,
+                PlantingSeasonNotificationType.SpeciesTargetsAdded,
+                PlantingSeasonNotificationType.SpeciesTargetsUpdated,
+            )
+        PlantingSeasonNotificationPage.PlantingSeasonPlanning ->
+            setOf(
+                PlantingSeasonNotificationType.AllocationQuantitiesUpdated,
+                PlantingSeasonNotificationType.SeasonWithdrawalRecorded,
+                PlantingSeasonNotificationType.PlantingSeasonPastEndDate,
+            )
+        PlantingSeasonNotificationPage.Inventory ->
+            setOf(
+                PlantingSeasonNotificationType.SpeciesTargetsAdded,
+                PlantingSeasonNotificationType.SpeciesTargetsUpdated,
+                PlantingSeasonNotificationType.PlantingSeasonClosed,
+                PlantingSeasonNotificationType.ScheduledPlantingDateRequested,
+            )
+        PlantingSeasonNotificationPage.Withdrawals ->
+            setOf(
+                PlantingSeasonNotificationType.ScheduledPlantingDateRequested,
+                PlantingSeasonNotificationType.PlantingSeasonClosed,
+            )
+      }
 
   private fun buildNotificationModel(
       plantingSeasonId: PlantingSeasonId,
@@ -234,10 +265,13 @@ class PlantingSeasonNotificationsService(
   /**
    * Returns the dismissal watermark and display names for every planting season matching
    * [condition]. Every matching season is included; [SeasonInfo.lastDismissedEventLogId] is null
-   * for seasons that have never dismissed a notification, which means all of their events should be
-   * treated as undismissed.
+   * for seasons that have never dismissed a notification for [page], which means all of their
+   * events for that page should be treated as undismissed.
    */
-  private fun fetchSeasonInfoByCondition(condition: Condition): Map<PlantingSeasonId, SeasonInfo> =
+  private fun fetchSeasonInfoByCondition(
+      condition: Condition,
+      page: PlantingSeasonNotificationPage,
+  ): Map<PlantingSeasonId, SeasonInfo> =
       dslContext
           .select(
               PLANTING_SEASONS.ID,
@@ -248,6 +282,7 @@ class PlantingSeasonNotificationsService(
           .from(PLANTING_SEASONS)
           .leftJoin(PLANTING_SEASON_NOTIFICATIONS)
           .on(PLANTING_SEASON_NOTIFICATIONS.PLANTING_SEASON_ID.eq(PLANTING_SEASONS.ID))
+          .and(PLANTING_SEASON_NOTIFICATIONS.PAGE_ID.eq(page))
           .where(condition)
           .associate { record ->
             record[PLANTING_SEASONS.ID]!! to
