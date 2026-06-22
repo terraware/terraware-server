@@ -4,6 +4,8 @@ import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.tables.references.WCVP_DISTRIBUTIONS
+import com.terraformation.backend.db.default_schema.tables.references.WCVP_TAXA
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.species.event.WcvpImportedEvent
@@ -14,6 +16,7 @@ import java.util.zip.ZipFile
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import org.junit.Assume.assumeNotNull
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -52,5 +55,12 @@ class WcvpImporterTest : DatabaseTest(), RunsAsUser {
     ZipFile(path.toFile()).use { zipFile -> importer.import(zipFile) }
 
     eventPublisher.assertEventPublished(WcvpImportedEvent())
+
+    assertNotEquals(0, dslContext.fetchCount(WCVP_TAXA), "Number of taxon rows inserted")
+    assertNotEquals(
+        0,
+        dslContext.fetchCount(WCVP_DISTRIBUTIONS),
+        "Number of distribution rows inserted",
+    )
   }
 }

@@ -83,10 +83,18 @@ class WcvpImporter(
     log.info("Importing WCVP distribution data")
 
     var count = 0
+    val unknownTaxonIds = mutableListOf<WcvpTaxonId?>()
 
-    return DistributionParser(inputStream)
+    DistributionParser(inputStream)
         .sequence()
-        .filter { it.taxonId in taxonIds }
+        .filter { row ->
+          if (row.taxonId in taxonIds) {
+            true
+          } else {
+            unknownTaxonIds.add(row.taxonId)
+            false
+          }
+        }
         .chunked(INSERT_BATCH_SIZE)
         .forEach { chunk ->
           dslContext
@@ -100,6 +108,10 @@ class WcvpImporter(
           count += chunk.size
           log.debug("Imported $count distribution records")
         }
+
+    if (unknownTaxonIds.isNotEmpty()) {
+      log.warn("Found taxon IDs in distributions that were not in taxon list: $unknownTaxonIds")
+    }
   }
 
   private class DistributionParser(inputStream: InputStream) :
