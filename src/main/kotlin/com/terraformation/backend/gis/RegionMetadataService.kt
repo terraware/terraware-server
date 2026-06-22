@@ -97,6 +97,25 @@ class RegionMetadataService(private val dslContext: DSLContext) {
                   .where(BOTANICAL_COUNTRIES.LEVEL3_CODE.eq(WCVP_DISTRIBUTIONS.LEVEL3_CODE)),
           )
           .execute()
+
+      val botanicalCountriesPopulated = dslContext.fetchExists(BOTANICAL_COUNTRIES)
+      if (botanicalCountriesPopulated) {
+        val unknownLevel3Codes =
+            dslContext
+                .selectDistinct(WCVP_DISTRIBUTIONS.LEVEL3_CODE)
+                .from(WCVP_DISTRIBUTIONS)
+                .where(WCVP_DISTRIBUTIONS.LEVEL3_CODE.isNotNull)
+                .and(WCVP_DISTRIBUTIONS.BOTANICAL_COUNTRY_ID.isNull)
+                .orderBy(WCVP_DISTRIBUTIONS.LEVEL3_CODE)
+                .fetch(WCVP_DISTRIBUTIONS.LEVEL3_CODE)
+
+        if (unknownLevel3Codes.isNotEmpty()) {
+          log.warn(
+              "WCVP distributions had level 3 region codes that were not in botanical countries " +
+                  "list: $unknownLevel3Codes"
+          )
+        }
+      }
     }
   }
 }
