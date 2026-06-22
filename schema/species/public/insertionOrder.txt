@@ -1,6 +1,6 @@
 organizations
-ecoregions
 botanical_countries
+ecoregions
 conservation_categories
 ecosystem_types
 gbif_taxa
@@ -9,6 +9,7 @@ species_native_categories
 species_problem_fields
 species_problem_types
 successional_groups
+wcvp_taxa
 wood_density_levels
 species
 gbif_names
@@ -19,6 +20,7 @@ ecoregion_botanical_countries
 species_ecosystem_types
 species_plant_material_sourcing_methods
 species_successional_groups
+wcvp_distributions
 species_problems
 gbif_distributions
 gbif_vernacular_names

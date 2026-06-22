@@ -3,6 +3,7 @@
       <table name="botanical_countries" remarks="Geographic areas of each of the TDWG Level 3 regions." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <child column="botanical_country_id" foreignKey="ecoregion_botanical_countries_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="ecoregion_botanical_countries"/>
+            <child column="botanical_country_id" foreignKey="wcvp_distributions_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="wcvp_distributions"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="level3_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -150,7 +151,7 @@
          <checkConstraint constraint="(language !~ similar_to_escape(' *'::text))" name="gbif_names_language_check"/>
       </table>
       <table name="gbif_taxa" remarks="Taxonomic data about species and families. A subset of the GBIF backbone dataset." schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="GBIF-defined ID of the taxon. GBIF taxon IDs are unrelated to the WCVP taxon IDs for the same species." size="19" type="int8" typeCode="-5">
             <child column="taxon_id" foreignKey="gbif_names_taxon_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="gbif_names"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="dataset_id" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -438,6 +439,47 @@
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="successional_groups_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="wcvp_distributions" remarks="World Checklist of Vascular Plants distribution data, indicating which species are found in which botanical countries." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="taxon_id" foreignKey="wcvp_distributions_taxon_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="wcvp_taxa"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="level3_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="establishment_means" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="occurrence_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="threat_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="botanical_country_id" nullable="true" remarks="ID of the TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list." size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="wcvp_distributions_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="botanical_countries"/>
+         </column>
+         <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
+         <primaryKey column="level3_code" sequenceNumberInPK="2"/>
+         <index name="wcvp_distributions_pkey" unique="true">
+            <column ascending="true" name="taxon_id"/>
+            <column ascending="true" name="level3_code"/>
+         </index>
+         <index name="wcvp_distributions_botanical_country_id_idx" unique="false">
+            <column ascending="true" name="botanical_country_id"/>
+         </index>
+      </table>
+      <table name="wcvp_taxa" remarks="World Checklist of Vascular Plants species taxonomy." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="WCVP-defined ID of the taxon. WCVP taxon IDs are unrelated to the GBIF taxon IDs for the same species." size="19" type="int8" typeCode="-5">
+            <child column="taxon_id" foreignKey="wcvp_distributions_taxon_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="wcvp_distributions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="accepted_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="family" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="genus" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="infraspecific_epithet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="nomenclatural_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="original_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="parent_name_usage_id" nullable="true" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="specific_epithet" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="taxon_rank" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="taxonomic_status" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
+         <index name="wcvp_taxa_pkey" unique="true">
+            <column ascending="true" name="taxon_id"/>
          </index>
       </table>
       <table name="wood_density_levels" remarks="The taxonomic level in the at which a wood density measurement is known" schema="public" type="TABLE">

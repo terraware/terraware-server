@@ -1,9 +1,9 @@
 time_zones
 asset_statuses
 seed_treatments
+botanical_countries
 ecoregions
 land_use_model_types
-botanical_countries
 chat_memory_message_types
 conservation_categories
 device_template_categories
@@ -31,6 +31,7 @@ upload_problem_types
 upload_statuses
 upload_types
 user_types
+wcvp_taxa
 wood_density_levels
 countries
 notification_types
@@ -74,6 +75,7 @@ upload_problems
 user_disclaimers
 user_global_roles
 user_preferences
+wcvp_distributions
 birdnet_results
 notifications
 organization_internal_tags
