@@ -80,9 +80,15 @@ abstract class ParsedCsvReader<T>(private val csvReader: CSVReader) {
      * Returns a [CSVParser] configured to parse GBIF TSV files. The parser is stateful, so we
      * construct a new one for each input stream.
      */
-    fun tsvParser(): CSVParser =
+    fun tsvParser(): CSVParser = separatorParser('\t')
+
+    /**
+     * Returns a [CSVParser] configured to parse files with a certain separator character. The
+     * parser is stateful, so we construct a new one for each input stream.
+     */
+    fun separatorParser(separator: Char): CSVParser =
         CSVParserBuilder()
-            .withSeparator('\t')
+            .withSeparator(separator)
             .withIgnoreQuotations(true)
             .withFieldAsNull(CSVReaderNullFieldIndicator.BOTH)
             .build()

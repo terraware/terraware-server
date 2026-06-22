@@ -501,6 +501,7 @@ val ID_WRAPPERS =
                         ".*\\.[a-z_]+_by",
                     ),
                 ),
+                IdWrapper("WcvpTaxonId", listOf("wcvp_.*\\.taxon_id", "wcvp_.*\\..*_usage_id")),
             ),
         "seedbank" to
             listOf(
