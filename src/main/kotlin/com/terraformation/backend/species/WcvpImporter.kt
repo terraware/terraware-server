@@ -18,6 +18,12 @@ import java.util.zip.ZipFile
 import org.jooq.DSLContext
 import org.springframework.context.ApplicationEventPublisher
 
+/**
+ * Imports the World Checklist of Vascular plants data.
+ *
+ * Note that the JUnit test for this class is skipped by default; set the `TEST_WCVP_IMPORTER`
+ * environment variable to enable it if you're updating this code.
+ */
 @Named
 class WcvpImporter(
     private val dslContext: DSLContext,
