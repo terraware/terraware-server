@@ -117,6 +117,7 @@ class PlantingSeasonNotificationsService(
           entries,
           seasonInfoById.getValue(plantingSeasonId),
           scientificNamesBySpeciesId,
+          page,
           requestedTypes,
       )
     }
@@ -162,6 +163,7 @@ class PlantingSeasonNotificationsService(
       entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>,
       seasonInfo: SeasonInfo,
       scientificNamesBySpeciesId: Map<SpeciesId, String>,
+      page: PlantingSeasonNotificationPage,
       requestedTypes: Set<PlantingSeasonNotificationType>,
   ): PlantingSeasonNotificationGroupModel? {
     val notifications =
@@ -175,6 +177,7 @@ class PlantingSeasonNotificationsService(
         plantingSeasonName = seasonInfo.plantingSeasonName,
         plantingSiteName = seasonInfo.plantingSiteName,
         lastEventLogId = entries.maxOf { it.id },
+        notificationPage = page,
         notifications = notifications,
     )
   }

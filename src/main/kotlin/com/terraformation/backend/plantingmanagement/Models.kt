@@ -3,6 +3,7 @@ package com.terraformation.backend.plantingmanagement
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonNotificationPage
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
@@ -86,5 +87,6 @@ data class PlantingSeasonNotificationGroupModel(
     val plantingSeasonName: String,
     val plantingSiteName: String,
     val lastEventLogId: EventLogId,
+    val notificationPage: PlantingSeasonNotificationPage,
     val notifications: List<PlantingSeasonNotificationModel>,
 )
