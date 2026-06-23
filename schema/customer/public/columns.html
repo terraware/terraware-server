@@ -214,7 +214,7 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "biome_number",
+        "name": "eco_biome_code",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
@@ -363,18 +363,18 @@
         "comments": ""
     },
     {
-        "tableName": "ecoregions",
-        "tableFileName": "ecoregions",
+        "tableName": "country_subdivisions",
+        "tableFileName": "country_subdivisions",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "boundary",
-        "type": "geometry",
+        "name": "name",
+        "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Name of subdivision in US English.<\/p>"
     },
     {
         "tableName": "user_disclaimers",
@@ -699,18 +699,18 @@
         "comments": ""
     },
     {
-        "tableName": "ecoregions",
-        "tableFileName": "ecoregions",
+        "tableName": "country_subdivisions",
+        "tableFileName": "country_subdivisions",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "eco_biome_code",
+        "keyClass": "primaryKey",
+        "keyTitle": "Primary Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>code",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>Full ISO-3166-2 subdivision code including country code prefix.<\/p>"
     },
     {
         "tableName": "users",
@@ -1152,7 +1152,7 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "eco_name",
+        "name": "realm",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
@@ -1446,8 +1446,8 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "realm",
-        "type": "text",
+        "name": "boundary",
+        "type": "geometry",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
@@ -1836,9 +1836,9 @@
         "tableName": "ecoregions",
         "tableFileName": "ecoregions",
         "tableType": "Table",
-        "keyClass": "indexedColumn",
-        "keyTitle": "Indexed",
-        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>object_id",
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "biome_name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
@@ -1880,7 +1880,7 @@
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "biome_name",
+        "name": "eco_id",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
@@ -2533,18 +2533,18 @@
         "comments": ""
     },
     {
-        "tableName": "country_subdivisions",
-        "tableFileName": "country_subdivisions",
+        "tableName": "ecoregions",
+        "tableFileName": "ecoregions",
         "tableType": "Table",
-        "keyClass": "foreignKey",
-        "keyTitle": "Foreign Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>country_code",
+        "keyClass": "indexedColumn",
+        "keyTitle": "Indexed",
+        "name": "<i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'><\/i>object_id",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>ISO-3166 alpha-2 country code.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "organization_internal_tags",
@@ -3023,18 +3023,18 @@
         "comments": ""
     },
     {
-        "tableName": "country_subdivisions",
-        "tableFileName": "country_subdivisions",
+        "tableName": "ecoregions",
+        "tableFileName": "ecoregions",
         "tableType": "Table",
         "keyClass": "primaryKey",
         "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>code",
-        "type": "text",
-        "length": 2147483647,
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
+        "type": "int8",
+        "length": 19,
         "nullable": "",
-        "autoUpdated": "",
+        "autoUpdated": "√",
         "defaultValue": "null",
-        "comments": "<p>Full ISO-3166-2 subdivision code including country code prefix.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "device_managers",
@@ -3065,18 +3065,18 @@
         "comments": ""
     },
     {
-        "tableName": "country_subdivisions",
-        "tableFileName": "country_subdivisions",
+        "tableName": "ecoregions",
+        "tableFileName": "ecoregions",
         "tableType": "Table",
         "keyClass": "",
         "keyTitle": "",
-        "name": "name",
+        "name": "eco_name",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": "<p>Name of subdivision in US English.<\/p>"
+        "comments": ""
     },
     {
         "tableName": "project_internal_users",
@@ -3264,13 +3264,13 @@
         "tableName": "ecoregions",
         "tableFileName": "ecoregions",
         "tableType": "Table",
-        "keyClass": "primaryKey",
-        "keyTitle": "Primary Key",
-        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>id",
-        "type": "int8",
-        "length": 19,
+        "keyClass": "",
+        "keyTitle": "",
+        "name": "biome_number",
+        "type": "text",
+        "length": 2147483647,
         "nullable": "",
-        "autoUpdated": "√",
+        "autoUpdated": "",
         "defaultValue": "null",
         "comments": ""
     },
@@ -3373,18 +3373,18 @@
         "comments": ""
     },
     {
-        "tableName": "ecoregions",
-        "tableFileName": "ecoregions",
+        "tableName": "country_subdivisions",
+        "tableFileName": "country_subdivisions",
         "tableType": "Table",
-        "keyClass": "",
-        "keyTitle": "",
-        "name": "eco_id",
+        "keyClass": "foreignKey",
+        "keyTitle": "Foreign Key",
+        "name": "<i class='icon ion-key iconkey' style='padding-left: 5px;'><\/i>country_code",
         "type": "text",
         "length": 2147483647,
         "nullable": "",
         "autoUpdated": "",
         "defaultValue": "null",
-        "comments": ""
+        "comments": "<p>ISO-3166 alpha-2 country code.<\/p>"
     },
     {
         "tableName": "seed_fund_report_photos",
