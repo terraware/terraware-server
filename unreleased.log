@@ -1,3 +1,4 @@
+ee1cbcd6 SW-8420 Add endpoint to dismiss planting season notifications per page (#4640)
 60e40e76 SW-8420 Make notifications fetched per-page and per-season instead of just per-season (#4639)
 9fb66e6c SW-8420 Add all notification types and categories (#4638)
 78d3faae SW-8411 Don't require water depth for mangrove plots (#4648)
