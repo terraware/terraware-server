@@ -16,16 +16,21 @@ import java.io.Reader
  * enough to be a significant bottleneck when importing large data sets. This class is less
  * flexible, but significantly faster.
  */
-abstract class ParsedCsvReader<T>(private val csvReader: CSVReader) {
+abstract class ParsedCsvReader<T>(
+    private val csvReader: CSVReader,
+    private val columnNames: List<String>? = null,
+) {
   constructor(
       reader: Reader,
       csvParser: CSVParser,
-  ) : this(CSVReaderBuilder(reader).withCSVParser(csvParser).build())
+      columnNames: List<String>? = null,
+  ) : this(CSVReaderBuilder(reader).withCSVParser(csvParser).build(), columnNames)
 
   constructor(
       inputStream: InputStream,
       csvParser: CSVParser,
-  ) : this(InputStreamReader(inputStream), csvParser)
+      columnNames: List<String>? = null,
+  ) : this(InputStreamReader(inputStream), csvParser, columnNames)
 
   private lateinit var positions: Map<String, Int>
   private var numColumns: Int = -1
@@ -53,6 +58,12 @@ abstract class ParsedCsvReader<T>(private val csvReader: CSVReader) {
     return get(pos)
   }
 
+  protected fun Array<String?>.getOrNull(columnName: String): String? {
+    val pos = positions[columnName] ?: return null
+
+    return get(pos)
+  }
+
   /**
    * Returns a sequence of parsed values from the input. The first row must be a header row
    * containing the names of the columns.
@@ -61,6 +72,12 @@ abstract class ParsedCsvReader<T>(private val csvReader: CSVReader) {
    */
   fun sequence(): Sequence<T> {
     readHeaderRow()
+
+    if (columnNames != null) {
+      numColumns = columnNames.size
+      positions = columnNames.mapIndexed { index, columnName -> columnName to index }.toMap()
+    }
+
     return csvReader.asSequence().filter { it.size == numColumns }.mapNotNull { parseRow(it) }
   }
 
