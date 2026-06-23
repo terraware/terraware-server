@@ -477,6 +477,10 @@ val ID_WRAPPERS =
                     "GbifTaxonId",
                     listOf("gbif_taxa\\.id", "gbif_.*\\.taxon_id", "gbif_.*\\..*_usage_id"),
                 ),
+                IdWrapper(
+                    "GriisResourceId",
+                    listOf("griis_resources\\.id", ".*\\.griis_resource_id"),
+                ),
                 IdWrapper("InternalTagId", listOf("internal_tags\\.id", ".*\\.internal_tag_id")),
                 IdWrapper("NotificationId", listOf("notifications\\.id", ".*\\.notification_id")),
                 IdWrapper("OrganizationId", listOf("organizations\\.id", ".*\\.organization_id")),

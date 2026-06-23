@@ -146,6 +146,7 @@ import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
+import com.terraformation.backend.db.default_schema.GriisResourceId
 import com.terraformation.backend.db.default_schema.GrowthForm
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.LandUseModelType
@@ -240,6 +241,8 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRoles
 import com.terraformation.backend.db.default_schema.tables.records.BotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.EcoregionBotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.EcoregionsRecord
+import com.terraformation.backend.db.default_schema.tables.records.GriisResourcesRecord
+import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
@@ -5878,6 +5881,59 @@ abstract class DatabaseBackedTest {
       ecoregionId: EcoregionId = inserted.ecoregionId,
   ) {
     EcoregionBotanicalCountriesRecord(ecoregionId, botanicalCountryId).attach(dslContext).insert()
+  }
+
+  private var nextGriisResourceSuffix: Int = 1
+
+  fun insertGriisResource(
+      resourceName: String = "resource${nextGriisResourceSuffix++}",
+      countryCode: String = "US",
+      publicationDate: LocalDate = LocalDate.EPOCH,
+      updatedTime: Instant = Instant.EPOCH,
+  ): GriisResourceId {
+    val record =
+        GriisResourcesRecord(
+                id = null,
+                resourceName = resourceName,
+                countryCode = countryCode,
+                publicationDate = publicationDate,
+                updatedTime = updatedTime,
+            )
+            .attach(dslContext)
+
+    record.insert()
+
+    return record.id!!.also { inserted.griisResourceIds.add(it) }
+  }
+
+  private var nextGriisTaxonId: Long = 1
+
+  fun insertGriisTaxon(
+      acceptedNameUsage: String? = null,
+      establishmentMeans: String? = null,
+      griisResourceId: GriisResourceId = inserted.griisResourceId,
+      habitat: String? = null,
+      isInvasive: Boolean = true,
+      occurrenceStatus: String? = "present",
+      scientificName: String = "Species name",
+      taxonId: Long = nextGriisTaxonId++,
+      taxonomicStatus: String = "accepted",
+      taxonRank: String = "species",
+  ) {
+    GriisTaxaRecord(
+            acceptedNameUsage = acceptedNameUsage,
+            establishmentMeans = establishmentMeans,
+            griisResourceId = griisResourceId,
+            habitat = habitat,
+            isInvasive = isInvasive,
+            occurrenceStatus = occurrenceStatus,
+            scientificName = scientificName,
+            taxonId = taxonId,
+            taxonomicStatus = taxonomicStatus,
+            taxonRank = taxonRank,
+        )
+        .attach(dslContext)
+        .insert()
   }
 
   private var nextWcvpTaxonId: Long = 1

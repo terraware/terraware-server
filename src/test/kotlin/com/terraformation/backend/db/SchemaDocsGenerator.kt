@@ -310,6 +310,8 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "gbif_taxa" to setOf(SPECIES),
                   "gbif_vernacular_names" to setOf(SPECIES),
                   "global_roles" to setOf(ALL, CUSTOMER),
+                  "griis_resources" to setOf(ALL, SPECIES),
+                  "griis_taxa" to setOf(ALL, SPECIES),
                   "growth_forms" to setOf(ALL, SEEDBANK),
                   "identifier_sequences" to setOf(ALL, SEEDBANK, NURSERY),
                   "internal_tags" to setOf(ALL, CUSTOMER),
