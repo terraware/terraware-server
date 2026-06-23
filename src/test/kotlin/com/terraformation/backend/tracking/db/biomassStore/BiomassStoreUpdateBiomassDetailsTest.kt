@@ -215,6 +215,72 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
   }
 
   @Test
+  fun `updates mangrove-only values`() {
+    dslContext.deleteFrom(OBSERVATION_BIOMASS_DETAILS).execute()
+    insertObservationBiomassDetails(
+        description = "Original description",
+        forestType = BiomassForestType.Mangrove,
+        herbaceousCoverPercent = 10,
+        ph = BigDecimal.ONE,
+        salinityPpt = BigDecimal.TWO,
+        smallTreesCountLow = 1,
+        smallTreesCountHigh = 4,
+        soilAssessment = "Original soil assessment",
+        tideId = MangroveTide.Low,
+        tideTime = Instant.EPOCH,
+        waterDepthCm = 1,
+    )
+
+    val before = dslContext.fetchSingle(OBSERVATION_BIOMASS_DETAILS)
+
+    store.updateBiomassDetails(inserted.observationId, inserted.monitoringPlotId) {
+      it.copy(
+          ph = BigDecimal.TEN,
+          salinityPpt = BigDecimal.ONE,
+          tide = MangroveTide.High,
+          tideTime = Instant.ofEpochSecond(120),
+          waterDepthCm = null,
+      )
+    }
+
+    val expected =
+        before.copy().apply {
+          ph = BigDecimal.TEN
+          salinityPpt = BigDecimal.ONE
+          tideId = MangroveTide.High
+          tideTime = Instant.ofEpochSecond(120)
+          waterDepthCm = null
+        }
+
+    assertTableEquals(expected)
+
+    eventPublisher.assertEventPublished(
+        BiomassDetailsUpdatedEvent(
+            changedFrom =
+                BiomassDetailsUpdatedEventValues(
+                    ph = BigDecimal.ONE,
+                    salinity = BigDecimal.TWO,
+                    tide = MangroveTide.Low,
+                    tideTime = Instant.EPOCH,
+                    waterDepth = 1,
+                ),
+            changedTo =
+                BiomassDetailsUpdatedEventValues(
+                    ph = BigDecimal.TEN,
+                    salinity = BigDecimal.ONE,
+                    tide = MangroveTide.High,
+                    tideTime = Instant.ofEpochSecond(120),
+                    waterDepth = null,
+                ),
+            monitoringPlotId = inserted.monitoringPlotId,
+            observationId = inserted.observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
+        )
+    )
+  }
+
+  @Test
   fun `omits unmodified values from events`() {
     val before = dslContext.fetchSingle(OBSERVATION_BIOMASS_DETAILS)
 
