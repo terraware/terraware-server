@@ -198,6 +198,45 @@
          <checkConstraint constraint="(country_code !~ similar_to_escape(' *'::text))" name="gbif_vernacular_names_country_code_check"/>
          <checkConstraint constraint="(language !~ similar_to_escape(' *'::text))" name="gbif_vernacular_names_language_check"/>
       </table>
+      <table name="griis_resources" remarks="Resource-level metadata from the Global Register of Introduced and Invasive Species." schema="public" type="TABLE">
+         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <child column="griis_resource_id" foreignKey="griis_taxa_griis_resource_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="griis_taxa"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="resource_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="country_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="publication_date" nullable="false" remarks="" size="13" type="date" typeCode="91"/>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="4" name="updated_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="griis_resources_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="griis_resources_country_code_idx" unique="false">
+            <column ascending="true" name="country_code"/>
+         </index>
+         <index name="griis_resources_resource_name_key" unique="true">
+            <column ascending="true" name="resource_name"/>
+         </index>
+      </table>
+      <table name="griis_taxa" remarks="Information about which species are introduced or invasive in which locations." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="griis_resource_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
+            <parent column="id" foreignKey="griis_taxa_griis_resource_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="griis_resources"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="scientific_name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="accepted_name_usage" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="taxon_rank" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="taxonomic_status" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="occurrence_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="establishment_means" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="is_invasive" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="habitat" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="griis_resource_id" sequenceNumberInPK="1"/>
+         <primaryKey column="taxon_id" sequenceNumberInPK="2"/>
+         <index name="griis_taxa_pkey" unique="true">
+            <column ascending="true" name="griis_resource_id"/>
+            <column ascending="true" name="taxon_id"/>
+         </index>
+      </table>
       <table name="organizations" remarks="Top-level information about organizations." schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="Unique numeric identifier of the organization." size="19" type="int8" typeCode="-5">
             <child column="organization_id" foreignKey="batches_organization_id_fkey" implied="false" onDeleteCascade="true" schema="nursery" table="batches"/>

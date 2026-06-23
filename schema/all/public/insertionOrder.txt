@@ -47,10 +47,12 @@ projects
 devices
 seed_fund_reports
 chat_memory_conversations
+griis_resources
 internal_tags
 timeseries
 uploads
 device_templates
+griis_taxa
 identifier_sequences
 organization_report_settings
 project_report_settings

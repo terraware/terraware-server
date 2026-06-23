@@ -7,6 +7,7 @@ species_plant_material_sourcing_methods
 species_ecosystem_types
 ecoregion_botanical_countries
 species_growth_forms
+griis_taxa
 gbif_name_words
 ecoregion_countries
 gbif_names
@@ -18,6 +19,7 @@ species_problem_types
 species_problem_fields
 species_native_categories
 plant_material_sourcing_methods
+griis_resources
 gbif_taxa
 ecosystem_types
 conservation_categories

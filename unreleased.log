@@ -1,3 +1,4 @@
+29039235 SW-8536 Define schema for GRIIS species data (#4646)
 9b8a6692 Add generic reader for Darwin Core archives (#4643)
 65dd4e0e Increase default heap size limit to 5GB (#4642)
 81968298 Reduce EcoregionImporter memory footprint (#4641)

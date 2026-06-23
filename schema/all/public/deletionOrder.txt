@@ -36,10 +36,12 @@ thumbnails
 project_report_settings
 organization_report_settings
 identifier_sequences
+griis_taxa
 device_templates
 uploads
 timeseries
 internal_tags
+griis_resources
 chat_memory_conversations
 seed_fund_reports
 devices
