@@ -7,6 +7,7 @@ import com.terraformation.backend.gis.EcoregionImporter
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.WcvpImporter
 import com.terraformation.backend.species.db.GbifImporter
+import com.terraformation.backend.species.db.GriisImporter
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -29,6 +30,7 @@ class AdminSpeciesController(
     private val botanicalCountryImporter: BotanicalCountryImporter,
     private val ecoregionImporter: EcoregionImporter,
     private val gbifImporter: GbifImporter,
+    private val griisImporter: GriisImporter,
     private val wcvpImporter: WcvpImporter,
 ) {
   private val log = perClassLogger()
@@ -83,6 +85,34 @@ class AdminSpeciesController(
       redirectAttributes.successMessage = "Ecoregions imported successfully."
     } catch (e: Exception) {
       log.error("Ecoregion import failed", e)
+      redirectAttributes.failureMessage = "Import failed: ${e.message}"
+    }
+
+    return redirectToAdminHome()
+  }
+
+  @PostMapping("/importGriisResources")
+  fun importGriisResources(
+      @RequestParam resourceName: String? = null,
+      @RequestParam forceUpdate: Boolean,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    try {
+      val resources =
+          griisImporter.fetchResourceList().filter {
+            resourceName == null || resourceName == it.name
+          }
+
+      val updatedCount = resources.count { resource ->
+        griisImporter.importResource(resource, forceUpdate)
+      }
+
+      val skippedCount = resources.size - updatedCount
+
+      redirectAttributes.successMessage =
+          "Imported $updatedCount and skipped $skippedCount GRIIS resources."
+    } catch (e: Exception) {
+      log.error("GRIIS import failed", e)
       redirectAttributes.failureMessage = "Import failed: ${e.message}"
     }
 
