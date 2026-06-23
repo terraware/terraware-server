@@ -166,6 +166,7 @@ class DarwinCoreReader(private val zipFile: ZipFile) {
       get() =
           when (fieldsTerminatedBy) {
             "\\t" -> '\t'
+            "" -> throw IllegalArgumentException("Field terminator may not be an empty string")
             else -> fieldsTerminatedBy[0]
           }
   }
