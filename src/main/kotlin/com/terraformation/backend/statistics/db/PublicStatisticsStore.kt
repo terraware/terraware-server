@@ -39,7 +39,11 @@ class PublicStatisticsStore(
               )
           )
 
-  fun fetchStatistics(): PublicStatisticsModel {
+  private val cachedStatistics: PublicStatisticsModel by lazy { computeStatistics() }
+
+  fun fetchStatistics(): PublicStatisticsModel = cachedStatistics
+
+  private fun computeStatistics(): PublicStatisticsModel {
     return PublicStatisticsModel(
         totalOrganizations = countOrganizations(),
         totalCountries = countCountries(),

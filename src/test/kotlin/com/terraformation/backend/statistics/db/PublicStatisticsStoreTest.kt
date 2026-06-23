@@ -71,6 +71,17 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   @Test
+  fun `returns cached result on subsequent calls`() {
+    insertOrganization()
+    val firstResult = store.fetchStatistics()
+
+    insertOrganization()
+    val secondResult = store.fetchStatistics()
+
+    assertEquals(firstResult, secondResult, "Should return cached result")
+  }
+
+  @Test
   fun `sums planting site area excluding internal organizations`() {
     val organizationId = insertOrganization()
     insertPlantingSite(organizationId = organizationId, areaHa = BigDecimal(10))
