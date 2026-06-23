@@ -65,7 +65,7 @@ class PlantingSeasonNotificationsController(
               "specified event log id. The event log id should be the lastEventLogId returned by " +
               "the notifications listing endpoint.",
   )
-  @PostMapping("/notifications")
+  @PostMapping("/notifications/dismiss")
   fun dismissPlantingSeasonNotifications(
       @RequestBody payload: DismissPlantingSeasonNotificationsRequestPayload,
   ): SimpleSuccessResponsePayload {
