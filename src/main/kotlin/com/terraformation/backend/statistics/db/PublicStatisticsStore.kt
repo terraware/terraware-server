@@ -1,9 +1,15 @@
 package com.terraformation.backend.statistics.db
 
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_INTERNAL_TAGS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
+import com.terraformation.backend.db.nursery.tables.references.BATCHES
+import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
+import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.statistics.PublicStatisticsModel
 import jakarta.inject.Named
@@ -48,6 +54,9 @@ class PublicStatisticsStore(
         totalOrganizations = countOrganizations(),
         totalCountries = countCountries(),
         totalAreaUnderRestorationHa = sumPlantingSiteArea(),
+        totalSeedsInStorage = sumSeedsInStorage(),
+        totalSeedlingsInNurseries = sumSeedlingsInNurseries(),
+        totalPlantings = countPlantings(),
     )
   }
 
@@ -81,5 +90,60 @@ class PublicStatisticsStore(
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ORGANIZATION_ID.notIn(internalOrganizationIds))
         .fetchOne(0, BigDecimal::class.java) ?: BigDecimal.ZERO
+  }
+
+  private fun sumSeedsInStorage(): Long {
+    val totalSeeds =
+        DSL.sum(
+            DSL.case_()
+                .`when`(
+                    ACCESSIONS.REMAINING_UNITS_ID.eq(SeedQuantityUnits.Seeds),
+                    ACCESSIONS.REMAINING_QUANTITY,
+                )
+                .`when`(
+                    ACCESSIONS.REMAINING_UNITS_ID.ne(SeedQuantityUnits.Seeds)
+                        .and(ACCESSIONS.SUBSET_COUNT.isNotNull)
+                        .and(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNotNull)
+                        .and(ACCESSIONS.REMAINING_GRAMS.isNotNull),
+                    ACCESSIONS.REMAINING_GRAMS.div(ACCESSIONS.SUBSET_WEIGHT_GRAMS)
+                        .mul(ACCESSIONS.SUBSET_COUNT),
+                )
+                .else_(BigDecimal.ZERO)
+        )
+
+    val activeStates = AccessionState.entries.filter { it.active }
+
+    return dslContext
+        .select(totalSeeds)
+        .from(ACCESSIONS)
+        .join(FACILITIES)
+        .on(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
+        .where(FACILITIES.ORGANIZATION_ID.notIn(internalOrganizationIds))
+        .and(ACCESSIONS.STATE_ID.`in`(activeStates))
+        .fetchOne { (total) -> (total ?: BigDecimal.ZERO).toLong() } ?: 0L
+  }
+
+  private fun sumSeedlingsInNurseries(): Long {
+    return dslContext
+        .select(
+            DSL.sum(
+                BATCHES.GERMINATING_QUANTITY.plus(BATCHES.ACTIVE_GROWTH_QUANTITY)
+                    .plus(BATCHES.READY_QUANTITY)
+                    .plus(BATCHES.HARDENING_OFF_QUANTITY)
+            )
+        )
+        .from(BATCHES)
+        .where(BATCHES.ORGANIZATION_ID.notIn(internalOrganizationIds))
+        .fetchOne(0, Long::class.java) ?: 0L
+  }
+
+  private fun countPlantings(): Int {
+    return dslContext
+        .selectCount()
+        .from(DELIVERIES)
+        .join(PLANTING_SITES)
+        .on(DELIVERIES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+        .where(PLANTING_SITES.ORGANIZATION_ID.notIn(internalOrganizationIds))
+        .fetchOne(0, Int::class.java) ?: 0
   }
 }

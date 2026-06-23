@@ -4,6 +4,10 @@ import com.terraformation.backend.RunsAsDatabaseUser
 import com.terraformation.backend.customer.model.InternalTagIds
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.seedbank.AccessionState
+import com.terraformation.backend.db.seedbank.SeedQuantityUnits
+import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.statistics.PublicStatisticsModel
 import java.math.BigDecimal
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,6 +27,9 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             totalOrganizations = 0,
             totalCountries = 0,
             totalAreaUnderRestorationHa = BigDecimal.ZERO,
+            totalSeedsInStorage = 0L,
+            totalSeedlingsInNurseries = 0L,
+            totalPlantings = 0,
         ),
         statistics,
         "Should return zeros",
@@ -95,5 +102,138 @@ internal class PublicStatisticsStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         0,
         BigDecimal(15).compareTo(store.fetchStatistics().totalAreaUnderRestorationHa),
     )
+  }
+
+  @Test
+  fun `sums seeds in storage using seed count units`() {
+    val organizationId = insertOrganization()
+    val facilityId = insertFacility(organizationId = organizationId, type = FacilityType.SeedBank)
+    insertAccession(
+        row =
+            AccessionsRow(
+                remainingQuantity = BigDecimal(100),
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+            ),
+        facilityId = facilityId,
+        stateId = AccessionState.InStorage,
+    )
+    insertAccession(
+        row =
+            AccessionsRow(
+                remainingQuantity = BigDecimal(50),
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+            ),
+        facilityId = facilityId,
+        stateId = AccessionState.Drying,
+    )
+
+    assertEquals(150L, store.fetchStatistics().totalSeedsInStorage)
+  }
+
+  @Test
+  fun `estimates seeds in storage from weight when no seed count available`() {
+    val organizationId = insertOrganization()
+    val facilityId = insertFacility(organizationId = organizationId, type = FacilityType.SeedBank)
+    // 10g remaining / 2g per subset * 100 seeds per subset = 500 estimated seeds
+    insertAccession(
+        row =
+            AccessionsRow(
+                remainingGrams = BigDecimal(10),
+                remainingQuantity = BigDecimal(10),
+                remainingUnitsId = SeedQuantityUnits.Grams,
+                subsetWeightGrams = BigDecimal(2),
+                subsetCount = 100,
+            ),
+        facilityId = facilityId,
+        stateId = AccessionState.InStorage,
+    )
+
+    assertEquals(500L, store.fetchStatistics().totalSeedsInStorage)
+  }
+
+  @Test
+  fun `excludes seeds in inactive accession states from storage count`() {
+    val organizationId = insertOrganization()
+    val facilityId = insertFacility(organizationId = organizationId, type = FacilityType.SeedBank)
+    for (state in listOf(AccessionState.Withdrawn, AccessionState.UsedUp, AccessionState.Nursery)) {
+      insertAccession(
+          row =
+              AccessionsRow(
+                  remainingQuantity = BigDecimal(100),
+                  remainingUnitsId = SeedQuantityUnits.Seeds,
+              ),
+          facilityId = facilityId,
+          stateId = state,
+      )
+    }
+
+    assertEquals(0L, store.fetchStatistics().totalSeedsInStorage)
+  }
+
+  @Test
+  fun `excludes seeds from internal organizations`() {
+    val internalOrgId = insertOrganization()
+    insertOrganizationInternalTag(internalOrgId, InternalTagIds.Internal)
+    val facilityId = insertFacility(organizationId = internalOrgId, type = FacilityType.SeedBank)
+    insertAccession(
+        row =
+            AccessionsRow(
+                remainingQuantity = BigDecimal(100),
+                remainingUnitsId = SeedQuantityUnits.Seeds,
+            ),
+        facilityId = facilityId,
+        stateId = AccessionState.InStorage,
+    )
+
+    assertEquals(0L, store.fetchStatistics().totalSeedsInStorage)
+  }
+
+  @Test
+  fun `sums all seedling quantities excluding internal organizations`() {
+    val organizationId = insertOrganization()
+    insertFacility(organizationId = organizationId, type = FacilityType.Nursery)
+    insertSpecies(organizationId = organizationId)
+    insertBatch(
+        organizationId = organizationId,
+        germinatingQuantity = 10,
+        activeGrowthQuantity = 20,
+        readyQuantity = 30,
+        hardeningOffQuantity = 5,
+    )
+
+    val internalOrgId = insertOrganization()
+    insertOrganizationInternalTag(internalOrgId, InternalTagIds.Internal)
+    insertFacility(organizationId = internalOrgId, type = FacilityType.Nursery)
+    insertSpecies(organizationId = internalOrgId)
+    insertBatch(
+        organizationId = internalOrgId,
+        germinatingQuantity = 100,
+        activeGrowthQuantity = 100,
+        readyQuantity = 100,
+        hardeningOffQuantity = 100,
+    )
+
+    assertEquals(65L, store.fetchStatistics().totalSeedlingsInNurseries)
+  }
+
+  @Test
+  fun `counts deliveries excluding internal organizations`() {
+    val organizationId = insertOrganization()
+    val facilityId = insertFacility(organizationId = organizationId, type = FacilityType.Nursery)
+    val plantingSiteId = insertPlantingSite(organizationId = organizationId)
+    val withdrawalId1 = insertNurseryWithdrawal(facilityId = facilityId)
+    val withdrawalId2 = insertNurseryWithdrawal(facilityId = facilityId)
+    insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId1)
+    insertDelivery(plantingSiteId = plantingSiteId, withdrawalId = withdrawalId2)
+
+    val internalOrgId = insertOrganization()
+    insertOrganizationInternalTag(internalOrgId, InternalTagIds.Internal)
+    val internalFacilityId =
+        insertFacility(organizationId = internalOrgId, type = FacilityType.Nursery)
+    val internalPlantingSiteId = insertPlantingSite(organizationId = internalOrgId)
+    val internalWithdrawalId = insertNurseryWithdrawal(facilityId = internalFacilityId)
+    insertDelivery(plantingSiteId = internalPlantingSiteId, withdrawalId = internalWithdrawalId)
+
+    assertEquals(2, store.fetchStatistics().totalPlantings)
   }
 }
