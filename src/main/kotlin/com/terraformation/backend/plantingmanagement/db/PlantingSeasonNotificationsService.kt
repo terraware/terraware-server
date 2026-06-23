@@ -82,6 +82,32 @@ class PlantingSeasonNotificationsService(
   ): List<PlantingSeasonNotificationGroupModel> =
       getNotifications(PLANTING_SEASONS.ID.eq(plantingSeasonId), page)
 
+  /**
+   * Dismisses the notifications for [page] of [plantingSeasonId] up to and including [eventLogId].
+   *
+   * [eventLogId] is the last event log id the client received from [getNotifications]; subsequent
+   * calls to [getNotifications] will only return notifications for events logged after it.
+   */
+  fun dismissNotifications(
+      plantingSeasonId: PlantingSeasonId,
+      page: PlantingSeasonNotificationPage,
+      eventLogId: EventLogId,
+  ) {
+    requirePermissions { updatePlantingSeason(plantingSeasonId) }
+
+    with(PLANTING_SEASON_NOTIFICATIONS) {
+      dslContext
+          .insertInto(PLANTING_SEASON_NOTIFICATIONS)
+          .set(PLANTING_SEASON_ID, plantingSeasonId)
+          .set(PAGE_ID, page)
+          .set(LAST_DISMISSED_EVENT_LOG_ID, eventLogId)
+          .onConflict(PLANTING_SEASON_ID, PAGE_ID)
+          .doUpdate()
+          .set(LAST_DISMISSED_EVENT_LOG_ID, eventLogId)
+          .execute()
+    }
+  }
+
   private fun getNotifications(
       condition: Condition,
       page: PlantingSeasonNotificationPage,

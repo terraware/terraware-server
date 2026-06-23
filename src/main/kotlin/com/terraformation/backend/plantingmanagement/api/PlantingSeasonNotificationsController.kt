@@ -1,6 +1,7 @@
 package com.terraformation.backend.plantingmanagement.api
 
 import com.terraformation.backend.api.ApiResponse200
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.TrackingEndpoint
 import com.terraformation.backend.db.default_schema.EventLogId
@@ -14,6 +15,8 @@ import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotificati
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -53,7 +56,39 @@ class PlantingSeasonNotificationsController(
         notifications.map { PlantingSeasonNotificationGroupPayload(it) }
     )
   }
+
+  @ApiResponse200
+  @Operation(
+      summary = "Dismisses planting season notifications for the specified page.",
+      description =
+          "Dismisses all notifications for the planting season and page up to and including the " +
+              "specified event log id. The event log id should be the lastEventLogId returned by " +
+              "the notifications listing endpoint.",
+  )
+  @PostMapping("/notifications/dismiss")
+  fun dismissPlantingSeasonNotifications(
+      @RequestBody payload: DismissPlantingSeasonNotificationsRequestPayload,
+  ): SimpleSuccessResponsePayload {
+    plantingSeasonNotificationsService.dismissNotifications(
+        payload.plantingSeasonId,
+        payload.notificationPage,
+        payload.lastEventLogId,
+    )
+
+    return SimpleSuccessResponsePayload()
+  }
 }
+
+data class DismissPlantingSeasonNotificationsRequestPayload(
+    val plantingSeasonId: PlantingSeasonId,
+    val notificationPage: PlantingSeasonNotificationPage,
+    @Schema(
+        description =
+            "The last event log id returned for the list of notifications within the specified " +
+                "page. All notifications up to and including this event will be dismissed."
+    )
+    val lastEventLogId: EventLogId,
+)
 
 data class GetPlantingSeasonNotificationsResponsePayload(
     val notifications: List<PlantingSeasonNotificationGroupPayload>

@@ -45,6 +45,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.springframework.security.access.AccessDeniedException
 
 internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDatabaseUser {
   override lateinit var user: TerrawareUser
@@ -606,6 +607,140 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               PlantingSeasonNotificationPage.InventoryPlanning,
           ),
       )
+    }
+  }
+
+  @Nested
+  inner class DismissNotifications {
+    @Test
+    fun `dismisses notifications up to and including the given event`() {
+      insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      val latest = insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
+
+      service.dismissNotifications(
+          plantingSeasonId,
+          PlantingSeasonNotificationPage.InventoryPlanning,
+          latest.id,
+      )
+
+      assertEquals(
+          emptyList<PlantingSeasonNotificationGroupModel>(),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationPage.InventoryPlanning,
+          ),
+      )
+    }
+
+    @Test
+    fun `keeps notifications for events logged after the dismissed event`() {
+      val dismissed = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      val newer = insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
+
+      service.dismissNotifications(
+          plantingSeasonId,
+          PlantingSeasonNotificationPage.InventoryPlanning,
+          dismissed.id,
+      )
+
+      assertEquals(
+          listOf(model(newer.id, listOf(targetUpdated(speciesName1)))),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationPage.InventoryPlanning,
+          ),
+      )
+    }
+
+    @Test
+    fun `only dismisses notifications for the specified page and planting season`() {
+      val otherSeasonId = insertPlantingSeason(name = "Other Season")
+      val event = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
+      val otherSeasonEvent =
+          insertSpeciesTargetCreatedEvent(speciesId = speciesId1, plantingSeasonId = otherSeasonId)
+
+      service.dismissNotifications(
+          plantingSeasonId,
+          PlantingSeasonNotificationPage.InventoryPlanning,
+          event.id,
+      )
+
+      assertEquals(
+          emptyList<PlantingSeasonNotificationGroupModel>(),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationPage.InventoryPlanning,
+          ),
+          "InventoryPlanning page should have no undismissed notifications",
+      )
+
+      assertEquals(
+          listOf(
+              model(
+                  event.id,
+                  listOf(targetAdded(speciesName1)),
+                  notificationPage = PlantingSeasonNotificationPage.Inventory,
+              )
+          ),
+          service.getNotifications(plantingSeasonId, PlantingSeasonNotificationPage.Inventory),
+          "Inventory page should still show the undismissed notification",
+      )
+
+      assertEquals(
+          listOf(
+              model(
+                  otherSeasonEvent.id,
+                  listOf(targetAdded(speciesName1)),
+                  plantingSeasonId = otherSeasonId,
+                  plantingSeasonName = "Other Season",
+              )
+          ),
+          service.getNotifications(otherSeasonId, PlantingSeasonNotificationPage.InventoryPlanning),
+          "Other planting season should still show the undismissed notification",
+      )
+    }
+
+    @Test
+    fun `advances an existing dismissal watermark`() {
+      val first = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
+      clock.instant = clock.instant.plusSeconds(1)
+      val second = insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
+
+      service.dismissNotifications(
+          plantingSeasonId,
+          PlantingSeasonNotificationPage.InventoryPlanning,
+          first.id,
+      )
+      service.dismissNotifications(
+          plantingSeasonId,
+          PlantingSeasonNotificationPage.InventoryPlanning,
+          second.id,
+      )
+
+      assertEquals(
+          emptyList<PlantingSeasonNotificationGroupModel>(),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationPage.InventoryPlanning,
+          ),
+      )
+    }
+
+    @Test
+    fun `throws exception when user has no permission to update the planting season`() {
+      val event = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
+      deleteOrganizationUser()
+      insertOrganizationUser(role = Role.Contributor)
+
+      assertThrows<AccessDeniedException> {
+        service.dismissNotifications(
+            plantingSeasonId,
+            PlantingSeasonNotificationPage.InventoryPlanning,
+            event.id,
+        )
+      }
     }
   }
 
