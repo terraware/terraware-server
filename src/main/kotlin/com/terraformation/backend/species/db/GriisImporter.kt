@@ -48,15 +48,14 @@ class GriisImporter(
   companion object {
     /**
      * Number of resources to request from the resource search service. This should be set high
-     * enough to avoid having th navigate through paginated results. As of June 2026, there are 380
+     * enough to avoid having to navigate through paginated results. As of June 2026, there are 380
      * resources.
      */
     private const val RESOURCE_PAGE_SIZE = 1000
 
     /**
-     * URL of resource search service. Length is set to 1000 to avoid having to navigate through
-     * paginated results; as of June 2026 there are 380 resources, so 1000 should be plenty of
-     * headroom.
+     * URL of resource search endpoint. This isn't a documented API; it's what the GBIF web UI
+     * fetches to populate the table of available resources.
      */
     val griisListResourcesUri =
         URI("https://cloud.gbif.org/griis/api/resources?start=0&length=$RESOURCE_PAGE_SIZE")
@@ -73,7 +72,10 @@ class GriisImporter(
     private const val RESOURCE_NAME_INDEX = 11
     private const val RESOURCE_UPDATED_TIME_INDEX = 6
 
-    /** Format of timestamp columns in resource list. */
+    /**
+     * The resource list has timestamps without time zones; we treat them as UTC since we only care
+     * about detecting out-of-date resources.
+     */
     private val timestampFormat =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneOffset.UTC)!!
 
