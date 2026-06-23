@@ -504,7 +504,7 @@ COMMENT ON COLUMN tracking.observation_biomass_details.ph IS 'Acidity of water i
 COMMENT ON COLUMN tracking.observation_biomass_details.salinity_ppt IS 'Salinity of water in parts per thousand (ppt). Must be non-null if forest type is "Mangrove".';
 COMMENT ON COLUMN tracking.observation_biomass_details.tide_id IS 'High/low tide during observation. Must be non-null if forest type is "Mangrove".';
 COMMENT ON COLUMN tracking.observation_biomass_details.tide_time IS 'Time when the tide is recorded. Must be non-null if forest type is "Mangrove".';
-COMMENT ON COLUMN tracking.observation_biomass_details.water_depth_cm IS 'Depth of water in centimeters (cm). Must be non-null if forest type is "Mangrove".';
+COMMENT ON COLUMN tracking.observation_biomass_details.water_depth_cm IS 'Depth of water in centimeters (cm). Only allowed if forest type is "Mangrove". Null value indicates no water in monitoring plot.';
 
 COMMENT ON TABLE tracking.observation_biomass_species IS 'Herbaceous and tree species data for a biomass observation.';
 COMMENT ON COLUMN tracking.observation_biomass_species.common_name IS 'The user-supplied common name of the plant''s species. Null if ID is known.';

@@ -179,9 +179,6 @@ data class BiomassDetailsModel<
       if (tideTime == null) {
         throw IllegalStateException("tideTime required for Mangrove")
       }
-      if (waterDepthCm == null) {
-        throw IllegalStateException("waterDepth required for Mangrove")
-      }
     }
 
     if (description != null && description.length > 50) {

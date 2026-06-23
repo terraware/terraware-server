@@ -306,7 +306,11 @@ data class ExistingBiomassMeasurementPayload(
     val tideTime: Instant?,
     val treeSpeciesCount: Int,
     val trees: List<ExistingTreePayload>,
-    @Schema(description = "Measured in centimeters.") //
+    @Schema(
+        description =
+            "Measured in centimeters. Only valid for Mangrove forests. A null value indicates " +
+                "that there was no water."
+    )
     val waterDepth: Int?,
 ) {
   companion object {
@@ -381,7 +385,11 @@ data class NewBiomassMeasurementPayload(
                 "recorded trees will be saved as an additional herbaceous species."
     )
     val species: List<BiomassSpeciesPayload>,
-    @Schema(description = "Measured in centimeters. Required for Mangrove forest.")
+    @Schema(
+        description =
+            "Measured in centimeters. Only valid for Mangrove forests. A null value indicates " +
+                "that there was no water."
+    )
     val waterDepth: Int?,
 ) {
   fun toModel(): NewBiomassDetailsModel {
