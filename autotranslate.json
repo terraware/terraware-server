@@ -38,6 +38,24 @@
   {
     "instructions": "src/main/resources/i18n/instructions.txt",
     "source": {
+      "file": "src/main/resources/i18n/Ecoregions_en.properties"
+    },
+    "targets": [
+      {
+        "language": "French",
+        "file": "src/main/resources/i18n/Ecoregions_fr.properties",
+        "instructions": "src/main/resources/i18n/instructions-fr.txt"
+      },
+      {
+        "language": "Spanish",
+        "file": "src/main/resources/i18n/Ecoregions_es.properties",
+        "instructions": "src/main/resources/i18n/instructions-es.txt"
+      }
+    ]
+  },
+  {
+    "instructions": "src/main/resources/i18n/instructions.txt",
+    "source": {
       "file": "src/main/resources/i18n/Enums_en.properties"
     },
     "targets": [
