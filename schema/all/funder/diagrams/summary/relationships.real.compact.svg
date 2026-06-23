@@ -276,10 +276,44 @@
 <polyline fill="none" stroke="black" points="740,-584 736,-584.05 "/>
 <ellipse fill="none" stroke="black" cx="732.8" cy="-584.09" rx="3.2" ry="3.2"/>
 </g>
-<!-- published_auto_calculated_indicator_baselines -->
+<!-- published_project_sdg -->
 <g id="node4" class="node">
+<title>published_project_sdg</title>
+<g id="a_node4"><a xlink:href="../../tables/published_project_sdg.html" xlink:title="published_project_sdg" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="405.5,-1941 405.5,-2025 580.5,-2025 580.5,-1941 405.5,-1941"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="406,-2003 406,-2025 581,-2025 581,-2003 406,-2003"/>
+<polygon fill="none" stroke="black" points="406,-2003 406,-2025 581,-2025 581,-2003 406,-2003"/>
+<text text-anchor="start" x="411" y="-2012.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">published_project_sdg</text>
+<text text-anchor="start" x="542" y="-2011.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="406,-1981 406,-2003 581,-2003 581,-1981 406,-1981"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411" y="-1998"/>
+<text text-anchor="start" x="438" y="-1989.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
+<polygon fill="none" stroke="black" points="406,-1959 406,-1981 581,-1981 581,-1959 406,-1959"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411" y="-1976"/>
+<text text-anchor="start" x="438" y="-1967.2" font-family="Helvetica,sans-Serif" font-size="11.00">sdg_number</text>
+<polygon fill="#ffffff" stroke="transparent" points="406,-1941 406,-1959 491,-1959 491,-1941 406,-1941"/>
+<polygon fill="none" stroke="black" points="406,-1941 406,-1959 491,-1959 491,-1941 406,-1941"/>
+<text text-anchor="start" x="409" y="-1947.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="491,-1941 491,-1959 536,-1959 536,-1941 491,-1941"/>
+<polygon fill="none" stroke="black" points="491,-1941 491,-1959 536,-1959 536,-1941 491,-1941"/>
+<text text-anchor="start" x="526" y="-1947.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="536,-1941 536,-1959 581,-1959 581,-1941 536,-1941"/>
+<polygon fill="none" stroke="black" points="536,-1941 536,-1959 581,-1959 581,-1941 536,-1941"/>
+<text text-anchor="start" x="571" y="-1947.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- published_project_sdg&#45;&gt;public.projects -->
+<g id="edge41" class="edge">
+<title>published_project_sdg:w&#45;&gt;public.projects:e</title>
+<path fill="none" stroke="black" d="M390.53,-1991.33C286.49,-1981.78 202.88,-1871.89 166.37,-1815.28"/>
+<polygon fill="black" stroke="black" points="397.01,-1991.63 404.83,-1995.6 401,-1991.82 405,-1992 405,-1992 405,-1992 401,-1991.82 405.17,-1988.4 397.01,-1991.63 397.01,-1991.63"/>
+<ellipse fill="none" stroke="black" cx="393.81" cy="-1991.49" rx="3.2" ry="3.2"/>
+</g>
+<!-- published_auto_calculated_indicator_baselines -->
+<g id="node5" class="node">
 <title>published_auto_calculated_indicator_baselines</title>
-<g id="a_node4"><a xlink:href="../../tables/published_auto_calculated_indic_82736b5c.html" xlink:title="published_auto_calculated_indicator_baselines" target="_top">
+<g id="a_node5"><a xlink:href="../../tables/published_auto_calculated_indic_82736b5c.html" xlink:title="published_auto_calculated_indicator_baselines" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="332,-2481 332,-2583 654,-2583 654,-2481 332,-2481"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="332,-2561 332,-2583 654,-2583 654,-2561 332,-2561"/>
 <polygon fill="none" stroke="black" points="332,-2561 332,-2583 654,-2583 654,-2561 332,-2561"/>
@@ -318,40 +352,6 @@
 <path fill="none" stroke="black" d="M316.53,-2528C308.12,-2528 299.58,-2528 291.03,-2528"/>
 <polygon fill="black" stroke="black" points="323,-2528 331,-2531.6 327,-2528 331,-2528 331,-2528 331,-2528 327,-2528 331,-2524.4 323,-2528 323,-2528"/>
 <ellipse fill="none" stroke="black" cx="319.8" cy="-2528" rx="3.2" ry="3.2"/>
-</g>
-<!-- published_project_sdg -->
-<g id="node5" class="node">
-<title>published_project_sdg</title>
-<g id="a_node5"><a xlink:href="../../tables/published_project_sdg.html" xlink:title="published_project_sdg" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="405.5,-1941 405.5,-2025 580.5,-2025 580.5,-1941 405.5,-1941"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="406,-2003 406,-2025 581,-2025 581,-2003 406,-2003"/>
-<polygon fill="none" stroke="black" points="406,-2003 406,-2025 581,-2025 581,-2003 406,-2003"/>
-<text text-anchor="start" x="411" y="-2012.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">published_project_sdg</text>
-<text text-anchor="start" x="542" y="-2011.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="406,-1981 406,-2003 581,-2003 581,-1981 406,-1981"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411" y="-1998"/>
-<text text-anchor="start" x="438" y="-1989.2" font-family="Helvetica,sans-Serif" font-size="11.00">project_id</text>
-<polygon fill="none" stroke="black" points="406,-1959 406,-1981 581,-1981 581,-1959 406,-1959"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="411" y="-1976"/>
-<text text-anchor="start" x="438" y="-1967.2" font-family="Helvetica,sans-Serif" font-size="11.00">sdg_number</text>
-<polygon fill="#ffffff" stroke="transparent" points="406,-1941 406,-1959 491,-1959 491,-1941 406,-1941"/>
-<polygon fill="none" stroke="black" points="406,-1941 406,-1959 491,-1959 491,-1941 406,-1941"/>
-<text text-anchor="start" x="409" y="-1947.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="491,-1941 491,-1959 536,-1959 536,-1941 491,-1941"/>
-<polygon fill="none" stroke="black" points="491,-1941 491,-1959 536,-1959 536,-1941 491,-1941"/>
-<text text-anchor="start" x="526" y="-1947.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="536,-1941 536,-1959 581,-1959 581,-1941 536,-1941"/>
-<polygon fill="none" stroke="black" points="536,-1941 536,-1959 581,-1959 581,-1941 536,-1941"/>
-<text text-anchor="start" x="571" y="-1947.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- published_project_sdg&#45;&gt;public.projects -->
-<g id="edge41" class="edge">
-<title>published_project_sdg:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M390.53,-1991.33C286.49,-1981.78 202.88,-1871.89 166.37,-1815.28"/>
-<polygon fill="black" stroke="black" points="397.01,-1991.63 404.83,-1995.6 401,-1991.82 405,-1992 405,-1992 405,-1992 401,-1991.82 405.17,-1988.4 397.01,-1991.63 397.01,-1991.63"/>
-<ellipse fill="none" stroke="black" cx="393.81" cy="-1991.49" rx="3.2" ry="3.2"/>
 </g>
 <!-- published_report_challenges -->
 <g id="node6" class="node">
