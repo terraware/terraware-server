@@ -308,11 +308,16 @@ class GriisImporter(
       columnNames: List<String>,
   ) : ParsedCsvReader<Taxon>(inputStream, csvParser, columnNames) {
     override fun parseRow(row: Array<String?>): Taxon? {
-      val taxonId = row["id"]?.toLongOrNull() ?: return null
+      // Taxon ID is supposed to be numeric, but sometimes resources incorrectly use URLs instead.
+      val taxonId = row["id"]?.toLongOrNull() ?: row["id"]?.hashCode()?.toLong() ?: return null
       val taxonRank = row["taxonRank"]?.lowercase() ?: return null
       val taxonomicStatus = row.getOrNull("taxonomicStatus")?.lowercase() ?: "accepted"
 
-      if (row["kingdom"] != "Plantae" || taxonRank == "synonym" || taxonomicStatus != "accepted") {
+      if (
+          row["kingdom"] != "Plantae" ||
+              taxonRank == "synonym" ||
+              !taxonomicStatus.startsWith("accepted")
+      ) {
         return null
       }
 
