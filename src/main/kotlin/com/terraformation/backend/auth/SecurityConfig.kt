@@ -71,6 +71,9 @@ class SecurityConfig(
         // Allow unauthenticated users to check their app versions for compatibility.
         authorize("/api/v1/versions", permitAll)
 
+        // Allow unauthenticated users to fetch aggregate platform statistics.
+        authorize("/api/v1/public/**", permitAll)
+
         // Allow unauthenticated users to fetch OpenAPI docs.
         authorize("/v3/**", permitAll)
         authorize("/swagger-ui/**", permitAll)
