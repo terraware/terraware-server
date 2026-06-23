@@ -198,6 +198,31 @@
     </div>
 
     <div th:if="${canImportGlobalSpeciesData}">
+        <h3>Import GRIIS resources</h3>
+
+        <p>
+            The list of resources is available
+            <a href="https://cloud.gbif.org/griis/">here</a>.
+        </p>
+
+        <form method="POST" action="importGriisResources">
+            <label>
+                Single resource name to import (leave blank to import all)
+                <input type="text" name="resourceName"/>
+            </label>
+            <label>
+                Force import?
+                <select name="forceUpdate">
+                    <option value="false" selected>No (only import updated resources)</option>
+                    <option value="true">Yes (import all resources)</option>
+                </select>
+            </label>
+            <input type="submit" value="Import">
+            (can take several minutes)
+        </form>
+    </div>
+
+    <div th:if="${canImportGlobalSpeciesData}">
         <h3>Import WWF/Resolve ecoregions</h3>
 
         <p>
