@@ -10,7 +10,6 @@ import com.terraformation.backend.tracking.model.Shapefile
 import jakarta.inject.Named
 import java.net.URI
 import java.nio.file.Path
-import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -58,54 +57,7 @@ class EcoregionImporter(
     val validCountryCodes =
         dslContext.select(COUNTRIES.CODE).from(COUNTRIES).fetchSet(COUNTRIES.CODE.asNonNullable())
 
-    log.info("Parsing ecoregions shapefile")
-
-    val shapefiles = Shapefile.fromZipFile(zipFilePath)
-    if (shapefiles.size != 1) {
-      throw IllegalArgumentException("Expected 1 shapefile in zip, found ${shapefiles.size}")
-    }
-    val features = shapefiles.first().features
-
-    log.info("Preprocessing ecoregion geometries")
-
-    val geometriesByObjectId = ConcurrentHashMap<String, Geometry>()
-    val precisionReducer = GeometryPrecisionReducer(PrecisionModel(1000000.0))
-    precisionReducer.setChangePrecisionModel(true)
-
-    // GeometryFixer is CPU-intensive for large geometries. Make use of all the available CPUs
-    // to process features in parallel.
-
-    val rows =
-        runBlocking(Dispatchers.Default) {
-          features
-              .map { feature ->
-                async {
-                  val rawGeometry =
-                      if (feature.geometry.isValid) {
-                        feature.geometry
-                      } else {
-                        GeometryFixer(feature.geometry).result
-                      }
-
-                  val geometry = precisionReducer.reduce(rawGeometry)
-
-                  val objectId = feature.properties["objectid"]!!
-                  geometriesByObjectId[objectId] = geometry
-
-                  DSL.row(
-                      objectId,
-                      feature.properties["eco_name"],
-                      feature.properties["biome_num"],
-                      feature.properties["biome_name"],
-                      feature.properties["realm"],
-                      feature.properties["eco_biome_"],
-                      feature.properties["eco_id"],
-                      geometry,
-                  )
-                }
-              }
-              .awaitAll()
-        }
+    val entries = loadEcoregionEntries(zipFilePath)
 
     log.info("Inserting ecoregions into database")
 
@@ -124,7 +76,7 @@ class EcoregionImporter(
                     ECO_ID,
                     BOUNDARY,
                 )
-                .valuesOfRows(rows)
+                .valuesOfRows(entries.map { it.toRow() })
                 .onConflict(OBJECT_ID)
                 .doUpdate()
                 .set(ECO_NAME, DSL.excluded(ECO_NAME))
@@ -138,7 +90,7 @@ class EcoregionImporter(
 
             dslContext
                 .deleteFrom(ECOREGIONS)
-                .where(OBJECT_ID.notIn(geometriesByObjectId.keys))
+                .where(OBJECT_ID.notIn(entries.map { it.objectId }))
                 .execute()
 
             dslContext
@@ -154,16 +106,15 @@ class EcoregionImporter(
 
       val ecoregionCountriesRows =
           runBlocking(Dispatchers.Default) {
-            features
-                .map { feature ->
+            entries
+                .map { entry ->
                   async {
-                    log.debug("Calculating for ${feature.properties["eco_name"]}")
+                    log.debug("Calculating for ${entry.ecoName}")
 
-                    val objectId = feature.properties["objectid"]!!
-                    val ecoregionId = ecoregionIdsByObjectId[objectId]
+                    val ecoregionId = ecoregionIdsByObjectId[entry.objectId]
                     val countries =
                         countryDetector.getCountries(
-                            geometriesByObjectId.getValue(objectId),
+                            entry.geometry,
                             minCoveragePercent,
                         )
 
@@ -189,5 +140,73 @@ class EcoregionImporter(
 
       eventPublisher.publishEvent(EcoregionsImportedEvent())
     }
+  }
+
+  private fun loadEcoregionEntries(zipFilePath: Path): List<EcoregionEntry> {
+    val entries = loadEntries(zipFilePath)
+
+    log.info("Preprocessing ecoregion geometries")
+
+    val precisionReducer = GeometryPrecisionReducer(PrecisionModel(1000000.0))
+    precisionReducer.setChangePrecisionModel(true)
+
+    // GeometryFixer is CPU-intensive for large geometries. Make use of all the available CPUs
+    // to process features in parallel. Update each entry's geometry in place so the system can
+    // reclaim the memory used by the original raw geometry.
+
+    runBlocking(Dispatchers.Default) {
+      entries
+          .map { entry ->
+            async {
+              val rawGeometry =
+                  if (entry.geometry.isValid) {
+                    entry.geometry
+                  } else {
+                    GeometryFixer(entry.geometry).result
+                  }
+
+              entry.geometry = precisionReducer.reduce(rawGeometry)
+            }
+          }
+          .awaitAll()
+    }
+
+    return entries
+  }
+
+  private fun loadEntries(zipFilePath: Path): List<EcoregionEntry> {
+    log.info("Parsing ecoregions shapefile")
+
+    val shapefiles = Shapefile.fromZipFile(zipFilePath)
+    if (shapefiles.size != 1) {
+      throw IllegalArgumentException("Expected 1 shapefile in zip, found ${shapefiles.size}")
+    }
+
+    return shapefiles.first().features.map { feature ->
+      EcoregionEntry(
+          objectId = feature.properties["objectid"]!!,
+          ecoName = feature.properties["eco_name"],
+          biomeNumber = feature.properties["biome_num"],
+          biomeName = feature.properties["biome_name"],
+          realm = feature.properties["realm"],
+          ecoBiomeCode = feature.properties["eco_biome_"],
+          ecoId = feature.properties["eco_id"],
+          geometry = feature.geometry,
+      )
+    }
+  }
+
+  data class EcoregionEntry(
+      val objectId: String,
+      val ecoName: String?,
+      val biomeNumber: String?,
+      val biomeName: String?,
+      val realm: String?,
+      val ecoBiomeCode: String?,
+      val ecoId: String?,
+      var geometry: Geometry,
+  ) {
+    fun toRow() =
+        DSL.row(objectId, ecoName, biomeNumber, biomeName, realm, ecoBiomeCode, ecoId, geometry)
   }
 }
