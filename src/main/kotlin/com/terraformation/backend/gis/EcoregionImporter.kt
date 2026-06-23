@@ -7,7 +7,6 @@ import com.terraformation.backend.db.default_schema.tables.references.ECOREGION_
 import com.terraformation.backend.gis.event.EcoregionsImportedEvent
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.tracking.model.Shapefile
-import com.terraformation.backend.tracking.model.ShapefileFeature
 import jakarta.inject.Named
 import java.net.URI
 import java.nio.file.Path
@@ -144,7 +143,7 @@ class EcoregionImporter(
   }
 
   private fun loadEcoregionEntries(zipFilePath: Path): List<EcoregionEntry> {
-    val features = loadFeatures(zipFilePath).toMutableList()
+    val entries = loadEntries(zipFilePath)
 
     log.info("Preprocessing ecoregion geometries")
 
@@ -152,41 +151,30 @@ class EcoregionImporter(
     precisionReducer.setChangePrecisionModel(true)
 
     // GeometryFixer is CPU-intensive for large geometries. Make use of all the available CPUs
-    // to process features in parallel. Conserve memory by removing each feature from the list
-    // once we've generated an async callback for it; that will let the system free up the raw
-    // geometries at the same time it's allocating fixed, precision-reduced versions.
+    // to process features in parallel. Update each entry's geometry in place so the system can
+    // reclaim the memory used by the original raw geometry.
 
-    return runBlocking(Dispatchers.Default) {
-      generateSequence { if (features.isNotEmpty()) features.removeFirst() else null }
-          .map { feature ->
+    runBlocking(Dispatchers.Default) {
+      entries
+          .map { entry ->
             async {
               val rawGeometry =
-                  if (feature.geometry.isValid) {
-                    feature.geometry
+                  if (entry.geometry.isValid) {
+                    entry.geometry
                   } else {
-                    GeometryFixer(feature.geometry).result
+                    GeometryFixer(entry.geometry).result
                   }
 
-              val geometry = precisionReducer.reduce(rawGeometry)
-
-              EcoregionEntry(
-                  objectId = feature.properties["objectid"]!!,
-                  ecoName = feature.properties["eco_name"],
-                  biomeNumber = feature.properties["biome_num"],
-                  biomeName = feature.properties["biome_name"],
-                  realm = feature.properties["realm"],
-                  ecoBiomeCode = feature.properties["eco_biome_"],
-                  ecoId = feature.properties["eco_id"],
-                  geometry = geometry,
-              )
+              entry.geometry = precisionReducer.reduce(rawGeometry)
             }
           }
-          .toList()
           .awaitAll()
     }
+
+    return entries
   }
 
-  private fun loadFeatures(zipFilePath: Path): List<ShapefileFeature> {
+  private fun loadEntries(zipFilePath: Path): List<EcoregionEntry> {
     log.info("Parsing ecoregions shapefile")
 
     val shapefiles = Shapefile.fromZipFile(zipFilePath)
@@ -194,7 +182,18 @@ class EcoregionImporter(
       throw IllegalArgumentException("Expected 1 shapefile in zip, found ${shapefiles.size}")
     }
 
-    return shapefiles.first().features
+    return shapefiles.first().features.map { feature ->
+      EcoregionEntry(
+          objectId = feature.properties["objectid"]!!,
+          ecoName = feature.properties["eco_name"],
+          biomeNumber = feature.properties["biome_num"],
+          biomeName = feature.properties["biome_name"],
+          realm = feature.properties["realm"],
+          ecoBiomeCode = feature.properties["eco_biome_"],
+          ecoId = feature.properties["eco_id"],
+          geometry = feature.geometry,
+      )
+    }
   }
 
   data class EcoregionEntry(
@@ -205,7 +204,7 @@ class EcoregionImporter(
       val realm: String?,
       val ecoBiomeCode: String?,
       val ecoId: String?,
-      val geometry: Geometry,
+      var geometry: Geometry,
   ) {
     fun toRow() =
         DSL.row(objectId, ecoName, biomeNumber, biomeName, realm, ecoBiomeCode, ecoId, geometry)
