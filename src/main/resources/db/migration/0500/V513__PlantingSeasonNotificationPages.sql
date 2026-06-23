@@ -3,8 +3,7 @@ CREATE TABLE tracking.planting_season_notification_pages (
     name TEXT NOT NULL UNIQUE
 );
 
--- The primary key gains page_id and changes shape, so recreate the table rather than altering
--- it in place. There are no rows worth preserving yet.
+-- Recreate the table rather than altering in place because of the change to the primary key.
 DROP TABLE tracking.planting_season_notifications;
 
 CREATE TABLE tracking.planting_season_notifications (
