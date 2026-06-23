@@ -29,6 +29,7 @@ import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -85,7 +86,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val update =
         UpdateAccessionRequestPayloadV2(
             bagNumbers = setOf("abc"),
-            collectedDate = today,
+            collectedTime = today.atStartOfDay(ZoneOffset.UTC).toInstant(),
             collectionSiteCity = "city",
             collectionSiteCoordinates =
                 setOf(
@@ -134,8 +135,9 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val accessionModelProperties = AccessionModel::class.declaredMemberProperties
     val propertyNames = updatePayloadProperties.map { it.name }.toSet()
 
+    val deprecatedPayloadFields = setOf("collectedDate")
     updatePayloadProperties.forEach { prop ->
-      if (prop.visibility == KVisibility.PUBLIC) {
+      if (prop.visibility == KVisibility.PUBLIC && prop.name !in deprecatedPayloadFields) {
         try {
           assertNotNull(prop.get(update), "Field ${prop.name} is null in example object")
         } catch (e: Exception) {

@@ -118,6 +118,18 @@ class AccessionsV2Controller(
 }
 
 /**
+ * Resolves the deprecated date-only `collectedDate` and the new `collectedTime` to a single
+ * timestamp. Once web and mobile have fully migrated to `collectedTime`, `collectedDate` can be
+ * removed from the request payloads and this helper deleted.
+ */
+private fun resolveCollectedTime(collectedDate: LocalDate?, collectedTime: Instant?): Instant? {
+  if (collectedDate != null && collectedTime != null) {
+    throw IllegalArgumentException("Only one of collectedDate and collectedTime may be specified.")
+  }
+  return collectedTime ?: collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()
+}
+
+/**
  * Supported accession states. This is a subset of the values in [AccessionState], minus obsolete
  * states that can still appear in accessions' state histories (and thus need to be kept around as
  * [AccessionState] enum values) but that can no longer be used as the current states for any
@@ -169,7 +181,13 @@ data class AccessionPayloadV2(
     )
     val active: AccessionActive,
     val bagNumbers: Set<String>?,
+    @Schema(
+        description = "Use collectedTime instead.",
+        deprecated = true,
+    )
     val collectedDate: LocalDate?,
+    @Schema(description = "Date and time the seeds were collected, in UTC.")
+    val collectedTime: Instant?,
     val collectionSiteCity: String? = null,
     val collectionSiteCoordinates: Set<Geolocation>?,
     val collectionSiteCountryCode: String? = null,
@@ -278,6 +296,7 @@ data class AccessionPayloadV2(
       active = model.active,
       bagNumbers = model.bagNumbers.orNull(),
       collectedDate = model.collectedDate,
+      collectedTime = model.collectedTime,
       collectionSiteCity = model.collectionSiteCity,
       collectionSiteCoordinates = model.geolocations.orNull(),
       collectionSiteCountryCode = model.collectionSiteCountryCode,
@@ -324,7 +343,18 @@ data class AccessionPayloadV2(
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayloadV2(
     val bagNumbers: Set<String>? = null,
+    @Schema(
+        description = "Use collectedTime instead.",
+        deprecated = true,
+    )
     val collectedDate: LocalDate? = null,
+    @Schema(
+        description =
+            "Date and time the seeds were collected, in UTC. Optional for now to stay " +
+                "backwards compatible with the deprecated collectedDate; once web and mobile use " +
+                "this field, remove collectedDate."
+    )
+    val collectedTime: Instant? = null,
     val collectionSiteCity: String? = null,
     val collectionSiteCoordinates: Set<Geolocation>? = null,
     val collectionSiteCountryCode: String? = null,
@@ -351,7 +381,7 @@ data class CreateAccessionRequestPayloadV2(
         bagNumbers = bagNumbers.orEmpty(),
         clock = clock,
         collectedDate = collectedDate,
-        collectedTime = collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+        collectedTime = resolveCollectedTime(collectedDate, collectedTime),
         collectionSiteCity = collectionSiteCity,
         collectionSiteCountryCode = collectionSiteCountryCode,
         collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
@@ -378,7 +408,13 @@ data class CreateAccessionRequestPayloadV2(
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class UpdateAccessionRequestPayloadV2(
     val bagNumbers: Set<String>? = null,
+    @Schema(
+        description = "Use collectedTime instead.",
+        deprecated = true,
+    )
     val collectedDate: LocalDate? = null,
+    @Schema(description = "Date and time the seeds were collected, in UTC.")
+    val collectedTime: Instant? = null,
     val collectionSiteCity: String? = null,
     val collectionSiteCoordinates: Set<Geolocation>? = null,
     val collectionSiteCountryCode: String? = null,
@@ -420,7 +456,7 @@ data class UpdateAccessionRequestPayloadV2(
       model.copy(
           bagNumbers = bagNumbers.orEmpty(),
           collectedDate = collectedDate,
-          collectedTime = collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+          collectedTime = resolveCollectedTime(collectedDate, collectedTime),
           collectionSiteCity = collectionSiteCity,
           collectionSiteCountryCode = collectionSiteCountryCode,
           collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,

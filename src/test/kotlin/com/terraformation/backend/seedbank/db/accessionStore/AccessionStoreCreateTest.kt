@@ -22,6 +22,7 @@ import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
@@ -170,7 +171,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     val accession =
         CreateAccessionRequestPayloadV2(
             bagNumbers = setOf("abc"),
-            collectedDate = today,
+            collectedTime = today.atStartOfDay(ZoneOffset.UTC).toInstant(),
             collectionSiteCity = "city",
             collectionSiteCoordinates =
                 setOf(
@@ -211,9 +212,12 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     val accessionModelProperties = AccessionModel::class.declaredMemberProperties
     val propertyNames = createPayloadProperties.map { it.name }.toSet()
 
-    createPayloadProperties.forEach { prop ->
-      assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
-    }
+    val deprecatedPayloadFields = setOf("collectedDate")
+    createPayloadProperties
+        .filter { it.name !in deprecatedPayloadFields }
+        .forEach { prop ->
+          assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
+        }
 
     val stored = store.create(accession.toModel(clock))
 
