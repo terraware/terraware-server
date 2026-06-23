@@ -132,6 +132,10 @@ COMMENT ON TABLE seedbank.geolocations IS 'Locations where seeds were collected.
 
 COMMENT ON TABLE global_roles IS '(Enum) System-wide roles that can be assigned to users. Global roles are not tied to organizations. These are generally for system or business administration; most users have no global roles.';
 
+COMMENT ON TABLE griis_resources IS 'Resource-level metadata from the Global Register of Introduced and Invasive Species.';
+
+COMMENT ON TABLE griis_taxa IS 'Information about which species are introduced or invasive in which locations.';
+
 COMMENT ON TABLE growth_forms IS '(Enum) What physical form a particular species takes. For example, "Tree" or "Shrub."';
 
 COMMENT ON TABLE identifier_sequences IS 'Current state for generating user-facing identifiers (accession number, etc.) for each organization.';

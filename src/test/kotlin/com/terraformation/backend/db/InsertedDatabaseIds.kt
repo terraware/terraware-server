@@ -21,6 +21,7 @@ import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FileId
+import com.terraformation.backend.db.default_schema.GriisResourceId
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -88,6 +89,7 @@ class InsertedDatabaseIds {
   val facilityIds = mutableListOf<FacilityId>()
   val fileIds = mutableListOf<FileId>()
   val fundingEntityIds = mutableListOf<FundingEntityId>()
+  val griisResourceIds = mutableListOf<GriisResourceId>()
   val internalTagIds = mutableListOf<InternalTagId>()
   val moduleIds = mutableListOf<ModuleId>()
   val monitoringPlotHistoryIds = mutableListOf<MonitoringPlotHistoryId>()
@@ -203,6 +205,9 @@ class InsertedDatabaseIds {
 
   val fundingEntityId
     get() = fundingEntityIds.last()
+
+  val griisResourceId
+    get() = griisResourceIds.last()
 
   val internalTagId
     get() = internalTagIds.last()
