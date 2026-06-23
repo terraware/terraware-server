@@ -1687,7 +1687,7 @@
 <text text-anchor="start" x="754.5" y="-1334" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="751.5,-1309.8 751.5,-1327.8 859.5,-1327.8 859.5,-1309.8 751.5,-1309.8"/>
 <polygon fill="none" stroke="black" points="751.5,-1309.8 751.5,-1327.8 859.5,-1327.8 859.5,-1309.8 751.5,-1309.8"/>
-<text text-anchor="start" x="754.5" y="-1316" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<text text-anchor="start" x="754.5" y="-1316" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
 <polygon fill="#ffffff" stroke="transparent" points="859.5,-1309.8 859.5,-1327.8 915.5,-1327.8 915.5,-1309.8 859.5,-1309.8"/>
 <polygon fill="none" stroke="black" points="859.5,-1309.8 859.5,-1327.8 915.5,-1327.8 915.5,-1309.8 859.5,-1309.8"/>
 <text text-anchor="start" x="905.5" y="-1316" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
@@ -1700,10 +1700,9 @@
 <!-- planting_season_notifications&#45;&gt;planting_seasons -->
 <g id="edge88" class="edge">
 <title>planting_season_notifications:w&#45;&gt;planting_seasons:e</title>
-<path fill="none" stroke="black" d="M740.02,-1337.29C688.66,-1342.32 679.13,-1383.8 622,-1383.8"/>
-<polygon fill="black" stroke="black" points="749.51,-1332.84 749.89,-1340.83 748.29,-1340.91 747.91,-1332.91 749.51,-1332.84"/>
-<polyline fill="none" stroke="black" points="750.5,-1336.8 746.5,-1336.99 "/>
-<ellipse fill="none" stroke="black" cx="743.31" cy="-1337.14" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M735.95,-1337.78C688.11,-1344.53 677.59,-1383.8 622,-1383.8"/>
+<polygon fill="black" stroke="black" points="742.52,-1337.34 750.74,-1340.39 746.51,-1337.07 750.5,-1336.8 750.5,-1336.8 750.5,-1336.8 746.51,-1337.07 750.26,-1333.21 742.52,-1337.34 742.52,-1337.34"/>
+<ellipse fill="none" stroke="black" cx="739.33" cy="-1337.55" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_season_species_targets -->
 <g id="node40" class="node">

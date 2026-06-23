@@ -84,7 +84,7 @@
                             </div>
                         </div><!-- /.box-header -->
                         <div class="box-body clearfix">
-                            <p>Stores the last dismissed event log id for each planting season in order to look up all events since.</p>
+                            <p>Stores the last dismissed event log id for each planting season and notification page in order to look up all events since.</p>
                         </div><!-- /.box-body -->
                     </div>
                 </section>
@@ -138,6 +138,28 @@
                                                 <td title="planting_season_notifications.planting_season_id references planting_seasons.id via planting_season_notifications_planting_season_id_fkey"><a href='planting_seasons.html'>planting_seasons</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">planting_season_notifications_planting_season_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="page_id">page_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title=''></td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="planting_season_notifications.page_id references planting_season_notification_pages.id via planting_season_notifications_page_id_fkey"><a href='planting_season_notification_pages.html'>planting_season_notification_pages</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">planting_season_notifications_page_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -198,8 +220,8 @@
                                 <tr>
                                     <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> planting_season_notifications_pkey</td>
                                     <td>Primary key</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>planting_season_id</td>
+                                    <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
+                                    <td>planting_season_id + page_id</td>
                                 </tr>
                                 </tbody>
                             </table>

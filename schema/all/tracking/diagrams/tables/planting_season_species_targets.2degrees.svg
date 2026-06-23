@@ -1127,7 +1127,7 @@
 <text text-anchor="start" x="661.5" y="-1569.19" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
 <polygon fill="#ffffff" stroke="transparent" points="658.5,-1544.99 658.5,-1562.99 766.5,-1562.99 766.5,-1544.99 658.5,-1544.99"/>
 <polygon fill="none" stroke="black" points="658.5,-1544.99 658.5,-1562.99 766.5,-1562.99 766.5,-1544.99 658.5,-1544.99"/>
-<text text-anchor="start" x="661.5" y="-1551.19" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<text text-anchor="start" x="661.5" y="-1551.19" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 3</text>
 <polygon fill="#ffffff" stroke="transparent" points="766.5,-1544.99 766.5,-1562.99 822.5,-1562.99 822.5,-1544.99 766.5,-1544.99"/>
 <polygon fill="none" stroke="black" points="766.5,-1544.99 766.5,-1562.99 822.5,-1562.99 822.5,-1544.99 766.5,-1544.99"/>
 <text text-anchor="start" x="812.5" y="-1551.19" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
@@ -1140,10 +1140,9 @@
 <!-- planting_season_notifications&#45;&gt;planting_seasons -->
 <g id="edge52" class="edge">
 <title>planting_season_notifications:w&#45;&gt;planting_seasons:e</title>
-<path fill="none" stroke="black" d="M646.83,-1571.4C600.14,-1566.27 558.56,-1528.81 533.11,-1500.21"/>
-<polygon fill="black" stroke="black" points="656.92,-1567.95 656.48,-1575.94 654.88,-1575.85 655.32,-1567.86 656.92,-1567.95"/>
-<polyline fill="none" stroke="black" points="657.5,-1571.99 653.51,-1571.77 "/>
-<ellipse fill="none" stroke="black" cx="650.31" cy="-1571.59" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M643.01,-1570.91C597.88,-1564.23 557.86,-1528.03 533.11,-1500.21"/>
+<polygon fill="black" stroke="black" points="649.52,-1571.39 657.23,-1575.58 653.51,-1571.69 657.5,-1571.99 657.5,-1571.99 657.5,-1571.99 653.51,-1571.69 657.77,-1568.4 649.52,-1571.39 649.52,-1571.39"/>
+<ellipse fill="none" stroke="black" cx="646.33" cy="-1571.16" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_season_species_targets -->
 <g id="node27" class="node">

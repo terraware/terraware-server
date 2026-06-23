@@ -8,6 +8,7 @@ observation_plot_statuses
 observation_states
 observation_types
 planting_date_request_statuses
+planting_season_notification_pages
 planting_season_statuses
 planting_types
 recorded_plant_statuses
@@ -39,7 +40,6 @@ simplified_substrata
 simplified_substratum_histories
 monitoring_plot_overlaps
 observation_requested_substrata
-planting_season_notifications
 planting_site_notifications
 planting_site_populations
 stratum_populations
@@ -48,6 +48,7 @@ observation_site_results
 observation_stratum_results
 observation_substratum_results
 planting_date_request_species
+planting_season_notifications
 scheduled_planting_date_species
 planting_season_allocated_species
 plot_t0_densities

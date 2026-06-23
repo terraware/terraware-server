@@ -1047,14 +1047,32 @@
          </index>
          <checkConstraint constraint="(quantity &gt;= 0)" name="planting_season_allocated_species_quantity_check"/>
       </table>
-      <table name="planting_season_notifications" remarks="Stores the last dismissed event log id for each planting season in order to look up all events since." schema="tracking" type="TABLE">
+      <table name="planting_season_notification_pages" remarks="(Enum) UI pages on which planting season notifications can be displayed and dismissed." schema="tracking" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="page_id" foreignKey="planting_season_notifications_page_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_notifications"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="planting_season_notification_pages_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="planting_season_notification_pages_name_key" unique="true">
+            <column ascending="true" name="name"/>
+         </index>
+      </table>
+      <table name="planting_season_notifications" remarks="Stores the last dismissed event log id for each planting season and notification page in order to look up all events since." schema="tracking" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="planting_season_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="id" foreignKey="planting_season_notifications_planting_season_id_fkey" implied="false" onDeleteCascade="true" schema="tracking" table="planting_seasons"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="last_dismissed_event_log_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="page_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="planting_season_notifications_page_id_fkey" implied="false" onDeleteCascade="false" schema="tracking" table="planting_season_notification_pages"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="last_dismissed_event_log_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <primaryKey column="planting_season_id" sequenceNumberInPK="1"/>
+         <primaryKey column="page_id" sequenceNumberInPK="2"/>
          <index name="planting_season_notifications_pkey" unique="true">
             <column ascending="true" name="planting_season_id"/>
+            <column ascending="true" name="page_id"/>
          </index>
       </table>
       <table name="planting_season_species_targets" remarks="Target quantities of each species to plant in each substratum for a planting season." schema="tracking" type="TABLE">

@@ -17,6 +17,7 @@ stratum_t0_temp_densities
 plot_t0_densities
 planting_season_allocated_species
 scheduled_planting_date_species
+planting_season_notifications
 planting_date_request_species
 observation_substratum_results
 observation_stratum_results
@@ -25,7 +26,6 @@ substratum_populations
 stratum_populations
 planting_site_populations
 planting_site_notifications
-planting_season_notifications
 observation_requested_substrata
 monitoring_plot_overlaps
 simplified_substratum_histories
@@ -57,6 +57,7 @@ soil_types
 recorded_plant_statuses
 planting_types
 planting_season_statuses
+planting_season_notification_pages
 planting_date_request_statuses
 observation_types
 observation_states
