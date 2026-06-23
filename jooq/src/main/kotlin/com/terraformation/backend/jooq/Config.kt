@@ -313,6 +313,11 @@ val ENUM_TABLES =
                     "planting_date_request_statuses",
                     listOf("planting_date_requests\\.status_id"),
                 ),
+                EnumTable(
+                    "planting_season_notification_pages",
+                    listOf("planting_season_notifications\\.page_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("planting_season_statuses", listOf("planting_seasons\\.status_id")),
                 EnumTable("planting_types"),
                 EnumTable(

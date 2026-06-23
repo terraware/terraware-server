@@ -14,6 +14,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.nursery.WithdrawalId
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonNotificationPage
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
@@ -22,7 +23,6 @@ import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
-import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationCategory
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
@@ -90,6 +90,8 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   private fun model(
       lastEventLogId: EventLogId,
       events: List<PlantingSeasonNotificationModel>,
+      notificationPage: PlantingSeasonNotificationPage =
+          PlantingSeasonNotificationPage.InventoryPlanning,
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSeasonName: String = this.plantingSeasonName,
       plantingSiteName: String = this.plantingSiteName,
@@ -99,6 +101,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           plantingSeasonName = plantingSeasonName,
           plantingSiteName = plantingSiteName,
           lastEventLogId = lastEventLogId,
+          notificationPage = notificationPage,
           notifications = events,
       )
 
@@ -146,7 +149,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.InventoryPlanning,
           ),
       )
     }
@@ -156,14 +159,47 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val dismissed = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
       clock.instant = clock.instant.plusSeconds(1)
       val newer = insertSpeciesTargetUpdatedEvent(speciesId = speciesId1)
-      insertPlantingSeasonNotification(lastDismissedEventLogId = dismissed.id)
+      insertPlantingSeasonNotification(
+          pageId = PlantingSeasonNotificationPage.InventoryPlanning,
+          lastDismissedEventLogId = dismissed.id,
+      )
 
       assertEquals(
           listOf(model(newer.id, listOf(targetUpdated(speciesName1)))),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.InventoryPlanning,
           ),
+      )
+    }
+
+    @Test
+    fun `dismissing one page does not dismiss the same event for another page`() {
+      val event = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
+      insertPlantingSeasonNotification(
+          pageId = PlantingSeasonNotificationPage.InventoryPlanning,
+          lastDismissedEventLogId = event.id,
+      )
+
+      assertEquals(
+          emptyList<PlantingSeasonNotificationGroupModel>(),
+          service.getNotifications(
+              plantingSeasonId,
+              PlantingSeasonNotificationPage.InventoryPlanning,
+          ),
+          "InventoryPlanning page should have no undismissed notifications",
+      )
+
+      assertEquals(
+          listOf(
+              model(
+                  event.id,
+                  listOf(targetAdded(speciesName1)),
+                  notificationPage = PlantingSeasonNotificationPage.Inventory,
+              )
+          ),
+          service.getNotifications(plantingSeasonId, PlantingSeasonNotificationPage.Inventory),
+          "Inventory page should still show the undismissed notification",
       )
     }
 
@@ -174,10 +210,16 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       insertSpeciesTargetCreatedEvent(speciesId = speciesId1, plantingSeasonId = otherSeasonId)
 
       assertEquals(
-          listOf(model(expected.id, listOf(targetAdded(speciesName1)))),
+          listOf(
+              model(
+                  expected.id,
+                  listOf(targetAdded(speciesName1)),
+                  notificationPage = PlantingSeasonNotificationPage.InventoryPlanning,
+              )
+          ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.InventoryPlanning,
           ),
       )
     }
@@ -189,10 +231,16 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val target = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
 
       assertEquals(
-          listOf(model(target.id, listOf(targetAdded(speciesName1)))),
+          listOf(
+              model(
+                  target.id,
+                  listOf(targetAdded(speciesName1)),
+                  notificationPage = PlantingSeasonNotificationPage.InventoryPlanning,
+              )
+          ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.InventoryPlanning,
           ),
       )
     }
@@ -200,13 +248,16 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
     @Test
     fun `returns no notifications when there are no undismissed events`() {
       val dismissed = insertSpeciesTargetCreatedEvent(speciesId = speciesId1)
-      insertPlantingSeasonNotification(lastDismissedEventLogId = dismissed.id)
+      insertPlantingSeasonNotification(
+          pageId = PlantingSeasonNotificationPage.InventoryPlanning,
+          lastDismissedEventLogId = dismissed.id,
+      )
 
       assertEquals(
           emptyList<PlantingSeasonNotificationGroupModel>(),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.InventoryPlanning,
           ),
       )
     }
@@ -218,7 +269,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertThrows<PlantingSeasonNotFoundException> {
         service.getNotifications(
             plantingSeasonId,
-            PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+            PlantingSeasonNotificationPage.InventoryPlanning,
         )
       }
     }
@@ -228,10 +279,16 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val event = insertSpeciesAllocatedCreatedEvent(speciesId = speciesId1)
 
       assertEquals(
-          listOf(model(event.id, listOf(allocationQuantitiesUpdated))),
+          listOf(
+              model(
+                  event.id,
+                  listOf(allocationQuantitiesUpdated),
+                  notificationPage = PlantingSeasonNotificationPage.PlantingSeasonPlanning,
+              )
+          ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.PlantingSeasonPlanning,
           ),
       )
     }
@@ -241,10 +298,16 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val event = insertWithdrawalCreatedEvent()
 
       assertEquals(
-          listOf(model(event.id, listOf(seasonWithdrawalRecorded))),
+          listOf(
+              model(
+                  event.id,
+                  listOf(seasonWithdrawalRecorded),
+                  notificationPage = PlantingSeasonNotificationPage.PlantingSeasonPlanning,
+              )
+          ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.PlantingSeasonPlanning,
           ),
       )
     }
@@ -266,7 +329,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.InventoryPlanning,
           ),
       )
     }
@@ -284,11 +347,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               model(
                   latest.id,
                   listOf(allocationQuantitiesUpdated, seasonWithdrawalRecorded, pastEndDate),
+                  notificationPage = PlantingSeasonNotificationPage.PlantingSeasonPlanning,
               )
           ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.PlantingSeasonPlanning,
           ),
       )
     }
@@ -313,11 +377,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
                       scheduledPlantingDateRequested,
                       closed,
                   ),
+                  notificationPage = PlantingSeasonNotificationPage.Inventory,
               )
           ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.Inventory.notificationTypes,
+              PlantingSeasonNotificationPage.Inventory,
           ),
       )
     }
@@ -333,11 +398,12 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
               model(
                   latest.id,
                   listOf(scheduledPlantingDateRequested, closed),
+                  notificationPage = PlantingSeasonNotificationPage.Withdrawals,
               )
           ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.Withdrawals.notificationTypes,
+              PlantingSeasonNotificationPage.Withdrawals,
           ),
       )
     }
@@ -349,10 +415,16 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       val latest = insertSpeciesAllocatedUpdatedEvent(speciesId = speciesId2)
 
       assertEquals(
-          listOf(model(latest.id, listOf(allocationQuantitiesUpdated))),
+          listOf(
+              model(
+                  latest.id,
+                  listOf(allocationQuantitiesUpdated),
+                  notificationPage = PlantingSeasonNotificationPage.PlantingSeasonPlanning,
+              )
+          ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.PlantingSeasonPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.PlantingSeasonPlanning,
           ),
       )
     }
@@ -381,7 +453,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           service
               .getNotifications(
                   organizationId,
-                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+                  PlantingSeasonNotificationPage.InventoryPlanning,
               )
               .associateBy { it.plantingSeasonId },
       )
@@ -397,6 +469,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           insertSpeciesTargetCreatedEvent(speciesId = speciesId1, plantingSeasonId = otherSeasonId)
       insertPlantingSeasonNotification(
           plantingSeasonId = plantingSeasonId,
+          pageId = PlantingSeasonNotificationPage.InventoryPlanning,
           lastDismissedEventLogId = dismissed.id,
       )
 
@@ -414,7 +487,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           service
               .getNotifications(
                   organizationId,
-                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+                  PlantingSeasonNotificationPage.InventoryPlanning,
               )
               .associateBy { it.plantingSeasonId },
       )
@@ -439,7 +512,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           service
               .getNotifications(
                   organizationId,
-                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+                  PlantingSeasonNotificationPage.InventoryPlanning,
               )
               .associateBy { it.plantingSeasonId },
       )
@@ -452,7 +525,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       assertThrows<PlantingSeasonNotFoundException> {
         service.getNotifications(
             organizationId,
-            PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+            PlantingSeasonNotificationPage.InventoryPlanning,
         )
       }
     }
@@ -469,7 +542,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           service
               .getNotifications(
                   plantingSeasonId,
-                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+                  PlantingSeasonNotificationPage.InventoryPlanning,
               )
               .single()
               .notifications
@@ -498,7 +571,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           service
               .getNotifications(
                   plantingSeasonId,
-                  PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+                  PlantingSeasonNotificationPage.InventoryPlanning,
               )
               .single()
               .notifications
@@ -530,7 +603,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           ),
           service.getNotifications(
               plantingSeasonId,
-              PlantingSeasonNotificationCategory.InventoryPlanning.notificationTypes,
+              PlantingSeasonNotificationPage.InventoryPlanning,
           ),
       )
     }

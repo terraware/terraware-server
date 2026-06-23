@@ -436,6 +436,7 @@ import com.terraformation.backend.db.tracking.ObservedPlotCoordinatesId
 import com.terraformation.backend.db.tracking.PlantingDateRequestStatus
 import com.terraformation.backend.db.tracking.PlantingId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonNotificationPage
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteHistoryId
 import com.terraformation.backend.db.tracking.PlantingSiteId
@@ -2369,11 +2370,14 @@ abstract class DatabaseBackedTest {
   fun insertPlantingSeasonNotification(
       row: PlantingSeasonNotificationsRow = PlantingSeasonNotificationsRow(),
       plantingSeasonId: PlantingSeasonId = row.plantingSeasonId ?: inserted.plantingSeasonId,
+      pageId: PlantingSeasonNotificationPage =
+          row.pageId ?: PlantingSeasonNotificationPage.InventoryPlanning,
       lastDismissedEventLogId: EventLogId,
   ) {
     val rowWithDefaults =
         row.copy(
             plantingSeasonId = plantingSeasonId,
+            pageId = pageId,
             lastDismissedEventLogId = lastDismissedEventLogId,
         )
 

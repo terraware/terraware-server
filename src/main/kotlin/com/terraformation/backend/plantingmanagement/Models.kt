@@ -3,6 +3,7 @@ package com.terraformation.backend.plantingmanagement
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
+import com.terraformation.backend.db.tracking.PlantingSeasonNotificationPage
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
@@ -76,42 +77,6 @@ enum class PlantingSeasonNotificationType {
   SpeciesTargetsUpdated,
 }
 
-enum class PlantingSeasonNotificationCategory {
-  InventoryPlanning,
-  PlantingSeasonPlanning,
-  Inventory,
-  Withdrawals;
-
-  val notificationTypes: Set<PlantingSeasonNotificationType>
-    get() =
-        when (this) {
-          InventoryPlanning ->
-              setOf(
-                  PlantingSeasonNotificationType.PlantingSeasonClosed,
-                  PlantingSeasonNotificationType.SpeciesTargetsAdded,
-                  PlantingSeasonNotificationType.SpeciesTargetsUpdated,
-              )
-          PlantingSeasonPlanning ->
-              setOf(
-                  PlantingSeasonNotificationType.AllocationQuantitiesUpdated,
-                  PlantingSeasonNotificationType.SeasonWithdrawalRecorded,
-                  PlantingSeasonNotificationType.PlantingSeasonPastEndDate,
-              )
-          Inventory ->
-              setOf(
-                  PlantingSeasonNotificationType.SpeciesTargetsAdded,
-                  PlantingSeasonNotificationType.SpeciesTargetsUpdated,
-                  PlantingSeasonNotificationType.PlantingSeasonClosed,
-                  PlantingSeasonNotificationType.ScheduledPlantingDateRequested,
-              )
-          Withdrawals ->
-              setOf(
-                  PlantingSeasonNotificationType.ScheduledPlantingDateRequested,
-                  PlantingSeasonNotificationType.PlantingSeasonClosed,
-              )
-        }
-}
-
 data class PlantingSeasonNotificationModel(
     val type: PlantingSeasonNotificationType,
     val speciesScientificNames: Set<String>? = null,
@@ -122,5 +87,6 @@ data class PlantingSeasonNotificationGroupModel(
     val plantingSeasonName: String,
     val plantingSiteName: String,
     val lastEventLogId: EventLogId,
+    val notificationPage: PlantingSeasonNotificationPage,
     val notifications: List<PlantingSeasonNotificationModel>,
 )
