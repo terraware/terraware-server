@@ -8,6 +8,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -211,8 +212,10 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
   private fun setCollectedDates(vararg dates: Pair<AccessionId, String?>) {
     dates.forEach { (id, dateStr) ->
       val accession = accessionsDao.fetchOneById(id)!!
-      val collectedDate = dateStr?.let { LocalDate.parse(it) }
-      accessionsDao.update(accession.copy(collectedDate = collectedDate))
+      val collectedTime = dateStr?.let {
+        LocalDate.parse(it).atStartOfDay(ZoneOffset.UTC).toInstant()
+      }
+      accessionsDao.update(accession.copy(collectedTime = collectedTime))
     }
   }
 }

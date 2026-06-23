@@ -229,7 +229,7 @@ abstract class SearchTable {
 
   fun ageField(
       fieldName: String,
-      databaseField: TableField<*, LocalDate?>,
+      databaseField: Field<LocalDate?>,
       granularity: AgeField.AgeGranularity,
       clock: Clock,
   ) = AgeField(fieldName, databaseField, this, true, true, granularity, clock)

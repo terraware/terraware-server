@@ -11,7 +11,6 @@ import java.util.EnumSet
 import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.TableField
 import org.jooq.impl.DSL
 
 /**
@@ -28,7 +27,7 @@ import org.jooq.impl.DSL
  */
 class AgeField(
     override val fieldName: String,
-    override val databaseField: TableField<*, LocalDate?>,
+    override val databaseField: Field<LocalDate?>,
     override val table: SearchTable,
     override val localize: Boolean = true,
     override val exportable: Boolean = true,

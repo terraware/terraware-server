@@ -2047,7 +2047,14 @@ class ReportStore(
             DSL.select(DSL.sum(EST_SEED_COUNT) + DSL.sum(TOTAL_WITHDRAWN_COUNT))
                 .from(this)
                 .where(PROJECT_ID.eq(REPORTS.PROJECT_ID))
-                .and(COLLECTED_DATE.between(REPORTS.START_DATE, REPORTS.END_DATE))
+                .and(
+                    DSL.field(
+                            "({0} AT TIME ZONE 'UTC')::date",
+                            LocalDate::class.java,
+                            COLLECTED_TIME,
+                        )
+                        .between(REPORTS.START_DATE, REPORTS.END_DATE)
+                )
         )
       }
 

@@ -22,6 +22,7 @@ COMMENT ON COLUMN seedbank.accession_state_history.old_state_id IS 'Null if this
 COMMENT ON TABLE seedbank.accession_states IS '(Enum) Available states an accession can be in. Each state represents a step in the seed management workflow.';
 
 COMMENT ON TABLE seedbank.accessions IS 'Information about batches of seeds. An accession is a batch of seeds of the same species collected in the same time and place by the same people.';
+COMMENT ON COLUMN seedbank.accessions.collected_time IS 'Date and time the seeds were collected, stored at midnight UTC when only a date is known.';
 COMMENT ON COLUMN seedbank.accessions.latest_observed_quantity IS 'Most recent remaining quantity as observed by the user.';
 COMMENT ON COLUMN seedbank.accessions.latest_observed_units_id IS 'Measurement units of `observed_quantity`.';
 COMMENT ON COLUMN seedbank.accessions.latest_observed_time IS 'Time of most recent change to observed quantity.';

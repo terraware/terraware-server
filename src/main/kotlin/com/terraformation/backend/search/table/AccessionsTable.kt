@@ -23,6 +23,7 @@ import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.seedbank.model.AccessionActive
 import com.terraformation.backend.seedbank.model.toActiveEnum
 import java.time.Clock
+import java.time.LocalDate
 import java.util.Locale
 import java.util.ResourceBundle
 import java.util.concurrent.ConcurrentHashMap
@@ -82,15 +83,18 @@ class AccessionsTable(private val tables: SearchTables, private val clock: Clock
     }
   }
 
+  private val collectedDateField: Field<LocalDate?> =
+      DSL.field("({0} AT TIME ZONE 'UTC')::date", LocalDate::class.java, ACCESSIONS.COLLECTED_TIME)
+
   // This needs to be lazy-initialized because aliasField() references the list of sublists
   override val fields: List<SearchField> by lazy {
     listOf(
         upperCaseTextField("accessionNumber", ACCESSIONS.NUMBER),
         ActiveField("active"),
-        ageField("ageMonths", ACCESSIONS.COLLECTED_DATE, AgeField.MonthGranularity, clock),
-        ageField("ageYears", ACCESSIONS.COLLECTED_DATE, AgeField.YearGranularity, clock),
+        ageField("ageMonths", collectedDateField, AgeField.MonthGranularity, clock),
+        ageField("ageYears", collectedDateField, AgeField.YearGranularity, clock),
         aliasField("bagNumber", "bags_number"),
-        dateField("collectedDate", ACCESSIONS.COLLECTED_DATE),
+        dateField("collectedDate", collectedDateField),
         textField("collectionSiteCity", ACCESSIONS.COLLECTION_SITE_CITY),
         textField("collectionSiteCountryCode", ACCESSIONS.COLLECTION_SITE_COUNTRY_CODE),
         textField(

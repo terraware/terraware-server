@@ -34,6 +34,7 @@ import java.io.InputStream
 import java.text.NumberFormat
 import java.time.Clock
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.util.Locale
 import java.util.ResourceBundle
 import java.util.concurrent.ConcurrentHashMap
@@ -203,7 +204,7 @@ class AccessionImporter(
               collectionSiteCountryCode = collectionCountryCode,
               collectionSiteCountrySubdivision = collectionCountrySubdivision,
               collectionSiteLandowner = collectionLandowner,
-              collectedDate = collectionDate,
+              collectedTime = collectionDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
               collectionSiteName = collectionSiteName,
               collectionSiteNotes = collectionSiteDescription,
               collectors = collectorName?.let { listOf(it) } ?: emptyList(),
@@ -221,7 +222,7 @@ class AccessionImporter(
           AccessionModel(
               accessionNumber = accessionNumber,
               clock = clock,
-              collectedDate = collectionDate,
+              collectedTime = collectionDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
               collectionSiteCity = collectionCity,
               collectionSiteCountryCode = collectionCountryCode,
               collectionSiteCountrySubdivision = collectionCountrySubdivision,

@@ -5300,7 +5300,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             AccessionsRow(
                 facilityId = facilityId1,
                 projectId = projectId,
-                collectedDate = getRandomDate(reportStartDate, reportEndDate),
+                collectedTime =
+                    getRandomDate(reportStartDate, reportEndDate)
+                        .atStartOfDay(ZoneOffset.UTC)
+                        .toInstant(),
                 estSeedCount = 25,
                 remainingQuantity = BigDecimal(25),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
@@ -5310,7 +5313,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             AccessionsRow(
                 facilityId = facilityId1,
                 projectId = projectId,
-                collectedDate = getRandomDate(reportStartDate, reportEndDate),
+                collectedTime =
+                    getRandomDate(reportStartDate, reportEndDate)
+                        .atStartOfDay(ZoneOffset.UTC)
+                        .toInstant(),
                 estSeedCount = 0,
                 remainingQuantity = BigDecimal(0),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
@@ -5321,7 +5327,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             AccessionsRow(
                 facilityId = facilityId2,
                 projectId = projectId,
-                collectedDate = getRandomDate(reportStartDate, reportEndDate),
+                collectedTime =
+                    getRandomDate(reportStartDate, reportEndDate)
+                        .atStartOfDay(ZoneOffset.UTC)
+                        .toInstant(),
                 estSeedCount = 32,
                 remainingGrams = BigDecimal(32),
                 remainingQuantity = BigDecimal(32),
@@ -5338,7 +5347,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             AccessionsRow(
                 facilityId = facilityId1,
                 projectId = projectId,
-                collectedDate = reportEndDate.plusDays(1),
+                collectedTime = reportEndDate.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant(),
                 estSeedCount = 2500,
                 remainingQuantity = BigDecimal(2500),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
@@ -5348,7 +5357,10 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             AccessionsRow(
                 facilityId = facilityId2,
                 projectId = otherProjectId,
-                collectedDate = getRandomDate(reportStartDate, reportEndDate),
+                collectedTime =
+                    getRandomDate(reportStartDate, reportEndDate)
+                        .atStartOfDay(ZoneOffset.UTC)
+                        .toInstant(),
                 estSeedCount = 1500,
                 remainingQuantity = BigDecimal(1500),
                 remainingUnitsId = SeedQuantityUnits.Seeds,
