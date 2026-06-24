@@ -239,7 +239,7 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
           salinityPpt = BigDecimal.ONE,
           tide = MangroveTide.High,
           tideTime = Instant.ofEpochSecond(120),
-          waterDepthCm = null,
+          waterDepthCm = 2,
       )
     }
 
@@ -249,7 +249,7 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
           salinityPpt = BigDecimal.ONE
           tideId = MangroveTide.High
           tideTime = Instant.ofEpochSecond(120)
-          waterDepthCm = null
+          waterDepthCm = 2
         }
 
     assertTableEquals(expected)
@@ -270,8 +270,67 @@ class BiomassStoreUpdateBiomassDetailsTest : BaseBiomassStoreTest() {
                     salinity = BigDecimal.ONE,
                     tide = MangroveTide.High,
                     tideTime = Instant.ofEpochSecond(120),
-                    waterDepth = null,
+                    waterDepth = 2,
                 ),
+            monitoringPlotId = inserted.monitoringPlotId,
+            observationId = inserted.observationId,
+            organizationId = inserted.organizationId,
+            plantingSiteId = inserted.plantingSiteId,
+        )
+    )
+  }
+
+  @Test
+  fun `can clear mangrove-only water measurements`() {
+    dslContext.deleteFrom(OBSERVATION_BIOMASS_DETAILS).execute()
+    insertObservationBiomassDetails(
+        description = "Original description",
+        forestType = BiomassForestType.Mangrove,
+        herbaceousCoverPercent = 10,
+        ph = BigDecimal.ONE,
+        salinityPpt = BigDecimal.TWO,
+        smallTreesCountLow = 1,
+        smallTreesCountHigh = 4,
+        soilAssessment = "Original soil assessment",
+        tideId = MangroveTide.Low,
+        tideTime = Instant.EPOCH,
+        waterDepthCm = 1,
+    )
+
+    val before = dslContext.fetchSingle(OBSERVATION_BIOMASS_DETAILS)
+
+    store.updateBiomassDetails(inserted.observationId, inserted.monitoringPlotId) {
+      it.copy(
+          ph = null,
+          salinityPpt = null,
+          tide = null,
+          tideTime = null,
+          waterDepthCm = null,
+      )
+    }
+
+    val expected =
+        before.copy().apply {
+          ph = null
+          salinityPpt = null
+          tideId = null
+          tideTime = null
+          waterDepthCm = null
+        }
+
+    assertTableEquals(expected)
+
+    eventPublisher.assertEventPublished(
+        BiomassDetailsUpdatedEvent(
+            changedFrom =
+                BiomassDetailsUpdatedEventValues(
+                    ph = BigDecimal.ONE,
+                    salinity = BigDecimal.TWO,
+                    tide = MangroveTide.Low,
+                    tideTime = Instant.EPOCH,
+                    waterDepth = 1,
+                ),
+            changedTo = BiomassDetailsUpdatedEventValues(),
             monitoringPlotId = inserted.monitoringPlotId,
             observationId = inserted.observationId,
             organizationId = inserted.organizationId,

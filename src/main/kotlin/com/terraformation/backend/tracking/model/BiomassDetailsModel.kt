@@ -166,18 +166,20 @@ data class BiomassDetailsModel<
     val waterDepthCm: Int? = null,
 ) {
   fun validate() {
-    if (forestType == BiomassForestType.Mangrove) {
-      if (ph == null) {
-        throw IllegalStateException("ph required for Mangrove")
-      }
-      if (salinityPpt == null) {
-        throw IllegalStateException("salinityPpt required for Mangrove")
-      }
-      if (tide == null) {
-        throw IllegalStateException("tide required for Mangrove")
-      }
-      if (tideTime == null) {
-        throw IllegalStateException("tideTime required for Mangrove")
+    val nonNullWaterValues = listOfNotNull(ph, salinityPpt, tide, tideTime, waterDepthCm)
+
+    if (nonNullWaterValues.isNotEmpty()) {
+      when (forestType) {
+        BiomassForestType.Mangrove -> {
+          if (nonNullWaterValues.size != 5) {
+            throw IllegalStateException(
+                "Water measurements must either all be set or all be absent"
+            )
+          }
+        }
+        BiomassForestType.Terrestrial -> {
+          throw IllegalStateException("Water measurements not allowed for Terrestrial forest type")
+        }
       }
     }
 

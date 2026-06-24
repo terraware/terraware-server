@@ -292,17 +292,33 @@ data class ExistingBiomassMeasurementPayload(
     val description: String?,
     val forestType: BiomassForestType,
     val herbaceousCoverPercent: Int,
+    @Schema(
+        description =
+            "Only valid for Mangrove forests. A null value indicates that there was no water."
+    )
     val ph: BigDecimal?,
     val quadrats: List<ExistingBiomassQuadratPayload>,
-    @Schema(description = "Measured in ppt") //
+    @Schema(
+        description =
+            "Measured in ppt. Only valid for Mangrove forests. A null value indicates that there " +
+                "was no water."
+    )
     val salinity: BigDecimal?,
     val smallTreeCountLow: Int,
     val smallTreeCountHigh: Int,
     val soilAssessment: String,
     val soilType: SoilType?,
-    @Schema(description = "Low or high tide.") //
+    @Schema(
+        description =
+            "Low or high tide. Only valid for Mangrove forests. A null value indicates that " +
+                "there was no water."
+    )
     val tide: MangroveTide?,
-    @Schema(description = "Time when ide is observed.") //
+    @Schema(
+        description =
+            "Time when tide is observed. Only valid for Mangrove forests. A null value indicates " +
+                "that there was no water."
+    )
     val tideTime: Instant?,
     val treeSpeciesCount: Int,
     val trees: List<ExistingTreePayload>,
@@ -357,15 +373,30 @@ data class ExistingBiomassMeasurementPayload(
   }
 }
 
+@Schema(
+    description =
+        "Measurements for terrestrial and mangrove biomass observations. Water measurements must " +
+            "either all be present or all be absent if forestType is Mangrove."
+)
 data class NewBiomassMeasurementPayload(
     val description: String?,
     val forestType: BiomassForestType,
     @Schema(minimum = "0", maximum = "100") //
     val herbaceousCoverPercent: Int,
-    @Schema(description = "Required for Mangrove forest.", minimum = "0", maximum = "14")
+    @Schema(
+        description =
+            "Only valid for Mangrove forests. A null value indicates that there was no water.",
+        minimum = "0",
+        maximum = "14",
+    )
     val ph: BigDecimal?,
     val quadrats: List<NewBiomassQuadratPayload>,
-    @Schema(description = "Measured in ppt. Required for Mangrove forest.", minimum = "0")
+    @Schema(
+        description =
+            "Measured in ppt. Only valid for Mangrove forests. A null value indicates that " +
+                "there was no water.",
+        minimum = "0",
+    )
     val salinity: BigDecimal?,
     @Schema(minimum = "0") //
     val smallTreeCountLow: Int,
@@ -373,9 +404,17 @@ data class NewBiomassMeasurementPayload(
     val smallTreeCountHigh: Int,
     val soilAssessment: String,
     val soilType: SoilType?,
-    @Schema(description = "Low or high tide. Required for Mangrove forest.")
+    @Schema(
+        description =
+            "Low or high tide. Only valid for Mangrove forests. A null value indicates that " +
+                "there was no water."
+    )
     val tide: MangroveTide?,
-    @Schema(description = "Time when ide is observed. Required for Mangrove forest.")
+    @Schema(
+        description =
+            "Time when tide is observed. Only valid for Mangrove forests. A null value " +
+                "indicates that there was no water."
+    )
     val tideTime: Instant?,
     val trees: List<NewTreePayload>,
     @Schema(
