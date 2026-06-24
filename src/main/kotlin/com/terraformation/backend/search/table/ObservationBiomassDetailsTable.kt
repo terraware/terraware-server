@@ -78,15 +78,15 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
                       )
               ),
           ),
-          bigDecimalField("ph", OBSERVATION_BIOMASS_DETAILS.PH),
+          noWater(bigDecimalField("ph", OBSERVATION_BIOMASS_DETAILS.PH)),
           integerField("smallTreesCountHigh", OBSERVATION_BIOMASS_DETAILS.SMALL_TREES_COUNT_HIGH),
           integerField("smallTreesCountLow", OBSERVATION_BIOMASS_DETAILS.SMALL_TREES_COUNT_LOW),
-          bigDecimalField("salinity", OBSERVATION_BIOMASS_DETAILS.SALINITY_PPT),
+          noWater(bigDecimalField("salinity", OBSERVATION_BIOMASS_DETAILS.SALINITY_PPT)),
           textField("soilAssessment", OBSERVATION_BIOMASS_DETAILS.SOIL_ASSESSMENT),
           enumField("soilType", OBSERVATION_BIOMASS_DETAILS.SOIL_TYPE_ID),
-          enumField("tide", OBSERVATION_BIOMASS_DETAILS.TIDE_ID),
-          timestampField("tideTime", OBSERVATION_BIOMASS_DETAILS.TIDE_TIME),
-          integerField("waterDepth", OBSERVATION_BIOMASS_DETAILS.WATER_DEPTH_CM),
+          noWater(enumField("tide", OBSERVATION_BIOMASS_DETAILS.TIDE_ID)),
+          noWater(timestampField("tideTime", OBSERVATION_BIOMASS_DETAILS.TIDE_TIME)),
+          noWater(integerField("waterDepth", OBSERVATION_BIOMASS_DETAILS.WATER_DEPTH_CM)),
       )
 
   override val defaultOrderFields: List<OrderField<*>>
@@ -104,4 +104,7 @@ class ObservationBiomassDetailsTable(private val tables: SearchTables) : SearchT
         .join(OBSERVATIONS)
         .on(OBSERVATION_BIOMASS_DETAILS.OBSERVATION_ID.eq(OBSERVATIONS.ID))
   }
+
+  private fun noWater(original: SearchField) =
+      nullMessageField(original, "search.observationBiomassDetails.noWater")
 }

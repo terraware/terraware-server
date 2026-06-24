@@ -19,6 +19,7 @@ import com.terraformation.backend.search.field.LocalDateTimeField
 import com.terraformation.backend.search.field.LocalizedTextField
 import com.terraformation.backend.search.field.LongField
 import com.terraformation.backend.search.field.NonLocalizableEnumField
+import com.terraformation.backend.search.field.NullMessageField
 import com.terraformation.backend.search.field.SearchField
 import com.terraformation.backend.search.field.StableIdField
 import com.terraformation.backend.search.field.TextField
@@ -289,6 +290,12 @@ abstract class SearchTable {
       fieldName: String,
       databaseField: Field<T?>,
   ) = NonLocalizableEnumField(fieldName, databaseField, this, T::class.java)
+
+  fun nullMessageField(
+      original: SearchField,
+      nullKey: String,
+      resourceBundleName: String = "i18n/Messages",
+  ) = NullMessageField(original, nullKey, resourceBundleName)
 
   fun textField(fieldName: String, databaseField: Field<String?>) =
       TextField(fieldName, databaseField, this)

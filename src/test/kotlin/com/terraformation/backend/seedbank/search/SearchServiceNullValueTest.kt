@@ -1,7 +1,10 @@
 package com.terraformation.backend.seedbank.search
 
+import com.terraformation.backend.db.tracking.BiomassForestType
+import com.terraformation.backend.db.tracking.ObservationType
 import com.terraformation.backend.search.FieldNode
 import com.terraformation.backend.search.NoConditionNode
+import com.terraformation.backend.search.SearchFieldPrefix
 import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -77,6 +80,32 @@ internal class SearchServiceNullValueTest : SearchServiceTest() {
             )
         ),
         searchAccessions(facilityId, fields, searchNode),
+    )
+  }
+
+  @Test
+  fun `null message field returns message for null values`() {
+    insertPlantingSite()
+    insertStratum()
+    insertSubstratum()
+    insertMonitoringPlot()
+    insertObservation(observationType = ObservationType.BiomassMeasurements)
+    insertObservationPlot()
+    insertObservationBiomassDetails(forestType = BiomassForestType.Mangrove)
+
+    val prefix = SearchFieldPrefix(tables.observationBiomassDetails)
+    val fields = listOf(prefix.resolve("waterDepth"))
+    val searchNode = NoConditionNode()
+
+    assertEquals(
+        SearchResults(
+            listOf(
+                mapOf(
+                    "waterDepth" to "No water",
+                )
+            )
+        ),
+        searchService.search(prefix, fields, mapOf(prefix to searchNode)),
     )
   }
 }
