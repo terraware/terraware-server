@@ -61,6 +61,11 @@ annotation class FunderEndpoint
 annotation class InternalEndpoint
 
 @Retention(AnnotationRetention.RUNTIME)
+@Tag(name = "Public")
+@Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
+annotation class PublicEndpoint
+
+@Retention(AnnotationRetention.RUNTIME)
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.FUNCTION)
 @ApiResponse(
     content =
