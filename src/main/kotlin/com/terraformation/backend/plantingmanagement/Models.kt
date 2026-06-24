@@ -80,6 +80,7 @@ enum class PlantingSeasonNotificationType {
 data class PlantingSeasonNotificationModel(
     val type: PlantingSeasonNotificationType,
     val speciesScientificNames: Set<String>? = null,
+    val dates: Set<LocalDate>? = null,
 )
 
 data class PlantingSeasonNotificationGroupModel(

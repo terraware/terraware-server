@@ -15,6 +15,8 @@ import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
+import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
@@ -25,6 +27,7 @@ import com.terraformation.backend.plantingmanagement.event.PlantingSeasonSpecies
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonUpdatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonWithdrawalCreatedEvent
 import jakarta.inject.Named
+import java.time.LocalDate
 import kotlin.reflect.KClass
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -134,8 +137,10 @@ class PlantingSeasonNotificationsService(
             )
             .groupBy { it.event.plantingSeasonId }
 
-    val scientificNamesBySpeciesId =
-        fetchScientificNamesBySpeciesId(speciesIdsOf(entriesBySeason.values.flatten()))
+    val allEntries = entriesBySeason.values.flatten()
+    val scientificNamesBySpeciesId = fetchScientificNamesBySpeciesId(speciesIdsOf(allEntries))
+    val datesByScheduledPlantingDateId =
+        fetchDatesByScheduledPlantingDateId(scheduledPlantingDateIdsOf(allEntries))
 
     return entriesBySeason.mapNotNull { (plantingSeasonId, entries) ->
       buildNotificationModel(
@@ -143,6 +148,7 @@ class PlantingSeasonNotificationsService(
           entries,
           seasonInfoById.getValue(plantingSeasonId),
           scientificNamesBySpeciesId,
+          datesByScheduledPlantingDateId,
           page,
           requestedTypes,
       )
@@ -189,11 +195,17 @@ class PlantingSeasonNotificationsService(
       entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>,
       seasonInfo: SeasonInfo,
       scientificNamesBySpeciesId: Map<SpeciesId, String>,
+      datesByScheduledPlantingDateId: Map<ScheduledPlantingDateId, LocalDate>,
       page: PlantingSeasonNotificationPage,
       requestedTypes: Set<PlantingSeasonNotificationType>,
   ): PlantingSeasonNotificationGroupModel? {
     val notifications =
-        combineEvents(entries.map { it.event }, scientificNamesBySpeciesId, requestedTypes)
+        combineEvents(
+            entries.map { it.event },
+            scientificNamesBySpeciesId,
+            datesByScheduledPlantingDateId,
+            requestedTypes,
+        )
     if (notifications.isEmpty()) {
       return null
     }
@@ -222,6 +234,7 @@ class PlantingSeasonNotificationsService(
   private fun combineEvents(
       events: List<PlantingSeasonRelatedPersistentEvent>,
       scientificNamesBySpeciesId: Map<SpeciesId, String>,
+      datesByScheduledPlantingDateId: Map<ScheduledPlantingDateId, LocalDate>,
       requestedTypes: Set<PlantingSeasonNotificationType>,
   ): List<PlantingSeasonNotificationModel> {
     require(events.mapTo(mutableSetOf()) { it.plantingSeasonId }.size <= 1) {
@@ -229,6 +242,7 @@ class PlantingSeasonNotificationsService(
     }
 
     val speciesNamesByType = linkedMapOf<PlantingSeasonNotificationType, MutableSet<String>>()
+    val scheduledDates = mutableSetOf<LocalDate>()
 
     events.forEach { event ->
       val type = event.notificationType ?: return@forEach
@@ -237,12 +251,19 @@ class PlantingSeasonNotificationsService(
       if (event is PlantingSeasonSpeciesTargetPersistentEvent) {
         scientificNamesBySpeciesId[event.speciesId]?.let { speciesNames.add(it) }
       }
+      if (event is PlantingDateRequestPersistentEvent) {
+        datesByScheduledPlantingDateId[event.scheduledPlantingDateId]?.let { scheduledDates.add(it) }
+      }
     }
 
     return speciesNamesByType.map { (type, speciesNames) ->
       PlantingSeasonNotificationModel(
           type = type,
           speciesScientificNames = speciesNames.ifEmpty { null },
+          dates =
+              if (type == PlantingSeasonNotificationType.ScheduledPlantingDateRequested) {
+                scheduledDates.ifEmpty { null }
+              } else null,
       )
     }
   }
@@ -279,6 +300,14 @@ class PlantingSeasonNotificationsService(
           .filterIsInstance<PlantingSeasonSpeciesTargetPersistentEvent>()
           .mapTo(mutableSetOf()) { it.speciesId }
 
+  private fun scheduledPlantingDateIdsOf(
+      entries: List<EventLogEntry<PlantingSeasonRelatedPersistentEvent>>
+  ): Set<ScheduledPlantingDateId> =
+      entries
+          .map { it.event }
+          .filterIsInstance<PlantingDateRequestPersistentEvent>()
+          .mapTo(mutableSetOf()) { it.scheduledPlantingDateId }
+
   private fun fetchScientificNamesBySpeciesId(speciesIds: Set<SpeciesId>): Map<SpeciesId, String> {
     if (speciesIds.isEmpty()) {
       return emptyMap()
@@ -289,6 +318,20 @@ class PlantingSeasonNotificationsService(
         .from(SPECIES)
         .where(SPECIES.ID.`in`(speciesIds))
         .associate { it[SPECIES.ID]!! to it[SPECIES.SCIENTIFIC_NAME]!! }
+  }
+
+  private fun fetchDatesByScheduledPlantingDateId(
+      ids: Set<ScheduledPlantingDateId>
+  ): Map<ScheduledPlantingDateId, LocalDate> {
+    if (ids.isEmpty()) {
+      return emptyMap()
+    }
+
+    return dslContext
+        .select(SCHEDULED_PLANTING_DATES.ID, SCHEDULED_PLANTING_DATES.DATE)
+        .from(SCHEDULED_PLANTING_DATES)
+        .where(SCHEDULED_PLANTING_DATES.ID.`in`(ids))
+        .associate { it[SCHEDULED_PLANTING_DATES.ID]!! to it[SCHEDULED_PLANTING_DATES.DATE]!! }
   }
 
   /**
