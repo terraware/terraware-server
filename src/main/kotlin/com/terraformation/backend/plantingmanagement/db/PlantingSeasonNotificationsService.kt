@@ -8,15 +8,15 @@ import com.terraformation.backend.db.default_schema.tables.references.SPECIES
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSeasonNotificationPage
 import com.terraformation.backend.db.tracking.PlantingSeasonStatus
+import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASONS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SEASON_NOTIFICATIONS
+import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.eventlog.db.EventLogStore
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationGroupModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
-import com.terraformation.backend.db.tracking.ScheduledPlantingDateId
-import com.terraformation.backend.db.tracking.tables.references.SCHEDULED_PLANTING_DATES
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonPersistentEvent
@@ -252,7 +252,9 @@ class PlantingSeasonNotificationsService(
         scientificNamesBySpeciesId[event.speciesId]?.let { speciesNames.add(it) }
       }
       if (event is PlantingDateRequestPersistentEvent) {
-        datesByScheduledPlantingDateId[event.scheduledPlantingDateId]?.let { scheduledDates.add(it) }
+        datesByScheduledPlantingDateId[event.scheduledPlantingDateId]?.let {
+          scheduledDates.add(it)
+        }
       }
     }
 
