@@ -1,0 +1,37 @@
+Terraware incorporates and/or derives from the following third-party datasets.
+Some files in this repository (e.g. region name lists, region-to-ecosystem
+mappings, and translated names) are DERIVED from these sources and have been
+MODIFIED by Terraformation. Each dataset is provided without warranty; see the
+linked licenses for full terms.
+
+------------------------------------------------------------------------------
+GBIF Backbone Taxonomy
+  GBIF Secretariat. GBIF Backbone Taxonomy. https://doi.org/10.15468/39omei
+  License: CC BY 4.0  https://creativecommons.org/licenses/by/4.0/
+  Source:  https://www.gbif.org
+
+GRIIS - Global Register of Introduced and Invasive Species
+  Invasive Species Specialist Group (ISSG), IUCN, via GBIF.
+  Pagad, S. et al. (2022). Scientific Data. https://doi.org/10.1038/s41597-022-01514-z
+  License: CC BY 4.0  https://creativecommons.org/licenses/by/4.0/
+  Source:  https://cloud.gbif.org/griis/
+
+WCVP - World Checklist of Vascular Plants
+  Govaerts, R. (ed.). World Checklist of Vascular Plants. Royal Botanic Gardens, Kew.
+  https://doi.org/10.34885/b8fr-km05
+  License: CC BY 3.0  https://creativecommons.org/licenses/by/3.0/
+  Source:  https://powo.science.kew.org
+
+RESOLVE Ecoregions 2017
+  Dinerstein, E. et al. (2017). BioScience 67:534-545.
+  https://doi.org/10.1093/biosci/bix014  (c) RESOLVE
+  License: CC BY 4.0  https://creativecommons.org/licenses/by/4.0/
+  Source:  https://ecoregions.appspot.com/
+
+WGSRPD (TDWG Level 3) - World Geographical Scheme for Recording Plant Distributions
+  Biodiversity Information Standards (TDWG). Open TDWG standard.
+  Source: https://github.com/tdwg/wgsrpd
+------------------------------------------------------------------------------
+
+Derived/modified data in this repository is (c) Terraformation and is not the
+responsibility of the original data providers.

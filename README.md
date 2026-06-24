@@ -17,3 +17,7 @@ We're offering this project as Apache-licensed open source in the interest of sh
 For the moment, we're not asking for code contributions from the community. (Check our [careers page](https://www.terraformation.com/about/careers) if you're itching to work on this code!)
 
 You may see references to some private repositories in the documentation. We're working toward opening more of our code, but not everything is ready yet.
+
+## Attributions
+
+See [ATTRIBUTIONS.txt](docs/ATTRIBUTIONS.txt) for information about data sources used by this repo.
