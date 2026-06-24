@@ -265,7 +265,9 @@ class PlantingSeasonNotificationsService(
           dates =
               if (type == PlantingSeasonNotificationType.ScheduledPlantingDateRequested) {
                 scheduledDates.ifEmpty { null }
-              } else null,
+              } else {
+                null
+              },
       )
     }
   }
