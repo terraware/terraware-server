@@ -1,6 +1,7 @@
 package com.terraformation.backend.gis
 
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ECOREGIONS
 import com.terraformation.backend.db.default_schema.tables.references.ECOREGION_COUNTRIES
@@ -62,42 +63,31 @@ class EcoregionImporter(
     log.info("Inserting ecoregions into database")
 
     dslContext.transaction { _ ->
-      val ecoregionIdsByObjectId =
-          with(ECOREGIONS) {
-            dslContext
-                .insertInto(
-                    ECOREGIONS,
-                    OBJECT_ID,
-                    ECO_NAME,
-                    BIOME_NUMBER,
-                    BIOME_NAME,
-                    REALM,
-                    ECO_BIOME_CODE,
-                    ECO_ID,
-                    BOUNDARY,
-                )
-                .valuesOfRows(entries.map { it.toRow() })
-                .onConflict(OBJECT_ID)
-                .doUpdate()
-                .set(ECO_NAME, DSL.excluded(ECO_NAME))
-                .set(BIOME_NUMBER, DSL.excluded(BIOME_NUMBER))
-                .set(BIOME_NAME, DSL.excluded(BIOME_NAME))
-                .set(REALM, DSL.excluded(REALM))
-                .set(ECO_BIOME_CODE, DSL.excluded(ECO_BIOME_CODE))
-                .set(ECO_ID, DSL.excluded(ECO_ID))
-                .set(BOUNDARY, DSL.excluded(BOUNDARY))
-                .execute()
+      with(ECOREGIONS) {
+        dslContext
+            .insertInto(
+                ECOREGIONS,
+                ID,
+                ECO_NAME,
+                BIOME_NUMBER,
+                BIOME_NAME,
+                REALM,
+                ECO_BIOME_CODE,
+                BOUNDARY,
+            )
+            .valuesOfRows(entries.map { it.toRow() })
+            .onConflict(ID)
+            .doUpdate()
+            .set(BIOME_NAME, DSL.excluded(BIOME_NAME))
+            .set(BIOME_NUMBER, DSL.excluded(BIOME_NUMBER))
+            .set(BOUNDARY, DSL.excluded(BOUNDARY))
+            .set(ECO_BIOME_CODE, DSL.excluded(ECO_BIOME_CODE))
+            .set(ECO_NAME, DSL.excluded(ECO_NAME))
+            .set(REALM, DSL.excluded(REALM))
+            .execute()
 
-            dslContext
-                .deleteFrom(ECOREGIONS)
-                .where(OBJECT_ID.notIn(entries.map { it.objectId }))
-                .execute()
-
-            dslContext
-                .select(OBJECT_ID, ID)
-                .from(ECOREGIONS)
-                .fetchMap(OBJECT_ID.asNonNullable(), ID.asNonNullable())
-          }
+        dslContext.deleteFrom(ECOREGIONS).where(ID.notIn(entries.map { it.id })).execute()
+      }
 
       log.info("Imported raw ecoregions data; calculating ecoregion-country mappings")
 
@@ -111,7 +101,7 @@ class EcoregionImporter(
                   async {
                     log.debug("Calculating for ${entry.ecoName}")
 
-                    val ecoregionId = ecoregionIdsByObjectId[entry.objectId]
+                    val ecoregionId = entry.id
                     val countries =
                         countryDetector.getCountries(
                             entry.geometry,
@@ -184,29 +174,26 @@ class EcoregionImporter(
 
     return shapefiles.first().features.map { feature ->
       EcoregionEntry(
-          objectId = feature.properties["objectid"]!!,
-          ecoName = feature.properties["eco_name"],
-          biomeNumber = feature.properties["biome_num"],
           biomeName = feature.properties["biome_name"],
-          realm = feature.properties["realm"],
+          biomeNumber = feature.properties["biome_num"],
           ecoBiomeCode = feature.properties["eco_biome_"],
-          ecoId = feature.properties["eco_id"],
+          ecoName = feature.properties["eco_name"],
           geometry = feature.geometry,
+          id = EcoregionId(feature.properties["eco_id"]!!),
+          realm = feature.properties["realm"],
       )
     }
   }
 
   data class EcoregionEntry(
-      val objectId: String,
-      val ecoName: String?,
-      val biomeNumber: String?,
       val biomeName: String?,
-      val realm: String?,
+      val biomeNumber: String?,
       val ecoBiomeCode: String?,
-      val ecoId: String?,
+      val ecoName: String?,
       var geometry: Geometry,
+      val id: EcoregionId,
+      val realm: String?,
   ) {
-    fun toRow() =
-        DSL.row(objectId, ecoName, biomeNumber, biomeName, realm, ecoBiomeCode, ecoId, geometry)
+    fun toRow() = DSL.row(id, ecoName, biomeNumber, biomeName, realm, ecoBiomeCode, geometry)
   }
 }
