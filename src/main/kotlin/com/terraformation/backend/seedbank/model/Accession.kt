@@ -17,7 +17,6 @@ import java.math.BigDecimal
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 
 /**
  * Enum representation of whether or not an accession is in an active state. We use this rather than
@@ -60,6 +59,7 @@ data class AccessionModel(
     val id: AccessionId? = null,
     val accessionNumber: String? = null,
     val bagNumbers: Set<String> = emptySet(),
+    val collectedDate: LocalDate? = null,
     val collectedTime: Instant? = null,
     val collectionSiteCity: String? = null,
     val collectionSiteCountryCode: String? = null,
@@ -111,9 +111,6 @@ data class AccessionModel(
   init {
     validate()
   }
-
-  val collectedDate: LocalDate?
-    get() = collectedTime?.atOffset(ZoneOffset.UTC)?.toLocalDate()
 
   val active: AccessionActive
     get() = state.toActiveEnum()

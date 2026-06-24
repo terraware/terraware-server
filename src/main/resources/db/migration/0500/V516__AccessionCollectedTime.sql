@@ -1,6 +1,5 @@
 ALTER TABLE seedbank.accessions
-    ALTER COLUMN collected_date TYPE TIMESTAMP WITH TIME ZONE
-        USING collected_date::TIMESTAMP AT TIME ZONE 'UTC';
+    ADD COLUMN collected_time TIMESTAMP WITH TIME ZONE;
 
-ALTER TABLE seedbank.accessions
-    RENAME COLUMN collected_date TO collected_time;
+UPDATE seedbank.accessions
+    SET collected_time = collected_date::TIMESTAMP AT TIME ZONE 'UTC';

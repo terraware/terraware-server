@@ -137,6 +137,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
             AccessionsRow(
                 number = "XYZ",
                 stateId = AccessionState.InStorage,
+                collectedDate = LocalDate.of(2019, 3, 2),
                 collectedTime = LocalDate.of(2019, 3, 2).atStartOfDay(ZoneOffset.UTC).toInstant(),
                 collectionSiteCity = "city",
                 collectionSiteCountryCode = "UG",

@@ -180,6 +180,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           ),
           listOf(
               AccessionsRow(
+                  collectedDate = LocalDate.of(2022, 3, 4),
                   collectedTime = LocalDate.of(2022, 3, 4).atStartOfDay(ZoneOffset.UTC).toInstant(),
                   collectionSiteCity = "City name",
                   collectionSiteCountryCode = "US",
@@ -205,6 +206,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   treesCollectedFrom = 5,
               ),
               AccessionsRow(
+                  collectedDate = LocalDate.of(2022, 3, 5),
                   collectedTime = LocalDate.of(2022, 3, 5).atStartOfDay(ZoneOffset.UTC).toInstant(),
                   collectionSiteCountryCode = "UG",
                   collectionSourceId = CollectionSource.Wild,
@@ -259,6 +261,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           ),
           listOf(
               AccessionsRow(
+                  collectedDate = LocalDate.of(2023, 6, 1),
                   collectedTime = LocalDate.of(2023, 6, 1).atStartOfDay(ZoneOffset.UTC).toInstant(),
                   createdBy = user.userId,
                   createdTime = Instant.EPOCH,
@@ -275,6 +278,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
                   stateId = AccessionState.UsedUp,
               ),
               AccessionsRow(
+                  collectedDate = LocalDate.of(2023, 6, 1),
                   collectedTime = LocalDate.of(2023, 6, 1).atStartOfDay(ZoneOffset.UTC).toInstant(),
                   createdBy = user.userId,
                   createdTime = Instant.EPOCH,
@@ -319,6 +323,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
           ),
           listOf(
               AccessionsRow(
+                  collectedDate = LocalDate.of(2022, 3, 5),
                   collectedTime = LocalDate.of(2022, 3, 5).atStartOfDay(ZoneOffset.UTC).toInstant(),
                   collectionSiteCountryCode = "UG",
                   collectionSourceId = CollectionSource.Wild,
@@ -977,6 +982,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       val accessionId =
           insertAccession(
               AccessionsRow(
+                  collectedDate = LocalDate.EPOCH,
                   collectedTime = LocalDate.EPOCH.atStartOfDay(ZoneOffset.UTC).toInstant(),
                   collectionSiteCity = "Old City",
                   collectionSiteCountryCode = "US",
@@ -1013,6 +1019,7 @@ internal class AccessionImporterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           listOf(
               AccessionsRow(
+                  collectedDate = LocalDate.of(2022, 3, 4),
                   collectedTime = LocalDate.of(2022, 3, 4).atStartOfDay(ZoneOffset.UTC).toInstant(),
                   collectionSiteCity = "New City",
                   collectionSiteCountryCode = "GB",

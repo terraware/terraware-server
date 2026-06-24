@@ -204,6 +204,7 @@ class AccessionImporter(
               collectionSiteCountryCode = collectionCountryCode,
               collectionSiteCountrySubdivision = collectionCountrySubdivision,
               collectionSiteLandowner = collectionLandowner,
+              collectedDate = collectionDate,
               collectedTime = collectionDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
               collectionSiteName = collectionSiteName,
               collectionSiteNotes = collectionSiteDescription,
@@ -222,6 +223,7 @@ class AccessionImporter(
           AccessionModel(
               accessionNumber = accessionNumber,
               clock = clock,
+              collectedDate = collectionDate,
               collectedTime = collectionDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
               collectionSiteCity = collectionCity,
               collectionSiteCountryCode = collectionCountryCode,
