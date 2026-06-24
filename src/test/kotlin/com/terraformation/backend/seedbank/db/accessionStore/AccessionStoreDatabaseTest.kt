@@ -86,6 +86,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val update =
         UpdateAccessionRequestPayloadV2(
             bagNumbers = setOf("abc"),
+            collectedDate = today,
             collectedTime = today.atStartOfDay(ZoneOffset.UTC).toInstant(),
             collectionSiteCity = "city",
             collectionSiteCoordinates =
@@ -135,9 +136,8 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val accessionModelProperties = AccessionModel::class.declaredMemberProperties
     val propertyNames = updatePayloadProperties.map { it.name }.toSet()
 
-    val deprecatedPayloadFields = setOf("collectedDate")
     updatePayloadProperties.forEach { prop ->
-      if (prop.visibility == KVisibility.PUBLIC && prop.name !in deprecatedPayloadFields) {
+      if (prop.visibility == KVisibility.PUBLIC) {
         try {
           assertNotNull(prop.get(update), "Field ${prop.name} is null in example object")
         } catch (e: Exception) {

@@ -171,6 +171,7 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     val accession =
         CreateAccessionRequestPayloadV2(
             bagNumbers = setOf("abc"),
+            collectedDate = today,
             collectedTime = today.atStartOfDay(ZoneOffset.UTC).toInstant(),
             collectionSiteCity = "city",
             collectionSiteCoordinates =
@@ -212,12 +213,9 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
     val accessionModelProperties = AccessionModel::class.declaredMemberProperties
     val propertyNames = createPayloadProperties.map { it.name }.toSet()
 
-    val deprecatedPayloadFields = setOf("collectedDate")
-    createPayloadProperties
-        .filter { it.name !in deprecatedPayloadFields }
-        .forEach { prop ->
-          assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
-        }
+    createPayloadProperties.forEach { prop ->
+      assertNotNull(prop.get(accession), "Field ${prop.name} is null in example object")
+    }
 
     val stored = store.create(accession.toModel(clock))
 
