@@ -14,6 +14,7 @@ import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationT
 import com.terraformation.backend.plantingmanagement.db.PlantingSeasonNotificationsService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Schema
+import java.time.LocalDate
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -97,12 +98,14 @@ data class GetPlantingSeasonNotificationsResponsePayload(
 data class PlantingSeasonNotificationPayload(
     val type: PlantingSeasonNotificationType,
     val speciesScientificNames: Set<String>? = null,
+    val dates: Set<LocalDate>? = null,
 ) {
   constructor(
       model: PlantingSeasonNotificationModel
   ) : this(
       type = model.type,
       speciesScientificNames = model.speciesScientificNames,
+      dates = model.dates,
   )
 }
 

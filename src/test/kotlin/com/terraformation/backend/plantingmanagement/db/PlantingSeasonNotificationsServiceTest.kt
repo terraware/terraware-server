@@ -27,6 +27,8 @@ import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationG
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationModel
 import com.terraformation.backend.plantingmanagement.PlantingSeasonNotificationType
 import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestCreatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEvent
+import com.terraformation.backend.plantingmanagement.event.PlantingDateRequestUpdatedEventValues
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesCreatedEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesPersistentEvent
 import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesUpdatedEvent
@@ -130,8 +132,11 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
   private val seasonWithdrawalRecorded =
       PlantingSeasonNotificationModel(PlantingSeasonNotificationType.SeasonWithdrawalRecorded)
 
-  private val scheduledPlantingDateRequested =
-      PlantingSeasonNotificationModel(PlantingSeasonNotificationType.ScheduledPlantingDateRequested)
+  private fun scheduledPlantingDateRequested(vararg dates: LocalDate) =
+      PlantingSeasonNotificationModel(
+          PlantingSeasonNotificationType.ScheduledPlantingDateRequested,
+          dates = dates.toSet().ifEmpty { null },
+      )
 
   @Nested
   inner class GetNotificationsBySeason {
@@ -375,7 +380,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
                   listOf(
                       targetAdded(speciesName1),
                       targetUpdated(speciesName1),
-                      scheduledPlantingDateRequested,
+                      scheduledPlantingDateRequested(LocalDate.EPOCH),
                       closed,
                   ),
                   notificationPage = PlantingSeasonNotificationPage.Inventory,
@@ -398,7 +403,7 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           listOf(
               model(
                   latest.id,
-                  listOf(scheduledPlantingDateRequested, closed),
+                  listOf(scheduledPlantingDateRequested(LocalDate.EPOCH), closed),
                   notificationPage = PlantingSeasonNotificationPage.Withdrawals,
               )
           ),
@@ -581,6 +586,101 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           listOf(targetUpdated(speciesName1, speciesName2)),
           notifications,
       )
+    }
+
+    @Test
+    fun `adds the date from a planting date request created event`() {
+      val date = LocalDate.of(2025, 1, 15)
+      insertPlantingDateRequestedEvent(date = date)
+
+      val notifications =
+          service
+              .getNotifications(plantingSeasonId, PlantingSeasonNotificationPage.Inventory)
+              .single()
+              .notifications
+
+      assertEquals(listOf(scheduledPlantingDateRequested(date)), notifications)
+    }
+
+    @Test
+    fun `accumulates dates from multiple planting date request created events`() {
+      val date1 = LocalDate.of(2025, 1, 15)
+      val date2 = LocalDate.of(2025, 2, 20)
+      insertPlantingDateRequestedEvent(date = date1)
+      clock.instant = clock.instant.plusSeconds(1)
+      insertPlantingDateRequestedEvent(date = date2)
+
+      val notifications =
+          service
+              .getNotifications(plantingSeasonId, PlantingSeasonNotificationPage.Inventory)
+              .single()
+              .notifications
+
+      assertEquals(listOf(scheduledPlantingDateRequested(date1, date2)), notifications)
+    }
+
+    @Test
+    fun `deduplicates dates when multiple created events share the same date`() {
+      val date = LocalDate.of(2025, 1, 15)
+      val scheduledId =
+          insertPlantingSeasonScheduledDate(date = date, plantingSeasonId = plantingSeasonId)
+      insertPlantingDateRequestedEvent(date = date, scheduledPlantingDateId = scheduledId)
+      clock.instant = clock.instant.plusSeconds(1)
+      insertPlantingDateRequestedEvent(date = date, scheduledPlantingDateId = scheduledId)
+
+      val notifications =
+          service
+              .getNotifications(plantingSeasonId, PlantingSeasonNotificationPage.Inventory)
+              .single()
+              .notifications
+
+      assertEquals(listOf(scheduledPlantingDateRequested(date)), notifications)
+    }
+
+    @Test
+    fun `shows the new date when the planting date request date was updated`() {
+      val originalDate = LocalDate.of(2025, 1, 15)
+      val newDate = LocalDate.of(2025, 3, 10)
+      // The DB reflects the current state after the update.
+      val scheduledId =
+          insertPlantingSeasonScheduledDate(date = newDate, plantingSeasonId = plantingSeasonId)
+      insertPlantingDateRequestedEvent(date = originalDate, scheduledPlantingDateId = scheduledId)
+      clock.instant = clock.instant.plusSeconds(1)
+      insertPlantingDateRequestUpdatedEvent(
+          changedFrom = PlantingDateRequestUpdatedEventValues(date = originalDate),
+          changedTo = PlantingDateRequestUpdatedEventValues(date = newDate),
+          scheduledPlantingDateId = scheduledId,
+      )
+
+      val notifications =
+          service
+              .getNotifications(plantingSeasonId, PlantingSeasonNotificationPage.Inventory)
+              .single()
+              .notifications
+
+      assertEquals(listOf(scheduledPlantingDateRequested(newDate)), notifications)
+    }
+
+    @Test
+    fun `shows the current date when the planting date request was updated without a date change`() {
+      val date = LocalDate.of(2025, 1, 15)
+      val scheduledId =
+          insertPlantingSeasonScheduledDate(date = date, plantingSeasonId = plantingSeasonId)
+      insertPlantingDateRequestedEvent(date = date, scheduledPlantingDateId = scheduledId)
+      clock.instant = clock.instant.plusSeconds(1)
+      insertPlantingDateRequestUpdatedEvent(
+          changedFrom = PlantingDateRequestUpdatedEventValues(notes = "old notes"),
+          changedTo = PlantingDateRequestUpdatedEventValues(notes = "new notes"),
+          scheduledPlantingDateId = scheduledId,
+      )
+
+      val notifications =
+          service
+              .getNotifications(plantingSeasonId, PlantingSeasonNotificationPage.Inventory)
+              .single()
+              .notifications
+
+      assertEquals(listOf(scheduledPlantingDateRequested(date)), notifications)
     }
 
     @Test
@@ -776,6 +876,30 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
       )
 
   private fun insertPlantingDateRequestedEvent(
+      date: LocalDate = LocalDate.EPOCH,
+      organizationId: OrganizationId = this.organizationId,
+      plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
+      plantingSiteId: PlantingSiteId = this.plantingSiteId,
+      scheduledPlantingDateId: ScheduledPlantingDateId =
+          insertPlantingSeasonScheduledDate(date = date, plantingSeasonId = plantingSeasonId),
+  ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
+    val event =
+        PlantingDateRequestCreatedEvent(
+            date = date,
+            notes = null,
+            organizationId = organizationId,
+            plantingSeasonId = plantingSeasonId,
+            plantingSiteId = plantingSiteId,
+            scheduledPlantingDateId = scheduledPlantingDateId,
+            status = PlantingDateRequestStatus.Pending,
+        )
+
+    return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
+  }
+
+  private fun insertPlantingDateRequestUpdatedEvent(
+      changedFrom: PlantingDateRequestUpdatedEventValues = PlantingDateRequestUpdatedEventValues(),
+      changedTo: PlantingDateRequestUpdatedEventValues = PlantingDateRequestUpdatedEventValues(),
       organizationId: OrganizationId = this.organizationId,
       plantingSeasonId: PlantingSeasonId = this.plantingSeasonId,
       plantingSiteId: PlantingSiteId = this.plantingSiteId,
@@ -783,14 +907,13 @@ internal class PlantingSeasonNotificationsServiceTest : DatabaseTest(), RunsAsDa
           insertPlantingSeasonScheduledDate(plantingSeasonId = plantingSeasonId),
   ): EventLogEntry<PlantingSeasonRelatedPersistentEvent> {
     val event =
-        PlantingDateRequestCreatedEvent(
-            date = LocalDate.EPOCH,
-            notes = null,
+        PlantingDateRequestUpdatedEvent(
+            changedFrom = changedFrom,
+            changedTo = changedTo,
             organizationId = organizationId,
             plantingSeasonId = plantingSeasonId,
             plantingSiteId = plantingSiteId,
             scheduledPlantingDateId = scheduledPlantingDateId,
-            status = PlantingDateRequestStatus.Pending,
         )
 
     return EventLogEntry(user.userId, clock.instant, event, eventLogStore.insertEvent(event))
