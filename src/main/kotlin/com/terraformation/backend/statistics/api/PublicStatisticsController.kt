@@ -34,6 +34,9 @@ data class PublicStatisticsPayload(
     val totalOrganizations: Int,
     val totalCountries: Int,
     val totalAreaUnderRestorationHa: BigDecimal,
+    val totalSeedsInStorage: Long,
+    val totalSeedlingsInNurseries: Long,
+    val totalPlantings: Int,
 ) {
   constructor(
       model: PublicStatisticsModel
@@ -41,6 +44,9 @@ data class PublicStatisticsPayload(
       totalOrganizations = model.totalOrganizations,
       totalCountries = model.totalCountries,
       totalAreaUnderRestorationHa = model.totalAreaUnderRestorationHa,
+      totalSeedsInStorage = model.totalSeedsInStorage,
+      totalSeedlingsInNurseries = model.totalSeedlingsInNurseries,
+      totalPlantings = model.totalPlantings,
   )
 }
 
