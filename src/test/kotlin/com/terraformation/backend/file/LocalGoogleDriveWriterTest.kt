@@ -1,5 +1,6 @@
 package com.terraformation.backend.file
 
+import com.terraformation.backend.db.default_schema.FileId
 import jakarta.ws.rs.core.MediaType
 import java.nio.file.NoSuchFileException
 import org.junit.jupiter.api.Assertions.assertArrayEquals
@@ -50,8 +51,43 @@ class LocalGoogleDriveWriterTest {
   }
 
   @Test
+  fun `uploadFile does not overwrite when fileId differs from the stored file`() {
+    val fileId1 = FileId(1L)
+    val fileId2 = FileId(2L)
+
+    val id1 =
+        writer.uploadFile(
+            parentFolderId,
+            "doc.txt",
+            MediaType.TEXT_PLAIN,
+            "v1".byteInputStream(),
+            fileId = fileId1,
+        )
+    val id2 =
+        writer.uploadFile(
+            parentFolderId,
+            "doc.txt",
+            MediaType.TEXT_PLAIN,
+            "v2".byteInputStream(),
+            fileId = fileId2,
+        )
+
+    assertNotEquals(id1, id2, "different fileIds should produce different Google Drive IDs")
+    assertArrayEquals(
+        "v1".toByteArray(),
+        writer.downloadFile(id1).readAllBytes(),
+        "first file unchanged",
+    )
+    assertArrayEquals(
+        "v2".toByteArray(),
+        writer.downloadFile(id2).readAllBytes(),
+        "second file distinct",
+    )
+  }
+
+  @Test
   fun `uploadFile overwrites the existing file when fileId matches`() {
-    val terrawareFileId = com.terraformation.backend.db.default_schema.FileId(1L)
+    val terrawareFileId = FileId(1L)
 
     val firstId =
         writer.uploadFile(

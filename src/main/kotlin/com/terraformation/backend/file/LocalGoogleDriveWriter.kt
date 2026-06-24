@@ -75,9 +75,9 @@ class LocalGoogleDriveWriter(
       overwriteExistingFile: Boolean,
   ): String {
     val path = "$parentFolderId/$filename"
-    val existingId = if (overwriteExistingFile) findIdForPath(path) else null
+    val existingId = if (overwriteExistingFile) findIdForPath(path, fileId) else null
     val id = existingId ?: UUID.randomUUID().toString()
-    val storageUrl = storageUrlFor(path)
+    val storageUrl = storageUrlFor(path, fileId)
 
     if (existingId != null) {
       try {
@@ -88,7 +88,7 @@ class LocalGoogleDriveWriter(
     }
     fileStore.write(storageUrl, inputStream)
 
-    entries[id] = Entry(path, contentType)
+    entries[id] = Entry(path, contentType, fileId)
     persist()
 
     log.info("Stored local Google Drive file $filename as $id")
@@ -100,7 +100,7 @@ class LocalGoogleDriveWriter(
 
   override fun downloadFile(googleFileId: String): InputStream {
     val entry = entries[googleFileId] ?: throw NoSuchFileException(googleFileId)
-    return fileStore.read(storageUrlFor(entry.path))
+    return fileStore.read(storageUrlFor(entry.path, entry.fileId))
   }
 
   override fun copyFile(
@@ -154,18 +154,20 @@ class LocalGoogleDriveWriter(
 
   override fun shareFile(googleFileId: String): URI {
     val entry = entries[googleFileId] ?: return folderUrl(googleFileId)
-    return storageUrlFor(entry.path)
+    return storageUrlFor(entry.path, entry.fileId)
   }
 
-  private fun findIdForPath(path: String): String? =
-      entries.entries.firstOrNull { it.value.path == path }?.key
+  private fun findIdForPath(path: String, fileId: FileId?): String? =
+      entries.entries
+          .firstOrNull { it.value.path == path && (fileId == null || it.value.fileId == fileId) }
+          ?.key
 
   /** Moves a file's bytes to the storage URL for its new location and updates its [Entry]. */
   private fun relocate(id: String, newParentFolderId: String, newName: String) {
     val entry = entries[id] ?: return
     val newPath = "$newParentFolderId/$newName"
-    val oldUrl = storageUrlFor(entry.path)
-    val newUrl = storageUrlFor(newPath)
+    val oldUrl = storageUrlFor(entry.path, entry.fileId)
+    val newUrl = storageUrlFor(newPath, entry.fileId)
     if (newUrl != oldUrl) {
       fileStore.read(oldUrl).use { fileStore.write(newUrl, it) }
       fileStore.delete(oldUrl)
@@ -178,7 +180,7 @@ class LocalGoogleDriveWriter(
     entries.remove(id)?.let {
       persist()
       try {
-        fileStore.delete(storageUrlFor(it.path))
+        fileStore.delete(storageUrlFor(it.path, it.fileId))
       } catch (_: NoSuchFileException) {
         // Already gone; nothing to delete.
       }
@@ -214,9 +216,12 @@ class LocalGoogleDriveWriter(
     }
   }
 
-  private fun storageUrlFor(path: String): URI {
+  private fun storageUrlFor(path: String, fileId: FileId? = null): URI {
     val filename = path.substringAfterLast('/')
-    return fileStore.getUrl(Path("$FOLDER/${sha256Hex(path).take(16)}${extensionOf(filename)}"))
+    val hashInput = if (fileId != null) "$fileId/$path" else path
+    return fileStore.getUrl(
+        Path("$FOLDER/${sha256Hex(hashInput).take(16)}${extensionOf(filename)}")
+    )
   }
 
   private fun folderUrl(folderId: String): URI =
@@ -232,7 +237,7 @@ class LocalGoogleDriveWriter(
     return digest.digest(input.toByteArray()).joinToString("") { "%02x".format(it) }
   }
 
-  private data class Entry(val path: String, val contentType: String)
+  private data class Entry(val path: String, val contentType: String, val fileId: FileId? = null)
 
   companion object {
     private const val LOCAL_DRIVE_ID = "local-drive"
