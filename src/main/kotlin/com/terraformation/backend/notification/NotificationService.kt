@@ -911,7 +911,9 @@ class NotificationService(
                 config,
                 webAppUrls.fullDeliverable(deliverableId, organizationId, projectId).toString(),
             )
-          } else null
+          } else {
+            null
+          }
 
       log.info("Creating notifications for deliverable $deliverableId status updated")
 
