@@ -316,7 +316,7 @@ data class ExistingBiomassMeasurementPayload(
     val tide: MangroveTide?,
     @Schema(
         description =
-            "Time when ide is observed. Only valid for Mangrove forests. A null value indicates " +
+            "Time when tide is observed. Only valid for Mangrove forests. A null value indicates " +
                 "that there was no water."
     )
     val tideTime: Instant?,
