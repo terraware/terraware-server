@@ -42,7 +42,7 @@ class DropboxWriterExternalTest {
                 )
         )
 
-    writer = DropboxWriter(config)
+    writer = RemoteDropboxWriter(config)
   }
 
   @AfterEach
