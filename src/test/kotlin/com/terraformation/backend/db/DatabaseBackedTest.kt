@@ -3627,9 +3627,11 @@ abstract class DatabaseBackedTest {
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
       isPermanent: Boolean = row.isPermanent ?: false,
-      monitoringPlotHistoryId: MonitoringPlotHistoryId =
-          row.monitoringPlotHistoryId ?: inserted.monitoringPlotHistoryId,
       monitoringPlotId: MonitoringPlotId = row.monitoringPlotId ?: inserted.monitoringPlotId,
+      monitoringPlotHistoryId: MonitoringPlotHistoryId =
+          row.monitoringPlotHistoryId
+              ?: inserted.monitoringPlotHistoryIdsByMonitoringPlotId[monitoringPlotId]?.last()
+              ?: inserted.monitoringPlotHistoryId,
       observationId: ObservationId = row.observationId ?: inserted.observationId,
       statusId: ObservationPlotStatus =
           row.statusId
