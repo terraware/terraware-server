@@ -331,6 +331,7 @@ data class AccessionPayloadV2(
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class CreateAccessionRequestPayloadV2(
     val bagNumbers: Set<String>? = null,
+    @Schema(description = "Will be derived from collectedTime if present.", deprecated = true)
     val collectedDate: LocalDate? = null,
     @Schema(description = "Date and time the seeds were collected.")
     val collectedTime: Instant? = null,
@@ -387,6 +388,7 @@ data class CreateAccessionRequestPayloadV2(
 @JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 data class UpdateAccessionRequestPayloadV2(
     val bagNumbers: Set<String>? = null,
+    @Schema(description = "Will be derived from collectedTime if present.", deprecated = true)
     val collectedDate: LocalDate? = null,
     @Schema(description = "Date and time the seeds were collected.")
     val collectedTime: Instant? = null,
