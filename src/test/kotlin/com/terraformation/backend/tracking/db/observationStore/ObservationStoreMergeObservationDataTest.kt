@@ -7,9 +7,9 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.records.DependentSubstratumObservationRecord
-import com.terraformation.backend.db.tracking.tables.references.DEPENDENT_SUBSTRATUM_OBSERVATION
+import com.terraformation.backend.db.tracking.tables.records.ObservationDependentSubstrataRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
@@ -296,13 +296,13 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
     // The target absorbed the source's B plot, so it now self-references both substrata.
     assertTableEquals(
         listOf(
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 target,
                 substratumAHistory,
                 target,
                 substratumAHistory,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 target,
                 substratumBHistory,
                 target,
@@ -312,9 +312,9 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
         "Target self-references both substrata after the merge",
     )
     assertTableEmpty(
-        DEPENDENT_SUBSTRATUM_OBSERVATION,
+        OBSERVATION_DEPENDENT_SUBSTRATA,
         "No dependency rows reference the deleted source",
-        where = DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(source),
+        where = OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(source),
     )
   }
 
@@ -347,31 +347,31 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
     // each substratum in its snapshot.
     assertTableEquals(
         listOf(
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 target,
                 substratumAHistory,
                 target,
                 substratumAHistory,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 source,
                 substratumAHistory,
                 target,
                 substratumAHistory,
             ),
-            DependentSubstratumObservationRecord(
-                source,
-                substratumBHistory,
+            ObservationDependentSubstrataRecord(
                 source,
                 substratumBHistory,
+                source,
+                substratumBHistory,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 later,
                 substratumAHistory,
                 later,
                 substratumAHistory,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 later,
                 substratumBHistory,
                 source,
@@ -387,25 +387,25 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
     // rather than from the deleted source (which would otherwise drop the substratum).
     assertTableEquals(
         listOf(
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 target,
                 substratumAHistory,
                 target,
                 substratumAHistory,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 target,
                 substratumBHistory,
                 target,
                 substratumBHistory,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 later,
                 substratumAHistory,
                 later,
                 substratumAHistory,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 later,
                 substratumBHistory,
                 target,

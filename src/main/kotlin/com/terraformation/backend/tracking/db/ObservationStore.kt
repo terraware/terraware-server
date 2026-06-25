@@ -2621,15 +2621,15 @@ class ObservationStore(
 
         val dependentsOfSource =
             dslContext
-                .selectDistinct(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID)
-                .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+                .selectDistinct(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID)
+                .from(OBSERVATION_DEPENDENT_SUBSTRATA)
                 .where(
-                    DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(
+                    OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(
                         sourceObservationId
                     )
                 )
-                .and(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.ne(sourceObservationId))
-                .fetch(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.asNonNullable())
+                .and(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.ne(sourceObservationId))
+                .fetch(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.asNonNullable())
 
         dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(sourceObservationId)).execute()
 
@@ -2819,11 +2819,11 @@ class ObservationStore(
 
     val dependentObservationIds =
         dslContext
-            .selectDistinct(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID)
-            .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
-            .where(DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(observationId))
-            .and(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.ne(observationId))
-            .fetch(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.asNonNullable())
+            .selectDistinct(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID)
+            .from(OBSERVATION_DEPENDENT_SUBSTRATA)
+            .where(OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.ne(observationId))
+            .fetch(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.asNonNullable())
 
     dslContext.transaction { _ ->
       if (t0PlotIds.isNotEmpty()) {
