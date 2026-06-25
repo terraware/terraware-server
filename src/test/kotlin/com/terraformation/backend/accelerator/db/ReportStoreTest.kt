@@ -6231,21 +6231,21 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     // Dead plants: 20
 
     // observation2 observed substratumId2, incompleteSubstratum, and futureSubstratum
-    insertDependentSubstratumObservation(
+    insertObservationDependentSubstrata(
         observationId = site1observation2,
         substratumHistoryId = substratum2NewHistory,
     )
-    insertDependentSubstratumObservation(
+    insertObservationDependentSubstrata(
         observationId = site1observation2,
         substratumHistoryId = incompleteSubstratumHistory,
     )
-    insertDependentSubstratumObservation(
+    insertObservationDependentSubstrata(
         observationId = site1observation2,
         substratumHistoryId = futureSubstratumNewHistory,
     )
 
     // observation2 did not observe substratumId1
-    insertDependentSubstratumObservation(
+    insertObservationDependentSubstrata(
         observationId = site1observation2,
         substratumHistoryId = substratum1NewHistory,
         dependsOnObservationId = site1OldObservationId,
@@ -6253,7 +6253,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     // Site 2 only has one observation
-    insertDependentSubstratumObservation(
+    insertObservationDependentSubstrata(
         observationId = site2ObservationId,
         substratumHistoryId = site2Substratum1History,
     )
@@ -6531,11 +6531,11 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     )
 
     // Each site only has one substratum and one observation. Site 3 is unobserved.
-    insertDependentSubstratumObservation(
+    insertObservationDependentSubstrata(
         observationId = site1ObservationId,
         substratumHistoryId = site1SubstratumHistory,
     )
-    insertDependentSubstratumObservation(
+    insertObservationDependentSubstrata(
         observationId = site2ObservationId,
         substratumHistoryId = site2SubstratumHistory,
     )

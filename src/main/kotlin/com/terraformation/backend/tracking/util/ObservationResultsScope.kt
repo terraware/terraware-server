@@ -12,10 +12,10 @@ import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.ObservationPlotResults
 import com.terraformation.backend.db.tracking.tables.ObservationPlots
-import com.terraformation.backend.db.tracking.tables.references.DEPENDENT_SUBSTRATUM_OBSERVATION
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
@@ -479,20 +479,20 @@ class ObservationResultsStratum(
               )
               .`in`(
                   DSL.select(
-                          DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID,
+                          OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID,
                           SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID,
                       )
-                      .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+                      .from(OBSERVATION_DEPENDENT_SUBSTRATA)
                       .join(SUBSTRATUM_HISTORIES)
                       .on(
                           SUBSTRATUM_HISTORIES.ID.eq(
-                              DEPENDENT_SUBSTRATUM_OBSERVATION.SUBSTRATUM_HISTORY_ID
+                              OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID
                           )
                       )
                       .where(
                           DSL.row(
-                                  DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID,
-                                  DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_SUBSTRATUM_HISTORY_ID,
+                                  OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID,
+                                  OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_SUBSTRATUM_HISTORY_ID,
                               )
                               .`in`(
                                   DSL.select(

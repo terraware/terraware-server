@@ -1891,7 +1891,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
 
     // B was never observed in observation 2, so its dependency row rolls forward to observation 1.
     val bDependency =
-        dependentSubstratumObservationDao.fetchByObservationId(observation2).single {
+        observationDependentSubstrataDao.fetchByObservationId(observation2).single {
           it.dependsOnObservationId != observation2
         }
     assertEquals(

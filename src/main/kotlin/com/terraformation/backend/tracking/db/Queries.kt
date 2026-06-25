@@ -3,9 +3,9 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.SubstratumId
-import com.terraformation.backend.db.tracking.tables.references.DEPENDENT_SUBSTRATUM_OBSERVATION
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_REQUESTED_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIES
@@ -27,11 +27,11 @@ fun latestObservationForSubstratumField(
     substratumIdField: Field<SubstratumId?>,
 ): Select<Record1<ObservationId?>> {
   val dependentSsh = SUBSTRATUM_HISTORIES.`as`("dependent_obs_ssh")
-  return DSL.select(DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID)
-      .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+  return DSL.select(OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID)
+      .from(OBSERVATION_DEPENDENT_SUBSTRATA)
       .join(dependentSsh)
-      .on(dependentSsh.ID.eq(DEPENDENT_SUBSTRATUM_OBSERVATION.SUBSTRATUM_HISTORY_ID))
-      .where(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.eq(observationIdField))
+      .on(dependentSsh.ID.eq(OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID))
+      .where(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.eq(observationIdField))
       .and(dependentSsh.SUBSTRATUM_ID.eq(substratumIdField))
       .limit(1)
 }

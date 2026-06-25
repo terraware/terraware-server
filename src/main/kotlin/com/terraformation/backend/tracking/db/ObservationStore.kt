@@ -1378,16 +1378,16 @@ class ObservationStore(
                 .and(OBSERVATIONS.COMPLETED_TIME.gt(observation.completedTime))
                 .and(
                     OBSERVATIONS.ID.`in`(
-                        DSL.select(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID)
-                            .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+                        DSL.select(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID)
+                            .from(OBSERVATION_DEPENDENT_SUBSTRATA)
                             .join(dependentSsh)
                             .on(
                                 dependentSsh.ID.eq(
-                                    DEPENDENT_SUBSTRATUM_OBSERVATION.SUBSTRATUM_HISTORY_ID
+                                    OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID
                                 )
                             )
                             .where(
-                                DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(
+                                OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(
                                     observationId
                                 )
                             )
