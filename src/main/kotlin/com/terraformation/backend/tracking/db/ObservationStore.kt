@@ -2619,7 +2619,48 @@ class ObservationStore(
               .execute()
         }
 
+        val dependentsOfSource =
+            dslContext
+                .selectDistinct(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID)
+                .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+                .where(
+                    DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(
+                        sourceObservationId
+                    )
+                )
+                .and(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.ne(sourceObservationId))
+                .fetch(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.asNonNullable())
+
         dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(sourceObservationId)).execute()
+
+        // The target absorbed the source's completed plots, which may have been completed later
+        // than
+        // the target's own. If the target is already completed/abandoned, realign its
+        // completed_time
+        // with its latest completed plot so dependency ordering (which ranks candidate sources by
+        // completed_time) treats the absorbed data as the most recent observation of its substrata,
+        // not an older one. An in-progress target keeps its null completed_time (the
+        // completed_time_and_state constraint requires it, and it is not yet a roll-forward
+        // source).
+        dslContext
+            .update(OBSERVATIONS)
+            .set(
+                OBSERVATIONS.COMPLETED_TIME,
+                DSL.field(
+                    DSL.select(DSL.max(OBSERVATION_PLOTS.COMPLETED_TIME))
+                        .from(OBSERVATION_PLOTS)
+                        .where(OBSERVATION_PLOTS.OBSERVATION_ID.eq(targetObservationId))
+                        .and(OBSERVATION_PLOTS.STATUS_ID.eq(ObservationPlotStatus.Completed))
+                ),
+            )
+            .where(OBSERVATIONS.ID.eq(targetObservationId))
+            .and(OBSERVATIONS.COMPLETED_TIME.isNotNull)
+            .execute()
+
+        recordSubstratumDependencies(targetObservationId)
+
+        // Recompute dependencies of downstream observations
+        dependentsOfSource.forEach { recordSubstratumDependencies(it) }
       }
     }
   }
@@ -2800,6 +2841,14 @@ class ObservationStore(
             .where(PLOT_T0_OBSERVATIONS.OBSERVATION_ID.eq(observationId))
             .fetch(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.asNonNullable())
 
+    val dependentObservationIds =
+        dslContext
+            .selectDistinct(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID)
+            .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+            .where(DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(observationId))
+            .and(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.ne(observationId))
+            .fetch(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.asNonNullable())
+
     dslContext.transaction { _ ->
       if (t0PlotIds.isNotEmpty()) {
         dslContext
@@ -2809,6 +2858,9 @@ class ObservationStore(
       }
 
       dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).execute()
+
+      // Recompute dependencies of downstream observations
+      dependentObservationIds.forEach { recordSubstratumDependencies(it) }
     }
   }
 
