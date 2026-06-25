@@ -3,7 +3,7 @@ package com.terraformation.backend.tracking.db.observationStore
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.db.tracking.tables.records.DependentSubstratumObservationRecord
+import com.terraformation.backend.db.tracking.tables.records.ObservationDependentSubstrataRecord
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.point
 import com.terraformation.backend.tracking.db.ObservationScenarioTest
@@ -50,7 +50,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
     )
 
     assertTableEquals(
-        DependentSubstratumObservationRecord(
+        ObservationDependentSubstrataRecord(
             observationId = observationId,
             substratumHistoryId = substratumHistoryId,
             dependsOnObservationId = observationId,
@@ -131,13 +131,13 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
     assertTableEquals(
         listOf(
             // observationId1 observed both substrata -> self-references.
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 observationId = observationId1,
                 substratumHistoryId = substratumHistoryIdA,
                 dependsOnObservationId = observationId1,
                 dependsOnSubstratumHistoryId = substratumHistoryIdA,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 observationId = observationId1,
                 substratumHistoryId = substratumHistoryIdB,
                 dependsOnObservationId = observationId1,
@@ -145,13 +145,13 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
             ),
             // observationId2 observed A -> self-reference; B was not observed -> points back to
             // observationId1.
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 observationId = observationId2,
                 substratumHistoryId = substratumHistoryIdA,
                 dependsOnObservationId = observationId2,
                 dependsOnSubstratumHistoryId = substratumHistoryIdA,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 observationId = observationId2,
                 substratumHistoryId = substratumHistoryIdB,
                 dependsOnObservationId = observationId1,
@@ -236,19 +236,19 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
 
     assertTableEquals(
         listOf(
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 observationId = observationId1,
                 substratumHistoryId = substratumHistoryIdA,
                 dependsOnObservationId = observationId1,
                 dependsOnSubstratumHistoryId = substratumHistoryIdA,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 observationId = observationId1,
                 substratumHistoryId = substratumHistoryIdB,
                 dependsOnObservationId = observationId1,
                 dependsOnSubstratumHistoryId = substratumHistoryIdB,
             ),
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 observationId = observationId2,
                 substratumHistoryId = substratumHistoryIdA,
                 dependsOnObservationId = observationId2,
@@ -256,7 +256,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
             ),
             // B was requested but not observed in observationId2, so it rolls forward to the prior
             // observation that actually observed it rather than self-referencing.
-            DependentSubstratumObservationRecord(
+            ObservationDependentSubstrataRecord(
                 observationId = observationId2,
                 substratumHistoryId = substratumHistoryIdB,
                 dependsOnObservationId = observationId1,
@@ -287,7 +287,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
     )
 
     assertTableEquals(
-        DependentSubstratumObservationRecord(
+        ObservationDependentSubstrataRecord(
             observationId = observationId,
             substratumHistoryId = substratumHistoryId,
             dependsOnObservationId = observationId,
@@ -328,7 +328,7 @@ class ObservationStoreSubstratumDependenciesTest : ObservationScenarioTest() {
     )
 
     assertTableEquals(
-        DependentSubstratumObservationRecord(
+        ObservationDependentSubstrataRecord(
             observationId = observationId,
             substratumHistoryId = substratumHistoryIdA,
             dependsOnObservationId = observationId,
