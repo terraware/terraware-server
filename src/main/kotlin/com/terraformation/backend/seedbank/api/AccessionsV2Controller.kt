@@ -117,6 +117,9 @@ class AccessionsV2Controller(
   }
 }
 
+private fun resolveCollectedTime(collectedDate: LocalDate?, collectedTime: Instant?): Instant? =
+    collectedTime ?: collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()
+
 /**
  * Supported accession states. This is a subset of the values in [AccessionState], minus obsolete
  * states that can still appear in accessions' state histories (and thus need to be kept around as
@@ -170,6 +173,8 @@ data class AccessionPayloadV2(
     val active: AccessionActive,
     val bagNumbers: Set<String>?,
     val collectedDate: LocalDate?,
+    @Schema(description = "Date and time the seeds were collected.") //
+    val collectedTime: Instant?,
     val collectionSiteCity: String? = null,
     val collectionSiteCoordinates: Set<Geolocation>?,
     val collectionSiteCountryCode: String? = null,
@@ -278,6 +283,7 @@ data class AccessionPayloadV2(
       active = model.active,
       bagNumbers = model.bagNumbers.orNull(),
       collectedDate = model.collectedDate,
+      collectedTime = model.collectedTime,
       collectionSiteCity = model.collectionSiteCity,
       collectionSiteCoordinates = model.geolocations.orNull(),
       collectionSiteCountryCode = model.collectionSiteCountryCode,
@@ -325,6 +331,8 @@ data class AccessionPayloadV2(
 data class CreateAccessionRequestPayloadV2(
     val bagNumbers: Set<String>? = null,
     val collectedDate: LocalDate? = null,
+    @Schema(description = "Date and time the seeds were collected.")
+    val collectedTime: Instant? = null,
     val collectionSiteCity: String? = null,
     val collectionSiteCoordinates: Set<Geolocation>? = null,
     val collectionSiteCountryCode: String? = null,
@@ -351,7 +359,7 @@ data class CreateAccessionRequestPayloadV2(
         bagNumbers = bagNumbers.orEmpty(),
         clock = clock,
         collectedDate = collectedDate,
-        collectedTime = collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+        collectedTime = resolveCollectedTime(collectedDate, collectedTime),
         collectionSiteCity = collectionSiteCity,
         collectionSiteCountryCode = collectionSiteCountryCode,
         collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
@@ -379,6 +387,8 @@ data class CreateAccessionRequestPayloadV2(
 data class UpdateAccessionRequestPayloadV2(
     val bagNumbers: Set<String>? = null,
     val collectedDate: LocalDate? = null,
+    @Schema(description = "Date and time the seeds were collected.")
+    val collectedTime: Instant? = null,
     val collectionSiteCity: String? = null,
     val collectionSiteCoordinates: Set<Geolocation>? = null,
     val collectionSiteCountryCode: String? = null,
@@ -420,7 +430,7 @@ data class UpdateAccessionRequestPayloadV2(
       model.copy(
           bagNumbers = bagNumbers.orEmpty(),
           collectedDate = collectedDate,
-          collectedTime = collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+          collectedTime = resolveCollectedTime(collectedDate, collectedTime),
           collectionSiteCity = collectionSiteCity,
           collectionSiteCountryCode = collectionSiteCountryCode,
           collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,

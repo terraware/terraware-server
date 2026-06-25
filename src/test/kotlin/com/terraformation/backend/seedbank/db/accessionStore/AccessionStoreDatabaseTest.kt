@@ -29,6 +29,7 @@ import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -86,6 +87,7 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
         UpdateAccessionRequestPayloadV2(
             bagNumbers = setOf("abc"),
             collectedDate = today,
+            collectedTime = today.atStartOfDay(ZoneOffset.UTC).toInstant(),
             collectionSiteCity = "city",
             collectionSiteCoordinates =
                 setOf(
