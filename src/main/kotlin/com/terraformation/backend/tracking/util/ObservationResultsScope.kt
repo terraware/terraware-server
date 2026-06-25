@@ -68,12 +68,7 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
 
   /**
    * Selects the [OBSERVATION_PLOT_RESULTS] rows that contribute to this scope when it is computed
-   * for [observationIdField]: the plots belonging to the scope, each taken from its substratum's
-   * latest observation at or before [observationIdField] (so a substratum that wasn't observed in
-   * the current observation still contributes its last-observed plots). This is the single
-   * definition of the rolled-forward plot set; the survival rate, plant density, and standard
-   * deviations all derive from it. Consumers that need only permanent plots add that filter
-   * themselves.
+   * for [observationIdField], using latest observed plots from unobserved substratum
    */
   fun latestPlotResultsCondition(
       plotResults: ObservationPlotResults,
