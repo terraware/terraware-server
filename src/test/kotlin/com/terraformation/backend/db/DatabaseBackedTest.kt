@@ -240,6 +240,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimers
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.records.BotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.EcoregionBotanicalCountriesRecord
+import com.terraformation.backend.db.default_schema.tables.records.EcoregionCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.EcoregionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisResourcesRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
@@ -5885,6 +5886,13 @@ abstract class DatabaseBackedTest {
       ecoregionId: EcoregionId = inserted.ecoregionId,
   ) {
     EcoregionBotanicalCountriesRecord(ecoregionId, botanicalCountryId).attach(dslContext).insert()
+  }
+
+  fun insertEcoregionCountry(
+      countryCode: String = "US",
+      ecoregionId: EcoregionId = inserted.ecoregionId,
+  ) {
+    EcoregionCountriesRecord(ecoregionId, countryCode).attach(dslContext).insert()
   }
 
   private var nextGriisResourceSuffix: Int = 1
