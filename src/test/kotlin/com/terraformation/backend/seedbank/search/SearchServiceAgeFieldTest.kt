@@ -8,6 +8,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchResults
 import com.terraformation.backend.search.SearchSortField
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -16,6 +17,7 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
   private val ageMonthsField = rootPrefix.resolve("ageMonths")
   private val ageYearsField = rootPrefix.resolve("ageYears")
   private val collectedDateField = rootPrefix.resolve("collectedDate")
+  private val collectedTimeField = rootPrefix.resolve("collectedTime")
   private val idField = rootPrefix.resolve("id")
 
   @Test
@@ -208,11 +210,37 @@ internal class SearchServiceAgeFieldTest : SearchServiceTest() {
     }
   }
 
+  @Test
+  fun `can search by collectedTime`() {
+    setCollectedDates(accessionId1 to "2020-06-01", accessionId2 to "2019-01-01")
+
+    val searchNode = FieldNode(collectedTimeField, listOf("2020-06-01T00:00:00Z"))
+
+    val expected =
+        SearchResults(
+            listOf(mapOf("id" to "$accessionId1", "collectedTime" to "2020-06-01T00:00:00Z"))
+        )
+
+    val actual =
+        searchService.search(
+            rootPrefix,
+            listOf(idField, collectedTimeField),
+            mapOf(rootPrefix to searchNode),
+        )
+
+    assertEquals(expected, actual)
+  }
+
   private fun setCollectedDates(vararg dates: Pair<AccessionId, String?>) {
     dates.forEach { (id, dateStr) ->
       val accession = accessionsDao.fetchOneById(id)!!
       val collectedDate = dateStr?.let { LocalDate.parse(it) }
-      accessionsDao.update(accession.copy(collectedDate = collectedDate))
+      accessionsDao.update(
+          accession.copy(
+              collectedDate = collectedDate,
+              collectedTime = collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+          )
+      )
     }
   }
 }

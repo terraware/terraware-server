@@ -990,6 +990,7 @@ internal class SearchServiceNestedFieldsTest : SearchServiceTest() {
                     "ageMonths" to "15",
                     "ageYears" to "1",
                     "collectedDate" to "2019-03-02",
+                    "collectedTime" to "2019-03-02T00:00:00Z",
                     "collectionSiteCity" to "city",
                     "collectionSiteCountryCode" to "UG",
                     "collectionSiteCountrySubdivision" to "subdivision",
