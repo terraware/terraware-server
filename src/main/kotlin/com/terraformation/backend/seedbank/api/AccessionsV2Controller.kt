@@ -117,6 +117,7 @@ class AccessionsV2Controller(
   }
 }
 
+// For backwards compatibility, use a fallback of collectedDate at midnight
 private fun resolveCollectedTime(collectedDate: LocalDate?, collectedTime: Instant?): Instant? =
     collectedTime ?: collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()
 

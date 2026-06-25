@@ -55,6 +55,7 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 import org.jooq.Condition
 import org.jooq.DSLContext
@@ -279,7 +280,7 @@ class AccessionStore(
               with(ACCESSIONS) {
                 dslContext
                     .insertInto(ACCESSIONS)
-                    .set(COLLECTED_DATE, accession.collectedDate)
+                    .set(COLLECTED_DATE, effectiveCollectedDate(accession, facilityId))
                     .set(
                         COLLECTED_TIME,
                         accession.collectedTime
@@ -460,7 +461,7 @@ class AccessionStore(
           with(ACCESSIONS) {
             dslContext
                 .update(ACCESSIONS)
-                .set(COLLECTED_DATE, accession.collectedDate)
+                .set(COLLECTED_DATE, effectiveCollectedDate(accession, facilityId))
                 .set(
                     COLLECTED_TIME,
                     accession.collectedTime
@@ -1130,4 +1131,17 @@ class AccessionStore(
       }
     } while (nextAccessionId != null)
   }
+
+  private fun collectionTimeZone(facilityId: FacilityId): ZoneId =
+      currentUser().timeZone ?: parentStore.getEffectiveTimeZone(facilityId)
+
+  private fun effectiveCollectedDate(
+      accession: AccessionModel,
+      facilityId: FacilityId,
+  ): LocalDate? =
+      if (accession.collectedTime != null) {
+        LocalDate.ofInstant(accession.collectedTime, collectionTimeZone(facilityId))
+      } else {
+        accession.collectedDate
+      }
 }
