@@ -38,6 +38,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotConditionsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
+import com.terraformation.backend.db.tracking.tables.references.DEPENDENT_SUBSTRATUM_OBSERVATION
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
@@ -111,6 +112,8 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.Record1
+import org.jooq.Select
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
@@ -930,6 +933,20 @@ class ObservationStore(
           plantCountsBySpecies,
       )
 
+      observationPlotsDao.update(
+          observationPlotsRow.copy(
+              completedBy = currentUser().userId,
+              completedTime = clock.instant(),
+              notes = notes,
+              observedTime = observedTime,
+              statusId = ObservationPlotStatus.Completed,
+          )
+      )
+
+      if (!isAdHoc) {
+        recordSubstratumDependencies(observationId)
+      }
+
       updateObservationResults(
           observationId,
           plantingSite,
@@ -939,16 +956,6 @@ class ObservationStore(
           substratumHistoryId,
           monitoringPlotId,
           isAdHoc,
-      )
-
-      observationPlotsDao.update(
-          observationPlotsRow.copy(
-              completedBy = currentUser().userId,
-              completedTime = clock.instant(),
-              notes = notes,
-              observedTime = observedTime,
-              statusId = ObservationPlotStatus.Completed,
-          )
       )
 
       if (substratumId != null) {
@@ -1545,6 +1552,7 @@ class ObservationStore(
         log.info("Marking observation $observationId as abandoned")
         abandonPlots(observationId)
         updateObservationState(observationId, ObservationState.Abandoned)
+        recordSubstratumDependencies(observationId)
         resetPlantPopulationSinceLastObservation(observation.plantingSiteId)
         recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
       }
@@ -1561,6 +1569,7 @@ class ObservationStore(
   ) {
     updateObservationState(observationId, ObservationState.Completed)
     if (!isAdHoc) {
+      recordSubstratumDependencies(observationId)
       // Ad-hoc observations do not reset unobserved populations
       resetPlantPopulationSinceLastObservation(plantingSiteId)
       recalculateSurvivalRates(observationId, plantingSiteId)
@@ -1568,6 +1577,105 @@ class ObservationStore(
     }
 
     eventPublisher.publishEvent(ObservationCompletedEvent(observationId))
+  }
+
+  private fun computeLatestObservationForSubstratumField(
+      observationId: ObservationId,
+      substratumIdField: Field<SubstratumId?>,
+  ): Select<Record1<ObservationId?>> {
+    val candidateObs = OBSERVATIONS.`as`("candidate_obs")
+    val op = OBSERVATION_PLOTS.`as`("dep_op")
+    val mph = MONITORING_PLOT_HISTORIES.`as`("dep_mph")
+
+    return DSL.select(candidateObs.ID)
+        .from(candidateObs)
+        .where(
+            DSL.exists(
+                DSL.selectOne()
+                    .from(op)
+                    .join(mph)
+                    .on(mph.ID.eq(op.MONITORING_PLOT_HISTORY_ID))
+                    .where(op.OBSERVATION_ID.eq(candidateObs.ID))
+                    .and(op.COMPLETED_TIME.isNotNull)
+                    .and(mph.SUBSTRATUM_ID.eq(substratumIdField))
+            )
+        )
+        .and(
+            DSL.or(
+                candidateObs.ID.eq(observationId),
+                candidateObs.COMPLETED_TIME.le(
+                    DSL.select(OBSERVATIONS.COMPLETED_TIME)
+                        .from(OBSERVATIONS)
+                        .where(OBSERVATIONS.ID.eq(observationId))
+                ),
+            )
+        )
+        .and(candidateObs.IS_AD_HOC.isFalse)
+        .orderBy(
+            // Prefer results from the same observation as the `observationId` if it exists.
+            candidateObs.ID.eq(observationId).desc(),
+            // Otherwise take the results from the next latest observation for that area.
+            candidateObs.COMPLETED_TIME.desc(),
+        )
+        .limit(1)
+  }
+
+  private fun recordSubstratumDependencies(observationId: ObservationId) {
+    val consumingSsh = SUBSTRATUM_HISTORIES.`as`("consuming_ssh")
+    val consumingSh = STRATUM_HISTORIES.`as`("consuming_sh")
+    val srcSsh = SUBSTRATUM_HISTORIES.`as`("src_ssh")
+    val srcSh = STRATUM_HISTORIES.`as`("src_sh")
+    val srcObs = OBSERVATIONS.`as`("src_obs")
+
+    val dependsOnObservationId =
+        DSL.field(
+            computeLatestObservationForSubstratumField(
+                observationId,
+                consumingSsh.SUBSTRATUM_ID,
+            )
+        )
+
+    val dependsOnSubstratumHistoryId =
+        DSL.field(
+            DSL.select(srcSsh.ID)
+                .from(srcObs)
+                .join(srcSh)
+                .on(srcSh.PLANTING_SITE_HISTORY_ID.eq(srcObs.PLANTING_SITE_HISTORY_ID))
+                .join(srcSsh)
+                .on(srcSsh.STRATUM_HISTORY_ID.eq(srcSh.ID))
+                .where(srcObs.ID.eq(dependsOnObservationId))
+                .and(srcSsh.SUBSTRATUM_ID.eq(consumingSsh.SUBSTRATUM_ID))
+        )
+
+    dslContext
+        .deleteFrom(DEPENDENT_SUBSTRATUM_OBSERVATION)
+        .where(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.eq(observationId))
+        .execute()
+
+    dslContext
+        .insertInto(
+            DEPENDENT_SUBSTRATUM_OBSERVATION,
+            DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID,
+            DEPENDENT_SUBSTRATUM_OBSERVATION.SUBSTRATUM_HISTORY_ID,
+            DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID,
+            DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_SUBSTRATUM_HISTORY_ID,
+        )
+        .select(
+            DSL.select(
+                    DSL.value(observationId, OBSERVATIONS.ID),
+                    consumingSsh.ID,
+                    dependsOnObservationId,
+                    dependsOnSubstratumHistoryId,
+                )
+                .from(OBSERVATIONS)
+                .join(consumingSh)
+                .on(consumingSh.PLANTING_SITE_HISTORY_ID.eq(OBSERVATIONS.PLANTING_SITE_HISTORY_ID))
+                .join(consumingSsh)
+                .on(consumingSsh.STRATUM_HISTORY_ID.eq(consumingSh.ID))
+                .where(OBSERVATIONS.ID.eq(observationId))
+                .and(dependsOnObservationId.isNotNull)
+        )
+        .execute()
   }
 
   /**
@@ -1605,6 +1713,10 @@ class ObservationStore(
             .fetch()
 
     dslContext.transaction { _ ->
+      if (!isAdHoc) {
+        recordSubstratumDependencies(observationId)
+      }
+
       completedPlots.forEach { record ->
         updateObservationResults(
             observationId,
