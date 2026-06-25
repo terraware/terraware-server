@@ -16,6 +16,10 @@ CREATE TEMPORARY TABLE temp_ecoregion_botanical_countries AS
 TRUNCATE TABLE ecoregion_countries;
 TRUNCATE TABLE ecoregion_botanical_countries;
 
+-- Move the existing IDs out of the way since they might collide with the new ones.
+-- Both the existing and the new IDs are positive integers.
+UPDATE ecoregions SET id = -id;
+
 UPDATE ecoregions SET id = eco_id::BIGINT;
 
 ALTER TABLE ecoregions DROP COLUMN eco_id;
