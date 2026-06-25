@@ -2784,13 +2784,6 @@ class ObservationStore(
             .and(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.ne(observationId))
             .fetch(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.asNonNullable())
 
-    val plantingSiteId =
-        dslContext
-            .select(OBSERVATIONS.PLANTING_SITE_ID.asNonNullable())
-            .from(OBSERVATIONS)
-            .where(OBSERVATIONS.ID.eq(observationId))
-            .fetchOne(OBSERVATIONS.PLANTING_SITE_ID.asNonNullable())
-
     dslContext.transaction { _ ->
       if (t0PlotIds.isNotEmpty()) {
         dslContext
@@ -2803,14 +2796,6 @@ class ObservationStore(
 
       // Recompute dependencies of downstream observations
       dependentObservationIds.forEach { recordSubstratumDependencies(it) }
-
-      if (plantingSiteId != null) {
-        dependentObservationIds.forEach {
-          recalculateSurvivalRates(it, plantingSiteId)
-          updateObservationResults(it, plantingSiteId)
-          recalculateSurvivalRateResults(it, plantingSiteId)
-        }
-      }
     }
   }
 
