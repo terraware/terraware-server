@@ -55,6 +55,7 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -163,6 +164,7 @@ class AccessionStore(
           accessionNumber = record[NUMBER],
           bagNumbers = record[bagNumbersField],
           collectedDate = record[COLLECTED_DATE],
+          collectedTime = record[COLLECTED_TIME],
           collectionSiteCity = record[COLLECTION_SITE_CITY],
           collectionSiteCountryCode = record[COLLECTION_SITE_COUNTRY_CODE],
           collectionSiteCountrySubdivision = record[COLLECTION_SITE_COUNTRY_SUBDIVISION],
@@ -278,6 +280,11 @@ class AccessionStore(
                 dslContext
                     .insertInto(ACCESSIONS)
                     .set(COLLECTED_DATE, accession.collectedDate)
+                    .set(
+                        COLLECTED_TIME,
+                        accession.collectedTime
+                            ?: accession.collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+                    )
                     .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                     .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
                     .set(
@@ -454,6 +461,11 @@ class AccessionStore(
             dslContext
                 .update(ACCESSIONS)
                 .set(COLLECTED_DATE, accession.collectedDate)
+                .set(
+                    COLLECTED_TIME,
+                    accession.collectedTime
+                        ?: accession.collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+                )
                 .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                 .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
                 .set(

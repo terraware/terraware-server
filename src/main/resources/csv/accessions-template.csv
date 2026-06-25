@@ -21,7 +21,7 @@ Please choose from the following list or an error will occur during upload:
 - In Storage
 - Used Up","Collection Date*
 
-Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine!",Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,Collector Name ,"Collection Source
+Please enter in YYYY-MM-DD format or an error will occur during upload. If you are unsure of the exact date an estimate is fine! After importing, you can change the date and specify a time, if necessary.",Collecting Site Name,Landowner,City or County,State / Province / Region,Country,Site Description / Notes,Collector Name ,"Collection Source
 
 Please choose from the following list or an error will occur during upload:
 - Wild (In Situ)

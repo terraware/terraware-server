@@ -23,7 +23,7 @@ Elija de la siguiente lista o se producirá un error durante la carga:
 - En almacén
 - Agotado","Fecha de recolección*
 
-Ingrese en el formato AAAA-MM-DD o se producirá un error durante la carga. Si no está seguro de la fecha exacta, ¡una estimación está bien!",Nombre del lugar de recolección,Propietario del lugar,Ciudad o condado,Estado / Provincia / Región,País,Descripción o notas del lugar,Nombre del recolector,"Origen de la recolección
+Ingrese en el formato AAAA-MM-DD o se producirá un error durante la carga. Si no está seguro de la fecha exacta, ¡una estimación está bien! Después de la importación, podrá cambiar la fecha y especificar una hora, si es necesario.",Nombre del lugar de recolección,Propietario del lugar,Ciudad o condado,Estado / Provincia / Región,País,Descripción o notas del lugar,Nombre del recolector,"Origen de la recolección
 
 Elija de la siguiente lista o se producirá un error durante la carga:
 

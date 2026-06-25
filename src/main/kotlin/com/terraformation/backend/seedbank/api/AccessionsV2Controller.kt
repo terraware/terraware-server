@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -350,6 +351,7 @@ data class CreateAccessionRequestPayloadV2(
         bagNumbers = bagNumbers.orEmpty(),
         clock = clock,
         collectedDate = collectedDate,
+        collectedTime = collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
         collectionSiteCity = collectionSiteCity,
         collectionSiteCountryCode = collectionSiteCountryCode,
         collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
@@ -418,6 +420,7 @@ data class UpdateAccessionRequestPayloadV2(
       model.copy(
           bagNumbers = bagNumbers.orEmpty(),
           collectedDate = collectedDate,
+          collectedTime = collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
           collectionSiteCity = collectionSiteCity,
           collectionSiteCountryCode = collectionSiteCountryCode,
           collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,

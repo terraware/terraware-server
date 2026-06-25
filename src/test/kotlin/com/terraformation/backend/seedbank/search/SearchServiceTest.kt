@@ -32,6 +32,7 @@ import io.mockk.every
 import java.math.BigDecimal
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneOffset
 import org.junit.jupiter.api.BeforeEach
 
 internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
@@ -137,6 +138,7 @@ internal abstract class SearchServiceTest : DatabaseTest(), RunsAsUser {
                 number = "XYZ",
                 stateId = AccessionState.InStorage,
                 collectedDate = LocalDate.of(2019, 3, 2),
+                collectedTime = LocalDate.of(2019, 3, 2).atStartOfDay(ZoneOffset.UTC).toInstant(),
                 collectionSiteCity = "city",
                 collectionSiteCountryCode = "UG",
                 collectionSiteCountrySubdivision = "subdivision",
