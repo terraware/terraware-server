@@ -38,7 +38,7 @@ plugins {
 
 buildscript {
   // Force the jOOQ codegen plugin to use the same jOOQ version we use in the application code.
-  val jooqVersion: String by project
+  val jooqVersion = providers.gradleProperty("jooqVersion").get()
   configurations.classpath {
     resolutionStrategy {
       setForcedModules(
@@ -65,15 +65,15 @@ repositories {
 }
 
 dependencies {
-  val awsSdkVersion: String by project
-  val flywayVersion: String by project
-  val geoToolsVersion: String by project
-  val jjwtVersion: String by project
-  val jooqVersion: String by project
-  val jtsVersion: String by project
-  val ktorVersion: String by project
-  val postgresJdbcVersion: String by project
-  val springDocVersion: String by project
+  val awsSdkVersion = providers.gradleProperty("awsSdkVersion").get()
+  val flywayVersion = providers.gradleProperty("flywayVersion").get()
+  val geoToolsVersion = providers.gradleProperty("geoToolsVersion").get()
+  val jjwtVersion = providers.gradleProperty("jjwtVersion").get()
+  val jooqVersion = providers.gradleProperty("jooqVersion").get()
+  val jtsVersion = providers.gradleProperty("jtsVersion").get()
+  val ktorVersion = providers.gradleProperty("ktorVersion").get()
+  val postgresJdbcVersion = providers.gradleProperty("postgresJdbcVersion").get()
+  val springDocVersion = providers.gradleProperty("springDocVersion").get()
 
   jooqCodegen("org.postgresql:postgresql:$postgresJdbcVersion")
 
@@ -277,8 +277,8 @@ tasks {
 jooq {
   withContainer {
     image {
-      val postgresDockerRepository: String by project
-      val postgresDockerTag: String by project
+      val postgresDockerRepository = providers.gradleProperty("postgresDockerRepository").get()
+      val postgresDockerTag = providers.gradleProperty("postgresDockerTag").get()
 
       name = "$postgresDockerRepository:$postgresDockerTag"
     }
