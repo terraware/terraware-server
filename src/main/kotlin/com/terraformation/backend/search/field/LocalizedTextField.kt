@@ -118,11 +118,14 @@ class LocalizedTextField<T : Any>(
     return fieldValuesByLocalizedString.getOrPut(locale) {
       val bundle = ResourceBundle.getBundle(resourceBundleName, locale)
       val map =
-          bundle.keySet().associate { key ->
-            val fieldValue = prefix?.let { key.substringAfter(prefix) } ?: key
-            val localizedText = bundle.getString(key).lowercase(locale).removeDiacritics()
-            localizedText to fieldValue
-          }
+          bundle
+              .keySet()
+              .filter { key -> prefix == null || key.startsWith(prefix) }
+              .associate { key ->
+                val fieldValue = prefix?.let { key.substringAfter(prefix) } ?: key
+                val localizedText = bundle.getString(key).lowercase(locale).removeDiacritics()
+                localizedText to fieldValue
+              }
 
       map.keys.sortedWith(Collator.getInstance(locale)).associateWith { map[it]!! }
     }
