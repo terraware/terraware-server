@@ -1663,6 +1663,7 @@ class ObservationStore(
     dslContext.transaction { _ ->
       if (!isAdHoc) {
         recordSubstratumDependencies(observationId)
+        recalculateSurvivalRates(observationId, plantingSiteId)
       }
 
       completedPlots.forEach { record ->
