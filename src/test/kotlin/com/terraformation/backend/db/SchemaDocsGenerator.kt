@@ -401,7 +401,6 @@ class SchemaDocsGenerator : DatabaseTest() {
               mapOf(
                   "biomass_forest_types" to setOf(ALL, TRACKING),
                   "deliveries" to setOf(ALL, TRACKING),
-                  "dependent_substratum_observation" to setOf(ALL, TRACKING),
                   "draft_planting_sites" to setOf(ALL, TRACKING),
                   "mangrove_tides" to setOf(ALL, TRACKING),
                   "monitoring_plot_histories" to setOf(ALL, TRACKING),
@@ -411,6 +410,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "observation_biomass_quadrat_details" to setOf(ALL, TRACKING),
                   "observation_biomass_quadrat_species" to setOf(ALL, TRACKING),
                   "observation_biomass_species" to setOf(ALL, TRACKING),
+                  "observation_dependent_substrata" to setOf(ALL, TRACKING),
                   "observable_conditions" to setOf(ALL, TRACKING),
                   "observation_media_files" to setOf(ALL, TRACKING),
                   "observation_media_types" to setOf(ALL, TRACKING),

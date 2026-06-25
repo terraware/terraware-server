@@ -453,7 +453,6 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.keys.PLANTING_SITES_PKEY
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
-import com.terraformation.backend.db.tracking.tables.daos.DependentSubstratumObservationDao
 import com.terraformation.backend.db.tracking.tables.daos.DraftPlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotOverlapsDao
@@ -461,6 +460,7 @@ import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassDetailsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassQuadratDetailsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationBiomassSpeciesDao
+import com.terraformation.backend.db.tracking.tables.daos.ObservationDependentSubstrataDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationMediaFilesDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotConditionsDao
 import com.terraformation.backend.db.tracking.tables.daos.ObservationPlotResultsDao
@@ -500,7 +500,6 @@ import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstratumHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstratumPopulationsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
-import com.terraformation.backend.db.tracking.tables.pojos.DependentSubstratumObservationRow
 import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotOverlapsRow
@@ -509,6 +508,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassDet
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratDetailsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassQuadratSpeciesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationBiomassSpeciesRow
+import com.terraformation.backend.db.tracking.tables.pojos.ObservationDependentSubstrataRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotConditionsRow
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationPlotResultsRow
@@ -713,7 +713,7 @@ abstract class DatabaseBackedTest {
   protected val deliverablesDao: DeliverablesDao by lazyDao()
   protected val deliverableVariablesDao: DeliverableVariablesDao by lazyDao()
   protected val deliveriesDao: DeliveriesDao by lazyDao()
-  protected val dependentSubstratumObservationDao: DependentSubstratumObservationDao by lazyDao()
+  protected val observationDependentSubstrataDao: ObservationDependentSubstrataDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
   protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()
@@ -3716,14 +3716,14 @@ abstract class DatabaseBackedTest {
     )
   }
 
-  protected fun insertDependentSubstratumObservation(
+  protected fun insertObservationDependentSubstrata(
       observationId: ObservationId,
       substratumHistoryId: SubstratumHistoryId,
       dependsOnObservationId: ObservationId = observationId,
       dependsOnSubstratumHistoryId: SubstratumHistoryId = substratumHistoryId,
   ) {
-    dependentSubstratumObservationDao.insert(
-        DependentSubstratumObservationRow(
+    observationDependentSubstrataDao.insert(
+        ObservationDependentSubstrataRow(
             observationId = observationId,
             substratumHistoryId = substratumHistoryId,
             dependsOnObservationId = dependsOnObservationId,
