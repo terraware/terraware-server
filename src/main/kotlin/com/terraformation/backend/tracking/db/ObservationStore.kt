@@ -112,8 +112,6 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
-import org.jooq.Record1
-import org.jooq.Select
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
@@ -1582,15 +1580,15 @@ class ObservationStore(
   private fun computeLatestObservationForSubstratumField(
       observationId: ObservationId,
       substratumIdField: Field<SubstratumId?>,
-  ): Select<Record1<ObservationId?>> {
+  ): Field<ObservationId?> {
     val candidateObs = OBSERVATIONS.`as`("candidate_obs")
     val op = OBSERVATION_PLOTS.`as`("dep_op")
     val mph = MONITORING_PLOT_HISTORIES.`as`("dep_mph")
 
-    return DSL.select(candidateObs.ID)
-        .from(candidateObs)
-        .where(
-            DSL.exists(
+    return DSL.field(
+        DSL.select(candidateObs.ID)
+            .from(candidateObs)
+            .whereExists(
                 DSL.selectOne()
                     .from(op)
                     .join(mph)
@@ -1599,25 +1597,25 @@ class ObservationStore(
                     .and(op.COMPLETED_TIME.isNotNull)
                     .and(mph.SUBSTRATUM_ID.eq(substratumIdField))
             )
-        )
-        .and(
-            DSL.or(
-                candidateObs.ID.eq(observationId),
-                candidateObs.COMPLETED_TIME.le(
-                    DSL.select(OBSERVATIONS.COMPLETED_TIME)
-                        .from(OBSERVATIONS)
-                        .where(OBSERVATIONS.ID.eq(observationId))
-                ),
+            .and(
+                DSL.or(
+                    candidateObs.ID.eq(observationId),
+                    candidateObs.COMPLETED_TIME.le(
+                        DSL.select(OBSERVATIONS.COMPLETED_TIME)
+                            .from(OBSERVATIONS)
+                            .where(OBSERVATIONS.ID.eq(observationId))
+                    ),
+                )
             )
-        )
-        .and(candidateObs.IS_AD_HOC.isFalse)
-        .orderBy(
-            // Prefer results from the same observation as the `observationId` if it exists.
-            candidateObs.ID.eq(observationId).desc(),
-            // Otherwise take the results from the next latest observation for that area.
-            candidateObs.COMPLETED_TIME.desc(),
-        )
-        .limit(1)
+            .and(candidateObs.IS_AD_HOC.isFalse)
+            .orderBy(
+                // Prefer results from the same observation as the `observationId` if it exists.
+                candidateObs.ID.eq(observationId).desc(),
+                // Otherwise take the results from the next latest observation for that area.
+                candidateObs.COMPLETED_TIME.desc(),
+            )
+            .limit(1)
+    )
   }
 
   private fun recordSubstratumDependencies(observationId: ObservationId) {
@@ -1628,11 +1626,9 @@ class ObservationStore(
     val srcObs = OBSERVATIONS.`as`("src_obs")
 
     val dependsOnObservationId =
-        DSL.field(
-            computeLatestObservationForSubstratumField(
-                observationId,
-                consumingSsh.SUBSTRATUM_ID,
-            )
+        computeLatestObservationForSubstratumField(
+            observationId,
+            consumingSsh.SUBSTRATUM_ID,
         )
 
     val dependsOnSubstratumHistoryId =
