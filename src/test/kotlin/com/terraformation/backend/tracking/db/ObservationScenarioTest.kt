@@ -99,6 +99,7 @@ abstract class ObservationScenarioTest : DatabaseTest(), RunsAsUser {
 
     every { user.canReadObservation(any()) } returns true
     every { user.canUpdateObservation(any()) } returns true
+    every { user.canUpdateObservationQuantities(any()) } returns true
     every { user.canReadPlantingSite(plantingSiteId) } returns true
   }
 

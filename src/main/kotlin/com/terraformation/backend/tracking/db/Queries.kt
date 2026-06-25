@@ -3,6 +3,7 @@ package com.terraformation.backend.tracking.db
 import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.db.tracking.tables.references.DEPENDENT_SUBSTRATUM_OBSERVATION
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
@@ -11,45 +12,29 @@ import com.terraformation.backend.db.tracking.tables.references.STRATUM_HISTORIE
 import com.terraformation.backend.db.tracking.tables.references.SUBSTRATUM_HISTORIES
 import org.jooq.Condition
 import org.jooq.Field
+import org.jooq.Record1
+import org.jooq.Select
 import org.jooq.impl.DSL
 
 /**
- * Retrieves the most recent observationId for a substratum, with a completed time less than or
- * equal to the given observationId's completed time.
+ * Retrieves the most recent observationId for a substratum, or null if the substratum was not
+ * observed in or before the requested observation
  *
  * The substratum in question is assumed to be OBSERVED_SUBSTRATUM_SPECIES_TOTALS.SUBSTRATUM_ID.
  */
 fun latestObservationForSubstratumField(
     observationIdField: Field<ObservationId?>,
     substratumIdField: Field<SubstratumId?>,
-) =
-    DSL.select(OBSERVATIONS.ID)
-        .from(OBSERVATIONS)
-        .join(OBSERVATION_REQUESTED_SUBSTRATA)
-        .on(OBSERVATIONS.ID.eq(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID))
-        .where(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(substratumIdField))
-        .and(
-            DSL.or(
-                // Always consider the reference observation itself, even while it is still in
-                // progress and so has no completed time to compare against yet.
-                OBSERVATIONS.ID.eq(observationIdField),
-                OBSERVATIONS.COMPLETED_TIME.le(
-                    DSL.select(OBSERVATIONS.COMPLETED_TIME)
-                        .from(OBSERVATIONS)
-                        .where(OBSERVATIONS.ID.eq(observationIdField))
-                ),
-            )
-        )
-        .and(OBSERVATIONS.IS_AD_HOC.isFalse)
-        .orderBy(
-            // Prefer results from the same observation as the `observationId` if it exists.
-            // True is considered greater than false, so sorting by an "=" expression in
-            // descending order means the matches come first.
-            OBSERVATIONS.ID.eq(observationIdField).desc(),
-            // Otherwise take the results from the next latest observation for that area.
-            OBSERVATIONS.COMPLETED_TIME.desc(),
-        )
-        .limit(1)
+): Select<Record1<ObservationId?>> {
+  val dependentSsh = SUBSTRATUM_HISTORIES.`as`("dependent_obs_ssh")
+  return DSL.select(DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID)
+      .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+      .join(dependentSsh)
+      .on(dependentSsh.ID.eq(DEPENDENT_SUBSTRATUM_OBSERVATION.SUBSTRATUM_HISTORY_ID))
+      .where(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.eq(observationIdField))
+      .and(dependentSsh.SUBSTRATUM_ID.eq(substratumIdField))
+      .limit(1)
+}
 
 /**
  * Returns an observationId if the given monitoring plot is used in the observation results from
