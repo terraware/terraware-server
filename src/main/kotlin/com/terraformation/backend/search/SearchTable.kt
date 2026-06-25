@@ -277,11 +277,12 @@ abstract class SearchTable {
   fun localDateTimeField(fieldName: String, databaseField: TableField<*, LocalDateTime?>) =
       LocalDateTimeField(fieldName, databaseField, this)
 
-  fun localizedTextField(
+  fun <T : Any> localizedTextField(
       fieldName: String,
-      databaseField: TableField<*, String?>,
+      databaseField: Field<T?>,
       resourceBundleName: String,
-  ) = LocalizedTextField(fieldName, databaseField, resourceBundleName, this)
+      prefix: String? = null,
+  ) = LocalizedTextField(fieldName, databaseField, resourceBundleName, prefix, this)
 
   fun longField(fieldName: String, databaseField: Field<Long?>, nullable: Boolean = true) =
       LongField(fieldName, databaseField, this)
