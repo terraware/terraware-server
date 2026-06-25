@@ -11,6 +11,7 @@ import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.mockUser
@@ -26,6 +27,8 @@ import kotlin.math.roundToInt
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
@@ -810,6 +813,108 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
             mapOf(plantingSiteId to rates2),
         )
     assertSurvivalRates(expected2, "Survival rates includes species not in observation 2")
+  }
+
+  @Test
+  fun `survival rate recalc skips observations that do not depend on the edited plot's data`() {
+    every { user.canUpdateObservationQuantities(any()) } returns true
+
+    val species1 = insertSpecies()
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare())
+    val plotQ = insertMonitoringPlot(permanentIndex = 2)
+    insertPlotT0Density(plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare())
+
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = species1,
+                statusId = RecordedPlantStatus.Live,
+            )
+        ),
+    )
+
+    val observation2 = insertObservation()
+    insertObservationRequestedSubstratum()
+    insertObservationPlot(
+        monitoringPlotId = plotQ,
+        observationId = observation2,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    observationStore.completePlot(
+        observation2,
+        plotQ,
+        emptySet(),
+        "Notes",
+        observedTime.plusSeconds(10),
+        listOf(
+            RecordedPlantsRow(
+                certaintyId = RecordedSpeciesCertainty.Known,
+                gpsCoordinates = point(1),
+                speciesId = species1,
+                statusId = RecordedPlantStatus.Live,
+            )
+        ),
+    )
+
+    // Stamp a sentinel into observation 2's stratum survival rate after completion. A correct
+    // recalc scoped to dependents of observation 1 must leave this untouched.
+    val sentinel = 999
+    dslContext
+        .update(OBSERVATION_STRATUM_RESULTS)
+        .set(OBSERVATION_STRATUM_RESULTS.SURVIVAL_RATE, sentinel)
+        .where(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID.eq(observation2))
+        .and(OBSERVATION_STRATUM_RESULTS.STRATUM_ID.eq(stratumId))
+        .execute()
+
+    // Edit observation 1's species totals for plot P, then run the recalc that the edit path
+    // triggers via the MonitoringSpeciesTotalsEditedEvent listener.
+    observationStore.updateMonitoringSpecies(
+        observationId,
+        plotId,
+        RecordedSpeciesCertainty.Known,
+        species1,
+        null,
+    ) { model ->
+      model.copy(totalLive = model.totalLive + 1)
+    }
+    observationStore.recalculateSurvivalRates(plotId)
+
+    val obs1StratumRate =
+        observationStratumResultsDao
+            .fetchByObservationId(observationId)
+            .single { it.stratumId == stratumId }
+            .survivalRate
+    val obs2StratumRate =
+        observationStratumResultsDao
+            .fetchByObservationId(observation2)
+            .single { it.stratumId == stratumId }
+            .survivalRate
+
+    assertAll(
+        {
+          assertEquals(
+              100 * 2 / 10,
+              obs1StratumRate,
+              "Observation 1 stratum survival rate is recomputed from the edited totals",
+          )
+        },
+        {
+          assertEquals(
+              sentinel,
+              obs2StratumRate,
+              "Observation 2 stratum survival rate is untouched because it does not depend on " +
+                  "observation 1",
+          )
+        },
+    )
   }
 
   @Test
@@ -1711,6 +1816,211 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     }
 
     return SurvivalRates(plotRates, substratumRates, stratumRates, siteRates)
+  }
+
+  /**
+   * End-to-end flow for how a substratum ends up requested-but-unobserved in practice: an
+   * observation that planned to cover it is abandoned before that substratum's plot is completed.
+   * The abandoned observation must still roll the substratum's last-observed data forward.
+   */
+  @Test
+  fun `abandoning an observation rolls its unobserved substrata forward into the rollups`() {
+    val speciesId = insertSpecies()
+    insertPlotT0Density(
+        monitoringPlotId = plotId,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare(),
+    )
+
+    val substratumB = insertSubstratum()
+    val plotB = insertMonitoringPlot(permanentIndex = 2, substratumId = substratumB)
+    insertPlotT0Density(
+        monitoringPlotId = plotB,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(20).toPlantsPerHectare(),
+    )
+
+    // observation 1 observes both A and B.
+    insertObservationRequestedSubstratum(observationId = observationId, substratumId = substratumB)
+    insertObservationPlot(
+        observationId = observationId,
+        monitoringPlotId = plotB,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 8), RecordedPlantStatus.Live),
+    )
+    observationStore.completePlot(
+        observationId,
+        plotB,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 16), RecordedPlantStatus.Live),
+    )
+
+    // observation 2 requests A and B and has plots in both, but only A's plot is completed before
+    // the observation is abandoned, leaving B requested-but-unobserved.
+    val observation2 = insertObservation()
+    insertObservationRequestedSubstratum(observationId = observation2, substratumId = substratumId)
+    insertObservationRequestedSubstratum(observationId = observation2, substratumId = substratumB)
+    insertObservationPlot(
+        observationId = observation2,
+        monitoringPlotId = plotId,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    insertObservationPlot(
+        observationId = observation2,
+        monitoringPlotId = plotB,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    observationStore.completePlot(
+        observation2,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime.plusSeconds(10),
+        createPlantsRows(mapOf(speciesId to 9), RecordedPlantStatus.Live),
+    )
+
+    observationStore.abandonObservation(observation2)
+
+    // B was never observed in observation 2, so its dependency row rolls forward to observation 1.
+    val bDependency =
+        dependentSubstratumObservationDao.fetchByObservationId(observation2).single {
+          it.dependsOnObservationId != observation2
+        }
+    assertEquals(
+        observationId,
+        bDependency.dependsOnObservationId,
+        "B rolls forward to observation 1",
+    )
+
+    // An abandoned observation is treated like a completed one (its not-observed plot is ignored),
+    // so it rolls B forward into the stratum survival rate in both the numerator (live) and the
+    // denominator (T0): (A live 9 + B live 16) / (A T0 10 + B T0 20) = 25/30 ~= 83%.
+    val stratumResult =
+        observationStratumResultsDao.fetchByObservationId(observation2).single {
+          it.stratumId == stratumId
+        }
+    assertEquals(
+        83,
+        stratumResult.survivalRate,
+        "Abandoned observation rolls B's survival rate forward",
+    )
+    assertNotNull(stratumResult.plantDensity, "Abandoned observation rolls B's density forward")
+  }
+
+  /**
+   * Editing the data an abandoned observation rolls forward must update that abandoned
+   * observation's rollups. The edited observation is the latest one to actually observe the
+   * substratum, so the later abandoned observation depends on it.
+   */
+  @Test
+  fun `editing an observation propagates into a later abandoned observation that rolls it forward`() {
+    val speciesId = insertSpecies()
+    insertPlotT0Density(
+        monitoringPlotId = plotId,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare(),
+    )
+
+    val substratumB = insertSubstratum()
+    val plotB = insertMonitoringPlot(permanentIndex = 2, substratumId = substratumB)
+    insertPlotT0Density(
+        monitoringPlotId = plotB,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(20).toPlantsPerHectare(),
+    )
+
+    insertObservationRequestedSubstratum(observationId = observationId, substratumId = substratumB)
+    insertObservationPlot(
+        observationId = observationId,
+        monitoringPlotId = plotB,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 8), RecordedPlantStatus.Live),
+    )
+    observationStore.completePlot(
+        observationId,
+        plotB,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 16), RecordedPlantStatus.Live),
+    )
+
+    val observation2 = insertObservation()
+    insertObservationRequestedSubstratum(observationId = observation2, substratumId = substratumId)
+    insertObservationRequestedSubstratum(observationId = observation2, substratumId = substratumB)
+    insertObservationPlot(
+        observationId = observation2,
+        monitoringPlotId = plotId,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    insertObservationPlot(
+        observationId = observation2,
+        monitoringPlotId = plotB,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    // Complete observation 2 strictly after observation 1 (completion times are monotonic per
+    // site);
+    // the edit-propagation lookup only considers later observations.
+    clock.instant = Instant.ofEpochSecond(10)
+    observationStore.completePlot(
+        observation2,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime.plusSeconds(10),
+        createPlantsRows(mapOf(speciesId to 9), RecordedPlantStatus.Live),
+    )
+    observationStore.abandonObservation(observation2)
+
+    fun observation2StratumRate() =
+        observationStratumResultsDao
+            .fetchByObservationId(observation2)
+            .single { it.stratumId == stratumId }
+            .survivalRate
+
+    val rateBeforeEdit = observation2StratumRate()
+
+    // Edit observation 1's B data (which the abandoned observation 2 rolls forward) down to zero
+    // live plants.
+    observationStore.updateMonitoringSpecies(
+        observationId,
+        plotB,
+        RecordedSpeciesCertainty.Known,
+        speciesId,
+        null,
+    ) { model ->
+      model.copy(totalLive = 0)
+    }
+
+    val rateAfterEdit = observation2StratumRate()
+
+    // The edit must flow into observation 2's rolled-up survival rate. Matching on requested
+    // (rather
+    // than observed) substrata would treat observation 2 as superseding B and leave this stale.
+    assertNotEquals(rateBeforeEdit, rateAfterEdit, "Abandoned observation rate after editing B")
+    assertEquals(true, rateAfterEdit!! < rateBeforeEdit!!, "Lower live count lowers the rate")
   }
 
   private fun createPlantsRows(

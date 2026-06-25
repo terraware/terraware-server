@@ -5592,7 +5592,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertHistory = false,
         )
     val substratum1oldHistory = insertSubstratumHistory(stratumHistoryId = site1stratumOldHistory)
-    insertSubstratumHistory()
+    val substratum1NewHistory = insertSubstratumHistory()
     val substratum1plot1 = insertMonitoringPlot(permanentIndex = 1, insertHistory = false)
     val substratum1plot1OldHist =
         insertMonitoringPlotHistory(
@@ -5634,7 +5634,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertHistory = false,
         )
     val substratum2oldHistory = insertSubstratumHistory(stratumHistoryId = site1stratumOldHistory)
-    insertSubstratumHistory()
+    val substratum2NewHistory = insertSubstratumHistory()
     // this plot was in observation1 but was reassigned from observation2
     val reassignedPlot = insertMonitoringPlot(permanentIndex = 2)
     val reassignedPlotHist = inserted.monitoringPlotHistoryId
@@ -5710,6 +5710,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             areaHa = BigDecimal(1000),
             plantingCompletedTime = null,
         )
+    val incompleteSubstratumHistory = inserted.substratumHistoryId
     // plot was in a different substratum previously
     val incompleteSubstratumPlot1 = insertMonitoringPlot(permanentIndex = 5, insertHistory = false)
     val incompleteSubstratumPlot1OldHist =
@@ -5735,7 +5736,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             insertHistory = false,
         )
     val futureSubstratumOldHist = insertSubstratumHistory(stratumHistoryId = site1stratumOldHistory)
-    insertSubstratumHistory()
+    val futureSubstratumNewHistory = insertSubstratumHistory()
     val futureSubstratumPlot1 = insertMonitoringPlot(permanentIndex = 6, insertHistory = false)
     val futureSubstratumPlot1OldHist =
         insertMonitoringPlotHistory(
@@ -5765,6 +5766,7 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
             areaHa = BigDecimal(30),
             plantingCompletedTime = plantingCompletedDate2.atStartOfDay().toInstant(ZoneOffset.UTC),
         )
+    val site2Substratum1History = inserted.substratumHistoryId
     val substratum3plot1 = insertMonitoringPlot(permanentIndex = 1)
     val substratum3plot1Hist = inserted.monitoringPlotHistoryId
     insertPlotT0Density(
@@ -6218,6 +6220,34 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     // Total plants: 50
     // Dead plants: 20
 
+    // observation2 observed substratumId2, incompleteSubstratum, and futureSubstratum
+    insertDependentSubstratumObservation(
+        observationId = site1observation2,
+        substratumHistoryId = substratum2NewHistory,
+    )
+    insertDependentSubstratumObservation(
+        observationId = site1observation2,
+        substratumHistoryId = incompleteSubstratumHistory,
+    )
+    insertDependentSubstratumObservation(
+        observationId = site1observation2,
+        substratumHistoryId = futureSubstratumNewHistory,
+    )
+
+    // observation2 did not observe substratumId1
+    insertDependentSubstratumObservation(
+        observationId = site1observation2,
+        substratumHistoryId = substratum1NewHistory,
+        dependsOnObservationId = site1OldObservationId,
+        dependsOnSubstratumHistoryId = substratum1oldHistory,
+    )
+
+    // Site 2 only has one observation
+    insertDependentSubstratumObservation(
+        observationId = site2ObservationId,
+        substratumHistoryId = site2Substratum1History,
+    )
+
     // Populate the rolled-up stratum and site SRs that the project-level area-weighted
     // calculation reads from. Site 1's stratum has substrata of areas 10+20+1000+3000=4030 ha;
     // site 2 has one substratum of area 30 ha. With both stratum SRs=50, the project SR is
@@ -6488,6 +6518,16 @@ class ReportStoreTest : DatabaseTest(), RunsAsDatabaseUser {
         plantingSiteId = plantingSite3,
         plantingSiteHistoryId = plantingSiteHistory3,
         permanentLive = 51,
+    )
+
+    // Each site only has one substratum and one observation. Site 3 is unobserved.
+    insertDependentSubstratumObservation(
+        observationId = site1ObservationId,
+        substratumHistoryId = site1SubstratumHistory,
+    )
+    insertDependentSubstratumObservation(
+        observationId = site2ObservationId,
+        substratumHistoryId = site2SubstratumHistory,
     )
 
     // Populate the rolled-up site/stratum SR values that the project-level area-weighted

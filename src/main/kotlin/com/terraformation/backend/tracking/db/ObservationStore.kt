@@ -38,6 +38,7 @@ import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
 import com.terraformation.backend.db.tracking.tables.records.ObservationPlotConditionsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservedPlotSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.records.RecordedPlantsRecord
+import com.terraformation.backend.db.tracking.tables.references.DEPENDENT_SUBSTRATUM_OBSERVATION
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
@@ -111,6 +112,8 @@ import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
 import org.jooq.Record
+import org.jooq.Record1
+import org.jooq.Select
 import org.jooq.impl.DSL
 import org.jooq.impl.SQLDataType
 import org.springframework.context.ApplicationEventPublisher
@@ -930,6 +933,20 @@ class ObservationStore(
           plantCountsBySpecies,
       )
 
+      observationPlotsDao.update(
+          observationPlotsRow.copy(
+              completedBy = currentUser().userId,
+              completedTime = clock.instant(),
+              notes = notes,
+              observedTime = observedTime,
+              statusId = ObservationPlotStatus.Completed,
+          )
+      )
+
+      if (!isAdHoc) {
+        recordSubstratumDependencies(observationId)
+      }
+
       updateObservationResults(
           observationId,
           plantingSite,
@@ -939,16 +956,6 @@ class ObservationStore(
           substratumHistoryId,
           monitoringPlotId,
           isAdHoc,
-      )
-
-      observationPlotsDao.update(
-          observationPlotsRow.copy(
-              completedBy = currentUser().userId,
-              completedTime = clock.instant(),
-              notes = notes,
-              observedTime = observedTime,
-              statusId = ObservationPlotStatus.Completed,
-          )
       )
 
       if (substratumId != null) {
@@ -1366,21 +1373,13 @@ class ObservationStore(
         //
         // So we want to update later observations that don't have newer results for the substratum
         // we're editing, that is, observations for which this observation's substratum-level totals
-        // would be used to calculate the stratum- and site-level totals.
+        // would be used to calculate the stratum- and site-level totals. Those are exactly the
+        // observations whose dependent_substratum_observation row for this substratum points back
+        // at
+        // the edited observation; matching on requested (rather than observed) substrata would miss
+        // later observations that requested the substratum but did not observe it.
 
-        val latestObservations = OBSERVATIONS.`as`("latest_observations")
-        val observationWithLatestResultsForSubstratum =
-            DSL.field(
-                DSL.select(latestObservations.ID)
-                    .from(latestObservations)
-                    .join(OBSERVATION_REQUESTED_SUBSTRATA)
-                    .on(latestObservations.ID.eq(OBSERVATION_REQUESTED_SUBSTRATA.OBSERVATION_ID))
-                    .where(latestObservations.COMPLETED_TIME.ge(observation.completedTime))
-                    .and(latestObservations.COMPLETED_TIME.le(OBSERVATIONS.COMPLETED_TIME))
-                    .and(OBSERVATION_REQUESTED_SUBSTRATA.SUBSTRATUM_ID.eq(substratumId))
-                    .orderBy(latestObservations.COMPLETED_TIME.desc(), latestObservations.ID.desc())
-                    .limit(1)
-            )
+        val dependentSsh = SUBSTRATUM_HISTORIES.`as`("edit_dependent_ssh")
         val stratumHistoryIdAtTimeOfObservation =
             DSL.field(
                 DSL.select(STRATUM_HISTORIES.ID)
@@ -1419,7 +1418,24 @@ class ObservationStore(
                 .from(OBSERVATIONS)
                 .where(OBSERVATIONS.PLANTING_SITE_ID.eq(observation.plantingSiteId))
                 .and(OBSERVATIONS.COMPLETED_TIME.gt(observation.completedTime))
-                .and(observationWithLatestResultsForSubstratum.eq(observationId))
+                .and(
+                    OBSERVATIONS.ID.`in`(
+                        DSL.select(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID)
+                            .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+                            .join(dependentSsh)
+                            .on(
+                                dependentSsh.ID.eq(
+                                    DEPENDENT_SUBSTRATUM_OBSERVATION.SUBSTRATUM_HISTORY_ID
+                                )
+                            )
+                            .where(
+                                DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(
+                                    observationId
+                                )
+                            )
+                            .and(dependentSsh.SUBSTRATUM_ID.eq(substratumId))
+                    )
+                )
                 .and(OBSERVATIONS.OBSERVATION_TYPE_ID.eq(ObservationType.Monitoring))
                 .fetch()
 
@@ -1543,9 +1559,15 @@ class ObservationStore(
     if (hasCompletedPlots) {
       dslContext.transaction { _ ->
         log.info("Marking observation $observationId as abandoned")
+        // An abandoned observation is treated exactly like a completed one, except that its
+        // not-observed plots are ignored (see the survival-rate recalculation conditions) and a
+        // substratum whose plots were all left unobserved is rolled forward as if it had never been
+        // requested. So it runs the same recalculation sequence as completeObservation.
         abandonPlots(observationId)
         updateObservationState(observationId, ObservationState.Abandoned)
+        recordSubstratumDependencies(observationId)
         resetPlantPopulationSinceLastObservation(observation.plantingSiteId)
+        recalculateSurvivalRates(observationId, observation.plantingSiteId)
         recalculateSurvivalRateResults(observationId, observation.plantingSiteId)
       }
     } else {
@@ -1561,6 +1583,7 @@ class ObservationStore(
   ) {
     updateObservationState(observationId, ObservationState.Completed)
     if (!isAdHoc) {
+      recordSubstratumDependencies(observationId)
       // Ad-hoc observations do not reset unobserved populations
       resetPlantPopulationSinceLastObservation(plantingSiteId)
       recalculateSurvivalRates(observationId, plantingSiteId)
@@ -1568,6 +1591,105 @@ class ObservationStore(
     }
 
     eventPublisher.publishEvent(ObservationCompletedEvent(observationId))
+  }
+
+  private fun computeLatestObservationForSubstratumField(
+      observationId: ObservationId,
+      substratumIdField: Field<SubstratumId?>,
+  ): Select<Record1<ObservationId?>> {
+    val candidateObs = OBSERVATIONS.`as`("candidate_obs")
+    val op = OBSERVATION_PLOTS.`as`("dep_op")
+    val mph = MONITORING_PLOT_HISTORIES.`as`("dep_mph")
+
+    return DSL.select(candidateObs.ID)
+        .from(candidateObs)
+        .where(
+            DSL.exists(
+                DSL.selectOne()
+                    .from(op)
+                    .join(mph)
+                    .on(mph.ID.eq(op.MONITORING_PLOT_HISTORY_ID))
+                    .where(op.OBSERVATION_ID.eq(candidateObs.ID))
+                    .and(op.COMPLETED_TIME.isNotNull)
+                    .and(mph.SUBSTRATUM_ID.eq(substratumIdField))
+            )
+        )
+        .and(
+            DSL.or(
+                candidateObs.ID.eq(observationId),
+                candidateObs.COMPLETED_TIME.le(
+                    DSL.select(OBSERVATIONS.COMPLETED_TIME)
+                        .from(OBSERVATIONS)
+                        .where(OBSERVATIONS.ID.eq(observationId))
+                ),
+            )
+        )
+        .and(candidateObs.IS_AD_HOC.isFalse)
+        .orderBy(
+            // Prefer results from the same observation as the `observationId` if it exists.
+            candidateObs.ID.eq(observationId).desc(),
+            // Otherwise take the results from the next latest observation for that area.
+            candidateObs.COMPLETED_TIME.desc(),
+        )
+        .limit(1)
+  }
+
+  private fun recordSubstratumDependencies(observationId: ObservationId) {
+    val consumingSsh = SUBSTRATUM_HISTORIES.`as`("consuming_ssh")
+    val consumingSh = STRATUM_HISTORIES.`as`("consuming_sh")
+    val srcSsh = SUBSTRATUM_HISTORIES.`as`("src_ssh")
+    val srcSh = STRATUM_HISTORIES.`as`("src_sh")
+    val srcObs = OBSERVATIONS.`as`("src_obs")
+
+    val dependsOnObservationId =
+        DSL.field(
+            computeLatestObservationForSubstratumField(
+                observationId,
+                consumingSsh.SUBSTRATUM_ID,
+            )
+        )
+
+    val dependsOnSubstratumHistoryId =
+        DSL.field(
+            DSL.select(srcSsh.ID)
+                .from(srcObs)
+                .join(srcSh)
+                .on(srcSh.PLANTING_SITE_HISTORY_ID.eq(srcObs.PLANTING_SITE_HISTORY_ID))
+                .join(srcSsh)
+                .on(srcSsh.STRATUM_HISTORY_ID.eq(srcSh.ID))
+                .where(srcObs.ID.eq(dependsOnObservationId))
+                .and(srcSsh.SUBSTRATUM_ID.eq(consumingSsh.SUBSTRATUM_ID))
+        )
+
+    dslContext
+        .deleteFrom(DEPENDENT_SUBSTRATUM_OBSERVATION)
+        .where(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.eq(observationId))
+        .execute()
+
+    dslContext
+        .insertInto(
+            DEPENDENT_SUBSTRATUM_OBSERVATION,
+            DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID,
+            DEPENDENT_SUBSTRATUM_OBSERVATION.SUBSTRATUM_HISTORY_ID,
+            DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID,
+            DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_SUBSTRATUM_HISTORY_ID,
+        )
+        .select(
+            DSL.select(
+                    DSL.value(observationId, OBSERVATIONS.ID),
+                    consumingSsh.ID,
+                    dependsOnObservationId,
+                    dependsOnSubstratumHistoryId,
+                )
+                .from(OBSERVATIONS)
+                .join(consumingSh)
+                .on(consumingSh.PLANTING_SITE_HISTORY_ID.eq(OBSERVATIONS.PLANTING_SITE_HISTORY_ID))
+                .join(consumingSsh)
+                .on(consumingSsh.STRATUM_HISTORY_ID.eq(consumingSh.ID))
+                .where(OBSERVATIONS.ID.eq(observationId))
+                .and(dependsOnObservationId.isNotNull)
+        )
+        .execute()
   }
 
   /**
@@ -1605,6 +1727,10 @@ class ObservationStore(
             .fetch()
 
     dslContext.transaction { _ ->
+      if (!isAdHoc) {
+        recordSubstratumDependencies(observationId)
+      }
+
       completedPlots.forEach { record ->
         updateObservationResults(
             observationId,
@@ -1736,17 +1862,21 @@ class ObservationStore(
 
         with(OBSERVED_STRATUM_SPECIES_TOTALS) {
           val updateScope = ObservationSpeciesStratum(stratumHistoryId, stratumId)
+          // The live totals above roll each substratum forward from its latest observation, so the
+          // denominators must roll the same T0 densities forward to avoid inflating the rate.
           val survivalRatePermanentDenominator =
               getSurvivalRateDenominator(
                   updateScope,
                   PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
                   DSL.value(observationId, OBSERVATIONS.ID.dataType),
+                  carryForward = true,
               )
           val survivalRateTempDenominator =
               getSurvivalRateTempDenominator(
                   updateScope,
                   STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
                   DSL.value(observationId, OBSERVATIONS.ID.dataType),
+                  carryForward = true,
               )
           val survivalRateDenominator =
               DSL.coalesce(
@@ -1794,17 +1924,21 @@ class ObservationStore(
 
       with(OBSERVED_SITE_SPECIES_TOTALS) {
         val updateScope = ObservationSpeciesSite(plantingSiteId, plantingSiteHistoryId)
+        // Same as the stratum block: the site live totals roll substrata forward, so the
+        // denominators must too.
         val survivalRatePermanentDenominator =
             getSurvivalRateDenominator(
                 updateScope,
                 PLOT_T0_DENSITIES.SPECIES_ID.eq(speciesKey.id),
                 DSL.value(observationId, OBSERVATIONS.ID.dataType),
+                carryForward = true,
             )
         val survivalRateTempDenominator =
             getSurvivalRateTempDenominator(
                 updateScope,
                 STRATUM_T0_TEMP_DENSITIES.SPECIES_ID.eq(speciesKey.id),
                 DSL.value(observationId, OBSERVATIONS.ID.dataType),
+                carryForward = true,
             )
         val survivalRateDenominator =
             DSL.coalesce(
@@ -2057,17 +2191,23 @@ class ObservationStore(
   ) {
     val table = updateScope.observedTotalsTable
     val observationIdField = table.field("observation_id", OBSERVATIONS.ID.dataType)!!
+    // This scope's live total may roll a not-currently-observed substratum forward from a prior
+    // observation (stratum and site); when it does, the denominator must roll the same T0 densities
+    // forward or the rate is inflated.
+    val carryForward = updateScope.survivalRateDenominatorCarriesForward
     val survivalRatePermanentDenominator =
         getSurvivalRateDenominator(
             updateScope,
             DSL.trueCondition(),
             observationIdField,
+            carryForward,
         )
     val survivalRateTempDenominator =
         getSurvivalRateTempDenominator(
             updateScope,
             DSL.trueCondition(),
             observationIdField,
+            carryForward,
         )
     val survivalRateDenominator =
         DSL.coalesce(survivalRatePermanentDenominator, BigDecimal.ZERO)
@@ -2094,6 +2234,10 @@ class ObservationStore(
                     .from(OBSERVATION_PLOTS)
                     .where(updateScope.observationPlotsCondition(observationIdField))
                     .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+                    // Not-observed plots (e.g. those left unfinished by an abandoned observation)
+                    // are
+                    // not pending; only genuinely incomplete plots block recalculation.
+                    .and(OBSERVATION_PLOTS.STATUS_ID.ne(ObservationPlotStatus.NotObserved))
             ),
         )
 
@@ -2180,17 +2324,23 @@ class ObservationStore(
   ) {
     val table = updateScope.observedTotalsTable
     val observationIdField = table.field("observation_id", OBSERVATIONS.ID.dataType)!!
+    // See the sibling overload: when the live total rolls a substratum forward, the denominator
+    // must
+    // roll the same T0 densities forward or the rate is inflated.
+    val carryForward = updateScope.survivalRateDenominatorCarriesForward
     val survivalRatePermanentDenominator =
         getSurvivalRateDenominator(
             updateScope,
             DSL.trueCondition(),
             DSL.value(observationId, OBSERVATIONS.ID.dataType),
+            carryForward,
         )
     val survivalRateTempDenominator =
         getSurvivalRateTempDenominator(
             updateScope,
             DSL.trueCondition(),
             DSL.value(observationId, OBSERVATIONS.ID.dataType),
+            carryForward,
         )
     val survivalRateDenominator =
         DSL.coalesce(survivalRatePermanentDenominator, BigDecimal.ZERO)
@@ -2220,6 +2370,10 @@ class ObservationStore(
                         )
                     )
                     .and(OBSERVATION_PLOTS.COMPLETED_TIME.isNull)
+                    // Not-observed plots (e.g. those left unfinished by an abandoned observation)
+                    // are
+                    // not pending; only genuinely incomplete plots block recalculation.
+                    .and(OBSERVATION_PLOTS.STATUS_ID.ne(ObservationPlotStatus.NotObserved))
             )
             .not()
 
@@ -2511,7 +2665,28 @@ class ObservationStore(
               .execute()
         }
 
+        // Other observations that rolled the source's substratum data forward; their dependency
+        // rows cascade away with the source, so capture them before the delete and recompute them
+        // afterward (they fall back to the next-latest source, which may now be the target that
+        // just absorbed the source's completed plots).
+        val dependentsOfSource =
+            dslContext
+                .selectDistinct(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID)
+                .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+                .where(
+                    DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(
+                        sourceObservationId
+                    )
+                )
+                .and(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.ne(sourceObservationId))
+                .fetch(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.asNonNullable())
+
         dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(sourceObservationId)).execute()
+
+        // The target absorbed the source's completed plots, so its set of observed substrata may
+        // have changed; recompute its dependencies and those of the source's former dependents.
+        recordSubstratumDependencies(targetObservationId)
+        dependentsOfSource.forEach { recordSubstratumDependencies(it) }
       }
     }
   }
@@ -2692,6 +2867,17 @@ class ObservationStore(
             .where(PLOT_T0_OBSERVATIONS.OBSERVATION_ID.eq(observationId))
             .fetch(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.asNonNullable())
 
+    // Other observations that roll this one's substratum data forward. Their dependency rows
+    // cascade-delete with this observation, so once it is gone they must recompute to fall back to
+    // the next-latest source (or drop the substratum if none remains).
+    val dependentObservationIds =
+        dslContext
+            .selectDistinct(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID)
+            .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+            .where(DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID.eq(observationId))
+            .and(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.ne(observationId))
+            .fetch(DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID.asNonNullable())
+
     dslContext.transaction { _ ->
       if (t0PlotIds.isNotEmpty()) {
         dslContext
@@ -2701,6 +2887,8 @@ class ObservationStore(
       }
 
       dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).execute()
+
+      dependentObservationIds.forEach { recordSubstratumDependencies(it) }
     }
   }
 
@@ -3662,8 +3850,27 @@ class ObservationStore(
       updateScope: ObservationSpeciesScope<ID, HistoryId>,
       condition: Condition,
       observationIdField: Field<ObservationId?>,
+      carryForward: Boolean = false,
   ): Field<BigDecimal> {
     val opPerm = OBSERVATION_PLOTS.`as`("opPerm")
+    // When the live total rolls a substratum forward (stratum/site scopes), the denominator must
+    // attribute each plot's T0 to that substratum's roll-forward source observation, exactly as the
+    // live total does; otherwise it uses the requested-substrata mapping.
+    val plotObservationCondition =
+        if (carryForward) {
+          opPerm.IS_PERMANENT.isTrue.and(
+              opPerm.OBSERVATION_ID.eq(
+                  latestObservationForSubstratumField(
+                      observationIdField,
+                      opPerm.monitoringPlotHistories.SUBSTRATUM_ID,
+                  )
+              )
+          )
+        } else {
+          opPerm.OBSERVATION_ID.eq(
+              observationIdForPlot(PLOT_T0_DENSITIES.MONITORING_PLOT_ID, observationIdField, true)
+          )
+        }
     return DSL.field(
         DSL.select(DSL.sum(PLOT_T0_DENSITIES.PLOT_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
             .from(PLOT_T0_DENSITIES)
@@ -3678,15 +3885,7 @@ class ObservationStore(
                     updateScope.alternateCompletedCondition(PLOT_T0_DENSITIES.MONITORING_PLOT_ID),
                 )
             )
-            .and(
-                opPerm.OBSERVATION_ID.eq(
-                    observationIdForPlot(
-                        PLOT_T0_DENSITIES.MONITORING_PLOT_ID,
-                        observationIdField,
-                        true,
-                    )
-                )
-            )
+            .and(plotObservationCondition)
     )
   }
 
@@ -3694,9 +3893,25 @@ class ObservationStore(
       updateScope: ObservationSpeciesScope<ID, HistoryId>,
       condition: Condition,
       observationIdField: Field<ObservationId?>,
+      carryForward: Boolean = false,
   ): Field<BigDecimal> {
     val opTemp = OBSERVATION_PLOTS.`as`("opTemp")
     return with(STRATUM_T0_TEMP_DENSITIES) {
+      val plotObservationCondition =
+          if (carryForward) {
+            opTemp.IS_PERMANENT.isFalse.and(
+                opTemp.OBSERVATION_ID.eq(
+                    latestObservationForSubstratumField(
+                        observationIdField,
+                        opTemp.monitoringPlotHistories.SUBSTRATUM_ID,
+                    )
+                )
+            )
+          } else {
+            opTemp.OBSERVATION_ID.eq(
+                observationIdForPlot(opTemp.MONITORING_PLOT_ID, observationIdField, false)
+            )
+          }
       DSL.field(
           DSL.select(DSL.sum(STRATUM_DENSITY).mul(DSL.inline(HECTARES_PER_PLOT)))
               .from(STRATUM_T0_TEMP_DENSITIES)
@@ -3716,15 +3931,7 @@ class ObservationStore(
                       updateScope.alternateCompletedCondition(opTemp.MONITORING_PLOT_ID),
                   )
               )
-              .and(
-                  opTemp.OBSERVATION_ID.eq(
-                      observationIdForPlot(
-                          opTemp.MONITORING_PLOT_ID,
-                          observationIdField,
-                          false,
-                      )
-                  )
-              )
+              .and(plotObservationCondition)
       )
     }
   }

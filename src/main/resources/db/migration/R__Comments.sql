@@ -431,6 +431,12 @@ COMMENT ON COLUMN tracking.deliveries.reassigned_by IS 'Which user recorded the 
 COMMENT ON COLUMN tracking.deliveries.reassigned_time IS 'When the reassignment was recorded. Null if this delivery has no reassignment.';
 COMMENT ON COLUMN tracking.deliveries.withdrawal_id IS 'Which nursery withdrawal the plants came from.';
 
+COMMENT ON TABLE tracking.dependent_substratum_observation IS 'For a completed observation and each substratum in its geometry snapshot, the prior (or same) observation whose substratum results should be rolled forward. A materialization of the "latest observation at or before this one that observed the substratum" relationship. A substratum observed in the observation itself is stored as a self-reference.';
+COMMENT ON COLUMN tracking.dependent_substratum_observation.observation_id IS 'The consuming observation whose rolled-up results use the depended-on data.';
+COMMENT ON COLUMN tracking.dependent_substratum_observation.substratum_history_id IS 'The substratum''s history in the consuming observation''s snapshot.';
+COMMENT ON COLUMN tracking.dependent_substratum_observation.depends_on_observation_id IS 'The observation whose substratum results are rolled forward; equals observation_id when the substratum was observed in the consuming observation.';
+COMMENT ON COLUMN tracking.dependent_substratum_observation.depends_on_substratum_history_id IS 'The substratum''s history in the depended-on observation''s snapshot.';
+
 COMMENT ON TABLE tracking.draft_planting_sites IS 'Details of planting sites that are in the process of being defined.';
 COMMENT ON COLUMN tracking.draft_planting_sites.data IS 'Client-defined state of the definition of the planting site. This may include a mix of map data and application state and is treated as opaque by the server.';
 COMMENT ON COLUMN tracking.draft_planting_sites.num_substrata is 'Number of substrata defined so far.';

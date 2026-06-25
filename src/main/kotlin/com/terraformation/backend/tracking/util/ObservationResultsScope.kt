@@ -12,6 +12,7 @@ import com.terraformation.backend.db.tracking.SubstratumHistoryId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.ObservationPlotResults
 import com.terraformation.backend.db.tracking.tables.ObservationPlots
+import com.terraformation.backend.db.tracking.tables.references.DEPENDENT_SUBSTRATUM_OBSERVATION
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
@@ -59,12 +60,16 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
   val latestLiveField: Field<Int>
 
   /**
-   * Condition that covers all result table rows that could be affected by a change to the scoped
-   * entity. For ID-based scopes this is the same as [observedTotalsCondition]. For plotId-based
-   * scopes it expands to include all observations for every substratum/stratum the plot has ever
-   * historically belonged to, ensuring that observations which reference the plot's data via
-   * [observationIdForPlot] are also updated.
+   * Whether this scope's survival-rate denominator must roll a substratum's data forward the same
+   * way [latestLiveField] does. True for the stratum and site scopes, whose live totals pull each
+   * substratum from its latest observation at or before the current one (so the denominator must
+   * pull the same T0 densities, or the rate is inflated). False for the plot and substratum scopes,
+   * which use only the current observation's data.
    */
+  val survivalRateDenominatorCarriesForward: Boolean
+    get() = false
+
+  /** Condition that covers all result table rows that could be affected downstream. */
   val survivalRateRecalculationCondition: Condition
 
   fun anyChildHasNullSurvivalRateCondition(observationIdField: Field<ObservationId?>): Condition
@@ -402,6 +407,8 @@ class ObservationResultsStratum(
           stratumHistorySelect
       )
 
+  override val survivalRateDenominatorCarriesForward = true
+
   override val latestLiveField =
       with(OBSERVATION_SUBSTRATUM_RESULTS) {
         DSL.field(
@@ -465,16 +472,45 @@ class ObservationResultsStratum(
   override val observedTotalsCondition =
       OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(stratumHistorySelect)
 
+  /**
+   * For the plotId case, scopes the recalc to exactly the stratum result rows whose data is rolled
+   * up from the edited plot's observations.
+   */
   override val survivalRateRecalculationCondition: Condition
     get() =
         if (plotId != null) {
-          OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(
-              DSL.selectDistinct(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
-                  .from(MONITORING_PLOT_HISTORIES)
-                  .join(SUBSTRATUM_HISTORIES)
-                  .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
-                  .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId))
-          )
+          DSL.row(
+                  OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
+                  OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID,
+              )
+              .`in`(
+                  DSL.select(
+                          DEPENDENT_SUBSTRATUM_OBSERVATION.OBSERVATION_ID,
+                          SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID,
+                      )
+                      .from(DEPENDENT_SUBSTRATUM_OBSERVATION)
+                      .join(SUBSTRATUM_HISTORIES)
+                      .on(
+                          SUBSTRATUM_HISTORIES.ID.eq(
+                              DEPENDENT_SUBSTRATUM_OBSERVATION.SUBSTRATUM_HISTORY_ID
+                          )
+                      )
+                      .where(
+                          DSL.row(
+                                  DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_OBSERVATION_ID,
+                                  DEPENDENT_SUBSTRATUM_OBSERVATION.DEPENDS_ON_SUBSTRATUM_HISTORY_ID,
+                              )
+                              .`in`(
+                                  DSL.select(
+                                          OBSERVATION_PLOTS.OBSERVATION_ID,
+                                          OBSERVATION_PLOTS.monitoringPlotHistories
+                                              .SUBSTRATUM_HISTORY_ID,
+                                      )
+                                      .from(OBSERVATION_PLOTS)
+                                      .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
+                              )
+                      )
+              )
         } else {
           observedTotalsCondition
         }
@@ -632,6 +668,8 @@ class ObservationResultsSite(
   override val rollupSpeciesCondition = OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_ID.eq(siteSelect)
 
   override val plotResultsCondition = DSL.trueCondition()
+
+  override val survivalRateDenominatorCarriesForward = true
 
   override val latestLiveField =
       with(OBSERVATION_SUBSTRATUM_RESULTS) {
