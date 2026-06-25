@@ -89,4 +89,92 @@ class EcoregionsTableTest : DatabaseTest(), RunsAsUser {
         result.results,
     )
   }
+
+  @Test
+  fun `can find ecoregions for a botanical country`() {
+    insertBotanicalCountry(level3Code = "NAM", name = "Namibia")
+    insertEcoregion(id = 103, ecoName = "Namib Desert")
+    insertEcoregionBotanicalCountry()
+    insertEcoregion(id = 104, ecoName = "Namibian savanna woodlands")
+    insertEcoregionBotanicalCountry()
+    insertBotanicalCountry(level3Code = "RUW", name = "Northwest European Russia")
+    insertEcoregion(id = 200, ecoName = "Flinders-Lofty montane woodlands")
+    insertEcoregionBotanicalCountry()
+
+    val prefix = SearchFieldPrefix(tables.ecoregions)
+    val fields =
+        listOf(
+            prefix.resolve("id"),
+            prefix.resolve("name"),
+        )
+
+    val result =
+        searchService.search(
+            prefix,
+            fields,
+            mapOf(
+                prefix to
+                    FieldNode(
+                        prefix.resolve("ecoregionBotanicalCountries.botanicalCountry.level3Code"),
+                        listOf("NAM"),
+                    )
+            ),
+        )
+
+    assertEquals(
+        listOf(
+            mapOf(
+                "id" to "103",
+                "name" to "Namib Desert",
+            ),
+            mapOf(
+                "id" to "104",
+                "name" to "Namibian savanna woodlands",
+            ),
+        ),
+        result.results,
+    )
+  }
+
+  @Test
+  fun `can find botanical countries for an ecoregion`() {
+    insertBotanicalCountry(level3Code = "NAM", name = "Namibia")
+    insertEcoregion(id = 103, ecoName = "Namib Desert")
+    insertEcoregionBotanicalCountry()
+    insertBotanicalCountry(level3Code = "RUW", name = "Northwest European Russia")
+    insertEcoregion(id = 200, ecoName = "Flinders-Lofty montane woodlands")
+    insertEcoregionBotanicalCountry()
+
+    val prefix = SearchFieldPrefix(tables.botanicalCountries)
+    val fields =
+        listOf(
+            prefix.resolve("level3Code"),
+            prefix.resolve("name"),
+        )
+
+    val result =
+        Locales.SPANISH.use {
+          searchService.search(
+              prefix,
+              fields,
+              mapOf(
+                  prefix to
+                      FieldNode(
+                          prefix.resolve("ecoregionBotanicalCountries.ecoregion.id"),
+                          listOf("200"),
+                      )
+              ),
+          )
+        }
+
+    assertEquals(
+        listOf(
+            mapOf(
+                "level3Code" to "RUW",
+                "name" to "Rusia Europea Noroccidental",
+            ),
+        ),
+        result.results,
+    )
+  }
 }
