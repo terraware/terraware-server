@@ -1914,6 +1914,13 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         "Abandoned observation rolls B's survival rate forward",
     )
     assertNotNull(stratumResult.plantDensity, "Abandoned observation rolls B's density forward")
+    // The survival-rate std dev must weigh both A's observed plot and B's rolled-forward plot; with
+    // only A's plot it would be 0 (a single sample).
+    assertEquals(
+        5,
+        stratumResult.survivalRateStdDev,
+        "Abandoned observation rolls B's plot into the survival-rate std dev",
+    )
   }
 
   @Test
