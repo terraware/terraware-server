@@ -2591,27 +2591,11 @@ class ObservationStore(
                 .fetch(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.asNonNullable())
 
         dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(sourceObservationId)).execute()
-        
+
         recordSubstratumDependencies(targetObservationId)
 
         // Recompute dependencies of downstream observations
         dependentsOfSource.forEach { recordSubstratumDependencies(it) }
-
-        // Rewriting the dependency rows changes which observation each substratum rolls forward
-        // from, so the dependents' materialized stratum/site totals must be rebuilt from the new
-        // rows. The caller's site-wide survival-rate recalc only refreshes the rate, not the live
-        // and density totals it reads. (The target is rebuilt by the caller.)
-        val plantingSiteId =
-            dslContext
-                .select(OBSERVATIONS.PLANTING_SITE_ID.asNonNullable())
-                .from(OBSERVATIONS)
-                .where(OBSERVATIONS.ID.eq(targetObservationId))
-                .fetchOne(OBSERVATIONS.PLANTING_SITE_ID.asNonNullable())!!
-        dependentsOfSource.forEach {
-          recalculateSurvivalRates(it, plantingSiteId)
-          updateObservationResults(it, plantingSiteId)
-          recalculateSurvivalRateResults(it, plantingSiteId)
-        }
       }
     }
   }
@@ -2820,10 +2804,6 @@ class ObservationStore(
       // Recompute dependencies of downstream observations
       dependentObservationIds.forEach { recordSubstratumDependencies(it) }
 
-      // The dependency rows above now point at a fallback source (or none); rebuild each
-      // dependent's
-      // materialized stratum/site totals from them, since the caller's site-wide survival-rate
-      // recalc refreshes only the rate, not the live and density totals it reads.
       if (plantingSiteId != null) {
         dependentObservationIds.forEach {
           recalculateSurvivalRates(it, plantingSiteId)
