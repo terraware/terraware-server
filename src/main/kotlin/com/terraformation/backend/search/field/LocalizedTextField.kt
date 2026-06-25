@@ -14,19 +14,21 @@ import org.jooq.Condition
 import org.jooq.Field
 import org.jooq.Record
 import org.jooq.impl.DSL
+import org.jooq.impl.SQLDataType
 
 /**
  * Search field for values that are mapped to localized strings but are not represented as enums.
  */
-class LocalizedTextField(
+class LocalizedTextField<T : Any>(
     override val fieldName: String,
     /** The field that has the name of the string to look up in the resource bundle. */
-    override val databaseField: Field<String?>,
+    override val databaseField: Field<T?>,
     private val resourceBundleName: String,
+    private val prefix: String?,
     override val table: SearchTable,
     override val localize: Boolean = true,
     override val exportable: Boolean = true,
-) : SingleColumnSearchField<String>() {
+) : SingleColumnSearchField<T>() {
   /**
    * Maps lower-case diacritic-free localized strings to their corresponding database field values.
    * The interior Map is sorted alphabetically by localized string.
@@ -40,7 +42,7 @@ class LocalizedTextField(
   private val orderByFields = ConcurrentHashMap<Locale, Field<Int>>()
 
   override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy, SearchFilterType.PhraseMatch)
+    get() = EnumSet.of(SearchFilterType.Exact)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
     val locale = currentLocale()
@@ -53,7 +55,7 @@ class LocalizedTextField(
           DSL.or(
               listOfNotNull(
                   if (nonNullFieldValues.isNotEmpty()) {
-                    databaseField.`in`(nonNullFieldValues)
+                    databaseField.cast(SQLDataType.VARCHAR).`in`(nonNullFieldValues)
                   } else {
                     null
                   },
@@ -66,17 +68,14 @@ class LocalizedTextField(
       SearchFilterType.Fuzzy ->
           throw IllegalArgumentException("Fuzzy search not supported for localized text fields")
       SearchFilterType.PhraseMatch ->
-          DSL.or(
-              listOfNotNull(if (fieldNode.values.any { it == null }) databaseField.isNull else null)
-                  .plus(phaseMatchCondition(nonNullFieldValues.filterNotNull()))
-          )
+          throw IllegalArgumentException("Phrase match not supported for localized text fields")
       SearchFilterType.Range ->
           throw IllegalArgumentException("Range search not supported for localized text fields")
     }
   }
 
   override fun computeValue(record: Record): String? {
-    return record[databaseField]?.let { getLocalizedString(it) }
+    return record[databaseField]?.let { getLocalizedString("$it") }
   }
 
   override val possibleValues: List<String>
@@ -93,7 +92,9 @@ class LocalizedTextField(
         val fieldValuesToPosition: Map<String?, Int> =
             valuesMap.entries.mapIndexed { index, (_, fieldValue) -> fieldValue to index }.toMap()
 
-        return DSL.case_(databaseField).mapValues(fieldValuesToPosition).else_(valuesMap.size)
+        return DSL.case_(databaseField.cast(SQLDataType.VARCHAR))
+            .mapValues(fieldValuesToPosition)
+            .else_(valuesMap.size)
       }
     }
 
@@ -108,7 +109,7 @@ class LocalizedTextField(
           bundle.keySet().associateWith { bundle.getString(it) }
         }
 
-    return stringsForLocale[databaseValue]
+    return stringsForLocale[stringKey(databaseValue)]
         ?: throw IllegalStateException("No localized string for $databaseValue in $locale")
   }
 
@@ -117,8 +118,18 @@ class LocalizedTextField(
     return fieldValuesByLocalizedString.getOrPut(locale) {
       val bundle = ResourceBundle.getBundle(resourceBundleName, locale)
       val map =
-          bundle.keySet().associateBy { bundle.getString(it).lowercase(locale).removeDiacritics() }
+          bundle
+              .keySet()
+              .filter { key -> prefix == null || key.startsWith(prefix) }
+              .associate { key ->
+                val fieldValue = prefix?.let { key.substringAfter(prefix) } ?: key
+                val localizedText = bundle.getString(key).lowercase(locale).removeDiacritics()
+                localizedText to fieldValue
+              }
+
       map.keys.sortedWith(Collator.getInstance(locale)).associateWith { map[it]!! }
     }
   }
+
+  private fun stringKey(baseKey: String) = prefix?.let { "$prefix$baseKey" } ?: baseKey
 }
