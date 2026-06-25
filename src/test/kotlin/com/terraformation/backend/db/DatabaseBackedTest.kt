@@ -3717,8 +3717,8 @@ abstract class DatabaseBackedTest {
   }
 
   protected fun insertObservationDependentSubstrata(
-      observationId: ObservationId,
-      substratumHistoryId: SubstratumHistoryId,
+      observationId: ObservationId = inserted.observationId,
+      substratumHistoryId: SubstratumHistoryId = inserted.substratumHistoryId,
       dependsOnObservationId: ObservationId = observationId,
       dependsOnSubstratumHistoryId: SubstratumHistoryId = substratumHistoryId,
   ) {
