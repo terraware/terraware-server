@@ -59,16 +59,6 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
 
   val latestLiveField: Field<Int>
 
-  /**
-   * Whether this scope's survival-rate denominator must roll a substratum's data forward the same
-   * way [latestLiveField] does. True for the stratum and site scopes, whose live totals pull each
-   * substratum from its latest observation at or before the current one (so the denominator must
-   * pull the same T0 densities, or the rate is inflated). False for the plot and substratum scopes,
-   * which use only the current observation's data.
-   */
-  val survivalRateDenominatorCarriesForward: Boolean
-    get() = false
-
   /** Condition that covers all result table rows that could be affected downstream. */
   val survivalRateRecalculationCondition: Condition
 

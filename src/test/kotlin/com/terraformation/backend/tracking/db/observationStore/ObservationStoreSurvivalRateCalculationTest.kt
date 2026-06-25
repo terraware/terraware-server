@@ -10,8 +10,10 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservedStratumSpeciesTotalsRecord
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_STRATUM_RESULTS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.db.tracking.tables.references.STRATUM_T0_TEMP_DENSITIES
 import com.terraformation.backend.mockUser
@@ -1917,6 +1919,125 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
         "Abandoned observation rolls B's survival rate forward",
     )
     assertNotNull(stratumResult.plantDensity, "Abandoned observation rolls B's density forward")
+  }
+
+  @Test
+  fun `a full recalculation keeps a rolled-forward substratum's stratum survival rate consistent`() {
+    val speciesId = insertSpecies()
+    val stratumHistoryId = inserted.stratumHistoryId
+    insertPlotT0Density(
+        monitoringPlotId = plotId,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(10).toPlantsPerHectare(),
+    )
+
+    val substratumB = insertSubstratum()
+    val plotB = insertMonitoringPlot(permanentIndex = 2, substratumId = substratumB)
+    insertPlotT0Density(
+        monitoringPlotId = plotB,
+        speciesId = speciesId,
+        plotDensity = BigDecimal.valueOf(20).toPlantsPerHectare(),
+    )
+
+    // observation 1 observes both A and B.
+    insertObservationRequestedSubstratum(observationId = observationId, substratumId = substratumB)
+    insertObservationPlot(
+        observationId = observationId,
+        monitoringPlotId = plotB,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    observationStore.completePlot(
+        observationId,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 8), RecordedPlantStatus.Live),
+    )
+    observationStore.completePlot(
+        observationId,
+        plotB,
+        emptySet(),
+        "Notes",
+        observedTime,
+        createPlantsRows(mapOf(speciesId to 16), RecordedPlantStatus.Live),
+    )
+
+    // observation 2 observes only A and is abandoned
+    val observation2 = insertObservation()
+    insertObservationRequestedSubstratum(observationId = observation2, substratumId = substratumId)
+    insertObservationRequestedSubstratum(observationId = observation2, substratumId = substratumB)
+    insertObservationPlot(
+        observationId = observation2,
+        monitoringPlotId = plotId,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+    insertObservationPlot(
+        observationId = observation2,
+        monitoringPlotId = plotB,
+        claimedBy = user.userId,
+        isPermanent = true,
+    )
+
+    clock.instant = Instant.ofEpochSecond(10)
+    observationStore.completePlot(
+        observation2,
+        plotId,
+        emptySet(),
+        "Notes",
+        observedTime.plusSeconds(10),
+        createPlantsRows(mapOf(speciesId to 9), RecordedPlantStatus.Live),
+    )
+
+    observationStore.abandonObservation(observation2)
+
+    assertTableEquals(
+        ObservedStratumSpeciesTotalsRecord(
+            observationId = observation2,
+            stratumId = stratumId,
+            stratumHistoryId = stratumHistoryId,
+            certaintyId = RecordedSpeciesCertainty.Known,
+            speciesId = speciesId,
+            speciesName = null,
+            totalLive = 9,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 25,
+            survivalRate = 83,
+        ),
+        message = "Stratum species totals for observation 2 uses data from observation 1",
+        where = OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observation2),
+    )
+
+    observationStore.updateMonitoringSpecies(
+        observationId,
+        plotB,
+        RecordedSpeciesCertainty.Known,
+        speciesId,
+        null,
+    ) { model ->
+      model.copy(totalLive = 6)
+    }
+
+    assertTableEquals(
+        ObservedStratumSpeciesTotalsRecord(
+            observationId = observation2,
+            stratumId = stratumId,
+            stratumHistoryId = stratumHistoryId,
+            certaintyId = RecordedSpeciesCertainty.Known,
+            speciesId = speciesId,
+            speciesName = null,
+            totalLive = 9,
+            totalDead = 0,
+            totalExisting = 0,
+            permanentLive = 15,
+            survivalRate = 50,
+        ),
+        message = "Stratum species totals for observation 2 after editing observation 1's B data",
+        where = OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observation2),
+    )
   }
 
   /**

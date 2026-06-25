@@ -43,6 +43,16 @@ interface ObservationSpeciesScope<ID : Any, HistoryId : Any> {
   val observedTotalsScopeHistoryField: TableField<*, HistoryId?>
   val observedTotalsTable: Table<out Record>
 
+  /**
+   * Whether this scope's live totals roll a not-currently-observed substratum forward from a prior
+   * observation. True for the stratum and site scopes, whose totals sum each substratum at its
+   * latest observation; the survival-rate denominator must roll the same T0 densities forward or
+   * the rate is inflated. False for the plot and substratum scopes, which use only the current
+   * observation's data.
+   */
+  val survivalRateDenominatorCarriesForward: Boolean
+    get() = false
+
   fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>): Condition
 
   fun tempStratumCondition(tempStratumTable: ObservationPlots): Condition
@@ -215,6 +225,8 @@ class ObservationSpeciesStratum(
 
   override val observedTotalsTable = OBSERVED_STRATUM_SPECIES_TOTALS
 
+  override val survivalRateDenominatorCarriesForward = true
+
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
 
@@ -292,6 +304,8 @@ class ObservationSpeciesSite(
       OBSERVED_SITE_SPECIES_TOTALS.PLANTING_SITE_HISTORY_ID
 
   override val observedTotalsTable = OBSERVED_SITE_SPECIES_TOTALS
+
+  override val survivalRateDenominatorCarriesForward = true
 
   override fun alternateCompletedCondition(plotField: TableField<*, MonitoringPlotId?>) =
       if (plotId == null) DSL.falseCondition() else plotField.eq(plotId)
