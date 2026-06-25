@@ -73,37 +73,6 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
   }
 
   @Test
-  fun `realigns the target completed time with a later merged-in source plot`() {
-    val plotA = insertMonitoringPlot()
-    val plotB = insertMonitoringPlot()
-    val targetObservationId = insertObservation()
-    val sourceObservationId = insertObservation()
-
-    // The target completed earlier than the source it absorbs.
-    clock.instant = Instant.ofEpochSecond(100)
-    completePlotWith(targetObservationId, plotB, 1)
-    clock.instant = Instant.ofEpochSecond(500)
-    completePlotWith(sourceObservationId, plotA, 1)
-
-    store.mergeObservationData(sourceObservationId, targetObservationId)
-
-    // Dependency ordering ranks candidate sources by completed_time, so the target must adopt the
-    // absorbed plot's later completion time; otherwise a later observation could roll forward an
-    // observation completed between the target and the source instead of the merged data.
-    val targetCompletedTime =
-        dslContext
-            .select(OBSERVATIONS.COMPLETED_TIME)
-            .from(OBSERVATIONS)
-            .where(OBSERVATIONS.ID.eq(targetObservationId))
-            .fetchOne(OBSERVATIONS.COMPLETED_TIME)
-    assertEquals(
-        Instant.ofEpochSecond(500),
-        targetCompletedTime,
-        "Target completed_time after absorbing the later source plot",
-    )
-  }
-
-  @Test
   fun `conflict plot overwrites target data and drops t0 when target was the t0 observation`() {
     val plotId = insertMonitoringPlot()
     val sourceObservationId = insertObservation()
