@@ -42,7 +42,7 @@ class LocalizedTextField<T : Any>(
   private val orderByFields = ConcurrentHashMap<Locale, Field<Int>>()
 
   override val supportedFilterTypes: Set<SearchFilterType>
-    get() = EnumSet.of(SearchFilterType.Exact, SearchFilterType.Fuzzy, SearchFilterType.PhraseMatch)
+    get() = EnumSet.of(SearchFilterType.Exact)
 
   override fun getCondition(fieldNode: FieldNode): Condition {
     val locale = currentLocale()
