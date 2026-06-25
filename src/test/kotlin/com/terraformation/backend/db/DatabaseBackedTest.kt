@@ -453,6 +453,7 @@ import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.TreeGrowthForm
 import com.terraformation.backend.db.tracking.keys.PLANTING_SITES_PKEY
 import com.terraformation.backend.db.tracking.tables.daos.DeliveriesDao
+import com.terraformation.backend.db.tracking.tables.daos.DependentSubstratumObservationDao
 import com.terraformation.backend.db.tracking.tables.daos.DraftPlantingSitesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.MonitoringPlotOverlapsDao
@@ -499,6 +500,7 @@ import com.terraformation.backend.db.tracking.tables.daos.SubstrataDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstratumHistoriesDao
 import com.terraformation.backend.db.tracking.tables.daos.SubstratumPopulationsDao
 import com.terraformation.backend.db.tracking.tables.pojos.DeliveriesRow
+import com.terraformation.backend.db.tracking.tables.pojos.DependentSubstratumObservationRow
 import com.terraformation.backend.db.tracking.tables.pojos.DraftPlantingSitesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotHistoriesRow
 import com.terraformation.backend.db.tracking.tables.pojos.MonitoringPlotOverlapsRow
@@ -711,6 +713,7 @@ abstract class DatabaseBackedTest {
   protected val deliverablesDao: DeliverablesDao by lazyDao()
   protected val deliverableVariablesDao: DeliverableVariablesDao by lazyDao()
   protected val deliveriesDao: DeliveriesDao by lazyDao()
+  protected val dependentSubstratumObservationDao: DependentSubstratumObservationDao by lazyDao()
   protected val deviceManagersDao: DeviceManagersDao by lazyDao()
   protected val devicesDao: DevicesDao by lazyDao()
   protected val deviceTemplatesDao: DeviceTemplatesDao by lazyDao()
@@ -3710,6 +3713,22 @@ abstract class DatabaseBackedTest {
   ) {
     observationRequestedSubstrataDao.insert(
         ObservationRequestedSubstrataRow(observationId, substratumId)
+    )
+  }
+
+  protected fun insertDependentSubstratumObservation(
+      observationId: ObservationId,
+      substratumHistoryId: SubstratumHistoryId,
+      dependsOnObservationId: ObservationId = observationId,
+      dependsOnSubstratumHistoryId: SubstratumHistoryId = substratumHistoryId,
+  ) {
+    dependentSubstratumObservationDao.insert(
+        DependentSubstratumObservationRow(
+            observationId = observationId,
+            substratumHistoryId = substratumHistoryId,
+            dependsOnObservationId = dependsOnObservationId,
+            dependsOnSubstratumHistoryId = dependsOnSubstratumHistoryId,
+        )
     )
   }
 

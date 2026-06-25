@@ -544,7 +544,14 @@ val ID_WRAPPERS =
                     listOf("monitoring_plot_histories\\.id", ".*\\.monitoring_plot_history_id"),
                 ),
                 IdWrapper("MonitoringPlotId", listOf("monitoring_plots\\.id", ".*\\..*_plot_id")),
-                IdWrapper("ObservationId", listOf("observations\\.id", ".*\\.observation_id")),
+                IdWrapper(
+                    "ObservationId",
+                    listOf(
+                        "observations\\.id",
+                        ".*\\.observation_id",
+                        ".*\\.depends_on_observation_id",
+                    ),
+                ),
                 IdWrapper(
                     "ObservationTypeId",
                     listOf("observation_types\\.id", ".*\\.observation_type_id"),
@@ -583,6 +590,7 @@ val ID_WRAPPERS =
                     listOf(
                         "substratum_histories\\.id",
                         ".*\\.substratum_history_id",
+                        ".*\\.depends_on_substratum_history_id",
                     ),
                 ),
                 IdWrapper(
