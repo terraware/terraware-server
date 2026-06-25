@@ -5852,16 +5852,15 @@ abstract class DatabaseBackedTest {
     return record.id!!.also { inserted.botanicalCountryIds.add(it) }
   }
 
-  private var nextEcoregionObjectId = 1
+  private var nextEcoregionId = 1L
 
   fun insertEcoregion(
       biomeName: String = "biome",
       biomeNumber: String = "1",
       boundary: Geometry = rectangle(1),
       ecoBiomeCode: String = "code",
-      ecoId: String = "id",
       ecoName: String = "ecoregion",
-      objectId: String = "${nextEcoregionObjectId++}",
+      id: Any = nextEcoregionId++,
       realm: String = "realm",
   ): EcoregionId {
     val record =
@@ -5870,9 +5869,8 @@ abstract class DatabaseBackedTest {
                 biomeNumber = biomeNumber,
                 boundary = boundary,
                 ecoBiomeCode = ecoBiomeCode,
-                ecoId = ecoId,
                 ecoName = ecoName,
-                objectId = objectId,
+                id = EcoregionId("$id"),
                 realm = realm,
             )
             .attach(dslContext)
