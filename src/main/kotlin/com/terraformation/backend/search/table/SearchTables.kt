@@ -39,6 +39,8 @@ class SearchTables(clock: Clock) {
   val documents = DocumentsTable(this)
   val documentTemplates = DocumentTemplatesTable(this)
   val draftPlantingSites = DraftPlantingSitesTable(this)
+  val ecoregions = EcoregionsTable(this)
+  val ecoregionCountries = EcoregionCountriesTable(this)
   val events = EventsTable(this)
   val facilities = FacilitiesTable(this)
   val facilityInventories = FacilityInventoriesTable(this)
