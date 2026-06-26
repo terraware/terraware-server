@@ -49,7 +49,7 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
     val userOrganizationIdField =
         organizationsPrefix.resolve("members.user.organizationMemberships.organization.id")
 
-    val fields = listOf(userIdField, userOrganizationIdField, roleField)
+    val fields = listOf(roleField, userIdField, userOrganizationIdField)
     val sortOrder = fields.map { SearchSortField(it) }
 
     val expected =
@@ -59,10 +59,10 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
                     "members" to
                         listOf(
                             mapOf(
-                                "roleName" to "Manager",
+                                "roleName" to "Admin",
                                 "user" to
                                     mapOf(
-                                        "id" to "${user.userId}",
+                                        "id" to "$bothOrgsUserId",
                                         "organizationMemberships" to
                                             listOf(
                                                 mapOf(
@@ -73,10 +73,10 @@ internal class SearchServiceUserSearchTest : SearchServiceTest() {
                                     ),
                             ),
                             mapOf(
-                                "roleName" to "Admin",
+                                "roleName" to "Manager",
                                 "user" to
                                     mapOf(
-                                        "id" to "$bothOrgsUserId",
+                                        "id" to "${user.userId}",
                                         "organizationMemberships" to
                                             listOf(
                                                 mapOf(
