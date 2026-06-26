@@ -1,3 +1,4 @@
+a0a2a4d5 Upgrade Node dependencies once a month (#4683)
 cf962f56 Upgrade to Gradle 9.6.1 (#4681)
 e3dda70a Update Node.js to v24.18.0 (#4674)
 fb74ac80 Fix flaky search test (#4678)
