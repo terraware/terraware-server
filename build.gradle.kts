@@ -194,27 +194,26 @@ tasks.register("downloadDependencies") {
 
 testing {
   suites {
-    val test by
-        getting(JvmTestSuite::class) {
-          useJUnitJupiter()
+    getByName<JvmTestSuite>("test") {
+      useJUnitJupiter()
 
-          targets {
-            all {
-              testTask.configure {
-                jvmArgs(
-                    "-Dfile.encoding=UTF-8",
-                    "-Djava.awt.headless=true",
-                    "-Duser.country=US",
-                    "-Xmx5120m",
-                    // For MockK, which needs to stub out final fields.
-                    "--enable-final-field-mutation=ALL-UNNAMED",
-                )
-                systemProperty("java.locale.providers", "SPI,CLDR")
-                testLogging { exceptionFormat = TestExceptionFormat.FULL }
-              }
-            }
+      targets {
+        all {
+          testTask.configure {
+            jvmArgs(
+                "-Dfile.encoding=UTF-8",
+                "-Djava.awt.headless=true",
+                "-Duser.country=US",
+                "-Xmx5120m",
+                // For MockK, which needs to stub out final fields.
+                "--enable-final-field-mutation=ALL-UNNAMED",
+            )
+            systemProperty("java.locale.providers", "SPI,CLDR")
+            testLogging { exceptionFormat = TestExceptionFormat.FULL }
           }
         }
+      }
+    }
   }
 }
 
@@ -330,7 +329,7 @@ tasks.getByName<BootJar>("bootJar") {
 }
 
 spotless {
-  val ktfmtVersion: String by project
+  val ktfmtVersion = providers.gradleProperty("ktfmtVersion").get()
   kotlin {
     ktfmt(ktfmtVersion)
     target("src/**/*.kt", "buildSrc/**/*.kt", "jooq/**/*.kt")
