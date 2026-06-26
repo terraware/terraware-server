@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Value
 @Named
 class PreScreenBoundarySubmissionFetcher(
     private val applicationStore: ApplicationStore,
-    @Value("68") // From deliverables spreadsheet
+    @param:Value("68") // From deliverables spreadsheet
     val boundaryDeliverableId: DeliverableId,
 ) {
   companion object {

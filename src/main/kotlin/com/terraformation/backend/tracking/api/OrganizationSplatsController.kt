@@ -20,7 +20,6 @@ import com.terraformation.backend.splat.api.GetObservationSplatInfoResponsePaylo
 import com.terraformation.backend.splat.api.SetSplatAnnotationsRequestPayload
 import io.swagger.v3.oas.annotations.Operation
 import jakarta.ws.rs.ServiceUnavailableException
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -35,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @CustomerEndpoint
 class OrganizationSplatsController(
-    @Autowired(required = false) private val splatServiceDependency: SplatService?,
+    private val splatServiceDependency: SplatService?,
 ) {
   private val splatService: SplatService
     get() =
