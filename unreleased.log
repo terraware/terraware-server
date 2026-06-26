@@ -1,3 +1,4 @@
+bb724025 SW-8590 Translate botanical country names (#4679)
 d2655bc0 Use MessageFormat in localized search text fields (#4682)
 a0a2a4d5 Upgrade Node dependencies once a month (#4683)
 cf962f56 Upgrade to Gradle 9.6.1 (#4681)
