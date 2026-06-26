@@ -904,15 +904,16 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
           assertEquals(
               100 * 2 / 10,
               obs1StratumRate,
-              "Observation 1 stratum survival rate is recomputed from the edited totals",
+              "Observation 1 stratum survival rate should be recomputed from the " +
+                  "edited totals",
           )
         },
         {
           assertEquals(
               sentinel,
               obs2StratumRate,
-              "Observation 2 stratum survival rate is untouched because it does not depend on " +
-                  "observation 1",
+              "Observation 2 stratum survival rate should not be affected because it " +
+                  "does not depend on observation 1",
           )
         },
     )

@@ -3760,9 +3760,8 @@ class ObservationStore(
   ): Field<BigDecimal> {
     val opPerm = OBSERVATION_PLOTS.`as`("opPerm")
     // Attribute each plot's T0 to its substratum's latest observation at or before this one,
-    // exactly
-    // as the live total does. A substratum observed in this observation resolves to the observation
-    // itself (a self-reference); one it did not observe resolves to the rolled-forward source.
+    // exactly as the live total does. A substratum observed in this observation resolves to the
+    // observation itself; one it did not observe resolves to the rolled-forward source.
     val plotObservationCondition =
         opPerm.IS_PERMANENT.isTrue.and(
             opPerm.OBSERVATION_ID.eq(
