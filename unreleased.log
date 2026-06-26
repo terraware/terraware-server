@@ -1,3 +1,5 @@
+168e9aee Fix "final field mutated reflectively" warnings (#4676)
+db2d8e37 Upgrade to ktfmt 0.64 (#4677)
 c66bcfd0 Update GBIF importer to work with recent zipfiles (#4675)
 367c1798 SW-8573 Add ecoregions to search API (#4672)
 b42ce9cc SW-8573 Make LocalizedTextField more flexible (#4671)
