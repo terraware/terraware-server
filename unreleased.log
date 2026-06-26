@@ -1,3 +1,4 @@
+fb74ac80 Fix flaky search test (#4678)
 168e9aee Fix "final field mutated reflectively" warnings (#4676)
 db2d8e37 Upgrade to ktfmt 0.64 (#4677)
 c66bcfd0 Update GBIF importer to work with recent zipfiles (#4675)
