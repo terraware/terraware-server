@@ -9,6 +9,9 @@ import com.terraformation.backend.accelerator.model.IndicatorProgressModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsModel
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.assertSetEquals
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.ProjectUpdatedEvent
+import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
@@ -35,7 +38,14 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
 
   private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val store by lazy { ProjectAcceleratorDetailsStore(clock, dslContext, eventPublisher) }
+  private val store by lazy {
+    ProjectAcceleratorDetailsStore(
+        clock,
+        dslContext,
+        eventPublisher,
+        ParentStore(dslContext),
+    )
+  }
 
   @BeforeEach
   fun setUp() {
@@ -731,6 +741,39 @@ class ProjectAcceleratorDetailsStoreTest : DatabaseTest(), RunsAsUser {
               googleFolderUrl = URI("https://drive.google.com/test"),
           )
       )
+    }
+
+    @Test
+    fun `publishes ProjectUpdatedEvent if country code is updated`() {
+      val projectId = insertProject(countryCode = "KE")
+      insertProjectAcceleratorDetails(projectId = projectId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(projectId = projectId, countryCode = "KE")
+
+      store.update(projectId, existingValues) { it.copy(countryCode = "JP") }
+
+      eventPublisher.assertEventPublished(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(countryCode = "KE"),
+              changedTo = ProjectUpdatedEventValues(countryCode = "JP"),
+              organizationId = inserted.organizationId,
+              projectId = projectId,
+          )
+      )
+    }
+
+    @Test
+    fun `does not publish ProjectUpdatedEvent if country code is unchanged`() {
+      val projectId = insertProject(countryCode = "KE")
+      insertProjectAcceleratorDetails(projectId = projectId)
+
+      val existingValues =
+          ProjectAcceleratorVariableValuesModel(projectId = projectId, countryCode = "KE")
+
+      store.update(projectId, existingValues) { it.copy(dealDescription = "new description") }
+
+      eventPublisher.assertEventNotPublished<ProjectUpdatedEvent>()
     }
   }
 }

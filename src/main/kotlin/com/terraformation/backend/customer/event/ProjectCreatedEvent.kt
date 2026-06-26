@@ -5,6 +5,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 
 data class ProjectCreatedEventV1(
+    val countryCode: String?,
     val name: String,
     override val organizationId: OrganizationId,
     override val projectId: ProjectId,

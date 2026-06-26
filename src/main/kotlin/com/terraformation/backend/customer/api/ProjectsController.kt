@@ -75,6 +75,7 @@ class ProjectsController(
     val projectId =
         projectStore.create(
             NewProjectModel(
+                countryCode = payload.countryCode,
                 description = payload.description,
                 id = null,
                 name = payload.name,
@@ -154,6 +155,7 @@ class ProjectsController(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ProjectPayload(
+    val countryCode: String?,
     val createdBy: UserId?,
     val createdTime: Instant?,
     val description: String?,
@@ -167,6 +169,7 @@ data class ProjectPayload(
   constructor(
       model: ExistingProjectModel
   ) : this(
+      countryCode = model.countryCode,
       createdBy = model.createdBy,
       createdTime = model.createdTime,
       description = model.description,
@@ -196,6 +199,7 @@ data class InternalUserPayload(
 data class UpdateProjectInternalUserRequestPayload(val internalUsers: List<InternalUserPayload>)
 
 data class CreateProjectRequestPayload(
+    val countryCode: String?,
     val description: String?,
     val name: String,
     val organizationId: OrganizationId,
@@ -204,10 +208,12 @@ data class CreateProjectRequestPayload(
 data class CreateProjectResponsePayload(val id: ProjectId) : SuccessResponsePayload
 
 data class UpdateProjectRequestPayload(
+    val countryCode: String?,
     val description: String?,
     val name: String,
 ) {
-  fun applyTo(model: ExistingProjectModel) = model.copy(description = description, name = name)
+  fun applyTo(model: ExistingProjectModel) =
+      model.copy(countryCode = countryCode, description = description, name = name)
 }
 
 data class GetProjectResponsePayload(val project: ProjectPayload) : SuccessResponsePayload

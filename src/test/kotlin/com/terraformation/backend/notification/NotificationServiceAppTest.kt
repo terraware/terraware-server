@@ -304,7 +304,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
                 ),
                 SystemUser(usersDao),
             ),
-            ProjectAcceleratorDetailsStore(clock, dslContext, publisher),
+            ProjectAcceleratorDetailsStore(clock, dslContext, publisher, ParentStore(dslContext)),
         )
 
     webAppUrls = WebAppUrls(config, dummyKeycloakInfo())

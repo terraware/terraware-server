@@ -7,6 +7,9 @@ import com.terraformation.backend.accelerator.model.ProjectAcceleratorDetailsMod
 import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableValuesModel
 import com.terraformation.backend.accelerator.model.TRACKED_ACCUMULATED_INDICATORS
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.ProjectUpdatedEvent
+import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.ProjectNotFoundException
 import com.terraformation.backend.db.accelerator.AutoCalculatedIndicator
@@ -32,6 +35,7 @@ class ProjectAcceleratorDetailsStore(
     private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
+    private val parentStore: ParentStore,
 ) {
   /**
    * Returns the accelerator details for a project. If the project doesn't have any details yet,
@@ -180,6 +184,19 @@ class ProjectAcceleratorDetailsStore(
 
       if (existing.phase != updated.phase) {
         eventPublisher.publishEvent(ProjectPhaseUpdatedEvent(projectId, updated.phase))
+      }
+
+      if (existing.countryCode != updated.countryCode) {
+        eventPublisher.publishEvent(
+            ProjectUpdatedEvent(
+                changedFrom = ProjectUpdatedEventValues(countryCode = existing.countryCode),
+                changedTo = ProjectUpdatedEventValues(countryCode = updated.countryCode),
+                organizationId =
+                    parentStore.getOrganizationId(projectId)
+                        ?: throw ProjectNotFoundException(projectId),
+                projectId = projectId,
+            )
+        )
       }
 
       if (existing.landUseModelTypes != updated.landUseModelTypes) {

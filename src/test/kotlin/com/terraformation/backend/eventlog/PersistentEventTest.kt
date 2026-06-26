@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -112,22 +113,29 @@ class PersistentEventTest {
 
   @ParameterizedTest
   @MethodSource("getFieldsUpdatedEventClasses")
-  fun `fields-updated events have localizable names for all their fields`(kClass: KClass<*>) {
+  fun `fields-updated events have localizable names for all their fields`(
+      kClasses: List<KClass<*>>
+  ) {
     val subjectName =
-        EventSubjectName.entries.firstOrNull { kClass.isSubclassOf(it.eventInterface) }
+        EventSubjectName.entries.firstOrNull { kClasses.first().isSubclassOf(it.eventInterface) }
     assumeNotNull(subjectName)
 
-    val valuesClass =
-        kClass.memberProperties.firstOrNull { it.name == "changedFrom" }?.returnType?.jvmErasure
-    assumeNotNull(valuesClass)
+    val valuesClasses = kClasses.mapNotNull { kClass ->
+      kClass.memberProperties.firstOrNull { it.name == "changedFrom" }?.returnType?.jvmErasure
+    }
+    assumeTrue(valuesClasses.isNotEmpty())
 
     val stringKeyPrefix = "eventSubject.${subjectName!!.name}.field"
+
     val expected =
-        valuesClass!!
-            .memberProperties
-            .map { "$stringKeyPrefix.${it.name}" }
+        valuesClasses
+            .flatMap { valuesClass ->
+              valuesClass.memberProperties.map { "$stringKeyPrefix.${it.name}" }
+            }
             .sorted()
+            .distinct()
             .joinToString("\n") { "$it=" }
+
     val actual =
         eventSubjectFieldNames
             .filter { it.startsWith(stringKeyPrefix) }
@@ -190,9 +198,19 @@ class PersistentEventTest {
       eventClasses.filter { it.isSubclassOf(UpgradableEvent::class) }
     }
 
+    /**
+     * Returns a list of lists of "fields updated" event classes. Each child list contains all the
+     * event classes for a particular subject type.
+     */
     @JvmStatic
-    val fieldsUpdatedEventClasses: List<KClass<out PersistentEvent>> by lazy {
-      eventClasses.filter { it.isSubclassOf(FieldsUpdatedPersistentEvent::class) }
+    val fieldsUpdatedEventClasses: List<List<KClass<out PersistentEvent>>> by lazy {
+      eventClasses
+          .filter { it.isSubclassOf(FieldsUpdatedPersistentEvent::class) }
+          .groupBy { kClass ->
+            EventSubjectName.entries.firstOrNull { kClass.isSubclassOf(it.eventInterface) }
+          }
+          .values
+          .toList()
     }
 
     @Suppress("JAVA_CLASS_ON_COMPANION")

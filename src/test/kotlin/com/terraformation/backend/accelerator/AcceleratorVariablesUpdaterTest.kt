@@ -8,6 +8,9 @@ import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdat
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.model.ExistingApplicationModel
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.ProjectUpdatedEvent
+import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -27,6 +30,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -78,10 +82,11 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
 
   private val updater: AcceleratorVariablesUpdater by lazy {
     AcceleratorVariablesUpdater(
-        SystemUser(usersDao),
-        applicationStore,
         acceleratorProjectVariableValuesService,
+        applicationStore,
         dslContext,
+        ParentStore(dslContext),
+        SystemUser(usersDao),
         variableStore,
     )
   }
@@ -201,6 +206,96 @@ class AcceleratorVariablesUpdaterTest : DatabaseTest(), RunsAsUser {
       assertEquals(
           "XXX",
           acceleratorProjectVariableValuesService.fetchValues(projectId).dealName,
+      )
+    }
+  }
+
+  @Nested
+  inner class ProjectUpdatedEventListener {
+    @Test
+    fun `syncs country variable for an accelerator project`() {
+      insertProjectAcceleratorDetails(projectId = projectId)
+
+      updater.on(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(countryCode = null),
+              changedTo = ProjectUpdatedEventValues(countryCode = "BR"),
+              organizationId = organizationId,
+              projectId = projectId,
+          )
+      )
+
+      assertEquals(
+          "BR",
+          acceleratorProjectVariableValuesService.fetchValues(projectId).countryCode,
+      )
+    }
+
+    @Test
+    fun `does not sync for a non-accelerator project`() {
+      updater.on(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(countryCode = null),
+              changedTo = ProjectUpdatedEventValues(countryCode = "BR"),
+              organizationId = organizationId,
+              projectId = projectId,
+          )
+      )
+
+      assertNull(acceleratorProjectVariableValuesService.fetchValues(projectId).countryCode)
+    }
+
+    @Test
+    fun `does nothing when country did not change`() {
+      insertProjectAcceleratorDetails(projectId = projectId)
+
+      updater.on(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(countryCode = null, description = "old"),
+              changedTo = ProjectUpdatedEventValues(countryCode = null, description = "new"),
+              organizationId = organizationId,
+              projectId = projectId,
+          )
+      )
+
+      assertNull(acceleratorProjectVariableValuesService.fetchValues(projectId).countryCode)
+    }
+
+    @Test
+    fun `clears country variable when country is cleared`() {
+      insertProjectAcceleratorDetails(projectId = projectId)
+      insertSelectValue(countryVariableId, optionIds = setOf(brazilOptionId))
+
+      updater.on(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(countryCode = "BR"),
+              changedTo = ProjectUpdatedEventValues(countryCode = null),
+              organizationId = organizationId,
+              projectId = projectId,
+          )
+      )
+
+      assertNull(acceleratorProjectVariableValuesService.fetchValues(projectId).countryCode)
+    }
+
+    @Test
+    fun `does not write when country variable already matches`() {
+      insertProjectAcceleratorDetails(projectId = projectId)
+      insertSelectValue(countryVariableId, optionIds = setOf(brazilOptionId))
+
+      updater.on(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(countryCode = null),
+              changedTo = ProjectUpdatedEventValues(countryCode = "BR"),
+              organizationId = organizationId,
+              projectId = projectId,
+          )
+      )
+
+      eventPublisher.assertEventNotPublished<VariableValueUpdatedEvent>()
+      assertEquals(
+          "BR",
+          acceleratorProjectVariableValuesService.fetchValues(projectId).countryCode,
       )
     }
   }

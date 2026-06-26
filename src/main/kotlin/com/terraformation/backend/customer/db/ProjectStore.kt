@@ -8,6 +8,8 @@ import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEventValues
+import com.terraformation.backend.customer.event.ProjectUpdatedEvent
+import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
@@ -25,6 +27,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternal
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
+import com.terraformation.backend.util.nullIfEquals
 import jakarta.inject.Named
 import java.time.InstantSource
 import org.jooq.DSLContext
@@ -72,6 +75,7 @@ class ProjectStore(
 
     val row =
         ProjectsRow(
+            countryCode = model.countryCode,
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
             description = model.description,
@@ -91,6 +95,7 @@ class ProjectStore(
 
     eventPublisher.publishEvent(
         ProjectCreatedEvent(
+            countryCode = model.countryCode,
             name = model.name,
             organizationId = model.organizationId,
             projectId = projectId,
@@ -127,6 +132,7 @@ class ProjectStore(
       try {
         dslContext
             .update(PROJECTS)
+            .set(PROJECTS.COUNTRY_CODE, updated.countryCode)
             .set(PROJECTS.DESCRIPTION, updated.description)
             .set(PROJECTS.MODIFIED_BY, currentUser().userId)
             .set(PROJECTS.MODIFIED_TIME, clock.instant())
@@ -142,6 +148,27 @@ class ProjectStore(
             ProjectRenamedEvent(
                 changedFrom = ProjectRenamedEventValues(name = existing.name),
                 changedTo = ProjectRenamedEventValues(name = updated.name),
+                organizationId = existing.organizationId,
+                projectId = projectId,
+            )
+        )
+      }
+
+      if (
+          existing.countryCode != updated.countryCode || existing.description != updated.description
+      ) {
+        eventPublisher.publishEvent(
+            ProjectUpdatedEvent(
+                changedFrom =
+                    ProjectUpdatedEventValues(
+                        countryCode = existing.countryCode.nullIfEquals(updated.countryCode),
+                        description = existing.description.nullIfEquals(updated.description),
+                    ),
+                changedTo =
+                    ProjectUpdatedEventValues(
+                        countryCode = updated.countryCode.nullIfEquals(existing.countryCode),
+                        description = updated.description.nullIfEquals(existing.description),
+                    ),
                 organizationId = existing.organizationId,
                 projectId = projectId,
             )
