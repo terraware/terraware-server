@@ -82,3 +82,12 @@ For deployment or if you're running terraware-server with a Docker image, you'll
 - `TERRAWARE_DROPBOX_ENABLED` (set this to `true`)
 - `TERRAWARE_DROPBOX_REFRESHTOKEN`
 
+## Local document storage (test/dev)
+
+To avoid talking to the real Dropbox or Google Drive APIs, deliverable documents can be stored through the server's local file store instead:
+
+- `terraware.dropbox.use-local-store=true` routes sensitive (Dropbox) documents to the local file store.
+- `terraware.google-drive.use-local-store=true` routes non-sensitive (Google Drive) documents to the local file store.
+
+These are intended for development and automated tests. The documents are still recorded with their normal `DocumentStore` (Google or Dropbox); only the storage backend changes.
+

@@ -41,37 +41,34 @@
 <g id="node20" class="node">
 <title>ecoregions</title>
 <g id="a_node20"><a xlink:href="../../tables/ecoregions.html" xlink:title="ecoregions" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="310,-287 310,-389 427,-389 427,-287 310,-287"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="310.5,-367 310.5,-389 427.5,-389 427.5,-367 310.5,-367"/>
-<polygon fill="none" stroke="black" points="310.5,-367 310.5,-389 427.5,-389 427.5,-367 310.5,-367"/>
-<text text-anchor="start" x="315" y="-376.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">ecoregions</text>
-<text text-anchor="start" x="388.5" y="-375.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="310.5,-345 310.5,-367 427.5,-367 427.5,-345 310.5,-345"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="315.5" y="-362"/>
-<text text-anchor="start" x="330.5" y="-353.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="#ffffff" stroke="transparent" points="310.5,-323 310.5,-345 427.5,-345 427.5,-323 310.5,-323"/>
-<polygon fill="none" stroke="black" points="310.5,-323 310.5,-345 427.5,-345 427.5,-323 310.5,-323"/>
-<text text-anchor="start" x="330.5" y="-331.2" font-family="Helvetica,sans-Serif" font-size="11.00">object_id</text>
-<polygon fill="none" stroke="black" points="310.5,-305 310.5,-323 427.5,-323 427.5,-305 310.5,-305"/>
-<text text-anchor="start" x="313.5" y="-311.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="310.5,-287 310.5,-305 357.5,-305 357.5,-287 310.5,-287"/>
-<polygon fill="none" stroke="black" points="310.5,-287 310.5,-305 357.5,-305 357.5,-287 310.5,-287"/>
-<text text-anchor="start" x="313.5" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="357.5,-287 357.5,-305 387.5,-305 387.5,-287 357.5,-287"/>
-<polygon fill="none" stroke="black" points="357.5,-287 357.5,-305 387.5,-305 387.5,-287 357.5,-287"/>
-<text text-anchor="start" x="377.5" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="387.5,-287 387.5,-305 427.5,-305 427.5,-287 387.5,-287"/>
-<polygon fill="none" stroke="black" points="387.5,-287 387.5,-305 427.5,-305 427.5,-287 387.5,-287"/>
-<text text-anchor="start" x="408.5" y="-293.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="310,-298 310,-378 427,-378 427,-298 310,-298"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="310.5,-356 310.5,-378 427.5,-378 427.5,-356 310.5,-356"/>
+<polygon fill="none" stroke="black" points="310.5,-356 310.5,-378 427.5,-378 427.5,-356 310.5,-356"/>
+<text text-anchor="start" x="315" y="-365.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">ecoregions</text>
+<text text-anchor="start" x="388.5" y="-364.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="310.5,-334 310.5,-356 427.5,-356 427.5,-334 310.5,-334"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="315.5" y="-351"/>
+<text text-anchor="start" x="330.5" y="-342.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="310.5,-316 310.5,-334 427.5,-334 427.5,-316 310.5,-316"/>
+<text text-anchor="start" x="313.5" y="-322.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="310.5,-298 310.5,-316 357.5,-316 357.5,-298 310.5,-298"/>
+<polygon fill="none" stroke="black" points="310.5,-298 310.5,-316 357.5,-316 357.5,-298 310.5,-298"/>
+<text text-anchor="start" x="313.5" y="-304.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="357.5,-298 357.5,-316 387.5,-316 387.5,-298 357.5,-298"/>
+<polygon fill="none" stroke="black" points="357.5,-298 357.5,-316 387.5,-316 387.5,-298 357.5,-298"/>
+<text text-anchor="start" x="377.5" y="-304.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="387.5,-298 387.5,-316 427.5,-316 427.5,-298 387.5,-298"/>
+<polygon fill="none" stroke="black" points="387.5,-298 387.5,-316 427.5,-316 427.5,-298 387.5,-298"/>
+<text text-anchor="start" x="408.5" y="-304.2" font-family="Helvetica,sans-Serif" font-size="11.00">2 &gt;</text>
 </a>
 </g>
 </g>
 <!-- ecoregion_countries&#45;&gt;ecoregions -->
 <g id="edge7" class="edge">
 <title>ecoregion_countries:w&#45;&gt;ecoregions:e</title>
-<path fill="none" stroke="black" d="M599.7,-357.98C529,-357.76 506,-356 428.5,-356"/>
-<polygon fill="black" stroke="black" points="606.5,-357.99 614.49,-361.6 610.5,-357.99 614.5,-358 614.5,-358 614.5,-358 610.5,-357.99 614.51,-354.4 606.5,-357.99 606.5,-357.99"/>
-<ellipse fill="none" stroke="black" cx="603.3" cy="-357.98" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M599.67,-357.85C528.85,-356.43 506.19,-345 428.5,-345"/>
+<polygon fill="black" stroke="black" points="606.5,-357.92 614.46,-361.6 610.5,-357.96 614.5,-358 614.5,-358 614.5,-358 610.5,-357.96 614.54,-354.4 606.5,-357.92 606.5,-357.92"/>
+<ellipse fill="none" stroke="black" cx="603.3" cy="-357.89" rx="3.2" ry="3.2"/>
 </g>
 <!-- wcvp_taxa -->
 <g id="node2" class="node">
@@ -680,9 +677,9 @@
 <!-- ecoregion_botanical_countries&#45;&gt;ecoregions -->
 <g id="edge6" class="edge">
 <title>ecoregion_botanical_countries:w&#45;&gt;ecoregions:e</title>
-<path fill="none" stroke="black" d="M569.97,-254.16C502.32,-265.47 506.39,-356 428.5,-356"/>
-<polygon fill="black" stroke="black" points="576.53,-253.63 584.79,-256.59 580.51,-253.32 584.5,-253 584.5,-253 584.5,-253 580.51,-253.32 584.21,-249.41 576.53,-253.63 576.53,-253.63"/>
-<ellipse fill="none" stroke="black" cx="573.34" cy="-253.89" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M569.96,-254.1C504.3,-264.48 503.8,-345 428.5,-345"/>
+<polygon fill="black" stroke="black" points="576.52,-253.6 584.77,-256.59 580.51,-253.3 584.5,-253 584.5,-253 584.5,-253 580.51,-253.3 584.23,-249.41 576.52,-253.6 576.52,-253.6"/>
+<ellipse fill="none" stroke="black" cx="573.33" cy="-253.84" rx="3.2" ry="3.2"/>
 </g>
 <!-- botanical_countries -->
 <g id="node22" class="node">
