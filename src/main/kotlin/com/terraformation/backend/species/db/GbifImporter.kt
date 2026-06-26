@@ -80,7 +80,11 @@ class GbifImporter(
      */
     private val SEARCHABLE_TAXON_RANKS = setOf("species", "subspecies", "variety", "form")
 
-    /** All the tables affected by the import process. Existing data is deleted before importing. */
+    /**
+     * All the tables affected by the import process. The order is important here: it needs to start
+     * at the leaf nodes of the tree of foreign key relationships (that is, child tables first)
+     * since the bulk delete at the start of the import is done in the order listed here.
+     */
     private val GBIF_TABLES =
         listOf(
             GBIF_NAME_WORDS,
@@ -140,8 +144,10 @@ class GbifImporter(
   private fun deleteAll() {
     log.info("Deleting existing GBIF data")
 
-    // Need to truncate all tables at once because they share foreign key relationships.
-    dslContext.truncate(GBIF_TABLES).execute()
+    GBIF_TABLES.forEach { table ->
+      log.debug("Deleting from ${table.name}")
+      dslContext.deleteFrom(table).execute()
+    }
   }
 
   /**
