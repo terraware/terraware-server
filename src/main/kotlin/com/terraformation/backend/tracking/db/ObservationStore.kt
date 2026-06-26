@@ -2169,7 +2169,7 @@ class ObservationStore(
         .where(recalculationCondition)
         .execute()
 
-    // Standard deviation and area are stored only for scopes that aggregate plots depends on the
+    // Standard deviation and area are stored only for scopes that aggregate plots depend on the
     // just computed survival rates.
     if (survivalRateStdDevField != null && survivalRateAreaField != null) {
       dslContext

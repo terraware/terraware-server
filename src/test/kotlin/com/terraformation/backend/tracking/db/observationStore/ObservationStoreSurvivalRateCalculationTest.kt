@@ -1898,7 +1898,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     assertEquals(
         observationId,
         bDependency.dependsOnObservationId,
-        "B rolls forward to observation 1",
+        "B should roll forward to observation 1",
     )
 
     // An abandoned observation is treated like a completed one (its not-observed plot is ignored),
@@ -1911,7 +1911,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     assertEquals(
         83,
         stratumResult.survivalRate,
-        "Abandoned observation rolls B's survival rate forward",
+        "Abandoned observation should roll B's survival rate forward",
     )
     assertNotNull(stratumResult.plantDensity, "Abandoned observation rolls B's density forward")
     // The survival-rate std dev must weigh both A's observed plot and B's rolled-forward plot; with
@@ -1919,7 +1919,7 @@ class ObservationStoreSurvivalRateCalculationTest : ObservationScenarioTest() {
     assertEquals(
         5,
         stratumResult.survivalRateStdDev,
-        "Abandoned observation rolls B's plot into the survival-rate std dev",
+        "Abandoned observation should roll B's plot into the survival-rate std dev",
     )
   }
 
