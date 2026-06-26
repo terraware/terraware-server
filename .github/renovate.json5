@@ -27,9 +27,13 @@
         {
             description: 'Group Node dependencies',
             matchFileNames: [
+                '.nvmrc',
                 'package.json',
             ],
             groupName: 'Node dependencies',
+            schedule: [
+                'on the first day of the month',
+            ],
         },
         {
             description: 'Group Python dependencies',
