@@ -136,15 +136,13 @@ class KeycloakAdminClientImpl(
   /** Sends a request and retrieves its response as a JAX-RS [Response] with a string entity. */
   private fun WebClient.RequestHeadersSpec<*>.retrieveStringResponse(): Response {
     return exchangeToMono { response ->
-          response
-              .bodyToMono<String>()
-              .flatMap { responseBody ->
-                Mono.just(
-                    Response.status(response.statusCode().value()).entity(responseBody).build()
-                )
-              }
-              .defaultIfEmpty(Response.status(response.statusCode().value()).build())
-        }
+      response
+          .bodyToMono<String>()
+          .flatMap { responseBody ->
+            Mono.just(Response.status(response.statusCode().value()).entity(responseBody).build())
+          }
+          .defaultIfEmpty(Response.status(response.statusCode().value()).build())
+    }
         .block()!!
   }
 

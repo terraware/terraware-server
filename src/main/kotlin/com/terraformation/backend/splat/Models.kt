@@ -149,8 +149,10 @@ fun List<CoordinateModel>?.toMultiPointField(): Field<Geometry?> =
           indices.joinToString(", ") { i ->
             "ST_MakePoint({${i * 3}}, {${i * 3 + 1}}, {${i * 3 + 2}})"
           }
-      val bindings =
-          flatMap { c -> listOf(DSL.value(c.x), DSL.value(c.y), DSL.value(c.z)) }.toTypedArray()
+      val bindings = flatMap { c ->
+        listOf(DSL.value(c.x), DSL.value(c.y), DSL.value(c.z))
+      }
+          .toTypedArray()
       DSL.field(
           "ST_Collect(ARRAY[$pointPlaceholders])",
           SQLDataType.GEOMETRY,
