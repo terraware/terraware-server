@@ -103,7 +103,10 @@ class GbifImporter(
 
   fun import(zipFile: ZipFile) {
     import { fileName ->
-      val entry = zipFile.getEntry("backbone/$fileName") ?: throw FileNotFoundException(fileName)
+      val entry =
+          zipFile.getEntry(fileName)
+              ?: zipFile.getEntry("backbone/$fileName")
+              ?: throw FileNotFoundException(fileName)
       zipFile.getInputStream(entry)
     }
   }
