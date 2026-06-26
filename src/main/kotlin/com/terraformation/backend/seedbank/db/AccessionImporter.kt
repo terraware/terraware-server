@@ -34,7 +34,6 @@ import java.io.InputStream
 import java.text.NumberFormat
 import java.time.Clock
 import java.time.LocalDate
-import java.time.ZoneOffset
 import java.util.Locale
 import java.util.ResourceBundle
 import java.util.concurrent.ConcurrentHashMap
@@ -46,6 +45,7 @@ import org.springframework.context.annotation.Lazy
 @Named
 class AccessionImporter(
     private val accessionStore: AccessionStore,
+    private val accessionHelper: AccessionHelper,
     dslContext: DSLContext,
     private val facilityStore: FacilityStore,
     fileStore: FileStore,
@@ -205,7 +205,10 @@ class AccessionImporter(
               collectionSiteCountrySubdivision = collectionCountrySubdivision,
               collectionSiteLandowner = collectionLandowner,
               collectedDate = collectionDate,
-              collectedTime = collectionDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
+              collectedTime =
+                  collectionDate
+                      .atStartOfDay(accessionHelper.collectionTimeZone(facilityId))
+                      .toInstant(),
               collectionSiteName = collectionSiteName,
               collectionSiteNotes = collectionSiteDescription,
               collectors = collectorName?.let { listOf(it) } ?: emptyList(),
@@ -224,7 +227,10 @@ class AccessionImporter(
               accessionNumber = accessionNumber,
               clock = clock,
               collectedDate = collectionDate,
-              collectedTime = collectionDate.atStartOfDay(ZoneOffset.UTC).toInstant(),
+              collectedTime =
+                  collectionDate
+                      .atStartOfDay(accessionHelper.collectionTimeZone(facilityId))
+                      .toInstant(),
               collectionSiteCity = collectionCity,
               collectionSiteCountryCode = collectionCountryCode,
               collectionSiteCountrySubdivision = collectionCountrySubdivision,

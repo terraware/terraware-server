@@ -313,4 +313,50 @@ internal class AccessionStoreCreateTest : AccessionStoreTest() {
 
     assertEquals(date, accessionsDao.fetchOneById(accessionId)?.collectedDate)
   }
+
+  @Test
+  fun `create derives collectedTime from collectedDate using user timezone`() {
+    // Midnight on Jan 15 in America/New_York (UTC-5) = 05:00 UTC
+    val date = LocalDate.of(2024, 1, 15)
+    val userId = insertUser(timeZone = ZoneId.of("America/New_York"))
+    insertOrganizationUser(userId = userId, role = Role.Admin)
+    switchToUser(userId)
+
+    val accessionId = store.create(accessionModel().copy(collectedDate = date)).id!!
+
+    assertEquals(
+        Instant.parse("2024-01-15T05:00:00Z"),
+        accessionsDao.fetchOneById(accessionId)?.collectedTime,
+    )
+  }
+
+  @Test
+  fun `create derives collectedTime from collectedDate using org timezone when user has none`() {
+    // Midnight on Jan 15 in America/New_York (UTC-5) = 05:00 UTC
+    val date = LocalDate.of(2024, 1, 15)
+    val orgId = insertOrganization(timeZone = ZoneId.of("America/New_York"))
+    val facId = insertFacility(organizationId = orgId)
+    insertOrganizationUser(organizationId = orgId, role = Role.Admin)
+
+    val accessionId =
+        store.create(accessionModel(facilityId = facId).copy(collectedDate = date)).id!!
+
+    assertEquals(
+        Instant.parse("2024-01-15T05:00:00Z"),
+        accessionsDao.fetchOneById(accessionId)?.collectedTime,
+    )
+  }
+
+  @Test
+  fun `create derives collectedTime from collectedDate using UTC when no timezone is configured`() {
+    // Midnight on Jan 15 in UTC = 00:00 UTC
+    val date = LocalDate.of(2024, 1, 15)
+
+    val accessionId = store.create(accessionModel().copy(collectedDate = date)).id!!
+
+    assertEquals(
+        Instant.parse("2024-01-15T00:00:00Z"),
+        accessionsDao.fetchOneById(accessionId)?.collectedTime,
+    )
+  }
 }

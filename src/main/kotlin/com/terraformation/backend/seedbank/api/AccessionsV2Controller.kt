@@ -29,7 +29,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -116,10 +115,6 @@ class AccessionsV2Controller(
     return GetAccessionResponsePayloadV2(AccessionPayloadV2(accession))
   }
 }
-
-// For backwards compatibility, use a fallback of collectedDate at midnight
-private fun resolveCollectedTime(collectedDate: LocalDate?, collectedTime: Instant?): Instant? =
-    collectedTime ?: collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant()
 
 /**
  * Supported accession states. This is a subset of the values in [AccessionState], minus obsolete
@@ -361,7 +356,7 @@ data class CreateAccessionRequestPayloadV2(
         bagNumbers = bagNumbers.orEmpty(),
         clock = clock,
         collectedDate = collectedDate,
-        collectedTime = resolveCollectedTime(collectedDate, collectedTime),
+        collectedTime = collectedTime,
         collectionSiteCity = collectionSiteCity,
         collectionSiteCountryCode = collectionSiteCountryCode,
         collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
@@ -433,7 +428,7 @@ data class UpdateAccessionRequestPayloadV2(
       model.copy(
           bagNumbers = bagNumbers.orEmpty(),
           collectedDate = collectedDate,
-          collectedTime = resolveCollectedTime(collectedDate, collectedTime),
+          collectedTime = collectedTime,
           collectionSiteCity = collectionSiteCity,
           collectionSiteCountryCode = collectionSiteCountryCode,
           collectionSiteCountrySubdivision = collectionSiteCountrySubdivision,
