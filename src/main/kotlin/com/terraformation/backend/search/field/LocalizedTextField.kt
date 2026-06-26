@@ -6,6 +6,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.util.removeDiacritics
 import java.text.Collator
+import java.text.MessageFormat
 import java.util.EnumSet
 import java.util.Locale
 import java.util.ResourceBundle
@@ -106,7 +107,7 @@ class LocalizedTextField<T : Any>(
     val stringsForLocale =
         localizedStringsByFieldValue.getOrPut(locale) {
           val bundle = ResourceBundle.getBundle(resourceBundleName, locale)
-          bundle.keySet().associateWith { bundle.getString(it) }
+          bundle.keySet().associateWith { MessageFormat.format(bundle.getString(it)) }
         }
 
     return stringsForLocale[stringKey(databaseValue)]
@@ -123,7 +124,8 @@ class LocalizedTextField<T : Any>(
               .filter { key -> prefix == null || key.startsWith(prefix) }
               .associate { key ->
                 val fieldValue = prefix?.let { key.substringAfter(prefix) } ?: key
-                val localizedText = bundle.getString(key).lowercase(locale).removeDiacritics()
+                val localizedText =
+                    MessageFormat.format(bundle.getString(key)).lowercase(locale).removeDiacritics()
                 localizedText to fieldValue
               }
 
