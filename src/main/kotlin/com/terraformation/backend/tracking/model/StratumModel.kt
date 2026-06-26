@@ -125,10 +125,10 @@ data class StratumModel<
     return substrata
         .sortedWith(
             compareBy { substratum: SubstratumModel<SSID> ->
-                  substratum.monitoringPlots.count { plot ->
-                    plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
-                  }
-                }
+              substratum.monitoringPlots.count { plot ->
+                plot.permanentIndex != null && plot.permanentIndex <= numPermanentPlots
+              }
+            }
                 .thenBy { if (it.id != null && it.id in requestedSubstratumIds) 0 else 1 }
                 .thenBy { it.id?.value ?: 0L }
         )

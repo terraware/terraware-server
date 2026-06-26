@@ -17,19 +17,18 @@ class SearchFieldMetadataTest {
   fun `all search fields have English descriptions`() {
     // Generate a string with one line per missing field, suitable for copy-pasting into
     // Messages_en.properties.
-    val missingFields =
-        mapAllSearchFields { table, field ->
-              try {
-                // This will throw an exception if there is no entry in the strings table
-                // for the field.
-                messages.searchFieldDisplayName(table.name, field.fieldName)
-                null
-              } catch (e: Exception) {
-                "search.${table.name}.${field.fieldName}="
-              }
-            }
-            .sorted()
-            .joinToString("\n", "\n", "\n")
+    val missingFields = mapAllSearchFields { table, field ->
+      try {
+        // This will throw an exception if there is no entry in the strings table
+        // for the field.
+        messages.searchFieldDisplayName(table.name, field.fieldName)
+        null
+      } catch (e: Exception) {
+        "search.${table.name}.${field.fieldName}="
+      }
+    }
+        .sorted()
+        .joinToString("\n", "\n", "\n")
 
     assertEquals("\n\n", missingFields, "Missing search field descriptions")
   }
@@ -55,12 +54,13 @@ class SearchFieldMetadataTest {
 
   @Test
   fun `search field names are unique`() {
-    val duplicateFields =
-        mapAllSearchFields { table, field -> "${field.fieldName} in ${table.name}" }
-            .groupBy { it }
-            .mapValues { it.value.size }
-            .filterValues { it > 1 }
-            .keys
+    val duplicateFields = mapAllSearchFields { table, field ->
+      "${field.fieldName} in ${table.name}"
+    }
+        .groupBy { it }
+        .mapValues { it.value.size }
+        .filterValues { it > 1 }
+        .keys
 
     assertSetEquals(emptySet<String>(), duplicateFields, "Found duplicate field names")
   }

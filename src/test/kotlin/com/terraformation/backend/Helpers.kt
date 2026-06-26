@@ -251,5 +251,7 @@ fun getEnvOrSkipTest(name: String): String {
  * Returns a string representation of a Set with the items sorted and each item on its own indented
  * line.
  */
-private fun Set<*>.toPrettyString(): String =
-    sortedBy { it.toString() }.joinToString(",\n  ", "[\n  ", "\n]")
+private fun Set<*>.toPrettyString(): String = sortedBy {
+  it.toString()
+}
+    .joinToString(",\n  ", "[\n  ", "\n]")

@@ -199,8 +199,10 @@ internal class PermissionTest : DatabaseTest() {
   private inline fun <reified T> List<T>.filterToArray(func: (T) -> Boolean): Array<T> =
       filter(func).toTypedArray()
 
-  private inline fun <reified T> List<T>.filterStartsWith(prefix: String): Array<T> =
-      filter { "$it".startsWith(prefix) }.toTypedArray()
+  private inline fun <reified T> List<T>.filterStartsWith(prefix: String): Array<T> = filter {
+    "$it".startsWith(prefix)
+  }
+      .toTypedArray()
 
   private inline fun <reified T> List<T>.forOrg1() = filterStartsWith("1")
 
