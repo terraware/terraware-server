@@ -1,3 +1,5 @@
+cf962f56 Upgrade to Gradle 9.6.1 (#4681)
+e3dda70a Update Node.js to v24.18.0 (#4674)
 fb74ac80 Fix flaky search test (#4678)
 168e9aee Fix "final field mutated reflectively" warnings (#4676)
 db2d8e37 Upgrade to ktfmt 0.64 (#4677)
