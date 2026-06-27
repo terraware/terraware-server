@@ -20,9 +20,11 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternal
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import java.time.Instant
+import java.util.Optional
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -208,12 +210,18 @@ data class CreateProjectRequestPayload(
 data class CreateProjectResponsePayload(val id: ProjectId) : SuccessResponsePayload
 
 data class UpdateProjectRequestPayload(
-    val countryCode: String?,
+    // TEMPORARY: Treat missing country codes as "don't edit"; this can change to plain String? type
+    // once clients are updated to know about this field.
+    val countryCode: Optional<String>?,
     val description: String?,
     val name: String,
 ) {
   fun applyTo(model: ExistingProjectModel) =
-      model.copy(countryCode = countryCode, description = description, name = name)
+      model.copy(
+          countryCode = countryCode.patchNullable(model.countryCode),
+          description = description,
+          name = name,
+      )
 }
 
 data class GetProjectResponsePayload(val project: ProjectPayload) : SuccessResponsePayload
