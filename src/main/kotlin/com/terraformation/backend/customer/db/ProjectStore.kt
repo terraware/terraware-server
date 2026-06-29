@@ -158,7 +158,9 @@ class ProjectStore(
       }
 
       if (
-          existing.countryCode != updated.countryCode || existing.description != updated.description
+          existing.countryCode != updated.countryCode ||
+              existing.description != updated.description ||
+              existing.ecoregionId != updated.ecoregionId
       ) {
         eventPublisher.publishEvent(
             ProjectUpdatedEvent(
