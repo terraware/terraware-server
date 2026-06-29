@@ -115,7 +115,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
                   ?: property.getter.findAnnotation()
                   ?: property.javaField?.getAnnotation(Schema::class.java)
           val propertyName = propertyAnnotation?.name.orEmpty().ifEmpty { property.name }
-          val propertySchema = classSchema.properties?.get(propertyName)
+          var propertySchema = classSchema.properties?.get(propertyName)
 
           if (
               propertySchema != null && propertySchema.`$ref` != null && propertyAnnotation != null
@@ -137,6 +137,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
 
             composedSchema.description = propertyAnnotation.description.ifEmpty { null }
             classSchema.properties[propertyName] = composedSchema
+            propertySchema = composedSchema
           }
 
           // ArbitraryJsonObject and Map<String, Any?> fields are also missing descriptions, but
@@ -170,13 +171,19 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
             } else {
               // Property doesn't have a @Schema annotation, so it doesn't have a Schema object
               // associated with it yet; we need to make one of the appropriate type.
-              val newSchema =
+              propertySchema =
                   ModelConverters.getInstance()
                       .readAllAsResolvedSchema(property.returnType.javaType)
                       ?.schema
-              if (newSchema != null) {
-                newSchema.nullable = true
-                classSchema.addProperty(propertyName, newSchema)
+              if (propertySchema != null) {
+                propertySchema.nullable = true
+                if (classSchema is ComposedSchema) {
+                  classSchema.allOf
+                      .firstOrNull { it is ObjectSchema }
+                      ?.addProperty(propertyName, propertySchema)
+                } else {
+                  classSchema.addProperty(propertyName, propertySchema)
+                }
               }
             }
           }
