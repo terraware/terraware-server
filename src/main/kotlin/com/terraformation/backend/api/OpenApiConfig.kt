@@ -177,10 +177,10 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
                       ?.schema
               if (propertySchema != null) {
                 propertySchema.nullable = true
-                if (classSchema is ComposedSchema) {
+                if (classSchema is ComposedSchema && classSchema.allOf.any { it is ObjectSchema }) {
                   classSchema.allOf
-                      .firstOrNull { it is ObjectSchema }
-                      ?.addProperty(propertyName, propertySchema)
+                      .first { it is ObjectSchema }
+                      .addProperty(propertyName, propertySchema)
                 } else {
                   classSchema.addProperty(propertyName, propertySchema)
                 }
