@@ -1,14 +1,13 @@
 package com.terraformation.backend.eventlog
 
+import com.terraformation.backend.eventlog.api.CreatedActionPayload
 import com.terraformation.backend.i18n.Messages
 
 /**
  * Common interface for events that represent an entity being created with specific initial field
  * values. This is used to render [PersistentEvent]s into API payloads for event log queries.
- * Creation events that implement this interface will produce a
- * [CreatedActionPayload][com.terraformation.backend.eventlog.api.CreatedActionPayload] that
- * includes the initial field values; those that don't will produce a plain
- * [CreatedActionPayload][com.terraformation.backend.eventlog.api.CreatedActionPayload] with no
+ * Creation events that implement this interface will produce a [CreatedActionPayload] that includes
+ * the initial field values; those that don't will produce a plain [CreatedActionPayload] with no
  * field data.
  *
  * The typical pattern is to define a nested class (usually called `Values`) with a nullable
@@ -64,8 +63,8 @@ interface FieldsCreatedPersistentEvent : EntityCreatedPersistentEvent {
    * Returns an [InitialField] if [value] is non-null, null otherwise. This would typically be
    * called in `listOfNotNull` in the [listInitialFields] implementation.
    */
-  fun createInitialField(fieldName: String, value: List<String>?): InitialField? {
-    return if (value != null) InitialField(fieldName, value) else null
+  fun createInitialField(fieldName: String, value: List<String>?): InitialField? = value?.let {
+    InitialField(fieldName, it)
   }
 
   /**
@@ -73,7 +72,6 @@ interface FieldsCreatedPersistentEvent : EntityCreatedPersistentEvent {
    * null otherwise. This would typically be called in `listOfNotNull` in the [listInitialFields]
    * implementation.
    */
-  fun createInitialField(fieldName: String, value: String?): InitialField? {
-    return createInitialField(fieldName, value?.let { listOf(it) })
-  }
+  fun createInitialField(fieldName: String, value: String?): InitialField? =
+      createInitialField(fieldName, value?.let { listOf(it) })
 }
