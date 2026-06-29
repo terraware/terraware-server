@@ -73,14 +73,14 @@ class DocumentsController(
 
   @Operation(summary = "Gets a document.")
   @GetMapping("/{id}")
-  fun getDocument(@PathVariable("id") id: DocumentId): GetDocumentResponsePayload {
+  fun getDocument(@PathVariable id: DocumentId): GetDocumentResponsePayload {
     return GetDocumentResponsePayload(DocumentPayload(documentStore.fetchOneById(id)))
   }
 
   @Operation(summary = "Updates a document.")
   @PutMapping("/{id}")
   fun updateDocument(
-      @PathVariable("id") id: DocumentId,
+      @PathVariable id: DocumentId,
       @RequestBody payload: UpdateDocumentRequestPayload,
   ): SimpleSuccessResponsePayload {
     documentStore.updateDocument(id) { payload.applyChanges(it) }

@@ -31,7 +31,7 @@ class ProjectScoresControllerV2(
   @GetMapping
   @Operation(summary = "Gets overall score for a single project. ")
   fun getProjectOverallScore(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
   ): GetProjectOverallScoreResponsePayload {
     val model = projectOverallScoreStore.fetch(projectId)
     return GetProjectOverallScoreResponsePayload(ProjectOverallScorePayload(model))
@@ -42,7 +42,7 @@ class ProjectScoresControllerV2(
   @PutMapping
   @Operation(summary = "Updates overall score for a single project.")
   fun upsertProjectScores(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: UpdateProjectOverallScoreRequestPayload,
   ): SimpleSuccessResponsePayload {
     projectOverallScoreStore.update(projectId) { payload.score.toModel(projectId) }

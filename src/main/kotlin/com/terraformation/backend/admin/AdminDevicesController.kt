@@ -75,7 +75,7 @@ class AdminDevicesController(
 
   @GetMapping("/deviceManagers/{deviceManagerId}")
   fun getDeviceManager(
-      @PathVariable("deviceManagerId") deviceManagerId: DeviceManagerId,
+      @PathVariable deviceManagerId: DeviceManagerId,
       model: Model,
   ): String {
     val manager = deviceManagerStore.fetchOneById(deviceManagerId)
@@ -145,7 +145,7 @@ class AdminDevicesController(
   @PostMapping("/deviceManagers/{deviceManagerId}")
   fun updateDeviceManager(
       redirectAttributes: RedirectAttributes,
-      @PathVariable("deviceManagerId") deviceManagerId: DeviceManagerId,
+      @PathVariable deviceManagerId: DeviceManagerId,
       @ModelAttribute row: DeviceManagersRow,
   ): String {
     row.id = deviceManagerId
@@ -193,7 +193,7 @@ class AdminDevicesController(
   @PostMapping("/deviceManagers/{deviceManagerId}/generateToken")
   fun generateToken(
       redirectAttributes: RedirectAttributes,
-      @PathVariable("deviceManagerId") deviceManagerId: DeviceManagerId,
+      @PathVariable deviceManagerId: DeviceManagerId,
   ): String {
     try {
       val row = deviceManagerStore.fetchOneById(deviceManagerId)

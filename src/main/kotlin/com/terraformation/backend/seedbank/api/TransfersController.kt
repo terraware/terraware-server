@@ -30,7 +30,7 @@ class TransfersController(
   @Operation(summary = "Transfers seeds to a nursery.")
   @PostMapping("/nursery")
   fun createNurseryTransferWithdrawal(
-      @PathVariable("accessionId") accessionId: AccessionId,
+      @PathVariable accessionId: AccessionId,
       @RequestBody payload: CreateNurseryTransferRequestPayload,
   ): CreateNurseryTransferResponsePayload {
     val (accession, batch) =

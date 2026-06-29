@@ -51,9 +51,7 @@ class AutomationsController(
 
   @GetMapping("/{automationId}")
   @Operation(summary = "Gets the details of a single automation for a device or facility.")
-  fun getAutomation(
-      @PathVariable("automationId") automationId: AutomationId
-  ): GetAutomationResponsePayload {
+  fun getAutomation(@PathVariable automationId: AutomationId): GetAutomationResponsePayload {
     val automation = automationStore.fetchOneById(automationId)
     return GetAutomationResponsePayload(AutomationPayload(automation))
   }
@@ -83,7 +81,7 @@ class AutomationsController(
   @Operation(summary = "Updates an existing automation for a device or facility.")
   @PutMapping("/{automationId}")
   fun updateAutomation(
-      @PathVariable("automationId") automationId: AutomationId,
+      @PathVariable automationId: AutomationId,
       @RequestBody payload: UpdateAutomationRequestPayload,
   ): SimpleSuccessResponsePayload {
     val existing = automationStore.fetchOneById(automationId)
@@ -93,9 +91,7 @@ class AutomationsController(
 
   @DeleteMapping("/{automationId}")
   @Operation(summary = "Deletes an existing automation from a device or facility.")
-  fun deleteAutomation(
-      @PathVariable("automationId") automationId: AutomationId
-  ): SimpleSuccessResponsePayload {
+  fun deleteAutomation(@PathVariable automationId: AutomationId): SimpleSuccessResponsePayload {
     automationStore.delete(automationId)
     return SimpleSuccessResponsePayload()
   }

@@ -73,7 +73,7 @@ class FundingEntitiesController(
   @Operation(summary = "Updates an existing funding entity")
   @PutMapping("/{fundingEntityId}")
   fun updateFundingEntity(
-      @PathVariable("fundingEntityId") fundingEntityId: FundingEntityId,
+      @PathVariable fundingEntityId: FundingEntityId,
       @RequestBody @Valid payload: UpdateFundingEntityRequestPayload,
   ): SimpleSuccessResponsePayload {
     fundingEntityService.update(payload.toRow(fundingEntityId), payload.projects)
@@ -86,7 +86,7 @@ class FundingEntitiesController(
   )
   @DeleteMapping("/{fundingEntityId}")
   fun deleteFundingEntity(
-      @PathVariable("fundingEntityId") fundingEntityId: FundingEntityId
+      @PathVariable fundingEntityId: FundingEntityId
   ): SimpleSuccessResponsePayload {
     fundingEntityService.deleteFundingEntity(fundingEntityId)
     return SimpleSuccessResponsePayload()

@@ -71,7 +71,7 @@ class BatchesController(
   @ApiResponse404
   @GetMapping("/{id}")
   @Operation(summary = "Gets information about a single seedling batch.")
-  fun getBatch(@PathVariable("id") id: BatchId): BatchResponsePayload {
+  fun getBatch(@PathVariable id: BatchId): BatchResponsePayload {
     val row = batchStore.fetchOneById(id)
     return BatchResponsePayload(BatchPayload(row))
   }
@@ -92,7 +92,7 @@ class BatchesController(
   @ApiResponseSimpleSuccess
   @DeleteMapping("/{id}")
   @Operation(summary = "Deletes an existing seedling batch from a nursery.")
-  fun deleteBatch(@PathVariable("id") id: BatchId): SimpleSuccessResponsePayload {
+  fun deleteBatch(@PathVariable id: BatchId): SimpleSuccessResponsePayload {
     batchStore.delete(id)
     return SimpleSuccessResponsePayload()
   }
@@ -108,7 +108,7 @@ class BatchesController(
   @Operation(summary = "Updates non-quantity-related details about a batch.")
   @PutMapping("/{id}")
   fun updateBatch(
-      @PathVariable("id") id: BatchId,
+      @PathVariable id: BatchId,
       @RequestBody payload: UpdateBatchRequestPayload,
   ): BatchResponsePayload {
     batchStore.updateDetails(id, payload.version, payload::applyChanges)
@@ -126,7 +126,7 @@ class BatchesController(
   )
   @PutMapping("/{id}/quantities")
   fun updateBatchQuantities(
-      @PathVariable("id") id: BatchId,
+      @PathVariable id: BatchId,
       @RequestBody payload: UpdateBatchQuantitiesRequestPayload,
   ): BatchResponsePayload {
     batchStore.updateQuantities(
@@ -151,7 +151,7 @@ class BatchesController(
   )
   @PostMapping("/{id}/changeStatuses")
   fun changeBatchStatuses(
-      @PathVariable("id") id: BatchId,
+      @PathVariable id: BatchId,
       @RequestBody payload: ChangeBatchStatusRequestPayload,
   ): BatchResponsePayload {
     batchStore.changeStatuses(id, payload.initialPhase, payload.finalPhase, payload.quantity)

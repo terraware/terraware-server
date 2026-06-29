@@ -40,7 +40,7 @@ class ViabilityTestsController(
   @GetMapping
   @Operation(summary = "List all of the accession's viability tests.")
   fun listViabilityTests(
-      @PathVariable("accessionId") accessionId: AccessionId
+      @PathVariable accessionId: AccessionId
   ): ListViabilityTestsResponsePayload {
     val tests = viabilityTestStore.fetchViabilityTests(accessionId)
     return ListViabilityTestsResponsePayload(tests.map { GetViabilityTestPayload(it) })
@@ -49,8 +49,8 @@ class ViabilityTestsController(
   @GetMapping("/{viabilityTestId}")
   @Operation(summary = "Get a single viability test.")
   fun getViabilityTest(
-      @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("viabilityTestId") viabilityTestId: ViabilityTestId,
+      @PathVariable accessionId: AccessionId,
+      @PathVariable viabilityTestId: ViabilityTestId,
   ): GetViabilityTestResponsePayload {
     val model = viabilityTestStore.fetchOneById(viabilityTestId)
     if (model.accessionId != accessionId) {
@@ -66,7 +66,7 @@ class ViabilityTestsController(
   )
   @PostMapping
   fun createViabilityTest(
-      @PathVariable("accessionId") accessionId: AccessionId,
+      @PathVariable accessionId: AccessionId,
       @RequestBody payload: CreateViabilityTestRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.createViabilityTest(payload.toModel(accessionId))
@@ -79,8 +79,8 @@ class ViabilityTestsController(
       description = "May cause the accession's remaining quantity to change.",
   )
   fun deleteViabilityTest(
-      @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("viabilityTestId") viabilityTestId: ViabilityTestId,
+      @PathVariable accessionId: AccessionId,
+      @PathVariable viabilityTestId: ViabilityTestId,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.deleteViabilityTest(accessionId, viabilityTestId)
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))
@@ -92,8 +92,8 @@ class ViabilityTestsController(
   )
   @PutMapping("/{viabilityTestId}")
   fun updateViabilityTest(
-      @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("viabilityTestId") viabilityTestId: ViabilityTestId,
+      @PathVariable accessionId: AccessionId,
+      @PathVariable viabilityTestId: ViabilityTestId,
       @RequestBody payload: UpdateViabilityTestRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession =

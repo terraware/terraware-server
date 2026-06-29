@@ -76,7 +76,7 @@ class WithdrawalsController(
   @GetMapping("/{withdrawalId}")
   @Operation(summary = "Gets information about a specific nursery withdrawal.")
   fun getNurseryWithdrawal(
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId
+      @PathVariable withdrawalId: WithdrawalId
   ): GetNurseryWithdrawalResponsePayload {
     val withdrawal = batchStore.fetchWithdrawalById(withdrawalId)
     val batches = withdrawal.batchWithdrawals.map { batchStore.fetchOneById(it.batchId) }
@@ -112,7 +112,7 @@ class WithdrawalsController(
   @PostMapping("/{withdrawalId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBodyPhotoFile
   fun uploadWithdrawalPhoto(
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
+      @PathVariable withdrawalId: WithdrawalId,
       @RequestPart("file") file: MultipartFile,
   ): CreateNurseryWithdrawalPhotoResponsePayload {
     val contentType = file.getPlainContentType(SUPPORTED_PHOTO_TYPES)
@@ -140,8 +140,8 @@ class WithdrawalsController(
   )
   @ResponseBody
   fun getWithdrawalPhoto(
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
-      @PathVariable("photoId") photoId: FileId,
+      @PathVariable withdrawalId: WithdrawalId,
+      @PathVariable photoId: FileId,
       @QueryParam("maxWidth")
       @Schema(description = PHOTO_MAXWIDTH_DESCRIPTION)
       maxWidth: Int? = null,
@@ -159,7 +159,7 @@ class WithdrawalsController(
   @GetMapping("/{withdrawalId}/photos")
   @Operation(summary = "Lists all the photos of a withdrawal.")
   fun listWithdrawalPhotos(
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
+      @PathVariable withdrawalId: WithdrawalId,
   ): ListWithdrawalPhotosResponsePayload {
     val fileIds = withdrawalPhotoService.listPhotos(withdrawalId)
 

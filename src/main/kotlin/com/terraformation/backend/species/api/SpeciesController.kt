@@ -155,7 +155,7 @@ class SpeciesController(
   @GetMapping("/problems/{problemId}")
   @Operation(description = "Returns details about a problem with a species.")
   fun getSpeciesProblem(
-      @PathVariable("problemId") problemId: SpeciesProblemId
+      @PathVariable problemId: SpeciesProblemId
   ): GetSpeciesProblemResponsePayload {
     val problem = speciesStore.fetchProblemById(problemId)
     return GetSpeciesProblemResponsePayload(SpeciesProblemElement(problem))
@@ -173,7 +173,7 @@ class SpeciesController(
   )
   @PostMapping("/problems/{problemId}")
   fun acceptProblemSuggestion(
-      @PathVariable("problemId") problemId: SpeciesProblemId
+      @PathVariable problemId: SpeciesProblemId
   ): GetSpeciesResponsePayload {
     val updatedRow = speciesStore.acceptProblemSuggestion(problemId)
     val remainingProblems = speciesStore.fetchProblemsBySpeciesId(updatedRow.id)
@@ -188,9 +188,7 @@ class SpeciesController(
           "Deletes information about a problem with a species without applying any suggested " +
               "changes."
   )
-  fun deleteProblem(
-      @PathVariable("problemId") problemId: SpeciesProblemId
-  ): SimpleSuccessResponsePayload {
+  fun deleteProblem(@PathVariable problemId: SpeciesProblemId): SimpleSuccessResponsePayload {
     speciesStore.deleteProblem(problemId)
     return SimpleSuccessResponsePayload()
   }

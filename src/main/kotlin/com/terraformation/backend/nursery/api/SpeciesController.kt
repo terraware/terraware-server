@@ -22,9 +22,7 @@ class SpeciesController(
 ) {
   @GetMapping("/{speciesId}/summary")
   @Operation(summary = "Gets a summary of the numbers of plants of each species in all nurseries.")
-  fun getSpeciesSummary(
-      @PathVariable("speciesId") speciesId: SpeciesId
-  ): GetSpeciesSummaryResponsePayload {
+  fun getSpeciesSummary(@PathVariable speciesId: SpeciesId): GetSpeciesSummaryResponsePayload {
     val summary = batchStore.getSpeciesSummary(speciesId)
     return GetSpeciesSummaryResponsePayload(SpeciesSummaryPayload(summary))
   }

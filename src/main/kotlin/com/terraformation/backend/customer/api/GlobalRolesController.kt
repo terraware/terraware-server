@@ -48,7 +48,7 @@ class GlobalRolesController(
   @PostMapping("/users/{userId}/globalRoles")
   @Operation(summary = "Apply the supplied global roles to the user.")
   fun updateGlobalRoles(
-      @PathVariable("userId") userId: UserId,
+      @PathVariable userId: UserId,
       @RequestBody payload: UpdateGlobalRolesRequestPayload,
   ): SuccessResponsePayload {
     userStore.updateGlobalRoles(setOf(userId), payload.globalRoles)
