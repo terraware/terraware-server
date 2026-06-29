@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.search
 import com.terraformation.backend.RunsAsUser
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.Role
@@ -15,6 +16,7 @@ import com.terraformation.backend.search.SearchFilterType
 import com.terraformation.backend.search.SearchService
 import com.terraformation.backend.search.table.SearchTables
 import com.terraformation.backend.seedbank.AccessionService
+import com.terraformation.backend.seedbank.db.AccessionHelper
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.model.AccessionSummaryStatistics
 import io.mockk.every
@@ -30,6 +32,7 @@ internal class AccessionServiceSearchSummaryTest : DatabaseTest(), RunsAsUser {
 
   private val accessionStore: AccessionStore by lazy {
     AccessionStore(
+        AccessionHelper(ParentStore(dslContext)),
         dslContext,
         mockk(),
         mockk(),

@@ -90,6 +90,7 @@ import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.event.NurserySeedlingBatchReadyEvent
 import com.terraformation.backend.report.event.SeedFundReportCreatedEvent
 import com.terraformation.backend.report.model.SeedFundReportMetadata
+import com.terraformation.backend.seedbank.db.AccessionHelper
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
@@ -182,6 +183,7 @@ internal class NotificationServiceAppTest : DatabaseTest(), RunsAsUser {
 
     accessionStore =
         AccessionStore(
+            AccessionHelper(parentStore),
             dslContext,
             BagStore(dslContext),
             facilitiesDao,

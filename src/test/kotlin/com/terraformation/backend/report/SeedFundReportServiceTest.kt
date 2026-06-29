@@ -97,6 +97,7 @@ class SeedFundReportServiceTest : DatabaseTest(), RunsAsUser {
   private val service by lazy {
     SeedFundReportService(
         AccessionStore(
+            mockk(),
             dslContext,
             mockk(),
             mockk(),

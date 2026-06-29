@@ -77,6 +77,7 @@ class PhotoRepositoryTest : DatabaseTest(), RunsAsUser {
   fun setUp() {
     accessionStore =
         AccessionStore(
+            mockk(),
             dslContext,
             mockk(),
             mockk(),

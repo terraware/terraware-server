@@ -16,6 +16,7 @@ import com.terraformation.backend.db.seedbank.AccessionState
 import com.terraformation.backend.db.seedbank.DataSource
 import com.terraformation.backend.db.seedbank.ViabilityTestType
 import com.terraformation.backend.i18n.Messages
+import com.terraformation.backend.seedbank.db.AccessionHelper
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
@@ -58,6 +59,7 @@ internal abstract class AccessionStoreTest : DatabaseTest(), RunsAsDatabaseUser 
 
     store =
         AccessionStore(
+            AccessionHelper(parentStore),
             dslContext,
             BagStore(dslContext),
             facilitiesDao,

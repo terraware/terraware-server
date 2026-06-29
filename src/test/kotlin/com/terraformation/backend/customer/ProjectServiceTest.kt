@@ -26,6 +26,7 @@ import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
 import com.terraformation.backend.nursery.db.BatchStore
 import com.terraformation.backend.plantingmanagement.db.SeasonHelper
+import com.terraformation.backend.seedbank.db.AccessionHelper
 import com.terraformation.backend.seedbank.db.AccessionStore
 import com.terraformation.backend.seedbank.db.BagStore
 import com.terraformation.backend.seedbank.db.GeolocationStore
@@ -59,6 +60,7 @@ class ProjectServiceTest : DatabaseTest(), RunsAsUser {
   private val service: ProjectService by lazy {
     ProjectService(
         AccessionStore(
+            AccessionHelper(parentStore),
             dslContext,
             BagStore(dslContext),
             facilitiesDao,

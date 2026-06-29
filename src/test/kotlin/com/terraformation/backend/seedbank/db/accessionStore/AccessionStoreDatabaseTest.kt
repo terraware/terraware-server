@@ -3,6 +3,7 @@ package com.terraformation.backend.seedbank.db.accessionStore
 import com.terraformation.backend.db.AccessionSpeciesHasDeliveriesException
 import com.terraformation.backend.db.ProjectInDifferentOrganizationException
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.nursery.tables.pojos.BatchesRow
 import com.terraformation.backend.db.seedbank.CollectionSource
 import com.terraformation.backend.db.seedbank.DataSource
@@ -28,7 +29,9 @@ import com.terraformation.backend.seedbank.model.AccessionModel
 import com.terraformation.backend.seedbank.model.Geolocation
 import com.terraformation.backend.seedbank.seeds
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZoneOffset
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.declaredMemberProperties
@@ -334,5 +337,22 @@ internal class AccessionStoreDatabaseTest : AccessionStoreTest() {
     val fetched = store.fetchOneById(initial.id!!)
 
     assertEquals(initial.species, fetched.species)
+  }
+
+  @Test
+  fun `update uses configured timezone when deriving collectedDate from collectedTime`() {
+    // Jan 15 at 10pm in America/New_York (UTC-5)
+    val collectedTime = Instant.parse("2024-01-16T03:00:00Z")
+    val userId = insertUser(timeZone = ZoneId.of("America/New_York"))
+    insertOrganizationUser(userId = userId, role = Role.Admin)
+    switchToUser(userId)
+
+    val initial = store.create(accessionModel())
+    store.update(initial.copy(collectedTime = collectedTime))
+
+    assertEquals(
+        LocalDate.of(2024, 1, 15),
+        accessionsDao.fetchOneById(initial.id!!)?.collectedDate,
+    )
   }
 }

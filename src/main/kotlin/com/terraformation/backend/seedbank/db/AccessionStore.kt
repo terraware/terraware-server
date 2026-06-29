@@ -55,7 +55,6 @@ import jakarta.inject.Named
 import java.math.BigDecimal
 import java.time.Clock
 import java.time.LocalDate
-import java.time.ZoneOffset
 import org.jooq.Condition
 import org.jooq.DSLContext
 import org.jooq.Field
@@ -70,6 +69,7 @@ import org.springframework.security.access.AccessDeniedException
 
 @Named
 class AccessionStore(
+    private val accessionHelper: AccessionHelper,
     private val dslContext: DSLContext,
     private val bagStore: BagStore,
     private val facilitiesDao: FacilitiesDao,
@@ -279,11 +279,16 @@ class AccessionStore(
               with(ACCESSIONS) {
                 dslContext
                     .insertInto(ACCESSIONS)
-                    .set(COLLECTED_DATE, accession.collectedDate)
+                    .set(
+                        COLLECTED_DATE,
+                        accessionHelper.effectiveCollectedDate(accession, facilityId),
+                    )
                     .set(
                         COLLECTED_TIME,
                         accession.collectedTime
-                            ?: accession.collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+                            ?: accession.collectedDate
+                                ?.atStartOfDay(accessionHelper.collectionTimeZone(facilityId))
+                                ?.toInstant(),
                     )
                     .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                     .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
@@ -460,11 +465,13 @@ class AccessionStore(
           with(ACCESSIONS) {
             dslContext
                 .update(ACCESSIONS)
-                .set(COLLECTED_DATE, accession.collectedDate)
+                .set(COLLECTED_DATE, accessionHelper.effectiveCollectedDate(accession, facilityId))
                 .set(
                     COLLECTED_TIME,
                     accession.collectedTime
-                        ?: accession.collectedDate?.atStartOfDay(ZoneOffset.UTC)?.toInstant(),
+                        ?: accession.collectedDate
+                            ?.atStartOfDay(accessionHelper.collectionTimeZone(facilityId))
+                            ?.toInstant(),
                 )
                 .set(COLLECTION_SITE_CITY, accession.collectionSiteCity)
                 .set(COLLECTION_SITE_COUNTRY_CODE, accession.collectionSiteCountryCode)
