@@ -215,9 +215,9 @@
 </g>
 </g>
 <!-- planting_sites -->
-<g id="node19" class="node">
+<g id="node18" class="node">
 <title>planting_sites</title>
-<g id="a_node19"><a xlink:href="../../tables/planting_sites.html" xlink:title="planting_sites" target="_top">
+<g id="a_node18"><a xlink:href="../../tables/planting_sites.html" xlink:title="planting_sites" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="8,-2212 8,-2358 232,-2358 232,-2212 8,-2212"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="8,-2336 8,-2358 232,-2358 232,-2336 8,-2336"/>
 <polygon fill="none" stroke="black" points="8,-2336 8,-2358 232,-2358 232,-2336 8,-2336"/>
@@ -465,9 +465,9 @@
 </g>
 </g>
 <!-- scheduled_planting_dates -->
-<g id="node13" class="node">
+<g id="node14" class="node">
 <title>scheduled_planting_dates</title>
-<g id="a_node13"><a xlink:href="../../tables/scheduled_planting_dates.html" xlink:title="scheduled_planting_dates" target="_top">
+<g id="a_node14"><a xlink:href="../../tables/scheduled_planting_dates.html" xlink:title="scheduled_planting_dates" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="636,-519 636,-643 833,-643 833,-519 636,-519"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="636.5,-621 636.5,-643 833.5,-643 833.5,-621 636.5,-621"/>
 <polygon fill="none" stroke="black" points="636.5,-621 636.5,-643 833.5,-643 833.5,-621 636.5,-621"/>
@@ -1126,17 +1126,10 @@
 <polyline fill="none" stroke="black" points="1197,-1796 1193.02,-1795.57 "/>
 <ellipse fill="none" stroke="black" cx="1189.84" cy="-1795.22" rx="3.2" ry="3.2"/>
 </g>
-<!-- scheduled_planting_dates&#45;&gt;planting_seasons -->
-<g id="edge139" class="edge">
-<title>scheduled_planting_dates:w&#45;&gt;planting_seasons:e</title>
-<path fill="none" stroke="black" d="M620.88,-588.42C569.65,-591.46 553.02,-610 495,-610"/>
-<polygon fill="black" stroke="black" points="627.5,-588.23 635.6,-591.6 631.5,-588.11 635.5,-588 635.5,-588 635.5,-588 631.5,-588.11 635.4,-584.4 627.5,-588.23 627.5,-588.23"/>
-<ellipse fill="none" stroke="black" cx="624.3" cy="-588.32" rx="3.2" ry="3.2"/>
-</g>
 <!-- simplified_strata -->
-<g id="node14" class="node">
+<g id="node13" class="node">
 <title>simplified_strata</title>
-<g id="a_node14"><a xlink:href="../../tables/simplified_strata.html" xlink:title="simplified_strata" target="_top">
+<g id="a_node13"><a xlink:href="../../tables/simplified_strata.html" xlink:title="simplified_strata" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="662.5,-1653 662.5,-1733 806.5,-1733 806.5,-1653 662.5,-1653"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="662.5,-1711 662.5,-1733 806.5,-1733 806.5,-1711 662.5,-1711"/>
 <polygon fill="none" stroke="black" points="662.5,-1711 662.5,-1733 806.5,-1733 806.5,-1711 662.5,-1711"/>
@@ -1202,6 +1195,13 @@
 <polygon fill="black" stroke="black" points="660.46,-1696.06 660.95,-1704.04 659.35,-1704.14 658.86,-1696.16 660.46,-1696.06"/>
 <polyline fill="none" stroke="black" points="661.5,-1700 657.51,-1700.25 "/>
 <ellipse fill="none" stroke="black" cx="654.31" cy="-1700.44" rx="3.2" ry="3.2"/>
+</g>
+<!-- scheduled_planting_dates&#45;&gt;planting_seasons -->
+<g id="edge139" class="edge">
+<title>scheduled_planting_dates:w&#45;&gt;planting_seasons:e</title>
+<path fill="none" stroke="black" d="M620.88,-588.42C569.65,-591.46 553.02,-610 495,-610"/>
+<polygon fill="black" stroke="black" points="627.5,-588.23 635.6,-591.6 631.5,-588.11 635.5,-588 635.5,-588 635.5,-588 631.5,-588.11 635.4,-584.4 627.5,-588.23 627.5,-588.23"/>
+<ellipse fill="none" stroke="black" cx="624.3" cy="-588.32" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_site_histories&#45;&gt;planting_sites -->
 <g id="edge110" class="edge">
@@ -1469,9 +1469,9 @@
 <ellipse fill="none" stroke="black" cx="1502.41" cy="-3056.4" rx="3.2" ry="3.2"/>
 </g>
 <!-- recorded_plants -->
-<g id="node18" class="node">
+<g id="node19" class="node">
 <title>recorded_plants</title>
-<g id="a_node18"><a xlink:href="../../tables/recorded_plants.html" xlink:title="recorded_plants" target="_top">
+<g id="a_node19"><a xlink:href="../../tables/recorded_plants.html" xlink:title="recorded_plants" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1912.5,-1342 1912.5,-1532 2052.5,-1532 2052.5,-1342 1912.5,-1342"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1912.5,-1510 1912.5,-1532 2052.5,-1532 2052.5,-1510 1912.5,-1510"/>
 <polygon fill="none" stroke="black" points="1912.5,-1510 1912.5,-1532 2052.5,-1532 2052.5,-1510 1912.5,-1510"/>
@@ -1903,9 +1903,9 @@
 <ellipse fill="none" stroke="black" cx="612.46" cy="-758.13" rx="3.2" ry="3.2"/>
 </g>
 <!-- planting_season_notification_pages -->
-<g id="node56" class="node">
+<g id="node55" class="node">
 <title>planting_season_notification_pages</title>
-<g id="a_node56"><a xlink:href="../../tables/planting_season_notification_pages.html" xlink:title="planting_season_notification_pages" target="_top">
+<g id="a_node55"><a xlink:href="../../tables/planting_season_notification_pages.html" xlink:title="planting_season_notification_pages" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="293.5,-687 293.5,-771 548.5,-771 548.5,-687 293.5,-687"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="294,-749 294,-771 549,-771 549,-749 294,-749"/>
 <polygon fill="none" stroke="black" points="294,-749 294,-771 549,-771 549,-749 294,-749"/>
@@ -2721,9 +2721,9 @@
 <ellipse fill="none" stroke="black" cx="1193.92" cy="-2248.61" rx="3.2" ry="3.2"/>
 </g>
 <!-- observed_site_species_totals -->
-<g id="node55" class="node">
+<g id="node56" class="node">
 <title>observed_site_species_totals</title>
-<g id="a_node55"><a xlink:href="../../tables/observed_site_species_totals.html" xlink:title="observed_site_species_totals" target="_top">
+<g id="a_node56"><a xlink:href="../../tables/observed_site_species_totals.html" xlink:title="observed_site_species_totals" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="1514.5,-3112 1514.5,-3302 1728.5,-3302 1728.5,-3112 1514.5,-3112"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="1514.5,-3280 1514.5,-3302 1728.5,-3302 1728.5,-3280 1514.5,-3280"/>
 <polygon fill="none" stroke="black" points="1514.5,-3280 1514.5,-3302 1728.5,-3302 1728.5,-3280 1514.5,-3280"/>
