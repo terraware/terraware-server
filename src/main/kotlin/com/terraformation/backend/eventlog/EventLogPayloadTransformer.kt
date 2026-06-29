@@ -8,6 +8,7 @@ import com.terraformation.backend.eventlog.api.BiomassQuadratSpeciesSubjectPaylo
 import com.terraformation.backend.eventlog.api.BiomassQuadratSubjectPayload
 import com.terraformation.backend.eventlog.api.BiomassSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
+import com.terraformation.backend.eventlog.api.CreatedFieldPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
 import com.terraformation.backend.eventlog.api.EventActionPayload
 import com.terraformation.backend.eventlog.api.EventLogEntryPayload
@@ -154,7 +155,16 @@ class EventLogPayloadTransformer(
           }
 
       // Create and delete actions don't need any event-type-specific arguments because the details
-      // are already in the subject.
+      // are already in the subject. Events that implement FieldsCreatedPersistentEvent also include
+      // initial field values in the payload.
+      is FieldsCreatedPersistentEvent ->
+          listOf(
+              CreatedActionPayload(
+                  event.listInitialFields(messages).map {
+                    CreatedFieldPayload(it.fieldName, it.value)
+                  }
+              )
+          )
       is EntityCreatedPersistentEvent -> listOf(CreatedActionPayload())
       is EntityDeletedPersistentEvent -> listOf(DeletedActionPayload())
 

@@ -1,17 +1,21 @@
 package com.terraformation.backend.eventlog.api
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 sealed interface EventActionPayload
 
-@JsonTypeName("Created")
-class CreatedActionPayload : EventActionPayload {
-  override fun equals(other: Any?) = other is CreatedActionPayload
+data class CreatedFieldPayload(
+    val fieldName: String,
+    val value: List<String>?,
+)
 
-  override fun hashCode() = javaClass.hashCode() xor 1
-}
+@JsonTypeName("Created")
+data class CreatedActionPayload(
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) val fields: List<CreatedFieldPayload> = emptyList(),
+) : EventActionPayload
 
 @JsonTypeName("Deleted")
 class DeletedActionPayload : EventActionPayload {
