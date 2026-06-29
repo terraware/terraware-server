@@ -93,7 +93,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class GetPreviousProjectName {
     @Test
     fun `upgrades first ProjectRenamedEventV1`() {
-      insertEvent(ProjectCreatedEventV1("Old name", organizationId, projectId))
+      insertEvent(ProjectCreatedEventV1(null, "Old name", organizationId, projectId))
 
       testUpgrade(
           ProjectRenamedEventV1("New name", organizationId, projectId),
@@ -108,7 +108,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
 
     @Test
     fun `upgrades second ProjectRenamedEventV1`() {
-      insertEvent(ProjectCreatedEventV1("Old name", organizationId, projectId))
+      insertEvent(ProjectCreatedEventV1(null, "Old name", organizationId, projectId))
       insertEvent(ProjectRenamedEventV1("Middle name", organizationId, projectId))
 
       testUpgrade(
@@ -126,7 +126,7 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
     // first one would be upgraded and written to the database before the second one was upgraded.
     @Test
     fun `upgrades ProjectRenamedEventV1 that follows an already-upgraded rename`() {
-      insertEvent(ProjectCreatedEventV1("Old name", organizationId, projectId))
+      insertEvent(ProjectCreatedEventV1(null, "Old name", organizationId, projectId))
       insertEvent(
           ProjectRenamedEventV2(
               changedFrom = ProjectRenamedEventV2.Values("Old name"),

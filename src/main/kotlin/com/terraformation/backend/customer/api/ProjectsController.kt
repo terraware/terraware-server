@@ -20,9 +20,11 @@ import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternal
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.seedbank.AccessionId
 import com.terraformation.backend.db.tracking.PlantingSiteId
+import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import java.time.Instant
+import java.util.Optional
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -75,6 +77,7 @@ class ProjectsController(
     val projectId =
         projectStore.create(
             NewProjectModel(
+                countryCode = payload.countryCode,
                 description = payload.description,
                 id = null,
                 name = payload.name,
@@ -154,6 +157,7 @@ class ProjectsController(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ProjectPayload(
+    val countryCode: String?,
     val createdBy: UserId?,
     val createdTime: Instant?,
     val description: String?,
@@ -167,6 +171,7 @@ data class ProjectPayload(
   constructor(
       model: ExistingProjectModel
   ) : this(
+      countryCode = model.countryCode,
       createdBy = model.createdBy,
       createdTime = model.createdTime,
       description = model.description,
@@ -196,6 +201,7 @@ data class InternalUserPayload(
 data class UpdateProjectInternalUserRequestPayload(val internalUsers: List<InternalUserPayload>)
 
 data class CreateProjectRequestPayload(
+    val countryCode: String?,
     val description: String?,
     val name: String,
     val organizationId: OrganizationId,
@@ -204,10 +210,18 @@ data class CreateProjectRequestPayload(
 data class CreateProjectResponsePayload(val id: ProjectId) : SuccessResponsePayload
 
 data class UpdateProjectRequestPayload(
+    // TEMPORARY: Treat missing country codes as "don't edit"; this can change to plain String? type
+    // once clients are updated to know about this field.
+    val countryCode: Optional<String>?,
     val description: String?,
     val name: String,
 ) {
-  fun applyTo(model: ExistingProjectModel) = model.copy(description = description, name = name)
+  fun applyTo(model: ExistingProjectModel) =
+      model.copy(
+          countryCode = countryCode.patchNullable(model.countryCode),
+          description = description,
+          name = name,
+      )
 }
 
 data class GetProjectResponsePayload(val project: ProjectPayload) : SuccessResponsePayload

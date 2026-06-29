@@ -16,6 +16,7 @@ import com.terraformation.backend.accelerator.model.ProjectAcceleratorVariableVa
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
 import com.terraformation.backend.accelerator.variables.ApplicationVariableValuesService
 import com.terraformation.backend.config.TerrawareServerConfig
+import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
@@ -58,6 +59,7 @@ class ApplicationServiceTest : DatabaseTest(), RunsAsUser {
             clock,
             dslContext,
             eventPublisher,
+            ParentStore(dslContext),
         ),
     )
   }

@@ -4,6 +4,8 @@ import com.terraformation.backend.accelerator.db.ApplicationStore
 import com.terraformation.backend.accelerator.event.ApplicationInternalNameUpdatedEvent
 import com.terraformation.backend.accelerator.event.VariableValueUpdatedEvent
 import com.terraformation.backend.accelerator.variables.AcceleratorProjectVariableValuesService
+import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.event.ProjectUpdatedEvent
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_ACCELERATOR_DETAILS
 import com.terraformation.backend.documentproducer.db.VariableStore
@@ -14,10 +16,11 @@ import org.springframework.context.event.EventListener
 
 @Named
 class AcceleratorVariablesUpdater(
-    private val systemUser: SystemUser,
-    private val applicationStore: ApplicationStore,
     private val acceleratorProjectVariableValuesService: AcceleratorProjectVariableValuesService,
+    private val applicationStore: ApplicationStore,
     private val dslContext: DSLContext,
+    private val parentStore: ParentStore,
+    private val systemUser: SystemUser,
     private val variableStore: VariableStore,
 ) {
 
@@ -57,6 +60,27 @@ class AcceleratorVariablesUpdater(
           application.projectId,
           values.copy(dealName = application.internalName),
       )
+    }
+  }
+
+  @EventListener
+  fun on(event: ProjectUpdatedEvent) {
+    if (event.changedFrom.countryCode == event.changedTo.countryCode) {
+      return
+    }
+
+    if (!parentStore.isProjectInAccelerator(event.projectId)) {
+      return
+    }
+
+    systemUser.run {
+      val values = acceleratorProjectVariableValuesService.fetchValues(event.projectId)
+      if (values.countryCode != event.changedTo.countryCode) {
+        acceleratorProjectVariableValuesService.writeValues(
+            event.projectId,
+            values.copy(countryCode = event.changedTo.countryCode),
+        )
+      }
     }
   }
 }

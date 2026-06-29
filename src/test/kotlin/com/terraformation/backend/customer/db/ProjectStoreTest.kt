@@ -10,6 +10,8 @@ import com.terraformation.backend.customer.event.ProjectInternalUserAddedEvent
 import com.terraformation.backend.customer.event.ProjectInternalUserRemovedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEvent
 import com.terraformation.backend.customer.event.ProjectRenamedEventValues
+import com.terraformation.backend.customer.event.ProjectUpdatedEvent
+import com.terraformation.backend.customer.event.ProjectUpdatedEventValues
 import com.terraformation.backend.customer.model.ExistingProjectModel
 import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
@@ -73,6 +75,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val newProjectId =
           store.create(
               NewProjectModel(
+                  countryCode = "US",
                   description = "Project description",
                   id = null,
                   name = "Project name",
@@ -82,6 +85,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           ProjectsRow(
+              countryCode = "US",
               createdBy = user.userId,
               createdTime = clock.instant,
               description = "Project description",
@@ -97,6 +101,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventPublished(
           ProjectCreatedEvent(
+              countryCode = "US",
               name = "Project name",
               organizationId = organizationId,
               projectId = newProjectId,
@@ -265,6 +270,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       store.update(projectId) {
         ExistingProjectModel(
+            countryCode = "AU",
             description = "New description",
             id = ProjectId(-1),
             name = "New name",
@@ -274,6 +280,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           before.copy(
+              countryCode = "AU",
               createdBy = currentUserId,
               createdTime = Instant.EPOCH,
               description = "New description",
@@ -293,6 +300,16 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               projectId = projectId,
           )
       )
+
+      eventPublisher.assertEventPublished(
+          ProjectUpdatedEvent(
+              changedFrom = ProjectUpdatedEventValues(description = "Description 1"),
+              changedTo =
+                  ProjectUpdatedEventValues(countryCode = "AU", description = "New description"),
+              organizationId = organizationId,
+              projectId = projectId,
+          )
+      )
     }
 
     @Test
@@ -300,6 +317,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       store.update(projectId) { it.copy(description = "New description") }
 
       eventPublisher.assertEventNotPublished<ProjectRenamedEvent>()
+    }
+
+    @Test
+    fun `does not publish ProjectUpdatedEvent if non-name information does not change`() {
+      store.update(projectId) { it.copy(name = "New name") }
+
+      eventPublisher.assertEventNotPublished<ProjectUpdatedEvent>()
     }
 
     @Test
