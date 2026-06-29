@@ -12,6 +12,7 @@ import com.terraformation.backend.customer.model.NewProjectModel
 import com.terraformation.backend.customer.model.ProjectInternalUserModel
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
+import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.ProjectInternalRole
@@ -79,6 +80,7 @@ class ProjectsController(
             NewProjectModel(
                 countryCode = payload.countryCode,
                 description = payload.description,
+                ecoregionId = payload.ecoregionId,
                 id = null,
                 name = payload.name,
                 organizationId = payload.organizationId,
@@ -161,6 +163,7 @@ data class ProjectPayload(
     val createdBy: UserId?,
     val createdTime: Instant?,
     val description: String?,
+    val ecoregionId: EcoregionId?,
     val id: ProjectId,
     val modifiedBy: UserId?,
     val modifiedTime: Instant?,
@@ -175,6 +178,7 @@ data class ProjectPayload(
       createdBy = model.createdBy,
       createdTime = model.createdTime,
       description = model.description,
+      ecoregionId = model.ecoregionId,
       id = model.id,
       modifiedBy = model.modifiedBy,
       modifiedTime = model.modifiedTime,
@@ -203,6 +207,7 @@ data class UpdateProjectInternalUserRequestPayload(val internalUsers: List<Inter
 data class CreateProjectRequestPayload(
     val countryCode: String?,
     val description: String?,
+    val ecoregionId: EcoregionId?,
     val name: String,
     val organizationId: OrganizationId,
 )
@@ -214,12 +219,16 @@ data class UpdateProjectRequestPayload(
     // once clients are updated to know about this field.
     val countryCode: Optional<String>?,
     val description: String?,
+    // TEMPORARY: Treat missing ecoregions as "don't edit"; this can change to plain EcoregionId?
+    // type once clients are updated to know about this field.
+    val ecoregionId: Optional<EcoregionId>?,
     val name: String,
 ) {
   fun applyTo(model: ExistingProjectModel) =
       model.copy(
           countryCode = countryCode.patchNullable(model.countryCode),
           description = description,
+          ecoregionId = ecoregionId.patchNullable(model.ecoregionId),
           name = name,
       )
 }

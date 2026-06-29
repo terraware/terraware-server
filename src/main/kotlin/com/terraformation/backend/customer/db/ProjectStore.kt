@@ -79,6 +79,7 @@ class ProjectStore(
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
             description = model.description,
+            ecoregionId = model.ecoregionId,
             modifiedBy = currentUser().userId,
             modifiedTime = clock.instant(),
             name = model.name,
@@ -96,6 +97,7 @@ class ProjectStore(
     eventPublisher.publishEvent(
         ProjectCreatedEvent(
             countryCode = model.countryCode,
+            ecoregionId = model.ecoregionId,
             name = model.name,
             organizationId = model.organizationId,
             projectId = projectId,
@@ -134,6 +136,7 @@ class ProjectStore(
             .update(PROJECTS)
             .set(PROJECTS.COUNTRY_CODE, updated.countryCode)
             .set(PROJECTS.DESCRIPTION, updated.description)
+            .set(PROJECTS.ECOREGION_ID, updated.ecoregionId)
             .set(PROJECTS.MODIFIED_BY, currentUser().userId)
             .set(PROJECTS.MODIFIED_TIME, clock.instant())
             .set(PROJECTS.NAME, updated.name)
@@ -163,11 +166,13 @@ class ProjectStore(
                     ProjectUpdatedEventValues(
                         countryCode = existing.countryCode.nullIfEquals(updated.countryCode),
                         description = existing.description.nullIfEquals(updated.description),
+                        ecoregionId = existing.ecoregionId.nullIfEquals(updated.ecoregionId),
                     ),
                 changedTo =
                     ProjectUpdatedEventValues(
                         countryCode = updated.countryCode.nullIfEquals(existing.countryCode),
                         description = updated.description.nullIfEquals(existing.description),
+                        ecoregionId = updated.ecoregionId.nullIfEquals(existing.ecoregionId),
                     ),
                 organizationId = existing.organizationId,
                 projectId = projectId,

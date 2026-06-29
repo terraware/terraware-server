@@ -988,6 +988,7 @@ abstract class DatabaseBackedTest {
       description: String? = null,
       phase: AcceleratorPhase? = null,
       countryCode: String? = null,
+      ecoregionId: EcoregionId? = null,
   ): ProjectId {
     val row =
         ProjectsRow(
@@ -995,6 +996,7 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             description = description,
+            ecoregionId = ecoregionId,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
