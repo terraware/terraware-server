@@ -54,7 +54,9 @@ class EcoregionImporter(
 
   private val log = perClassLogger()
 
-  fun importEcoregions(zipFilePath: Path) {
+  fun importEcoregions(zipFilePath: Path): EcoregionImportResult {
+    val obsoleteEcoregions = mutableMapOf<EcoregionId, String>()
+
     val validCountryCodes =
         dslContext.select(COUNTRIES.CODE).from(COUNTRIES).fetchSet(COUNTRIES.CODE.asNonNullable())
 
@@ -86,7 +88,20 @@ class EcoregionImporter(
             .set(REALM, DSL.excluded(REALM))
             .execute()
 
-        dslContext.deleteFrom(ECOREGIONS).where(ID.notIn(entries.map { it.id })).execute()
+        val allEcoregionIds = entries.map { it.id }
+
+        // Flag ecoregions that are no longer on the list.
+        dslContext
+            .select(ID.asNonNullable(), ECO_NAME.asNonNullable())
+            .from(ECOREGIONS)
+            .where(ID.notIn(allEcoregionIds))
+            .orderBy(ID)
+            .fetch()
+            .forEach { (ecoregionId, ecoregionName) ->
+              log.warn("Ecoregion $ecoregionId ($ecoregionName) was deleted from ecoregions list.")
+
+              obsoleteEcoregions[ecoregionId] = ecoregionName
+            }
       }
 
       log.info("Imported raw ecoregions data; calculating ecoregion-country mappings")
@@ -130,6 +145,8 @@ class EcoregionImporter(
 
       eventPublisher.publishEvent(EcoregionsImportedEvent())
     }
+
+    return EcoregionImportResult(obsoleteEcoregions)
   }
 
   private fun loadEcoregionEntries(zipFilePath: Path): List<EcoregionEntry> {
@@ -184,6 +201,8 @@ class EcoregionImporter(
       )
     }
   }
+
+  data class EcoregionImportResult(val obsoleteEcoregions: Map<EcoregionId, String>)
 
   data class EcoregionEntry(
       val biomeName: String?,

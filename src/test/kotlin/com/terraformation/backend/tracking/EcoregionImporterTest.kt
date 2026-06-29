@@ -11,6 +11,7 @@ import java.nio.file.StandardCopyOption
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import org.junit.Assume.assumeNotNull
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -33,6 +34,7 @@ class EcoregionImporterTest : DatabaseTest() {
 
   @Test
   fun `import ecoregions data`() {
+    val deletedEcoregionId = insertEcoregion(id = 1234567, ecoName = "Old Region")
     val path = Path("build/ecoregions.zip").toAbsolutePath()
 
     if (!path.exists()) {
@@ -43,8 +45,15 @@ class EcoregionImporterTest : DatabaseTest() {
       }
     }
 
-    importer.importEcoregions(path)
+    val result = importer.importEcoregions(path)
 
     eventPublisher.assertEventPublished(EcoregionsImportedEvent())
+
+    assertEquals(
+        EcoregionImporter.EcoregionImportResult(
+            obsoleteEcoregions = mapOf(deletedEcoregionId to "Old Region"),
+        ),
+        result,
+    )
   }
 }

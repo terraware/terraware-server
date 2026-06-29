@@ -80,9 +80,18 @@ class AdminSpeciesController(
       redirectAttributes: RedirectAttributes,
   ): String {
     try {
-      withDownloadedFile(url) { zipFilePath -> ecoregionImporter.importEcoregions(zipFilePath) }
+      val result =
+          withDownloadedFile(url) { zipFilePath -> ecoregionImporter.importEcoregions(zipFilePath) }
 
       redirectAttributes.successMessage = "Ecoregions imported successfully."
+
+      if (result.obsoleteEcoregions.isNotEmpty()) {
+        redirectAttributes.successDetails =
+            result.obsoleteEcoregions.map { (ecoregionId, name) ->
+              "Ecoregion $ecoregionId ($name) was deleted from ecoregions list; keeping it " +
+                  "around in Terraware so it can be referenced by historical data."
+            }
+      }
     } catch (e: Exception) {
       log.error("Ecoregion import failed", e)
       redirectAttributes.failureMessage = "Import failed: ${e.message}"
@@ -137,7 +146,7 @@ class AdminSpeciesController(
     return redirectToAdminHome()
   }
 
-  private fun withDownloadedFile(url: URI, suffix: String = ".zip", func: (Path) -> Unit) {
+  private fun <T> withDownloadedFile(url: URI, suffix: String = ".zip", func: (Path) -> T): T {
     val tempFile = kotlin.io.path.createTempFile(suffix = suffix)
 
     try {
@@ -147,7 +156,7 @@ class AdminSpeciesController(
         Files.copy(fileStream, tempFile, StandardCopyOption.REPLACE_EXISTING)
       }
 
-      func(tempFile)
+      return func(tempFile)
     } finally {
       tempFile.deleteIfExists()
     }
