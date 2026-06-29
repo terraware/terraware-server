@@ -1,6 +1,7 @@
 package com.terraformation.backend.customer.model
 
 import com.terraformation.backend.db.accelerator.AcceleratorPhase
+import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.UserId
@@ -14,6 +15,7 @@ data class ProjectModel<ID : ProjectId?>(
     val createdBy: UserId? = null,
     val createdTime: Instant? = null,
     val description: String? = null,
+    val ecoregionId: EcoregionId? = null,
     val id: ID,
     val modifiedBy: UserId? = null,
     val modifiedTime: Instant? = null,
@@ -28,6 +30,7 @@ data class ProjectModel<ID : ProjectId?>(
           row.createdBy,
           row.createdTime,
           row.description,
+          row.ecoregionId,
           row.id!!,
           row.modifiedBy,
           row.modifiedTime,
@@ -43,6 +46,7 @@ data class ProjectModel<ID : ProjectId?>(
           createdBy = record[PROJECTS.CREATED_BY]!!,
           createdTime = record[PROJECTS.CREATED_TIME]!!,
           description = record[PROJECTS.DESCRIPTION],
+          ecoregionId = record[PROJECTS.ECOREGION_ID],
           id = record[PROJECTS.ID]!!,
           modifiedBy = record[PROJECTS.MODIFIED_BY]!!,
           modifiedTime = record[PROJECTS.MODIFIED_TIME]!!,
