@@ -90,7 +90,7 @@ class EventLogPayloadContext(
 
   /**
    * Returns the scientific name of a species, possibly looking it up from the database the first
-   * time it's requested. Used by subjects whose entities reference a `SpeciesId` directly. Returns
+   * time it's requested. Used by subjects whose entities reference a [SpeciesId] directly. Returns
    * the species ID as a string if the species can't be found (e.g., it was hard-deleted).
    */
   fun getSpeciesScientificName(speciesId: SpeciesId): String =
@@ -114,14 +114,15 @@ class EventLogPayloadContext(
   inline fun <reified T : EventSubjectPayload> subjectFullText(vararg args: Any) =
       subjectFullText(T::class, args)
 
-  /** Returns all the events of a given class that were fetched from the database. */
+  /** Returns all the events of a given class [T] that were fetched from the database. */
   fun <T : PersistentEvent> getEvents(kClass: KClass<T>): List<T> {
     @Suppress("UNCHECKED_CAST")
     return (eventsByClass[kClass] as? List<T>) ?: emptyList()
   }
 
   /**
-   * Returns the first event of a given class that matches a condition, or null if no events match.
+   * Returns the first event of a given class [T] that matches [predicate], or null if no events
+   * match.
    */
   inline fun <reified T : PersistentEvent> firstOrNull(predicate: (T) -> Boolean): T? =
       getEvents(T::class).firstOrNull { predicate(it) }
@@ -134,9 +135,9 @@ class EventLogPayloadContext(
           )
 
   /**
-   * Returns the first event of a given class that matches a condition and that was published before
-   * the specified event, or null if no matching events were published before the specified one.
-   * This can be used to find, e.g., the most recent rename event.
+   * Returns the first event of a given class [kClass] that matches [predicate] and that was
+   * published before the specified event [event], or null if no matching events were published
+   * before the specified one. This can be used to find, e.g., the most recent rename event.
    */
   @Suppress("UNCHECKED_CAST")
   fun <T : PersistentEvent> lastEventBefore(
@@ -159,9 +160,9 @@ class EventLogPayloadContext(
   }
 
   /**
-   * Returns the first event of a given class that matches a condition and that was published before
-   * the specified event, or null if no matching events were published before the specified one.
-   * This can be used to find, e.g., the most recent rename event.
+   * Returns the first event of a given class [T] that matches [predicate] and that was published
+   * before the specified event [event], or null if no matching events were published before the
+   * specified one. This can be used to find, e.g., the most recent rename event.
    */
   inline fun <reified T : PersistentEvent> lastEventBefore(
       event: Any,
