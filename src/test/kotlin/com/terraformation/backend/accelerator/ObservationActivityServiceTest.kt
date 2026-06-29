@@ -270,6 +270,12 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       )
       val plot2File3Id = insertFile(contentType = "video/mp4")
       insertObservationMediaFile(position = null)
+      val plot2File4Id = insertFile()
+      insertObservationMediaFile(
+          caption = "Explanation",
+          position = ObservationPlotPosition.NortheastCorner,
+          type = ObservationMediaType.Explanation,
+      )
 
       // Second observation shouldn't be included.
       insertObservation()
@@ -331,11 +337,20 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
               ActivityMediaFilesRecord(
                   activityId = activityId,
                   activityMediaTypeId = ActivityMediaType.Photo,
+                  caption = "Explanation",
+                  fileId = plot2File4Id,
+                  isCoverPhoto = false,
+                  isHiddenOnMap = false,
+                  listPosition = 4,
+              ),
+              ActivityMediaFilesRecord(
+                  activityId = activityId,
+                  activityMediaTypeId = ActivityMediaType.Photo,
                   caption = "Quadrat",
                   fileId = plot2File1Id,
                   isCoverPhoto = false,
                   isHiddenOnMap = false,
-                  listPosition = 4,
+                  listPosition = 5,
               ),
               ActivityMediaFilesRecord(
                   activityId = activityId,
@@ -344,7 +359,7 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                   fileId = plot2File3Id,
                   isCoverPhoto = false,
                   isHiddenOnMap = false,
-                  listPosition = 5,
+                  listPosition = 6,
               ),
           )
       )

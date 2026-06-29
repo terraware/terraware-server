@@ -260,10 +260,18 @@ class ObservationService(
     if (metadata.geolocation == null && isOriginal) {
       throw IllegalArgumentException("Geolocation is required for original observation photos")
     }
+
+    if (type == ObservationMediaType.Explanation) {
+      if (caption.isNullOrBlank()) {
+        throw IllegalArgumentException("Caption is required for explanation media file")
+      }
+      if (position == null) {
+        throw IllegalArgumentException("Position is required for explanation media file")
+      }
+    }
     if (type == ObservationMediaType.Quadrat && position == null) {
       throw IllegalArgumentException("Position is required for quadrat media file")
     }
-
     if (type == ObservationMediaType.Soil && position != null) {
       throw IllegalArgumentException("Position must be null for a soil media file")
     }

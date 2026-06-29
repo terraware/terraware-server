@@ -389,7 +389,8 @@ ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 INSERT INTO tracking.observation_media_types (id, name)
 VALUES (1, 'Plot'),
        (2, 'Quadrat'),
-       (3, 'Soil')
+       (3, 'Soil'),
+       (4, 'Explanation')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO tracking.observation_plot_positions (id, name)
