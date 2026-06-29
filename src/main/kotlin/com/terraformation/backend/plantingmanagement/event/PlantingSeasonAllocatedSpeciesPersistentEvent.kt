@@ -4,8 +4,8 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
-import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 import com.terraformation.backend.eventlog.EntityDeletedPersistentEvent
+import com.terraformation.backend.eventlog.FieldsCreatedPersistentEvent
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.util.nullIfEquals
@@ -24,7 +24,12 @@ data class PlantingSeasonAllocatedSpeciesCreatedEventV1(
     override val plantingSiteId: PlantingSiteId,
     val quantity: Int,
     override val speciesId: SpeciesId,
-) : EntityCreatedPersistentEvent, PlantingSeasonAllocatedSpeciesPersistentEvent
+) : FieldsCreatedPersistentEvent, PlantingSeasonAllocatedSpeciesPersistentEvent {
+  override fun listInitialFields(messages: Messages) =
+      listOfNotNull(
+          createInitialField("quantity", quantity.toString()),
+      )
+}
 
 typealias PlantingSeasonAllocatedSpeciesCreatedEvent = PlantingSeasonAllocatedSpeciesCreatedEventV1
 
