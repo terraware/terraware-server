@@ -107,7 +107,7 @@ dependencies {
 
   implementation("ch.qos.logback.access:logback-access-tomcat:2.0.12")
   implementation("com.drewnoakes:metadata-extractor:2.20.0")
-  implementation("com.dropbox.core:dropbox-core-sdk:7.1.0")
+  implementation("com.dropbox.core:dropbox-core-sdk:8.0.0")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-xml")
   implementation("com.google.api-client:google-api-client:2.9.0")
   implementation("com.google.auth:google-auth-library-oauth2-http:1.48.0")
