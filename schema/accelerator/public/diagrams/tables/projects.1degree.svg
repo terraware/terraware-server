@@ -40,7 +40,7 @@
 <g id="node2" class="node">
 <title>projects</title>
 <g id="a_node2"><a xlink:href="../../tables/projects.html" xlink:title="projects" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="287,-2074 287,-2338 503,-2338 503,-2074 287,-2074"/>
+<polygon fill="#ffffff" stroke="transparent" points="287,-2052 287,-2338 503,-2338 503,-2052 287,-2052"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="289,-2314 289,-2336 501,-2336 501,-2314 289,-2314"/>
 <polygon fill="none" stroke="black" points="289,-2314 289,-2336 501,-2336 501,-2314 289,-2314"/>
 <text text-anchor="start" x="293.5" y="-2323.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">projects</text>
@@ -91,16 +91,20 @@
 <text text-anchor="start" x="309" y="-2102.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
 <polygon fill="none" stroke="black" points="401,-2094 401,-2116 501,-2116 501,-2094 401,-2094"/>
 <text text-anchor="start" x="404" y="-2102.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="#ffffff" stroke="transparent" points="289,-2076 289,-2094 349,-2094 349,-2076 289,-2076"/>
-<polygon fill="none" stroke="black" points="289,-2076 289,-2094 349,-2094 349,-2076 289,-2076"/>
-<text text-anchor="start" x="292" y="-2082.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="349,-2076 349,-2094 401,-2094 401,-2076 349,-2076"/>
-<polygon fill="none" stroke="black" points="349,-2076 349,-2094 401,-2094 401,-2076 349,-2076"/>
-<text text-anchor="start" x="391" y="-2082.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="401,-2076 401,-2094 501,-2094 501,-2076 401,-2076"/>
-<polygon fill="none" stroke="black" points="401,-2076 401,-2094 501,-2094 501,-2076 401,-2076"/>
-<text text-anchor="start" x="476" y="-2082.2" font-family="Helvetica,sans-Serif" font-size="11.00">46 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="288,-2075 288,-2337 502,-2337 502,-2075 288,-2075"/>
+<polygon fill="none" stroke="black" points="289,-2072 289,-2094 401,-2094 401,-2072 289,-2072"/>
+<text text-anchor="start" x="309" y="-2080.2" font-family="Helvetica,sans-Serif" font-size="11.00">ecoregion_id</text>
+<polygon fill="none" stroke="black" points="401,-2072 401,-2094 501,-2094 501,-2072 401,-2072"/>
+<text text-anchor="start" x="404" y="-2080.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="transparent" points="289,-2054 289,-2072 349,-2072 349,-2054 289,-2054"/>
+<polygon fill="none" stroke="black" points="289,-2054 289,-2072 349,-2072 349,-2054 289,-2054"/>
+<text text-anchor="start" x="292" y="-2060.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="349,-2054 349,-2072 401,-2072 401,-2054 349,-2054"/>
+<polygon fill="none" stroke="black" points="349,-2054 349,-2072 401,-2072 401,-2054 349,-2054"/>
+<text text-anchor="start" x="391" y="-2060.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="401,-2054 401,-2072 501,-2072 501,-2054 401,-2054"/>
+<polygon fill="none" stroke="black" points="401,-2054 401,-2072 501,-2072 501,-2054 401,-2054"/>
+<text text-anchor="start" x="476" y="-2060.2" font-family="Helvetica,sans-Serif" font-size="11.00">46 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="288,-2053 288,-2337 502,-2337 502,-2053 288,-2053"/>
 </a>
 </g>
 </g>

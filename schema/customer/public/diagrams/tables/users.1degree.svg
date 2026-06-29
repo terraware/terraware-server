@@ -161,7 +161,7 @@
 <g id="node3" class="node">
 <title>projects</title>
 <g id="a_node3"><a xlink:href="../../tables/projects.html" xlink:title="projects" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="918,-3975.07 918,-4165.07 1030,-4165.07 1030,-3975.07 918,-3975.07"/>
+<polygon fill="#ffffff" stroke="transparent" points="918,-3953.07 918,-4165.07 1030,-4165.07 1030,-3953.07 918,-3953.07"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="918,-4143.07 918,-4165.07 1030,-4165.07 1030,-4143.07 918,-4143.07"/>
 <polygon fill="none" stroke="black" points="918,-4143.07 918,-4165.07 1030,-4165.07 1030,-4143.07 918,-4143.07"/>
 <text text-anchor="start" x="922.5" y="-4152.27" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">projects</text>
@@ -187,17 +187,20 @@
 <polygon fill="none" stroke="black" points="918,-4011.07 918,-4033.07 1030,-4033.07 1030,-4011.07 918,-4011.07"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="923" y="-4028.07"/>
 <text text-anchor="start" x="938" y="-4019.27" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
-<polygon fill="none" stroke="black" points="918,-3993.07 918,-4011.07 1030,-4011.07 1030,-3993.07 918,-3993.07"/>
-<text text-anchor="start" x="921" y="-3999.27" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="918,-3975.07 918,-3993.07 964,-3993.07 964,-3975.07 918,-3975.07"/>
-<polygon fill="none" stroke="black" points="918,-3975.07 918,-3993.07 964,-3993.07 964,-3975.07 918,-3975.07"/>
-<text text-anchor="start" x="921" y="-3981.27" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="964,-3975.07 964,-3993.07 989,-3993.07 989,-3975.07 964,-3975.07"/>
-<polygon fill="none" stroke="black" points="964,-3975.07 964,-3993.07 989,-3993.07 989,-3975.07 964,-3975.07"/>
-<text text-anchor="start" x="979" y="-3981.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="989,-3975.07 989,-3993.07 1030,-3993.07 1030,-3975.07 989,-3975.07"/>
-<polygon fill="none" stroke="black" points="989,-3975.07 989,-3993.07 1030,-3993.07 1030,-3975.07 989,-3975.07"/>
-<text text-anchor="start" x="1005" y="-3981.27" font-family="Helvetica,sans-Serif" font-size="11.00">49 &gt;</text>
+<polygon fill="none" stroke="black" points="918,-3989.07 918,-4011.07 1030,-4011.07 1030,-3989.07 918,-3989.07"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="923" y="-4006.07"/>
+<text text-anchor="start" x="938" y="-3997.27" font-family="Helvetica,sans-Serif" font-size="11.00">ecoregion_id</text>
+<polygon fill="none" stroke="black" points="918,-3971.07 918,-3989.07 1030,-3989.07 1030,-3971.07 918,-3971.07"/>
+<text text-anchor="start" x="921" y="-3977.27" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="918,-3953.07 918,-3971.07 964,-3971.07 964,-3953.07 918,-3953.07"/>
+<polygon fill="none" stroke="black" points="918,-3953.07 918,-3971.07 964,-3971.07 964,-3953.07 918,-3953.07"/>
+<text text-anchor="start" x="921" y="-3959.27" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 5</text>
+<polygon fill="#ffffff" stroke="transparent" points="964,-3953.07 964,-3971.07 989,-3971.07 989,-3953.07 964,-3953.07"/>
+<polygon fill="none" stroke="black" points="964,-3953.07 964,-3971.07 989,-3971.07 989,-3953.07 964,-3953.07"/>
+<text text-anchor="start" x="979" y="-3959.27" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="989,-3953.07 989,-3971.07 1030,-3971.07 1030,-3953.07 989,-3953.07"/>
+<polygon fill="none" stroke="black" points="989,-3953.07 989,-3971.07 1030,-3971.07 1030,-3953.07 989,-3953.07"/>
+<text text-anchor="start" x="1005" y="-3959.27" font-family="Helvetica,sans-Serif" font-size="11.00">49 &gt;</text>
 </a>
 </g>
 </g>
@@ -1379,9 +1382,9 @@
 <!-- docprod.variable_workflow_history&#45;&gt;users -->
 <g id="edge54" class="edge">
 <title>docprod.variable_workflow_history:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M1120.82,-4039.42C1097.94,-4029.01 1108.02,-3990.23 1083,-3965.07 1000.25,-3881.85 948.92,-3898.11 865,-3816.07 847.01,-3798.48 853.81,-3782.62 832,-3770.07 767.37,-3732.89 550.57,-3790.94 498,-3738.07 424.69,-3664.34 559.98,-3272.07 456,-3272.07"/>
-<polygon fill="black" stroke="black" points="1127.14,-4040.6 1134.34,-4045.61 1131.07,-4041.34 1135,-4042.07 1135,-4042.07 1135,-4042.07 1131.07,-4041.34 1135.66,-4038.53 1127.14,-4040.6 1127.14,-4040.6"/>
-<ellipse fill="none" stroke="black" cx="1123.99" cy="-4040.02" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1120.64,-4039.63C1091.83,-4027.73 1113.01,-3975.07 1083,-3943.07 1005.36,-3860.28 950.75,-3884.43 865,-3810.07 847.59,-3794.97 852.35,-3780.88 832,-3770.07 766.15,-3735.09 550.57,-3790.94 498,-3738.07 424.69,-3664.34 559.98,-3272.07 456,-3272.07"/>
+<polygon fill="black" stroke="black" points="1127.11,-4040.73 1134.4,-4045.62 1131.06,-4041.4 1135,-4042.07 1135,-4042.07 1135,-4042.07 1131.06,-4041.4 1135.6,-4038.52 1127.11,-4040.73 1127.11,-4040.73"/>
+<ellipse fill="none" stroke="black" cx="1123.96" cy="-4040.19" rx="3.2" ry="3.2"/>
 </g>
 <!-- docprod.variable_workflow_history&#45;&gt;projects -->
 <g id="edge55" class="edge">
@@ -1498,9 +1501,9 @@
 <!-- funder.published_activities&#45;&gt;users -->
 <g id="edge60" class="edge">
 <title>funder.published_activities:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M1144.36,-3917.24C1115.94,-3909.24 1115.37,-3876.93 1083,-3857.07 979.03,-3793.28 949.82,-3777.65 832,-3746.07 759.89,-3726.74 550.48,-3763.17 498,-3710.07 429.27,-3640.52 553.78,-3272.07 456,-3272.07"/>
-<polygon fill="black" stroke="black" points="1151.06,-3918.08 1158.55,-3922.64 1155.03,-3918.57 1159,-3919.07 1159,-3919.07 1159,-3919.07 1155.03,-3918.57 1159.45,-3915.5 1151.06,-3918.08 1151.06,-3918.08"/>
-<ellipse fill="none" stroke="black" cx="1147.89" cy="-3917.68" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1144.71,-3917.22C1113.88,-3908.21 1117.76,-3868.46 1083,-3846.07 982.04,-3781.05 948.55,-3774.99 832,-3746.07 759.55,-3728.09 550.48,-3763.17 498,-3710.07 429.27,-3640.52 553.78,-3272.07 456,-3272.07"/>
+<polygon fill="black" stroke="black" points="1151.07,-3918.04 1158.54,-3922.64 1155.03,-3918.56 1159,-3919.07 1159,-3919.07 1159,-3919.07 1155.03,-3918.56 1159.46,-3915.5 1151.07,-3918.04 1151.07,-3918.04"/>
+<ellipse fill="none" stroke="black" cx="1147.89" cy="-3917.63" rx="3.2" ry="3.2"/>
 </g>
 <!-- funder.published_activities&#45;&gt;projects -->
 <g id="edge59" class="edge">
@@ -1558,7 +1561,7 @@
 <!-- funder.published_project_details&#45;&gt;countries -->
 <g id="edge61" class="edge">
 <title>funder.published_project_details:w&#45;&gt;countries:e</title>
-<path fill="none" stroke="black" d="M1129.06,-3364.83C1115.6,-3374.73 1122.74,-3402.48 1116,-3427.07 1089.51,-3523.69 1132.96,-3563.23 1083,-3650.07 1021.18,-3757.53 919.55,-3712.75 865,-3824.07 836.24,-3882.77 878.13,-6130.76 832,-6177.07 803.81,-6205.38 152.95,-6190.07 113,-6190.07"/>
+<path fill="none" stroke="black" d="M1129.06,-3364.83C1115.6,-3374.73 1122.74,-3402.48 1116,-3427.07 1089.51,-3523.69 1134.33,-3564.03 1083,-3650.07 1021.03,-3753.97 919.94,-3705.29 865,-3813.07 835.18,-3871.58 878.34,-6130.54 832,-6177.07 803.81,-6205.38 152.95,-6190.07 113,-6190.07"/>
 <polygon fill="black" stroke="black" points="1135.28,-3363.15 1143.94,-3364.55 1139.14,-3362.11 1143,-3361.07 1143,-3361.07 1143,-3361.07 1139.14,-3362.11 1142.06,-3357.59 1135.28,-3363.15 1135.28,-3363.15"/>
 <ellipse fill="none" stroke="black" cx="1132.19" cy="-3363.98" rx="3.2" ry="3.2"/>
 </g>
@@ -3320,9 +3323,9 @@
 <!-- tracking.planting_sites&#45;&gt;users -->
 <g id="edge159" class="edge">
 <title>tracking.planting_sites:w&#45;&gt;users:e</title>
-<path fill="none" stroke="black" d="M1136.06,-3677.56C1072.68,-3710.17 890.29,-3910.21 865,-3941.07 847.41,-3962.53 856.26,-3980.6 832,-3994.07 799.56,-4012.09 524.99,-4019.54 498,-3994.07 439.55,-3938.92 536.36,-3272.07 456,-3272.07"/>
-<polygon fill="black" stroke="black" points="1142.39,-3675.52 1151.1,-3676.5 1146.19,-3674.3 1150,-3673.07 1150,-3673.07 1150,-3673.07 1146.19,-3674.3 1148.9,-3669.64 1142.39,-3675.52 1142.39,-3675.52"/>
-<ellipse fill="none" stroke="black" cx="1139.34" cy="-3676.5" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1135.95,-3677.33C1072.87,-3707.48 887.78,-3888.26 865,-3919.07 843.35,-3948.35 862.5,-3974.17 832,-3994.07 800.92,-4014.35 524.99,-4019.54 498,-3994.07 439.55,-3938.92 536.36,-3272.07 456,-3272.07"/>
+<polygon fill="black" stroke="black" points="1142.34,-3675.39 1151.04,-3676.52 1146.17,-3674.23 1150,-3673.07 1150,-3673.07 1150,-3673.07 1146.17,-3674.23 1148.96,-3669.63 1142.34,-3675.39 1142.34,-3675.39"/>
+<ellipse fill="none" stroke="black" cx="1139.28" cy="-3676.32" rx="3.2" ry="3.2"/>
 </g>
 <!-- tracking.planting_sites&#45;&gt;users -->
 <g id="edge160" class="edge">
@@ -3341,9 +3344,9 @@
 <!-- tracking.planting_sites&#45;&gt;countries -->
 <g id="edge158" class="edge">
 <title>tracking.planting_sites:w&#45;&gt;countries:e</title>
-<path fill="none" stroke="black" d="M1135.2,-3608.26C1059.32,-3621.76 1140.28,-3747.26 1083,-3823.07 1013.29,-3915.32 920.85,-3863.82 865,-3965.07 835.01,-4019.44 876.23,-6156.49 832,-6200.07 778.58,-6252.71 231.53,-6208.43 157,-6200.07 137.07,-6197.83 133.05,-6190.07 113,-6190.07"/>
-<polygon fill="black" stroke="black" points="1142.03,-3607.71 1150.29,-3610.66 1146.01,-3607.39 1150,-3607.07 1150,-3607.07 1150,-3607.07 1146.01,-3607.39 1149.71,-3603.48 1142.03,-3607.71 1142.03,-3607.71"/>
-<ellipse fill="none" stroke="black" cx="1138.84" cy="-3607.97" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M1135.43,-3608.29C1063.71,-3621.62 1139.35,-3741.35 1083,-3812.07 1012.56,-3900.47 921.38,-3845.1 865,-3943.07 833.73,-3997.42 876.66,-6156.06 832,-6200.07 778.58,-6252.71 231.53,-6208.43 157,-6200.07 137.07,-6197.83 133.05,-6190.07 113,-6190.07"/>
+<polygon fill="black" stroke="black" points="1142.03,-3607.74 1150.3,-3610.66 1146.01,-3607.4 1150,-3607.07 1150,-3607.07 1150,-3607.07 1146.01,-3607.4 1149.7,-3603.48 1142.03,-3607.74 1142.03,-3607.74"/>
+<ellipse fill="none" stroke="black" cx="1138.84" cy="-3608" rx="3.2" ry="3.2"/>
 </g>
 <!-- tracking.planting_sites&#45;&gt;organizations -->
 <g id="edge161" class="edge">

@@ -1,8 +1,8 @@
 time_zones
 asset_statuses
+ecoregions
 seed_treatments
 botanical_countries
-ecoregions
 land_use_model_types
 chat_memory_message_types
 conservation_categories

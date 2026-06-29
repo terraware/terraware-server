@@ -86,8 +86,8 @@ device_template_categories
 conservation_categories
 chat_memory_message_types
 land_use_model_types
-ecoregions
 botanical_countries
 seed_treatments
+ecoregions
 asset_statuses
 time_zones
