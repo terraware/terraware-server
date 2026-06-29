@@ -12,17 +12,21 @@ import com.terraformation.backend.db.tracking.MonitoringPlotId
 import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationMediaType
 import com.terraformation.backend.db.tracking.ObservationPlotPosition
+import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.eventlog.api.CreatedActionPayload
+import com.terraformation.backend.eventlog.api.CreatedFieldPayload
 import com.terraformation.backend.eventlog.api.DeletedActionPayload
 import com.terraformation.backend.eventlog.api.EventLogEntryPayload
 import com.terraformation.backend.eventlog.api.FieldUpdatedActionPayload
 import com.terraformation.backend.eventlog.api.ObservationPlotMediaSubjectPayload
+import com.terraformation.backend.eventlog.api.PlantingSeasonAllocatedSpeciesSubjectPayload
 import com.terraformation.backend.eventlog.model.EventLogEntry
 import com.terraformation.backend.file.api.MediaKind
 import com.terraformation.backend.i18n.Locales
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.i18n.use
+import com.terraformation.backend.plantingmanagement.event.PlantingSeasonAllocatedSpeciesCreatedEventV1
 import com.terraformation.backend.tracking.event.ObservationMediaFileDeletedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEvent
 import com.terraformation.backend.tracking.event.ObservationMediaFileEditedEventValues
@@ -45,7 +49,8 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
   private val monitoringPlotId = MonitoringPlotId(2)
   private val observationId = ObservationId(3)
   private val organizationId = OrganizationId(4)
-  private val plantingSiteId = PlantingSiteId(5)
+  private val plantingSeasonId = PlantingSeasonId(5)
+  private val plantingSiteId = PlantingSiteId(6)
   private lateinit var deletedUserId: UserId
   private lateinit var knownUserId: UserId
 
@@ -203,6 +208,45 @@ class EventLogPayloadTransformerTest : DatabaseTest(), RunsAsDatabaseUser {
     val actual = transformer.eventsToPayloads(listOf(uploadEntry, deleteEntry))
 
     assertEquals(expected, actual)
+  }
+
+  @Test
+  fun `FieldsCreatedPersistentEvent includes initial field values in CreatedActionPayload`() {
+    val speciesId = insertSpecies(scientificName = "Quercus robur")
+
+    val entry =
+        eventLogEntry(
+            knownUserId,
+            PlantingSeasonAllocatedSpeciesCreatedEventV1(
+                organizationId = inserted.organizationId,
+                plantingSeasonId = plantingSeasonId,
+                plantingSiteId = plantingSiteId,
+                quantity = 42,
+                speciesId = speciesId,
+            ),
+        )
+
+    val expected =
+        listOf(
+            EventLogEntryPayload(
+                action =
+                    CreatedActionPayload(listOf(CreatedFieldPayload("quantity", listOf("42")))),
+                subject =
+                    PlantingSeasonAllocatedSpeciesSubjectPayload(
+                        fullText = "Allocated species Quercus robur",
+                        plantingSeasonId = plantingSeasonId,
+                        plantingSiteId = plantingSiteId,
+                        scientificName = "Quercus robur",
+                        shortText = "Allocated species",
+                        speciesId = speciesId,
+                    ),
+                timestamp = entry.createdTime,
+                userId = knownUserId,
+                userName = "Known User",
+            )
+        )
+
+    assertEquals(expected, transformer.eventsToPayloads(listOf(entry)))
   }
 
   private fun uploadedEvent(): ObservationMediaFileUploadedEvent =
