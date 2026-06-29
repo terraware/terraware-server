@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.table.SearchTables
+import io.swagger.v3.core.converter.ModelConverters
 import io.swagger.v3.core.util.RefUtils
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
@@ -28,6 +29,7 @@ import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.typeOf
 import org.jooq.DSLContext
@@ -162,10 +164,21 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
           }
 
           // Optional<*> properties should be marked as nullable in the schema.
-          if (
-              propertySchema != null && property.returnType.jvmErasure.isSubclassOf(Optional::class)
-          ) {
-            propertySchema.nullable = true
+          if (property.returnType.jvmErasure.isSubclassOf(Optional::class)) {
+            if (propertySchema != null) {
+              propertySchema.nullable = true
+            } else {
+              // Property doesn't have a @Schema annotation, so it doesn't have a Schema object
+              // associated with it yet; we need to make one of the appropriate type.
+              val newSchema =
+                  ModelConverters.getInstance()
+                      .readAllAsResolvedSchema(property.returnType.javaType)
+                      ?.schema
+              if (newSchema != null) {
+                newSchema.nullable = true
+                classSchema.addProperty(propertyName, newSchema)
+              }
+            }
           }
         }
       }
