@@ -202,9 +202,9 @@
 <ellipse fill="none" stroke="black" cx="984.31" cy="-12206.5" rx="3.2" ry="3.2"/>
 </g>
 <!-- ecoregions -->
-<g id="node36" class="node">
+<g id="node35" class="node">
 <title>ecoregions</title>
-<g id="a_node36"><a xlink:href="../../tables/ecoregions.html" xlink:title="ecoregions" target="_top">
+<g id="a_node35"><a xlink:href="../../tables/ecoregions.html" xlink:title="ecoregions" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="639.5,-12012 639.5,-12206 756.5,-12206 756.5,-12012 639.5,-12012"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="640,-12184 640,-12206 757,-12206 757,-12184 640,-12184"/>
 <polygon fill="none" stroke="black" points="640,-12184 640,-12206 757,-12206 757,-12184 640,-12184"/>
@@ -1007,9 +1007,9 @@
 <ellipse fill="none" stroke="black" cx="598.83" cy="-11013.86" rx="3.2" ry="3.2"/>
 </g>
 <!-- country_subdivisions -->
-<g id="node35" class="node">
+<g id="node36" class="node">
 <title>country_subdivisions</title>
-<g id="a_node35"><a xlink:href="../../tables/country_subdivisions.html" xlink:title="country_subdivisions" target="_top">
+<g id="a_node36"><a xlink:href="../../tables/country_subdivisions.html" xlink:title="country_subdivisions" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="311.5,-11046 311.5,-11152 480.5,-11152 480.5,-11046 311.5,-11046"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="312,-11130 312,-11152 481,-11152 481,-11130 312,-11130"/>
 <polygon fill="none" stroke="black" points="312,-11130 312,-11152 481,-11152 481,-11130 312,-11130"/>
