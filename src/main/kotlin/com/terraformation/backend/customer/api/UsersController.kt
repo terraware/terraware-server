@@ -166,7 +166,7 @@ class UsersController(private val clock: InstantSource, private val userStore: U
   @GetMapping("/{userId}")
   @Operation(summary = "Get a user by ID, if they exist.")
   fun getUser(
-      @PathVariable("userId") userId: UserId,
+      @PathVariable userId: UserId,
   ): GetUserResponsePayload {
     val user = userStore.fetchOneByIdAccelerator(userId)
     return GetUserResponsePayload(UserProfilePayload(user))

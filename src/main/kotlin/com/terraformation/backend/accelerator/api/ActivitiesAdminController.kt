@@ -68,7 +68,7 @@ class ActivitiesAdminController(
   @RequireGlobalRole(
       [GlobalRole.ReadOnly, GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin]
   )
-  fun adminGetActivity(@PathVariable("id") id: ActivityId): AdminGetActivityResponsePayload {
+  fun adminGetActivity(@PathVariable id: ActivityId): AdminGetActivityResponsePayload {
     val activity = activityStore.fetchOneById(id, ActivityMediaDepth.All)
 
     return AdminGetActivityResponsePayload(AdminActivityPayload(activity))
@@ -89,7 +89,7 @@ class ActivitiesAdminController(
   @PutMapping("/{id}")
   @RequireGlobalRole([GlobalRole.TFExpert, GlobalRole.AcceleratorAdmin, GlobalRole.SuperAdmin])
   fun adminUpdateActivity(
-      @PathVariable("id") id: ActivityId,
+      @PathVariable id: ActivityId,
       @RequestBody payload: AdminUpdateActivityRequestPayload,
   ): SimpleSuccessResponsePayload {
     activityStore.updateForAdmin(id, payload::applyTo)

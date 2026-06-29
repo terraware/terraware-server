@@ -36,7 +36,7 @@ class ProjectScoresController(
   @GetMapping
   @Operation(summary = "Gets score selections for a single project.")
   fun getProjectScores(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
   ): GetProjectScoresResponsePayload {
     val scoresByPhase = projectScoreStore.fetchScores(projectId)
 
@@ -61,7 +61,7 @@ class ProjectScoresController(
               "exist, a new entry is created. Setting a `score` to `null` removes the score.",
   )
   fun upsertProjectScores(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
       @RequestBody @Valid payload: UpsertProjectScoresRequestPayload,
   ): SimpleSuccessResponsePayload {
     projectScoreStore.updateScores(projectId, payload.phase, payload.scores.map { it.toModel() })

@@ -78,7 +78,7 @@ class AdminInternalTagsController(
 
   @PostMapping("/updateInternalTag/{id}")
   fun updateInternalTag(
-      @PathVariable("id") id: InternalTagId,
+      @PathVariable id: InternalTagId,
       @RequestParam name: String,
       @RequestParam description: String?,
       redirectAttributes: RedirectAttributes,
@@ -96,7 +96,7 @@ class AdminInternalTagsController(
 
   @PostMapping("/deleteInternalTag/{id}")
   fun deleteInternalTag(
-      @PathVariable("id") id: InternalTagId,
+      @PathVariable id: InternalTagId,
       redirectAttributes: RedirectAttributes,
   ): String {
     try {

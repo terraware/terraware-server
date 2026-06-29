@@ -43,7 +43,7 @@ class ProjectVotesController(
               "contain a list of eligible voters and their selections. ",
   )
   fun getProjectVotes(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
   ): GetProjectVotesResponsePayload {
     val votes = voteStore.fetchAllVotes(projectId)
     val decisions = voteStore.fetchAllVoteDecisions(projectId)
@@ -62,7 +62,7 @@ class ProjectVotesController(
               "exist, a new entry is created. Setting a `voteOption` to `null` removes the vote.",
   )
   fun upsertProjectVotes(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
       @RequestBody payload: UpsertProjectVotesRequestPayload,
   ): SimpleSuccessResponsePayload {
     payload.votes.forEach {
@@ -86,7 +86,7 @@ class ProjectVotesController(
               "`phaseDelete` to `true`",
   )
   fun deleteProjectVotes(
-      @PathVariable("projectId") projectId: ProjectId,
+      @PathVariable projectId: ProjectId,
       @RequestBody payload: DeleteProjectVotesRequestPayload,
   ): SimpleSuccessResponsePayload {
     if (payload.userId == null && payload.phaseDelete != true) {

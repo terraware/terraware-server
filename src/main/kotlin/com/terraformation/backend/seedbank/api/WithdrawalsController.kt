@@ -33,9 +33,7 @@ class WithdrawalsController(
 ) {
   @GetMapping
   @Operation(summary = "List all the withdrawals from an accession.")
-  fun listWithdrawals(
-      @PathVariable("accessionId") accessionId: AccessionId
-  ): GetWithdrawalsResponsePayload {
+  fun listWithdrawals(@PathVariable accessionId: AccessionId): GetWithdrawalsResponsePayload {
     val withdrawals = withdrawalStore.fetchWithdrawals(accessionId)
     val payloads = withdrawals.map { GetWithdrawalPayload(it) }
 
@@ -45,8 +43,8 @@ class WithdrawalsController(
   @GetMapping("/{withdrawalId}")
   @Operation(summary = "Get a single withdrawal.")
   fun getWithdrawal(
-      @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
+      @PathVariable accessionId: AccessionId,
+      @PathVariable withdrawalId: WithdrawalId,
   ): GetWithdrawalResponsePayload {
     val model = withdrawalStore.fetchOneById(withdrawalId)
     return GetWithdrawalResponsePayload(GetWithdrawalPayload(model))
@@ -58,7 +56,7 @@ class WithdrawalsController(
   )
   @PostMapping
   fun createWithdrawal(
-      @PathVariable("accessionId") accessionId: AccessionId,
+      @PathVariable accessionId: AccessionId,
       @RequestBody payload: CreateWithdrawalRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.createWithdrawal(payload.toModel(accessionId))
@@ -71,8 +69,8 @@ class WithdrawalsController(
   )
   @PutMapping("/{withdrawalId}")
   fun updateWithdrawal(
-      @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
+      @PathVariable accessionId: AccessionId,
+      @PathVariable withdrawalId: WithdrawalId,
       @RequestBody payload: UpdateWithdrawalRequestPayload,
   ): UpdateAccessionResponsePayloadV2 {
     val accession =
@@ -86,8 +84,8 @@ class WithdrawalsController(
       description = "May cause the accession's remaining quantity to change.",
   )
   fun deleteWithdrawal(
-      @PathVariable("accessionId") accessionId: AccessionId,
-      @PathVariable("withdrawalId") withdrawalId: WithdrawalId,
+      @PathVariable accessionId: AccessionId,
+      @PathVariable withdrawalId: WithdrawalId,
   ): UpdateAccessionResponsePayloadV2 {
     val accession = accessionService.deleteWithdrawal(accessionId, withdrawalId)
     return UpdateAccessionResponsePayloadV2(AccessionPayloadV2(accession))

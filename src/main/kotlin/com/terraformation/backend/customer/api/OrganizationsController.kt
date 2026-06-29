@@ -82,7 +82,7 @@ class OrganizationsController(
   @GetMapping("/{organizationId}")
   @Operation(summary = "Gets information about an organization.")
   fun getOrganization(
-      @PathVariable("organizationId")
+      @PathVariable
       @Schema(description = "ID of organization to get. User must be a member of the organization.")
       organizationId: OrganizationId,
       @RequestParam("depth", defaultValue = "Organization")
@@ -109,7 +109,7 @@ class OrganizationsController(
   @Operation(summary = "Updates an existing organization.")
   @PutMapping("/{organizationId}")
   fun updateOrganization(
-      @PathVariable("organizationId") organizationId: OrganizationId,
+      @PathVariable organizationId: OrganizationId,
       @RequestBody @Valid payload: UpdateOrganizationRequestPayload,
   ): SimpleSuccessResponsePayload {
     organizationStore.update(payload.toRow().copy(id = organizationId))
@@ -125,7 +125,7 @@ class OrganizationsController(
   )
   @DeleteMapping("/{organizationId}")
   fun deleteOrganization(
-      @PathVariable("organizationId") organizationId: OrganizationId
+      @PathVariable organizationId: OrganizationId
   ): SimpleSuccessResponsePayload {
     try {
       organizationService.deleteOrganization(organizationId)
@@ -138,7 +138,7 @@ class OrganizationsController(
   @Operation(summary = "Lists the features available to an organization.")
   @GetMapping("/{organizationId}/features")
   fun listOrganizationFeatures(
-      @PathVariable("organizationId") organizationId: OrganizationId
+      @PathVariable organizationId: OrganizationId
   ): ListOrganizationFeaturesResponsePayload {
     val features = organizationFeatureStore.listOrganizationFeatureProjects(organizationId)
     return ListOrganizationFeaturesResponsePayload(features)
@@ -147,7 +147,7 @@ class OrganizationsController(
   @Operation(summary = "Lists the roles in an organization.")
   @GetMapping("/{organizationId}/roles")
   fun listOrganizationRoles(
-      @PathVariable("organizationId") organizationId: OrganizationId
+      @PathVariable organizationId: OrganizationId
   ): ListOrganizationRolesResponsePayload {
     val roleCounts = organizationStore.countRoleUsers(organizationId)
     return ListOrganizationRolesResponsePayload(
@@ -158,7 +158,7 @@ class OrganizationsController(
   @GetMapping("/{organizationId}/users")
   @Operation(summary = "Lists the users in an organization.")
   fun listOrganizationUsers(
-      @PathVariable("organizationId") organizationId: OrganizationId,
+      @PathVariable organizationId: OrganizationId,
   ): ListOrganizationUsersResponsePayload {
     val users = organizationStore.fetchUsers(organizationId)
     return ListOrganizationUsersResponsePayload(users.map { OrganizationUserPayload(it) })
@@ -167,7 +167,7 @@ class OrganizationsController(
   @PostMapping("/{organizationId}/users")
   @Operation(summary = "Adds a user to an organization.")
   fun addOrganizationUser(
-      @PathVariable("organizationId") organizationId: OrganizationId,
+      @PathVariable organizationId: OrganizationId,
       @RequestBody payload: AddOrganizationUserRequestPayload,
   ): CreateOrganizationUserResponsePayload {
     if (!emailValidator.isValid(payload.email)) {
@@ -181,8 +181,8 @@ class OrganizationsController(
   @GetMapping("/{organizationId}/users/{userId}")
   @Operation(summary = "Gets information about a user's membership in an organization.")
   fun getOrganizationUser(
-      @PathVariable("organizationId") organizationId: OrganizationId,
-      @PathVariable("userId") userId: UserId,
+      @PathVariable organizationId: OrganizationId,
+      @PathVariable userId: UserId,
   ): GetOrganizationUserResponsePayload {
     val model =
         try {
@@ -207,8 +207,8 @@ class OrganizationsController(
       description = "Does not remove any data created by the user.",
   )
   fun deleteOrganizationUser(
-      @PathVariable("organizationId") organizationId: OrganizationId,
-      @PathVariable("userId") userId: UserId,
+      @PathVariable organizationId: OrganizationId,
+      @PathVariable userId: UserId,
   ): SimpleSuccessResponsePayload {
     try {
       organizationStore.removeUser(organizationId, userId)
@@ -233,8 +233,8 @@ class OrganizationsController(
               "administrators.",
   )
   fun updateOrganizationUser(
-      @PathVariable("organizationId") organizationId: OrganizationId,
-      @PathVariable("userId") userId: UserId,
+      @PathVariable organizationId: OrganizationId,
+      @PathVariable userId: UserId,
       @RequestBody payload: UpdateOrganizationUserRequestPayload,
   ): SimpleSuccessResponsePayload {
     // Currently, the only setting is the user's role.

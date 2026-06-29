@@ -129,8 +129,8 @@ class PlantingSitesController(
   @GetMapping("/{id}/history/{historyId}")
   @Operation(summary = "Gets information about an older version of a planting site.")
   fun getPlantingSiteHistory(
-      @PathVariable("id") id: PlantingSiteId,
-      @PathVariable("historyId") historyId: PlantingSiteHistoryId,
+      @PathVariable id: PlantingSiteId,
+      @PathVariable historyId: PlantingSiteHistoryId,
       @RequestParam(defaultValue = "true") simplified: Boolean? = true,
   ): GetPlantingSiteHistoryResponsePayload {
     val model =
@@ -211,7 +211,7 @@ class PlantingSitesController(
   @Operation(summary = "Updates information about an existing planting site.")
   @PutMapping("/{id}")
   fun updatePlantingSite(
-      @PathVariable("id") id: PlantingSiteId,
+      @PathVariable id: PlantingSiteId,
       @RequestBody payload: UpdatePlantingSiteRequestPayload,
   ): SimpleSuccessResponsePayload {
     plantingSiteStore.updatePlantingSite(id, payload::applyTo)
@@ -228,7 +228,7 @@ class PlantingSitesController(
       description = "Planting site should not have any plantings.",
   )
   @DeleteMapping("/{id}")
-  fun deletePlantingSite(@PathVariable("id") id: PlantingSiteId): SimpleSuccessResponsePayload {
+  fun deletePlantingSite(@PathVariable id: PlantingSiteId): SimpleSuccessResponsePayload {
     plantingSiteService.deletePlantingSite(id)
     return SimpleSuccessResponsePayload()
   }
