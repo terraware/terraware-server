@@ -589,6 +589,7 @@ data class PlantingSeasonScheduledDateSubjectPayload(
 
 @JsonTypeName("PlantingSeasonScheduledDateSpecies")
 data class PlantingSeasonScheduledDateSpeciesSubjectPayload(
+    val activeDate: LocalDate,
     override val fullText: String,
     val plantingSeasonId: PlantingSeasonId,
     val plantingSiteId: PlantingSiteId,
@@ -616,13 +617,14 @@ data class PlantingSeasonScheduledDateSpeciesSubjectPayload(
               ?.changedTo
               ?.date
               ?: context
-                  .lastEventBefore<PlantingSeasonScheduledDateCreatedEvent>(event) {
+                  .first<PlantingSeasonScheduledDateCreatedEvent> {
                     it.scheduledPlantingDateId == event.scheduledPlantingDateId
                   }
-                  ?.date
-      val dateText = activeDate?.toString() ?: event.scheduledPlantingDateId.toString()
+                  .date
+      val dateText = activeDate.toString()
 
       return PlantingSeasonScheduledDateSpeciesSubjectPayload(
+          activeDate = activeDate,
           fullText =
               context.subjectFullText<PlantingSeasonScheduledDateSpeciesSubjectPayload>(
                   scientificName,
