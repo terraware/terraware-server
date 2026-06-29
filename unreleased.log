@@ -1,3 +1,5 @@
+f61ce3a0 Add activeDate to scheduled date species subject (#4690)
+c7d54df5 SW-7489 Use collectedTime to derive collectedDate (#4673)
 90f3e3d0 Update dependency com.dropbox.core:dropbox-core-sdk to v7.1.0 (#4689)
 f4aa59c4 Remove redundant PathVariable parameters (#4688)
 7dfd9bc9 SW-8541 Add ecoregion ID to projects (#4686)
