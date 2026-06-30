@@ -22,6 +22,7 @@ import com.terraformation.backend.db.default_schema.tables.references.FILE_BATCH
 import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
+import com.terraformation.backend.file.event.FileBatchFinishedUploadingEvent
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
@@ -220,6 +221,27 @@ class FileService(
           .returning(ID)
           .fetchOne(ID)!!
     }
+  }
+
+  /**
+   * Marks a file batch as finished uploading. This sets the batch's asset status to
+   * [AssetStatus.Ready] and publishes a [FileBatchFinishedUploadingEvent].
+   */
+  fun finishUploadingFileBatch(fileBatchId: FileBatchId) {
+    val rowsUpdated =
+        with(FILE_BATCHES) {
+          dslContext
+              .update(FILE_BATCHES)
+              .set(ASSET_STATUS_ID, AssetStatus.Ready)
+              .where(ID.eq(fileBatchId))
+              .execute()
+        }
+
+    if (rowsUpdated != 1) {
+      throw FileBatchNotFoundException(fileBatchId)
+    }
+
+    eventPublisher.publishEvent(FileBatchFinishedUploadingEvent(fileBatchId))
   }
 
   @Throws(IOException::class)
