@@ -25,12 +25,14 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.ObservationState
 import com.terraformation.backend.file.S3FileStore
 import com.terraformation.backend.file.SizedInputStream
+import com.terraformation.backend.file.event.FileBatchFinishedUploadingEvent
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.point
 import com.terraformation.backend.splat.event.SplatDeletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationCompletedEvent
 import com.terraformation.backend.splat.event.SplatGenerationFailedEvent
 import com.terraformation.backend.splat.event.SplatMarkedNeedsAttentionEvent
+import com.terraformation.backend.splat.sqs.SplatterRequestFileLocation
 import com.terraformation.backend.splat.sqs.SplatterRequestMessage
 import com.terraformation.backend.tracking.db.ObservationNotFoundException
 import io.awspring.cloud.sqs.operations.SqsTemplate
@@ -38,6 +40,7 @@ import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.slot
 import io.mockk.verify
 import java.io.ByteArrayInputStream
 import java.math.BigDecimal
@@ -1910,6 +1913,98 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
     fun `does not generate splat when upload is part of a file batch`() {
       val fileBatchId = insertFileBatch(batchType = FileBatchType.Splat)
       service.on(OrganizationVideoUploadedEvent(orgFileId, organizationId, fileBatchId))
+
+      assertTableEmpty(SPLATS)
+      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
+    }
+  }
+
+  @Nested
+  inner class OnFileBatchFinishedUploadingEvent {
+    @BeforeEach
+    fun setUp() {
+      every { fileStore.getPath(any()) } answers { java.nio.file.Paths.get("/path/to/video.mp4") }
+      every { fileStore.getUrl(any()) } answers
+          {
+            val path = firstArg<java.nio.file.Path>()
+            URI("s3://bucket/${path.fileName}")
+          }
+      every { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) } returns
+          mockk(relaxed = true)
+    }
+
+    @Test
+    fun `generates splat with JSON data file for a video plus JSON batch`() {
+      val fileBatchId = insertFileBatch()
+      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
+      insertOrganizationMediaFile(fileId = videoFileId)
+      val jsonFileId =
+          insertFile(
+              contentType = "application/json",
+              fileBatchId = fileBatchId,
+              storageUrl = "s3://bucket/data.json",
+          )
+
+      val messageSlot = slot<SplatterRequestMessage>()
+      every { sqsTemplate.send(any<String>(), capture(messageSlot)) } returns mockk(relaxed = true)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      val splat = dslContext.fetchSingle(SPLATS, SPLATS.FILE_ID.eq(videoFileId))
+      assertEquals(jsonFileId, splat.dataFileId, "Data file ID")
+      assertEquals(
+          SplatterRequestFileLocation("bucket", "data.json"),
+          messageSlot.captured.dataFile,
+          "Request data file location",
+      )
+    }
+
+    @Test
+    fun `does nothing when batch has no organization video`() {
+      val fileBatchId = insertFileBatch()
+      insertFile(contentType = "application/json", fileBatchId = fileBatchId)
+      insertFile(contentType = "image/jpeg", fileBatchId = fileBatchId)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      assertTableEmpty(SPLATS)
+      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
+    }
+
+    @Test
+    fun `does not generate splat when video is not organization media`() {
+      val fileBatchId = insertFileBatch()
+      insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
+      insertFile(contentType = "application/json", fileBatchId = fileBatchId)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      assertTableEmpty(SPLATS)
+      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
+    }
+
+    @Test
+    fun `does not generate splat when batch has more than two files`() {
+      val fileBatchId = insertFileBatch()
+      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
+      insertOrganizationMediaFile(fileId = videoFileId)
+      insertFile(contentType = "application/json", fileBatchId = fileBatchId)
+      insertFile(contentType = "application/json", fileBatchId = fileBatchId)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
+
+      assertTableEmpty(SPLATS)
+      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
+    }
+
+    @Test
+    fun `does not generate splat when batch has no JSON data file`() {
+      val fileBatchId = insertFileBatch()
+      val videoFileId = insertFile(contentType = "video/mp4", fileBatchId = fileBatchId)
+      insertOrganizationMediaFile(fileId = videoFileId)
+      insertFile(contentType = "image/jpeg", fileBatchId = fileBatchId)
+
+      service.on(FileBatchFinishedUploadingEvent(fileBatchId))
 
       assertTableEmpty(SPLATS)
       verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
