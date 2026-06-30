@@ -14,6 +14,7 @@ import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
+import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.records.FileAccessTokensRecord
@@ -451,6 +452,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
       assertTableEquals(
           FileBatchesRecord(
               id = fileBatchId,
+              assetStatusId = AssetStatus.Preparing,
               createdBy = currentUser().userId,
               createdTime = clock.instant,
           )
