@@ -34,6 +34,7 @@ class SearchTables(clock: Clock) {
   val batchWithdrawals = BatchWithdrawalsTable(this)
   val botanicalCountries = BotanicalCountriesTable(this)
   val countries = CountriesTable(this)
+  val countryBotanicalCountries = CountryBotanicalCountriesTable(this)
   val countrySubdivisions = CountrySubdivisionsTable(this)
   val deliverables = DeliverablesTable(this)
   val deliveries = DeliveriesTable(this)
