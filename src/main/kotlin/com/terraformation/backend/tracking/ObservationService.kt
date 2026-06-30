@@ -332,6 +332,12 @@ class ObservationService(
     val initialRow = fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
     val updatedRow = updateFunc(initialRow)
 
+    if (
+        initialRow.typeId == ObservationMediaType.Explanation && updatedRow.caption.isNullOrBlank()
+    ) {
+      throw IllegalArgumentException("Cannot remove caption from Explanation photo")
+    }
+
     if (initialRow != updatedRow) {
       observationMediaFilesDao.update(initialRow.copy(caption = updatedRow.caption))
       fileService.touchFile(fileId)

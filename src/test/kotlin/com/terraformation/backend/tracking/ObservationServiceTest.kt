@@ -1121,6 +1121,25 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `throws exception if removing caption from Explanation photo`() {
+        val fileId =
+            service.storeMediaFile(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = byteArrayOf(1).inputStream(),
+                metadata = metadata,
+                caption = "caption",
+                isOriginal = true,
+                type = ObservationMediaType.Explanation,
+            )
+
+        assertThrows<IllegalArgumentException> {
+          service.updateMediaFile(observationId, plotId, fileId) { it.copy(caption = null) }
+        }
+      }
+
+      @Test
       fun `throws exception if no permission to update observation`() {
         val fileId =
             service.storeMediaFile(
