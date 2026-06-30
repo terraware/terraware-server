@@ -41,10 +41,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-@RequestMapping
+@RequestMapping("/api/v1/tracking/observations/{observationId}")
 @RestController
 @TrackingEndpoint
-class SplatsController(
+class ObservationSplatsController(
     private val splatServiceDependency: SplatService?,
 ) {
   private val splatService: SplatService
@@ -54,7 +54,7 @@ class SplatsController(
 
   @ApiResponse200
   @ApiResponse404("The observation does not exist.")
-  @GetMapping("/api/v1/tracking/observations/{observationId}/splats")
+  @GetMapping("/splats")
   @Operation(summary = "Gets information about the 3D Gaussian splat models from an observation.")
   fun listObservationSplats(
       @PathVariable observationId: ObservationId,
@@ -74,7 +74,7 @@ class SplatsController(
 
   @ApiResponse200
   @ApiResponse404("The observation does not exist.")
-  @GetMapping("/api/v1/tracking/observations/{observationId}/birdnet")
+  @GetMapping("/birdnet")
   @Operation(summary = "Gets information about BirdNet results from an observation.")
   fun getObservationBirdnetResults(
       @PathVariable observationId: ObservationId,
@@ -100,7 +100,7 @@ class SplatsController(
       "The plot observation does not exist, or does not have a video with the requested ID."
   )
   @ApiResponse422("The system was unable to generate a splat from the requested file.")
-  @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}")
+  @GetMapping("/splats/{fileId}")
   @Operation(
       summary = "Downloads a 3D model of a Gaussian splat from an observation video.",
   )
@@ -125,7 +125,7 @@ class SplatsController(
   @ApiResponse404(
       "The plot observation does not exist, or does not have a video with the requested ID."
   )
-  @PostMapping("/api/v1/tracking/observations/{observationId}/splats")
+  @PostMapping("/splats")
   @Operation(
       summary =
           "Initiates the generation of a 3D model of a Gaussian splat from an observation video.",
@@ -144,7 +144,7 @@ class SplatsController(
   @ApiResponse404(
       "The plot observation does not exist, or does not have a splat for the requested file ID."
   )
-  @GetMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/info")
+  @GetMapping("/splats/{fileId}/info")
   @Operation(summary = "Gets the info for a splat model, such as the list of annotations.")
   fun listSplatDetails(
       @PathVariable observationId: ObservationId,
@@ -159,7 +159,7 @@ class SplatsController(
   @ApiResponse404(
       "The plot observation does not exist, or does not have a splat for the requested file ID."
   )
-  @DeleteMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}")
+  @DeleteMapping("/splats/{fileId}")
   @Operation(summary = "Deletes a 3D Gaussian splat model from an observation.")
   fun deleteObservationSplat(
       @PathVariable observationId: ObservationId,
@@ -173,7 +173,7 @@ class SplatsController(
   @ApiResponse404(
       "The plot observation does not exist, or does not have a splat for the requested file ID."
   )
-  @PostMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/annotations")
+  @PostMapping("/splats/{fileId}/annotations")
   @Operation(
       summary = "Sets the list of annotations for a splat model.",
       description =
@@ -194,7 +194,7 @@ class SplatsController(
   @ApiResponse404(
       "The plot observation does not exist, or does not have a splat for the requested file ID."
   )
-  @PutMapping("/api/v1/tracking/observations/{observationId}/splats/{fileId}/needsAttention")
+  @PutMapping("/splats/{fileId}/needsAttention")
   @Operation(summary = "Flags a splat as needing administrator attention.")
   fun setObservationSplatNeedsAttention(
       @PathVariable observationId: ObservationId,
