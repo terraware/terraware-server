@@ -462,10 +462,6 @@ val ID_WRAPPERS =
                 IdWrapper("DeviceTemplateId", listOf("device_templates\\.id")),
                 IdWrapper("DisclaimerId", listOf("disclaimers\\.id", ".*\\.disclaimer_id")),
                 IdWrapper(
-                    "EcoregionId",
-                    listOf("ecoregions\\.id", ".*\\.ecoregion_id"),
-                ),
-                IdWrapper(
                     "EventLogId",
                     listOf(
                         "event_log\\.id",
@@ -640,14 +636,6 @@ val EMBEDDABLES =
             .withName("batch_withdrawal_id")
             .withTables("nursery.batch_withdrawals")
             .withColumns("batch_id", "withdrawal_id"),
-        EmbeddableDefinitionType()
-            .withName("ecoregion_botanical_country_id")
-            .withTables("ecoregion_botanical_countries")
-            .withColumns("ecoregion_id", "botanical_country_id"),
-        EmbeddableDefinitionType()
-            .withName("ecoregion_country_id")
-            .withTables("ecoregion_countries")
-            .withColumns("ecoregion_id", "country_code"),
         EmbeddableDefinitionType()
             .withName("facility_inventory_id")
             .withTables("nursery.facility_inventories")

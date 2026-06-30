@@ -1,6 +1,5 @@
 package com.terraformation.backend.customer.event
 
-import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.eventlog.FieldsUpdatedPersistentEvent
@@ -19,18 +18,12 @@ data class ProjectUpdatedEventV1(
   data class Values(
       val countryCode: String? = null,
       val description: String? = null,
-      val ecoregionId: EcoregionId? = null,
   )
 
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
           createUpdatedField("countryCode", changedFrom.countryCode, changedTo.countryCode),
           createUpdatedField("description", changedFrom.description, changedTo.description),
-          createUpdatedField(
-              "ecoregionId",
-              changedFrom.ecoregionId?.toString(),
-              changedTo.ecoregionId?.toString(),
-          ),
       )
 }
 

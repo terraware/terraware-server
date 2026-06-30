@@ -11,7 +11,6 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODUL
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VARIABLES
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
-import com.terraformation.backend.db.default_schema.tables.references.ECOREGIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
@@ -46,7 +45,6 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
               "draftPlantingSites",
               PROJECTS.ID.eq(DRAFT_PLANTING_SITES.PROJECT_ID),
           ),
-          ecoregions.asSingleValueSublist("ecoregion", PROJECTS.ECOREGION_ID.eq(ECOREGIONS.ID)),
           events.asMultiValueSublist("events", eventsCondition),
           organizations.asSingleValueSublist(
               "organization",

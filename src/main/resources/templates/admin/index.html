@@ -223,23 +223,6 @@
     </div>
 
     <div th:if="${canImportGlobalSpeciesData}">
-        <h3>Import WWF/Resolve ecoregions</h3>
-
-        <p>
-            You can download the data or find the download URL
-            <a href="https://ecoregions.appspot.com/">here</a>.
-            (Find the link at About / Download Shapefile.)
-        </p>
-
-        <form method="POST" action="importEcoregions">
-            <label for="ecoregionUrl">URL of ecoregions zipfile</label>
-            <input id="ecoregionUrl" name="url" required th:value="${defaultEcoregionsUrl}"/>
-            <input type="submit" value="Import">
-            (can take several minutes)
-        </form>
-    </div>
-
-    <div th:if="${canImportGlobalSpeciesData}">
         <h3>Import TDWG Level 3 botanical countries</h3>
 
         <p>

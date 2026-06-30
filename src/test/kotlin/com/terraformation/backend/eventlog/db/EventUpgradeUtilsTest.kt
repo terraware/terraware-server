@@ -96,7 +96,6 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       insertEvent(
           ProjectCreatedEventV1(
               countryCode = null,
-              ecoregionId = null,
               name = "Old name",
               organizationId = organizationId,
               projectId = projectId,
@@ -119,7 +118,6 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       insertEvent(
           ProjectCreatedEventV1(
               countryCode = null,
-              ecoregionId = null,
               name = "Old name",
               organizationId = organizationId,
               projectId = projectId,
@@ -145,7 +143,6 @@ class EventUpgradeUtilsTest : DatabaseTest(), RunsAsDatabaseUser {
       insertEvent(
           ProjectCreatedEventV1(
               countryCode = null,
-              ecoregionId = null,
               name = "Old name",
               organizationId = organizationId,
               projectId = projectId,

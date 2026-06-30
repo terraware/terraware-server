@@ -138,7 +138,6 @@ import com.terraformation.backend.db.default_schema.BotanicalCountryId
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DisclaimerId
-import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
@@ -239,9 +238,6 @@ import com.terraformation.backend.db.default_schema.tables.pojos.TimeseriesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.records.BotanicalCountriesRecord
-import com.terraformation.backend.db.default_schema.tables.records.EcoregionBotanicalCountriesRecord
-import com.terraformation.backend.db.default_schema.tables.records.EcoregionCountriesRecord
-import com.terraformation.backend.db.default_schema.tables.records.EcoregionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisResourcesRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
@@ -988,7 +984,6 @@ abstract class DatabaseBackedTest {
       description: String? = null,
       phase: AcceleratorPhase? = null,
       countryCode: String? = null,
-      ecoregionId: EcoregionId? = null,
   ): ProjectId {
     val row =
         ProjectsRow(
@@ -996,7 +991,6 @@ abstract class DatabaseBackedTest {
             createdBy = createdBy,
             createdTime = createdTime,
             description = description,
-            ecoregionId = ecoregionId,
             modifiedBy = createdBy,
             modifiedTime = createdTime,
             name = name,
@@ -5853,48 +5847,6 @@ abstract class DatabaseBackedTest {
     record.insert()
 
     return record.id!!.also { inserted.botanicalCountryIds.add(it) }
-  }
-
-  private var nextEcoregionId = 1L
-
-  fun insertEcoregion(
-      biomeName: String = "biome",
-      biomeNumber: String = "1",
-      boundary: Geometry = rectangle(1),
-      ecoBiomeCode: String = "code",
-      ecoName: String = "ecoregion",
-      id: Any = nextEcoregionId++,
-      realm: String = "realm",
-  ): EcoregionId {
-    val record =
-        EcoregionsRecord(
-                biomeName = biomeName,
-                biomeNumber = biomeNumber,
-                boundary = boundary,
-                ecoBiomeCode = ecoBiomeCode,
-                ecoName = ecoName,
-                id = EcoregionId("$id"),
-                realm = realm,
-            )
-            .attach(dslContext)
-
-    record.insert()
-
-    return record.id!!.also { inserted.ecoregionIds.add(it) }
-  }
-
-  fun insertEcoregionBotanicalCountry(
-      botanicalCountryId: BotanicalCountryId = inserted.botanicalCountryId,
-      ecoregionId: EcoregionId = inserted.ecoregionId,
-  ) {
-    EcoregionBotanicalCountriesRecord(ecoregionId, botanicalCountryId).attach(dslContext).insert()
-  }
-
-  fun insertEcoregionCountry(
-      countryCode: String = "US",
-      ecoregionId: EcoregionId = inserted.ecoregionId,
-  ) {
-    EcoregionCountriesRecord(ecoregionId, countryCode).attach(dslContext).insert()
   }
 
   private var nextGriisResourceSuffix: Int = 1
