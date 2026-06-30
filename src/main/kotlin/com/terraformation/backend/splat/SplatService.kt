@@ -536,6 +536,10 @@ class SplatService(
 
   @EventListener
   fun on(event: OrganizationVideoUploadedEvent) {
+    if (event.fileBatchId != null) {
+      // Video was part of a batch; don't auto-generate splat.
+      return
+    }
     try {
       generateOrganizationMediaSplat(event.organizationId, event.fileId)
     } catch (e: Exception) {

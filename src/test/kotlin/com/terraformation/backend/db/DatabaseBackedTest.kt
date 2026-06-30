@@ -143,6 +143,7 @@ import com.terraformation.backend.db.default_schema.EventLogId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.GriisResourceId
@@ -184,6 +185,7 @@ import com.terraformation.backend.db.default_schema.tables.daos.DeviceTemplatesD
 import com.terraformation.backend.db.default_schema.tables.daos.DevicesDao
 import com.terraformation.backend.db.default_schema.tables.daos.DisclaimersDao
 import com.terraformation.backend.db.default_schema.tables.daos.FacilitiesDao
+import com.terraformation.backend.db.default_schema.tables.daos.FileBatchesDao
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.daos.IdentifierSequencesDao
 import com.terraformation.backend.db.default_schema.tables.daos.InternalTagsDao
@@ -222,6 +224,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.BirdnetResultsR
 import com.terraformation.backend.db.default_schema.tables.pojos.DeviceManagersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.DisclaimersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FacilitiesRow
+import com.terraformation.backend.db.default_schema.tables.pojos.FileBatchesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.InternalTagsRow
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationInternalTagsRow
@@ -724,6 +727,7 @@ abstract class DatabaseBackedTest {
   protected val eventProjectsDao: EventProjectsDao by lazyDao()
   protected val eventsDao: EventsDao by lazyDao()
   protected val facilitiesDao: FacilitiesDao by lazyDao()
+  protected val fileBatchesDao: FileBatchesDao by lazyDao()
   protected val filesDao: FilesDao by lazyDao()
   protected val fundingEntitiesDao: FundingEntitiesDao by lazyDao()
   protected val fundingEntityProjectsDao: FundingEntityProjectsDao by lazyDao()
@@ -1879,6 +1883,7 @@ abstract class DatabaseBackedTest {
       capturedLocalTime: LocalDateTime? = row.capturedLocalTime,
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+      fileBatchId: FileBatchId? = row.fileBatchId,
       geolocation: Point? = row.geolocation?.centroid,
       modifiedBy: UserId = row.modifiedBy ?: createdBy,
       modifiedTime: Instant = row.modifiedTime ?: createdTime,
@@ -1890,6 +1895,7 @@ abstract class DatabaseBackedTest {
             contentType = contentType,
             createdBy = createdBy,
             createdTime = createdTime,
+            fileBatchId = fileBatchId,
             fileName = fileName,
             geolocation = geolocation,
             modifiedBy = modifiedBy,
@@ -1901,6 +1907,22 @@ abstract class DatabaseBackedTest {
     filesDao.insert(rowWithDefaults)
 
     return rowWithDefaults.id!!.also { inserted.fileIds.add(it) }
+  }
+
+  fun insertFileBatch(
+      row: FileBatchesRow = FileBatchesRow(),
+      createdBy: UserId = row.createdBy ?: inserted.userId,
+      createdTime: Instant = row.createdTime ?: Instant.EPOCH,
+  ): FileBatchId {
+    val rowWithDefaults =
+        row.copy(
+            createdBy = createdBy,
+            createdTime = createdTime,
+        )
+
+    fileBatchesDao.insert(rowWithDefaults)
+
+    return rowWithDefaults.id!!.also { inserted.fileBatchIds.add(it) }
   }
 
   private var nextUploadNumber = 1
