@@ -1,6 +1,7 @@
 package com.terraformation.backend.search.table
 
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
+import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_BOTANICAL_COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.search.SearchTable
@@ -16,6 +17,10 @@ class CountriesTable(tables: SearchTables) : SearchTable() {
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
+          countryBotanicalCountries.asMultiValueSublist(
+              "botanicalCountries",
+              COUNTRIES.CODE.eq(COUNTRY_BOTANICAL_COUNTRIES.COUNTRY_CODE),
+          ),
           organizations.asMultiValueSublist(
               "organizations",
               COUNTRIES.CODE.eq(ORGANIZATIONS.COUNTRY_CODE),
