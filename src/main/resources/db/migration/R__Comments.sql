@@ -60,6 +60,8 @@ COMMENT ON COLUMN countries.code_alpha3 IS 'ISO-3166 alpha-3 country code. This 
 COMMENT ON COLUMN countries.eligible IS 'If false, projects in this country are ineligible for the accelerator program.';
 COMMENT ON COLUMN countries.name IS 'Name of country in US English.';
 
+COMMENT ON TABLE country_botanical_countries IS 'Which countries contain (either entirely or partially) which botanical countries.';
+
 COMMENT ON TABLE country_subdivisions IS 'Country subdivision (state, province, region, etc.) information per ISO-3166-2.';
 COMMENT ON COLUMN country_subdivisions.code IS 'Full ISO-3166-2 subdivision code including country code prefix.';
 COMMENT ON COLUMN country_subdivisions.country_code IS 'ISO-3166 alpha-2 country code.';
