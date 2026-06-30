@@ -145,11 +145,13 @@ class ObservationActivityService(
                 plotResult.media
                     .sortedBy { it.fileId }
                     .sortedBy { file ->
-                      // Corner photos first, then quadrat photos, then everything else.
+                      // Corner / explanation photos first, then quadrat photos, then the rest.
                       when (file.type) {
                         ObservationMediaType.Plot if file.position != null -> 0
+                        ObservationMediaType.Explanation -> 0
                         ObservationMediaType.Quadrat -> 1
-                        else -> 2
+                        ObservationMediaType.Plot,
+                        ObservationMediaType.Soil -> 2
                       }
                     }
 

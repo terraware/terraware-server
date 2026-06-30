@@ -917,6 +917,38 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `throws exception for missing caption for Explanation photos`() {
+        assertThrows<IllegalArgumentException> {
+          service.storeMediaFile(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              position = ObservationPlotPosition.SouthwestCorner,
+              data = byteArrayOf(1).inputStream(),
+              metadata = metadata,
+              caption = "",
+              isOriginal = true,
+              type = ObservationMediaType.Explanation,
+          )
+        }
+      }
+
+      @Test
+      fun `throws exception for missing photo position for Explanation photos`() {
+        assertThrows<IllegalArgumentException> {
+          service.storeMediaFile(
+              observationId = observationId,
+              monitoringPlotId = plotId,
+              position = null,
+              data = byteArrayOf(1).inputStream(),
+              metadata = metadata,
+              caption = "Explanation",
+              isOriginal = true,
+              type = ObservationMediaType.Explanation,
+          )
+        }
+      }
+
+      @Test
       fun `throws exception for missing photo position for Quadrat photos`() {
         assertThrows<IllegalArgumentException> {
           service.storeMediaFile(
@@ -1086,6 +1118,25 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
                 plantingSiteId = plantingSiteId,
             )
         )
+      }
+
+      @Test
+      fun `throws exception if removing caption from Explanation photo`() {
+        val fileId =
+            service.storeMediaFile(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = ObservationPlotPosition.NortheastCorner,
+                data = byteArrayOf(1).inputStream(),
+                metadata = metadata,
+                caption = "caption",
+                isOriginal = true,
+                type = ObservationMediaType.Explanation,
+            )
+
+        assertThrows<IllegalArgumentException> {
+          service.updateMediaFile(observationId, plotId, fileId) { it.copy(caption = null) }
+        }
       }
 
       @Test
