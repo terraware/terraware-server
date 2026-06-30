@@ -93,6 +93,7 @@ class FileService(
       data: InputStream,
       newFileMetadata: NewFileMetadata,
       populateMetadata: ((NewFileMetadata) -> NewFileMetadata)? = null,
+      fileBatchId: FileBatchId? = null,
       insertChildRows: (StoredFile) -> Unit,
   ): FileId {
     val copier = InputStreamCopier(data)
@@ -168,6 +169,7 @@ class FileService(
                 contentType = fullMetadata.contentType,
                 createdTime = clock.instant(),
                 createdBy = currentUser().userId,
+                fileBatchId = fileBatchId,
                 fileName = fullMetadata.filename,
                 geolocation = fullMetadata.geolocation,
                 modifiedBy = currentUser().userId,

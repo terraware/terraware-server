@@ -949,6 +949,25 @@ class ObservationServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       }
 
       @Test
+      fun `stores file batch ID on the file row`() {
+        val fileBatchId = insertFileBatch()
+
+        val fileId =
+            service.storeMediaFile(
+                observationId = observationId,
+                monitoringPlotId = plotId,
+                position = null,
+                data = byteArrayOf(1).inputStream(),
+                metadata = metadata,
+                caption = "caption",
+                isOriginal = false,
+                fileBatchId = fileBatchId,
+            )
+
+        assertEquals(fileBatchId, filesDao.fetchOneById(fileId)!!.fileBatchId, "File Batch ID")
+      }
+
+      @Test
       fun `throws exception for missing photo position for Quadrat photos`() {
         assertThrows<IllegalArgumentException> {
           service.storeMediaFile(

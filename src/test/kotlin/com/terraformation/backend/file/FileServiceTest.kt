@@ -334,6 +334,22 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
         fileService.storeFile("category", ByteArray(0).inputStream(), metadata) {}
       }
     }
+
+    @Test
+    fun `stores file batch ID when provided`() {
+      val fileBatchId = insertFileBatch()
+      val data = Random.nextBytes(10)
+
+      val fileId =
+          fileService.storeFile(
+              "category",
+              data.inputStream(),
+              metadata.copy(size = data.size.toLong()),
+              fileBatchId = fileBatchId,
+          ) {}
+
+      assertEquals(fileBatchId, filesDao.fetchOneById(fileId)!!.fileBatchId, "File Batch ID")
+    }
   }
 
   @Test

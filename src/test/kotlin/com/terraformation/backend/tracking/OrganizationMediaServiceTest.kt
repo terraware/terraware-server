@@ -106,6 +106,19 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
 
       eventPublisher.assertEventNotPublished<OrganizationVideoUploadedEvent>()
     }
+
+    @Test
+    fun `stores file batch ID on the file row and includes on batch ID on the event`() {
+      val fileBatchId = insertFileBatch()
+      val multipartFile = MockMultipartFile("file", "video/mp4", "video/mp4", ByteArray(1024))
+
+      val fileId = service.upload(organizationId, multipartFile, "caption", fileBatchId)
+
+      assertEquals(fileBatchId, filesDao.fetchOneById(fileId)!!.fileBatchId)
+      eventPublisher.assertEventPublished(
+          OrganizationVideoUploadedEvent(fileId, organizationId, fileBatchId)
+      )
+    }
   }
 
   @Nested

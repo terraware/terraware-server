@@ -1904,5 +1904,14 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertTableEmpty(SPLATS)
     }
+
+    @Test
+    fun `does not generate splat when upload is part of a file batch`() {
+      val fileBatchId = insertFileBatch()
+      service.on(OrganizationVideoUploadedEvent(orgFileId, organizationId, fileBatchId))
+
+      assertTableEmpty(SPLATS)
+      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
+    }
   }
 }

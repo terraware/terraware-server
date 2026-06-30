@@ -1,5 +1,6 @@
 package com.terraformation.backend.customer.event
 
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 
@@ -7,4 +8,5 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 data class OrganizationVideoUploadedEvent(
     val fileId: FileId,
     val organizationId: OrganizationId,
+    val fileBatchId: FileBatchId? = null,
 )

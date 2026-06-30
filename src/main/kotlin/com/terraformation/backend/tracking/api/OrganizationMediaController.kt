@@ -9,6 +9,7 @@ import com.terraformation.backend.api.RequestBodyPhotoFile
 import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.toResponseEntity
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.file.mux.MuxStreamModel
@@ -50,6 +51,7 @@ class OrganizationMediaController(
             organizationId = organizationId,
             file = file,
             caption = payload?.caption,
+            fileBatchId = payload?.fileBatchId,
         )
     return UploadOrganizationMediaResponsePayload(fileId)
   }
@@ -129,6 +131,7 @@ class OrganizationMediaController(
 
 data class UploadOrganizationMediaRequestPayload(
     val caption: String? = null,
+    val fileBatchId: FileBatchId? = null,
 )
 
 data class UploadOrganizationMediaResponsePayload(
