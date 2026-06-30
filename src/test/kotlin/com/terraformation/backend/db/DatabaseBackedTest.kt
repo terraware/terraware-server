@@ -1919,11 +1919,13 @@ abstract class DatabaseBackedTest {
 
   fun insertFileBatch(
       row: FileBatchesRow = FileBatchesRow(),
+      assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Preparing,
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
   ): FileBatchId {
     val rowWithDefaults =
         row.copy(
+            assetStatusId = assetStatus,
             createdBy = createdBy,
             createdTime = createdTime,
         )
