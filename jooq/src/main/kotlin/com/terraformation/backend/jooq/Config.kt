@@ -190,6 +190,11 @@ val ENUM_TABLES =
                 ),
                 EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
+                EnumTable(
+                    "file_batch_types",
+                    listOf("file_batches\\.batch_type_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("global_roles", isLocalizable = false),
                 EnumTable("growth_forms"),
                 EnumTable("land_use_model_types"),
