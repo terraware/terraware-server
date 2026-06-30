@@ -133,14 +133,19 @@ Renders an item with an h3 label. <div th:replace="::h3Item ('Foo', 'Bar')"/> be
         <table>
             <tr>
                 <th>Species</th>
-                <th>Growth Form</th>
+                <th>Growth Forms</th>
                 <th>Total Planted</th>
                 <th>Mortality Rate in Field (%)</th>
                 <th>Mortality Rate in Nursery (%)</th>
             </tr>
             <tr th:each="species : ${site.species}">
                 <td th:text="${species.scientificName}"></td>
-                <td th:text="${species.growthForm?.jsonValue}"></td>
+                <td>
+                    <th:block th:each="growthForm : ${species.growthForms?.![jsonValue]}">
+                        <th:block th:text="${growthForm}"/>
+                        <br/>
+                    </th:block>
+                </td>
                 <td th:text="${species.totalPlanted}"></td>
                 <td th:text="${species.mortalityRateInField}"></td>
             </tr>
