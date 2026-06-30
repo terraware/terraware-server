@@ -2,19 +2,49 @@ package com.terraformation.backend.gis
 
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.tables.records.CountryBotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
 import com.terraformation.backend.gis.event.BotanicalCountriesImportedEvent
+import com.terraformation.backend.rectangle
 import com.terraformation.backend.species.event.WcvpImportedEvent
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class RegionMetadataServiceTest : DatabaseTest() {
-  private val service by lazy { RegionMetadataService(dslContext) }
+  private val service by lazy { RegionMetadataService(CountryDetector(), dslContext) }
 
   @Test
   fun `listens for events`() {
     assertIsEventListener<BotanicalCountriesImportedEvent>(service)
     assertIsEventListener<WcvpImportedEvent>(service)
+  }
+
+  @Nested
+  inner class UpdateCountryBotanicalCountryMapping {
+    @Test
+    fun `updates mappings based on boundary intersections`() {
+      // 500km square in eastern Africa
+      val botanicalId1 =
+          insertBotanicalCountry(boundary = rectangle(500_000, 500_000, 3_000_000, 1_000_000))
+      // 500km square in South America
+      val botanicalId2 =
+          insertBotanicalCountry(boundary = rectangle(500_000, 500_000, -8_000_000, 0))
+
+      // New mappings should replace existing ones.
+      insertCountryBotanicalCountry()
+
+      service.on(BotanicalCountriesImportedEvent())
+
+      assertTableEquals(
+          listOf(
+              CountryBotanicalCountriesRecord("SD", botanicalId1),
+              CountryBotanicalCountriesRecord("SS", botanicalId1),
+              CountryBotanicalCountriesRecord("BR", botanicalId2),
+              CountryBotanicalCountriesRecord("CO", botanicalId2),
+              CountryBotanicalCountriesRecord("VE", botanicalId2),
+          )
+      )
+    }
   }
 
   @Nested
