@@ -11,6 +11,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.NotificationId
@@ -115,6 +116,9 @@ class FacilityNotFoundException(val facilityId: FacilityId) :
 
 class FacilityTypeMismatchException(val facilityId: FacilityId, val requiredType: FacilityType) :
     MismatchedStateException("Facility $facilityId is not of type ${requiredType.jsonValue}")
+
+class FileBatchNotFoundException(val fileBatchId: FileBatchId) :
+    EntityNotFoundException("File batch $fileBatchId not found")
 
 class FileNotFoundException(val fileId: FileId) : EntityNotFoundException("File $fileId not found")
 
