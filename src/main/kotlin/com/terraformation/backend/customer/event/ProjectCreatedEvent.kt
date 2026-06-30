@@ -1,13 +1,11 @@
 package com.terraformation.backend.customer.event
 
-import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.eventlog.EntityCreatedPersistentEvent
 
 data class ProjectCreatedEventV1(
     val countryCode: String?,
-    val ecoregionId: EcoregionId?,
     val name: String,
     override val organizationId: OrganizationId,
     override val projectId: ProjectId,

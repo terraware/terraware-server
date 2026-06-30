@@ -3,7 +3,6 @@ package com.terraformation.backend.admin
 import com.terraformation.backend.api.RequireGlobalRole
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.gis.BotanicalCountryImporter
-import com.terraformation.backend.gis.EcoregionImporter
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.WcvpImporter
 import com.terraformation.backend.species.db.GbifImporter
@@ -28,7 +27,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes
 @Validated
 class AdminSpeciesController(
     private val botanicalCountryImporter: BotanicalCountryImporter,
-    private val ecoregionImporter: EcoregionImporter,
     private val gbifImporter: GbifImporter,
     private val griisImporter: GriisImporter,
     private val wcvpImporter: WcvpImporter,
@@ -68,32 +66,6 @@ class AdminSpeciesController(
       redirectAttributes.successMessage = "Botanical countries imported successfully."
     } catch (e: Exception) {
       log.error("Botanical country import failed", e)
-      redirectAttributes.failureMessage = "Import failed: ${e.message}"
-    }
-
-    return redirectToAdminHome()
-  }
-
-  @PostMapping("/importEcoregions")
-  fun importEcoregions(
-      @RequestParam url: URI,
-      redirectAttributes: RedirectAttributes,
-  ): String {
-    try {
-      val result =
-          withDownloadedFile(url) { zipFilePath -> ecoregionImporter.importEcoregions(zipFilePath) }
-
-      redirectAttributes.successMessage = "Ecoregions imported successfully."
-
-      if (result.obsoleteEcoregions.isNotEmpty()) {
-        redirectAttributes.successDetails =
-            result.obsoleteEcoregions.map { (ecoregionId, name) ->
-              "Ecoregion $ecoregionId ($name) was deleted from ecoregions list; keeping it " +
-                  "around in Terraware so it can be referenced by historical data."
-            }
-      }
-    } catch (e: Exception) {
-      log.error("Ecoregion import failed", e)
       redirectAttributes.failureMessage = "Import failed: ${e.message}"
     }
 

@@ -20,7 +20,6 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNameInUseException
 import com.terraformation.backend.db.ProjectNotFoundException
-import com.terraformation.backend.db.default_schema.EcoregionId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -58,11 +57,8 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   }
 
   private lateinit var organizationId: OrganizationId
-  private val ecoregionId: EcoregionId by lazy {
-    insertEcoregion(ecoName = "Test Ecoregion")
-  }
   private val projectId: ProjectId by lazy {
-    insertProject(description = "Description 1", ecoregionId = ecoregionId, name = "Project 1")
+    insertProject(description = "Description 1", name = "Project 1")
   }
 
   @BeforeEach
@@ -81,7 +77,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               NewProjectModel(
                   countryCode = "US",
                   description = "Project description",
-                  ecoregionId = ecoregionId,
                   id = null,
                   name = "Project name",
                   organizationId = organizationId,
@@ -94,7 +89,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdBy = user.userId,
               createdTime = clock.instant,
               description = "Project description",
-              ecoregionId = ecoregionId,
               id = newProjectId,
               modifiedBy = user.userId,
               modifiedTime = clock.instant,
@@ -108,7 +102,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       eventPublisher.assertEventPublished(
           ProjectCreatedEvent(
               countryCode = "US",
-              ecoregionId = ecoregionId,
               name = "Project name",
               organizationId = organizationId,
               projectId = newProjectId,
@@ -148,7 +141,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdBy = currentUserId,
               createdTime = Instant.EPOCH,
               description = "Description 1",
-              ecoregionId = ecoregionId,
               id = projectId,
               modifiedBy = currentUserId,
               modifiedTime = Instant.EPOCH,
@@ -231,7 +223,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
           insertProject(
               name = "Project 3",
               organizationId = otherUserOrganizationId,
-              ecoregionId = ecoregionId,
           )
       insertProject(organizationId = nonMemberOrganizationId)
 
@@ -258,7 +249,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               ExistingProjectModel(
                   createdBy = currentUserId,
                   createdTime = Instant.EPOCH,
-                  ecoregionId = ecoregionId,
                   id = projectId3,
                   modifiedBy = currentUserId,
                   modifiedTime = Instant.EPOCH,
@@ -282,13 +272,10 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val before = projectsDao.fetchOneById(projectId)!!
 
-      val newEcoregionId = insertEcoregion()
-
       store.update(projectId) {
         ExistingProjectModel(
             countryCode = "AU",
             description = "New description",
-            ecoregionId = newEcoregionId,
             id = ProjectId(-1),
             name = "New name",
             organizationId = OrganizationId(-1),
@@ -301,7 +288,6 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               createdBy = currentUserId,
               createdTime = Instant.EPOCH,
               description = "New description",
-              ecoregionId = newEcoregionId,
               modifiedBy = currentUserId,
               modifiedTime = clock.instant,
               name = "New name",
@@ -321,16 +307,11 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventPublished(
           ProjectUpdatedEvent(
-              changedFrom =
-                  ProjectUpdatedEventValues(
-                      description = "Description 1",
-                      ecoregionId = ecoregionId,
-                  ),
+              changedFrom = ProjectUpdatedEventValues(description = "Description 1"),
               changedTo =
                   ProjectUpdatedEventValues(
                       countryCode = "AU",
                       description = "New description",
-                      ecoregionId = newEcoregionId,
                   ),
               organizationId = organizationId,
               projectId = projectId,
