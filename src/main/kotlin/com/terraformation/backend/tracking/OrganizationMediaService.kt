@@ -13,7 +13,7 @@ import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.file.FileService
-import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
+import com.terraformation.backend.file.SUPPORTED_ADDITIONAL_MEDIA_TYPES
 import com.terraformation.backend.file.SizedInputStream
 import com.terraformation.backend.file.ThumbnailService
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
@@ -46,7 +46,7 @@ class OrganizationMediaService(
   ): FileId {
     requirePermissions { createOrganizationMedia(organizationId) }
 
-    val contentType = file.getPlainContentType(SUPPORTED_MEDIA_TYPES)
+    val contentType = file.getPlainContentType(SUPPORTED_ADDITIONAL_MEDIA_TYPES)
     val filename = file.getFilename("media")
 
     val fileId =
