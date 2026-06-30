@@ -5,11 +5,9 @@ wcvp_distributions
 species_successional_groups
 species_plant_material_sourcing_methods
 species_ecosystem_types
-ecoregion_botanical_countries
 species_growth_forms
 griis_taxa
 gbif_name_words
-ecoregion_countries
 gbif_names
 species
 wood_density_levels
@@ -23,6 +21,5 @@ griis_resources
 gbif_taxa
 ecosystem_types
 conservation_categories
-ecoregions
 botanical_countries
 organizations

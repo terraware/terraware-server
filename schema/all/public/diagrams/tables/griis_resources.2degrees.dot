@@ -9,7 +9,6 @@ digraph "twoDegreesRelationshipsDiagram" {
   "funder.published_project_details":"elipses":w -> "users":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "countries":"region_id":w -> "regions":"elipses":e [arrowhead=none dir=back arrowtail=crowodot];
   "country_subdivisions":"elipses":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
-  "ecoregion_countries":"elipses":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "griis_resources":"country_code":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
   "griis_taxa":"griis_resource_id":w -> "griis_resources":"id.type":e [arrowhead=none dir=back arrowtail=crowodot];
   "organizations":"elipses":w -> "countries":"code":e [arrowhead=none dir=back arrowtail=crowodot];
@@ -61,7 +60,7 @@ digraph "twoDegreesRelationshipsDiagram" {
       <TR><TD PORT="region_id" COLSPAN="3" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"><IMG SRC="../../images/foreignKeys.png"/></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="73" HEIGHT="16">region_id</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="code_alpha3" COLSPAN="3" BGCOLOR="#ffffff" ALIGN="LEFT"><TABLE BORDER="0" CELLSPACING="0" ALIGN="LEFT"><TR ALIGN="LEFT"><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="15" HEIGHT="16"></TD><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="73" HEIGHT="16">code_alpha3</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">249 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">10 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 1</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">249 rows</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">9 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/countries.html"
     target="_top"
@@ -77,17 +76,6 @@ digraph "twoDegreesRelationshipsDiagram" {
     URL="../../tables/country_subdivisions.html"
     target="_top"
     tooltip="country_subdivisions"
-  ];
-  "ecoregion_countries" [
-   label=<
-    <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
-      <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="120" HEIGHT="16"><B>ecoregion_countries</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
-      <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 2</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD></TR>
-    </TABLE>>
-    URL="../../tables/ecoregion_countries.html"
-    target="_top"
-    tooltip="ecoregion_countries"
   ];
   "griis_resources" [
    label=<
@@ -133,7 +121,7 @@ digraph "twoDegreesRelationshipsDiagram" {
     <TABLE BORDER="0" CELLBORDER="1" CELLSPACING="0" BGCOLOR="#ffffff">
       <TR><TD COLSPAN="3"  BGCOLOR="#f5f5f5"><TABLE BORDER="0" CELLSPACING="0"><TR><TD ALIGN="LEFT" FIXEDSIZE="TRUE" WIDTH="48" HEIGHT="16"><B>projects</B></TD><TD ALIGN="RIGHT">[table]</TD></TR></TABLE></TD></TR>
       <TR><TD PORT="elipses" COLSPAN="3" ALIGN="LEFT">...</TD></TR>
-      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 6</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">49 &gt;</TD></TR>
+      <TR><TD ALIGN="LEFT" BGCOLOR="#ffffff">&lt; 5</TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">  </TD><TD ALIGN="RIGHT" BGCOLOR="#ffffff">49 &gt;</TD></TR>
     </TABLE>>
     URL="../../tables/projects.html"
     target="_top"

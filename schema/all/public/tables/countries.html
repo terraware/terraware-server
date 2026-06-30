@@ -146,11 +146,6 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="ecoregion_countries.country_code references countries.code via ecoregion_countries_country_code_fkey"><a href='ecoregion_countries.html'>ecoregion_countries</a><span class='relatedKey'>.country_code</span></td>
-                                                <td class="constraint detail">ecoregion_countries_country_code_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
-                                            </tr>
-                                            <tr>
                                                 <td title="griis_resources.country_code references countries.code via griis_resources_country_code_fkey"><a href='griis_resources.html'>griis_resources</a><span class='relatedKey'>.country_code</span></td>
                                                 <td class="constraint detail">griis_resources_country_code_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
@@ -338,12 +333,12 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td>countries_code_caps</td>
-                                    <td>(code &#61; upper(code))</td>
-                                </tr>
-                                <tr>
                                     <td>countries_code_length</td>
                                     <td>(length(code) &#61; 2)</td>
+                                </tr>
+                                <tr>
+                                    <td>countries_code_caps</td>
+                                    <td>(code &#61; upper(code))</td>
                                 </tr>
                                 </tbody>
                             </table>

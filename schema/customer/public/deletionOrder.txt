@@ -12,7 +12,6 @@ seed_fund_report_files
 project_land_use_model_types
 organization_media_files
 organization_managed_location_types
-ecoregion_countries
 device_managers
 project_report_settings
 organization_report_settings
@@ -43,4 +42,3 @@ facility_types
 facility_connection_states
 disclaimers
 land_use_model_types
-ecoregions

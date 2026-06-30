@@ -27,8 +27,6 @@ organization_media_files
 organization_managed_location_types
 mux_assets
 file_access_tokens
-ecoregion_countries
-ecoregion_botanical_countries
 device_managers
 chat_memory_messages
 timeseries_values
@@ -85,9 +83,8 @@ disclaimers
 device_template_categories
 conservation_categories
 chat_memory_message_types
-land_use_model_types
 botanical_countries
+land_use_model_types
 seed_treatments
-ecoregions
 asset_statuses
 time_zones

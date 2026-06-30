@@ -1,4 +1,3 @@
-ecoregions
 land_use_model_types
 disclaimers
 facility_connection_states
@@ -29,7 +28,6 @@ uploads
 organization_report_settings
 project_report_settings
 device_managers
-ecoregion_countries
 organization_managed_location_types
 organization_media_files
 project_land_use_model_types
