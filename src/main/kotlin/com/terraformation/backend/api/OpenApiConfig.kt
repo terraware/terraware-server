@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import com.terraformation.backend.auth.KeycloakInfo
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.table.SearchTables
+import io.swagger.v3.core.converter.ModelConverters
 import io.swagger.v3.core.util.RefUtils
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.models.OpenAPI
@@ -28,6 +29,7 @@ import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.primaryConstructor
 import kotlin.reflect.full.superclasses
 import kotlin.reflect.jvm.javaField
+import kotlin.reflect.jvm.javaType
 import kotlin.reflect.jvm.jvmErasure
 import kotlin.reflect.typeOf
 import org.jooq.DSLContext
@@ -113,7 +115,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
                   ?: property.getter.findAnnotation()
                   ?: property.javaField?.getAnnotation(Schema::class.java)
           val propertyName = propertyAnnotation?.name.orEmpty().ifEmpty { property.name }
-          val propertySchema = classSchema.properties?.get(propertyName)
+          var propertySchema = classSchema.properties?.get(propertyName)
 
           if (
               propertySchema != null && propertySchema.`$ref` != null && propertyAnnotation != null
@@ -135,6 +137,7 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
 
             composedSchema.description = propertyAnnotation.description.ifEmpty { null }
             classSchema.properties[propertyName] = composedSchema
+            propertySchema = composedSchema
           }
 
           // ArbitraryJsonObject and Map<String, Any?> fields are also missing descriptions, but
@@ -162,10 +165,27 @@ class OpenApiConfig(private val keycloakInfo: KeycloakInfo) : OpenApiCustomizer 
           }
 
           // Optional<*> properties should be marked as nullable in the schema.
-          if (
-              propertySchema != null && property.returnType.jvmErasure.isSubclassOf(Optional::class)
-          ) {
-            propertySchema.nullable = true
+          if (property.returnType.jvmErasure.isSubclassOf(Optional::class)) {
+            if (propertySchema != null) {
+              propertySchema.nullable = true
+            } else {
+              // Property doesn't have a @Schema annotation, so it doesn't have a Schema object
+              // associated with it yet; we need to make one of the appropriate type.
+              propertySchema =
+                  ModelConverters.getInstance()
+                      .readAllAsResolvedSchema(property.returnType.javaType)
+                      ?.schema
+              if (propertySchema != null) {
+                propertySchema.nullable = true
+                if (classSchema is ComposedSchema && classSchema.allOf.any { it is ObjectSchema }) {
+                  classSchema.allOf
+                      .first { it is ObjectSchema }
+                      .addProperty(propertyName, propertySchema)
+                } else {
+                  classSchema.addProperty(propertyName, propertySchema)
+                }
+              }
+            }
           }
         }
       }
