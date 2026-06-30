@@ -288,6 +288,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "chat_memory_messages" to setOf(ALL, ACCELERATOR),
                   "conservation_categories" to setOf(ALL, SPECIES),
                   "countries" to setOf(ALL, CUSTOMER),
+                  "country_botanical_countries" to setOf(ALL, SPECIES),
                   "country_subdivisions" to setOf(ALL, CUSTOMER),
                   "devices" to setOf(ALL, DEVICE),
                   "device_managers" to setOf(ALL, CUSTOMER, DEVICE),
