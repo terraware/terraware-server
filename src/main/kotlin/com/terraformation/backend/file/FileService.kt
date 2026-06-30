@@ -11,6 +11,7 @@ import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileBatchId
+import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
@@ -198,11 +199,12 @@ class FileService(
     }
   }
 
-  fun createFileBatch(): FileBatchId {
+  fun createFileBatch(type: FileBatchType): FileBatchId {
     return with(FILE_BATCHES) {
       dslContext
           .insertInto(FILE_BATCHES)
           .set(ASSET_STATUS_ID, AssetStatus.Preparing)
+          .set(BATCH_TYPE_ID, type)
           .set(CREATED_BY, currentUser().userId)
           .set(CREATED_TIME, clock.instant())
           .returning(ID)

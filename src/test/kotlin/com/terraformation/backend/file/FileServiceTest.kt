@@ -15,6 +15,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
+import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.records.FileAccessTokensRecord
@@ -447,12 +448,13 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     fun `inserts row and returns new ID`() {
       clock.instant = Instant.ofEpochSecond(100000)
 
-      val fileBatchId = fileService.createFileBatch()
+      val fileBatchId = fileService.createFileBatch(FileBatchType.Splats)
 
       assertTableEquals(
           FileBatchesRecord(
               id = fileBatchId,
               assetStatusId = AssetStatus.Preparing,
+              batchTypeId = FileBatchType.Splats,
               createdBy = currentUser().userId,
               createdTime = clock.instant,
           )
