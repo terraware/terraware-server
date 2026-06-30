@@ -9,11 +9,13 @@ import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DefaultCatalog
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.daos.FilesDao
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
+import com.terraformation.backend.db.default_schema.tables.references.FILE_BATCHES
 import com.terraformation.backend.db.default_schema.tables.references.MUX_ASSETS
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.THUMBNAILS
@@ -193,6 +195,15 @@ class FileService(
         throw e
       }
     }
+  }
+
+  fun createFileBatch(): FileBatchId {
+    return dslContext
+        .insertInto(FILE_BATCHES)
+        .set(FILE_BATCHES.CREATED_BY, currentUser().userId)
+        .set(FILE_BATCHES.CREATED_TIME, clock.instant())
+        .returning(FILE_BATCHES.ID)
+        .fetchOne(FILE_BATCHES.ID)!!
   }
 
   @Throws(IOException::class)
