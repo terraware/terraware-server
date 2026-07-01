@@ -410,6 +410,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "observation_biomass_quadrat_details" to setOf(ALL, TRACKING),
                   "observation_biomass_quadrat_species" to setOf(ALL, TRACKING),
                   "observation_biomass_species" to setOf(ALL, TRACKING),
+                  "observation_dependent_substrata" to setOf(ALL, TRACKING),
                   "observable_conditions" to setOf(ALL, TRACKING),
                   "observation_media_files" to setOf(ALL, TRACKING),
                   "observation_media_types" to setOf(ALL, TRACKING),

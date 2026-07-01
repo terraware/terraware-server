@@ -456,6 +456,12 @@ COMMENT ON COLUMN tracking.monitoring_plots.size_meters IS 'Length in meters of 
 
 COMMENT ON TABLE tracking.observable_conditions IS '(Enum) Conditions that can be observed in a monitoring plot.';
 
+COMMENT ON TABLE tracking.observation_dependent_substrata IS 'For a completed observation and each substratum in its geometry snapshot, the prior (or same) observation whose substratum results should be rolled forward. A materialization of the "latest observation at or before this one that observed the substratum" relationship. A substratum observed in the observation itself is stored as a self-reference.';
+COMMENT ON COLUMN tracking.observation_dependent_substrata.observation_id IS 'The consuming observation whose rolled-up results use the depended-on data.';
+COMMENT ON COLUMN tracking.observation_dependent_substrata.substratum_history_id IS 'The substratum''s history in the consuming observation''s snapshot.';
+COMMENT ON COLUMN tracking.observation_dependent_substrata.depends_on_observation_id IS 'The observation whose substratum results are rolled forward; equals observation_id when the substratum was observed in the consuming observation.';
+COMMENT ON COLUMN tracking.observation_dependent_substrata.depends_on_substratum_history_id IS 'The substratum''s history in the depended-on observation''s snapshot.';
+
 COMMENT ON TABLE tracking.observation_media_files IS 'Observation-specific details about a photo or video of a monitoring plot. Generic metadata is in the `files` table.';
 COMMENT ON COLUMN tracking.observation_media_files.is_original IS 'If true, this photo was uploaded as part of the original observation data. If false, this photo was added after the observation.';
 
