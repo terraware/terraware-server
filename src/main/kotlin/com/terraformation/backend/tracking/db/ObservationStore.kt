@@ -2619,7 +2619,24 @@ class ObservationStore(
               .execute()
         }
 
+        val dependentsOfSource =
+            dslContext
+                .selectDistinct(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID)
+                .from(OBSERVATION_DEPENDENT_SUBSTRATA)
+                .where(
+                    OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(
+                        sourceObservationId
+                    )
+                )
+                .and(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.ne(sourceObservationId))
+                .fetch(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.asNonNullable())
+
         dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(sourceObservationId)).execute()
+
+        recordSubstratumDependencies(targetObservationId)
+
+        // Recompute dependencies of downstream observations
+        dependentsOfSource.forEach { recordSubstratumDependencies(it) }
       }
     }
   }
@@ -2800,6 +2817,14 @@ class ObservationStore(
             .where(PLOT_T0_OBSERVATIONS.OBSERVATION_ID.eq(observationId))
             .fetch(PLOT_T0_OBSERVATIONS.MONITORING_PLOT_ID.asNonNullable())
 
+    val dependentObservationIds =
+        dslContext
+            .selectDistinct(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID)
+            .from(OBSERVATION_DEPENDENT_SUBSTRATA)
+            .where(OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(observationId))
+            .and(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.ne(observationId))
+            .fetch(OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID.asNonNullable())
+
     dslContext.transaction { _ ->
       if (t0PlotIds.isNotEmpty()) {
         dslContext
@@ -2809,6 +2834,9 @@ class ObservationStore(
       }
 
       dslContext.deleteFrom(OBSERVATIONS).where(OBSERVATIONS.ID.eq(observationId)).execute()
+
+      // Recompute dependencies of downstream observations
+      dependentObservationIds.forEach { recordSubstratumDependencies(it) }
     }
   }
 

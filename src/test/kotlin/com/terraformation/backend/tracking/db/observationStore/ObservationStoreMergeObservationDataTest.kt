@@ -7,7 +7,9 @@ import com.terraformation.backend.db.tracking.ObservationId
 import com.terraformation.backend.db.tracking.RecordedPlantStatus
 import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
+import com.terraformation.backend.db.tracking.tables.records.ObservationDependentSubstrataRecord
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_MEDIA_FILES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_CONDITIONS
@@ -268,6 +270,150 @@ class ObservationStoreMergeObservationDataTest : BaseObservationStoreTest() {
 
     assertEquals(expectedTotals, helper.fetchAllTotals(), "Species totals after rebuild")
     assertEquals(expectedResults, helper.fetchAllResults(), "Observation results after rebuild")
+  }
+
+  @Test
+  fun `merge folds the source's substratum into the target's dependencies`() {
+    val substratumA = inserted.substratumId
+    val substratumAHistory = inserted.substratumHistoryId
+    val substratumB = insertSubstratum()
+    val substratumBHistory = inserted.substratumHistoryId
+    val plotA = insertMonitoringPlot(substratumId = substratumA)
+    val plotB = insertMonitoringPlot(substratumId = substratumB)
+
+    // Each observation covers only part of the site: the target observes substratum A, the source
+    // observes substratum B.
+    clock.instant = Instant.ofEpochSecond(1)
+    val target = insertObservation()
+    completePlotWith(target, plotA, 1)
+
+    clock.instant = Instant.ofEpochSecond(2)
+    val source = insertObservation()
+    completePlotWith(source, plotB, 1)
+
+    store.mergeObservationData(source, target)
+
+    // The target absorbed the source's B plot, so it now self-references both substrata.
+    assertTableEquals(
+        listOf(
+            ObservationDependentSubstrataRecord(
+                target,
+                substratumAHistory,
+                target,
+                substratumAHistory,
+            ),
+            ObservationDependentSubstrataRecord(
+                target,
+                substratumBHistory,
+                target,
+                substratumBHistory,
+            ),
+        ),
+        "Target self-references both substrata after the merge",
+    )
+    assertTableEmpty(
+        OBSERVATION_DEPENDENT_SUBSTRATA,
+        "No dependency rows reference the deleted source",
+        where = OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID.eq(source),
+    )
+  }
+
+  @Test
+  fun `merge recomputes dependencies of observations that rolled the source forward`() {
+    val substratumA = inserted.substratumId
+    val substratumAHistory = inserted.substratumHistoryId
+    val substratumB = insertSubstratum()
+    val substratumBHistory = inserted.substratumHistoryId
+    val plotA = insertMonitoringPlot(substratumId = substratumA)
+    val plotB = insertMonitoringPlot(substratumId = substratumB)
+    val plotA2 = insertMonitoringPlot(substratumId = substratumA)
+
+    // Partial-site observations: target observes A, source observes B (the latest B data), and a
+    // later observation observes only A so it rolls B forward from the source.
+    clock.instant = Instant.ofEpochSecond(1)
+    val target = insertObservation()
+    completePlotWith(target, plotA, 1)
+
+    clock.instant = Instant.ofEpochSecond(2)
+    val source = insertObservation()
+    completePlotWith(source, plotB, 1)
+
+    clock.instant = Instant.ofEpochSecond(3)
+    val later = insertObservation()
+    completePlotWith(later, plotA2, 1)
+
+    // Before the merge, the later observation rolls B forward from the source. The source itself
+    // rolls A forward from the target (it never observed A), and every observation has a row for
+    // each substratum in its snapshot.
+    assertTableEquals(
+        listOf(
+            ObservationDependentSubstrataRecord(
+                target,
+                substratumAHistory,
+                target,
+                substratumAHistory,
+            ),
+            ObservationDependentSubstrataRecord(
+                source,
+                substratumAHistory,
+                target,
+                substratumAHistory,
+            ),
+            ObservationDependentSubstrataRecord(
+                source,
+                substratumBHistory,
+                source,
+                substratumBHistory,
+            ),
+            ObservationDependentSubstrataRecord(
+                later,
+                substratumAHistory,
+                later,
+                substratumAHistory,
+            ),
+            ObservationDependentSubstrataRecord(
+                later,
+                substratumBHistory,
+                source,
+                substratumBHistory,
+            ),
+        ),
+        "Later observation rolls B forward from the source before the merge",
+    )
+
+    store.mergeObservationData(source, target)
+
+    // The target absorbed B, so the later observation must now roll B forward from the target
+    // rather than from the deleted source (which would otherwise drop the substratum).
+    assertTableEquals(
+        listOf(
+            ObservationDependentSubstrataRecord(
+                target,
+                substratumAHistory,
+                target,
+                substratumAHistory,
+            ),
+            ObservationDependentSubstrataRecord(
+                target,
+                substratumBHistory,
+                target,
+                substratumBHistory,
+            ),
+            ObservationDependentSubstrataRecord(
+                later,
+                substratumAHistory,
+                later,
+                substratumAHistory,
+            ),
+            ObservationDependentSubstrataRecord(
+                later,
+                substratumBHistory,
+                target,
+                substratumBHistory,
+            ),
+        ),
+        "Later observation rolls B forward from the target after the merge",
+    )
   }
 
   private fun livePlant(speciesId: SpeciesId = this.speciesId) =
