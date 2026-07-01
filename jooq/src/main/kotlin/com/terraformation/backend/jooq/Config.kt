@@ -186,6 +186,11 @@ val ENUM_TABLES =
                 EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
                 EnumTable(
+                    "file_batch_statuses",
+                    listOf("file_batches\\.batch_status_id"),
+                    isLocalizable = false,
+                ),
+                EnumTable(
                     "file_batch_types",
                     listOf("file_batches\\.batch_type_id"),
                     isLocalizable = false,

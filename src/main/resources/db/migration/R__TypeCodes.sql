@@ -250,8 +250,14 @@ VALUES (1, 'Seed Bank'),
        (4, 'Nursery')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO file_batch_statuses (id, name)
+VALUES (1, 'Uploading'),
+       (2, 'Upload Complete'),
+       (3, 'Timed Out')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO file_batch_types (id, name)
-VALUES (1, 'Splats')
+VALUES (1, 'Splat')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO global_roles (id, name)
