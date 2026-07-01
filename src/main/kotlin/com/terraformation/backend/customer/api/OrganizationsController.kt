@@ -112,7 +112,7 @@ class OrganizationsController(
       @PathVariable organizationId: OrganizationId,
       @RequestBody @Valid payload: UpdateOrganizationRequestPayload,
   ): SimpleSuccessResponsePayload {
-    organizationStore.update(payload.toRow().copy(id = organizationId))
+    organizationStore.update(organizationId, payload::applyTo)
     return SimpleSuccessResponsePayload()
   }
 
@@ -326,18 +326,17 @@ data class UpdateOrganizationRequestPayload(
     val timeZone: ZoneId?,
     val website: String?,
 ) {
-  fun toRow(): OrganizationsRow {
-    return OrganizationsRow(
-        countryCode = countryCode,
-        countrySubdivisionCode = countrySubdivisionCode,
-        description = description,
-        name = name,
-        organizationTypeId = organizationType,
-        organizationTypeDetails = organizationTypeDetails,
-        timeZone = timeZone,
-        website = website,
-    )
-  }
+  fun applyTo(row: OrganizationsRow) =
+      row.copy(
+          countryCode = countryCode,
+          countrySubdivisionCode = countrySubdivisionCode,
+          description = description,
+          name = name,
+          organizationTypeId = organizationType,
+          organizationTypeDetails = organizationTypeDetails,
+          timeZone = timeZone,
+          website = website,
+      )
 }
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

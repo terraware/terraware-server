@@ -196,17 +196,16 @@ class OrganizationStore(
     }
   }
 
-  fun update(row: OrganizationsRow) {
-    val organizationId = row.id ?: throw IllegalArgumentException("Organization ID must be set")
-
+  fun update(organizationId: OrganizationId, updateFunc: (OrganizationsRow) -> OrganizationsRow) {
     requirePermissions { updateOrganization(organizationId) }
-
-    validateCountryCode(row.countryCode, row.countrySubdivisionCode)
-    validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
 
     val existingRow =
         organizationsDao.fetchOneById(organizationId)
             ?: throw OrganizationNotFoundException(organizationId)
+    val row = updateFunc(existingRow)
+
+    validateCountryCode(row.countryCode, row.countrySubdivisionCode)
+    validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
 
     with(ORGANIZATIONS) {
       dslContext
