@@ -8,6 +8,7 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
+import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
@@ -553,7 +554,7 @@ class SplatService(
     val batchType =
         dslContext.fetchValue(FILE_BATCHES.BATCH_TYPE_ID, FILE_BATCHES.ID.eq(event.fileBatchId))
             ?: throw FileBatchNotFoundException(event.fileBatchId)
-    if (batchType != FileBatchType.Splats) {
+    if (batchType != FileBatchType.Splat) {
       // only generate splat for Splats batch types that finish uploading
       return
     }
@@ -567,7 +568,13 @@ class SplatService(
 
     val videoFileId =
         batchFiles.firstOrNull { it[FILES.CONTENT_TYPE]?.startsWith("video/") == true }?.value1()
-            ?: return
+
+    if (videoFileId == null) {
+      log.warn(
+          "File batch ${event.fileBatchId} does not contain a video file; not generating splat"
+      )
+      return
+    }
 
     val organizationId =
         dslContext
@@ -576,11 +583,8 @@ class SplatService(
             .where(ORGANIZATION_MEDIA_FILES.FILE_ID.eq(videoFileId))
             .fetchOne(ORGANIZATION_MEDIA_FILES.ORGANIZATION_ID) ?: return
 
-    if (batchFiles.size != 2) {
-      log.warn(
-          "File batch ${event.fileBatchId} contains an organization video but does not have " +
-              "exactly two files; not generating splat"
-      )
+    if (batchFiles.size > 2) {
+      log.warn("File batch ${event.fileBatchId} contains more than two files; not generating splat")
       return
     }
 
