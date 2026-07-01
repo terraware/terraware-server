@@ -59,20 +59,21 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
 
   val latestLiveField: Field<Int>
 
-  /**
-   * Condition that covers all result table rows that could be affected by a change to the scoped
-   * entity. For ID-based scopes this is the same as [observedTotalsCondition]. For plotId-based
-   * scopes it expands to include all observations for every substratum/stratum the plot has ever
-   * historically belonged to, ensuring that observations which reference the plot's data via
-   * [observationIdForPlot] are also updated.
-   */
+  /** Condition that covers all result table rows that could be affected downstream. */
   val survivalRateRecalculationCondition: Condition
 
   fun anyChildHasNullSurvivalRateCondition(observationIdField: Field<ObservationId?>): Condition
 
   fun observationPlotsCondition(observationIdField: Field<ObservationId?>): Condition
 
-  fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults): Condition
+  /**
+   * Selects the [OBSERVATION_PLOT_RESULTS] rows that contribute to this scope when it is computed
+   * for [observationIdField], using latest observed plots from unobserved substratum
+   */
+  fun latestPlotResultsCondition(
+      plotResults: ObservationPlotResults,
+      observationIdField: Field<ObservationId?>,
+  ): Condition
 
   /**
    * Returns the SQL expression that produces the survival rate (as an integer percentage 0–100) for
@@ -119,7 +120,11 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
    * data to the rollup, matching how survival rate uses [latestObservationForSubstratumField].
    */
   fun latestPlantDensityField(observationIdField: Field<ObservationId?>): Field<Int?> =
-      observedPlantDensityField(observationIdField)
+      DSL.field(
+          DSL.select(DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER))
+              .from(OBSERVATION_PLOT_RESULTS)
+              .where(latestPlotResultsCondition(OBSERVATION_PLOT_RESULTS, observationIdField))
+      )
 
   /**
    * Returns the SQL expression for this scope's plant density using only the plots observed in
@@ -146,8 +151,7 @@ interface ObservationResultsScope<ID : Any, HistoryId : Any> :
                   DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY).cast(SQLDataType.INTEGER)
               )
               .from(OBSERVATION_PLOT_RESULTS)
-              .where(plotResultsCondition)
-              .and(OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(observationIdField))
+              .where(latestPlotResultsCondition(OBSERVATION_PLOT_RESULTS, observationIdField))
       )
 }
 
@@ -208,8 +212,12 @@ class ObservationResultsPlot(
       OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField)
           .and(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
 
-  override fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults) =
-      DSL.falseCondition()
+  override fun latestPlotResultsCondition(
+      plotResults: ObservationPlotResults,
+      observationIdField: Field<ObservationId?>,
+  ) =
+      plotResults.MONITORING_PLOT_ID.eq(plotId)
+          .and(plotResults.OBSERVATION_ID.eq(observationIdField))
 
   override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
       tempStratumTable.MONITORING_PLOT_ID.eq(plotId)
@@ -320,17 +328,12 @@ class ObservationResultsSubstratum(
               )
           )
 
-  override fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults) =
-      DSL.and(
-          plotResultsTable.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID.eq(
-              OBSERVATION_SUBSTRATUM_RESULTS.SUBSTRATUM_HISTORY_ID
-          ),
-          plotResultsTable.OBSERVATION_ID.eq(OBSERVATION_SUBSTRATUM_RESULTS.OBSERVATION_ID),
-          DSL.or(
-              observedTotalsPlantingSiteTempCondition,
-              plotResultsTable.observationPlots.IS_PERMANENT.isTrue,
-          ),
-      )
+  override fun latestPlotResultsCondition(
+      plotResults: ObservationPlotResults,
+      observationIdField: Field<ObservationId?>,
+  ) =
+      plotResults.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID.`in`(substratumHistorySelect)
+          .and(plotResults.OBSERVATION_ID.eq(observationIdField))
 
   override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
       tempStratumTable.monitoringPlotHistories.SUBSTRATUM_HISTORY_ID.`in`(substratumHistorySelect)
@@ -425,43 +428,6 @@ class ObservationResultsStratum(
                 )
         )
       }
-
-  private fun latestPlotDensityAggregate(
-      aggregate: Field<BigDecimal?>,
-      observationIdField: Field<ObservationId?>,
-  ): Field<Int?> =
-      DSL.field(
-          DSL.select(aggregate.cast(SQLDataType.INTEGER))
-              .from(OBSERVATION_PLOT_RESULTS)
-              .where(
-                  OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
-                      .STRATUM_HISTORY_ID
-                      .`in`(stratumHistorySelect)
-              )
-              .and(
-                  OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(
-                      latestObservationForSubstratumField(
-                          observationIdField,
-                          OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
-                              .SUBSTRATUM_ID,
-                      )
-                  )
-              )
-      )
-
-  override fun latestPlantDensityField(observationIdField: Field<ObservationId?>): Field<Int?> =
-      latestPlotDensityAggregate(
-          DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY),
-          observationIdField,
-      )
-
-  override fun latestPlantDensityStdDevField(
-      observationIdField: Field<ObservationId?>
-  ): Field<Int?> =
-      latestPlotDensityAggregate(
-          DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY),
-          observationIdField,
-      )
 
   override val observedTotalsCondition =
       OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(stratumHistorySelect)
@@ -558,17 +524,21 @@ class ObservationResultsStratum(
               )
           )
 
-  override fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults) =
-      DSL.and(
-          plotResultsTable.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID.eq(
-              OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID
-          ),
-          plotResultsTable.OBSERVATION_ID.eq(OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID),
-          DSL.or(
-              observedTotalsPlantingSiteTempCondition,
-              plotResultsTable.observationPlots.IS_PERMANENT.isTrue,
-          ),
-      )
+  override fun latestPlotResultsCondition(
+      plotResults: ObservationPlotResults,
+      observationIdField: Field<ObservationId?>,
+  ) =
+      plotResults.monitoringPlotHistories.substratumHistories.STRATUM_HISTORY_ID.`in`(
+              stratumHistorySelect
+          )
+          .and(
+              plotResults.OBSERVATION_ID.eq(
+                  latestObservationForSubstratumField(
+                      observationIdField,
+                      plotResults.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID,
+                  )
+              )
+          )
 
   override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
       STRATUM_T0_TEMP_DENSITIES.STRATUM_ID.`in`(
@@ -688,44 +658,6 @@ class ObservationResultsSite(
         )
       }
 
-  private fun latestPlotDensityAggregate(
-      aggregate: Field<BigDecimal?>,
-      observationIdField: Field<ObservationId?>,
-  ): Field<Int?> =
-      DSL.field(
-          DSL.select(aggregate.cast(SQLDataType.INTEGER))
-              .from(OBSERVATION_PLOT_RESULTS)
-              .where(
-                  OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
-                      .stratumHistories
-                      .PLANTING_SITE_HISTORY_ID
-                      .`in`(siteHistorySelect)
-              )
-              .and(
-                  OBSERVATION_PLOT_RESULTS.OBSERVATION_ID.eq(
-                      latestObservationForSubstratumField(
-                          observationIdField,
-                          OBSERVATION_PLOT_RESULTS.monitoringPlotHistories.substratumHistories
-                              .SUBSTRATUM_ID,
-                      )
-                  )
-              )
-      )
-
-  override fun latestPlantDensityField(observationIdField: Field<ObservationId?>): Field<Int?> =
-      latestPlotDensityAggregate(
-          DSL.avg(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY),
-          observationIdField,
-      )
-
-  override fun latestPlantDensityStdDevField(
-      observationIdField: Field<ObservationId?>
-  ): Field<Int?> =
-      latestPlotDensityAggregate(
-          DSL.stddevSamp(OBSERVATION_PLOT_RESULTS.PLANT_DENSITY),
-          observationIdField,
-      )
-
   override val observedTotalsCondition = OBSERVATION_SITE_RESULTS.PLANTING_SITE_ID.eq(siteSelect)
 
   override val survivalRateRecalculationCondition: Condition
@@ -808,17 +740,21 @@ class ObservationResultsSite(
       OBSERVATION_PLOTS.OBSERVATION_ID.eq(observationIdField)
           .and(OBSERVATION_PLOTS.monitoringPlots.PLANTING_SITE_ID.eq(siteSelect))
 
-  override fun observationPlotResultsCondition(plotResultsTable: ObservationPlotResults) =
-      DSL.and(
-          plotResultsTable.monitoringPlotHistories.substratumHistories.stratumHistories
-              .PLANTING_SITE_HISTORY_ID
-              .eq(OBSERVATION_SITE_RESULTS.PLANTING_SITE_HISTORY_ID),
-          plotResultsTable.OBSERVATION_ID.eq(OBSERVATION_SITE_RESULTS.OBSERVATION_ID),
-          DSL.or(
-              observedTotalsPlantingSiteTempCondition,
-              plotResultsTable.observationPlots.IS_PERMANENT.isTrue,
-          ),
-      )
+  override fun latestPlotResultsCondition(
+      plotResults: ObservationPlotResults,
+      observationIdField: Field<ObservationId?>,
+  ) =
+      plotResults.monitoringPlotHistories.substratumHistories.stratumHistories
+          .PLANTING_SITE_HISTORY_ID
+          .`in`(siteHistorySelect)
+          .and(
+              plotResults.OBSERVATION_ID.eq(
+                  latestObservationForSubstratumField(
+                      observationIdField,
+                      plotResults.monitoringPlotHistories.substratumHistories.SUBSTRATUM_ID,
+                  )
+              )
+          )
 
   override fun tempStratumCondition(tempStratumTable: ObservationPlots) =
       STRATUM_T0_TEMP_DENSITIES.strata.PLANTING_SITE_ID.eq(siteSelect)

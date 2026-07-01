@@ -2169,10 +2169,8 @@ class ObservationStore(
         .where(recalculationCondition)
         .execute()
 
-    // Standard deviation and area are stored only for scopes that aggregate plots (substratum,
-    // stratum, site). They depend on the survival rate just computed above, so they're set in a
-    // separate statement that reads the stored value instead of recomputing the (large) survival
-    // rate expression for each column.
+    // Standard deviation and area are stored only for scopes that aggregate plots depend on the
+    // just computed survival rates.
     if (survivalRateStdDevField != null && survivalRateAreaField != null) {
       dslContext
           .update(table)
@@ -2180,7 +2178,7 @@ class ObservationStore(
               survivalRateStdDevField,
               DSL.if_(
                   survivalRateField.isNotNull,
-                  getSurvivalRateWeightedStandardDeviation(updateScope),
+                  getSurvivalRateWeightedStandardDeviation(updateScope, observationIdField),
                   DSL.castNull(SQLDataType.INTEGER),
               ),
           )
@@ -2310,7 +2308,10 @@ class ObservationStore(
                 survivalRateStdDevField,
                 DSL.if_(
                     survivalRateField.isNotNull,
-                    getSurvivalRateWeightedStandardDeviation(updateScope),
+                    getSurvivalRateWeightedStandardDeviation(
+                        updateScope,
+                        DSL.value(observationId, OBSERVATIONS.ID.dataType),
+                    ),
                     DSL.castNull(SQLDataType.INTEGER),
                 ),
             )
@@ -3835,6 +3836,7 @@ class ObservationStore(
    */
   private fun <ID : Any, HistoryId : Any> getSurvivalRateWeightedStandardDeviation(
       updateScope: ObservationResultsScope<ID, HistoryId>,
+      observationIdField: Field<ObservationId?>,
   ): Field<Int> {
     val plotResults = OBSERVATION_PLOT_RESULTS.`as`("plotResults")
     val survivalRate = plotResults.SURVIVAL_RATE.cast(SQLDataType.NUMERIC)
@@ -3857,7 +3859,13 @@ class ObservationStore(
                 )
             )
             .from(plotResults)
-            .where(updateScope.observationPlotResultsCondition(plotResults))
+            .where(updateScope.latestPlotResultsCondition(plotResults, observationIdField))
+            .and(
+                DSL.or(
+                    updateScope.observedTotalsPlantingSiteTempCondition,
+                    plotResults.observationPlots.IS_PERMANENT.isTrue,
+                )
+            )
             .and(plotResults.SURVIVAL_RATE.isNotNull)
     )
   }
