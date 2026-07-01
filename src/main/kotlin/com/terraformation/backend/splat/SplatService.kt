@@ -550,6 +550,14 @@ class SplatService(
 
   @EventListener
   fun on(event: FileBatchFinishedUploadingEvent) {
+    val batchType =
+        dslContext.fetchValue(FILE_BATCHES.BATCH_TYPE_ID, FILE_BATCHES.ID.eq(event.fileBatchId))
+            ?: throw FileBatchNotFoundException(event.fileBatchId)
+    if (batchType != FileBatchType.Splats) {
+      // only generate splat for Splats batch types that finish uploading
+      return
+    }
+
     val batchFiles =
         dslContext
             .select(FILES.ID, FILES.CONTENT_TYPE)
