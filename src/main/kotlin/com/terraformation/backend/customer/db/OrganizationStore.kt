@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.UserType
 import com.terraformation.backend.db.default_schema.tables.daos.OrganizationsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
+import com.terraformation.backend.db.default_schema.tables.references.BOTANICAL_COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -141,11 +142,13 @@ class OrganizationStore(
   ): OrganizationModel {
     requirePermissions { createEntityWithOwner(ownerUserId) }
 
+    validateBotanicalCountryCode(row.botanicalCountryCode)
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
     validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
 
     val fullRow =
         OrganizationsRow(
+            botanicalCountryCode = row.botanicalCountryCode,
             countryCode = row.countryCode?.uppercase(),
             countrySubdivisionCode = row.countrySubdivisionCode?.uppercase(),
             createdBy = currentUser().userId,
@@ -204,12 +207,14 @@ class OrganizationStore(
             ?: throw OrganizationNotFoundException(organizationId)
     val row = updateFunc(existingRow)
 
+    validateBotanicalCountryCode(row.botanicalCountryCode)
     validateCountryCode(row.countryCode, row.countrySubdivisionCode)
     validateOrganizationType(row.organizationTypeId, row.organizationTypeDetails)
 
     with(ORGANIZATIONS) {
       dslContext
           .update(ORGANIZATIONS)
+          .set(BOTANICAL_COUNTRY_CODE, row.botanicalCountryCode)
           .set(COUNTRY_CODE, row.countryCode)
           .set(COUNTRY_SUBDIVISION_CODE, row.countrySubdivisionCode)
           .set(DESCRIPTION, row.description)
@@ -612,6 +617,19 @@ class OrganizationStore(
       if (numOwners < 2) {
         throw CannotRemoveLastOwnerException(organizationId)
       }
+    }
+  }
+
+  /** Throws [IllegalArgumentException] if a botanical country code is invalid. */
+  private fun validateBotanicalCountryCode(botanicalCountryCode: String?) {
+    if (
+        botanicalCountryCode != null &&
+            !dslContext.fetchExists(
+                BOTANICAL_COUNTRIES,
+                BOTANICAL_COUNTRIES.LEVEL3_CODE.eq(botanicalCountryCode),
+            )
+    ) {
+      throw IllegalArgumentException("Botanical country code not recognized")
     }
   }
 

@@ -3,6 +3,7 @@ package com.terraformation.backend.search.table
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.db.accelerator.tables.references.APPLICATIONS
 import com.terraformation.backend.db.default_schema.OrganizationId
+import com.terraformation.backend.db.default_schema.tables.references.BOTANICAL_COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRY_SUBDIVISIONS
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -33,6 +34,10 @@ class OrganizationsTable(tables: SearchTables) : SearchTable() {
     with(tables) {
       listOf(
           batches.asMultiValueSublist("batches", ORGANIZATIONS.ID.eq(BATCHES.ORGANIZATION_ID)),
+          botanicalCountries.asSingleValueSublist(
+              "botanicalCountry",
+              ORGANIZATIONS.BOTANICAL_COUNTRY_CODE.eq(BOTANICAL_COUNTRIES.LEVEL3_CODE),
+          ),
           countries.asSingleValueSublist(
               "country",
               ORGANIZATIONS.COUNTRY_CODE.eq(COUNTRIES.CODE),
