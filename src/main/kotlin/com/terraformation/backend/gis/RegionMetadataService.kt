@@ -50,12 +50,12 @@ class RegionMetadataService(
                 async {
                   log.debug("Calculating for ${record.name}")
 
-                  val botanicalCountryId = record.id!!
+                  val botanicalCountryCode = record.level3Code!!
                   val countries = countryDetector.getCountries(record.boundary!!)
 
                   countries
                       .filter { it in validCountryCodes }
-                      .map { countryCode -> DSL.row(countryCode, botanicalCountryId) }
+                      .map { countryCode -> DSL.row(countryCode, botanicalCountryCode) }
                 }
               }
               .awaitAll()
@@ -69,7 +69,7 @@ class RegionMetadataService(
           .insertInto(
               COUNTRY_BOTANICAL_COUNTRIES,
               COUNTRY_BOTANICAL_COUNTRIES.COUNTRY_CODE,
-              COUNTRY_BOTANICAL_COUNTRIES.BOTANICAL_COUNTRY_ID,
+              COUNTRY_BOTANICAL_COUNTRIES.BOTANICAL_COUNTRY_CODE,
           )
           .valuesOfRows(countryBotanicalCountriesRows)
           .execute()
@@ -83,8 +83,8 @@ class RegionMetadataService(
       dslContext
           .update(WCVP_DISTRIBUTIONS)
           .set(
-              WCVP_DISTRIBUTIONS.BOTANICAL_COUNTRY_ID,
-              DSL.select(BOTANICAL_COUNTRIES.ID)
+              WCVP_DISTRIBUTIONS.BOTANICAL_COUNTRY_CODE,
+              DSL.select(BOTANICAL_COUNTRIES.LEVEL3_CODE)
                   .from(BOTANICAL_COUNTRIES)
                   .where(BOTANICAL_COUNTRIES.LEVEL3_CODE.eq(WCVP_DISTRIBUTIONS.LEVEL3_CODE)),
           )
@@ -97,7 +97,7 @@ class RegionMetadataService(
                 .selectDistinct(WCVP_DISTRIBUTIONS.LEVEL3_CODE)
                 .from(WCVP_DISTRIBUTIONS)
                 .where(WCVP_DISTRIBUTIONS.LEVEL3_CODE.isNotNull)
-                .and(WCVP_DISTRIBUTIONS.BOTANICAL_COUNTRY_ID.isNull)
+                .and(WCVP_DISTRIBUTIONS.BOTANICAL_COUNTRY_CODE.isNull)
                 .orderBy(WCVP_DISTRIBUTIONS.LEVEL3_CODE)
                 .fetch(WCVP_DISTRIBUTIONS.LEVEL3_CODE)
 

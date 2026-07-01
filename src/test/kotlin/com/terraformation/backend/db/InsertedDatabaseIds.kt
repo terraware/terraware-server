@@ -15,7 +15,6 @@ import com.terraformation.backend.db.accelerator.SubmissionDocumentId
 import com.terraformation.backend.db.accelerator.SubmissionId
 import com.terraformation.backend.db.accelerator.SubmissionSnapshotId
 import com.terraformation.backend.db.default_schema.AutomationId
-import com.terraformation.backend.db.default_schema.BotanicalCountryId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.FacilityId
@@ -74,7 +73,7 @@ class InsertedDatabaseIds {
   val bagsIds = mutableListOf<BagId>()
   val batchIds = mutableListOf<BatchId>()
   val biomassSpeciesIds = mutableListOf<BiomassSpeciesId>()
-  val botanicalCountryIds = mutableListOf<BotanicalCountryId>()
+  val botanicalCountryCodes = mutableListOf<String>()
   val commonIndicatorIds = mutableListOf<CommonIndicatorId>()
   val deliverableIds = mutableListOf<DeliverableId>()
   val deliveryIds = mutableListOf<DeliveryId>()
@@ -162,8 +161,8 @@ class InsertedDatabaseIds {
   val biomassSpeciesId
     get() = biomassSpeciesIds.last()
 
-  val botanicalCountryId
-    get() = botanicalCountryIds.last()
+  val botanicalCountryCode
+    get() = botanicalCountryCodes.last()
 
   val commonIndicatorId
     get() = commonIndicatorIds.last()
