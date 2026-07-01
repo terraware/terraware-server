@@ -1,3 +1,6 @@
+d42c0f70 SW-8351 Roll forward substrata when backfilling observation results (#4666)
+f730412a SW-8351 Use all dependent plots into the survival-rate std dev (#4665)
+a796392c SW-8351 Compute rolled-forward stats from the dependency table (#4664)
 74ea37ae SW-8351 Maintain substratum dependencies across merge and deletion (#4663)
 26f9ad1e SW-8351 Record substratum dependencies on completion and abandon (#4662)
 14d06fd5 SW-8351 Add observation_dependent_substrata table (#4661)
