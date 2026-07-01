@@ -496,15 +496,15 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
   @Nested
   inner class FinishUploadingFileBatch {
     @Test
-    fun `sets asset status to Ready and publishes event`() {
+    fun `sets batch status to Upload Complete and publishes event`() {
       val fileBatchId = insertFileBatch()
 
       fileService.finishUploadingFileBatch(fileBatchId)
 
       assertEquals(
-          AssetStatus.Ready,
-          fileBatchesDao.fetchOneById(fileBatchId)!!.assetStatusId,
-          "Asset status",
+          FileBatchStatus.UploadComplete,
+          fileBatchesDao.fetchOneById(fileBatchId)!!.batchStatusId,
+          "Batch status",
       )
       eventPublisher.assertEventPublished(FileBatchFinishedUploadingEvent(fileBatchId))
     }
