@@ -224,15 +224,15 @@ class FileService(
   }
 
   /**
-   * Marks a file batch as finished uploading. This sets the batch's asset status to
-   * [AssetStatus.Ready] and publishes a [FileBatchFinishedUploadingEvent].
+   * Marks a file batch as finished uploading. This sets the batch's asset status
+   * to[FileBatchStatus.UploadComplete] and publishes a [FileBatchFinishedUploadingEvent].
    */
   fun finishUploadingFileBatch(fileBatchId: FileBatchId) {
     val rowsUpdated =
         with(FILE_BATCHES) {
           dslContext
               .update(FILE_BATCHES)
-              .set(ASSET_STATUS_ID, AssetStatus.Ready)
+              .set(BATCH_STATUS_ID, FileBatchStatus.UploadComplete)
               .where(ID.eq(fileBatchId))
               .execute()
         }
