@@ -8,7 +8,6 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
-import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
@@ -540,14 +539,14 @@ class SplatService(
   @EventListener
   fun on(event: OrganizationVideoUploadedEvent) {
     if (event.fileBatchId != null) {
-      val batchType =
-          dslContext.fetchValue(FILE_BATCHES.BATCH_TYPE_ID, FILE_BATCHES.ID.eq(event.fileBatchId))
-              ?: throw FileBatchNotFoundException(event.fileBatchId)
-      if (batchType == FileBatchType.Splat) {
-        // Video was part of a splat batch; don't auto-generate splat (wait until batch is complete)
+      if (dslContext.fetchExists(FILE_BATCHES, FILE_BATCHES.ID.eq(event.fileBatchId))) {
+        // Video was part of a batch; don't auto-generate splat
         return
+      } else {
+        throw FileBatchNotFoundException(event.fileBatchId)
       }
     }
+
     try {
       generateOrganizationMediaSplat(event.organizationId, event.fileId)
     } catch (e: Exception) {
