@@ -6,8 +6,10 @@ import com.terraformation.backend.db.tracking.tables.records.ObservationPlotResu
 import com.terraformation.backend.db.tracking.tables.records.ObservationSiteResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationStratumResultsRecord
 import com.terraformation.backend.db.tracking.tables.records.ObservationSubstratumResultsRecord
+import com.terraformation.backend.db.tracking.tables.references.OBSERVED_STRATUM_SPECIES_TOTALS
 import io.mockk.every
 import java.time.Instant
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.security.access.AccessDeniedException
@@ -182,6 +184,103 @@ class ObservationStorePopulateObservationResultsTest : BaseObservationStoreTest(
         ),
         "observation_site_results",
     )
+  }
+
+  @Test
+  fun `backfill rolls an unobserved substratum forward into the stratum totals`() {
+    val stratumId = insertStratum()
+    val substratumA = insertSubstratum()
+    val plotA = insertMonitoringPlot()
+    val plotAHistory = inserted.monitoringPlotHistoryId
+    val substratumB = insertSubstratum()
+    val plotB = insertMonitoringPlot()
+    val plotBHistory = inserted.monitoringPlotHistoryId
+    val speciesId = insertSpecies()
+
+    // Observation 1 (earlier) observed substratum B with a completed plot.
+    val observation1 =
+        insertObservation(state = ObservationState.Completed, completedTime = Instant.EPOCH)
+    insertObservationPlot(
+        observationId = observation1,
+        monitoringPlotId = plotB,
+        monitoringPlotHistoryId = plotBHistory,
+        isPermanent = true,
+        completedBy = user.userId,
+        completedTime = Instant.EPOCH,
+        statusId = ObservationPlotStatus.Completed,
+    )
+    insertObservedPlotSpeciesTotals(
+        observationId = observation1,
+        monitoringPlotId = plotB,
+        speciesId = speciesId,
+        totalLive = 10,
+        permanentLive = 10,
+    )
+    insertObservedSubstratumSpeciesTotals(
+        observationId = observation1,
+        substratumId = substratumB,
+        speciesId = speciesId,
+        totalLive = 10,
+        permanentLive = 10,
+    )
+
+    // Observation 2 (later) observed only substratum A, leaving B unobserved.
+    val observation2 =
+        insertObservation(
+            state = ObservationState.Completed,
+            completedTime = Instant.ofEpochSecond(10),
+        )
+    insertObservationPlot(
+        observationId = observation2,
+        monitoringPlotId = plotA,
+        monitoringPlotHistoryId = plotAHistory,
+        isPermanent = true,
+        completedBy = user.userId,
+        completedTime = Instant.ofEpochSecond(10),
+        statusId = ObservationPlotStatus.Completed,
+    )
+    insertObservedPlotSpeciesTotals(
+        observationId = observation2,
+        monitoringPlotId = plotA,
+        speciesId = speciesId,
+        totalLive = 9,
+        permanentLive = 9,
+    )
+    insertObservedSubstratumSpeciesTotals(
+        observationId = observation2,
+        substratumId = substratumA,
+        speciesId = speciesId,
+        totalLive = 9,
+        permanentLive = 9,
+    )
+    // Stale stratum totals reflecting only A, as if computed before the dependency feature existed.
+    insertObservedStratumSpeciesTotals(
+        observationId = observation2,
+        stratumId = stratumId,
+        speciesId = speciesId,
+        totalLive = 9,
+        permanentLive = 9,
+    )
+
+    store.populateObservationResults(observation2)
+
+    // The backfill records B's dependency on observation 1 and re-aggregates the stratum totals.
+    val (totalLive, permanentLive) =
+        dslContext
+            .select(
+                OBSERVED_STRATUM_SPECIES_TOTALS.TOTAL_LIVE,
+                OBSERVED_STRATUM_SPECIES_TOTALS.PERMANENT_LIVE,
+            )
+            .from(OBSERVED_STRATUM_SPECIES_TOTALS)
+            .where(OBSERVED_STRATUM_SPECIES_TOTALS.OBSERVATION_ID.eq(observation2))
+            .and(OBSERVED_STRATUM_SPECIES_TOTALS.SPECIES_ID.eq(speciesId))
+            .fetchOne { it.value1() to it.value2() }!!
+    assertEquals(
+        19,
+        permanentLive,
+        "Backfill rolls observation 1's substratum B forward into observation 2's permanent_live",
+    )
+    assertEquals(9, totalLive, "total_live stays observed-only and excludes the rolled-forward B")
   }
 
   @Test
