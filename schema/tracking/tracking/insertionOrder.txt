@@ -54,6 +54,7 @@ scheduled_planting_date_species
 observation_site_results
 observation_stratum_results
 observation_substratum_results
+observation_dependent_substrata
 observed_plot_species_totals
 observed_site_species_totals
 observed_stratum_species_totals

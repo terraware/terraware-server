@@ -13,6 +13,7 @@ wcvp_taxa
 wood_density_levels
 species
 gbif_names
+country_botanical_countries
 gbif_name_words
 griis_taxa
 species_growth_forms

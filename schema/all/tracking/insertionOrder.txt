@@ -50,6 +50,7 @@ observation_substratum_results
 planting_date_request_species
 planting_season_notifications
 scheduled_planting_date_species
+observation_dependent_substrata
 planting_season_allocated_species
 plot_t0_densities
 stratum_t0_temp_densities

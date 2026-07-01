@@ -8,6 +8,7 @@ species_ecosystem_types
 species_growth_forms
 griis_taxa
 gbif_name_words
+country_botanical_countries
 gbif_names
 species
 wood_density_levels

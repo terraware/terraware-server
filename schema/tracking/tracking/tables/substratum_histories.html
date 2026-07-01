@@ -136,6 +136,16 @@
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="observation_dependent_substrata.depends_on_substratum_history_id references substratum_histories.id via observation_dependent_substra_depends_on_substratum_histor_fkey"><a href='observation_dependent_substrata.html'>observation_dependent_substrata</a><span class='relatedKey'>.depends_on_substratum_history_id</span></td>
+                                                <td class="constraint detail">observation_dependent_substra_depends_on_substratum_histor_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td title="observation_dependent_substrata.substratum_history_id references substratum_histories.id via observation_dependent_substrata_substratum_history_id_fkey"><a href='observation_dependent_substrata.html'>observation_dependent_substrata</a><span class='relatedKey'>.substratum_history_id</span></td>
+                                                <td class="constraint detail">observation_dependent_substrata_substratum_history_id_fkey</td>
+                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="observation_substratum_results.substratum_history_id references substratum_histories.id via observation_substratum_results_substratum_history_id_fkey"><a href='observation_substratum_results.html'>observation_substratum_results</a><span class='relatedKey'>.substratum_history_id</span></td>
                                                 <td class="constraint detail">observation_substratum_results_substratum_history_id_fkey</td>
                                                 <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>

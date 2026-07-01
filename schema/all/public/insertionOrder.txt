@@ -1,8 +1,8 @@
 time_zones
 asset_statuses
 seed_treatments
-land_use_model_types
 botanical_countries
+land_use_model_types
 chat_memory_message_types
 conservation_categories
 device_template_categories
@@ -58,6 +58,7 @@ project_report_settings
 thumbnails
 timeseries_values
 chat_memory_messages
+country_botanical_countries
 device_managers
 file_access_tokens
 mux_assets

@@ -16,6 +16,7 @@ observation_plot_conditions
 stratum_t0_temp_densities
 plot_t0_densities
 planting_season_allocated_species
+observation_dependent_substrata
 scheduled_planting_date_species
 planting_season_notifications
 planting_date_request_species
