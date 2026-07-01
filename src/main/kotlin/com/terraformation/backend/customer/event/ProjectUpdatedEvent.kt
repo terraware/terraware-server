@@ -16,12 +16,18 @@ data class ProjectUpdatedEventV1(
     override val projectId: ProjectId,
 ) : FieldsUpdatedPersistentEvent, ProjectPersistentEvent {
   data class Values(
+      val botanicalCountryCode: String? = null,
       val countryCode: String? = null,
       val description: String? = null,
   )
 
   override fun listUpdatedFields(messages: Messages) =
       listOfNotNull(
+          createUpdatedField(
+              "botanicalCountryCode",
+              messages.botanicalCountryName(changedFrom.botanicalCountryCode),
+              messages.botanicalCountryName(changedTo.botanicalCountryCode),
+          ),
           createUpdatedField("countryCode", changedFrom.countryCode, changedTo.countryCode),
           createUpdatedField("description", changedFrom.description, changedTo.description),
       )

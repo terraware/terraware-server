@@ -103,6 +103,10 @@ class Messages {
 
   fun booleanOrNull(value: Boolean?): String? = value?.let { getMessage("boolean.$it") }
 
+  fun botanicalCountryName(value: String?): String? = value?.let {
+    getMessageSource("i18n.BotanicalCountries").getMessage(it)
+  }
+
   fun csvBadHeader() = getMessage("csvBadHeader")
 
   fun csvRequiredFieldMissing() = getMessage("csvRequiredFieldMissing")

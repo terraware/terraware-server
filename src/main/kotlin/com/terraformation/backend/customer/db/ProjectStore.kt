@@ -25,6 +25,7 @@ import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.daos.ProjectsDao
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectInternalUsersRow
 import com.terraformation.backend.db.default_schema.tables.pojos.ProjectsRow
+import com.terraformation.backend.db.default_schema.tables.references.BOTANICAL_COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECT_INTERNAL_USERS
 import com.terraformation.backend.util.nullIfEquals
@@ -73,8 +74,11 @@ class ProjectStore(
   fun create(model: NewProjectModel): ProjectId {
     requirePermissions { createProject(model.organizationId) }
 
+    validateBotanicalCountryCode(model.botanicalCountryCode)
+
     val row =
         ProjectsRow(
+            botanicalCountryCode = model.botanicalCountryCode,
             countryCode = model.countryCode,
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
@@ -95,6 +99,7 @@ class ProjectStore(
 
     eventPublisher.publishEvent(
         ProjectCreatedEvent(
+            botanicalCountryCode = model.botanicalCountryCode,
             countryCode = model.countryCode,
             name = model.name,
             organizationId = model.organizationId,
@@ -128,10 +133,13 @@ class ProjectStore(
     val existing = fetchOneById(projectId)
     val updated = updateFunc(existing)
 
+    validateBotanicalCountryCode(updated.botanicalCountryCode)
+
     dslContext.transaction { _ ->
       try {
         dslContext
             .update(PROJECTS)
+            .set(PROJECTS.BOTANICAL_COUNTRY_CODE, updated.botanicalCountryCode)
             .set(PROJECTS.COUNTRY_CODE, updated.countryCode)
             .set(PROJECTS.DESCRIPTION, updated.description)
             .set(PROJECTS.MODIFIED_BY, currentUser().userId)
@@ -155,17 +163,27 @@ class ProjectStore(
       }
 
       if (
-          existing.countryCode != updated.countryCode || existing.description != updated.description
+          existing.botanicalCountryCode != updated.botanicalCountryCode ||
+              existing.countryCode != updated.countryCode ||
+              existing.description != updated.description
       ) {
         eventPublisher.publishEvent(
             ProjectUpdatedEvent(
                 changedFrom =
                     ProjectUpdatedEventValues(
+                        botanicalCountryCode =
+                            existing.botanicalCountryCode.nullIfEquals(
+                                updated.botanicalCountryCode
+                            ),
                         countryCode = existing.countryCode.nullIfEquals(updated.countryCode),
                         description = existing.description.nullIfEquals(updated.description),
                     ),
                 changedTo =
                     ProjectUpdatedEventValues(
+                        botanicalCountryCode =
+                            updated.botanicalCountryCode.nullIfEquals(
+                                existing.botanicalCountryCode
+                            ),
                         countryCode = updated.countryCode.nullIfEquals(existing.countryCode),
                         description = updated.description.nullIfEquals(existing.description),
                     ),
@@ -276,5 +294,18 @@ class ProjectStore(
         .selectFrom(PROJECT_INTERNAL_USERS)
         .where(conditions)
         .fetchInto(ProjectInternalUsersRow::class.java)
+  }
+
+  /** Throws [IllegalArgumentException] if a botanical country code is invalid. */
+  private fun validateBotanicalCountryCode(botanicalCountryCode: String?) {
+    if (
+        botanicalCountryCode != null &&
+            !dslContext.fetchExists(
+                BOTANICAL_COUNTRIES,
+                BOTANICAL_COUNTRIES.LEVEL3_CODE.eq(botanicalCountryCode),
+            )
+    ) {
+      throw IllegalArgumentException("Botanical country code not recognized")
+    }
   }
 }

@@ -71,10 +71,13 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class Create {
     @Test
     fun `creates project`() {
+      val botanicalCountryCode = insertBotanicalCountry()
       clock.instant = Instant.ofEpochSecond(123)
+
       val newProjectId =
           store.create(
               NewProjectModel(
+                  botanicalCountryCode = botanicalCountryCode,
                   countryCode = "US",
                   description = "Project description",
                   id = null,
@@ -85,6 +88,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           ProjectsRow(
+              botanicalCountryCode = botanicalCountryCode,
               countryCode = "US",
               createdBy = user.userId,
               createdTime = clock.instant,
@@ -101,6 +105,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       eventPublisher.assertEventPublished(
           ProjectCreatedEvent(
+              botanicalCountryCode = botanicalCountryCode,
               countryCode = "US",
               name = "Project name",
               organizationId = organizationId,
@@ -125,6 +130,20 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       assertThrows<ProjectNameInUseException> {
         store.create(
             NewProjectModel(id = null, name = "Project 1", organizationId = organizationId)
+        )
+      }
+    }
+
+    @Test
+    fun `throws exception on bad botanical country code`() {
+      assertThrows<IllegalArgumentException> {
+        store.create(
+            NewProjectModel(
+                botanicalCountryCode = "XXX",
+                id = null,
+                name = "Project 1",
+                organizationId = organizationId,
+            )
         )
       }
     }
@@ -211,6 +230,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
     @Test
     fun `fetches projects across organizations`() {
       val currentUserId = user.userId
+      val botanicalCountryCode = insertBotanicalCountry()
       val otherUserOrganizationId = insertOrganization()
       val nonMemberOrganizationId = insertOrganization()
 
@@ -221,6 +241,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
       val projectId2 = insertProject(name = "Project 2", organizationId = organizationId)
       val projectId3 =
           insertProject(
+              botanicalCountryCode = botanicalCountryCode,
               name = "Project 3",
               organizationId = otherUserOrganizationId,
           )
@@ -247,6 +268,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
                   organizationId = organizationId,
               ),
               ExistingProjectModel(
+                  botanicalCountryCode = botanicalCountryCode,
                   createdBy = currentUserId,
                   createdTime = Instant.EPOCH,
                   id = projectId3,
@@ -267,6 +289,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
   inner class Update {
     @Test
     fun `updates editable fields`() {
+      val botanicalCountryCode = insertBotanicalCountry()
       clock.instant = Instant.ofEpochSecond(123)
       val currentUserId = user.userId
 
@@ -274,6 +297,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       store.update(projectId) {
         ExistingProjectModel(
+            botanicalCountryCode = botanicalCountryCode,
             countryCode = "AU",
             description = "New description",
             id = ProjectId(-1),
@@ -284,6 +308,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       val expected =
           before.copy(
+              botanicalCountryCode = botanicalCountryCode,
               countryCode = "AU",
               createdBy = currentUserId,
               createdTime = Instant.EPOCH,
@@ -310,6 +335,7 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
               changedFrom = ProjectUpdatedEventValues(description = "Description 1"),
               changedTo =
                   ProjectUpdatedEventValues(
+                      botanicalCountryCode = botanicalCountryCode,
                       countryCode = "AU",
                       description = "New description",
                   ),
@@ -347,6 +373,15 @@ class ProjectStoreTest : DatabaseTest(), RunsAsDatabaseUser {
 
       assertThrows<ProjectNameInUseException> {
         store.update(projectId2) { it.copy(name = "Existing name") }
+      }
+    }
+
+    @Test
+    fun `throws exception on bad botanical country code`() {
+      val projectId = insertProject()
+
+      assertThrows<IllegalArgumentException> {
+        store.update(projectId) { it.copy(botanicalCountryCode = "XXX") }
       }
     }
   }
