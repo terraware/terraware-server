@@ -15,6 +15,7 @@ import com.terraformation.backend.db.tracking.tables.ObservationPlots
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.MONITORING_PLOT_HISTORIES
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATIONS
+import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_DEPENDENT_SUBSTRATA
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_PLOT_RESULTS
 import com.terraformation.backend.db.tracking.tables.references.OBSERVATION_SITE_RESULTS
@@ -465,16 +466,45 @@ class ObservationResultsStratum(
   override val observedTotalsCondition =
       OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(stratumHistorySelect)
 
+  /**
+   * For the plotId case, scopes the recalc to exactly the stratum result rows whose data is rolled
+   * up from the edited plot's observations.
+   */
   override val survivalRateRecalculationCondition: Condition
     get() =
         if (plotId != null) {
-          OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID.`in`(
-              DSL.selectDistinct(SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID)
-                  .from(MONITORING_PLOT_HISTORIES)
-                  .join(SUBSTRATUM_HISTORIES)
-                  .on(SUBSTRATUM_HISTORIES.ID.eq(MONITORING_PLOT_HISTORIES.SUBSTRATUM_HISTORY_ID))
-                  .where(MONITORING_PLOT_HISTORIES.MONITORING_PLOT_ID.eq(plotId))
-          )
+          DSL.row(
+                  OBSERVATION_STRATUM_RESULTS.OBSERVATION_ID,
+                  OBSERVATION_STRATUM_RESULTS.STRATUM_HISTORY_ID,
+              )
+              .`in`(
+                  DSL.select(
+                          OBSERVATION_DEPENDENT_SUBSTRATA.OBSERVATION_ID,
+                          SUBSTRATUM_HISTORIES.STRATUM_HISTORY_ID,
+                      )
+                      .from(OBSERVATION_DEPENDENT_SUBSTRATA)
+                      .join(SUBSTRATUM_HISTORIES)
+                      .on(
+                          SUBSTRATUM_HISTORIES.ID.eq(
+                              OBSERVATION_DEPENDENT_SUBSTRATA.SUBSTRATUM_HISTORY_ID
+                          )
+                      )
+                      .where(
+                          DSL.row(
+                                  OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_OBSERVATION_ID,
+                                  OBSERVATION_DEPENDENT_SUBSTRATA.DEPENDS_ON_SUBSTRATUM_HISTORY_ID,
+                              )
+                              .`in`(
+                                  DSL.select(
+                                          OBSERVATION_PLOTS.OBSERVATION_ID,
+                                          OBSERVATION_PLOTS.monitoringPlotHistories
+                                              .SUBSTRATUM_HISTORY_ID,
+                                      )
+                                      .from(OBSERVATION_PLOTS)
+                                      .where(OBSERVATION_PLOTS.MONITORING_PLOT_ID.eq(plotId))
+                              )
+                      )
+              )
         } else {
           observedTotalsCondition
         }
