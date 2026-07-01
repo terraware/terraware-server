@@ -112,9 +112,12 @@ COMMENT ON TABLE facility_types IS '(Enum) Types of facilities that can be repre
 
 COMMENT ON TABLE file_access_tokens IS 'Temporary tokens for unauthenticated access to files from the file store.';
 
+COMMENT ON TABLE file_batch_statuses IS '(Enum) Statuses of file batches.';
+
 COMMENT ON TABLE file_batch_types IS '(Enum) Types of file batches.';
 
 COMMENT ON TABLE file_batches IS 'Groups of files that were uploaded together.';
+COMMENT ON COLUMN file_batches.batch_status_id IS 'Which status a file batch is in.';
 COMMENT ON COLUMN file_batches.batch_type_id IS 'Which type of files this batch contains.';
 
 COMMENT ON TABLE files IS 'Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`.';

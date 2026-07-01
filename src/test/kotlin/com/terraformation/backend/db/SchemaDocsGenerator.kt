@@ -303,6 +303,7 @@ class SchemaDocsGenerator : DatabaseTest() {
                   "facility_connection_states" to setOf(ALL, CUSTOMER, DEVICE),
                   "facility_types" to setOf(ALL, CUSTOMER),
                   "file_access_tokens" to setOf(ALL),
+                  "file_batch_statuses" to setOf(ALL),
                   "file_batch_types" to setOf(ALL),
                   "file_batches" to setOf(ALL),
                   "files" to setOf(ALL, ACCELERATOR, CUSTOMER, NURSERY, SEEDBANK),
