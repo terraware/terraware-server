@@ -108,7 +108,7 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
-    fun `stores file batch ID on the file row and includes on batch ID on the event`() {
+    fun `stores file batch ID on the file row and includes batch ID on the event`() {
       val fileBatchId = insertFileBatch()
       val multipartFile = MockMultipartFile("file", "video/mp4", "video/mp4", ByteArray(1024))
 
