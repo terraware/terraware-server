@@ -271,6 +271,37 @@ internal class PlantingDateRequestsStoreTest : DatabaseTest(), RunsAsDatabaseUse
     }
 
     @Test
+    fun `changes status back to Partial when a species is added to the date`() {
+      val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
+      insertScheduledPlantingDateSpecies(quantity = 5)
+      insertPlantingDateRequest(status = PlantingDateRequestStatus.Fulfilled)
+      insertFacility()
+      insertBatch()
+      insertNurseryWithdrawal(
+          plantingSeasonId = plantingSeasonId,
+          scheduledPlantingDateRequestId = scheduledPlantingDateId,
+          purpose = WithdrawalPurpose.OutPlant,
+      )
+      insertBatchWithdrawal(readyQuantityWithdrawn = 5)
+
+      val species2 = insertSpecies()
+      insertScheduledPlantingDateSpecies(speciesId = species2, quantity = 10)
+
+      store.update(scheduledPlantingDateId, plantingSeasonId)
+      assertTableEquals(
+          PlantingDateRequestsRecord(
+              date = LocalDate.EPOCH,
+              createdBy = user.userId,
+              createdTime = Instant.EPOCH,
+              modifiedBy = user.userId,
+              modifiedTime = clock.instant,
+              scheduledPlantingDateId = scheduledPlantingDateId,
+              statusId = PlantingDateRequestStatus.Partial,
+          )
+      )
+    }
+
+    @Test
     fun `deletes species no longer in scheduled planting date`() {
       val scheduledPlantingDateId = insertPlantingSeasonScheduledDate()
       insertPlantingDateRequest()

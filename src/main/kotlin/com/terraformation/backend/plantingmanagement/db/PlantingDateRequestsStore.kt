@@ -164,6 +164,8 @@ class PlantingDateRequestsStore(
 
       insertRequestSpecies(scheduledPlantingDateId)
 
+      updateRequestStatus(scheduledPlantingDateId)
+
       val newDate =
           dslContext
               .select(PLANTING_DATE_REQUESTS.DATE)
