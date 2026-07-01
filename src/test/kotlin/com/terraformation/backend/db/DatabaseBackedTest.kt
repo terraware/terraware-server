@@ -144,6 +144,7 @@ import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
 import com.terraformation.backend.db.default_schema.FileBatchId
+import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.GriisResourceId
@@ -1920,12 +1921,14 @@ abstract class DatabaseBackedTest {
   fun insertFileBatch(
       row: FileBatchesRow = FileBatchesRow(),
       assetStatus: AssetStatus = row.assetStatusId ?: AssetStatus.Preparing,
+      batchType: FileBatchType = row.batchTypeId ?: FileBatchType.Splats,
       createdBy: UserId = row.createdBy ?: inserted.userId,
       createdTime: Instant = row.createdTime ?: Instant.EPOCH,
   ): FileBatchId {
     val rowWithDefaults =
         row.copy(
             assetStatusId = assetStatus,
+            batchTypeId = batchType,
             createdBy = createdBy,
             createdTime = createdTime,
         )
