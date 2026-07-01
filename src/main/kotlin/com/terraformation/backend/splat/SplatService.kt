@@ -543,7 +543,7 @@ class SplatService(
       val batchType =
           dslContext.fetchValue(FILE_BATCHES.BATCH_TYPE_ID, FILE_BATCHES.ID.eq(event.fileBatchId))
               ?: throw FileBatchNotFoundException(event.fileBatchId)
-      if (batchType == FileBatchType.Splats) {
+      if (batchType == FileBatchType.Splat) {
         // Video was part of a splat batch; don't auto-generate splat (wait until batch is complete)
         return
       }
