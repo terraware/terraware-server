@@ -31,6 +31,7 @@ import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 import org.springframework.context.support.ResourceBundleMessageSource
@@ -45,18 +46,9 @@ data class NotificationMessage(val title: String, val body: String)
  */
 @Named
 class Messages {
-  private val messageSource =
-      ResourceBundleMessageSource().apply {
-        // Make the handling of single quote characters consistent regardless of whether or not
-        // strings contain placeholders.
-        setAlwaysUseMessageFormat(true)
-        setBasename("i18n.Messages")
-        setDefaultEncoding("UTF-8")
-      }
+  private val messageSources = ConcurrentHashMap<String, ResourceBundleMessageSource>()
 
-  private fun getMessage(code: String, vararg args: Any): String {
-    return messageSource.getMessage(code, args, currentLocale())
-  }
+  private val messageSource = getMessageSource("i18n.Messages")
 
   fun applicationPreScreenFailureBadSize(
       country: String,
@@ -716,6 +708,26 @@ class Messages {
       getMessage("variablesCsvVariableParentDoesNotExist")
 
   fun variablesCsvWrongDataTypeForChild() = getMessage("variablesCsvWrongDataTypeForChild")
+
+  private fun getMessage(code: String, vararg args: Any): String {
+    return messageSource.getMessage(code, args, currentLocale())
+  }
+
+  private fun ResourceBundleMessageSource.getMessage(code: String, vararg args: Any): String {
+    return getMessage(code, args, currentLocale())
+  }
+
+  private fun getMessageSource(name: String): ResourceBundleMessageSource {
+    return messageSources.computeIfAbsent(name) {
+      ResourceBundleMessageSource().apply {
+        // Make the handling of single quote characters consistent regardless of whether or not
+        // strings contain placeholders.
+        setAlwaysUseMessageFormat(true)
+        setBasename(name)
+        setDefaultEncoding("UTF-8")
+      }
+    }
+  }
 
   private fun eventSubjectPrefix(kClass: KClass<*>) =
       "eventSubject.${kClass.findAnnotation<JsonTypeName>()!!.value}"
