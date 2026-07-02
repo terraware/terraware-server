@@ -15,6 +15,7 @@ data class OrganizationModel(
     val id: OrganizationId,
     val name: String,
     val description: String? = null,
+    val botanicalCountryCode: String? = null,
     val countryCode: String? = null,
     val countrySubdivisionCode: String? = null,
     val createdTime: Instant,
@@ -36,6 +37,7 @@ data class OrganizationModel(
       id = record[ORGANIZATIONS.ID] ?: throw IllegalArgumentException("ID is required"),
       name = record[ORGANIZATIONS.NAME] ?: throw IllegalArgumentException("Name is required"),
       description = record[ORGANIZATIONS.DESCRIPTION],
+      botanicalCountryCode = record[ORGANIZATIONS.BOTANICAL_COUNTRY_CODE],
       countryCode = record[ORGANIZATIONS.COUNTRY_CODE],
       countrySubdivisionCode = record[ORGANIZATIONS.COUNTRY_SUBDIVISION_CODE],
       createdTime =
@@ -57,6 +59,7 @@ fun OrganizationsRow.toModel(totalUsers: Int): OrganizationModel =
         id = id ?: throw IllegalArgumentException("ID is required"),
         name = name ?: throw IllegalArgumentException("Name is required"),
         description = description,
+        botanicalCountryCode = botanicalCountryCode,
         countryCode = countryCode,
         countrySubdivisionCode = countrySubdivisionCode,
         createdTime = createdTime ?: throw IllegalArgumentException("Created time is required"),
