@@ -17,6 +17,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -272,6 +273,9 @@ data class IndividualUser(
   override fun canDeleteUpload(uploadId: UploadId) = canReadUpload(uploadId)
 
   override fun canDeleteUsers(): Boolean = isSuperAdmin()
+
+  override fun canFinishUploadingFileBatch(fileBatchId: FileBatchId): Boolean =
+      parentStore.getUserId(fileBatchId) == userId || isSuperAdmin()
 
   override fun canImportGlobalSpeciesData() = isSuperAdmin()
 

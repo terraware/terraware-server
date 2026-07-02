@@ -5,6 +5,7 @@ import com.drew.imaging.FileTypeDetector
 import com.drew.imaging.ImageMetadataReader
 import com.drew.metadata.Metadata
 import com.terraformation.backend.auth.currentUser
+import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DefaultCatalog
 import com.terraformation.backend.db.FileBatchNotFoundException
@@ -224,10 +225,12 @@ class FileService(
   }
 
   /**
-   * Marks a file batch as finished uploading. This sets the batch's asset status
-   * to[FileBatchStatus.UploadComplete] and publishes a [FileBatchFinishedUploadingEvent].
+   * Marks a file batch as finished uploading. This sets the batch's asset status to
+   * [FileBatchStatus.UploadComplete] and publishes a [FileBatchFinishedUploadingEvent].
    */
   fun finishUploadingFileBatch(fileBatchId: FileBatchId) {
+    requirePermissions { finishUploadingFileBatch(fileBatchId) }
+
     val rowsUpdated =
         with(FILE_BATCHES) {
           dslContext
