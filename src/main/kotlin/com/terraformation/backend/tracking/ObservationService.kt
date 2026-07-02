@@ -1,7 +1,9 @@
 package com.terraformation.backend.tracking
 
 import com.terraformation.backend.auth.currentUser
-import com.terraformation.backend.customer.db.ParentStore
+import com.terraformation.backend.customer.db.getEffectiveTimeZone
+import com.terraformation.backend.customer.db.getOrganizationId
+import com.terraformation.backend.customer.db.getPlantingSiteId
 import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
@@ -107,7 +109,6 @@ class ObservationService(
     private val observationStore: ObservationStore,
     private val plantingSiteNotificationStore: PlantingSiteNotificationStore,
     private val plantingSiteStore: PlantingSiteStore,
-    private val parentStore: ParentStore,
     private val rateLimitedEventPublisher: RateLimitedEventPublisher,
     private val systemUser: SystemUser,
     private val thumbnailService: ThumbnailService,
@@ -247,113 +248,112 @@ class ObservationService(
       caption: String?,
       isOriginal: Boolean,
       type: ObservationMediaType = ObservationMediaType.Plot,
-  ): FileId {
-    requirePermissions { updateObservation(observationId) }
+  ): FileId =
+      context(dslContext) {
+        requirePermissions { updateObservation(observationId) }
 
-    val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
-            ?: throw ObservationNotFoundException(observationId)
-    val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
-            ?: throw ObservationNotFoundException(observationId)
+        val plantingSiteId =
+            getPlantingSiteId(observationId) ?: throw ObservationNotFoundException(observationId)
+        val organizationId =
+            getOrganizationId(plantingSiteId) ?: throw ObservationNotFoundException(observationId)
 
-    if (metadata.geolocation == null && isOriginal) {
-      throw IllegalArgumentException("Geolocation is required for original observation photos")
-    }
-
-    if (type == ObservationMediaType.Explanation) {
-      if (caption.isNullOrBlank()) {
-        throw IllegalArgumentException("Caption is required for explanation media file")
-      }
-      if (position == null) {
-        throw IllegalArgumentException("Position is required for explanation media file")
-      }
-    }
-    if (type == ObservationMediaType.Quadrat && position == null) {
-      throw IllegalArgumentException("Position is required for quadrat media file")
-    }
-    if (type == ObservationMediaType.Soil && position != null) {
-      throw IllegalArgumentException("Position must be null for a soil media file")
-    }
-
-    val fileId =
-        fileService.storeFile("observation", data, metadata) { (fileId, fullMetadata) ->
-          observationMediaFilesDao.insert(
-              ObservationMediaFilesRow(
-                  caption = caption,
-                  fileId = fileId,
-                  isOriginal = isOriginal,
-                  monitoringPlotId = monitoringPlotId,
-                  observationId = observationId,
-                  positionId = position,
-                  typeId = type,
-              )
-          )
-
-          eventPublisher.publishEvent(
-              ObservationMediaFileUploadedEvent(
-                  caption = caption,
-                  contentType = fullMetadata.contentType,
-                  geolocation = fullMetadata.geolocation,
-                  fileId = fileId,
-                  isOriginal = isOriginal,
-                  observationId = observationId,
-                  organizationId = organizationId,
-                  plantingSiteId = plantingSiteId,
-                  position = position,
-                  monitoringPlotId = monitoringPlotId,
-                  type = type,
-              )
-          )
+        if (metadata.geolocation == null && isOriginal) {
+          throw IllegalArgumentException("Geolocation is required for original observation photos")
         }
 
-    log.info(
-        "Stored media file $fileId of type $type for observation $observationId of plot $monitoringPlotId"
-    )
+        if (type == ObservationMediaType.Explanation) {
+          if (caption.isNullOrBlank()) {
+            throw IllegalArgumentException("Caption is required for explanation media file")
+          }
+          if (position == null) {
+            throw IllegalArgumentException("Position is required for explanation media file")
+          }
+        }
+        if (type == ObservationMediaType.Quadrat && position == null) {
+          throw IllegalArgumentException("Position is required for quadrat media file")
+        }
+        if (type == ObservationMediaType.Soil && position != null) {
+          throw IllegalArgumentException("Position must be null for a soil media file")
+        }
 
-    return fileId
-  }
+        val fileId =
+            fileService.storeFile("observation", data, metadata) { (fileId, fullMetadata) ->
+              observationMediaFilesDao.insert(
+                  ObservationMediaFilesRow(
+                      caption = caption,
+                      fileId = fileId,
+                      isOriginal = isOriginal,
+                      monitoringPlotId = monitoringPlotId,
+                      observationId = observationId,
+                      positionId = position,
+                      typeId = type,
+                  )
+              )
+
+              eventPublisher.publishEvent(
+                  ObservationMediaFileUploadedEvent(
+                      caption = caption,
+                      contentType = fullMetadata.contentType,
+                      geolocation = fullMetadata.geolocation,
+                      fileId = fileId,
+                      isOriginal = isOriginal,
+                      observationId = observationId,
+                      organizationId = organizationId,
+                      plantingSiteId = plantingSiteId,
+                      position = position,
+                      monitoringPlotId = monitoringPlotId,
+                      type = type,
+                  )
+              )
+            }
+
+        log.info(
+            "Stored media file $fileId of type $type for observation $observationId of plot $monitoringPlotId"
+        )
+
+        return fileId
+      }
 
   fun updateMediaFile(
       observationId: ObservationId,
       monitoringPlotId: MonitoringPlotId,
       fileId: FileId,
       updateFunc: (ObservationMediaFilesRow) -> ObservationMediaFilesRow,
-  ) {
-    requirePermissions { updateObservation(observationId) }
+  ) =
+      context(dslContext) {
+        requirePermissions { updateObservation(observationId) }
 
-    val plantingSiteId =
-        parentStore.getPlantingSiteId(observationId)
-            ?: throw ObservationNotFoundException(observationId)
-    val organizationId =
-        parentStore.getOrganizationId(plantingSiteId)
-            ?: throw ObservationNotFoundException(observationId)
+        val plantingSiteId =
+            getPlantingSiteId(observationId) ?: throw ObservationNotFoundException(observationId)
+        val organizationId =
+            getOrganizationId(plantingSiteId) ?: throw ObservationNotFoundException(observationId)
 
-    val initialRow = fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
-    val updatedRow = updateFunc(initialRow)
+        val initialRow = fetchMediaFilesRow(observationId, monitoringPlotId, fileId)
+        val updatedRow = updateFunc(initialRow)
 
-    if (
-        initialRow.typeId == ObservationMediaType.Explanation && updatedRow.caption.isNullOrBlank()
-    ) {
-      throw IllegalArgumentException("Cannot remove caption from Explanation photo")
-    }
+        if (
+            initialRow.typeId == ObservationMediaType.Explanation &&
+                updatedRow.caption.isNullOrBlank()
+        ) {
+          throw IllegalArgumentException("Cannot remove caption from Explanation photo")
+        }
 
-    if (initialRow != updatedRow) {
-      observationMediaFilesDao.update(initialRow.copy(caption = updatedRow.caption))
-      fileService.touchFile(fileId)
-      eventPublisher.publishEvent(
-          ObservationMediaFileEditedEvent(
-              changedFrom = ObservationMediaFileEditedEventValues(initialRow.caption),
-              changedTo = ObservationMediaFileEditedEventValues(updatedRow.caption),
-              fileId = fileId,
-              monitoringPlotId = monitoringPlotId,
-              observationId = observationId,
-              organizationId = organizationId,
-              plantingSiteId = plantingSiteId,
+        if (initialRow != updatedRow) {
+          observationMediaFilesDao.update(initialRow.copy(caption = updatedRow.caption))
+          fileService.touchFile(fileId)
+          eventPublisher.publishEvent(
+              ObservationMediaFileEditedEvent(
+                  changedFrom = ObservationMediaFileEditedEventValues(initialRow.caption),
+                  changedTo = ObservationMediaFileEditedEventValues(updatedRow.caption),
+                  fileId = fileId,
+                  monitoringPlotId = monitoringPlotId,
+                  observationId = observationId,
+                  organizationId = organizationId,
+                  plantingSiteId = plantingSiteId,
+              )
           )
-      )
-    }
-  }
+        }
+      }
 
   fun deleteMediaFile(
       observationId: ObservationId,
@@ -483,32 +483,33 @@ class ObservationService(
       observationId: ObservationId,
       otherSpeciesName: String,
       speciesId: SpeciesId,
-  ) {
-    requirePermissions {
-      updateSpecies(speciesId)
-      updateObservation(observationId)
-    }
+  ) =
+      context(dslContext) {
+        requirePermissions {
+          updateSpecies(speciesId)
+          updateObservation(observationId)
+        }
 
-    if (parentStore.getOrganizationId(observationId) != parentStore.getOrganizationId(speciesId)) {
-      throw SpeciesInWrongOrganizationException(speciesId)
-    }
+        if (getOrganizationId(observationId) != getOrganizationId(speciesId)) {
+          throw SpeciesInWrongOrganizationException(speciesId)
+        }
 
-    observationLocker.withLockedObservation(observationId) { observation ->
-      @Suppress("DEPRECATION")
-      when (observation.observationType) {
-        ObservationType.BiomassMeasurements ->
-            biomassStore.mergeOtherSpecies(observationId, otherSpeciesName, speciesId)
-        ObservationType.Monitoring ->
-            observationStore.mergeOtherSpeciesForMonitoring(
-                observationId,
-                observation.plantingSiteId,
-                observation.isAdHoc,
-                otherSpeciesName,
-                speciesId,
-            )
+        observationLocker.withLockedObservation(observationId) { observation ->
+          @Suppress("DEPRECATION")
+          when (observation.observationType) {
+            ObservationType.BiomassMeasurements ->
+                biomassStore.mergeOtherSpecies(observationId, otherSpeciesName, speciesId)
+            ObservationType.Monitoring ->
+                observationStore.mergeOtherSpeciesForMonitoring(
+                    observationId,
+                    observation.plantingSiteId,
+                    observation.isAdHoc,
+                    otherSpeciesName,
+                    speciesId,
+                )
+          }
+        }
       }
-    }
-  }
 
   /**
    * Populates the `observation_*_results` tables for every observation that has at least one
@@ -724,72 +725,75 @@ class ObservationService(
       plantingSiteId: PlantingSiteId,
       plants: Collection<RecordedPlantsRow> = emptySet(),
       swCorner: Point,
-  ): Pair<ObservationId, MonitoringPlotId> {
-    requirePermissions { scheduleAdHocObservation(plantingSiteId) }
+  ): Pair<ObservationId, MonitoringPlotId> =
+      context(dslContext) {
+        requirePermissions { scheduleAdHocObservation(plantingSiteId) }
 
-    if (observedTime.isAfter(clock.instant().plusSeconds(CLOCK_TOLERANCE_SECONDS))) {
-      throw IllegalArgumentException("Observed time is in the future")
-    }
-
-    if (!plantingSiteStore.isDetailed(plantingSiteId)) {
-      throw PlantingSiteNotDetailedException(plantingSiteId)
-    }
-
-    when (observationType) {
-      ObservationType.BiomassMeasurements -> {
-        if (biomassDetails == null) {
-          throw IllegalArgumentException("Biomass observations must contain biomass details")
+        if (observedTime.isAfter(clock.instant().plusSeconds(CLOCK_TOLERANCE_SECONDS))) {
+          throw IllegalArgumentException("Observed time is in the future")
         }
-        if (plants.isNotEmpty()) {
-          throw IllegalArgumentException("Biomass observations must not contain plants")
-        }
-      }
-      ObservationType.Monitoring -> {
-        if (biomassDetails != null) {
-          throw IllegalArgumentException("Monitoring observations must not contain biomass details")
-        }
-      }
-    }
 
-    val effectiveTimeZone = parentStore.getEffectiveTimeZone(plantingSiteId)
-    val date = LocalDate.ofInstant(observedTime, effectiveTimeZone)
+        if (!plantingSiteStore.isDetailed(plantingSiteId)) {
+          throw PlantingSiteNotDetailedException(plantingSiteId)
+        }
 
-    return dslContext.transactionResult { _ ->
-      val observationId =
-          observationStore.createObservation(
-              NewObservationModel(
-                  endDate = date,
-                  id = null,
-                  isAdHoc = true,
-                  observationType = observationType,
-                  plantingSiteId = plantingSiteId,
-                  requestedSubstratumIds = emptySet(),
-                  startDate = date,
-                  state = ObservationState.Upcoming,
+        when (observationType) {
+          ObservationType.BiomassMeasurements -> {
+            if (biomassDetails == null) {
+              throw IllegalArgumentException("Biomass observations must contain biomass details")
+            }
+            if (plants.isNotEmpty()) {
+              throw IllegalArgumentException("Biomass observations must not contain plants")
+            }
+          }
+          ObservationType.Monitoring -> {
+            if (biomassDetails != null) {
+              throw IllegalArgumentException(
+                  "Monitoring observations must not contain biomass details"
               )
+            }
+          }
+        }
+
+        val effectiveTimeZone = getEffectiveTimeZone(plantingSiteId)
+        val date = LocalDate.ofInstant(observedTime, effectiveTimeZone)
+
+        return dslContext.transactionResult { _ ->
+          val observationId =
+              observationStore.createObservation(
+                  NewObservationModel(
+                      endDate = date,
+                      id = null,
+                      isAdHoc = true,
+                      observationType = observationType,
+                      plantingSiteId = plantingSiteId,
+                      requestedSubstratumIds = emptySet(),
+                      startDate = date,
+                      state = ObservationState.Upcoming,
+                  )
+              )
+
+          val plotId = plantingSiteStore.createAdHocMonitoringPlot(plantingSiteId, swCorner)
+          observationStore.addAdHocPlotToObservation(observationId, plotId)
+
+          systemUser.run { observationStore.recordObservationStart(observationId) }
+
+          observationStore.claimPlot(observationId, plotId)
+
+          biomassDetails?.let { biomassStore.insertBiomassDetails(observationId, plotId, it) }
+
+          observationStore.completePlot(
+              observationId,
+              plotId,
+              conditions,
+              notes,
+              observedTime,
+              plants,
           )
 
-      val plotId = plantingSiteStore.createAdHocMonitoringPlot(plantingSiteId, swCorner)
-      observationStore.addAdHocPlotToObservation(observationId, plotId)
-
-      systemUser.run { observationStore.recordObservationStart(observationId) }
-
-      observationStore.claimPlot(observationId, plotId)
-
-      biomassDetails?.let { biomassStore.insertBiomassDetails(observationId, plotId, it) }
-
-      observationStore.completePlot(
-          observationId,
-          plotId,
-          conditions,
-          notes,
-          observedTime,
-          plants,
-      )
-
-      observationId to plotId
-    }
-  }
+          observationId to plotId
+        }
+      }
 
   /**
    * Performs update operations on a completed monitoring plot in an observation. The actual updates
@@ -931,18 +935,18 @@ class ObservationService(
       plantingSiteId: PlantingSiteId,
       startDate: LocalDate,
       endDate: LocalDate,
-  ) {
-    val today =
-        LocalDate.ofInstant(clock.instant(), parentStore.getEffectiveTimeZone(plantingSiteId))
+  ) =
+      context(dslContext) {
+        val today = LocalDate.ofInstant(clock.instant(), getEffectiveTimeZone(plantingSiteId))
 
-    if (startDate.isBefore(today) || startDate.isAfter(today.plusYears(1))) {
-      throw InvalidObservationStartDateException(startDate)
-    }
+        if (startDate.isBefore(today) || startDate.isAfter(today.plusYears(1))) {
+          throw InvalidObservationStartDateException(startDate)
+        }
 
-    if (endDate.isBefore(startDate.plusDays(1)) || endDate.isAfter(startDate.plusMonths(2))) {
-      throw InvalidObservationEndDateException(startDate, endDate)
-    }
-  }
+        if (endDate.isBefore(startDate.plusDays(1)) || endDate.isAfter(startDate.plusMonths(2))) {
+          throw InvalidObservationEndDateException(startDate, endDate)
+        }
+      }
 
   private fun elapsedWeeks(source: Instant, weeks: Long): Boolean =
       source.isBefore(clock.instant().minus(weeks * 7, ChronoUnit.DAYS).plus(1, ChronoUnit.HOURS))

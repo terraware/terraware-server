@@ -106,7 +106,6 @@ class ObservationServiceMergeObservationsTest : DatabaseTest(), RunsAsDatabaseUs
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
-        parentStore,
         eventPublisher,
         systemUser,
         mockk(),
