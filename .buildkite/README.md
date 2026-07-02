@@ -23,7 +23,11 @@ steps:
           # from which the current branch was forked, but small enough to keep the clone
           # operation reasonably fast.
           depth: 200
-    command: "buildkite-agent pipeline upload"
+    command: |
+      if [[ "$$BUILDKITE_BRANCH" == "$$BUILDKITE_PIPELINE_DEFAULT_BRANCH" ]]; then
+        export BUILDKITE_GIT_DIFF_BASE="HEAD~1"
+      fi
+      buildkite-agent pipeline upload
 ```
 
 ## YAML anchors
@@ -67,6 +71,11 @@ to the file level. Then, after a successful build, if we're building on the "mai
 "promote" the file-level cache to the pipeline level, such that next time the dependencies change,
 the pipeline-level cache serves as a starting point and we only have to download the dependencies
 that actually changes.
+
+Each promotion step is guarded by an `if_changed` directive so it only runs when the relevant
+manifest files changed. Note that `if_changed` needs the `BUILDKITE_GIT_DIFF_BASE` override set
+in the upload step (see above) to work correctly on main; without it, the diff on a main build
+would compare main against itself and the promotion steps would never fire.
 
 Artifacts are per-job; we use them to pass data between steps. For example, the "build" directory
 gets bundled up in a compressed tarfile so it can be downloaded by later steps.
