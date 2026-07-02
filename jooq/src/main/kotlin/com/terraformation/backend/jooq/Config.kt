@@ -449,10 +449,6 @@ val ID_WRAPPERS =
             listOf(
                 IdWrapper("AutomationId", listOf("automations\\.id")),
                 IdWrapper("BalenaDeviceId", listOf("device_managers\\.balena_id")),
-                IdWrapper(
-                    "BotanicalCountryId",
-                    listOf("botanical_countries\\.id", ".*\\.botanical_country_id"),
-                ),
                 IdWrapper("ChatMemoryMessageId", listOf("chat_memory_messages\\.id")),
                 IdWrapper(
                     "DeviceId",
@@ -645,9 +641,9 @@ val EMBEDDABLES =
             .withTables("nursery.batch_withdrawals")
             .withColumns("batch_id", "withdrawal_id"),
         EmbeddableDefinitionType()
-            .withName("country_botanical_country_id")
+            .withName("country_botanical_country_code")
             .withTables("country_botanical_countries")
-            .withColumns("country_code", "botanical_country_id"),
+            .withColumns("country_code", "botanical_country_code"),
         EmbeddableDefinitionType()
             .withName("facility_inventory_id")
             .withTables("nursery.facility_inventories")

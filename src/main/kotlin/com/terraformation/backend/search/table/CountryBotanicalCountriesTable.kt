@@ -11,14 +11,16 @@ import org.jooq.TableField
 
 class CountryBotanicalCountriesTable(private val tables: SearchTables) : SearchTable() {
   override val primaryKey: TableField<out Record, out Any?>
-    get() = COUNTRY_BOTANICAL_COUNTRIES.COUNTRY_BOTANICAL_COUNTRY_ID
+    get() = COUNTRY_BOTANICAL_COUNTRIES.COUNTRY_BOTANICAL_COUNTRY_CODE
 
   override val sublists: List<SublistField> by lazy {
     with(tables) {
       listOf(
           botanicalCountries.asSingleValueSublist(
               "botanicalCountry",
-              COUNTRY_BOTANICAL_COUNTRIES.BOTANICAL_COUNTRY_ID.eq(BOTANICAL_COUNTRIES.ID),
+              COUNTRY_BOTANICAL_COUNTRIES.BOTANICAL_COUNTRY_CODE.eq(
+                  BOTANICAL_COUNTRIES.LEVEL3_CODE
+              ),
           ),
           countries.asSingleValueSublist(
               "country",

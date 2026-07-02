@@ -305,7 +305,8 @@ COMMENT ON COLUMN users.last_activity_time IS 'When the user most recently inter
 COMMENT ON TABLE user_disclaimers IS 'Records of user acceptance of disclaimers.';
 
 COMMENT ON TABLE wcvp_distributions IS 'World Checklist of Vascular Plants distribution data, indicating which species are found in which botanical countries.';
-COMMENT ON COLUMN wcvp_distributions.botanical_country_id IS 'ID of the TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list.';
+COMMENT ON COLUMN wcvp_distributions.botanical_country_code IS 'Valid TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list.';
+COMMENT ON COLUMN wcvp_distributions.level3_code IS 'Original TDWG level 3 region (botanical country) for this distribution record, if any. This is usually the same as `botanical_country_code` but preserves the original value if the code was not on the list of TDWG regions.';
 
 COMMENT ON TABLE wcvp_taxa IS 'World Checklist of Vascular Plants species taxonomy.';
 COMMENT ON COLUMN wcvp_taxa.taxon_id IS 'WCVP-defined ID of the taxon. WCVP taxon IDs are unrelated to the GBIF taxon IDs for the same species.';

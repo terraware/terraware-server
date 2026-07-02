@@ -24,11 +24,10 @@ class RegionMetadataServiceTest : DatabaseTest() {
     @Test
     fun `updates mappings based on boundary intersections`() {
       // 500km square in eastern Africa
-      val botanicalId1 =
+      val bcCode1 =
           insertBotanicalCountry(boundary = rectangle(500_000, 500_000, 3_000_000, 1_000_000))
       // 500km square in South America
-      val botanicalId2 =
-          insertBotanicalCountry(boundary = rectangle(500_000, 500_000, -8_000_000, 0))
+      val bcCode2 = insertBotanicalCountry(boundary = rectangle(500_000, 500_000, -8_000_000, 0))
 
       // New mappings should replace existing ones.
       insertCountryBotanicalCountry()
@@ -37,11 +36,11 @@ class RegionMetadataServiceTest : DatabaseTest() {
 
       assertTableEquals(
           listOf(
-              CountryBotanicalCountriesRecord("SD", botanicalId1),
-              CountryBotanicalCountriesRecord("SS", botanicalId1),
-              CountryBotanicalCountriesRecord("BR", botanicalId2),
-              CountryBotanicalCountriesRecord("CO", botanicalId2),
-              CountryBotanicalCountriesRecord("VE", botanicalId2),
+              CountryBotanicalCountriesRecord("SD", bcCode1),
+              CountryBotanicalCountriesRecord("SS", bcCode1),
+              CountryBotanicalCountriesRecord("BR", bcCode2),
+              CountryBotanicalCountriesRecord("CO", bcCode2),
+              CountryBotanicalCountriesRecord("VE", bcCode2),
           )
       )
     }
@@ -50,9 +49,9 @@ class RegionMetadataServiceTest : DatabaseTest() {
   @Nested
   inner class UpdateWcvpBotanicalCountryMapping {
     @Test
-    fun `updates botanical country IDs based on level 3 codes`() {
-      val countryId1 = insertBotanicalCountry(level3Code = "AAA")
-      val countryId2 = insertBotanicalCountry(level3Code = "BBB")
+    fun `updates botanical country codes based on level 3 codes`() {
+      insertBotanicalCountry(level3Code = "AAA")
+      insertBotanicalCountry(level3Code = "BBB")
       insertBotanicalCountry(level3Code = "CCC")
 
       val taxonId1 = insertWcvpTaxon()
@@ -68,23 +67,23 @@ class RegionMetadataServiceTest : DatabaseTest() {
       assertTableEquals(
           listOf(
               WcvpDistributionsRecord(
+                  botanicalCountryCode = "AAA",
+                  level3Code = "AAA",
                   taxonId = taxonId1,
-                  level3Code = "AAA",
-                  botanicalCountryId = countryId1,
               ),
               WcvpDistributionsRecord(
-                  taxonId = taxonId2,
+                  botanicalCountryCode = "AAA",
                   level3Code = "AAA",
-                  botanicalCountryId = countryId1,
+                  taxonId = taxonId2,
               ),
               WcvpDistributionsRecord(
-                  taxonId = taxonId2,
+                  botanicalCountryCode = "BBB",
                   level3Code = "BBB",
-                  botanicalCountryId = countryId2,
+                  taxonId = taxonId2,
               ),
               WcvpDistributionsRecord(
-                  taxonId = taxonId3,
                   level3Code = "XXX",
+                  taxonId = taxonId3,
               ),
           )
       )

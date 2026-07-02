@@ -134,7 +134,6 @@ import com.terraformation.backend.db.accelerator.tables.references.ACTIVITY_OBSE
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.BalenaDeviceId
-import com.terraformation.backend.db.default_schema.BotanicalCountryId
 import com.terraformation.backend.db.default_schema.ConservationCategory
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DisclaimerId
@@ -5853,7 +5852,7 @@ abstract class DatabaseBackedTest {
       level2Code: Int = 555,
       level3Code: String = "${nextBotanicalCountryLevel3Code++}",
       name: String = "country",
-  ): BotanicalCountryId {
+  ): String {
     val record =
         BotanicalCountriesRecord(
                 boundary = boundary,
@@ -5866,14 +5865,16 @@ abstract class DatabaseBackedTest {
 
     record.insert()
 
-    return record.id!!.also { inserted.botanicalCountryIds.add(it) }
+    inserted.botanicalCountryCodes.add(level3Code)
+
+    return level3Code
   }
 
   fun insertCountryBotanicalCountry(
+      botanicalCountryCode: String = inserted.botanicalCountryCode,
       countryCode: String = "US",
-      botanicalCountryId: BotanicalCountryId = inserted.botanicalCountryId,
   ) {
-    CountryBotanicalCountriesRecord(countryCode, botanicalCountryId).attach(dslContext).insert()
+    CountryBotanicalCountriesRecord(countryCode, botanicalCountryCode).attach(dslContext).insert()
   }
 
   private var nextGriisResourceSuffix: Int = 1
@@ -5966,7 +5967,7 @@ abstract class DatabaseBackedTest {
   }
 
   fun insertWcvpDistribution(
-      botanicalCountryId: BotanicalCountryId? = null,
+      botanicalCountryCode: String? = null,
       establishmentMeans: String? = null,
       level3Code: String = "COD",
       occurrenceStatus: String? = null,
@@ -5974,7 +5975,7 @@ abstract class DatabaseBackedTest {
       threatStatus: String? = null,
   ) {
     WcvpDistributionsRecord(
-            botanicalCountryId = botanicalCountryId,
+            botanicalCountryCode = botanicalCountryCode,
             establishmentMeans = establishmentMeans,
             level3Code = level3Code,
             occurrenceStatus = occurrenceStatus,
