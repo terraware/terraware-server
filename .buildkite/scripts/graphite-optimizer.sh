@@ -15,6 +15,13 @@ if [[ -z "${GRAPHITE_CI_OPTIMIZATION_TOKEN:-}" ]]; then
   exit 0
 fi
 
+# The optimizer decides based on stack position, which only exists for PR builds.
+# Buildkite sets BUILDKITE_PULL_REQUEST to "false" for push builds; Graphite
+# rejects those with a 400.
+if [[ "${BUILDKITE_PULL_REQUEST:-false}" == "false" ]]; then
+  exit 0
+fi
+
 body_file=$(mktemp)
 trap 'rm -f "$body_file"' EXIT
 
