@@ -1,4 +1,3 @@
-organizations
 botanical_countries
 conservation_categories
 ecosystem_types
@@ -11,6 +10,7 @@ species_problem_types
 successional_groups
 wcvp_taxa
 wood_density_levels
+organizations
 species
 gbif_names
 country_botanical_countries

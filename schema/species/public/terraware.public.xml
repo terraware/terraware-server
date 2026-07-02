@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?><database name="terraware" schema="public" type="PostgreSQL - 17.4 (Debian 17.4-1.pgdg110+2)">
    <tables>
       <table name="botanical_countries" remarks="Geographic areas of each of the TDWG Level 3 regions." schema="public" type="TABLE">
-         <column autoUpdated="true" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <child column="botanical_country_id" foreignKey="country_botanical_countries_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="country_botanical_countries"/>
-            <child column="botanical_country_id" foreignKey="wcvp_distributions_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="wcvp_distributions"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="level3_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
+            <child column="botanical_country_code" foreignKey="country_botanical_countries_botanical_country_code_fkey" implied="false" onDeleteCascade="true" schema="public" table="country_botanical_countries"/>
+            <child column="botanical_country_code" foreignKey="organizations_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="organizations"/>
+            <child column="botanical_country_code" foreignKey="wcvp_distributions_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="wcvp_distributions"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="level3_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="level2_code" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="level1_code" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="boundary" nullable="false" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
-         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="level2_code" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="level1_code" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="boundary" nullable="false" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
+         <primaryKey column="level3_code" sequenceNumberInPK="1"/>
          <index name="botanical_countries_pkey" unique="true">
-            <column ascending="true" name="id"/>
-         </index>
-         <index name="botanical_countries_level3_code_key" unique="true">
             <column ascending="true" name="level3_code"/>
          </index>
       </table>
@@ -33,17 +30,17 @@
       </table>
       <table name="country_botanical_countries" remarks="Which countries contain (either entirely or partially) which botanical countries." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="country_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="botanical_country_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="country_botanical_countries_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="botanical_countries"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="botanical_country_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="level3_code" foreignKey="country_botanical_countries_botanical_country_code_fkey" implied="false" onDeleteCascade="true" schema="public" table="botanical_countries"/>
          </column>
          <primaryKey column="country_code" sequenceNumberInPK="1"/>
-         <primaryKey column="botanical_country_id" sequenceNumberInPK="2"/>
+         <primaryKey column="botanical_country_code" sequenceNumberInPK="2"/>
          <index name="country_botanical_countries_pkey" unique="true">
             <column ascending="true" name="country_code"/>
-            <column ascending="true" name="botanical_country_id"/>
+            <column ascending="true" name="botanical_country_code"/>
          </index>
-         <index name="country_botanical_countries_botanical_country_id_idx" unique="false">
-            <column ascending="true" name="botanical_country_id"/>
+         <index name="country_botanical_countries_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
          </index>
       </table>
       <table name="ecosystem_types" remarks="(Enum) Types of ecosystems in which plants can be found. Based on the World Wildlife Federation's &quot;Terrestrial Ecoregions of the World&quot; report." schema="public" type="TABLE">
@@ -220,9 +217,15 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="organization_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="organization_type_details" nullable="true" remarks="User provided information on the organization when type is Other, limited to 100 characters." size="100" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="website" nullable="true" remarks="Website information for the organization with no formatting restrictions." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12">
+            <parent column="level3_code" foreignKey="organizations_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="botanical_countries"/>
+         </column>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="organization_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="organizations_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
          </index>
          <checkConstraint constraint="((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code))" name="country_code_matches_subdivision"/>
          <checkConstraint constraint="(country_code !~ similar_to_escape(' *'::text))" name="organizations_country_code_check"/>
@@ -446,12 +449,12 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5">
             <parent column="taxon_id" foreignKey="wcvp_distributions_taxon_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="wcvp_taxa"/>
          </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="level3_code" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="level3_code" nullable="false" remarks="Original TDWG level 3 region (botanical country) for this distribution record, if any. This is usually the same as `botanical_country_code` but preserves the original value if the code was not on the list of TDWG regions." size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="establishment_means" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="occurrence_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="threat_status" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="botanical_country_id" nullable="true" remarks="ID of the TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list." size="19" type="int8" typeCode="-5">
-            <parent column="id" foreignKey="wcvp_distributions_botanical_country_id_fkey" implied="false" onDeleteCascade="true" schema="public" table="botanical_countries"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="botanical_country_code" nullable="true" remarks="Valid TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list." size="2147483647" type="text" typeCode="12">
+            <parent column="level3_code" foreignKey="wcvp_distributions_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="botanical_countries"/>
          </column>
          <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
          <primaryKey column="level3_code" sequenceNumberInPK="2"/>
@@ -459,8 +462,8 @@
             <column ascending="true" name="taxon_id"/>
             <column ascending="true" name="level3_code"/>
          </index>
-         <index name="wcvp_distributions_botanical_country_id_idx" unique="false">
-            <column ascending="true" name="botanical_country_id"/>
+         <index name="wcvp_distributions_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
          </index>
       </table>
       <table name="wcvp_taxa" remarks="World Checklist of Vascular Plants species taxonomy." schema="public" type="TABLE">

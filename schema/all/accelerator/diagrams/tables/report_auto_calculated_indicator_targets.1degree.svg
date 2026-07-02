@@ -100,34 +100,34 @@
 <g id="node3" class="node">
 <title>public.projects</title>
 <g id="a_node3"><a xlink:href="../../../public/tables/projects.html" xlink:title="public.projects" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="43.5,-226 43.5,-306 175.5,-306 175.5,-226 43.5,-226"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="43.5,-284 43.5,-306 175.5,-306 175.5,-284 43.5,-284"/>
-<polygon fill="none" stroke="black" points="43.5,-284 43.5,-306 175.5,-306 175.5,-284 43.5,-284"/>
-<text text-anchor="start" x="48.5" y="-293.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.projects</text>
-<text text-anchor="start" x="136.5" y="-292.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="43.5,-262 43.5,-284 175.5,-284 175.5,-262 43.5,-262"/>
-<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="48.5" y="-279"/>
-<text text-anchor="start" x="73.5" y="-270.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
-<polygon fill="none" stroke="black" points="43.5,-244 43.5,-262 175.5,-262 175.5,-244 43.5,-244"/>
-<text text-anchor="start" x="46.5" y="-250.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="43.5,-226 43.5,-244 86.5,-244 86.5,-226 43.5,-226"/>
-<polygon fill="none" stroke="black" points="43.5,-226 43.5,-244 86.5,-244 86.5,-226 43.5,-226"/>
-<text text-anchor="start" x="46.5" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="86.5,-226 86.5,-244 136.5,-244 136.5,-226 86.5,-226"/>
-<polygon fill="none" stroke="black" points="86.5,-226 86.5,-244 136.5,-244 136.5,-226 86.5,-226"/>
-<text text-anchor="start" x="99.5" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
-<polygon fill="#ffffff" stroke="transparent" points="136.5,-226 136.5,-244 175.5,-244 175.5,-226 136.5,-226"/>
-<polygon fill="none" stroke="black" points="136.5,-226 136.5,-244 175.5,-244 175.5,-226 136.5,-226"/>
-<text text-anchor="start" x="150.5" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">22 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="28.5,-226 28.5,-306 190.5,-306 190.5,-226 28.5,-226"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="28.5,-284 28.5,-306 190.5,-306 190.5,-284 28.5,-284"/>
+<polygon fill="none" stroke="black" points="28.5,-284 28.5,-306 190.5,-306 190.5,-284 28.5,-284"/>
+<text text-anchor="start" x="33.5" y="-293.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.projects</text>
+<text text-anchor="start" x="151.5" y="-292.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="28.5,-262 28.5,-284 190.5,-284 190.5,-262 28.5,-262"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="33.5" y="-279"/>
+<text text-anchor="start" x="48.5" y="-270.2" font-family="Helvetica,sans-Serif" font-size="11.00">phase_id</text>
+<polygon fill="none" stroke="black" points="28.5,-244 28.5,-262 190.5,-262 190.5,-244 28.5,-244"/>
+<text text-anchor="start" x="31.5" y="-250.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="28.5,-226 28.5,-244 86.5,-244 86.5,-226 28.5,-226"/>
+<polygon fill="none" stroke="black" points="28.5,-226 28.5,-244 86.5,-244 86.5,-226 28.5,-226"/>
+<text text-anchor="start" x="31.5" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="86.5,-226 86.5,-244 144.5,-244 144.5,-226 86.5,-226"/>
+<polygon fill="none" stroke="black" points="86.5,-226 86.5,-244 144.5,-244 144.5,-226 86.5,-226"/>
+<text text-anchor="start" x="107.5" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 rows</text>
+<polygon fill="#ffffff" stroke="transparent" points="144.5,-226 144.5,-244 190.5,-244 190.5,-226 144.5,-226"/>
+<polygon fill="none" stroke="black" points="144.5,-226 144.5,-244 190.5,-244 190.5,-226 144.5,-226"/>
+<text text-anchor="start" x="165.5" y="-232.2" font-family="Helvetica,sans-Serif" font-size="11.00">22 &gt;</text>
 </a>
 </g>
 </g>
 <!-- report_auto_calculated_indicator_targets&#45;&gt;public.projects -->
 <g id="edge2" class="edge">
 <title>report_auto_calculated_indicator_targets:w&#45;&gt;public.projects:e</title>
-<path fill="none" stroke="black" d="M246.41,-230.5C225.16,-231.92 203.32,-236.19 183.54,-241.29"/>
-<polygon fill="black" stroke="black" points="253,-230.28 261.12,-233.6 257,-230.14 261,-230 261,-230 261,-230 257,-230.14 260.88,-226.4 253,-230.28 253,-230.28"/>
-<ellipse fill="none" stroke="black" cx="249.81" cy="-230.39" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M246.49,-230.5C230.55,-231.56 214.28,-234.22 198.8,-237.63"/>
+<polygon fill="black" stroke="black" points="253,-230.27 261.12,-233.6 257,-230.14 261,-230 261,-230 261,-230 257,-230.14 260.88,-226.4 253,-230.27 253,-230.27"/>
+<ellipse fill="none" stroke="black" cx="249.81" cy="-230.38" rx="3.2" ry="3.2"/>
 </g>
 </g>
 </svg>

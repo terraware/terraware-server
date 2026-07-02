@@ -131,9 +131,13 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="11" name="organization_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="12" name="organization_type_details" nullable="true" remarks="User provided information on the organization when type is Other, limited to 100 characters." size="100" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="13" name="website" nullable="true" remarks="Website information for the organization with no formatting restrictions." size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="14" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="organization_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="organizations_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
          </index>
          <checkConstraint constraint="((country_subdivision_code IS NULL) OR (substr(country_subdivision_code, 1, 2) = country_code))" name="country_code_matches_subdivision"/>
          <checkConstraint constraint="(country_code !~ similar_to_escape(' *'::text))" name="organizations_country_code_check"/>

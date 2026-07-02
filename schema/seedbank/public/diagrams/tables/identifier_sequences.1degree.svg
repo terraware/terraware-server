@@ -50,7 +50,7 @@
 <g id="node2" class="node">
 <title>organizations</title>
 <g id="a_node2"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="8,-65 8,-145 182,-145 182,-65 8,-65"/>
+<polygon fill="#ffffff" stroke="transparent" points="8,-43 8,-145 182,-145 182,-43 8,-43"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="8,-123 8,-145 182,-145 182,-123 8,-123"/>
 <polygon fill="none" stroke="black" points="8,-123 8,-145 182,-145 182,-123 8,-123"/>
 <text text-anchor="start" x="13" y="-132.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">organizations</text>
@@ -58,17 +58,20 @@
 <polygon fill="none" stroke="black" points="8,-101 8,-123 182,-123 182,-101 8,-101"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="13" y="-118"/>
 <text text-anchor="start" x="28" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="8,-83 8,-101 182,-101 182,-83 8,-83"/>
-<text text-anchor="start" x="11" y="-89.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="8,-65 8,-83 84,-83 84,-65 8,-65"/>
-<polygon fill="none" stroke="black" points="8,-65 8,-83 84,-83 84,-65 8,-65"/>
-<text text-anchor="start" x="11" y="-71.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="84,-65 84,-83 128,-83 128,-65 84,-65"/>
-<polygon fill="none" stroke="black" points="84,-65 84,-83 128,-83 128,-65 84,-65"/>
-<text text-anchor="start" x="118" y="-71.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="128,-65 128,-83 182,-83 182,-65 128,-65"/>
-<polygon fill="none" stroke="black" points="128,-65 128,-83 182,-83 182,-65 128,-65"/>
-<text text-anchor="start" x="163" y="-71.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="8,-79 8,-101 182,-101 182,-79 8,-79"/>
+<polygon fill="none" stroke="black" points="8,-79 8,-101 182,-101 182,-79 8,-79"/>
+<text text-anchor="start" x="28" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">botanical_country_code</text>
+<polygon fill="none" stroke="black" points="8,-61 8,-79 182,-79 182,-61 8,-61"/>
+<text text-anchor="start" x="11" y="-67.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="8,-43 8,-61 84,-61 84,-43 8,-43"/>
+<polygon fill="none" stroke="black" points="8,-43 8,-61 84,-61 84,-43 8,-43"/>
+<text text-anchor="start" x="11" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="84,-43 84,-61 128,-61 128,-43 84,-43"/>
+<polygon fill="none" stroke="black" points="84,-43 84,-61 128,-61 128,-43 84,-43"/>
+<text text-anchor="start" x="118" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="128,-43 128,-61 182,-61 182,-43 128,-43"/>
+<polygon fill="none" stroke="black" points="128,-43 128,-61 182,-61 182,-43 128,-43"/>
+<text text-anchor="start" x="163" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
 </a>
 </g>
 </g>

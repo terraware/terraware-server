@@ -85,7 +85,7 @@ device_template_categories
 conservation_categories
 chat_memory_message_types
 land_use_model_types
-botanical_countries
 seed_treatments
 asset_statuses
+botanical_countries
 time_zones

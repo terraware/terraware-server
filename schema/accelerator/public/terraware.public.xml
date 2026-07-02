@@ -166,9 +166,13 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="phase_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
             <parent column="id" foreignKey="projects_phase_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="accelerator_phases"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="botanical_country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="projects_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+         <index name="projects_botanical_country_code_idx" unique="false">
+            <column ascending="true" name="botanical_country_code"/>
          </index>
          <index name="projects_created_by_idx" unique="false">
             <column ascending="true" name="created_by"/>

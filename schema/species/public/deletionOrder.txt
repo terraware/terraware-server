@@ -11,6 +11,7 @@ gbif_name_words
 country_botanical_countries
 gbif_names
 species
+organizations
 wood_density_levels
 wcvp_taxa
 successional_groups
@@ -23,4 +24,3 @@ gbif_taxa
 ecosystem_types
 conservation_categories
 botanical_countries
-organizations

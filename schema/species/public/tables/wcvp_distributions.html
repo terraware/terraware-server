@@ -158,7 +158,7 @@
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                         </table>
                                     </td>
-                                    <td></td>
+                                    <td><p>Original TDWG level 3 region (botanical country) for this distribution record, if any. This is usually the same as <code>botanical_country_code</code> but preserves the original value if the code was not on the list of TDWG regions.</p></td>
                                 </tr>
                                 <tr>
                                     <td><span id="establishment_means">establishment_means</span></td>
@@ -212,9 +212,9 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="botanical_country_id">botanical_country_id</span></td>
-                                    <td>int8</td>
-                                    <td>19</td>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="botanical_country_code">botanical_country_code</span></td>
+                                    <td>text</td>
+                                    <td>2147483647</td>
                                     <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
@@ -225,13 +225,13 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="wcvp_distributions.botanical_country_id references botanical_countries.id via wcvp_distributions_botanical_country_id_fkey"><a href='botanical_countries.html'>botanical_countries</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">wcvp_distributions_botanical_country_id_fkey</td>
-                                                <td class="constraint detail"><span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
+                                                <td title="wcvp_distributions.botanical_country_code references botanical_countries.level3_code via wcvp_distributions_botanical_country_code_fkey"><a href='botanical_countries.html'>botanical_countries</a><span class='relatedKey'>.level3_code</span></td>
+                                                <td class="constraint detail">wcvp_distributions_botanical_country_code_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
                                             </tr>
                                         </table>
                                     </td>
-                                    <td><p>ID of the TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list.</p></td>
+                                    <td><p>Valid TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list.</p></td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -270,10 +270,10 @@
                                     <td>taxon_id + level3_code</td>
                                 </tr>
                                 <tr>
-                                    <td title='Indexed'>wcvp_distributions_botanical_country_id_idx</td>
+                                    <td title='Indexed'>wcvp_distributions_botanical_country_code_idx</td>
                                     <td>Performance</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>botanical_country_id</td>
+                                    <td>botanical_country_code</td>
                                 </tr>
                                 </tbody>
                             </table>

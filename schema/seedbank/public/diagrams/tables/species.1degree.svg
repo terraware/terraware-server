@@ -179,34 +179,37 @@
 <g id="node4" class="node">
 <title>organizations</title>
 <g id="a_node4"><a xlink:href="../../tables/organizations.html" xlink:title="organizations" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="13.5,-1014 13.5,-1094 187.5,-1094 187.5,-1014 13.5,-1014"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="13.5,-1072 13.5,-1094 187.5,-1094 187.5,-1072 13.5,-1072"/>
-<polygon fill="none" stroke="black" points="13.5,-1072 13.5,-1094 187.5,-1094 187.5,-1072 13.5,-1072"/>
-<text text-anchor="start" x="18.5" y="-1081.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">organizations</text>
-<text text-anchor="start" x="148.5" y="-1080.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="13.5,-1050 13.5,-1072 187.5,-1072 187.5,-1050 13.5,-1050"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="18.5" y="-1067"/>
-<text text-anchor="start" x="33.5" y="-1058.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="13.5,-1032 13.5,-1050 187.5,-1050 187.5,-1032 13.5,-1032"/>
-<text text-anchor="start" x="16.5" y="-1038.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="13.5,-1014 13.5,-1032 89.5,-1032 89.5,-1014 13.5,-1014"/>
-<polygon fill="none" stroke="black" points="13.5,-1014 13.5,-1032 89.5,-1032 89.5,-1014 13.5,-1014"/>
-<text text-anchor="start" x="16.5" y="-1020.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="89.5,-1014 89.5,-1032 133.5,-1032 133.5,-1014 89.5,-1014"/>
-<polygon fill="none" stroke="black" points="89.5,-1014 89.5,-1032 133.5,-1032 133.5,-1014 89.5,-1014"/>
-<text text-anchor="start" x="123.5" y="-1020.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="133.5,-1014 133.5,-1032 187.5,-1032 187.5,-1014 133.5,-1014"/>
-<polygon fill="none" stroke="black" points="133.5,-1014 133.5,-1032 187.5,-1032 187.5,-1014 133.5,-1014"/>
-<text text-anchor="start" x="168.5" y="-1020.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="13.5,-999 13.5,-1101 187.5,-1101 187.5,-999 13.5,-999"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="13.5,-1079 13.5,-1101 187.5,-1101 187.5,-1079 13.5,-1079"/>
+<polygon fill="none" stroke="black" points="13.5,-1079 13.5,-1101 187.5,-1101 187.5,-1079 13.5,-1079"/>
+<text text-anchor="start" x="18.5" y="-1088.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">organizations</text>
+<text text-anchor="start" x="148.5" y="-1087.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="13.5,-1057 13.5,-1079 187.5,-1079 187.5,-1057 13.5,-1057"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="18.5" y="-1074"/>
+<text text-anchor="start" x="33.5" y="-1065.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="#ffffff" stroke="transparent" points="13.5,-1035 13.5,-1057 187.5,-1057 187.5,-1035 13.5,-1035"/>
+<polygon fill="none" stroke="black" points="13.5,-1035 13.5,-1057 187.5,-1057 187.5,-1035 13.5,-1035"/>
+<text text-anchor="start" x="33.5" y="-1043.2" font-family="Helvetica,sans-Serif" font-size="11.00">botanical_country_code</text>
+<polygon fill="none" stroke="black" points="13.5,-1017 13.5,-1035 187.5,-1035 187.5,-1017 13.5,-1017"/>
+<text text-anchor="start" x="16.5" y="-1023.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="13.5,-999 13.5,-1017 89.5,-1017 89.5,-999 13.5,-999"/>
+<polygon fill="none" stroke="black" points="13.5,-999 13.5,-1017 89.5,-1017 89.5,-999 13.5,-999"/>
+<text text-anchor="start" x="16.5" y="-1005.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="89.5,-999 89.5,-1017 133.5,-1017 133.5,-999 89.5,-999"/>
+<polygon fill="none" stroke="black" points="89.5,-999 89.5,-1017 133.5,-1017 133.5,-999 89.5,-999"/>
+<text text-anchor="start" x="123.5" y="-1005.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="133.5,-999 133.5,-1017 187.5,-1017 187.5,-999 133.5,-999"/>
+<polygon fill="none" stroke="black" points="133.5,-999 133.5,-1017 187.5,-1017 187.5,-999 133.5,-999"/>
+<text text-anchor="start" x="168.5" y="-1005.2" font-family="Helvetica,sans-Serif" font-size="11.00">7 &gt;</text>
 </a>
 </g>
 </g>
 <!-- species&#45;&gt;organizations -->
 <g id="edge4" class="edge">
 <title>species:w&#45;&gt;organizations:e</title>
-<path fill="none" stroke="black" d="M228.94,-1024.98C213.78,-1035.1 212.68,-1061 188.5,-1061"/>
-<polygon fill="black" stroke="black" points="235.3,-1023.18 243.98,-1024.46 239.15,-1022.09 243,-1021 243,-1021 243,-1021 239.15,-1022.09 242.02,-1017.54 235.3,-1023.18 235.3,-1023.18"/>
-<ellipse fill="none" stroke="black" cx="232.22" cy="-1024.05" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M228.83,-1025.34C213.11,-1036.97 214.49,-1068 188.5,-1068"/>
+<polygon fill="black" stroke="black" points="235.35,-1023.34 244.05,-1024.44 239.18,-1022.17 243,-1021 243,-1021 243,-1021 239.18,-1022.17 241.95,-1017.56 235.35,-1023.34 235.35,-1023.34"/>
+<ellipse fill="none" stroke="black" cx="232.29" cy="-1024.28" rx="3.2" ry="3.2"/>
 </g>
 <!-- seed_storage_behaviors -->
 <g id="node5" class="node">
@@ -286,9 +289,9 @@
 <!-- nursery.batches&#45;&gt;organizations -->
 <g id="edge2" class="edge">
 <title>nursery.batches:w&#45;&gt;organizations:e</title>
-<path fill="none" stroke="black" d="M587.7,-2007.76C472.14,-1939.15 299.2,-1061 188.5,-1061"/>
-<polygon fill="black" stroke="black" points="593.85,-2009.65 600.44,-2015.44 597.68,-2010.83 601.5,-2012 601.5,-2012 601.5,-2012 597.68,-2010.83 602.56,-2008.56 593.85,-2009.65 593.85,-2009.65"/>
-<ellipse fill="none" stroke="black" cx="590.79" cy="-2008.71" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M587.42,-2007.58C472.39,-1937.92 298.4,-1068 188.5,-1068"/>
+<polygon fill="black" stroke="black" points="593.87,-2009.6 600.42,-2015.43 597.68,-2010.8 601.5,-2012 601.5,-2012 601.5,-2012 597.68,-2010.8 602.58,-2008.57 593.87,-2009.6 593.87,-2009.6"/>
+<ellipse fill="none" stroke="black" cx="590.81" cy="-2008.65" rx="3.2" ry="3.2"/>
 </g>
 <!-- seedbank.accessions -->
 <g id="node6" class="node">
