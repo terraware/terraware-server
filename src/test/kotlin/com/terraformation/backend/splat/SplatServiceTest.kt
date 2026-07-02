@@ -11,6 +11,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
+import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
@@ -1903,6 +1904,15 @@ class SplatServiceTest : DatabaseTest(), RunsAsDatabaseUser {
       service.on(OrganizationVideoUploadedEvent(orgFileId, organizationId))
 
       assertTableEmpty(SPLATS)
+    }
+
+    @Test
+    fun `does not generate splat when upload is part of a file batch`() {
+      val fileBatchId = insertFileBatch(batchType = FileBatchType.Splat)
+      service.on(OrganizationVideoUploadedEvent(orgFileId, organizationId, fileBatchId))
+
+      assertTableEmpty(SPLATS)
+      verify(exactly = 0) { sqsTemplate.send(any<String>(), any<SplatterRequestMessage>()) }
     }
   }
 }

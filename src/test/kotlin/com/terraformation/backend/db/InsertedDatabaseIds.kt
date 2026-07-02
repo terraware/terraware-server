@@ -19,6 +19,7 @@ import com.terraformation.backend.db.default_schema.BotanicalCountryId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.GriisResourceId
 import com.terraformation.backend.db.default_schema.InternalTagId
@@ -85,6 +86,7 @@ class InsertedDatabaseIds {
   val draftPlantingSiteIds = mutableListOf<DraftPlantingSiteId>()
   val eventIds = mutableListOf<EventId>()
   val facilityIds = mutableListOf<FacilityId>()
+  val fileBatchIds = mutableListOf<FileBatchId>()
   val fileIds = mutableListOf<FileId>()
   val fundingEntityIds = mutableListOf<FundingEntityId>()
   val griisResourceIds = mutableListOf<GriisResourceId>()
@@ -194,6 +196,9 @@ class InsertedDatabaseIds {
 
   val facilityId
     get() = facilityIds.last()
+
+  val fileBatchId
+    get() = fileBatchIds.last()
 
   val fileId
     get() = fileIds.last()

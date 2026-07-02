@@ -12,8 +12,10 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileBatchStatus
 import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
@@ -332,6 +334,34 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
 
       assertThrows(IOException::class.java) {
         fileService.storeFile("category", ByteArray(0).inputStream(), metadata) {}
+      }
+    }
+
+    @Test
+    fun `stores file batch ID when provided`() {
+      val fileBatchId = insertFileBatch()
+      val data = Random.nextBytes(10)
+
+      val fileId =
+          fileService.storeFile(
+              "category",
+              data.inputStream(),
+              metadata.copy(size = data.size.toLong()),
+              fileBatchId = fileBatchId,
+          ) {}
+
+      assertEquals(fileBatchId, filesDao.fetchOneById(fileId)!!.fileBatchId, "File Batch ID")
+    }
+
+    @Test
+    fun `throws exception if file batch ID is invalid`() {
+      assertThrows<FileBatchNotFoundException> {
+        fileService.storeFile(
+            "category",
+            Random.nextBytes(10).inputStream(),
+            metadata,
+            fileBatchId = FileBatchId(-1),
+        ) {}
       }
     }
   }

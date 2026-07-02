@@ -5,12 +5,14 @@ import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.db.ParentStore
 import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.default_schema.AssetStatus
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.BIRDNET_RESULTS
 import com.terraformation.backend.db.default_schema.tables.references.FILES
+import com.terraformation.backend.db.default_schema.tables.references.FILE_BATCHES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_MEDIA_FILES
 import com.terraformation.backend.db.default_schema.tables.references.SPLATS
 import com.terraformation.backend.db.default_schema.tables.references.SPLAT_ANNOTATIONS
@@ -536,6 +538,15 @@ class SplatService(
 
   @EventListener
   fun on(event: OrganizationVideoUploadedEvent) {
+    if (event.fileBatchId != null) {
+      if (dslContext.fetchExists(FILE_BATCHES, FILE_BATCHES.ID.eq(event.fileBatchId))) {
+        // Video was part of a batch; don't auto-generate splat
+        return
+      } else {
+        throw FileBatchNotFoundException(event.fileBatchId)
+      }
+    }
+
     try {
       generateOrganizationMediaSplat(event.organizationId, event.fileId)
     } catch (e: Exception) {

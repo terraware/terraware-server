@@ -7,6 +7,7 @@ import com.terraformation.backend.customer.event.OrganizationVideoUploadedEvent
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.tables.references.FILES
@@ -41,6 +42,7 @@ class OrganizationMediaService(
       organizationId: OrganizationId,
       file: MultipartFile,
       caption: String?,
+      fileBatchId: FileBatchId? = null,
   ): FileId {
     requirePermissions { createOrganizationMedia(organizationId) }
 
@@ -52,6 +54,7 @@ class OrganizationMediaService(
             "organizationMedia",
             file.inputStream,
             FileMetadata.of(contentType, filename, file.size),
+            fileBatchId = fileBatchId,
         ) { (fileId, _) ->
           dslContext
               .insertInto(ORGANIZATION_MEDIA_FILES)
@@ -64,7 +67,9 @@ class OrganizationMediaService(
     log.info("Stored media file $fileId for organization $organizationId")
 
     if (contentType.startsWith("video/")) {
-      eventPublisher.publishEvent(OrganizationVideoUploadedEvent(fileId, organizationId))
+      eventPublisher.publishEvent(
+          OrganizationVideoUploadedEvent(fileId, organizationId, fileBatchId)
+      )
     }
 
     return fileId
