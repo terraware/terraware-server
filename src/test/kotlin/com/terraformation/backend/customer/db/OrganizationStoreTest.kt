@@ -402,7 +402,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     every { user.userId } returns newUserId
 
-    store.update(updates)
+    store.update(organizationId) { updates }
 
     val actual = organizationsDao.fetchOneById(organizationId)!!
 
@@ -419,13 +419,12 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update publishes event if time zone is changed`() {
-    val existing = organizationsDao.fetchOneById(organizationId)!!
     val newTimeZone = ZoneId.of("Europe/London")
 
-    store.update(existing)
+    store.update(organizationId) { it }
     publisher.assertEventNotPublished<OrganizationTimeZoneChangedEvent>()
 
-    store.update(existing.copy(timeZone = newTimeZone))
+    store.update(organizationId) { it.copy(timeZone = newTimeZone) }
     publisher.assertEventPublished(
         OrganizationTimeZoneChangedEvent(organizationId, null, newTimeZone)
     )
@@ -436,14 +435,14 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     every { user.canUpdateOrganization(organizationId) } returns false
 
     assertThrows<AccessDeniedException> {
-      store.update(OrganizationsRow(id = organizationId, name = "New Name"))
+      store.update(organizationId) { it }
     }
   }
 
   @Test
   fun `update rejects invalid country codes`() {
     assertThrows<IllegalArgumentException> {
-      store.update(OrganizationsRow(id = organizationId, name = "X", countryCode = "XX"))
+      store.update(organizationId) { it.copy(name = "X", countryCode = "XX") }
     }
   }
 
