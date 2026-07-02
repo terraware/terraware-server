@@ -296,7 +296,6 @@ class ProjectStore(
         .fetchInto(ProjectInternalUsersRow::class.java)
   }
 
-  /** Throws [IllegalArgumentException] if a botanical country code is invalid. */
   private fun validateBotanicalCountryCode(botanicalCountryCode: String?) {
     if (
         botanicalCountryCode != null &&
