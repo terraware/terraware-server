@@ -77,6 +77,7 @@ class ProjectsController(
     val projectId =
         projectStore.create(
             NewProjectModel(
+                botanicalCountryCode = payload.botanicalCountryCode,
                 countryCode = payload.countryCode,
                 description = payload.description,
                 id = null,
@@ -157,6 +158,7 @@ class ProjectsController(
 
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 data class ProjectPayload(
+    val botanicalCountryCode: String?,
     val countryCode: String?,
     val createdBy: UserId?,
     val createdTime: Instant?,
@@ -171,6 +173,7 @@ data class ProjectPayload(
   constructor(
       model: ExistingProjectModel
   ) : this(
+      botanicalCountryCode = model.botanicalCountryCode,
       countryCode = model.countryCode,
       createdBy = model.createdBy,
       createdTime = model.createdTime,
@@ -201,6 +204,7 @@ data class InternalUserPayload(
 data class UpdateProjectInternalUserRequestPayload(val internalUsers: List<InternalUserPayload>)
 
 data class CreateProjectRequestPayload(
+    val botanicalCountryCode: String?,
     val countryCode: String?,
     val description: String?,
     val name: String,
@@ -210,6 +214,9 @@ data class CreateProjectRequestPayload(
 data class CreateProjectResponsePayload(val id: ProjectId) : SuccessResponsePayload
 
 data class UpdateProjectRequestPayload(
+    // TEMPORARY: Treat missing codes as "don't edit"; this can change to plain String? type once
+    // clients are updated to know about this field.
+    val botanicalCountryCode: Optional<String>?,
     // TEMPORARY: Treat missing country codes as "don't edit"; this can change to plain String? type
     // once clients are updated to know about this field.
     val countryCode: Optional<String>?,
@@ -218,6 +225,7 @@ data class UpdateProjectRequestPayload(
 ) {
   fun applyTo(model: ExistingProjectModel) =
       model.copy(
+          botanicalCountryCode = botanicalCountryCode.patchNullable(model.botanicalCountryCode),
           countryCode = countryCode.patchNullable(model.countryCode),
           description = description,
           name = name,

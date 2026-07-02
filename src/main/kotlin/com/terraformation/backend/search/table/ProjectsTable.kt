@@ -10,6 +10,7 @@ import com.terraformation.backend.db.accelerator.tables.references.PROJECT_DELIV
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_MODULES
 import com.terraformation.backend.db.accelerator.tables.references.PROJECT_VARIABLES
 import com.terraformation.backend.db.default_schema.ProjectId
+import com.terraformation.backend.db.default_schema.tables.references.BOTANICAL_COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -39,6 +40,10 @@ class ProjectsTable(tables: SearchTables) : SearchTable() {
           accessions.asMultiValueSublist("accessions", PROJECTS.ID.eq(ACCESSIONS.PROJECT_ID)),
           applications.asSingleValueSublist("application", PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID)),
           batches.asMultiValueSublist("batches", PROJECTS.ID.eq(BATCHES.PROJECT_ID)),
+          botanicalCountries.asSingleValueSublist(
+              "botanicalCountry",
+              PROJECTS.BOTANICAL_COUNTRY_CODE.eq(BOTANICAL_COUNTRIES.LEVEL3_CODE),
+          ),
           countries.asSingleValueSublist("country", PROJECTS.COUNTRY_CODE.eq(COUNTRIES.CODE)),
           documents.asMultiValueSublist("documents", PROJECTS.ID.eq(DOCUMENTS.PROJECT_ID)),
           draftPlantingSites.asMultiValueSublist(

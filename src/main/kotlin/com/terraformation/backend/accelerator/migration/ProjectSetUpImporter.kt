@@ -112,6 +112,7 @@ class ProjectSetUpImporter(
                     val projectId =
                         projectStore.create(
                             NewProjectModel(
+                                botanicalCountryCode = null,
                                 id = null,
                                 name = projectName,
                                 organizationId = organization.id,
