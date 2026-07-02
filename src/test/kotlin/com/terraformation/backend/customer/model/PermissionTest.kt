@@ -3086,6 +3086,28 @@ internal class PermissionTest : DatabaseTest() {
   }
 
   @Test
+  fun `user can finish uploading their own file batch`() {
+    val fileBatchId = insertFileBatch(createdBy = userId)
+
+    assertTrue(user.canFinishUploadingFileBatch(fileBatchId), "Can finish uploading file batch")
+  }
+
+  @Test
+  fun `user cannot finish uploading file batch of other users`() {
+    val fileBatchId = insertFileBatch(createdBy = sameOrgUserId)
+
+    assertFalse(user.canFinishUploadingFileBatch(fileBatchId), "Can finish uploading file batch")
+  }
+
+  @Test
+  fun `super admin can finish uploading file batch of other users`() {
+    insertUserGlobalRole(userId, GlobalRole.SuperAdmin)
+    val fileBatchId = insertFileBatch(createdBy = sameOrgUserId)
+
+    assertTrue(user.canFinishUploadingFileBatch(fileBatchId), "Can finish uploading file batch")
+  }
+
+  @Test
   fun `admin user can read but not write draft planting sites of other users in same org`() {
     val otherUserDraftSiteId =
         insertDraftPlantingSite(createdBy = sameOrgUserId, organizationId = getDatabaseId(org1Id))

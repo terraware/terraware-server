@@ -27,6 +27,7 @@ import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -39,6 +40,7 @@ import com.terraformation.backend.db.default_schema.tables.references.AUTOMATION
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
+import com.terraformation.backend.db.default_schema.tables.references.FILE_BATCHES
 import com.terraformation.backend.db.default_schema.tables.references.NOTIFICATIONS
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
@@ -407,6 +409,9 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getUserId(draftPlantingSiteId: DraftPlantingSiteId): UserId? =
       fetchFieldById(draftPlantingSiteId, DRAFT_PLANTING_SITES.ID, DRAFT_PLANTING_SITES.CREATED_BY)
+
+  fun getUserId(fileBatchId: FileBatchId): UserId? =
+      fetchFieldById(fileBatchId, FILE_BATCHES.ID, FILE_BATCHES.CREATED_BY)
 
   fun getUserId(notificationId: NotificationId): UserId? =
       fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
