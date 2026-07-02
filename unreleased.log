@@ -1,3 +1,6 @@
+e4d64166 Enable Graphite CI Optimization (#4715)
+2dd5f567 Update dependency software.amazon.awssdk:bom to v2.46.17 (#4707)
+e0a9166e SW-8608 Update planting date request status whenever request is updated (#4708)
 d42c0f70 SW-8351 Roll forward substrata when backfilling observation results (#4666)
 f730412a SW-8351 Use all dependent plots into the survival-rate std dev (#4665)
 a796392c SW-8351 Compute rolled-forward stats from the dependency table (#4664)
