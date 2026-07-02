@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.locationtech.jts.geom.Coordinate
@@ -79,13 +78,11 @@ class StratumModelTest {
 
       val expected = listOf(MonitoringPlotId(14))
 
-      repeatTest {
-        val actual =
-            model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
-              model.findMonitoringPlot(it)?.id
-            }
-        assertEquals(expected, actual, "Should not have chosen permanent plot")
-      }
+      val actual =
+          model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
+            model.findMonitoringPlot(it)?.id
+          }
+      assertEquals(expected, actual, "Should not have chosen permanent plot")
     }
 
     @Test
@@ -99,16 +96,14 @@ class StratumModelTest {
                   ),
           )
 
-      repeatTest {
-        val indexOfSelectedPlot =
-            model
-                .chooseTemporaryPlots(substrataIds(1), siteOrigin)
-                .mapNotNull { model.findMonitoringPlot(it) }
-                .single()
-                .permanentIndex
+      val indexOfSelectedPlot =
+          model
+              .chooseTemporaryPlots(substrataIds(1), siteOrigin)
+              .mapNotNull { model.findMonitoringPlot(it) }
+              .single()
+              .permanentIndex
 
-        assertEquals(2, indexOfSelectedPlot, "Should have chosen plot with unused permanent index")
-      }
+      assertEquals(2, indexOfSelectedPlot, "Should have chosen plot with unused permanent index")
     }
 
     @Test
@@ -130,14 +125,12 @@ class StratumModelTest {
 
       val unexpected = listOf(MonitoringPlotId(11))
 
-      repeatTest {
-        val actual =
-            model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
-              model.findMonitoringPlot(it)?.id
-            }
+      val actual =
+          model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
+            model.findMonitoringPlot(it)?.id
+          }
 
-        assertNotEquals(unexpected, actual, "Should not have chosen unavailable plot")
-      }
+      assertNotEquals(unexpected, actual, "Should not have chosen unavailable plot")
     }
 
     @Test
@@ -196,14 +189,12 @@ class StratumModelTest {
 
       val expected = monitoringPlotIds(10)
 
-      repeatTest {
-        val chosenIds =
-            model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
-              model.findMonitoringPlot(it)?.id
-            }
+      val chosenIds =
+          model.chooseTemporaryPlots(substrataIds(1), siteOrigin).map {
+            model.findMonitoringPlot(it)?.id
+          }
 
-        assertEquals(expected, chosenIds.toSet())
-      }
+      assertEquals(expected, chosenIds.toSet())
     }
 
     @Test
@@ -243,21 +234,19 @@ class StratumModelTest {
               monitoringPlotIds(30, 31, 32, 33, 34),
           )
 
-      repeatTest {
-        val chosenIds =
-            model
-                .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin)
-                .map { model.findMonitoringPlot(it)?.id }
-                .toSet()
+      val chosenIds =
+          model
+              .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin)
+              .map { model.findMonitoringPlot(it)?.id }
+              .toSet()
 
-        val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+      val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(
-            listOf(2, 2, 2),
-            numChosenPerSubstratum,
-            "Number of plots chosen in each substratum",
-        )
-      }
+      assertEquals(
+          listOf(2, 2, 2),
+          numChosenPerSubstratum,
+          "Number of plots chosen in each substratum",
+      )
     }
 
     @Test
@@ -310,21 +299,19 @@ class StratumModelTest {
               monitoringPlotIds(30, 31, 32, 33, 34),
           )
 
-      repeatTest {
-        val chosenIds =
-            model
-                .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin)
-                .map { model.findMonitoringPlot(it)?.id }
-                .toSet()
+      val chosenIds =
+          model
+              .chooseTemporaryPlots(substrataIds(1, 2, 3), siteOrigin)
+              .map { model.findMonitoringPlot(it)?.id }
+              .toSet()
 
-        val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+      val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(
-            listOf(1, 2, 2),
-            numChosenPerSubstratum,
-            "Number of plots chosen in each substratum",
-        )
-      }
+      assertEquals(
+          listOf(1, 2, 2),
+          numChosenPerSubstratum,
+          "Number of plots chosen in each substratum",
+      )
     }
 
     @Test
@@ -373,21 +360,19 @@ class StratumModelTest {
               monitoringPlotIds(30, 31, 32, 33, 34),
           )
 
-      repeatTest {
-        val chosenIds =
-            model
-                .chooseTemporaryPlots(substrataIds(1, 2), siteOrigin)
-                .map { model.findMonitoringPlot(it)?.id }
-                .toSet()
+      val chosenIds =
+          model
+              .chooseTemporaryPlots(substrataIds(1, 2), siteOrigin)
+              .map { model.findMonitoringPlot(it)?.id }
+              .toSet()
 
-        val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+      val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(
-            listOf(2, 1, 0),
-            numChosenPerSubstratum,
-            "Number of plots chosen in each substratum",
-        )
-      }
+      assertEquals(
+          listOf(2, 1, 0),
+          numChosenPerSubstratum,
+          "Number of plots chosen in each substratum",
+      )
     }
 
     @Test
@@ -419,21 +404,19 @@ class StratumModelTest {
               monitoringPlotIds(30, 31, 32, 33, 34),
           )
 
-      repeatTest {
-        val chosenIds =
-            model
-                .chooseTemporaryPlots(substrataIds(2, 3), siteOrigin)
-                .map { model.findMonitoringPlot(it)?.id }
-                .toSet()
+      val chosenIds =
+          model
+              .chooseTemporaryPlots(substrataIds(2, 3), siteOrigin)
+              .map { model.findMonitoringPlot(it)?.id }
+              .toSet()
 
-        val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
+      val numChosenPerSubstratum = availablePlotIds.map { ids -> ids.intersect(chosenIds).size }
 
-        assertEquals(
-            listOf(0, 2, 2),
-            numChosenPerSubstratum,
-            "Number of plots chosen in each substratum",
-        )
-      }
+      assertEquals(
+          listOf(0, 2, 2),
+          numChosenPerSubstratum,
+          "Number of plots chosen in each substratum",
+      )
     }
 
     @Test
@@ -460,7 +443,7 @@ class StratumModelTest {
 
   @Nested
   inner class FindUnusedSquare {
-    @RepeatedTest(20)
+    @Test
     fun `can find square in non-rectangular stratum`() {
       // Boundary shape:
       //
@@ -545,7 +528,7 @@ class StratumModelTest {
       }
     }
 
-    @RepeatedTest(20, failureThreshold = 1)
+    @Test
     fun `does exhaustive search of sparse map`() {
       // The site is a series of small triangles spread over a large area, plus one square that's
       // big enough to hold a monitoring plot.
@@ -637,19 +620,6 @@ class StratumModelTest {
         }
       }
     }
-  }
-
-  /**
-   * Runs a test multiple times. Monitoring plot selection involves randomness; rather than seeding
-   * the random number generator to produce fixed results, we want to check that the expected
-   * constraints remain true with a variety of random values.
-   *
-   * Though this approach can never provide 100% confidence, the repeat count should be high enough,
-   * and our tests small enough, to make it very unlikely that any permutations of values aren't
-   * covered by a given test run.
-   */
-  private fun repeatTest(func: () -> Unit) {
-    repeat(25) { func() }
   }
 
   /**
