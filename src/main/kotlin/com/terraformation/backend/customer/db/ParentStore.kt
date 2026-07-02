@@ -459,3 +459,44 @@ class ParentStore(private val dslContext: DSLContext) {
         .fetchOne(fieldToFetch)
   }
 }
+
+context(_: DSLContext)
+fun getEffectiveTimeZone(plantingSiteId: PlantingSiteId): ZoneId =
+    fetchFieldById(
+        plantingSiteId,
+        PLANTING_SITES.ID,
+        DSL.coalesce(PLANTING_SITES.TIME_ZONE, PLANTING_SITES.organizations.TIME_ZONE),
+    ) ?: ZoneOffset.UTC
+
+context(_: DSLContext)
+fun getOrganizationId(observationId: ObservationId): OrganizationId? =
+    fetchFieldById(observationId, OBSERVATIONS.ID, OBSERVATIONS.plantingSites.ORGANIZATION_ID)
+
+context(_: DSLContext)
+fun getOrganizationId(plantingSiteId: PlantingSiteId): OrganizationId? =
+    fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.ORGANIZATION_ID)
+
+context(_: DSLContext)
+fun getOrganizationId(speciesId: SpeciesId): OrganizationId? =
+    fetchFieldById(speciesId, SPECIES.ID, SPECIES.ORGANIZATION_ID)
+
+context(_: DSLContext)
+fun getPlantingSiteId(observationId: ObservationId): PlantingSiteId? =
+    fetchFieldById(observationId, OBSERVATIONS.ID, OBSERVATIONS.PLANTING_SITE_ID)
+
+/**
+ * Looks up a database row by an ID and returns the value of one of the columns, or null if no row
+ * had the given ID.
+ */
+context(dslContext: DSLContext)
+private fun <C, P, R : Record> fetchFieldById(
+    id: C,
+    idField: TableField<R, C>,
+    fieldToFetch: Field<P>,
+): P? {
+  return dslContext
+      .select(fieldToFetch)
+      .from(idField.table)
+      .where(idField.eq(id))
+      .fetchOne(fieldToFetch)
+}

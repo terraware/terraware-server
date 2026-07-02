@@ -88,7 +88,6 @@ class PlotAssignmentTest : DatabaseTest(), RunsAsUser {
         observationStore,
         PlantingSiteNotificationStore(clock, dslContext),
         plantingSiteStore,
-        parentStore,
         eventPublisher,
         SystemUser(usersDao),
         mockk(),

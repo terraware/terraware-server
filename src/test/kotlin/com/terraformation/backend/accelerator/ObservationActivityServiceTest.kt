@@ -115,7 +115,6 @@ class ObservationActivityServiceTest : DatabaseTest(), RunsAsDatabaseUser {
             observationStore,
             PlantingSiteNotificationStore(clock, dslContext),
             plantingSiteStore,
-            parentStore,
             eventPublisher,
             systemUser,
             mockk(),
