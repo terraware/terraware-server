@@ -35,6 +35,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.ProjectId
@@ -142,6 +143,7 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(EventNotFoundException::class) { canReadModuleEvent(it) }
   private val facilityId: FacilityId by
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
+  private val fileBatchId = FileBatchId(1)
   private val funderId: UserId by readableId(AccessDeniedException::class) { canReadUser(it) }
   private val fundingEntityId: FundingEntityId by
       readableId(FundingEntityNotFoundException::class) { canReadFundingEntity(it) }
@@ -513,6 +515,13 @@ internal class PermissionRequirementsTest : RunsAsUser {
   @Test fun deleteUpload() = allow { deleteUpload(uploadId) } ifUser { canDeleteUpload(uploadId) }
 
   @Test fun deleteUsers() = allow { deleteUsers() } ifUser { canDeleteUsers() }
+
+  @Test
+  fun finishUploadingFileBatch() =
+      allow { finishUploadingFileBatch(fileBatchId) } ifUser
+          {
+            canFinishUploadingFileBatch(fileBatchId)
+          }
 
   @Test
   fun importGlobalSpeciesData() =
