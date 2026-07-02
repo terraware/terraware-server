@@ -70,7 +70,7 @@ In this pipeline, all builds read dependencies from the pipeline level and write
 to the file level. Then, after a successful build, if we're building on the "main" branch, we
 "promote" the file-level cache to the pipeline level, such that next time the dependencies change,
 the pipeline-level cache serves as a starting point and we only have to download the dependencies
-that actually changes.
+that actually changed.
 
 Each promotion step is guarded by an `if_changed` directive so it only runs when the relevant
 manifest files changed. Note that `if_changed` needs the `BUILDKITE_GIT_DIFF_BASE` override set
