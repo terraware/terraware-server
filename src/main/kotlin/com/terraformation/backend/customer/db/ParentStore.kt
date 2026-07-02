@@ -95,6 +95,121 @@ import org.jooq.impl.DSL
  */
 @Named
 class ParentStore(private val dslContext: DSLContext) {
+
+  fun botanicalCountryExists(botanicalCountryCode: String): Boolean =
+      dslContext.fetchExists(
+          BOTANICAL_COUNTRIES,
+          BOTANICAL_COUNTRIES.LEVEL3_CODE.eq(botanicalCountryCode),
+      )
+
+  fun exists(deviceManagerId: DeviceManagerId): Boolean =
+      fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null
+
+  fun exists(eventId: EventId, userId: UserId): Boolean =
+      dslContext
+          .selectOne()
+          .from(EVENT_PROJECTS)
+          .join(PROJECTS)
+          .on(PROJECTS.ID.eq(EVENT_PROJECTS.PROJECT_ID))
+          .join(ORGANIZATION_USERS)
+          .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+          .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+          .and(EVENT_PROJECTS.EVENT_ID.eq(eventId))
+          .fetch()
+          .isNotEmpty
+
+  fun exists(fundingEntityId: FundingEntityId, userId: UserId): Boolean =
+      dslContext
+          .selectOne()
+          .from(FUNDING_ENTITY_USERS)
+          .where(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID.eq(fundingEntityId))
+          .and(FUNDING_ENTITY_USERS.USER_ID.eq(userId))
+          .fetch()
+          .isNotEmpty
+
+  fun exists(moduleId: ModuleId, userId: UserId): Boolean {
+    val projectModuleExists =
+        dslContext
+            .selectOne()
+            .from(PROJECT_MODULES)
+            .join(PROJECTS)
+            .on(PROJECTS.ID.eq(PROJECT_MODULES.PROJECT_ID))
+            .join(ORGANIZATION_USERS)
+            .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+            .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+            .and(PROJECT_MODULES.MODULE_ID.eq(moduleId))
+            .fetch()
+            .isNotEmpty
+    val applicationModuleExists =
+        dslContext
+            .selectOne()
+            .from(APPLICATION_MODULES)
+            .join(APPLICATIONS)
+            .on(APPLICATIONS.ID.eq(APPLICATION_MODULES.APPLICATION_ID))
+            .join(PROJECTS)
+            .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
+            .join(ORGANIZATION_USERS)
+            .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
+            .where(ORGANIZATION_USERS.USER_ID.eq(userId))
+            .and(APPLICATION_MODULES.MODULE_ID.eq(moduleId))
+            .fetch()
+            .isNotEmpty
+
+    return projectModuleExists || applicationModuleExists
+  }
+
+  fun exists(organizationId: OrganizationId, userId: UserId): Boolean =
+      dslContext
+          .selectOne()
+          .from(ORGANIZATION_USERS)
+          .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
+          .and(ORGANIZATION_USERS.USER_ID.eq(userId))
+          .fetch()
+          .isNotEmpty
+
+  fun getDeviceManagerId(userId: UserId): DeviceManagerId? =
+      fetchFieldById(userId, DEVICE_MANAGERS.USER_ID, DEVICE_MANAGERS.ID)
+
+  fun getEffectiveTimeZone(accessionId: AccessionId): ZoneId =
+      fetchFieldById(
+          accessionId,
+          ACCESSIONS.ID,
+          DSL.coalesce(
+              ACCESSIONS.facilities.TIME_ZONE,
+              ACCESSIONS.facilities.organizations.TIME_ZONE,
+          ),
+      ) ?: ZoneOffset.UTC
+
+  fun getEffectiveTimeZone(activityId: ActivityId): ZoneId =
+      fetchFieldById(activityId, ACTIVITIES.ID, ACTIVITIES.projects.organizations.TIME_ZONE)
+          ?: ZoneOffset.UTC
+
+  fun getEffectiveTimeZone(batchId: BatchId): ZoneId =
+      fetchFieldById(
+          batchId,
+          BATCHES.ID,
+          DSL.coalesce(BATCHES.facilities.TIME_ZONE, BATCHES.facilities.organizations.TIME_ZONE),
+      ) ?: ZoneOffset.UTC
+
+  fun getEffectiveTimeZone(facilityId: FacilityId): ZoneId =
+      fetchFieldById(
+          facilityId,
+          FACILITIES.ID,
+          DSL.coalesce(FACILITIES.TIME_ZONE, FACILITIES.organizations.TIME_ZONE),
+      ) ?: ZoneOffset.UTC
+
+  fun getEffectiveTimeZone(plantingSiteId: PlantingSiteId): ZoneId =
+      fetchFieldById(
+          plantingSiteId,
+          PLANTING_SITES.ID,
+          DSL.coalesce(PLANTING_SITES.TIME_ZONE, PLANTING_SITES.organizations.TIME_ZONE),
+      ) ?: ZoneOffset.UTC
+
+  fun getFacilityConnectionState(deviceId: DeviceId): FacilityConnectionState {
+    return fetchFieldById(deviceId, DEVICES.ID, DEVICES.facilities.CONNECTION_STATE_ID)
+        ?: throw DeviceNotFoundException(deviceId)
+  }
+
   fun getFacilityId(accessionId: AccessionId): FacilityId? =
       fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.FACILITY_ID)
 
@@ -104,11 +219,11 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getFacilityId(batchId: BatchId): FacilityId? =
       fetchFieldById(batchId, BATCHES.ID, BATCHES.FACILITY_ID)
 
-  fun getFacilityId(deviceManagerId: DeviceManagerId): FacilityId? =
-      fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.FACILITY_ID)
-
   fun getFacilityId(deviceId: DeviceId): FacilityId? =
       fetchFieldById(deviceId, DEVICES.ID, DEVICES.FACILITY_ID)
+
+  fun getFacilityId(deviceManagerId: DeviceManagerId): FacilityId? =
+      fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DEVICE_MANAGERS.FACILITY_ID)
 
   fun getFacilityId(subLocationId: SubLocationId): FacilityId? =
       fetchFieldById(subLocationId, SUB_LOCATIONS.ID, SUB_LOCATIONS.FACILITY_ID)
@@ -118,6 +233,16 @@ class ParentStore(private val dslContext: DSLContext) {
 
   fun getFacilityId(withdrawalId: WithdrawalId): FacilityId? =
       fetchFieldById(withdrawalId, WITHDRAWALS.ID, WITHDRAWALS.FACILITY_ID)
+
+  fun getFacilityName(accessionId: AccessionId): String {
+    val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
+    return fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.NAME)
+        ?: throw FacilityNotFoundException(facilityId)
+  }
+
+  fun getFacilityType(facilityId: FacilityId): FacilityType =
+      fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.TYPE_ID)
+          ?: throw FacilityNotFoundException(facilityId)
 
   fun getFundingEntityIds(projectId: ProjectId): List<FundingEntityId> =
       dslContext
@@ -187,20 +312,6 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(plantingSiteId: PlantingSiteId): OrganizationId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.ORGANIZATION_ID)
 
-  fun getOrganizationId(substratumId: SubstratumId): OrganizationId? =
-      fetchFieldById(
-          substratumId,
-          SUBSTRATA.ID,
-          SUBSTRATA.plantingSites.ORGANIZATION_ID,
-      )
-
-  fun getOrganizationId(stratumId: StratumId): OrganizationId? =
-      fetchFieldById(
-          stratumId,
-          STRATA.ID,
-          STRATA.plantingSites.ORGANIZATION_ID,
-      )
-
   fun getOrganizationId(projectId: ProjectId): OrganizationId? =
       fetchFieldById(projectId, PROJECTS.ID, PROJECTS.ORGANIZATION_ID)
 
@@ -213,8 +324,22 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getOrganizationId(speciesId: SpeciesId): OrganizationId? =
       fetchFieldById(speciesId, SPECIES.ID, SPECIES.ORGANIZATION_ID)
 
+  fun getOrganizationId(stratumId: StratumId): OrganizationId? =
+      fetchFieldById(
+          stratumId,
+          STRATA.ID,
+          STRATA.plantingSites.ORGANIZATION_ID,
+      )
+
   fun getOrganizationId(submissionId: SubmissionId): OrganizationId? =
       fetchFieldById(submissionId, SUBMISSIONS.ID, SUBMISSIONS.projects.ORGANIZATION_ID)
+
+  fun getOrganizationId(substratumId: SubstratumId): OrganizationId? =
+      fetchFieldById(
+          substratumId,
+          SUBSTRATA.ID,
+          SUBSTRATA.plantingSites.ORGANIZATION_ID,
+      )
 
   fun getOrganizationId(uploadId: UploadId): OrganizationId? =
       fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.ORGANIZATION_ID)
@@ -228,14 +353,11 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getPlantingSiteId(plantingSeasonId: PlantingSeasonId): PlantingSiteId? =
       fetchFieldById(plantingSeasonId, PLANTING_SEASONS.ID, PLANTING_SEASONS.PLANTING_SITE_ID)
 
-  fun getPlantingSiteId(substratumId: SubstratumId): PlantingSiteId? =
-      fetchFieldById(substratumId, SUBSTRATA.ID, SUBSTRATA.PLANTING_SITE_ID)
-
   fun getPlantingSiteId(stratumId: StratumId): PlantingSiteId? =
       fetchFieldById(stratumId, STRATA.ID, STRATA.PLANTING_SITE_ID)
 
-  fun getUserId(notificationId: NotificationId): UserId? =
-      fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
+  fun getPlantingSiteId(substratumId: SubstratumId): PlantingSiteId? =
+      fetchFieldById(substratumId, SUBSTRATA.ID, SUBSTRATA.PLANTING_SITE_ID)
 
   fun getProjectId(accessionId: AccessionId): ProjectId? =
       fetchFieldById(accessionId, ACCESSIONS.ID, ACCESSIONS.PROJECT_ID)
@@ -268,6 +390,18 @@ class ParentStore(private val dslContext: DSLContext) {
   fun getProjectId(plantingSiteId: PlantingSiteId): ProjectId? =
       fetchFieldById(plantingSiteId, PLANTING_SITES.ID, PLANTING_SITES.PROJECT_ID)
 
+  fun getProjectId(reportId: ReportId): ProjectId? =
+      fetchFieldById(reportId, REPORTS.ID, REPORTS.PROJECT_ID)
+
+  fun getProjectId(seedFundReportId: SeedFundReportId): ProjectId? =
+      fetchFieldById(seedFundReportId, SEED_FUND_REPORTS.ID, SEED_FUND_REPORTS.PROJECT_ID)
+
+  fun getProjectId(stratumId: StratumId): ProjectId? =
+      fetchFieldById(stratumId, STRATA.ID, STRATA.plantingSites.PROJECT_ID)
+
+  fun getProjectId(submissionId: SubmissionId): ProjectId? =
+      fetchFieldById(submissionId, SUBMISSIONS.ID, SUBMISSIONS.PROJECT_ID)
+
   fun getProjectId(substratumId: SubstratumId): ProjectId? =
       fetchFieldById(
           substratumId,
@@ -275,150 +409,17 @@ class ParentStore(private val dslContext: DSLContext) {
           SUBSTRATA.plantingSites.PROJECT_ID,
       )
 
-  fun getProjectId(stratumId: StratumId): ProjectId? =
-      fetchFieldById(stratumId, STRATA.ID, STRATA.plantingSites.PROJECT_ID)
-
-  fun getProjectId(reportId: ReportId): ProjectId? =
-      fetchFieldById(reportId, REPORTS.ID, REPORTS.PROJECT_ID)
-
-  fun getProjectId(seedFundReportId: SeedFundReportId): ProjectId? =
-      fetchFieldById(seedFundReportId, SEED_FUND_REPORTS.ID, SEED_FUND_REPORTS.PROJECT_ID)
-
-  fun getProjectId(submissionId: SubmissionId): ProjectId? =
-      fetchFieldById(submissionId, SUBMISSIONS.ID, SUBMISSIONS.PROJECT_ID)
-
   fun getProjectId(viabilityTestId: ViabilityTestId): ProjectId? =
       fetchFieldById(viabilityTestId, VIABILITY_TESTS.ID, VIABILITY_TESTS.accessions.PROJECT_ID)
-
-  fun getFacilityConnectionState(deviceId: DeviceId): FacilityConnectionState {
-    return fetchFieldById(deviceId, DEVICES.ID, DEVICES.facilities.CONNECTION_STATE_ID)
-        ?: throw DeviceNotFoundException(deviceId)
-  }
-
-  fun getFacilityName(accessionId: AccessionId): String {
-    val facilityId = getFacilityId(accessionId) ?: throw AccessionNotFoundException(accessionId)
-    return fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.NAME)
-        ?: throw FacilityNotFoundException(facilityId)
-  }
-
-  fun getFacilityType(facilityId: FacilityId): FacilityType =
-      fetchFieldById(facilityId, FACILITIES.ID, FACILITIES.TYPE_ID)
-          ?: throw FacilityNotFoundException(facilityId)
 
   fun getUserId(draftPlantingSiteId: DraftPlantingSiteId): UserId? =
       fetchFieldById(draftPlantingSiteId, DRAFT_PLANTING_SITES.ID, DRAFT_PLANTING_SITES.CREATED_BY)
 
+  fun getUserId(notificationId: NotificationId): UserId? =
+      fetchFieldById(notificationId, NOTIFICATIONS.ID, NOTIFICATIONS.USER_ID)
+
   fun getUserId(uploadId: UploadId): UserId? =
       fetchFieldById(uploadId, UPLOADS.ID, UPLOADS.CREATED_BY)
-
-  fun getDeviceManagerId(userId: UserId): DeviceManagerId? =
-      fetchFieldById(userId, DEVICE_MANAGERS.USER_ID, DEVICE_MANAGERS.ID)
-
-  fun getEffectiveTimeZone(accessionId: AccessionId): ZoneId =
-      fetchFieldById(
-          accessionId,
-          ACCESSIONS.ID,
-          DSL.coalesce(
-              ACCESSIONS.facilities.TIME_ZONE,
-              ACCESSIONS.facilities.organizations.TIME_ZONE,
-          ),
-      ) ?: ZoneOffset.UTC
-
-  fun getEffectiveTimeZone(activityId: ActivityId): ZoneId =
-      fetchFieldById(activityId, ACTIVITIES.ID, ACTIVITIES.projects.organizations.TIME_ZONE)
-          ?: ZoneOffset.UTC
-
-  fun getEffectiveTimeZone(batchId: BatchId): ZoneId =
-      fetchFieldById(
-          batchId,
-          BATCHES.ID,
-          DSL.coalesce(BATCHES.facilities.TIME_ZONE, BATCHES.facilities.organizations.TIME_ZONE),
-      ) ?: ZoneOffset.UTC
-
-  fun getEffectiveTimeZone(facilityId: FacilityId): ZoneId =
-      fetchFieldById(
-          facilityId,
-          FACILITIES.ID,
-          DSL.coalesce(FACILITIES.TIME_ZONE, FACILITIES.organizations.TIME_ZONE),
-      ) ?: ZoneOffset.UTC
-
-  fun getEffectiveTimeZone(plantingSiteId: PlantingSiteId): ZoneId =
-      fetchFieldById(
-          plantingSiteId,
-          PLANTING_SITES.ID,
-          DSL.coalesce(PLANTING_SITES.TIME_ZONE, PLANTING_SITES.organizations.TIME_ZONE),
-      ) ?: ZoneOffset.UTC
-
-  fun botanicalCountryExists(botanicalCountryCode: String): Boolean =
-      dslContext.fetchExists(
-          BOTANICAL_COUNTRIES,
-          BOTANICAL_COUNTRIES.LEVEL3_CODE.eq(botanicalCountryCode),
-      )
-
-  fun exists(deviceManagerId: DeviceManagerId): Boolean =
-      fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null
-
-  fun exists(organizationId: OrganizationId, userId: UserId): Boolean =
-      dslContext
-          .selectOne()
-          .from(ORGANIZATION_USERS)
-          .where(ORGANIZATION_USERS.ORGANIZATION_ID.eq(organizationId))
-          .and(ORGANIZATION_USERS.USER_ID.eq(userId))
-          .fetch()
-          .isNotEmpty
-
-  fun exists(eventId: EventId, userId: UserId): Boolean =
-      dslContext
-          .selectOne()
-          .from(EVENT_PROJECTS)
-          .join(PROJECTS)
-          .on(PROJECTS.ID.eq(EVENT_PROJECTS.PROJECT_ID))
-          .join(ORGANIZATION_USERS)
-          .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-          .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-          .and(EVENT_PROJECTS.EVENT_ID.eq(eventId))
-          .fetch()
-          .isNotEmpty
-
-  fun exists(moduleId: ModuleId, userId: UserId): Boolean {
-    val projectModuleExists =
-        dslContext
-            .selectOne()
-            .from(PROJECT_MODULES)
-            .join(PROJECTS)
-            .on(PROJECTS.ID.eq(PROJECT_MODULES.PROJECT_ID))
-            .join(ORGANIZATION_USERS)
-            .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-            .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-            .and(PROJECT_MODULES.MODULE_ID.eq(moduleId))
-            .fetch()
-            .isNotEmpty
-    val applicationModuleExists =
-        dslContext
-            .selectOne()
-            .from(APPLICATION_MODULES)
-            .join(APPLICATIONS)
-            .on(APPLICATIONS.ID.eq(APPLICATION_MODULES.APPLICATION_ID))
-            .join(PROJECTS)
-            .on(PROJECTS.ID.eq(APPLICATIONS.PROJECT_ID))
-            .join(ORGANIZATION_USERS)
-            .on(ORGANIZATION_USERS.ORGANIZATION_ID.eq(PROJECTS.ORGANIZATION_ID))
-            .where(ORGANIZATION_USERS.USER_ID.eq(userId))
-            .and(APPLICATION_MODULES.MODULE_ID.eq(moduleId))
-            .fetch()
-            .isNotEmpty
-
-    return projectModuleExists || applicationModuleExists
-  }
-
-  fun exists(fundingEntityId: FundingEntityId, userId: UserId): Boolean =
-      dslContext
-          .selectOne()
-          .from(FUNDING_ENTITY_USERS)
-          .where(FUNDING_ENTITY_USERS.FUNDING_ENTITY_ID.eq(fundingEntityId))
-          .and(FUNDING_ENTITY_USERS.USER_ID.eq(userId))
-          .fetch()
-          .isNotEmpty
 
   /**
    * Returns true if an organization has one or more projects that are either in the accelerator or
