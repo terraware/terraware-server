@@ -1,3 +1,6 @@
+b0abb2c1 Make OrganizationStore.update use an update function (#4713)
+7d47c6b2 SW-8594 Add project botanical country to API (#4712)
+6fd8c737 SW-8594 Support alternate strings files in Messages (#4711)
 8ddf8d70 SW-8594 Add botanical country to org, project (#4710)
 690fc37d Use TDWG level 3 code as botanical country ID (#4709)
 8fe4b7e2 Update dependency software.amazon.awssdk:bom to v2.46.19 (#4716)
