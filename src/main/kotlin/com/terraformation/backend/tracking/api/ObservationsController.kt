@@ -38,7 +38,7 @@ import com.terraformation.backend.db.tracking.RecordedSpeciesCertainty
 import com.terraformation.backend.db.tracking.SubstratumId
 import com.terraformation.backend.db.tracking.tables.pojos.ObservationMediaFilesRow
 import com.terraformation.backend.db.tracking.tables.pojos.RecordedPlantsRow
-import com.terraformation.backend.file.SUPPORTED_MEDIA_TYPES
+import com.terraformation.backend.file.SUPPORTED_ADDITIONAL_MEDIA_TYPES
 import com.terraformation.backend.file.SUPPORTED_PHOTO_TYPES
 import com.terraformation.backend.file.api.GetMuxStreamResponsePayload
 import com.terraformation.backend.file.model.FileMetadata
@@ -563,7 +563,10 @@ class ObservationsController(
     return UploadPlotMediaResponsePayload(fileId)
   }
 
-  @Operation(summary = "Adds a photo/video of a monitoring plot after an observation is complete.")
+  @Operation(
+      summary =
+          "Adds a photo, video, or data file of a monitoring plot after an observation is complete."
+  )
   @PostMapping(
       "/{observationId}/plots/{plotId}/otherMedia",
       consumes = [MediaType.MULTIPART_FORM_DATA_VALUE],
@@ -579,7 +582,7 @@ class ObservationsController(
       @RequestParam position: ObservationPlotPosition?,
       @RequestParam type: ObservationMediaType?,
   ): UploadPlotMediaResponsePayload {
-    val contentType = file.getPlainContentType(SUPPORTED_MEDIA_TYPES)
+    val contentType = file.getPlainContentType(SUPPORTED_ADDITIONAL_MEDIA_TYPES)
     val filename = file.getFilename("photo")
 
     val fileId =

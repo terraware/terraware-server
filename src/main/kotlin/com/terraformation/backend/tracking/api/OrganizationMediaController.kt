@@ -38,7 +38,7 @@ class OrganizationMediaController(
     private val organizationMediaService: OrganizationMediaService,
 ) {
   @ApiResponse200
-  @Operation(summary = "Uploads a photo or video associated with an organization.")
+  @Operation(summary = "Uploads a photo, video, or data file associated with an organization.")
   @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
   @RequestBodyPhotoFile
   fun uploadOrganizationMediaFile(

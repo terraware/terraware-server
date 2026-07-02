@@ -108,6 +108,18 @@ internal class OrganizationMediaServiceTest : DatabaseTest(), RunsAsUser {
     }
 
     @Test
+    fun `accepts JSON data files without publishing a video event`() {
+      val multipartFile = MockMultipartFile("file", "data.json", "application/json", ByteArray(1))
+
+      val insertedFileId = service.upload(organizationId, multipartFile, "Test caption")
+
+      assertTableEquals(
+          OrganizationMediaFilesRecord(insertedFileId, organizationId, "Test caption")
+      )
+      eventPublisher.assertEventNotPublished<OrganizationVideoUploadedEvent>()
+    }
+
+    @Test
     fun `stores file batch ID on the file row and includes batch ID on the event`() {
       val fileBatchId = insertFileBatch()
       val multipartFile = MockMultipartFile("file", "video/mp4", "video/mp4", ByteArray(1024))
