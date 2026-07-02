@@ -64,6 +64,18 @@ agents:
   queue: "x86-8core"
 
 steps:
+  - label: ":graphite: CI optimizer"
+    key: "graphite-ci-optimizer"
+    soft_fail: true
+    plugins:
+      - *shallow-clone
+      - *load-secrets
+      - withgraphite/graphite-ci#main:
+          graphite_token: "${GRAPHITE_CI_OPTIMIZATION_TOKEN}"
+
+  - wait: ~
+    continue_on_failure: true
+
   - label: ":gradle: Build and test"
     key: "build-and-test"
     plugins:
