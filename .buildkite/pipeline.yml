@@ -70,8 +70,7 @@ steps:
     plugins:
       - *shallow-clone
       - *load-secrets
-      - withgraphite/graphite-ci#main:
-          graphite_token: "${GRAPHITE_CI_OPTIMIZATION_TOKEN}"
+    command: .buildkite/scripts/graphite-optimizer.sh
 
   - wait: ~
     continue_on_failure: true
