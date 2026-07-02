@@ -63,8 +63,10 @@ for downloaded dependencies. We use our own S3 bucket to store the caches.
 Caches have a concept of a level hierarchy, documented here:
 https://buildkite.com/resources/plugins/buildkite-plugins/cache-buildkite-plugin/#caching-levels
 In this pipeline, all builds read dependencies from the pipeline level and write dependencies
-to the branch and file levels. Then, after a successful build, if we're building on the "main"
-branch, we "promote" the caches to the pipeline level so they'll be available in other branches.
+to the file level. Then, after a successful build, if we're building on the "main" branch, we
+"promote" the file-level cache to the pipeline level, such that next time the dependencies change,
+the pipeline-level cache serves as a starting point and we only have to download the dependencies
+that actually changes.
 
 Artifacts are per-job; we use them to pass data between steps. For example, the "build" directory
 gets bundled up in a compressed tarfile so it can be downloaded by later steps.

@@ -6,22 +6,27 @@ common:
     compression: tgz
     restore: pipeline
 
-  - &cache-gradle-home-args
-    <<: *cache-common-args
-    path: ".gradle-home"
-    manifest:
+  - _: &cache-gradle-home-manifest
       - "build.gradle.kts"
       - "gradle.properties"
       - "settings.gradle.kts"
+
+  - &cache-gradle-home-args
+    <<: *cache-common-args
+    path: ".gradle-home"
+    manifest: *cache-gradle-home-manifest
 
   - &cache-gradle-home
     cache#v1.11.1:
       <<: *cache-gradle-home-args
 
+  - _: &cache-node-modules-manifest
+      - "yarn.lock"
+
   - &cache-node-modules-args
     <<: *cache-common-args
     path: "node_modules"
-    manifest: "yarn.lock"
+    manifest: *cache-node-modules-manifest
 
   - &cache-node-modules
     cache#v1.11.1:
@@ -33,6 +38,14 @@ common:
     manifest:
       - "scripts/requirements.txt"
       - ".buildkite/scripts/check-scripts.sh"
+
+  - _: &cache-buildx-manifest
+      - "docker/Dockerfile"
+      - "docker/Makefile"
+      - "docker/start.sh"
+      - "build.gradle.kts"
+      - "gradle.properties"
+      - "settings.gradle.kts"
 
   - &load-secrets
     seek-oss/aws-sm#v2.4.1:
@@ -83,12 +96,10 @@ steps:
           <<: *cache-gradle-home-args
           save:
             - file
-            - branch
       - cache#v1.11.1:
           <<: *cache-node-modules-args
           save:
             - file
-            - branch
       - artifacts#v1.9.4:
           upload: "build"
           compressed: "build.tgz"
@@ -138,7 +149,6 @@ steps:
           <<: *cache-pip-args
           save:
             - "file"
-            - "branch"
     command: .buildkite/scripts/check-scripts.sh
 
   - label: ":junit: Annotate build with test results"
@@ -166,34 +176,48 @@ steps:
       - cache#v1.11.1:
           <<: *cache-common-args
           path: ".buildx-cache"
+          manifest: *cache-buildx-manifest
           save:
-            - branch
-          force: true
+            - file
       - *restore-build-cache
       - *restore-build
       - *restore-dot-gradle
     command: .buildkite/scripts/docker-build-push.sh
 
-  - label: ":buildkite: Promote branch-level caches to pipeline-level"
-    key: "promote-caches"
+  - label: ":buildkite: Promote Gradle home cache to pipeline-level"
+    key: "promote-gradle-cache"
     depends_on: "docker"
     branches: "main"
+    if_changed: *cache-gradle-home-manifest
     plugins:
       - *shallow-clone
-      - cache#v1.11.1: &promote-cache
+      - cache#v1.11.1:
           <<: *cache-gradle-home-args
           save: "pipeline"
+          force: true
+    command: "rm -rf .gradle-home/caches/build-cache-1"
+
+  - label: ":buildkite: Promote Node modules cache to pipeline-level"
+    key: "promote-node-cache"
+    depends_on:
+      - "docker"
+      - "promote-gradle-cache"
+    branches: "main"
+    if_changed: *cache-node-modules-manifest
+    plugins:
+      - *shallow-clone
       - cache#v1.11.1:
           <<: *cache-node-modules-args
           save: "pipeline"
-      - cache#v1.11.1:
-          <<: *promote-cache
-          path: ".buildx-cache"
-    command: "rm -rf .gradle-home/caches/build-cache-1"
+          force: true
+    command: "true"
 
   - label: ":buildkite: Promote branch-level script cache to pipeline-level"
     key: "promote-script-cache"
-    depends_on: "promote-caches"
+    depends_on:
+      - "docker"
+      - "promote-gradle-cache"
+      - "promote-node-cache"
     branches: "main"
     if_changed: "scripts/**"
     plugins:
@@ -201,7 +225,27 @@ steps:
       - cache#v1.11.1:
           <<: *cache-pip-args
           save: "pipeline"
-    command: "echo --- :buildkite: Loaded branch-level script cache"
+          force: true
+    command: "true"
+
+  - label: ":buildkite: Promote Docker build cache to pipeline-level"
+    key: "promote-buildx-cache"
+    depends_on:
+      - "docker"
+      - "promote-gradle-cache"
+      - "promote-node-cache"
+      - "promote-script-cache"
+    branches: "main"
+    if_changed: *cache-buildx-manifest
+    plugins:
+      - *shallow-clone
+      - cache#v1.11.1:
+          <<: *cache-common-args
+          manifest: *cache-buildx-manifest
+          path: ".buildx-cache"
+          save: "pipeline"
+          force: true
+    command: "true"
 
   - label: ":amazon-ecs: Deploy to ECS"
     key: "deploy"
@@ -209,7 +253,9 @@ steps:
     concurrency_group: "terraware-server/deploy"
     depends_on:
       - "docker"
-      - "promote-caches"
+      - "promote-buildx-cache"
+      - "promote-gradle-cache"
+      - "promote-node-cache"
       - "promote-script-cache"
     if: "build.branch == 'main' || build.tag =~ /^v2[0-9]+\\.[0-9]+/"
     plugins:
