@@ -28,6 +28,7 @@ import com.terraformation.backend.db.default_schema.ProjectId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.pojos.OrganizationsRow
+import com.terraformation.backend.util.patchNullable
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Schema
@@ -41,6 +42,7 @@ import jakarta.ws.rs.core.Response
 import java.time.Instant
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import java.util.Optional
 import org.apache.commons.validator.routines.EmailValidator
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -265,6 +267,8 @@ data class UpdateOrganizationUserRequestPayload(
 )
 
 data class CreateOrganizationRequestPayload(
+    @Schema(description = "TDWG Level 3 region code of organization's botanical country.")
+    val botanicalCountryCode: String?,
     @Schema(description = "ISO 3166 alpha-2 code of organization's country.", example = "AU")
     @field:Size(min = 2, max = 2)
     val countryCode: String?,
@@ -292,6 +296,7 @@ data class CreateOrganizationRequestPayload(
 ) {
   fun toRow(): OrganizationsRow {
     return OrganizationsRow(
+        botanicalCountryCode = botanicalCountryCode,
         countryCode = countryCode,
         countrySubdivisionCode = countrySubdivisionCode,
         description = description,
@@ -305,6 +310,10 @@ data class CreateOrganizationRequestPayload(
 }
 
 data class UpdateOrganizationRequestPayload(
+    // TEMPORARY: Treat missing codes as "don't edit"; this can change to plain String? type once
+    // clients are updated to know about this field.
+    @Schema(description = "TDWG Level 3 region code of organization's botanical country.")
+    val botanicalCountryCode: Optional<String>?,
     @Schema(description = "ISO 3166 alpha-2 code of organization's country.", example = "AU")
     @field:Size(min = 2, max = 2)
     val countryCode: String?,
@@ -328,6 +337,7 @@ data class UpdateOrganizationRequestPayload(
 ) {
   fun applyTo(row: OrganizationsRow) =
       row.copy(
+          botanicalCountryCode = botanicalCountryCode.patchNullable(row.botanicalCountryCode),
           countryCode = countryCode,
           countrySubdivisionCode = countrySubdivisionCode,
           description = description,
@@ -341,6 +351,8 @@ data class UpdateOrganizationRequestPayload(
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class OrganizationPayload(
+    @Schema(description = "TDWG Level 3 region code of organization's botanical country.")
+    val botanicalCountryCode: String?,
     @Schema(description = "Whether this organization can submit reports to Terraformation.")
     val canSubmitReports: Boolean,
     @Schema(description = "ISO 3166 alpha-2 code of organization's country.", example = "AU")
@@ -388,21 +400,22 @@ data class OrganizationPayload(
       role: Role?,
       tfContactUser: IndividualUser? = null,
   ) : this(
+      botanicalCountryCode = model.botanicalCountryCode,
       canSubmitReports = InternalTagIds.Reporter in model.internalTags,
-      model.countryCode,
-      model.countrySubdivisionCode,
-      model.createdTime.truncatedTo(ChronoUnit.SECONDS),
-      model.description,
-      model.facilities?.map { FacilityPayload(it) },
-      model.id,
-      model.name,
-      model.organizationType,
-      model.organizationTypeDetails,
-      role,
+      countryCode = model.countryCode,
+      countrySubdivisionCode = model.countrySubdivisionCode,
+      createdTime = model.createdTime.truncatedTo(ChronoUnit.SECONDS),
+      description = model.description,
+      facilities = model.facilities?.map { FacilityPayload(it) },
+      id = model.id,
+      name = model.name,
+      organizationType = model.organizationType,
+      organizationTypeDetails = model.organizationTypeDetails,
+      role = role,
       tfContactUser = tfContactUser?.let { TerraformationContactUserPayload(it) },
-      model.timeZone,
-      model.totalUsers,
-      model.website,
+      timeZone = model.timeZone,
+      totalUsers = model.totalUsers,
+      website = model.website,
   )
 }
 

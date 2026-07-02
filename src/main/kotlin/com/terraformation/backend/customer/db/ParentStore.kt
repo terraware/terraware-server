@@ -36,6 +36,7 @@ import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
 import com.terraformation.backend.db.default_schema.tables.references.AUTOMATIONS
+import com.terraformation.backend.db.default_schema.tables.references.BOTANICAL_COUNTRIES
 import com.terraformation.backend.db.default_schema.tables.references.DEVICES
 import com.terraformation.backend.db.default_schema.tables.references.DEVICE_MANAGERS
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
@@ -347,6 +348,12 @@ class ParentStore(private val dslContext: DSLContext) {
           PLANTING_SITES.ID,
           DSL.coalesce(PLANTING_SITES.TIME_ZONE, PLANTING_SITES.organizations.TIME_ZONE),
       ) ?: ZoneOffset.UTC
+
+  fun botanicalCountryExists(botanicalCountryCode: String): Boolean =
+      dslContext.fetchExists(
+          BOTANICAL_COUNTRIES,
+          BOTANICAL_COUNTRIES.LEVEL3_CODE.eq(botanicalCountryCode),
+      )
 
   fun exists(deviceManagerId: DeviceManagerId): Boolean =
       fetchFieldById(deviceManagerId, DEVICE_MANAGERS.ID, DSL.one()) != null

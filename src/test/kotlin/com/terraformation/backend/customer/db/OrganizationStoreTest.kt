@@ -76,6 +76,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
     OrganizationModel(
         id = organizationId,
         name = "Organization 1",
+        botanicalCountryCode = null,
         countryCode = "US",
         countrySubdivisionCode = "US-HI",
         createdTime = Instant.EPOCH,
@@ -205,8 +206,10 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `createWithAdmin populates organization details`() {
+    val botanicalCountryCode = insertBotanicalCountry()
     val row =
         OrganizationsRow(
+            botanicalCountryCode = botanicalCountryCode,
             countryCode = "US",
             countrySubdivisionCode = "US-HI",
             description = "Test description",
@@ -245,6 +248,13 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     assertEquals("US", row.countryCode, "Country code")
     assertEquals("US-HI", row.countrySubdivisionCode, "Subdivision code")
+  }
+
+  @Test
+  fun `createWithAdmin rejects invalid botanical country codes`() {
+    assertThrows<IllegalArgumentException> {
+      store.createWithAdmin(OrganizationsRow(botanicalCountryCode = "XXX", name = "Test Org"))
+    }
   }
 
   @Test
@@ -377,6 +387,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
   @Test
   fun `update populates organization details`() {
+    val botanicalCountryCode = insertBotanicalCountry()
     val newTime = clock.instant().plusSeconds(1000)
     clock.instant = newTime
 
@@ -387,6 +398,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
             id = organizationId,
             name = "New Name",
             description = "New Description",
+            botanicalCountryCode = botanicalCountryCode,
             countryCode = "ZA",
             organizationTypeId = OrganizationType.Academia,
             timeZone = timeZone,
@@ -436,6 +448,13 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     assertThrows<AccessDeniedException> {
       store.update(organizationId) { it }
+    }
+  }
+
+  @Test
+  fun `update rejects invalid botanical country codes`() {
+    assertThrows<IllegalArgumentException> {
+      store.update(organizationId) { it.copy(name = "X", botanicalCountryCode = "XXX") }
     }
   }
 
