@@ -898,6 +898,7 @@ abstract class DatabaseBackedTest {
 
   protected fun insertOrganization(
       name: String = "Organization ${nextOrganizationNumber++}",
+      botanicalCountryCode: String? = null,
       countryCode: String? = null,
       countrySubdivisionCode: String? = null,
       createdBy: UserId = inserted.userId,
@@ -906,6 +907,7 @@ abstract class DatabaseBackedTest {
     return with(ORGANIZATIONS) {
       dslContext
           .insertInto(ORGANIZATIONS)
+          .set(BOTANICAL_COUNTRY_CODE, botanicalCountryCode)
           .set(COUNTRY_CODE, countryCode)
           .set(COUNTRY_SUBDIVISION_CODE, countrySubdivisionCode)
           .set(CREATED_BY, createdBy)
@@ -986,10 +988,12 @@ abstract class DatabaseBackedTest {
       createdTime: Instant = Instant.EPOCH,
       description: String? = null,
       phase: AcceleratorPhase? = null,
+      botanicalCountryCode: String? = null,
       countryCode: String? = null,
   ): ProjectId {
     val row =
         ProjectsRow(
+            botanicalCountryCode = botanicalCountryCode,
             countryCode = countryCode,
             createdBy = createdBy,
             createdTime = createdTime,
