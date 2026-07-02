@@ -14,9 +14,12 @@ import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
+import com.terraformation.backend.db.default_schema.FileBatchStatus
+import com.terraformation.backend.db.default_schema.FileBatchType
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.tables.pojos.FilesRow
 import com.terraformation.backend.db.default_schema.tables.records.FileAccessTokensRecord
+import com.terraformation.backend.db.default_schema.tables.records.FileBatchesRecord
 import com.terraformation.backend.db.default_schema.tables.records.FilesRecord
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
@@ -436,6 +439,26 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
     @Test
     fun `listens for event`() {
       assertIsEventListener<FileReferenceDeletedEvent>(fileService)
+    }
+  }
+
+  @Nested
+  inner class CreateFileBatch {
+    @Test
+    fun `inserts row and returns new ID`() {
+      clock.instant = Instant.ofEpochSecond(100000)
+
+      val fileBatchId = fileService.createFileBatch(FileBatchType.Splat)
+
+      assertTableEquals(
+          FileBatchesRecord(
+              id = fileBatchId,
+              batchStatusId = FileBatchStatus.Uploading,
+              batchTypeId = FileBatchType.Splat,
+              createdBy = currentUser().userId,
+              createdTime = clock.instant,
+          )
+      )
     }
   }
 
