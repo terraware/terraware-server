@@ -620,7 +620,6 @@ class OrganizationStore(
     }
   }
 
-  /** Throws [IllegalArgumentException] if a botanical country code is invalid. */
   private fun validateBotanicalCountryCode(botanicalCountryCode: String?) {
     if (
         botanicalCountryCode != null &&
@@ -633,7 +632,6 @@ class OrganizationStore(
     }
   }
 
-  /** Throws [IllegalArgumentException] if country and/or subdivision codes are invalid. */
   private fun validateCountryCode(countryCode: String?, countrySubdivisionCode: String?) {
     if (countryCode != null) {
       if (countryCode.length != 2) {
