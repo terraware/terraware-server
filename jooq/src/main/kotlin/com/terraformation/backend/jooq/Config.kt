@@ -185,6 +185,16 @@ val ENUM_TABLES =
                 EnumTable("ecosystem_types"),
                 EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
+                EnumTable(
+                    "file_batch_statuses",
+                    listOf("file_batches\\.batch_status_id"),
+                    isLocalizable = false,
+                ),
+                EnumTable(
+                    "file_batch_types",
+                    listOf("file_batches\\.batch_type_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("global_roles", isLocalizable = false),
                 EnumTable("growth_forms"),
                 EnumTable("land_use_model_types"),
@@ -472,6 +482,7 @@ val ID_WRAPPERS =
                     "FacilityId",
                     listOf("facilities\\.id", ".*\\.destination_facility_id", ".*\\.facility_id"),
                 ),
+                IdWrapper("FileBatchId", listOf("file_batches\\.id", ".*\\.file_batch_id")),
                 IdWrapper("FileId", listOf("files\\.id", ".*\\.file_id")),
                 IdWrapper("GbifNameId", listOf("gbif_names\\.id", ".*\\.gbif_name_id")),
                 IdWrapper(
