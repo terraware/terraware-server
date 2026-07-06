@@ -3,6 +3,7 @@ package com.terraformation.backend.gis
 import com.terraformation.backend.TestSingletons
 import com.terraformation.backend.assertSetEquals
 import com.terraformation.backend.point
+import com.terraformation.backend.polygon
 import com.terraformation.backend.util.Turtle
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -38,10 +39,18 @@ class CountryDetectorTest {
         detector.intersectionArea("NL", geometry) / geometry.area * 100.0
 
     assertThat(netherlandsIntersectionPercent)
+        .describedAs("Geometry intersects NL a little bit")
         .isGreaterThan(0.0)
         .isLessThan(CountryDetector.MIN_COVERAGE_PERCENT)
-        .describedAs("Geometry intersects NL a little bit")
 
     assertSetEquals(setOf("BE", "FR"), detector.getCountries(geometry))
+  }
+
+  @Test
+  fun `counts a country as covered even if it is a small percent of a geometry`() {
+    val geometry = polygon(1, 20, 24, 50)
+    val countries = detector.getCountries(geometry)
+
+    assertThat(countries).describedAs("Big geometry should cover Vatican City").contains("VA")
   }
 }
