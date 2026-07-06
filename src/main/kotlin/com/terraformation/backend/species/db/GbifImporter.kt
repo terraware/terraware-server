@@ -5,11 +5,13 @@ import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.LockType
 import com.terraformation.backend.db.OperationInProgressException
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.GbifTaxonId
 import com.terraformation.backend.db.default_schema.tables.records.GbifDistributionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GbifNameWordsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GbifTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.records.GbifVernacularNamesRecord
+import com.terraformation.backend.db.default_schema.tables.references.EXTERNAL_DATASET_IMPORTS
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_DISTRIBUTIONS
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_NAMES
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_NAME_WORDS
@@ -25,6 +27,7 @@ import jakarta.inject.Named
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URI
+import java.time.InstantSource
 import java.util.zip.ZipFile
 import org.jooq.DSLContext
 import org.jooq.exception.DataAccessException
@@ -61,6 +64,7 @@ import org.jooq.impl.DSL
  */
 @Named
 class GbifImporter(
+    private val clock: InstantSource,
     private val config: TerrawareServerConfig,
     private val dslContext: DSLContext,
     private val fileStore: FileStore,
@@ -134,6 +138,7 @@ class GbifImporter(
 
         insertWords()
         analyzeAll()
+        updateImportTime()
       }
     } catch (e: DataAccessException) {
       log.error("GBIF import aborted; changes have been rolled back.", e.cause ?: e)
@@ -335,6 +340,19 @@ class GbifImporter(
           .execute()
       count += records.size
       log.debug("Inserted $count words")
+    }
+  }
+
+  private fun updateImportTime() {
+    with(EXTERNAL_DATASET_IMPORTS) {
+      dslContext
+          .insertInto(EXTERNAL_DATASET_IMPORTS)
+          .set(EXTERNAL_DATASET_TYPE_ID, ExternalDatasetType.GBIF)
+          .set(IMPORTED_TIME, clock.instant())
+          .onConflict(EXTERNAL_DATASET_TYPE_ID)
+          .doUpdate()
+          .set(IMPORTED_TIME, DSL.excluded(IMPORTED_TIME))
+          .execute()
     }
   }
 
