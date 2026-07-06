@@ -75,7 +75,7 @@ class WcvpImporter(
           count += chunk.size
           log.debug("Imported $count taxa")
         }
-        .map { it.taxonId!! }
+        .mapNotNull { it.taxonId }
         .toSet()
   }
 
