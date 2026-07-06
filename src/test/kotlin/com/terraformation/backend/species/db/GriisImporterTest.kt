@@ -87,7 +87,7 @@ class GriisImporterTest : DatabaseTest() {
       mockResource("test", javaClass.getResourceAsStream("/species/griis/griis.zip")!!)
 
       insertGriisResource(resourceName = "test", updatedTime = updatedTime)
-      insertGriisTaxon()
+      insertGriisTaxon(isInvasive = true)
 
       val expectedResources = dslContext.fetch(GRIIS_RESOURCES)
       val expectedTaxa = dslContext.fetch(GRIIS_TAXA)

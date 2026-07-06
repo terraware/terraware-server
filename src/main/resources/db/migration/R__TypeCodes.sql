@@ -644,6 +644,7 @@ VALUES (1, 'Native'),
        (2, 'Non-native')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+-- These need to be in descending order of precedence.
 INSERT INTO species_nativities (id, name)
 VALUES (1, 'Invasive'),
        (2, 'Introduced'),
