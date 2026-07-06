@@ -94,6 +94,10 @@ COMMENT ON COLUMN event_log.payload IS 'JSON-serialized contents of the event ob
 
 COMMENT ON PROCEDURE event_log_create_id_index IS 'Creates an index on the event_log table for a top-level field in the event payload. The field is treated as a BIGINT. Only rows that have a non-null value for the field are indexed. The event class is included as a secondary key to support "all events of type X for entity Y" queries.';
 
+COMMENT ON TABLE external_dataset_imports IS 'The most recently imported versions of external data sets.';
+
+COMMENT ON TABLE external_dataset_types IS 'Types of external data sets that the system can pull information from.';
+
 COMMENT ON TABLE facilities IS 'Physical locations at a site. For example, each seed bank and each nursery is a facility.';
 COMMENT ON COLUMN facilities.idle_after_time IS 'Time at which the facility will be considered idle if no timeseries data is received. Null if the timeseries has already been marked as idle or if no timeseries data has ever been received from the facility.';
 COMMENT ON COLUMN facilities.idle_since_time IS 'Time at which the facility became idle. Null if the facility is not currently considered idle.';

@@ -249,6 +249,14 @@ VALUES (1, 'One-on-One Session'),
        (4, 'Recorded Session')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO external_dataset_types (id, name)
+VALUES (1, 'GBIF'),
+       (2, 'WCVP'),
+       (3, 'GRIIS'),
+       (4, 'RESOLVE'),
+       (5, 'NaturalEarth')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO facility_connection_states (id, name)
 VALUES (1, 'Not Connected'),
        (2, 'Connected'),
@@ -818,6 +826,12 @@ FROM (
 ON CONFLICT (id) DO UPDATE SET name = excluded.name,
                                description = excluded.description;
 
+-- Depends on external_dataset_types
+INSERT INTO external_dataset_imports (external_dataset_type_id, imported_time, last_publication_date)
+VALUES (5, '2024-07-12T16:22:22Z', '2022-06-02')
+ON CONFLICT (external_dataset_type_id) DO UPDATE
+    SET imported_time = excluded.imported_time,
+        last_publication_date = excluded.last_publication_date;
 
 -- When adding new tables, put them in alphabetical (ASCII) order unless they depend on other
 -- tables with alphabetically-greater names.
