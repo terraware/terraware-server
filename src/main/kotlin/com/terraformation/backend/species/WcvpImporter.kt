@@ -2,9 +2,11 @@ package com.terraformation.backend.species
 
 import com.opencsv.CSVParser
 import com.terraformation.backend.customer.model.requirePermissions
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.WcvpTaxonId
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpTaxaRecord
+import com.terraformation.backend.db.default_schema.tables.references.EXTERNAL_DATASET_IMPORTS
 import com.terraformation.backend.db.default_schema.tables.references.WCVP_DISTRIBUTIONS
 import com.terraformation.backend.db.default_schema.tables.references.WCVP_TAXA
 import com.terraformation.backend.log.perClassLogger
@@ -14,8 +16,10 @@ import com.terraformation.backend.util.onChunk
 import jakarta.inject.Named
 import java.io.InputStream
 import java.net.URI
+import java.time.InstantSource
 import java.util.zip.ZipFile
 import org.jooq.DSLContext
+import org.jooq.impl.DSL
 import org.springframework.context.ApplicationEventPublisher
 
 /**
@@ -26,6 +30,7 @@ import org.springframework.context.ApplicationEventPublisher
  */
 @Named
 class WcvpImporter(
+    private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
@@ -51,6 +56,8 @@ class WcvpImporter(
 
       val taxonIds = importTaxa(dcReader)
       importDistributions(dcReader, taxonIds)
+
+      updateImportTime(dcReader)
 
       eventPublisher.publishEvent(WcvpImportedEvent())
     }
@@ -111,6 +118,21 @@ class WcvpImporter(
 
     if (unknownTaxonIds.isNotEmpty()) {
       log.warn("Found taxon IDs in distributions that were not in taxon list: $unknownTaxonIds")
+    }
+  }
+
+  private fun updateImportTime(dcReader: DarwinCoreReader) {
+    with(EXTERNAL_DATASET_IMPORTS) {
+      dslContext
+          .insertInto(EXTERNAL_DATASET_IMPORTS)
+          .set(EXTERNAL_DATASET_TYPE_ID, ExternalDatasetType.WCVP)
+          .set(IMPORTED_TIME, clock.instant())
+          .set(LAST_PUBLICATION_DATE, dcReader.publicationDate)
+          .onConflict(EXTERNAL_DATASET_TYPE_ID)
+          .doUpdate()
+          .set(IMPORTED_TIME, DSL.excluded(IMPORTED_TIME))
+          .set(LAST_PUBLICATION_DATE, DSL.excluded(LAST_PUBLICATION_DATE))
+          .execute()
     }
   }
 

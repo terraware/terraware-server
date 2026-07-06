@@ -1,9 +1,12 @@
 package com.terraformation.backend.species
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.TestEventPublisher
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
+import com.terraformation.backend.db.default_schema.tables.references.EXTERNAL_DATASET_IMPORTS
 import com.terraformation.backend.db.default_schema.tables.references.WCVP_DISTRIBUTIONS
 import com.terraformation.backend.db.default_schema.tables.references.WCVP_TAXA
 import com.terraformation.backend.log.perClassLogger
@@ -12,10 +15,12 @@ import com.terraformation.backend.species.event.WcvpImportedEvent
 import io.mockk.every
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.time.Instant
 import java.util.zip.ZipFile
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import org.junit.Assume.assumeNotNull
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -31,8 +36,9 @@ import org.junit.jupiter.api.Test
 class WcvpImporterTest : DatabaseTest(), RunsAsUser {
   override val user: TerrawareUser = mockUser()
 
+  private val clock = TestClock()
   private val eventPublisher = TestEventPublisher()
-  private val importer by lazy { WcvpImporter(dslContext, eventPublisher) }
+  private val importer by lazy { WcvpImporter(clock, dslContext, eventPublisher) }
 
   @BeforeEach
   fun maybeSkipTest() {
@@ -42,6 +48,8 @@ class WcvpImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `import WCVP data`() {
     every { user.canImportGlobalSpeciesData() } returns true
+
+    clock.instant = Instant.ofEpochSecond(123)
 
     val path = Path("build/wcvp.zip").toAbsolutePath()
 
@@ -62,6 +70,15 @@ class WcvpImporterTest : DatabaseTest(), RunsAsUser {
         0,
         dslContext.fetchCount(WCVP_DISTRIBUTIONS),
         "Number of distribution rows inserted",
+    )
+
+    assertEquals(
+        clock.instant,
+        dslContext.fetchValue(
+            EXTERNAL_DATASET_IMPORTS.IMPORTED_TIME,
+            EXTERNAL_DATASET_IMPORTS.EXTERNAL_DATASET_TYPE_ID.eq(ExternalDatasetType.WCVP),
+        ),
+        "Import timestamp",
     )
   }
 }
