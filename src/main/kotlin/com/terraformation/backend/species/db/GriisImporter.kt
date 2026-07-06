@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.opencsv.CSVParser
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
+import com.terraformation.backend.db.default_schema.tables.references.EXTERNAL_DATASET_IMPORTS
 import com.terraformation.backend.db.default_schema.tables.references.GRIIS_RESOURCES
 import com.terraformation.backend.db.default_schema.tables.references.GRIIS_TAXA
 import com.terraformation.backend.log.perClassLogger
@@ -18,6 +20,7 @@ import java.net.URI
 import java.nio.file.Files.copy
 import java.nio.file.StandardCopyOption
 import java.time.Instant
+import java.time.InstantSource
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
@@ -41,6 +44,7 @@ import org.jooq.impl.DSL
  */
 @Named
 class GriisImporter(
+    private val clock: InstantSource,
     private val dslContext: DSLContext,
     private val objectMapper: ObjectMapper,
     private val uriFetcher: UriFetcher,
@@ -239,6 +243,26 @@ class GriisImporter(
 
         log.info("Imported ${taxaRecords.size} GRIIS taxa from resource $resourceName")
       }
+
+      updateImportTime()
+    }
+  }
+
+  private fun updateImportTime() {
+    with(EXTERNAL_DATASET_IMPORTS) {
+      dslContext
+          .insertInto(EXTERNAL_DATASET_IMPORTS)
+          .set(EXTERNAL_DATASET_TYPE_ID, ExternalDatasetType.GRIIS)
+          .set(IMPORTED_TIME, clock.instant())
+          .set(
+              LAST_PUBLICATION_DATE,
+              DSL.select(DSL.max(GRIIS_RESOURCES.PUBLICATION_DATE)).from(GRIIS_RESOURCES),
+          )
+          .onConflict(EXTERNAL_DATASET_TYPE_ID)
+          .doUpdate()
+          .set(IMPORTED_TIME, DSL.excluded(IMPORTED_TIME))
+          .set(LAST_PUBLICATION_DATE, DSL.excluded(LAST_PUBLICATION_DATE))
+          .execute()
     }
   }
 
