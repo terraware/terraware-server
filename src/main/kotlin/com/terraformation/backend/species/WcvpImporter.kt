@@ -1,5 +1,6 @@
 package com.terraformation.backend.species
 
+import com.opencsv.CSVParser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.default_schema.WcvpTaxonId
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
@@ -11,7 +12,6 @@ import com.terraformation.backend.species.event.WcvpImportedEvent
 import com.terraformation.backend.util.ParsedCsvReader
 import com.terraformation.backend.util.onChunk
 import jakarta.inject.Named
-import java.io.FileNotFoundException
 import java.io.InputStream
 import java.net.URI
 import java.util.zip.ZipFile
@@ -42,33 +42,27 @@ class WcvpImporter(
   private val log = perClassLogger()
 
   fun import(zipFile: ZipFile) {
-    import { fileName ->
-      val entry = zipFile.getEntry(fileName) ?: throw FileNotFoundException(fileName)
-      zipFile.getInputStream(entry)
-    }
-  }
-
-  fun import(openFile: (String) -> InputStream) {
     requirePermissions { importGlobalSpeciesData() }
+
+    val dcReader = DarwinCoreReader(zipFile)
 
     dslContext.transaction { _ ->
       dslContext.truncate(WCVP_DISTRIBUTIONS, WCVP_TAXA).execute()
 
-      val taxonIds = openFile(TAXON_FILENAME).use { importTaxa(it) }
-
-      openFile(DISTRIBUTION_FILENAME).use { importDistributions(it, taxonIds) }
+      val taxonIds = importTaxa(dcReader)
+      importDistributions(dcReader, taxonIds)
 
       eventPublisher.publishEvent(WcvpImportedEvent())
     }
   }
 
-  private fun importTaxa(inputStream: InputStream): Set<WcvpTaxonId> {
-    log.info("Importing WCVP taxon data")
-
+  private fun importTaxa(dcReader: DarwinCoreReader): Set<WcvpTaxonId> {
     var count = 0
 
-    return TaxonParser(inputStream)
-        .sequence()
+    log.info("Importing WCVP taxon data")
+
+    return dcReader
+        .parseFile("Taxon", ::TaxonParser)
         .onChunk(INSERT_BATCH_SIZE) { chunk ->
           dslContext
               .loadInto(WCVP_TAXA)
@@ -81,18 +75,18 @@ class WcvpImporter(
           count += chunk.size
           log.debug("Imported $count taxa")
         }
-        .mapNotNull { it.taxonId }
+        .map { it.taxonId!! }
         .toSet()
   }
 
-  private fun importDistributions(inputStream: InputStream, taxonIds: Set<WcvpTaxonId>) {
+  private fun importDistributions(dcReader: DarwinCoreReader, taxonIds: Set<WcvpTaxonId>) {
     log.info("Importing WCVP distribution data")
 
     var count = 0
     val unknownTaxonIds = mutableListOf<WcvpTaxonId?>()
 
-    DistributionParser(inputStream)
-        .sequence()
+    dcReader
+        .parseFile("Distribution", ::DistributionParser)
         .filter { row ->
           if (row.taxonId in taxonIds) {
             true
@@ -120,21 +114,24 @@ class WcvpImporter(
     }
   }
 
-  private class DistributionParser(inputStream: InputStream) :
-      ParsedCsvReader<WcvpDistributionsRecord>(inputStream, separatorParser('|')) {
+  private class DistributionParser(
+      inputStream: InputStream,
+      csvParser: CSVParser,
+      columnNames: List<String>,
+  ) : ParsedCsvReader<WcvpDistributionsRecord>(inputStream, csvParser, columnNames) {
     // Some distributions have location IDs like "TDWG:84" which aren't valid level 3 codes.
     private val tdwgPattern = Regex("^TDWG:[A-Z]+")
 
     override fun parseRow(row: Array<String?>): WcvpDistributionsRecord? {
-      val locationId = row["locationid"] ?: return null
-      val taxonId = row["coreid"]?.let { WcvpTaxonId(it) } ?: return null
+      val locationId = row["locationID"] ?: return null
+      val taxonId = row["id"]?.let { WcvpTaxonId(it) } ?: return null
 
       return if (tdwgPattern.matches(locationId)) {
         WcvpDistributionsRecord(
             taxonId = taxonId,
-            occurrenceStatus = row["occurrencestatus"],
-            threatStatus = row["threatstatus"],
-            establishmentMeans = row["establishmentmeans"],
+            occurrenceStatus = row["occurrenceStatus"],
+            threatStatus = row["threatStatus"],
+            establishmentMeans = row["establishmentMeans"],
             level3Code = locationId.substringAfter(':'),
         )
       } else {
@@ -143,23 +140,26 @@ class WcvpImporter(
     }
   }
 
-  private class TaxonParser(inputStream: InputStream) :
-      ParsedCsvReader<WcvpTaxaRecord>(inputStream, separatorParser('|')) {
+  private class TaxonParser(
+      inputStream: InputStream,
+      csvParser: CSVParser,
+      columnNames: List<String>,
+  ) : ParsedCsvReader<WcvpTaxaRecord>(inputStream, csvParser, columnNames) {
     override fun parseRow(row: Array<String?>): WcvpTaxaRecord? {
-      val taxonRank = row["taxonrank"] ?: return null
+      val taxonRank = row["taxonRank"] ?: return null
 
       return WcvpTaxaRecord(
-          acceptedNameUsageId = row["acceptednameusageid"]?.let { WcvpTaxonId(it) },
+          acceptedNameUsageId = row["acceptedNameUsageID"]?.let { WcvpTaxonId(it) },
           family = row["family"],
           genus = row["genus"],
-          infraspecificEpithet = row["infraspecificepithet"],
-          nomenclaturalStatus = row["nomenclaturalstatus"],
-          originalNameUsageId = row["originalnameusageid"]?.let { WcvpTaxonId(it) },
-          parentNameUsageId = row["parentnameusageid"]?.let { WcvpTaxonId(it) },
-          scientificName = row["scientfiicname"], // Column name is misspelled in the CSV file
-          specificEpithet = row["specificepithet"],
-          taxonId = row["taxonid"]?.let { WcvpTaxonId(it) },
-          taxonomicStatus = row["taxonomicstatus"],
+          infraspecificEpithet = row["infraSpecificEpithet"],
+          nomenclaturalStatus = row["nomenclaturalStatus"],
+          originalNameUsageId = row["originalNameUsageID"]?.let { WcvpTaxonId(it) },
+          parentNameUsageId = row["parentNameUsageID"]?.let { WcvpTaxonId(it) },
+          scientificName = row["scientificName"],
+          specificEpithet = row["specificEpithet"],
+          taxonId = row["id"]?.let { WcvpTaxonId(it) },
+          taxonomicStatus = row["taxonomicStatus"],
           taxonRank = taxonRank,
       )
     }
