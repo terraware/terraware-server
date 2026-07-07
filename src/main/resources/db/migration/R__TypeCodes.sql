@@ -128,6 +128,18 @@ VALUES (1, 'Web'),
        (3, 'File Import')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO accelerator.internal_interests (id, name)
+VALUES (1, 'Compliance'),
+       (2, 'Financial Viability'),
+       (3, 'GIS'),
+       (4, 'Carbon Eligibility'),
+       (5, 'Stakeholders and Community Impact'),
+       (6, 'Proposed Restoration Activities'),
+       (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
+       (8, 'Supplemental Files'),
+       (101, 'Sourcing')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO accelerator.deliverable_categories (id, name, internal_interest_id)
 VALUES (1, 'Compliance', 1),
        (2, 'Financial Viability', 2),
@@ -286,18 +298,6 @@ VALUES (1, 'Process'),
        (2, 'Output'),
        (3, 'Outcome'),
        (4, 'Goal')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO accelerator.internal_interests (id, name)
-VALUES (1, 'Compliance'),
-       (2, 'Financial Viability'),
-       (3, 'GIS'),
-       (4, 'Carbon Eligibility'),
-       (5, 'Stakeholders and Community Impact'),
-       (6, 'Proposed Restoration Activities'),
-       (7, 'Verra Non-Permanence Risk Tool (NPRT)'),
-       (8, 'Supplemental Files'),
-       (101, 'Sourcing')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO land_use_model_types (id, name)
@@ -496,18 +496,6 @@ INSERT INTO tracking.recorded_species_certainties (id, name)
 VALUES (1, 'Known'),
        (2, 'Other'),
        (3, 'Unknown')
-ON CONFLICT (id) DO UPDATE SET name = excluded.name;
-
-INSERT INTO regions (id, name)
-VALUES (1, 'Antarctica'),
-       (2, 'East Asia & Pacific'),
-       (3, 'Europe & Central Asia'),
-       (4, 'Latin America & Caribbean'),
-       (5, 'Middle East & North Africa'),
-       (6, 'North America'),
-       (7, 'Oceania'),
-       (8, 'South Asia'),
-       (9, 'Sub-Saharan Africa')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
 INSERT INTO accelerator.indicator_classes (id, name)
@@ -807,7 +795,13 @@ VALUES (101, 'Phase 0 (Doc Review)', 1),
 ON CONFLICT (id) DO UPDATE SET name = excluded.name,
                                pipeline_id = excluded.pipeline_id;
 
--- Depends on user_types
+-- Auth ID of 'DISABLED' has no special meaning but will never match a Keycloak UUID, meaning it is
+-- impossible to authenticate as this user.
+INSERT INTO users (auth_id, email, first_name, last_name, created_time, modified_time, user_type_id)
+VALUES ('DISABLED', 'system', 'Terraware', 'System', NOW(), NOW(), 4)
+ON CONFLICT (email) DO NOTHING;
+
+-- Depends on user_types, users
 INSERT INTO internal_tags (id, name, description, is_system, created_by, created_time, modified_by, modified_time)
 SELECT t.id, t.name, t.description, TRUE, su.id, NOW(), su.id, NOW()
 FROM (
