@@ -1,9 +1,13 @@
 package com.terraformation.backend.species.db
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
+import com.terraformation.backend.db.default_schema.tables.records.ExternalDatasetImportsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisResourcesRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
+import com.terraformation.backend.db.default_schema.tables.references.EXTERNAL_DATASET_IMPORTS
 import com.terraformation.backend.db.default_schema.tables.references.GRIIS_RESOURCES
 import com.terraformation.backend.db.default_schema.tables.references.GRIIS_TAXA
 import com.terraformation.backend.species.db.GriisImporter.GriisResource
@@ -21,9 +25,10 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class GriisImporterTest : DatabaseTest() {
+  private val clock = TestClock()
   private val uriFetcher: UriFetcher = mockk()
   private val importer: GriisImporter by lazy {
-    GriisImporter(dslContext, jacksonObjectMapper(), uriFetcher)
+    GriisImporter(clock, dslContext, jacksonObjectMapper(), uriFetcher)
   }
 
   @Nested
@@ -31,6 +36,7 @@ class GriisImporterTest : DatabaseTest() {
     @Test
     fun `imports plant species from archive`() {
       val updatedTime = Instant.ofEpochSecond(123)
+      clock.instant = Instant.ofEpochSecond(456)
       mockResource("test", javaClass.getResourceAsStream("/species/griis/griis.zip")!!)
 
       importer.importResource(GriisResource("test", updatedTime))
@@ -59,6 +65,17 @@ class GriisImporterTest : DatabaseTest() {
               taxonomicStatus = "accepted",
               taxonRank = "species",
           )
+      )
+
+      assertTableEquals(
+          listOf(
+              ExternalDatasetImportsRecord(
+                  externalDatasetTypeId = ExternalDatasetType.GRIIS,
+                  importedTime = clock.instant,
+                  lastPublicationDate = LocalDate.of(2026, 6, 22),
+              )
+          ),
+          where = EXTERNAL_DATASET_IMPORTS.EXTERNAL_DATASET_TYPE_ID.eq(ExternalDatasetType.GRIIS),
       )
     }
 
