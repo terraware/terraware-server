@@ -22,7 +22,7 @@ fun validateScientificNameSyntax(
     onInvalidCharacter(invalidChar)
   }
 
-  val wordCount = normalizedValue.split(' ').size
+  val wordCount = value.split(' ').size
   if (wordCount < 2) {
     onTooShort()
   } else if (wordCount > 4) {
