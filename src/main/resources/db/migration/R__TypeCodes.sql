@@ -644,6 +644,13 @@ VALUES (1, 'Native'),
        (2, 'Non-native')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;
 
+INSERT INTO species_nativities (id, name)
+VALUES (1, 'Invasive'),
+       (2, 'Introduced'),
+       (3, 'Native'),
+       (4, 'Unknown')
+ON CONFLICT (id) DO UPDATE SET name = excluded.name;
+
 INSERT INTO species_problem_fields (id, name)
 VALUES (1, 'Scientific Name')
 ON CONFLICT (id) DO UPDATE SET name = excluded.name;

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.terraformation.backend.TestClock
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.default_schema.ExternalDatasetType
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.tables.records.ExternalDatasetImportsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisResourcesRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
@@ -55,12 +56,13 @@ class GriisImporterTest : DatabaseTest() {
       // The taxon list also has an animal species, but it should be ignored.
       assertTableEquals(
           GriisTaxaRecord(
-              establishmentMeans = "Alien",
+              establishmentMeans = "alien",
               griisResourceId = resourceId,
               habitat = "Mangrove",
               isInvasive = true,
-              occurrenceStatus = "Present",
+              occurrenceStatus = "present",
               scientificName = "Cenchrus echinatus L.",
+              speciesNativityId = SpeciesNativity.Invasive,
               taxonId = 100001L,
               taxonomicStatus = "accepted",
               taxonRank = "species",
