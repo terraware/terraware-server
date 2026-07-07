@@ -225,7 +225,9 @@ COMMENT ON TABLE species_ecosystem_types IS 'Ecosystems where each species can b
 
 COMMENT ON TABLE species_growth_forms IS 'Growth forms of each species';
 
-COMMENT ON TABLE species_native_categories IS '(Enum) Categories related to native-ness of a species.';
+COMMENT ON TABLE species_native_categories IS '(Enum) Categories related to native-ness of a species. Used for accelerator species management.';
+
+COMMENT ON TABLE species_nativities IS '(Enum) Native/invasive/introduced values for a species in a given region.';
 
 COMMENT ON TABLE species_plant_material_sourcing_methods IS 'Sourcing methods for the plant material used to grow a particular species.';
 

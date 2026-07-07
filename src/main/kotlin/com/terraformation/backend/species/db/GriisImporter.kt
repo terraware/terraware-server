@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.opencsv.CSVParser
 import com.terraformation.backend.db.default_schema.ExternalDatasetType
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.references.EXTERNAL_DATASET_IMPORTS
 import com.terraformation.backend.db.default_schema.tables.references.GRIIS_RESOURCES
@@ -223,6 +224,19 @@ class GriisImporter(
                       "Taxon ID ${taxon.taxonId} not present in species profiles list"
                   )
 
+          // We'll do substring searches on the establishment means and occurrence status, so
+          // combine them for brevity.
+          val combinedStatus =
+              (distribution.establishmentMeans ?: "") + (distribution.occurrenceStatus ?: "")
+
+          val nativity =
+              when {
+                profile.isInvasive -> SpeciesNativity.Invasive
+                "introduced" in combinedStatus -> SpeciesNativity.Introduced
+                "alien" in combinedStatus -> SpeciesNativity.Introduced
+                else -> SpeciesNativity.Unknown
+              }
+
           GriisTaxaRecord(
               acceptedNameUsage = taxon.acceptedNameUsage,
               establishmentMeans = distribution.establishmentMeans,
@@ -231,6 +245,7 @@ class GriisImporter(
               isInvasive = profile.isInvasive,
               occurrenceStatus = distribution.occurrenceStatus,
               scientificName = taxon.scientificName,
+              speciesNativityId = nativity,
               taxonId = taxon.taxonId,
               taxonomicStatus = taxon.taxonomicStatus,
               taxonRank = taxon.taxonRank,
@@ -306,8 +321,8 @@ class GriisImporter(
 
       return Distribution(
           taxonId = taxonId,
-          establishmentMeans = row["establishmentMeans"],
-          occurrenceStatus = row.getOrNull("occurrenceStatus"),
+          establishmentMeans = row["establishmentMeans"]?.lowercase(),
+          occurrenceStatus = row.getOrNull("occurrenceStatus")?.lowercase(),
       )
     }
   }
