@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.tables.references.GRIIS_RESO
 import com.terraformation.backend.db.default_schema.tables.references.GRIIS_TAXA
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.DarwinCoreReader
+import com.terraformation.backend.species.model.normalizeScientificName
 import com.terraformation.backend.util.ParsedCsvReader
 import com.terraformation.backend.util.UriFetcher
 import jakarta.inject.Named
@@ -244,7 +245,7 @@ class GriisImporter(
               habitat = profile.habitat,
               isInvasive = profile.isInvasive,
               occurrenceStatus = distribution.occurrenceStatus,
-              scientificName = taxon.scientificName,
+              scientificName = normalizeScientificName(taxon.scientificName),
               speciesNativityId = nativity,
               taxonId = taxon.taxonId,
               taxonomicStatus = taxon.taxonomicStatus,
@@ -357,6 +358,7 @@ class GriisImporter(
       if (
           row["kingdom"] != "Plantae" ||
               taxonRank == "synonym" ||
+              taxonRank == "genus" ||
               !taxonomicStatus.startsWith("accepted")
       ) {
         return null

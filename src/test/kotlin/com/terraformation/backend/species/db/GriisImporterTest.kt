@@ -61,7 +61,7 @@ class GriisImporterTest : DatabaseTest() {
               habitat = "Mangrove",
               isInvasive = true,
               occurrenceStatus = "present",
-              scientificName = "Cenchrus echinatus L.",
+              scientificName = "Cenchrus echinatus",
               speciesNativityId = SpeciesNativity.Invasive,
               taxonId = 100001L,
               taxonomicStatus = "accepted",
