@@ -45,7 +45,9 @@ fun normalizeScientificName(value: String): String {
 
   val numSignificantWords =
       when {
-        words.size < 2 -> throw IllegalArgumentException("$value is not a valid species name")
+        words.isEmpty() || words.size == 1 && words[0].isEmpty() ->
+            throw IllegalArgumentException("No species name to normalize")
+        words.size == 1 -> 1
         words.size >= 4 && words[2] in rankMarkers -> 4
         else -> 2
       }

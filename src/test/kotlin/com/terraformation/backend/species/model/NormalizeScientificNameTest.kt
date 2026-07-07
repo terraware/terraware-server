@@ -18,6 +18,7 @@ class NormalizeScientificNameTest {
             "Aloe vera (L.) Burm. f." to "Aloe vera",
             "Costus woodsonii Maas" to "Costus woodsonii",
             " Allium   porrum " to "Allium porrum",
+            "Allium" to "Allium",
         )
 
     val actual = expected.mapValues { (name, _) -> normalizeScientificName(name) }
@@ -28,10 +29,5 @@ class NormalizeScientificNameTest {
   @Test
   fun `throws IllegalArgumentException on empty name`() {
     assertThrows<IllegalArgumentException> { normalizeScientificName("") }
-  }
-
-  @Test
-  fun `throws IllegalArgumentException on single-word name`() {
-    assertThrows<IllegalArgumentException> { normalizeScientificName("Foo") }
   }
 }
