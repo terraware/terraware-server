@@ -183,6 +183,11 @@ val ENUM_TABLES =
                     isLocalizable = false,
                 ),
                 EnumTable("ecosystem_types"),
+                EnumTable(
+                    "external_dataset_types",
+                    listOf("external_dataset_types\\.id", ".*\\.external_dataset_type_id"),
+                    isLocalizable = false,
+                ),
                 EnumTable("facility_connection_states", listOf("facilities\\.connection_state_id")),
                 EnumTable("facility_types", listOf("facilities\\.type_id")),
                 EnumTable("global_roles", isLocalizable = false),
