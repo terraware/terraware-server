@@ -1,12 +1,14 @@
 package com.terraformation.backend.species.db
 
 import com.terraformation.backend.RunsAsUser
+import com.terraformation.backend.TestClock
 import com.terraformation.backend.config.TerrawareServerConfig
 import com.terraformation.backend.customer.model.TerrawareUser
 import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.LockService
 import com.terraformation.backend.db.LockType
 import com.terraformation.backend.db.OperationInProgressException
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.GbifNameId
 import com.terraformation.backend.db.default_schema.GbifTaxonId
 import com.terraformation.backend.db.default_schema.tables.pojos.GbifDistributionsRow
@@ -14,9 +16,11 @@ import com.terraformation.backend.db.default_schema.tables.pojos.GbifNameWordsRo
 import com.terraformation.backend.db.default_schema.tables.pojos.GbifNamesRow
 import com.terraformation.backend.db.default_schema.tables.pojos.GbifTaxaRow
 import com.terraformation.backend.db.default_schema.tables.pojos.GbifVernacularNamesRow
+import com.terraformation.backend.db.default_schema.tables.records.ExternalDatasetImportsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GbifDistributionsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GbifTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.records.GbifVernacularNamesRecord
+import com.terraformation.backend.db.default_schema.tables.references.EXTERNAL_DATASET_IMPORTS
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_DISTRIBUTIONS
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_NAMES
 import com.terraformation.backend.db.default_schema.tables.references.GBIF_NAME_WORDS
@@ -31,6 +35,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import java.net.URI
 import java.nio.file.NoSuchFileException
+import java.time.Instant
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -40,6 +45,7 @@ import org.springframework.security.access.AccessDeniedException
 
 internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   private val gbifConfig: TerrawareServerConfig.GbifConfig = mockk()
+  private val clock = TestClock()
   private val config: TerrawareServerConfig = mockk()
   private val fileStore: FileStore = mockk()
   private val lockService: LockService = mockk()
@@ -49,7 +55,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
 
   @BeforeEach
   fun setUp() {
-    importer = GbifImporter(config, dslContext, fileStore, lockService)
+    importer = GbifImporter(clock, config, dslContext, fileStore, lockService)
 
     every { config.gbif } returns gbifConfig
     every { gbifConfig.datasetIds } returns listOf("dataset1", "dataset2", "dataset3")
@@ -61,6 +67,7 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
   @Test
   fun `parses and imports data from files`() {
     val prefix = javaClass.getResource("/species/gbif")!!.toURI()
+    clock.instant = Instant.ofEpochSecond(123)
     importer.import(prefix)
 
     val expected =
@@ -185,6 +192,16 @@ internal class GbifImporterTest : DatabaseTest(), RunsAsUser {
         )
 
     assertEquals(expected, actualData())
+
+    assertTableEquals(
+        listOf(
+            ExternalDatasetImportsRecord(
+                externalDatasetTypeId = ExternalDatasetType.GBIF,
+                importedTime = clock.instant,
+            )
+        ),
+        where = EXTERNAL_DATASET_IMPORTS.EXTERNAL_DATASET_TYPE_ID.eq(ExternalDatasetType.GBIF),
+    )
   }
 
   @Test
