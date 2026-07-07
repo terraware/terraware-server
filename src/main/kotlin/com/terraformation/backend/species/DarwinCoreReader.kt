@@ -98,7 +98,7 @@ class DarwinCoreReader(private val zipFile: ZipFile) {
 
     val idField = fileDetails.coreId ?: fileDetails.id
     val columnNames =
-        (listOfNotNull(idField) + fileDetails.fields)
+        (listOfNotNull(idField) + fileDetails.fields.filter { it.index > 0 })
             .sortedBy { it.index }
             .map { it.term?.substringAfterLast('/') ?: "id" }
 
@@ -140,7 +140,6 @@ class DarwinCoreReader(private val zipFile: ZipFile) {
 
   data class Keyword(
       val keyword: String,
-      val keywordThesaurus: String,
   )
 
   @JacksonXmlRootElement(localName = "archive", namespace = "http://rs.tdwg.org/dwc/text/")

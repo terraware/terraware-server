@@ -74,8 +74,13 @@ abstract class ParsedCsvReader<T>(
     readHeaderRow()
 
     if (columnNames != null) {
-      numColumns = columnNames.size
-      positions = columnNames.mapIndexed { index, columnName -> columnName to index }.toMap()
+      // columnNames can include optional columns that aren't actually in the file; ignore any
+      // extra columns.
+      positions =
+          columnNames
+              .subList(0, numColumns)
+              .mapIndexed { index, columnName -> columnName to index }
+              .toMap()
     }
 
     return csvReader.asSequence().filter { it.size == numColumns }.mapNotNull { parseRow(it) }
