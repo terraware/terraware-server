@@ -26,6 +26,7 @@ import com.terraformation.backend.db.seedbank.tables.pojos.AccessionsRow
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.i18n.Messages
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.point
 import io.mockk.every
 import io.mockk.mockk
 import java.time.Duration
@@ -407,6 +408,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 buildStartedDate = LocalDate.of(2022, 1, 1),
                 capacity = 50,
                 description = "Description",
+                location = point(1),
                 name = "Test",
                 maxIdleMinutes = 123,
                 operationStartedDate = LocalDate.of(2023, 2, 2),
@@ -428,6 +430,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             description = "Description",
             facilityNumber = 2,
             id = model.id,
+            location = point(1),
             maxIdleMinutes = 123,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
@@ -535,6 +538,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
                 buildStartedDate = LocalDate.of(2022, 1, 1),
                 capacity = 50,
                 description = "Initial description",
+                location = point(1),
                 name = "Initial name",
                 maxIdleMinutes = 1,
                 operationStartedDate = LocalDate.of(2023, 2, 2),
@@ -557,6 +561,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             description = "New description",
             facilityNumber = 12345,
             lastTimeseriesTime = Instant.EPOCH,
+            location = point(100),
             maxIdleMinutes = 2,
             modifiedTime = Instant.ofEpochSecond(50),
             name = "New name",
@@ -579,6 +584,7 @@ internal class FacilityStoreTest : DatabaseTest(), RunsAsUser {
             description = modified.description,
             facilityNumber = 1,
             id = initial.id,
+            location = point(100),
             maxIdleMinutes = modified.maxIdleMinutes,
             modifiedBy = user.userId,
             modifiedTime = clock.instant(),
