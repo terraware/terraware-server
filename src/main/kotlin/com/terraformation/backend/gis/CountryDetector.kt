@@ -78,6 +78,10 @@ class CountryDetector {
     result
   }
 
+  val countryAreas: Map<String, Double> by lazy {
+    countryBorders.mapValues { (_, border) -> border.area }
+  }
+
   /** Returns the country border geometry given the 2-letter country code */
   fun getCountryBorder(countryCode: String): Geometry? {
     return countryBorders[countryCode]
@@ -87,14 +91,18 @@ class CountryDetector {
    * Returns the 2-letter country codes for the countries that contain a geometry. If the geometry
    * falls outside any country, returns an empty set.
    *
-   * @param minCoveragePercent A country must cover at least this percentage of [geometry] to be
-   *   included in the result.
+   * @param minCoveragePercent Minimum percentage of the smaller geometry that must be covered by
+   *   the larger geometry to be included in the result. For geometries such as planting sites that
+   *   are much smaller than countries, this means at least this percentage of [geometry] must be
+   *   covered by a country for that country to be included. For large geometries like botanical
+   *   countries that can span multiple countries, at least this percentage of a country's area must
+   *   be covered by [geometry] for the country to be included.
    */
   fun getCountries(
       geometry: Geometry,
       minCoveragePercent: Double = MIN_COVERAGE_PERCENT,
   ): Set<String> {
-    val minCoverageArea = geometry.area * minCoveragePercent / 100.0
+    val geometryArea = geometry.area
 
     // For complex MultiPolygons, intersection calculations can be expensive. We only care
     // about exceeding the minimum coverage area, so do the calculation one polygon at a time
@@ -108,6 +116,8 @@ class CountryDetector {
 
     return countryBorders
         .mapNotNull { (countryCode, countryBorder) ->
+          val countryArea = countryAreas[countryCode] ?: geometryArea
+          val minCoverageArea = minOf(geometryArea, countryArea) * minCoveragePercent / 100.0
           val hasMinCoverage =
               geometries
                   .asSequence()
