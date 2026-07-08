@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{/admin/header :: head}">
+    <style th:fragment="additionalStyle">
+        form {
+            padding-bottom: 1em;
+        }
+    </style>
+</head>
+<body>
+
+<span th:replace="~{/admin/header :: top}"/>
+
+<a href="/admin/">Home</a>
+
+<h2>Species Management</h2>
+
+<div th:if="${canImportGlobalSpeciesData}">
+    <h3>Import GBIF species data</h3>
+
+    <p>You can download the data
+        <a href="https://hosted-datasets.gbif.org/datasets/backbone/current/backbone.zip">here</a>.
+        Use a <code>file://</code> URL to load the data from a file on the server's local
+        filesystem.
+    </p>
+
+    <form method="POST" enctype="multipart/form-data" action="importGbif">
+        <label for="gbifUrl">URL of backbone.zip</label>
+        <input id="gbifUrl" type="url" name="url" required/>
+        <input type="submit" value="Import"/>
+        (can take several minutes)
+    </form>
+
+    <h3>Import GRIIS resources</h3>
+
+    <p>
+        The list of resources is available
+        <a href="https://cloud.gbif.org/griis/">here</a>.
+    </p>
+
+    <form method="POST" action="importGriisResources">
+        <label>
+            Single resource name to import (leave blank to import all)
+            <input type="text" name="resourceName"/>
+        </label>
+        <label>
+            Force import?
+            <select name="forceUpdate">
+                <option value="false" selected>No (only import updated resources)</option>
+                <option value="true">Yes (import all resources)</option>
+            </select>
+        </label>
+        <input type="submit" value="Import">
+        (can take several minutes)
+    </form>
+
+    <h3>Import TDWG Level 3 botanical countries</h3>
+
+    <p>
+        You can download the data from
+        <a href="https://github.com/tdwg/wgsrpd/blob/master/geojson/level3.geojson">here</a>.
+    </p>
+
+    <form method="POST" action="importBotanicalCountries">
+        <label>URL of GeoJSON file
+            <input id="botanicalCountriesUrl" name="url" required th:value="${defaultBotanicalCountriesUrl}"/>
+        </label>
+        <input type="submit" value="Import">
+        (can take several minutes)
+    </form>
+
+    <h3>Import WCVP species list</h3>
+
+    <p>
+        You can download the data from
+        <a href="https://www.gbif.org/dataset/f382f0ce-323a-4091-bb9f-add557f3a9a2">here</a>.
+    </p>
+
+    <form method="POST" action="importWcvpSpeciesList">
+        <label>URL of zipfile
+            <input name="url" required th:value="${defaultWcvpSpeciesListUrl}"/>
+        </label>
+        <input type="submit" value="Import">
+        (can take several minutes)
+    </form>
+</div>
+
+</body>
+</html>
