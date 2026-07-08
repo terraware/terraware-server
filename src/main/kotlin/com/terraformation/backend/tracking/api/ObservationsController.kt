@@ -18,6 +18,7 @@ import com.terraformation.backend.api.getPlainContentType
 import com.terraformation.backend.api.gpxResponse
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.SRID
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.SpeciesId
@@ -574,6 +575,7 @@ class ObservationsController(
       @RequestPart("file") file: MultipartFile,
       @RequestPart("payload") payload: UploadPlotMediaRequestPayload?,
       @RequestParam caption: String?,
+      @RequestParam fileBatchId: FileBatchId?,
       @RequestParam position: ObservationPlotPosition?,
       @RequestParam type: ObservationMediaType?,
   ): UploadPlotMediaResponsePayload {
@@ -590,6 +592,7 @@ class ObservationsController(
             caption = payload?.caption ?: caption,
             isOriginal = false,
             type = payload?.type ?: type ?: ObservationMediaType.Plot,
+            fileBatchId = payload?.fileBatchId ?: fileBatchId,
         )
     return UploadPlotMediaResponsePayload(fileId)
   }
@@ -1068,6 +1071,7 @@ data class UploadPlotMediaRequestPayload(
     val position: ObservationPlotPosition?,
     @Schema(description = "Type of subject the uploaded file depicts.", defaultValue = "Plot")
     val type: ObservationMediaType?,
+    val fileBatchId: FileBatchId? = null,
 )
 
 data class UploadPlotPhotoRequestPayload(

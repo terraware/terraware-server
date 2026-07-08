@@ -6,6 +6,7 @@ import com.terraformation.backend.customer.model.SystemUser
 import com.terraformation.backend.customer.model.requirePermissions
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.asNonNullable
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.FileId
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.tracking.MonitoringPlotId
@@ -247,6 +248,7 @@ class ObservationService(
       caption: String?,
       isOriginal: Boolean,
       type: ObservationMediaType = ObservationMediaType.Plot,
+      fileBatchId: FileBatchId? = null,
   ): FileId {
     requirePermissions { updateObservation(observationId) }
 
@@ -277,7 +279,8 @@ class ObservationService(
     }
 
     val fileId =
-        fileService.storeFile("observation", data, metadata) { (fileId, fullMetadata) ->
+        fileService.storeFile("observation", data, metadata, fileBatchId = fileBatchId) {
+            (fileId, fullMetadata) ->
           observationMediaFilesDao.insert(
               ObservationMediaFilesRow(
                   caption = caption,

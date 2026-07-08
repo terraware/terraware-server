@@ -7,6 +7,7 @@ import com.drew.metadata.Metadata
 import com.terraformation.backend.auth.currentUser
 import com.terraformation.backend.daily.DailyTaskTimeArrivedEvent
 import com.terraformation.backend.db.DefaultCatalog
+import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.FileNotFoundException
 import com.terraformation.backend.db.TokenNotFoundException
 import com.terraformation.backend.db.default_schema.FileBatchId
@@ -93,8 +94,16 @@ class FileService(
       data: InputStream,
       newFileMetadata: NewFileMetadata,
       populateMetadata: ((NewFileMetadata) -> NewFileMetadata)? = null,
+      fileBatchId: FileBatchId? = null,
       insertChildRows: (StoredFile) -> Unit,
   ): FileId {
+    if (
+        fileBatchId != null &&
+            !dslContext.fetchExists(FILE_BATCHES, FILE_BATCHES.ID.eq(fileBatchId))
+    ) {
+      throw FileBatchNotFoundException(fileBatchId)
+    }
+
     val copier = InputStreamCopier(data)
     val fileTypeStream = copier.getCopy()
     val exifStream = copier.getCopy()
@@ -168,6 +177,7 @@ class FileService(
                 contentType = fullMetadata.contentType,
                 createdTime = clock.instant(),
                 createdBy = currentUser().userId,
+                fileBatchId = fileBatchId,
                 fileName = fullMetadata.filename,
                 geolocation = fullMetadata.geolocation,
                 modifiedBy = currentUser().userId,
