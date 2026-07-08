@@ -117,8 +117,6 @@ COMMENT ON TABLE file_batch_statuses IS '(Enum) Statuses of file batches.';
 COMMENT ON TABLE file_batch_types IS '(Enum) Types of file batches.';
 
 COMMENT ON TABLE file_batches IS 'Groups of files that were uploaded together.';
-COMMENT ON COLUMN file_batches.batch_status_id IS 'Which status a file batch is in.';
-COMMENT ON COLUMN file_batches.batch_type_id IS 'Which type of files this batch contains.';
 
 COMMENT ON TABLE files IS 'Generic information about individual files. Files are associated with application entities using linking tables such as `accession_photos`.';
 COMMENT ON COLUMN files.captured_local_time IS 'If applicable, the date and time in the local time zone of wherever the file''s data was captured. For example, the time a photo was taken. This may differ from `created_time`, which represents when the file was stored in Terraware. This is typically extracted from the file itself, e.g., EXIF metadata.';
