@@ -2,6 +2,7 @@ package com.terraformation.backend.file.api
 
 import com.terraformation.backend.api.ApiResponse200
 import com.terraformation.backend.api.InternalEndpoint
+import com.terraformation.backend.api.SimpleSuccessResponsePayload
 import com.terraformation.backend.api.SuccessResponsePayload
 import com.terraformation.backend.api.toResponseEntity
 import com.terraformation.backend.db.default_schema.FileBatchId
@@ -38,6 +39,21 @@ class FilesController(
   ): CreateFileBatchResponsePayload {
     val fileBatchId = fileService.createFileBatch(payload.type)
     return CreateFileBatchResponsePayload(fileBatchId)
+  }
+
+  @ApiResponse200
+  @Operation(
+      summary = "Marks a file batch as finished uploading.",
+      description =
+          "Indicates that all the files in the batch have been uploaded and the batch is ready to " +
+              "be processed.",
+  )
+  @PostMapping("/batches/{fileBatchId}/finish")
+  fun finishUploadingFileBatch(
+      @PathVariable fileBatchId: FileBatchId
+  ): SimpleSuccessResponsePayload {
+    fileService.finishUploadingFileBatch(fileBatchId)
+    return SimpleSuccessResponsePayload()
   }
 
   // If you change this path, update the path in MuxService too.

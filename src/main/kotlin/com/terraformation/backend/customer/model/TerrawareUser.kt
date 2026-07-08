@@ -15,6 +15,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -328,6 +329,8 @@ interface TerrawareUser : Principal, UserDetails {
   fun canDeleteUpload(uploadId: UploadId): Boolean = defaultPermission
 
   fun canDeleteUsers(): Boolean = defaultPermission
+
+  fun canFinishUploadingFileBatch(fileBatchId: FileBatchId): Boolean = defaultPermission
 
   fun canImportGlobalSpeciesData(): Boolean = defaultPermission
 

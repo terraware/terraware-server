@@ -25,6 +25,7 @@ import com.terraformation.backend.db.default_schema.tables.records.FileBatchesRe
 import com.terraformation.backend.db.default_schema.tables.records.FilesRecord
 import com.terraformation.backend.db.default_schema.tables.references.FILES
 import com.terraformation.backend.db.default_schema.tables.references.FILE_ACCESS_TOKENS
+import com.terraformation.backend.file.event.FileBatchFinishedUploadingEvent
 import com.terraformation.backend.file.event.FileDeletionStartedEvent
 import com.terraformation.backend.file.event.FileReferenceDeletedEvent
 import com.terraformation.backend.file.event.VideoFileUploadedEvent
@@ -489,6 +490,46 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
               createdTime = clock.instant,
           )
       )
+    }
+  }
+
+  @Nested
+  inner class FinishUploadingFileBatch {
+    @Test
+    fun `sets batch status to Upload Complete and publishes event`() {
+      val fileBatchId = insertFileBatch()
+      every { user.canFinishUploadingFileBatch(fileBatchId) } returns true
+
+      fileService.finishUploadingFileBatch(fileBatchId)
+
+      assertEquals(
+          FileBatchStatus.UploadComplete,
+          fileBatchesDao.fetchOneById(fileBatchId)!!.batchStatusId,
+          "Batch status should complete",
+      )
+      eventPublisher.assertEventPublished(FileBatchFinishedUploadingEvent(fileBatchId))
+    }
+
+    @Test
+    fun `throws exception if no permission to finish uploading file batch`() {
+      val fileBatchId = insertFileBatch()
+      every { user.canFinishUploadingFileBatch(fileBatchId) } returns false
+
+      assertThrows<FileBatchNotFoundException> { fileService.finishUploadingFileBatch(fileBatchId) }
+
+      assertEquals(
+          FileBatchStatus.Uploading,
+          fileBatchesDao.fetchOneById(fileBatchId)!!.batchStatusId,
+          "Batch status should stay uploading",
+      )
+      eventPublisher.assertEventNotPublished<FileBatchFinishedUploadingEvent>()
+    }
+
+    @Test
+    fun `throws exception if file batch does not exist`() {
+      assertThrows<FileBatchNotFoundException> {
+        fileService.finishUploadingFileBatch(FileBatchId(-1))
+      }
     }
   }
 

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -37,6 +38,7 @@ import com.terraformation.backend.db.default_schema.AutomationId
 import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DeviceManagerId
 import com.terraformation.backend.db.default_schema.FacilityId
+import com.terraformation.backend.db.default_schema.FileBatchId
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.NotificationId
 import com.terraformation.backend.db.default_schema.OrganizationId
@@ -606,6 +608,14 @@ class PermissionRequirements(private val user: TerrawareUser) {
     user.recordPermissionChecks {
       if (!user.canDeleteUsers()) {
         throw AccessDeniedException("No permission to delete users")
+      }
+    }
+  }
+
+  fun finishUploadingFileBatch(fileBatchId: FileBatchId) {
+    user.recordPermissionChecks {
+      if (!user.canFinishUploadingFileBatch(fileBatchId)) {
+        throw FileBatchNotFoundException(fileBatchId)
       }
     }
   }
