@@ -88,9 +88,9 @@ species_problems
 splat_annotations
 wcvp_distributions
 automations
-splats
 organization_users
 project_internal_users
+splats
 app_versions
 rate_limited_events
 test_clock

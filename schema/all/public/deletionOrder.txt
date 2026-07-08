@@ -2,9 +2,9 @@ vector_store
 test_clock
 rate_limited_events
 app_versions
+splats
 project_internal_users
 organization_users
-splats
 automations
 wcvp_distributions
 splat_annotations

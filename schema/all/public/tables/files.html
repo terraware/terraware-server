@@ -211,6 +211,11 @@
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
+                                                <td title="splats.data_file_id references files.id via splats_data_file_id_fkey"><a href='splats.html'>splats</a><span class='relatedKey'>.data_file_id</span></td>
+                                                <td class="constraint detail">splats_data_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                            <tr>
                                                 <td title="splats.file_id references files.id via splats_file_id_fkey"><a href='splats.html'>splats</a><span class='relatedKey'>.file_id</span></td>
                                                 <td class="constraint detail">splats_file_id_fkey</td>
                                                 <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>

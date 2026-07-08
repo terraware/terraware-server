@@ -430,6 +430,28 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="data_file_id">data_file_id</span></td>
+                                    <td>int8</td>
+                                    <td>19</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="splats.data_file_id references files.id via splats_data_file_id_fkey"><a href='files.html'>files</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">splats_data_file_id_fkey</td>
+                                                <td class="constraint detail"><span title='Null on delete:&#10;Foreign key to parent set to NULL when parent deleted'>N</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td><p>Optional file containing additional metadata that helps with generating the splat, such as pose priors from sensor data.</p></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -465,6 +487,12 @@
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>file_id</td>
+                                </tr>
+                                <tr>
+                                    <td title='Indexed'>splats_data_file_id_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>data_file_id</td>
                                 </tr>
                                 <tr>
                                     <td title='Indexed'>splats_organization_id_idx</td>
