@@ -15,6 +15,29 @@
 
 <h2>Species Management</h2>
 
+<h3>Calculate species nativity</h3>
+
+<form method="POST" action="calculateNativity">
+    <label>
+        Scientific name
+        <input type="text" name="scientificName" required th:value="${nativityScientificName}"/>
+    </label>
+
+    <label>
+        Botanical country (TDWG Level 3) code
+        <input type="text" size="3" maxlength="3" name="botanicalCountryCode" required
+               th:value="${nativityBotanicalCountryCode}"/>
+    </label>
+
+    <label>
+        2-letter country code
+        <input type="text" size="2" maxlength="2" name="countryCode" required
+               th:value="${nativityCountryCode}"/>
+    </label>
+
+    <input type="submit" value="Calculate nativity"/>
+</form>
+
 <div th:if="${canImportGlobalSpeciesData}">
     <h3>Import GBIF species data</h3>
 
