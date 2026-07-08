@@ -188,6 +188,8 @@ COMMENT ON COLUMN organizations.website IS 'Website information for the organiza
 
 COMMENT ON TABLE plant_material_sourcing_methods IS '(Enum) Sourcing methods for acquiring plant material.';
 
+COMMENT ON TABLE project_internal_roles IS '(Enum) Roles a user is allowed to have on a project.';
+
 COMMENT ON TABLE project_internal_users IS 'Which users have which internal roles on a project.';
 
 COMMENT ON CONSTRAINT project_internal_users_role_exclusive ON project_internal_users IS 'Either role_id or role_name is necessary, but cannot include both.';
@@ -196,7 +198,8 @@ COMMENT ON TABLE project_land_use_model_types IS 'Which projects have which type
 
 COMMENT ON TABLE project_report_settings IS 'Which projects require reports to be submitted each quarter. Organization-level settings are in `organization_report_settings`.';
 
-COMMENT ON TABLE project_internal_roles IS '(Enum) Roles a user is allowed to have on a project.';
+COMMENT ON TABLE project_species IS 'Information about species in the context of specific projects, if applicable.';
+COMMENT ON COLUMN project_species.project_id IS 'If the information about this species only applies to one of an organization''s projects, the project ID. Null if the organization has no projects (in which case we treat the organization as a "project").';
 
 COMMENT ON TABLE projects IS 'Distinguishes among an organization''s projects.';
 

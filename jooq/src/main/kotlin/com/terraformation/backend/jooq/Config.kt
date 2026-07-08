@@ -188,6 +188,7 @@ val ENUM_TABLES =
                     listOf(
                         "external_dataset_types\\.id",
                         ".*\\.external_dataset_type_id",
+                        "project_species\\..*_dataset_type_id",
                         "species\\..*_dataset_type_id",
                     ),
                 ),
@@ -243,7 +244,7 @@ val ENUM_TABLES =
                     "species_nativities",
                     listOf(
                         "species_nativities\\.id",
-                        ".*\\.species_nativity_id",
+                        ".*\\..*nativity_id",
                     ),
                     enumName = "SpeciesNativity",
                 ),
