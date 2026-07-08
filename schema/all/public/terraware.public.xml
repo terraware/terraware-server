@@ -508,6 +508,7 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="19" name="operation_started_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="20" name="capacity" nullable="true" remarks="" size="10" type="int4" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="21" name="facility_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="22" name="location" nullable="true" remarks="" size="2147483647" type="geometry" typeCode="1111"/>
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="site_module_pkey" unique="true">
             <column ascending="true" name="id"/>

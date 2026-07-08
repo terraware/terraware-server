@@ -40,9 +40,9 @@
 </g>
 </g>
 <!-- accessions -->
-<g id="node6" class="node">
+<g id="node5" class="node">
 <title>accessions</title>
-<g id="a_node6"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
+<g id="a_node5"><a xlink:href="../../tables/accessions.html" xlink:title="accessions" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="243,-618 243,-1670 474,-1670 474,-618 243,-618"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="243.5,-1648 243.5,-1670 474.5,-1670 474.5,-1648 243.5,-1648"/>
 <polygon fill="none" stroke="black" points="243.5,-1648 243.5,-1670 474.5,-1670 474.5,-1648 243.5,-1648"/>
@@ -335,9 +335,9 @@
 <ellipse fill="none" stroke="black" cx="554.8" cy="-2487.01" rx="3.2" ry="3.2"/>
 </g>
 <!-- collection_sources -->
-<g id="node5" class="node">
+<g id="node6" class="node">
 <title>collection_sources</title>
-<g id="a_node5"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
+<g id="a_node6"><a xlink:href="../../tables/collection_sources.html" xlink:title="collection_sources" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="21.5,-850 21.5,-934 174.5,-934 174.5,-850 21.5,-850"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="22,-912 22,-934 175,-934 175,-912 22,-912"/>
 <polygon fill="none" stroke="black" points="22,-912 22,-934 175,-934 175,-912 22,-912"/>
@@ -552,55 +552,57 @@
 <g id="node21" class="node">
 <title>public.facilities</title>
 <g id="a_node21"><a xlink:href="../../../public/tables/facilities.html" xlink:title="public.facilities" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="18,-1803 18,-2327 178,-2327 178,-1803 18,-1803"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="18,-2305 18,-2327 178,-2327 178,-2305 18,-2305"/>
+<polygon fill="#ffffff" stroke="transparent" points="18,-1803 18,-2349 178,-2349 178,-1803 18,-1803"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="18,-2327 18,-2349 178,-2349 178,-2327 18,-2327"/>
+<polygon fill="none" stroke="black" points="18,-2327 18,-2349 178,-2349 178,-2327 18,-2327"/>
+<text text-anchor="start" x="23" y="-2336.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.facilities</text>
+<text text-anchor="start" x="139" y="-2335.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
 <polygon fill="none" stroke="black" points="18,-2305 18,-2327 178,-2327 178,-2305 18,-2305"/>
-<text text-anchor="start" x="23" y="-2314.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">public.facilities</text>
-<text text-anchor="start" x="139" y="-2313.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<text text-anchor="start" x="38" y="-2313.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
 <polygon fill="none" stroke="black" points="18,-2283 18,-2305 178,-2305 178,-2283 18,-2283"/>
-<text text-anchor="start" x="38" y="-2291.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<text text-anchor="start" x="38" y="-2291.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
 <polygon fill="none" stroke="black" points="18,-2261 18,-2283 178,-2283 178,-2261 18,-2261"/>
-<text text-anchor="start" x="38" y="-2269.2" font-family="Helvetica,sans-Serif" font-size="11.00">type_id</text>
+<text text-anchor="start" x="38" y="-2269.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
 <polygon fill="none" stroke="black" points="18,-2239 18,-2261 178,-2261 178,-2239 18,-2239"/>
-<text text-anchor="start" x="38" y="-2247.2" font-family="Helvetica,sans-Serif" font-size="11.00">name</text>
+<text text-anchor="start" x="38" y="-2247.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
 <polygon fill="none" stroke="black" points="18,-2217 18,-2239 178,-2239 178,-2217 18,-2217"/>
-<text text-anchor="start" x="38" y="-2225.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_time</text>
+<text text-anchor="start" x="38" y="-2225.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
 <polygon fill="none" stroke="black" points="18,-2195 18,-2217 178,-2217 178,-2195 18,-2195"/>
-<text text-anchor="start" x="38" y="-2203.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_time</text>
+<text text-anchor="start" x="38" y="-2203.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
 <polygon fill="none" stroke="black" points="18,-2173 18,-2195 178,-2195 178,-2173 18,-2173"/>
-<text text-anchor="start" x="38" y="-2181.2" font-family="Helvetica,sans-Serif" font-size="11.00">created_by</text>
+<text text-anchor="start" x="38" y="-2181.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
 <polygon fill="none" stroke="black" points="18,-2151 18,-2173 178,-2173 178,-2151 18,-2151"/>
-<text text-anchor="start" x="38" y="-2159.2" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
+<text text-anchor="start" x="38" y="-2159.2" font-family="Helvetica,sans-Serif" font-size="11.00">max_idle_minutes</text>
 <polygon fill="none" stroke="black" points="18,-2129 18,-2151 178,-2151 178,-2129 18,-2129"/>
-<text text-anchor="start" x="38" y="-2137.2" font-family="Helvetica,sans-Serif" font-size="11.00">max_idle_minutes</text>
+<text text-anchor="start" x="38" y="-2137.2" font-family="Helvetica,sans-Serif" font-size="11.00">last_timeseries_time</text>
 <polygon fill="none" stroke="black" points="18,-2107 18,-2129 178,-2129 178,-2107 18,-2107"/>
-<text text-anchor="start" x="38" y="-2115.2" font-family="Helvetica,sans-Serif" font-size="11.00">last_timeseries_time</text>
+<text text-anchor="start" x="38" y="-2115.2" font-family="Helvetica,sans-Serif" font-size="11.00">idle_after_time</text>
 <polygon fill="none" stroke="black" points="18,-2085 18,-2107 178,-2107 178,-2085 18,-2085"/>
-<text text-anchor="start" x="38" y="-2093.2" font-family="Helvetica,sans-Serif" font-size="11.00">idle_after_time</text>
+<text text-anchor="start" x="38" y="-2093.2" font-family="Helvetica,sans-Serif" font-size="11.00">idle_since_time</text>
 <polygon fill="none" stroke="black" points="18,-2063 18,-2085 178,-2085 178,-2063 18,-2063"/>
-<text text-anchor="start" x="38" y="-2071.2" font-family="Helvetica,sans-Serif" font-size="11.00">idle_since_time</text>
+<text text-anchor="start" x="38" y="-2071.2" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
 <polygon fill="none" stroke="black" points="18,-2041 18,-2063 178,-2063 178,-2041 18,-2041"/>
-<text text-anchor="start" x="38" y="-2049.2" font-family="Helvetica,sans-Serif" font-size="11.00">description</text>
+<text text-anchor="start" x="38" y="-2049.2" font-family="Helvetica,sans-Serif" font-size="11.00">connection_state_id</text>
 <polygon fill="none" stroke="black" points="18,-2019 18,-2041 178,-2041 178,-2019 18,-2019"/>
-<text text-anchor="start" x="38" y="-2027.2" font-family="Helvetica,sans-Serif" font-size="11.00">connection_state_id</text>
+<text text-anchor="start" x="38" y="-2027.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
 <polygon fill="none" stroke="black" points="18,-1997 18,-2019 178,-2019 178,-1997 18,-1997"/>
-<text text-anchor="start" x="38" y="-2005.2" font-family="Helvetica,sans-Serif" font-size="11.00">organization_id</text>
+<text text-anchor="start" x="38" y="-2005.2" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
 <polygon fill="none" stroke="black" points="18,-1975 18,-1997 178,-1997 178,-1975 18,-1975"/>
-<text text-anchor="start" x="38" y="-1983.2" font-family="Helvetica,sans-Serif" font-size="11.00">time_zone</text>
+<text text-anchor="start" x="38" y="-1983.2" font-family="Helvetica,sans-Serif" font-size="11.00">last_notification_date</text>
 <polygon fill="none" stroke="black" points="18,-1953 18,-1975 178,-1975 178,-1953 18,-1953"/>
-<text text-anchor="start" x="38" y="-1961.2" font-family="Helvetica,sans-Serif" font-size="11.00">last_notification_date</text>
+<text text-anchor="start" x="38" y="-1961.2" font-family="Helvetica,sans-Serif" font-size="11.00">next_notification_time</text>
 <polygon fill="none" stroke="black" points="18,-1931 18,-1953 178,-1953 178,-1931 18,-1931"/>
-<text text-anchor="start" x="38" y="-1939.2" font-family="Helvetica,sans-Serif" font-size="11.00">next_notification_time</text>
+<text text-anchor="start" x="38" y="-1939.2" font-family="Helvetica,sans-Serif" font-size="11.00">build_started_date</text>
 <polygon fill="none" stroke="black" points="18,-1909 18,-1931 178,-1931 178,-1909 18,-1909"/>
-<text text-anchor="start" x="38" y="-1917.2" font-family="Helvetica,sans-Serif" font-size="11.00">build_started_date</text>
+<text text-anchor="start" x="38" y="-1917.2" font-family="Helvetica,sans-Serif" font-size="11.00">build_completed_date</text>
 <polygon fill="none" stroke="black" points="18,-1887 18,-1909 178,-1909 178,-1887 18,-1887"/>
-<text text-anchor="start" x="38" y="-1895.2" font-family="Helvetica,sans-Serif" font-size="11.00">build_completed_date</text>
+<text text-anchor="start" x="38" y="-1895.2" font-family="Helvetica,sans-Serif" font-size="11.00">operation_started_date</text>
 <polygon fill="none" stroke="black" points="18,-1865 18,-1887 178,-1887 178,-1865 18,-1865"/>
-<text text-anchor="start" x="38" y="-1873.2" font-family="Helvetica,sans-Serif" font-size="11.00">operation_started_date</text>
+<text text-anchor="start" x="38" y="-1873.2" font-family="Helvetica,sans-Serif" font-size="11.00">capacity</text>
 <polygon fill="none" stroke="black" points="18,-1843 18,-1865 178,-1865 178,-1843 18,-1843"/>
-<text text-anchor="start" x="38" y="-1851.2" font-family="Helvetica,sans-Serif" font-size="11.00">capacity</text>
+<text text-anchor="start" x="38" y="-1851.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_number</text>
 <polygon fill="none" stroke="black" points="18,-1821 18,-1843 178,-1843 178,-1821 18,-1821"/>
-<text text-anchor="start" x="38" y="-1829.2" font-family="Helvetica,sans-Serif" font-size="11.00">facility_number</text>
+<text text-anchor="start" x="38" y="-1829.2" font-family="Helvetica,sans-Serif" font-size="11.00">location</text>
 <polygon fill="#ffffff" stroke="transparent" points="18,-1803 18,-1821 73,-1821 73,-1803 18,-1803"/>
 <polygon fill="none" stroke="black" points="18,-1803 18,-1821 73,-1821 73,-1803 18,-1803"/>
 <text text-anchor="start" x="21" y="-1809.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
@@ -616,9 +618,9 @@
 <!-- accessions&#45;&gt;public.facilities -->
 <g id="edge14" class="edge">
 <title>accessions:w&#45;&gt;public.facilities:e</title>
-<path fill="none" stroke="black" d="M230.13,-1622.63C177.09,-1697.22 250.04,-2294 179,-2294"/>
-<polygon fill="black" stroke="black" points="235.69,-1619.2 244.39,-1618.06 239.1,-1617.1 242.5,-1615 242.5,-1615 242.5,-1615 239.1,-1617.1 240.61,-1611.94 235.69,-1619.2 235.69,-1619.2"/>
-<ellipse fill="none" stroke="black" cx="232.97" cy="-1620.88" rx="3.2" ry="3.2"/>
+<path fill="none" stroke="black" d="M230.1,-1622.4C174.92,-1697.32 252.47,-2316 179,-2316"/>
+<polygon fill="black" stroke="black" points="235.63,-1619.1 244.34,-1618.09 239.06,-1617.05 242.5,-1615 242.5,-1615 242.5,-1615 239.06,-1617.05 240.66,-1611.91 235.63,-1619.1 235.63,-1619.1"/>
+<ellipse fill="none" stroke="black" cx="232.88" cy="-1620.74" rx="3.2" ry="3.2"/>
 </g>
 <!-- public.sub_locations -->
 <g id="node23" class="node">
