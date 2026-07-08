@@ -1,3 +1,4 @@
+cc865084 Create file_batches table to group files (#4701)
 1beaed11 SW-8623 Calculate species nativities (#4737)
 8a1839cb SW-5202 Add notes to batch quantity edits (#4736)
 0aebe16a SW-8496 Add location field to facilities (#4735)

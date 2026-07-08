@@ -37,7 +37,7 @@
 <g id="node2" class="node">
 <title>files</title>
 <g id="a_node2"><a xlink:href="../../tables/files.html" xlink:title="files" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="391.5,-1346.67 391.5,-1492.67 532.5,-1492.67 532.5,-1346.67 391.5,-1346.67"/>
+<polygon fill="#ffffff" stroke="transparent" points="391.5,-1324.67 391.5,-1492.67 532.5,-1492.67 532.5,-1324.67 391.5,-1324.67"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="392,-1470.67 392,-1492.67 533,-1492.67 533,-1470.67 392,-1470.67"/>
 <polygon fill="none" stroke="black" points="392,-1470.67 392,-1492.67 533,-1492.67 533,-1470.67 392,-1470.67"/>
 <text text-anchor="start" x="396" y="-1479.87" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">files</text>
@@ -54,17 +54,20 @@
 <polygon fill="none" stroke="black" points="392,-1382.67 392,-1404.67 533,-1404.67 533,-1382.67 392,-1382.67"/>
 <image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="397" y="-1399.67"/>
 <text text-anchor="start" x="412" y="-1390.87" font-family="Helvetica,sans-Serif" font-size="11.00">modified_by</text>
-<polygon fill="none" stroke="black" points="392,-1364.67 392,-1382.67 533,-1382.67 533,-1364.67 392,-1364.67"/>
-<text text-anchor="start" x="395" y="-1370.87" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="392,-1346.67 392,-1364.67 453,-1364.67 453,-1346.67 392,-1346.67"/>
-<polygon fill="none" stroke="black" points="392,-1346.67 392,-1364.67 453,-1364.67 453,-1346.67 392,-1346.67"/>
-<text text-anchor="start" x="395" y="-1352.87" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
-<polygon fill="#ffffff" stroke="transparent" points="453,-1346.67 453,-1364.67 485,-1364.67 485,-1346.67 453,-1346.67"/>
-<polygon fill="none" stroke="black" points="453,-1346.67 453,-1364.67 485,-1364.67 485,-1346.67 453,-1346.67"/>
-<text text-anchor="start" x="475" y="-1352.87" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="485,-1346.67 485,-1364.67 533,-1364.67 533,-1346.67 485,-1346.67"/>
-<polygon fill="none" stroke="black" points="485,-1346.67 485,-1364.67 533,-1364.67 533,-1346.67 485,-1346.67"/>
-<text text-anchor="start" x="508" y="-1352.87" font-family="Helvetica,sans-Serif" font-size="11.00">14 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="392,-1360.67 392,-1382.67 533,-1382.67 533,-1360.67 392,-1360.67"/>
+<polygon fill="none" stroke="black" points="392,-1360.67 392,-1382.67 533,-1382.67 533,-1360.67 392,-1360.67"/>
+<text text-anchor="start" x="412" y="-1368.87" font-family="Helvetica,sans-Serif" font-size="11.00">file_batch_id</text>
+<polygon fill="none" stroke="black" points="392,-1342.67 392,-1360.67 533,-1360.67 533,-1342.67 392,-1342.67"/>
+<text text-anchor="start" x="395" y="-1348.87" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="392,-1324.67 392,-1342.67 453,-1342.67 453,-1324.67 392,-1324.67"/>
+<polygon fill="none" stroke="black" points="392,-1324.67 392,-1342.67 453,-1342.67 453,-1324.67 392,-1324.67"/>
+<text text-anchor="start" x="395" y="-1330.87" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="453,-1324.67 453,-1342.67 485,-1342.67 485,-1324.67 453,-1324.67"/>
+<polygon fill="none" stroke="black" points="453,-1324.67 453,-1342.67 485,-1342.67 485,-1324.67 453,-1324.67"/>
+<text text-anchor="start" x="475" y="-1330.87" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="485,-1324.67 485,-1342.67 533,-1342.67 533,-1324.67 485,-1324.67"/>
+<polygon fill="none" stroke="black" points="485,-1324.67 485,-1342.67 533,-1342.67 533,-1324.67 485,-1324.67"/>
+<text text-anchor="start" x="508" y="-1330.87" font-family="Helvetica,sans-Serif" font-size="11.00">14 &gt;</text>
 </a>
 </g>
 </g>

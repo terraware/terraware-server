@@ -78,7 +78,7 @@
 <g id="node2" class="node">
 <title>files</title>
 <g id="a_node2"><a xlink:href="../../tables/files.html" xlink:title="files" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="8,-153 8,-255 149,-255 149,-153 8,-153"/>
+<polygon fill="#ffffff" stroke="transparent" points="8,-131 8,-255 149,-255 149,-131 8,-131"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="8.5,-233 8.5,-255 149.5,-255 149.5,-233 8.5,-233"/>
 <polygon fill="none" stroke="black" points="8.5,-233 8.5,-255 149.5,-255 149.5,-233 8.5,-233"/>
 <text text-anchor="start" x="12.5" y="-242.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">files</text>
@@ -89,17 +89,20 @@
 <polygon fill="#ffffff" stroke="transparent" points="8.5,-189 8.5,-211 149.5,-211 149.5,-189 8.5,-189"/>
 <polygon fill="none" stroke="black" points="8.5,-189 8.5,-211 149.5,-211 149.5,-189 8.5,-189"/>
 <text text-anchor="start" x="28.5" y="-197.2" font-family="Helvetica,sans-Serif" font-size="11.00">storage_url</text>
-<polygon fill="none" stroke="black" points="8.5,-171 8.5,-189 149.5,-189 149.5,-171 8.5,-171"/>
-<text text-anchor="start" x="11.5" y="-177.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="8.5,-153 8.5,-171 64.5,-171 64.5,-153 8.5,-153"/>
-<polygon fill="none" stroke="black" points="8.5,-153 8.5,-171 64.5,-171 64.5,-153 8.5,-153"/>
-<text text-anchor="start" x="11.5" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="64.5,-153 64.5,-171 99.5,-171 99.5,-153 64.5,-153"/>
-<polygon fill="none" stroke="black" points="64.5,-153 64.5,-171 99.5,-171 99.5,-153 64.5,-153"/>
-<text text-anchor="start" x="89.5" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="99.5,-153 99.5,-171 149.5,-171 149.5,-153 99.5,-153"/>
-<polygon fill="none" stroke="black" points="99.5,-153 99.5,-171 149.5,-171 149.5,-153 99.5,-153"/>
-<text text-anchor="start" x="124.5" y="-159.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 &gt;</text>
+<polygon fill="#ffffff" stroke="transparent" points="8.5,-167 8.5,-189 149.5,-189 149.5,-167 8.5,-167"/>
+<polygon fill="none" stroke="black" points="8.5,-167 8.5,-189 149.5,-189 149.5,-167 8.5,-167"/>
+<text text-anchor="start" x="28.5" y="-175.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_batch_id</text>
+<polygon fill="none" stroke="black" points="8.5,-149 8.5,-167 149.5,-167 149.5,-149 8.5,-149"/>
+<text text-anchor="start" x="11.5" y="-155.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="8.5,-131 8.5,-149 64.5,-149 64.5,-131 8.5,-131"/>
+<polygon fill="none" stroke="black" points="8.5,-131 8.5,-149 64.5,-149 64.5,-131 8.5,-131"/>
+<text text-anchor="start" x="11.5" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="64.5,-131 64.5,-149 99.5,-149 99.5,-131 64.5,-131"/>
+<polygon fill="none" stroke="black" points="64.5,-131 64.5,-149 99.5,-149 99.5,-131 64.5,-131"/>
+<text text-anchor="start" x="89.5" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="99.5,-131 99.5,-149 149.5,-149 149.5,-131 99.5,-131"/>
+<polygon fill="none" stroke="black" points="99.5,-131 99.5,-149 149.5,-149 149.5,-131 99.5,-131"/>
+<text text-anchor="start" x="124.5" y="-137.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 &gt;</text>
 </a>
 </g>
 </g>

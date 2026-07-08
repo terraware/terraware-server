@@ -40,7 +40,7 @@
 <g id="node2" class="node">
 <title>files</title>
 <g id="a_node2"><a xlink:href="../../tables/files.html" xlink:title="files" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="8,-476 8,-762 276,-762 276,-476 8,-476"/>
+<polygon fill="#ffffff" stroke="transparent" points="8,-454 8,-762 276,-762 276,-454 8,-454"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="10,-738 10,-760 274,-760 274,-738 10,-738"/>
 <polygon fill="none" stroke="black" points="10,-738 10,-760 274,-760 274,-738 10,-738"/>
 <text text-anchor="start" x="14" y="-747.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">files</text>
@@ -91,16 +91,21 @@
 <text text-anchor="start" x="30" y="-504.2" font-family="Helvetica,sans-Serif" font-size="11.00">geolocation</text>
 <polygon fill="none" stroke="black" points="151,-496 151,-518 274,-518 274,-496 151,-496"/>
 <text text-anchor="start" x="154" y="-504.2" font-family="Helvetica,sans-Serif" font-size="11.00">geometry[2147483647]</text>
-<polygon fill="#ffffff" stroke="transparent" points="10,-478 10,-496 85,-496 85,-478 10,-478"/>
-<polygon fill="none" stroke="black" points="10,-478 10,-496 85,-496 85,-478 10,-478"/>
-<text text-anchor="start" x="13" y="-484.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 0</text>
-<polygon fill="#ffffff" stroke="transparent" points="85,-478 85,-496 151,-496 151,-478 85,-478"/>
-<polygon fill="none" stroke="black" points="85,-478 85,-496 151,-496 151,-478 85,-478"/>
-<text text-anchor="start" x="141" y="-484.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="151,-478 151,-496 274,-496 274,-478 151,-478"/>
-<polygon fill="none" stroke="black" points="151,-478 151,-496 274,-496 274,-478 151,-478"/>
-<text text-anchor="start" x="249" y="-484.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="9,-477 9,-761 275,-761 275,-477 9,-477"/>
+<polygon fill="#ffffff" stroke="transparent" points="10,-474 10,-496 151,-496 151,-474 10,-474"/>
+<polygon fill="none" stroke="black" points="10,-474 10,-496 151,-496 151,-474 10,-474"/>
+<text text-anchor="start" x="30" y="-482.2" font-family="Helvetica,sans-Serif" font-size="11.00">file_batch_id</text>
+<polygon fill="none" stroke="black" points="151,-474 151,-496 274,-496 274,-474 151,-474"/>
+<text text-anchor="start" x="154" y="-482.2" font-family="Helvetica,sans-Serif" font-size="11.00">int8[19]</text>
+<polygon fill="#ffffff" stroke="transparent" points="10,-456 10,-474 85,-474 85,-456 10,-456"/>
+<polygon fill="none" stroke="black" points="10,-456 10,-474 85,-474 85,-456 10,-456"/>
+<text text-anchor="start" x="13" y="-462.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 0</text>
+<polygon fill="#ffffff" stroke="transparent" points="85,-456 85,-474 151,-474 151,-456 85,-456"/>
+<polygon fill="none" stroke="black" points="85,-456 85,-474 151,-474 151,-456 85,-456"/>
+<text text-anchor="start" x="141" y="-462.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="151,-456 151,-474 274,-474 274,-456 151,-456"/>
+<polygon fill="none" stroke="black" points="151,-456 151,-474 274,-474 274,-456 151,-456"/>
+<text text-anchor="start" x="249" y="-462.2" font-family="Helvetica,sans-Serif" font-size="11.00">12 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="9,-455 9,-761 275,-761 275,-455 9,-455"/>
 </a>
 </g>
 </g>

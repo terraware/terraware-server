@@ -12,6 +12,8 @@ ecosystem_types
 external_dataset_types
 facility_connection_states
 facility_types
+file_batch_statuses
+file_batch_types
 global_roles
 growth_forms
 managed_location_types
@@ -38,10 +40,11 @@ countries
 notification_types
 users
 country_subdivisions
-files
 organizations
 event_log
+file_batches
 species
+files
 facilities
 sub_locations
 projects

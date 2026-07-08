@@ -48,10 +48,11 @@ devices
 projects
 sub_locations
 facilities
+files
 species
+file_batches
 event_log
 organizations
-files
 country_subdivisions
 users
 notification_types
@@ -78,6 +79,8 @@ notification_criticalities
 managed_location_types
 growth_forms
 global_roles
+file_batch_types
+file_batch_statuses
 facility_types
 facility_connection_states
 external_dataset_types
