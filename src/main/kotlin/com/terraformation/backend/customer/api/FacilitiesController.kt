@@ -28,6 +28,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.temporal.ChronoUnit
+import org.locationtech.jts.geom.Point
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -88,6 +89,7 @@ class FacilitiesController(
             buildStartedDate = payload.buildStartedDate,
             capacity = payload.capacity,
             description = payload.description?.ifEmpty { null },
+            location = payload.location,
             name = payload.name,
             operationStartedDate = payload.operationStartedDate,
             timeZone = payload.timeZone,
@@ -186,6 +188,7 @@ data class FacilityPayload(
     )
     val facilityNumber: Int,
     val id: FacilityId,
+    val location: Point?,
     val name: String,
     val operationStartedDate: LocalDate?,
     val organizationId: OrganizationId,
@@ -203,6 +206,7 @@ data class FacilityPayload(
       model.description,
       model.facilityNumber,
       model.id,
+      model.location,
       model.name,
       model.operationStartedDate,
       model.organizationId,
@@ -220,6 +224,7 @@ data class CreateFacilityRequestPayload(
     )
     val capacity: Int?,
     val description: String?,
+    val location: Point?,
     val name: String,
     val operationStartedDate: LocalDate?,
     @Schema(description = "Which organization this facility belongs to.")
@@ -244,6 +249,7 @@ data class CreateFacilityRequestPayload(
           buildStartedDate = buildStartedDate,
           capacity = capacity,
           description = description,
+          location = location,
           name = name,
           operationStartedDate = operationStartedDate,
           organizationId = organizationId,
@@ -274,6 +280,7 @@ data class UpdateFacilityRequestPayload(
     )
     val capacity: Int?,
     val description: String?,
+    val location: Point?,
     val name: String,
     val operationStartedDate: LocalDate?,
     val timeZone: ZoneId?,

@@ -11,6 +11,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import org.jooq.Record
+import org.locationtech.jts.geom.Point
 
 /** Maximum device manager idle time, in minutes, to assign to new facilities by default. */
 const val DEFAULT_MAX_IDLE_MINUTES = 30
@@ -20,6 +21,7 @@ data class NewFacilityModel(
     val buildStartedDate: LocalDate? = null,
     val capacity: Int? = null,
     val description: String? = null,
+    val location: Point? = null,
     val name: String,
     val maxIdleMinutes: Int = DEFAULT_MAX_IDLE_MINUTES,
     val operationStartedDate: LocalDate? = null,
@@ -40,6 +42,7 @@ data class FacilityModel(
     val id: FacilityId,
     val lastNotificationDate: LocalDate? = null,
     val lastTimeseriesTime: Instant?,
+    val location: Point? = null,
     val maxIdleMinutes: Int,
     val modifiedTime: Instant,
     val name: String,
@@ -68,6 +71,7 @@ data class FacilityModel(
       id = record[FACILITIES.ID] ?: throw IllegalArgumentException("ID is required"),
       lastNotificationDate = record[FACILITIES.LAST_NOTIFICATION_DATE],
       lastTimeseriesTime = record[FACILITIES.LAST_TIMESERIES_TIME],
+      location = record[FACILITIES.LOCATION] as? Point,
       maxIdleMinutes =
           record[FACILITIES.MAX_IDLE_MINUTES]
               ?: throw IllegalArgumentException("Max idle minutes is required"),
@@ -115,6 +119,7 @@ fun FacilitiesRow.toModel(): FacilityModel {
       id = id ?: throw IllegalArgumentException("ID is required"),
       lastNotificationDate = lastNotificationDate,
       lastTimeseriesTime = lastTimeseriesTime,
+      location = location as? Point,
       maxIdleMinutes =
           maxIdleMinutes ?: throw IllegalArgumentException("Max idle minutes is required"),
       modifiedTime = modifiedTime ?: throw IllegalArgumentException("Modified time is required"),

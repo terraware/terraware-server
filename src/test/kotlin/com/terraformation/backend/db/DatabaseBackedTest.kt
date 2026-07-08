@@ -942,6 +942,7 @@ abstract class DatabaseBackedTest {
       operationStartedDate: LocalDate? = null,
       capacity: Int? = null,
       facilityNumber: Int = nextFacilityNumber,
+      location: Point? = null,
   ): FacilityId {
     nextFacilityNumber++
 
@@ -960,6 +961,7 @@ abstract class DatabaseBackedTest {
           .set(IDLE_SINCE_TIME, idleSinceTime)
           .set(LAST_NOTIFICATION_DATE, lastNotificationDate)
           .set(LAST_TIMESERIES_TIME, lastTimeseriesTime)
+          .set(LOCATION, location)
           .set(MAX_IDLE_MINUTES, maxIdleMinutes)
           .set(MODIFIED_BY, createdBy)
           .set(MODIFIED_TIME, Instant.EPOCH)

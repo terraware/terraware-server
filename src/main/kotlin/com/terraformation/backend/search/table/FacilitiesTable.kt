@@ -11,6 +11,9 @@ import com.terraformation.backend.db.nursery.tables.references.WITHDRAWAL_SUMMAR
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
 import com.terraformation.backend.search.SearchTable
 import com.terraformation.backend.search.SublistField
+import com.terraformation.backend.search.field.CoordinateField.Companion.LATITUDE
+import com.terraformation.backend.search.field.CoordinateField.Companion.LONGITUDE
+import com.terraformation.backend.search.field.CoordinateField.Companion.POINT
 import com.terraformation.backend.search.field.SearchField
 import org.jooq.Condition
 import org.jooq.Record
@@ -54,6 +57,9 @@ class FacilitiesTable(tables: SearchTables) : SearchTable() {
           timestampField("createdTime", FACILITIES.CREATED_TIME),
           textField("description", FACILITIES.DESCRIPTION),
           integerField("facilityNumber", FACILITIES.FACILITY_NUMBER),
+          coordinateField("latitude", FACILITIES.LOCATION, POINT, LATITUDE),
+          coordinateField("longitude", FACILITIES.LOCATION, POINT, LONGITUDE),
+          geometryField("location", FACILITIES.LOCATION),
           idWrapperField("id", FACILITIES.ID) { FacilityId(it) },
           textField("name", FACILITIES.NAME),
           dateField("operationStartedDate", FACILITIES.OPERATION_STARTED_DATE),
