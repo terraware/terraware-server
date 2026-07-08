@@ -1,6 +1,9 @@
 package com.terraformation.backend.species.model
 
+private val emEnDashRegex = Regex("[—–]")
 private val invalidScientificNameChars = Regex("[^A-Za-z. -]")
+private val rankMarkers = setOf("f.", "subsp.", "var.")
+private val whitespaceRegex = Regex("\\s+")
 
 /**
  * Validates the syntax of a scientific name. This does not check for higher-level conditions such
@@ -19,7 +22,7 @@ fun validateScientificNameSyntax(
     onInvalidCharacter(invalidChar)
   }
 
-  val wordCount = normalizedValue.split(' ').size
+  val wordCount = value.split(' ').size
   if (wordCount < 2) {
     onTooShort()
   } else if (wordCount > 4) {
@@ -28,10 +31,26 @@ fun validateScientificNameSyntax(
 }
 
 /**
- * Normalizes the scientific name for a species. Normalizations performed include:
- * - replace en- and em-dashes with hyphens
+ * Transforms a full species scientific name to a normalized form.
+ *
+ * Normalized species names are either two words (genus and specific epithet) or four words (genus,
+ * specific epithet, infraspecific rank abbreviation, infraspecific epithet). For example, "Aloe
+ * vera" or "Euphorbia milii var. splendens".
+ *
+ * Authorship, hybrid markers, and other elements are removed, and em- and en-dashes are turned to
+ * hyphens.
  */
 fun normalizeScientificName(value: String): String {
-  // normalize dashes
-  return value.replace(Regex("[—–]"), "-")
+  val words = value.replace("×", "").replace(emEnDashRegex, "-").trim().split(whitespaceRegex)
+
+  val numSignificantWords =
+      when {
+        words.isEmpty() || words.size == 1 && words[0].isEmpty() ->
+            throw IllegalArgumentException("No species name to normalize")
+        words.size == 1 -> 1
+        words.size >= 4 && words[2] in rankMarkers -> 4
+        else -> 2
+      }
+
+  return words.subList(0, numSignificantWords).joinToString(" ")
 }

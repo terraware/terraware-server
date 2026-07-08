@@ -12,6 +12,7 @@ import com.terraformation.backend.db.default_schema.tables.references.WCVP_DISTR
 import com.terraformation.backend.db.default_schema.tables.references.WCVP_TAXA
 import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.event.WcvpImportedEvent
+import com.terraformation.backend.species.model.normalizeScientificName
 import com.terraformation.backend.util.ParsedCsvReader
 import com.terraformation.backend.util.onChunk
 import jakarta.inject.Named
@@ -170,10 +171,11 @@ class WcvpImporter(
         setOf("Illegitimate", "Invalid", "Misapplied", "Synonym")
 
     override fun parseRow(row: Array<String?>): WcvpTaxaRecord? {
+      val scientificName = row["scientificName"] ?: return null
       val taxonRank = row["taxonRank"] ?: return null
       val taxonomicStatus = row["taxonomicStatus"]
 
-      if (taxonomicStatus in excludedTaxonomicStatuses) {
+      if (taxonomicStatus in excludedTaxonomicStatuses || taxonRank == "Genus") {
         return null
       }
 
@@ -185,7 +187,7 @@ class WcvpImporter(
           nomenclaturalStatus = row["nomenclaturalStatus"],
           originalNameUsageId = row["originalNameUsageID"]?.let { WcvpTaxonId(it) },
           parentNameUsageId = row["parentNameUsageID"]?.let { WcvpTaxonId(it) },
-          scientificName = row["scientificName"],
+          scientificName = normalizeScientificName(scientificName),
           specificEpithet = row["specificEpithet"],
           taxonId = row["id"]?.let { WcvpTaxonId(it) },
           taxonomicStatus = taxonomicStatus,

@@ -97,7 +97,7 @@ internal class SpeciesCsvValidatorTest {
 
     @Test
     fun `may not contain punctuation other than periods or dashes`() {
-      assertError("Name name var: x", MalformedValue, messages.csvScientificNameInvalidChar(":"))
+      assertError("Name: name var. x", MalformedValue, messages.csvScientificNameInvalidChar(":"))
     }
 
     @ParameterizedTest
