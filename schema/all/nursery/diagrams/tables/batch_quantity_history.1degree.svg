@@ -14,7 +14,7 @@
 <g id="node1" class="node">
 <title>batch_quantity_history</title>
 <g id="a_node1"><a xlink:href="../../tables/batch_quantity_history.html" xlink:title="batch_quantity_history" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="482,-183 482,-469 747,-469 747,-183 482,-183"/>
+<polygon fill="#ffffff" stroke="transparent" points="482,-161 482,-469 747,-469 747,-161 482,-161"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="484.5,-445 484.5,-467 745.5,-467 745.5,-445 484.5,-445"/>
 <polygon fill="none" stroke="black" points="484.5,-445 484.5,-467 745.5,-467 745.5,-445 484.5,-445"/>
 <text text-anchor="start" x="489.5" y="-454.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">batch_quantity_history</text>
@@ -70,16 +70,20 @@
 <text text-anchor="start" x="504.5" y="-211.2" font-family="Helvetica,sans-Serif" font-size="11.00">hardening_off_quantity</text>
 <polygon fill="none" stroke="black" points="645.5,-203 645.5,-225 745.5,-225 745.5,-203 645.5,-203"/>
 <text text-anchor="start" x="648.5" y="-211.2" font-family="Helvetica,sans-Serif" font-size="11.00">int4[10]</text>
-<polygon fill="#ffffff" stroke="transparent" points="484.5,-185 484.5,-203 569.5,-203 569.5,-185 484.5,-185"/>
-<polygon fill="none" stroke="black" points="484.5,-185 484.5,-203 569.5,-203 569.5,-185 484.5,-185"/>
-<text text-anchor="start" x="487.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
-<polygon fill="#ffffff" stroke="transparent" points="569.5,-185 569.5,-203 645.5,-203 645.5,-185 569.5,-185"/>
-<polygon fill="none" stroke="black" points="569.5,-185 569.5,-203 645.5,-203 645.5,-185 569.5,-185"/>
-<text text-anchor="start" x="635.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="645.5,-185 645.5,-203 745.5,-203 745.5,-185 645.5,-185"/>
-<polygon fill="none" stroke="black" points="645.5,-185 645.5,-203 745.5,-203 745.5,-185 645.5,-185"/>
-<text text-anchor="start" x="726.5" y="-191.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
-<polygon fill="none" stroke="black" stroke-width="2" points="483,-184 483,-468 746,-468 746,-184 483,-184"/>
+<polygon fill="none" stroke="black" points="484.5,-181 484.5,-203 645.5,-203 645.5,-181 484.5,-181"/>
+<text text-anchor="start" x="504.5" y="-189.2" font-family="Helvetica,sans-Serif" font-size="11.00">notes</text>
+<polygon fill="none" stroke="black" points="645.5,-181 645.5,-203 745.5,-203 745.5,-181 645.5,-181"/>
+<text text-anchor="start" x="648.5" y="-189.2" font-family="Helvetica,sans-Serif" font-size="11.00">text[2147483647]</text>
+<polygon fill="#ffffff" stroke="transparent" points="484.5,-163 484.5,-181 569.5,-181 569.5,-163 484.5,-163"/>
+<polygon fill="none" stroke="black" points="484.5,-163 484.5,-181 569.5,-181 569.5,-163 484.5,-163"/>
+<text text-anchor="start" x="487.5" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 4</text>
+<polygon fill="#ffffff" stroke="transparent" points="569.5,-163 569.5,-181 645.5,-181 645.5,-163 569.5,-163"/>
+<polygon fill="none" stroke="black" points="569.5,-163 569.5,-181 645.5,-181 645.5,-163 569.5,-163"/>
+<text text-anchor="start" x="635.5" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="645.5,-163 645.5,-181 745.5,-181 745.5,-163 645.5,-163"/>
+<polygon fill="none" stroke="black" points="645.5,-163 645.5,-181 745.5,-181 745.5,-163 645.5,-163"/>
+<text text-anchor="start" x="726.5" y="-169.2" font-family="Helvetica,sans-Serif" font-size="11.00">0 &gt;</text>
+<polygon fill="none" stroke="black" stroke-width="2" points="483,-162 483,-468 746,-468 746,-162 483,-162"/>
 </a>
 </g>
 </g>

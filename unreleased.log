@@ -1,3 +1,5 @@
+1beaed11 SW-8623 Calculate species nativities (#4737)
+8a1839cb SW-5202 Add notes to batch quantity edits (#4736)
 0aebe16a SW-8496 Add location field to facilities (#4735)
 b5249087 Alphabetize parent store (#4717)
 35d7a202 Reduce unnecessary Buildkite cache updates (#4722)
