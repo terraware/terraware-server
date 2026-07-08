@@ -2,6 +2,7 @@ package com.terraformation.backend.gis
 
 import com.terraformation.backend.assertIsEventListener
 import com.terraformation.backend.db.DatabaseTest
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.tables.records.CountryBotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
 import com.terraformation.backend.gis.event.BotanicalCountriesImportedEvent
@@ -69,20 +70,24 @@ class RegionMetadataServiceTest : DatabaseTest() {
               WcvpDistributionsRecord(
                   botanicalCountryCode = "AAA",
                   level3Code = "AAA",
+                  speciesNativityId = SpeciesNativity.Introduced,
                   taxonId = taxonId1,
               ),
               WcvpDistributionsRecord(
                   botanicalCountryCode = "AAA",
                   level3Code = "AAA",
+                  speciesNativityId = SpeciesNativity.Introduced,
                   taxonId = taxonId2,
               ),
               WcvpDistributionsRecord(
                   botanicalCountryCode = "BBB",
                   level3Code = "BBB",
+                  speciesNativityId = SpeciesNativity.Introduced,
                   taxonId = taxonId2,
               ),
               WcvpDistributionsRecord(
                   level3Code = "XXX",
+                  speciesNativityId = SpeciesNativity.Introduced,
                   taxonId = taxonId3,
               ),
           )

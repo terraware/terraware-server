@@ -139,6 +139,7 @@ import com.terraformation.backend.db.default_schema.DeviceId
 import com.terraformation.backend.db.default_schema.DisclaimerId
 import com.terraformation.backend.db.default_schema.EcosystemType
 import com.terraformation.backend.db.default_schema.EventLogId
+import com.terraformation.backend.db.default_schema.ExternalDatasetType
 import com.terraformation.backend.db.default_schema.FacilityConnectionState
 import com.terraformation.backend.db.default_schema.FacilityId
 import com.terraformation.backend.db.default_schema.FacilityType
@@ -161,6 +162,7 @@ import com.terraformation.backend.db.default_schema.SeedStorageBehavior
 import com.terraformation.backend.db.default_schema.SeedTreatment
 import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SpeciesNativeCategory
+import com.terraformation.backend.db.default_schema.SpeciesNativity
 import com.terraformation.backend.db.default_schema.SplatAnnotationId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.SuccessionalGroup
@@ -238,6 +240,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UserDisclaimers
 import com.terraformation.backend.db.default_schema.tables.pojos.UserGlobalRolesRow
 import com.terraformation.backend.db.default_schema.tables.records.BotanicalCountriesRecord
 import com.terraformation.backend.db.default_schema.tables.records.CountryBotanicalCountriesRecord
+import com.terraformation.backend.db.default_schema.tables.records.ExternalDatasetImportsRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisResourcesRecord
 import com.terraformation.backend.db.default_schema.tables.records.GriisTaxaRecord
 import com.terraformation.backend.db.default_schema.tables.records.WcvpDistributionsRecord
@@ -5913,9 +5916,11 @@ abstract class DatabaseBackedTest {
       establishmentMeans: String? = null,
       griisResourceId: GriisResourceId = inserted.griisResourceId,
       habitat: String? = null,
-      isInvasive: Boolean = true,
+      isInvasive: Boolean = false,
       occurrenceStatus: String? = "present",
       scientificName: String = "Species name",
+      speciesNativity: SpeciesNativity =
+          if (isInvasive) SpeciesNativity.Invasive else SpeciesNativity.Unknown,
       taxonId: Long = nextGriisTaxonId++,
       taxonomicStatus: String = "accepted",
       taxonRank: String = "species",
@@ -5928,6 +5933,7 @@ abstract class DatabaseBackedTest {
             isInvasive = isInvasive,
             occurrenceStatus = occurrenceStatus,
             scientificName = scientificName,
+            speciesNativityId = speciesNativity,
             taxonId = taxonId,
             taxonomicStatus = taxonomicStatus,
             taxonRank = taxonRank,
@@ -5977,6 +5983,7 @@ abstract class DatabaseBackedTest {
       establishmentMeans: String? = null,
       level3Code: String = "COD",
       occurrenceStatus: String? = null,
+      speciesNativity: SpeciesNativity = SpeciesNativity.Introduced,
       taxonId: WcvpTaxonId = inserted.wcvpTaxonId,
       threatStatus: String? = null,
   ) {
@@ -5985,8 +5992,23 @@ abstract class DatabaseBackedTest {
             establishmentMeans = establishmentMeans,
             level3Code = level3Code,
             occurrenceStatus = occurrenceStatus,
+            speciesNativityId = speciesNativity,
             taxonId = taxonId,
             threatStatus = threatStatus,
+        )
+        .attach(dslContext)
+        .insert()
+  }
+
+  fun insertExternalDatasetImport(
+      type: ExternalDatasetType = ExternalDatasetType.GRIIS,
+      importedTime: Instant = Instant.EPOCH,
+      lastPublicationDate: LocalDate = LocalDate.of(2026, 1, 1),
+  ) {
+    ExternalDatasetImportsRecord(
+            externalDatasetTypeId = type,
+            importedTime = importedTime,
+            lastPublicationDate = lastPublicationDate,
         )
         .attach(dslContext)
         .insert()
