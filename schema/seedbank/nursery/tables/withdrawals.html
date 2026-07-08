@@ -455,6 +455,14 @@
                                 </thead>
                                 <tbody>
                                 <tr>
+                                    <td>undo_requires_withdrawal_id</td>
+                                    <td>(((purpose_id &#61; 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL)))</td>
+                                </tr>
+                                <tr>
+                                    <td>withdrawals_season_only_for_planting</td>
+                                    <td>((planting_season_id IS NULL) OR (purpose_id &#61; ANY (ARRAY[3, 5])))</td>
+                                </tr>
+                                <tr>
                                     <td>withdrawals_planting_date_request_season</td>
                                     <td>((scheduled_planting_date_request_id IS NULL) OR (planting_season_id IS NOT NULL))</td>
                                 </tr>
@@ -465,14 +473,6 @@
                                 <tr>
                                     <td>withdrawals_destination_only_for_transfers</td>
                                     <td>((destination_facility_id IS NULL) OR (purpose_id &#61; 1))</td>
-                                </tr>
-                                <tr>
-                                    <td>undo_requires_withdrawal_id</td>
-                                    <td>(((purpose_id &#61; 5) AND (undoes_withdrawal_id IS NOT NULL)) OR ((purpose_id &lt;&gt; 5) AND (undoes_withdrawal_id IS NULL)))</td>
-                                </tr>
-                                <tr>
-                                    <td>withdrawals_season_only_for_planting</td>
-                                    <td>((planting_season_id IS NULL) OR (purpose_id &#61; ANY (ARRAY[3, 5])))</td>
                                 </tr>
                                 </tbody>
                             </table>
