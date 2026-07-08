@@ -237,10 +237,70 @@
 </a>
 </g>
 </g>
-<!-- gbif_names -->
+<!-- country_botanical_countries -->
 <g id="node6" class="node">
+<title>country_botanical_countries</title>
+<g id="a_node6"><a xlink:href="../../tables/country_botanical_countries.html" xlink:title="country_botanical_countries" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="227,-1155 227,-1239 440,-1239 440,-1155 227,-1155"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="227.5,-1217 227.5,-1239 440.5,-1239 440.5,-1217 227.5,-1217"/>
+<polygon fill="none" stroke="black" points="227.5,-1217 227.5,-1239 440.5,-1239 440.5,-1217 227.5,-1217"/>
+<text text-anchor="start" x="232.5" y="-1226.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">country_botanical_countries</text>
+<text text-anchor="start" x="401.5" y="-1225.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="227.5,-1195 227.5,-1217 440.5,-1217 440.5,-1195 227.5,-1195"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="232.5" y="-1212"/>
+<text text-anchor="start" x="259.5" y="-1203.2" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
+<polygon fill="none" stroke="black" points="227.5,-1173 227.5,-1195 440.5,-1195 440.5,-1173 227.5,-1173"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="232.5" y="-1190"/>
+<text text-anchor="start" x="259.5" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00">botanical_country_code</text>
+<polygon fill="#ffffff" stroke="transparent" points="227.5,-1155 227.5,-1173 331.5,-1173 331.5,-1155 227.5,-1155"/>
+<polygon fill="none" stroke="black" points="227.5,-1155 227.5,-1173 331.5,-1173 331.5,-1155 227.5,-1155"/>
+<text text-anchor="start" x="230.5" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
+<polygon fill="#ffffff" stroke="transparent" points="331.5,-1155 331.5,-1173 385.5,-1173 385.5,-1155 331.5,-1155"/>
+<polygon fill="none" stroke="black" points="331.5,-1155 331.5,-1173 385.5,-1173 385.5,-1155 331.5,-1155"/>
+<text text-anchor="start" x="375.5" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="385.5,-1155 385.5,-1173 440.5,-1173 440.5,-1155 385.5,-1155"/>
+<polygon fill="none" stroke="black" points="385.5,-1155 385.5,-1173 440.5,-1173 440.5,-1155 385.5,-1155"/>
+<text text-anchor="start" x="430.5" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+</a>
+</g>
+</g>
+<!-- botanical_countries -->
+<g id="node23" class="node">
+<title>botanical_countries</title>
+<g id="a_node23"><a xlink:href="../../tables/botanical_countries.html" xlink:title="botanical_countries" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="12.5,-1137 12.5,-1217 173.5,-1217 173.5,-1137 12.5,-1137"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="13,-1195 13,-1217 174,-1217 174,-1195 13,-1195"/>
+<polygon fill="none" stroke="black" points="13,-1195 13,-1217 174,-1217 174,-1195 13,-1195"/>
+<text text-anchor="start" x="18" y="-1204.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">botanical_countries</text>
+<text text-anchor="start" x="135" y="-1203.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="13,-1173 13,-1195 174,-1195 174,-1173 13,-1173"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="18" y="-1190"/>
+<text text-anchor="start" x="45" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00">level3_code</text>
+<polygon fill="none" stroke="black" points="13,-1155 13,-1173 174,-1173 174,-1155 13,-1155"/>
+<text text-anchor="start" x="16" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="13,-1137 13,-1155 82,-1155 82,-1137 13,-1137"/>
+<polygon fill="none" stroke="black" points="13,-1137 13,-1155 82,-1155 82,-1137 13,-1137"/>
+<text text-anchor="start" x="16" y="-1143.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="82,-1137 82,-1155 123,-1155 123,-1137 82,-1137"/>
+<polygon fill="none" stroke="black" points="82,-1137 82,-1155 123,-1155 123,-1137 82,-1137"/>
+<text text-anchor="start" x="113" y="-1143.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="123,-1137 123,-1155 174,-1155 174,-1137 123,-1137"/>
+<polygon fill="none" stroke="black" points="123,-1137 123,-1155 174,-1155 174,-1137 123,-1137"/>
+<text text-anchor="start" x="155" y="-1143.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
+</a>
+</g>
+</g>
+<!-- country_botanical_countries&#45;&gt;botanical_countries -->
+<g id="edge5" class="edge">
+<title>country_botanical_countries:w&#45;&gt;botanical_countries:e</title>
+<path fill="none" stroke="black" d="M212.02,-1184C199.68,-1184 192.17,-1184 175,-1184"/>
+<polygon fill="black" stroke="black" points="218.5,-1184 226.5,-1187.6 222.5,-1184 226.5,-1184 226.5,-1184 226.5,-1184 222.5,-1184 226.5,-1180.4 218.5,-1184 218.5,-1184"/>
+<ellipse fill="none" stroke="black" cx="215.3" cy="-1184" rx="3.2" ry="3.2"/>
+</g>
+<!-- gbif_names -->
+<g id="node7" class="node">
 <title>gbif_names</title>
-<g id="a_node6"><a xlink:href="../../tables/gbif_names.html" xlink:title="gbif_names" target="_top">
+<g id="a_node7"><a xlink:href="../../tables/gbif_names.html" xlink:title="gbif_names" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="556,-2611 556,-2757 667,-2757 667,-2611 556,-2611"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="556.5,-2735 556.5,-2757 667.5,-2757 667.5,-2735 556.5,-2735"/>
 <polygon fill="none" stroke="black" points="556.5,-2735 556.5,-2757 667.5,-2757 667.5,-2735 556.5,-2735"/>
@@ -305,66 +365,6 @@
 <path fill="none" stroke="black" d="M540.86,-2702C492.12,-2702 474.75,-2702 419.5,-2702"/>
 <polygon fill="black" stroke="black" points="547.5,-2702 555.5,-2705.6 551.5,-2702 555.5,-2702 555.5,-2702 555.5,-2702 551.5,-2702 555.5,-2698.4 547.5,-2702 547.5,-2702"/>
 <ellipse fill="none" stroke="black" cx="544.3" cy="-2702" rx="3.2" ry="3.2"/>
-</g>
-<!-- country_botanical_countries -->
-<g id="node7" class="node">
-<title>country_botanical_countries</title>
-<g id="a_node7"><a xlink:href="../../tables/country_botanical_countries.html" xlink:title="country_botanical_countries" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="227,-1155 227,-1239 440,-1239 440,-1155 227,-1155"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="227.5,-1217 227.5,-1239 440.5,-1239 440.5,-1217 227.5,-1217"/>
-<polygon fill="none" stroke="black" points="227.5,-1217 227.5,-1239 440.5,-1239 440.5,-1217 227.5,-1217"/>
-<text text-anchor="start" x="232.5" y="-1226.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">country_botanical_countries</text>
-<text text-anchor="start" x="401.5" y="-1225.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="227.5,-1195 227.5,-1217 440.5,-1217 440.5,-1195 227.5,-1195"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="232.5" y="-1212"/>
-<text text-anchor="start" x="259.5" y="-1203.2" font-family="Helvetica,sans-Serif" font-size="11.00">country_code</text>
-<polygon fill="none" stroke="black" points="227.5,-1173 227.5,-1195 440.5,-1195 440.5,-1173 227.5,-1173"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="232.5" y="-1190"/>
-<text text-anchor="start" x="259.5" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00">botanical_country_code</text>
-<polygon fill="#ffffff" stroke="transparent" points="227.5,-1155 227.5,-1173 331.5,-1173 331.5,-1155 227.5,-1155"/>
-<polygon fill="none" stroke="black" points="227.5,-1155 227.5,-1173 331.5,-1173 331.5,-1155 227.5,-1155"/>
-<text text-anchor="start" x="230.5" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="331.5,-1155 331.5,-1173 385.5,-1173 385.5,-1155 331.5,-1155"/>
-<polygon fill="none" stroke="black" points="331.5,-1155 331.5,-1173 385.5,-1173 385.5,-1155 331.5,-1155"/>
-<text text-anchor="start" x="375.5" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="385.5,-1155 385.5,-1173 440.5,-1173 440.5,-1155 385.5,-1155"/>
-<polygon fill="none" stroke="black" points="385.5,-1155 385.5,-1173 440.5,-1173 440.5,-1155 385.5,-1155"/>
-<text text-anchor="start" x="430.5" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-</a>
-</g>
-</g>
-<!-- botanical_countries -->
-<g id="node23" class="node">
-<title>botanical_countries</title>
-<g id="a_node23"><a xlink:href="../../tables/botanical_countries.html" xlink:title="botanical_countries" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="12.5,-1137 12.5,-1217 173.5,-1217 173.5,-1137 12.5,-1137"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="13,-1195 13,-1217 174,-1217 174,-1195 13,-1195"/>
-<polygon fill="none" stroke="black" points="13,-1195 13,-1217 174,-1217 174,-1195 13,-1195"/>
-<text text-anchor="start" x="18" y="-1204.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">botanical_countries</text>
-<text text-anchor="start" x="135" y="-1203.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="13,-1173 13,-1195 174,-1195 174,-1173 13,-1173"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="18" y="-1190"/>
-<text text-anchor="start" x="45" y="-1181.2" font-family="Helvetica,sans-Serif" font-size="11.00">level3_code</text>
-<polygon fill="none" stroke="black" points="13,-1155 13,-1173 174,-1173 174,-1155 13,-1155"/>
-<text text-anchor="start" x="16" y="-1161.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="13,-1137 13,-1155 82,-1155 82,-1137 13,-1137"/>
-<polygon fill="none" stroke="black" points="13,-1137 13,-1155 82,-1155 82,-1137 13,-1137"/>
-<text text-anchor="start" x="16" y="-1143.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="82,-1137 82,-1155 123,-1155 123,-1137 82,-1137"/>
-<polygon fill="none" stroke="black" points="82,-1137 82,-1155 123,-1155 123,-1137 82,-1137"/>
-<text text-anchor="start" x="113" y="-1143.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="123,-1137 123,-1155 174,-1155 174,-1137 123,-1137"/>
-<polygon fill="none" stroke="black" points="123,-1137 123,-1155 174,-1155 174,-1137 123,-1137"/>
-<text text-anchor="start" x="155" y="-1143.2" font-family="Helvetica,sans-Serif" font-size="11.00">3 &gt;</text>
-</a>
-</g>
-</g>
-<!-- country_botanical_countries&#45;&gt;botanical_countries -->
-<g id="edge5" class="edge">
-<title>country_botanical_countries:w&#45;&gt;botanical_countries:e</title>
-<path fill="none" stroke="black" d="M212.02,-1184C199.68,-1184 192.17,-1184 175,-1184"/>
-<polygon fill="black" stroke="black" points="218.5,-1184 226.5,-1187.6 222.5,-1184 226.5,-1184 226.5,-1184 226.5,-1184 222.5,-1184 226.5,-1180.4 218.5,-1184 218.5,-1184"/>
-<ellipse fill="none" stroke="black" cx="215.3" cy="-1184" rx="3.2" ry="3.2"/>
 </g>
 <!-- organizations&#45;&gt;botanical_countries -->
 <g id="edge11" class="edge">
@@ -802,36 +802,10 @@
 <polygon fill="black" stroke="black" points="835.5,-2239 843.5,-2242.6 839.5,-2239 843.5,-2239 843.5,-2239 843.5,-2239 839.5,-2239 843.5,-2235.4 835.5,-2239 835.5,-2239"/>
 <ellipse fill="none" stroke="black" cx="832.3" cy="-2239" rx="3.2" ry="3.2"/>
 </g>
-<!-- plant_material_sourcing_methods -->
-<g id="node24" class="node">
-<title>plant_material_sourcing_methods</title>
-<g id="a_node24"><a xlink:href="../../tables/plant_material_sourcing_methods.html" xlink:title="plant_material_sourcing_methods" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="489,-2087 489,-2167 734,-2167 734,-2087 489,-2087"/>
-<polygon fill="#f5f5f5" stroke="transparent" points="489.5,-2145 489.5,-2167 734.5,-2167 734.5,-2145 489.5,-2145"/>
-<polygon fill="none" stroke="black" points="489.5,-2145 489.5,-2167 734.5,-2167 734.5,-2145 489.5,-2145"/>
-<text text-anchor="start" x="494.5" y="-2154.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plant_material_sourcing_methods</text>
-<text text-anchor="start" x="695.5" y="-2153.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
-<polygon fill="none" stroke="black" points="489.5,-2123 489.5,-2145 734.5,-2145 734.5,-2123 489.5,-2123"/>
-<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="494.5" y="-2140"/>
-<text text-anchor="start" x="521.5" y="-2131.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
-<polygon fill="none" stroke="black" points="489.5,-2105 489.5,-2123 734.5,-2123 734.5,-2105 489.5,-2105"/>
-<text text-anchor="start" x="492.5" y="-2111.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="489.5,-2087 489.5,-2105 600.5,-2105 600.5,-2087 489.5,-2087"/>
-<polygon fill="none" stroke="black" points="489.5,-2087 489.5,-2105 600.5,-2105 600.5,-2087 489.5,-2087"/>
-<text text-anchor="start" x="492.5" y="-2093.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="600.5,-2087 600.5,-2105 662.5,-2105 662.5,-2087 600.5,-2087"/>
-<polygon fill="none" stroke="black" points="600.5,-2087 600.5,-2105 662.5,-2105 662.5,-2087 600.5,-2087"/>
-<text text-anchor="start" x="652.5" y="-2093.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="662.5,-2087 662.5,-2105 734.5,-2105 734.5,-2087 662.5,-2087"/>
-<polygon fill="none" stroke="black" points="662.5,-2087 662.5,-2105 734.5,-2105 734.5,-2087 662.5,-2087"/>
-<text text-anchor="start" x="715.5" y="-2093.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
-</a>
-</g>
-</g>
 <!-- species_plant_material_sourcing_methods -->
-<g id="node25" class="node">
+<g id="node24" class="node">
 <title>species_plant_material_sourcing_methods</title>
-<g id="a_node25"><a xlink:href="../../tables/species_plant_material_sourcing_methods.html" xlink:title="species_plant_material_sourcing_methods" target="_top">
+<g id="a_node24"><a xlink:href="../../tables/species_plant_material_sourcing_methods.html" xlink:title="species_plant_material_sourcing_methods" target="_top">
 <polygon fill="#ffffff" stroke="transparent" points="793.5,-2105 793.5,-2189 1087.5,-2189 1087.5,-2105 793.5,-2105"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="793.5,-2167 793.5,-2189 1087.5,-2189 1087.5,-2167 793.5,-2167"/>
 <polygon fill="none" stroke="black" points="793.5,-2167 793.5,-2189 1087.5,-2189 1087.5,-2167 793.5,-2167"/>
@@ -861,6 +835,32 @@
 <path fill="none" stroke="black" d="M779.07,-2150.08C695.65,-2069.27 805.46,-1189 702.5,-1189"/>
 <polygon fill="black" stroke="black" points="785.18,-2152.77 791.05,-2159.29 788.84,-2154.39 792.5,-2156 792.5,-2156 792.5,-2156 788.84,-2154.39 793.95,-2152.71 785.18,-2152.77 785.18,-2152.77"/>
 <ellipse fill="none" stroke="black" cx="782.25" cy="-2151.48" rx="3.2" ry="3.2"/>
+</g>
+<!-- plant_material_sourcing_methods -->
+<g id="node25" class="node">
+<title>plant_material_sourcing_methods</title>
+<g id="a_node25"><a xlink:href="../../tables/plant_material_sourcing_methods.html" xlink:title="plant_material_sourcing_methods" target="_top">
+<polygon fill="#ffffff" stroke="transparent" points="489,-2087 489,-2167 734,-2167 734,-2087 489,-2087"/>
+<polygon fill="#f5f5f5" stroke="transparent" points="489.5,-2145 489.5,-2167 734.5,-2167 734.5,-2145 489.5,-2145"/>
+<polygon fill="none" stroke="black" points="489.5,-2145 489.5,-2167 734.5,-2167 734.5,-2145 489.5,-2145"/>
+<text text-anchor="start" x="494.5" y="-2154.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">plant_material_sourcing_methods</text>
+<text text-anchor="start" x="695.5" y="-2153.2" font-family="Helvetica,sans-Serif" font-size="11.00">[table]</text>
+<polygon fill="none" stroke="black" points="489.5,-2123 489.5,-2145 734.5,-2145 734.5,-2123 489.5,-2123"/>
+<image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="494.5" y="-2140"/>
+<text text-anchor="start" x="521.5" y="-2131.2" font-family="Helvetica,sans-Serif" font-size="11.00">id</text>
+<polygon fill="none" stroke="black" points="489.5,-2105 489.5,-2123 734.5,-2123 734.5,-2105 489.5,-2105"/>
+<text text-anchor="start" x="492.5" y="-2111.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="489.5,-2087 489.5,-2105 600.5,-2105 600.5,-2087 489.5,-2087"/>
+<polygon fill="none" stroke="black" points="489.5,-2087 489.5,-2105 600.5,-2105 600.5,-2087 489.5,-2087"/>
+<text text-anchor="start" x="492.5" y="-2093.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="600.5,-2087 600.5,-2105 662.5,-2105 662.5,-2087 600.5,-2087"/>
+<polygon fill="none" stroke="black" points="600.5,-2087 600.5,-2105 662.5,-2105 662.5,-2087 600.5,-2087"/>
+<text text-anchor="start" x="652.5" y="-2093.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="662.5,-2087 662.5,-2105 734.5,-2105 734.5,-2087 662.5,-2087"/>
+<polygon fill="none" stroke="black" points="662.5,-2087 662.5,-2105 734.5,-2105 734.5,-2087 662.5,-2087"/>
+<text text-anchor="start" x="715.5" y="-2093.2" font-family="Helvetica,sans-Serif" font-size="11.00">1 &gt;</text>
+</a>
+</g>
 </g>
 <!-- species_plant_material_sourcing_methods&#45;&gt;plant_material_sourcing_methods -->
 <g id="edge18" class="edge">
