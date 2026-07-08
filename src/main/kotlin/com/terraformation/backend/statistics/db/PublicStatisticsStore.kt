@@ -1,6 +1,7 @@
 package com.terraformation.backend.statistics.db
 
 import com.terraformation.backend.customer.model.InternalTagIds
+import com.terraformation.backend.db.default_schema.InternalTagId
 import com.terraformation.backend.db.default_schema.Role
 import com.terraformation.backend.db.default_schema.tables.references.FACILITIES
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATIONS
@@ -44,20 +45,17 @@ class PublicStatisticsStore(
    */
   private val MAX_SITE_AREA_HA = BigDecimal("100000")
 
-  /** Subquery selecting the IDs of organizations tagged with [InternalTagIds.Internal]. */
-  private val internalTaggedOrganizationIds =
+  private fun taggedOrganizationIds(internalTagId: InternalTagId) =
       DSL.select(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
           .from(ORGANIZATION_INTERNAL_TAGS)
-          .where(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Internal))
+          .where(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(internalTagId))
 
   /**
    * Subquery selecting the IDs of organizations that are excluded from public statistics because
-   * they belong to Terraformation. See the class documentation for the exclusion rules.
+   * they belong to Terraformation.
    */
   private val excludedOrganizationIds =
-      DSL.select(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
-          .from(ORGANIZATION_INTERNAL_TAGS)
-          .where(ORGANIZATION_INTERNAL_TAGS.INTERNAL_TAG_ID.eq(InternalTagIds.Testing))
+      taggedOrganizationIds(InternalTagIds.Testing)
           .union(
               DSL.select(ORGANIZATION_USERS.ORGANIZATION_ID)
                   .from(ORGANIZATION_USERS)
@@ -65,7 +63,11 @@ class PublicStatisticsStore(
                   .on(ORGANIZATION_USERS.USER_ID.eq(USERS.ID))
                   .where(ORGANIZATION_USERS.ROLE_ID.eq(Role.Owner))
                   .and(USERS.EMAIL.likeIgnoreCase("%@terraformation.com"))
-                  .and(ORGANIZATION_USERS.ORGANIZATION_ID.notIn(internalTaggedOrganizationIds))
+                  .and(
+                      ORGANIZATION_USERS.ORGANIZATION_ID.notIn(
+                          taggedOrganizationIds(InternalTagIds.Internal)
+                      )
+                  )
           )
 
   private val cachedStatistics: PublicStatisticsModel by lazy { computeStatistics() }
