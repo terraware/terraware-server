@@ -8,6 +8,8 @@ import com.terraformation.backend.log.perClassLogger
 import com.terraformation.backend.species.WcvpImporter
 import com.terraformation.backend.species.db.GbifImporter
 import com.terraformation.backend.species.db.GriisImporter
+import com.terraformation.backend.species.db.SpeciesNativityCalculator
+import com.terraformation.backend.species.model.normalizeScientificName
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -34,6 +36,7 @@ class AdminSpeciesController(
     private val botanicalCountryImporter: BotanicalCountryImporter,
     private val gbifImporter: GbifImporter,
     private val griisImporter: GriisImporter,
+    private val speciesNativityCalculator: SpeciesNativityCalculator,
     private val wcvpImporter: WcvpImporter,
 ) {
   private val log = perClassLogger()
@@ -48,6 +51,46 @@ class AdminSpeciesController(
     model.addAttribute("defaultWcvpSpeciesListUrl", WcvpImporter.defaultZipFileUrl.toString())
 
     return "/admin/species"
+  }
+
+  @PostMapping("/calculateNativity")
+  fun adminCalculateSpeciesNativity(
+      @RequestParam scientificName: String,
+      @RequestParam botanicalCountryCode: String,
+      @RequestParam countryCode: String,
+      redirectAttributes: RedirectAttributes,
+  ): String {
+    val normalizedScientificName = normalizeScientificName(scientificName)
+    redirectAttributes.addFlashAttribute("nativityScientificName", normalizedScientificName)
+    redirectAttributes.addFlashAttribute("nativityBotanicalCountryCode", botanicalCountryCode)
+    redirectAttributes.addFlashAttribute("nativityCountryCode", countryCode)
+
+    try {
+      val nativity =
+          speciesNativityCalculator
+              .calculateNativities(
+                  botanicalCountryCode,
+                  countryCode,
+                  listOf(normalizedScientificName),
+              )[normalizedScientificName]
+
+      if (nativity != null) {
+        redirectAttributes.successMessage = "Species $normalizedScientificName"
+        redirectAttributes.successDetails =
+            listOfNotNull(
+                "Nativity: ${nativity.speciesNativity}",
+                nativity.datasetType?.let { "Source type: $it" },
+                nativity.datasetDate?.let { "Source date: $it" },
+            )
+      } else {
+        redirectAttributes.failureMessage = "Nativity calculation did not return a result"
+      }
+    } catch (e: Exception) {
+      log.error("Failed to calculate nativity", e)
+      redirectAttributes.failureMessage = "Failed to calculate nativity: ${e.message}"
+    }
+
+    return redirectToSpeciesHome()
   }
 
   @PostMapping("/importGbif")
