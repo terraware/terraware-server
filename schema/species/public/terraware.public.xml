@@ -56,6 +56,27 @@
             <column ascending="true" name="name"/>
          </index>
       </table>
+      <table name="external_dataset_imports" remarks="The most recently imported versions of external data sets." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="external_dataset_type_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="external_dataset_imports_external_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_types"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="6" id="1" name="imported_time" nullable="false" remarks="" size="35" type="timestamptz" typeCode="93"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="last_publication_date" nullable="true" remarks="" size="13" type="date" typeCode="91"/>
+         <primaryKey column="external_dataset_type_id" sequenceNumberInPK="1"/>
+         <index name="external_dataset_imports_pkey" unique="true">
+            <column ascending="true" name="external_dataset_type_id"/>
+         </index>
+      </table>
+      <table name="external_dataset_types" remarks="Types of external data sets that the system can pull information from." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="external_dataset_type_id" foreignKey="external_dataset_imports_external_dataset_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="external_dataset_imports"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="external_dataset_types_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+      </table>
       <table name="gbif_distributions" remarks="Information about geographic distribution of species and their conservation statuses." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="taxon_id" nullable="false" remarks="" size="19" type="int8" typeCode="-5"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="country_code" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
@@ -189,11 +210,17 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="7" name="establishment_means" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="is_invasive" nullable="false" remarks="" size="1" type="bool" typeCode="-7"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="habitat" nullable="true" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="10" name="species_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="griis_taxa_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
          <primaryKey column="griis_resource_id" sequenceNumberInPK="1"/>
          <primaryKey column="taxon_id" sequenceNumberInPK="2"/>
          <index name="griis_taxa_pkey" unique="true">
             <column ascending="true" name="griis_resource_id"/>
             <column ascending="true" name="taxon_id"/>
+         </index>
+         <index name="griis_taxa_scientific_name_idx" unique="false">
+            <column ascending="true" name="scientific_name"/>
          </index>
       </table>
       <table name="organizations" remarks="Top-level information about organizations." schema="public" type="TABLE">
@@ -349,7 +376,7 @@
             <column ascending="true" name="species_id"/>
          </index>
       </table>
-      <table name="species_native_categories" remarks="(Enum) Categories related to native-ness of a species." schema="public" type="TABLE">
+      <table name="species_native_categories" remarks="(Enum) Categories related to native-ness of a species. Used for accelerator species management." schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="species_native_category_id" foreignKey="participant_project_species_species_native_category_id_fkey" implied="false" onDeleteCascade="false" schema="accelerator" table="participant_project_species"/>
          </column>
@@ -357,6 +384,20 @@
          <primaryKey column="id" sequenceNumberInPK="1"/>
          <index name="species_native_categories_pkey" unique="true">
             <column ascending="true" name="id"/>
+         </index>
+      </table>
+      <table name="species_nativities" remarks="(Enum) Native/invasive/introduced values for a species in a given region." schema="public" type="TABLE">
+         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
+            <child column="species_nativity_id" foreignKey="griis_taxa_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="griis_taxa"/>
+            <child column="species_nativity_id" foreignKey="wcvp_distributions_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="wcvp_distributions"/>
+         </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="text" typeCode="12"/>
+         <primaryKey column="id" sequenceNumberInPK="1"/>
+         <index name="species_nativities_pkey" unique="true">
+            <column ascending="true" name="id"/>
+         </index>
+         <index name="species_nativities_name_key" unique="true">
+            <column ascending="true" name="name"/>
          </index>
       </table>
       <table name="species_plant_material_sourcing_methods" remarks="Sourcing methods for the plant material used to grow a particular species." schema="public" type="TABLE">
@@ -456,6 +497,9 @@
          <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="botanical_country_code" nullable="true" remarks="Valid TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list." size="2147483647" type="text" typeCode="12">
             <parent column="level3_code" foreignKey="wcvp_distributions_botanical_country_code_fkey" implied="false" onDeleteCascade="false" schema="public" table="botanical_countries"/>
          </column>
+         <column autoUpdated="false" defaultValue="null" digits="0" id="6" name="species_nativity_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
+            <parent column="id" foreignKey="wcvp_distributions_species_nativity_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="species_nativities"/>
+         </column>
          <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
          <primaryKey column="level3_code" sequenceNumberInPK="2"/>
          <index name="wcvp_distributions_pkey" unique="true">
@@ -484,6 +528,9 @@
          <primaryKey column="taxon_id" sequenceNumberInPK="1"/>
          <index name="wcvp_taxa_pkey" unique="true">
             <column ascending="true" name="taxon_id"/>
+         </index>
+         <index name="wcvp_taxa_scientific_name_idx" unique="false">
+            <column ascending="true" name="scientific_name"/>
          </index>
       </table>
       <table name="wood_density_levels" remarks="The taxonomic level in the at which a wood density measurement is known" schema="public" type="TABLE">

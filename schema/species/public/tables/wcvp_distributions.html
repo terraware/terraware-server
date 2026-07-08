@@ -233,6 +233,28 @@
                                     </td>
                                     <td><p>Valid TDWG level 3 region (botanical country) for this distribution record, if any. Null if the location ID is unknown or if it contains a code not in the TDWG regions list.</p></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="species_nativity_id">species_nativity_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="wcvp_distributions.species_nativity_id references species_nativities.id via wcvp_distributions_species_nativity_id_fkey"><a href='species_nativities.html'>species_nativities</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">wcvp_distributions_species_nativity_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>

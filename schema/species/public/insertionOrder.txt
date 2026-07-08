@@ -1,6 +1,8 @@
 botanical_countries
+species_nativities
 conservation_categories
 ecosystem_types
+external_dataset_types
 gbif_taxa
 griis_resources
 plant_material_sourcing_methods
@@ -14,13 +16,14 @@ organizations
 species
 gbif_names
 country_botanical_countries
+external_dataset_imports
 gbif_name_words
-griis_taxa
 species_growth_forms
+griis_taxa
 species_ecosystem_types
 species_plant_material_sourcing_methods
 species_successional_groups
-wcvp_distributions
 species_problems
+wcvp_distributions
 gbif_distributions
 gbif_vernacular_names

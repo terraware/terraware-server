@@ -161,7 +161,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="scientific_name">scientific_name</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="scientific_name">scientific_name</span></td>
                                     <td>text</td>
                                     <td>2147483647</td>
                                     <td title=''></td>
@@ -296,6 +296,28 @@
                                     </td>
                                     <td></td>
                                 </tr>
+                                <tr>
+                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="species_nativity_id">species_nativity_id</span></td>
+                                    <td>int4</td>
+                                    <td>10</td>
+                                    <td title='nullable'>√</td>
+                                    <td title=''></td>
+                                    <td>null</td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="griis_taxa.species_nativity_id references species_nativities.id via griis_taxa_species_nativity_id_fkey"><a href='species_nativities.html'>species_nativities</a><span class='relatedKey'>.id</span></td>
+                                                <td class="constraint detail">griis_taxa_species_nativity_id_fkey</td>
+                                                <td class="constraint detail"><span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                    <td></td>
+                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -331,6 +353,12 @@
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>griis_resource_id + taxon_id</td>
+                                </tr>
+                                <tr>
+                                    <td title='Indexed'>griis_taxa_scientific_name_idx</td>
+                                    <td>Performance</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>scientific_name</td>
                                 </tr>
                                 </tbody>
                             </table>

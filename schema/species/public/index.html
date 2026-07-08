@@ -78,7 +78,7 @@
                         <div class="col-md-12">
                             <div class="callout callout-info">
                                 <h4>SchemaSpy Analysis of terraware.public</h4>
-                                <p>Generated on Thu Jul 02 18:31 GMT 2026</p>
+                                <p>Generated on Wed Jul 08 16:19 GMT 2026</p>
                             </div>
                         </div>
                     </div>
@@ -94,7 +94,7 @@
                                 <span class="info-box-icon bg-aqua"><i class="fa fa-table"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">TABLES</span>
-                                    <span class="info-box-number">26</span>
+                                    <span class="info-box-number">29</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -118,7 +118,7 @@
                                 <span class="info-box-icon bg-green"><span class="glyphicon glyphicon-list-alt" aria-hidden="true"></span></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">COLUMNS</span>
-                                    <span class="info-box-number">145</span>
+                                    <span class="info-box-number">154</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -130,7 +130,7 @@
                                 <span class="info-box-icon bg-yellow"><i class="ion ion-key"></i></span>
                                 <div class="info-box-content">
                                     <span class="info-box-text">Constraints</span>
-                                    <span class="info-box-number">20</span>
+                                    <span class="info-box-number">23</span>
                                 </div>
                                 <!-- /.info-box-content -->
                             </div>
@@ -305,6 +305,24 @@
                                         <td class="comment detail" style="display: table-cell;"><p>Resource-level metadata from the Global Register of Introduced and Invasive Species.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/species_nativities.html">species_nativities</a></td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Native/invasive/introduced values for a species in a given region.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/external_dataset_imports.html">external_dataset_imports</a></td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>The most recently imported versions of external data sets.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/wood_density_levels.html">wood_density_levels</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -325,8 +343,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/griis_taxa.html">griis_taxa</a></td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">1</td>
-                                        <td class="detail" align="right">10</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">11</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>Information about which species are introduced or invasive in which locations.</p></td>
@@ -377,6 +395,15 @@
                                         <td class="comment detail" style="display: table-cell;"><p>(Enum) Species fields that can be scanned for problems.</p></td>
                                     </tr>
                                     <tr class="tbl even" valign="top">
+                                        <td class="detail"><a href="tables/external_dataset_types.html">external_dataset_types</a></td>
+                                        <td class="detail" align="right">1</td>
+                                        <td class="detail" align="right">0</td>
+                                        <td class="detail" align="right">2</td>
+                                        <td class="detail" align="right">-1</td>
+                                        <td class="detail" align="right">Table</td>
+                                        <td class="comment detail" style="display: table-cell;"><p>Types of external data sets that the system can pull information from.</p></td>
+                                    </tr>
+                                    <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/gbif_taxa.html">gbif_taxa</a></td>
                                         <td class="detail" align="right">1</td>
                                         <td class="detail" align="right">0</td>
@@ -424,8 +451,8 @@
                                     <tr class="tbl even" valign="top">
                                         <td class="detail"><a href="tables/wcvp_distributions.html">wcvp_distributions</a></td>
                                         <td class="detail" align="right">0</td>
-                                        <td class="detail" align="right">2</td>
-                                        <td class="detail" align="right">6</td>
+                                        <td class="detail" align="right">3</td>
+                                        <td class="detail" align="right">7</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
                                         <td class="comment detail" style="display: table-cell;"><p>World Checklist of Vascular Plants distribution data, indicating which species are found in which botanical countries.</p></td>
@@ -437,7 +464,7 @@
                                         <td class="detail" align="right">2</td>
                                         <td class="detail" align="right">-1</td>
                                         <td class="detail" align="right">Table</td>
-                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Categories related to native-ness of a species.</p></td>
+                                        <td class="comment detail" style="display: table-cell;"><p>(Enum) Categories related to native-ness of a species. Used for accelerator species management.</p></td>
                                     </tr>
                             </table>
                         </div>

@@ -14,7 +14,7 @@
 <g id="node1" class="node">
 <title>griis_taxa</title>
 <g id="a_node1"><a xlink:href="../../tables/griis_taxa.html" xlink:title="griis_taxa" target="_top">
-<polygon fill="#ffffff" stroke="transparent" points="282,-87 282,-189 436,-189 436,-87 282,-87"/>
+<polygon fill="#ffffff" stroke="transparent" points="282,-43 282,-189 436,-189 436,-43 282,-43"/>
 <polygon fill="#f5f5f5" stroke="transparent" points="282,-167 282,-189 436,-189 436,-167 282,-167"/>
 <polygon fill="none" stroke="black" points="282,-167 282,-189 436,-189 436,-167 282,-167"/>
 <text text-anchor="start" x="287" y="-176.2" font-family="Helvetica,sans-Serif" font-weight="bold" font-size="11.00">griis_taxa</text>
@@ -25,17 +25,23 @@
 <polygon fill="none" stroke="black" points="282,-123 282,-145 436,-145 436,-123 282,-123"/>
 <image xlink:href="../../images/primaryKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="287" y="-140"/>
 <text text-anchor="start" x="302" y="-131.2" font-family="Helvetica,sans-Serif" font-size="11.00">taxon_id</text>
-<polygon fill="none" stroke="black" points="282,-105 282,-123 436,-123 436,-105 282,-105"/>
-<text text-anchor="start" x="285" y="-111.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
-<polygon fill="#ffffff" stroke="transparent" points="282,-87 282,-105 357,-105 357,-87 282,-87"/>
-<polygon fill="none" stroke="black" points="282,-87 282,-105 357,-105 357,-87 282,-87"/>
-<text text-anchor="start" x="285" y="-93.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 1</text>
-<polygon fill="#ffffff" stroke="transparent" points="357,-87 357,-105 396,-105 396,-87 357,-87"/>
-<polygon fill="none" stroke="black" points="357,-87 357,-105 396,-105 396,-87 357,-87"/>
-<text text-anchor="start" x="386" y="-93.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
-<polygon fill="#ffffff" stroke="transparent" points="396,-87 396,-105 436,-105 436,-87 396,-87"/>
-<polygon fill="none" stroke="black" points="396,-87 396,-105 436,-105 436,-87 396,-87"/>
-<text text-anchor="start" x="426" y="-93.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="282,-101 282,-123 436,-123 436,-101 282,-101"/>
+<polygon fill="none" stroke="black" points="282,-101 282,-123 436,-123 436,-101 282,-101"/>
+<text text-anchor="start" x="302" y="-109.2" font-family="Helvetica,sans-Serif" font-size="11.00">scientific_name</text>
+<polygon fill="none" stroke="black" points="282,-79 282,-101 436,-101 436,-79 282,-79"/>
+<image xlink:href="../../images/foreignKeys.png" width="11px" height="12px" preserveAspectRatio="xMinYMin meet" x="287" y="-96"/>
+<text text-anchor="start" x="302" y="-87.2" font-family="Helvetica,sans-Serif" font-size="11.00">species_nativity_id</text>
+<polygon fill="none" stroke="black" points="282,-61 282,-79 436,-79 436,-61 282,-61"/>
+<text text-anchor="start" x="285" y="-67.2" font-family="Helvetica,sans-Serif" font-size="11.00">...</text>
+<polygon fill="#ffffff" stroke="transparent" points="282,-43 282,-61 357,-61 357,-43 282,-43"/>
+<polygon fill="none" stroke="black" points="282,-43 282,-61 357,-61 357,-43 282,-43"/>
+<text text-anchor="start" x="285" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00">&lt; 2</text>
+<polygon fill="#ffffff" stroke="transparent" points="357,-43 357,-61 396,-61 396,-43 357,-43"/>
+<polygon fill="none" stroke="black" points="357,-43 357,-61 396,-61 396,-43 357,-43"/>
+<text text-anchor="start" x="386" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
+<polygon fill="#ffffff" stroke="transparent" points="396,-43 396,-61 436,-61 436,-43 396,-43"/>
+<polygon fill="none" stroke="black" points="396,-43 396,-61 436,-61 436,-43 396,-43"/>
+<text text-anchor="start" x="426" y="-49.2" font-family="Helvetica,sans-Serif" font-size="11.00"> &#160;</text>
 </a>
 </g>
 </g>
