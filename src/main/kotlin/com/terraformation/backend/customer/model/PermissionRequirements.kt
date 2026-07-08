@@ -297,8 +297,11 @@ class PermissionRequirements(private val user: TerrawareUser) {
   }
 
   fun createNotification(userId: UserId) {
-    if (!user.canCreateNotification(userId)) {
-      throw AccessDeniedException("No permission to create notification")
+    user.recordPermissionChecks {
+      if (!user.canCreateNotification(userId)) {
+        readUser(userId)
+        throw AccessDeniedException("No permission to create notification")
+      }
     }
   }
 
@@ -323,6 +326,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun createParticipantProjectSpecies(projectId: ProjectId) {
     user.recordPermissionChecks {
       if (!user.canCreateParticipantProjectSpecies(projectId)) {
+        readProject(projectId)
         throw AccessDeniedException("No permission to create participant project species")
       }
     }
@@ -364,6 +368,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun createSavedVersion(documentId: DocumentId) {
     user.recordPermissionChecks {
       if (!user.canCreateSavedVersion(documentId)) {
+        readDocument(documentId)
         throw AccessDeniedException("No permission to create saved versions")
       }
     }
@@ -483,6 +488,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun deleteFunder(userId: UserId) {
     user.recordPermissionChecks {
       if (!user.canDeleteFunder(userId)) {
+        readUser(userId)
         throw AccessDeniedException("No permission to delete funder $userId")
       }
     }
@@ -1629,6 +1635,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateDocument(documentId: DocumentId) {
     user.recordPermissionChecks {
       if (!user.canUpdateDocument(documentId)) {
+        readDocument(documentId)
         throw AccessDeniedException("No permission to update document")
       }
     }
@@ -1673,6 +1680,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun updateFundingEntityUsers(fundingEntityId: FundingEntityId) {
     user.recordPermissionChecks {
       if (!user.canUpdateFundingEntityUsers(fundingEntityId)) {
+        readFundingEntity(fundingEntityId)
         throw AccessDeniedException("No permission to update funding entity users")
       }
     }

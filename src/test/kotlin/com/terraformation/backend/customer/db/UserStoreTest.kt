@@ -19,6 +19,7 @@ import com.terraformation.backend.db.DatabaseTest
 import com.terraformation.backend.db.KeycloakRequestFailedException
 import com.terraformation.backend.db.KeycloakUserNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
+import com.terraformation.backend.db.UserNotFoundException
 import com.terraformation.backend.db.default_schema.GlobalRole
 import com.terraformation.backend.db.default_schema.OrganizationId
 import com.terraformation.backend.db.default_schema.Role
@@ -886,15 +887,28 @@ internal class UserStoreTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if no permission to delete funders`() {
+      every { user.canReadUser(inserted.userId) } returns true
       every { user.canDeleteFunder(inserted.userId) } returns false
 
       assertThrows<AccessDeniedException> { userStore.deleteFunderById(inserted.userId) }
     }
 
     @Test
+    fun `throws not-found exception if funder is not readable`() {
+      every { user.canReadUser(inserted.userId) } returns false
+      every { user.canDeleteFunder(inserted.userId) } returns false
+
+      assertThrows<UserNotFoundException> { userStore.deleteFunderById(inserted.userId) }
+    }
+
+    @Test
     fun `throws exception if attempting to delete non-funder users`() {
       val deviceManagerUser = insertUser(type = UserType.DeviceManager)
       val systemUser = insertUser(type = UserType.System)
+
+      every { user.canReadUser(any()) } returns true
+      every { user.canDeleteFunder(deviceManagerUser) } returns true
+      every { user.canDeleteFunder(systemUser) } returns true
 
       assertThrows<AccessDeniedException> { userStore.deleteFunderById(deviceManagerUser) }
       assertThrows<AccessDeniedException> { userStore.deleteFunderById(systemUser) }

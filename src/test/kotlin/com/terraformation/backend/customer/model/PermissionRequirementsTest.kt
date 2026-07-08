@@ -46,6 +46,7 @@ import com.terraformation.backend.db.default_schema.SpeciesId
 import com.terraformation.backend.db.default_schema.SubLocationId
 import com.terraformation.backend.db.default_schema.UploadId
 import com.terraformation.backend.db.default_schema.UserId
+import com.terraformation.backend.db.docprod.DocumentId
 import com.terraformation.backend.db.funder.FundingEntityId
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.WithdrawalId
@@ -60,6 +61,7 @@ import com.terraformation.backend.db.tracking.PlantingSeasonId
 import com.terraformation.backend.db.tracking.PlantingSiteId
 import com.terraformation.backend.db.tracking.StratumId
 import com.terraformation.backend.db.tracking.SubstratumId
+import com.terraformation.backend.documentproducer.db.DocumentNotFoundException
 import com.terraformation.backend.funder.db.FundingEntityNotFoundException
 import com.terraformation.backend.nursery.db.BatchNotFoundException
 import com.terraformation.backend.nursery.db.WithdrawalNotFoundException
@@ -138,6 +140,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
   private val deviceId: DeviceId by readableId(DeviceNotFoundException::class) { canReadDevice(it) }
   private val deviceManagerId: DeviceManagerId by
       readableId(DeviceManagerNotFoundException::class) { canReadDeviceManager(it) }
+  private val documentId: DocumentId by
+      readableId(DocumentNotFoundException::class) { canReadDocument(it) }
   private val draftPlantingSiteId: DraftPlantingSiteId by
       readableId(DraftPlantingSiteNotFoundException::class) { canReadDraftPlantingSite(it) }
   private val eventId: EventId by
@@ -146,13 +150,14 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
   private val fileBatchId: FileBatchId by
       readableId(FileBatchNotFoundException::class) { canFinishUploadingFileBatch(it) }
-  private val funderId: UserId by readableId(AccessDeniedException::class) { canReadUser(it) }
+  private val funderId: UserId by readableId(UserNotFoundException::class) { canReadUser(it) }
   private val fundingEntityId: FundingEntityId by
       readableId(FundingEntityNotFoundException::class) { canReadFundingEntity(it) }
   private val moduleId: ModuleId by readableId(ModuleNotFoundException::class) { canReadModule(it) }
   private val monitoringPlotId: MonitoringPlotId by
       readableId(PlotNotFoundException::class) { canReadMonitoringPlot(it) }
-  private val notificationUserId = UserId(2)
+  private val notificationUserId: UserId by
+      readableId(UserNotFoundException::class) { canReadUser(it) }
   private val notificationId: NotificationId by
       readableId(NotificationNotFoundException::class) { canReadNotification(it) }
   private val observationId: ObservationId by
@@ -385,12 +390,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
           }
 
   @Test
-  fun createParticipantProjectSpecies() {
-    assertThrows<AccessDeniedException> { requirements.createParticipantProjectSpecies(projectId) }
-
-    grant { user.canCreateParticipantProjectSpecies(projectId) }
-    requirements.createParticipantProjectSpecies(projectId)
-  }
+  fun createParticipantProjectSpecies() =
+      allow { createParticipantProjectSpecies(projectId) } ifUser
+          {
+            canCreateParticipantProjectSpecies(projectId)
+          }
 
   @Test
   fun createPlantingSeason() =
@@ -413,6 +417,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
           {
             canCreateSeedFundReport(organizationId)
           }
+
+  @Test
+  fun createSavedVersion() =
+      allow { createSavedVersion(documentId) } ifUser { canCreateSavedVersion(documentId) }
 
   @Test
   fun createSpecies() =
@@ -1051,6 +1059,10 @@ internal class PermissionRequirementsTest : RunsAsUser {
       allow { updateDeviceTemplates() } ifUser { canUpdateDeviceTemplates() }
 
   @Test
+  fun updateDocument() =
+      allow { updateDocument(documentId) } ifUser { canUpdateDocument(documentId) }
+
+  @Test
   fun updateDraftPlantingSite() =
       allow { updateDraftPlantingSite(draftPlantingSiteId) } ifUser
           {
@@ -1071,6 +1083,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test
   fun updateFundingEntityUsers() {
+    assertThrows<FundingEntityNotFoundException> {
+      requirements.updateFundingEntityUsers(fundingEntityId)
+    }
+
+    grant { user.canReadFundingEntity(fundingEntityId) }
     assertThrows<AccessDeniedException> { requirements.updateFundingEntityUsers(fundingEntityId) }
 
     grant { user.canUpdateFundingEntityUsers(fundingEntityId) }
