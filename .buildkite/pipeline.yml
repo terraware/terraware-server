@@ -301,5 +301,5 @@ steps:
 notify:
   - slack:
       channels:
-        - "#team-sw"
+        - "#buildkite-builds"
     if: build.state == "failed" && build.branch == "main"
