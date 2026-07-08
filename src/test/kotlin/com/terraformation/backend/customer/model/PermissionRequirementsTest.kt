@@ -13,6 +13,7 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -143,7 +144,8 @@ internal class PermissionRequirementsTest : RunsAsUser {
       readableId(EventNotFoundException::class) { canReadModuleEvent(it) }
   private val facilityId: FacilityId by
       readableId(FacilityNotFoundException::class) { canReadFacility(it) }
-  private val fileBatchId = FileBatchId(1)
+  private val fileBatchId: FileBatchId by
+      readableId(FileBatchNotFoundException::class) { canFinishUploadingFileBatch(it) }
   private val funderId: UserId by readableId(AccessDeniedException::class) { canReadUser(it) }
   private val fundingEntityId: FundingEntityId by
       readableId(FundingEntityNotFoundException::class) { canReadFundingEntity(it) }
@@ -516,12 +518,11 @@ internal class PermissionRequirementsTest : RunsAsUser {
 
   @Test fun deleteUsers() = allow { deleteUsers() } ifUser { canDeleteUsers() }
 
-  @Test
-  fun finishUploadingFileBatch() =
-      allow { finishUploadingFileBatch(fileBatchId) } ifUser
-          {
-            canFinishUploadingFileBatch(fileBatchId)
-          }
+  @Test fun finishUploadingFileBatch() = testRead { finishUploadingFileBatch(fileBatchId) }
+
+  //          {
+  //            canFinishUploadingFileBatch(fileBatchId)
+  //          }
 
   @Test
   fun importGlobalSpeciesData() =

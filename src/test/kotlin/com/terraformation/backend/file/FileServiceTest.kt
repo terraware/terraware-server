@@ -62,7 +62,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.http.MediaType
-import org.springframework.security.access.AccessDeniedException
 
 class FileServiceTest : DatabaseTest(), RunsAsUser {
   private val clock = TestClock()
@@ -516,7 +515,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
       val fileBatchId = insertFileBatch()
       every { user.canFinishUploadingFileBatch(fileBatchId) } returns false
 
-      assertThrows<AccessDeniedException> { fileService.finishUploadingFileBatch(fileBatchId) }
+      assertThrows<FileBatchNotFoundException> { fileService.finishUploadingFileBatch(fileBatchId) }
 
       assertEquals(
           FileBatchStatus.Uploading,
@@ -528,7 +527,7 @@ class FileServiceTest : DatabaseTest(), RunsAsUser {
 
     @Test
     fun `throws exception if file batch does not exist`() {
-      assertThrows<AccessDeniedException> {
+      assertThrows<FileBatchNotFoundException> {
         fileService.finishUploadingFileBatch(FileBatchId(-1))
       }
     }

@@ -13,6 +13,7 @@ import com.terraformation.backend.db.DeviceNotFoundException
 import com.terraformation.backend.db.EntityNotFoundException
 import com.terraformation.backend.db.EventNotFoundException
 import com.terraformation.backend.db.FacilityNotFoundException
+import com.terraformation.backend.db.FileBatchNotFoundException
 import com.terraformation.backend.db.NotificationNotFoundException
 import com.terraformation.backend.db.OrganizationNotFoundException
 import com.terraformation.backend.db.ProjectNotFoundException
@@ -614,7 +615,7 @@ class PermissionRequirements(private val user: TerrawareUser) {
   fun finishUploadingFileBatch(fileBatchId: FileBatchId) {
     user.recordPermissionChecks {
       if (!user.canFinishUploadingFileBatch(fileBatchId)) {
-        throw AccessDeniedException("No permission to finish uploading file batch $fileBatchId")
+        throw FileBatchNotFoundException(fileBatchId)
       }
     }
   }
