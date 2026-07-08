@@ -1,3 +1,4 @@
+5ddb22ec Add endpoint to finish a file batch upload (#4704)
 0e102a17 Add fileBatchId to upload file endpoints (#4703)
 2253cf2b Add endpoint to create a file batch (#4702)
 cc865084 Create file_batches table to group files (#4701)
