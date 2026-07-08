@@ -21,7 +21,7 @@ esac
 
 .buildkite/scripts/install-deps.sh --tools
 
-echo "--- :aws: Assuming role in target tier"
+echo "~~~ :aws: Assuming role in target tier"
 
 credentials=$(aws sts assume-role --role-arn "$ASSUME_ROLE" --role-session-name buildkite-deploy)
 AWS_ACCESS_KEY_ID=$(echo "$credentials" | jq -r '.Credentials.AccessKeyId');\
@@ -31,6 +31,10 @@ export AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY
 export AWS_SESSION_TOKEN
 
+echo "~~~ :amazon-ecs: Getting list of currently-running tasks"
+
+current_tasks=$(aws ecs list-tasks --cluster "$ECS_CLUSTER" --service "$ECS_SERVICE" --query taskArns --output text)
+
 echo "--- :amazon-ecs: Deploying to ECS cluster=${ECS_CLUSTER} service=${ECS_SERVICE}"
 
 aws ecs update-service \
@@ -38,7 +42,16 @@ aws ecs update-service \
     --service "$ECS_SERVICE" \
     --force-new-deployment
 
+if [ -n "$current_tasks" ]; then
+    echo "--- :amazon-ecs: Waiting for existing tasks to stop"
+
+    aws ecs wait tasks-stopped \
+        --cluster "$ECS_CLUSTER" \
+        --tasks $current_tasks
+fi
+
 echo "--- :amazon-ecs: Waiting for ECS deployment to stabilize"
+
 aws ecs wait services-stable \
     --cluster "$ECS_CLUSTER" \
     --service "$ECS_SERVICE"
