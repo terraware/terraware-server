@@ -299,9 +299,7 @@ steps:
     command: .buildkite/scripts/deploy-docs.sh
 
 notify:
-  # Post to Slack when a build on the main branch fails.
   - slack:
       channels:
         - "#team-sw"
-    #    if: build.state == "failed" && build.branch == "main"
-    if: build.state == "passed"
+    if: build.state == "failed" && build.branch == "main"
