@@ -3,6 +3,7 @@ package com.terraformation.backend.nursery.db.batchStore
 import com.terraformation.backend.db.nursery.BatchId
 import com.terraformation.backend.db.nursery.BatchQuantityHistoryType
 import com.terraformation.backend.db.nursery.tables.pojos.BatchQuantityHistoryRow
+import com.terraformation.backend.db.nursery.tables.records.BatchQuantityHistoryRecord
 import com.terraformation.backend.db.nursery.tables.references.BATCH_QUANTITY_HISTORY
 import com.terraformation.backend.nursery.db.BatchStaleException
 import java.time.Instant
@@ -35,6 +36,7 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
         ready = 3,
         hardeningOff = 4,
         historyType = BatchQuantityHistoryType.Observed,
+        notes = "Some notes",
     )
 
     val after = batchesDao.fetchOneById(batchId)!!
@@ -56,6 +58,21 @@ internal class BatchStoreUpdateQuantitiesTest : BatchStoreTest() {
             version = 2,
         ),
         after,
+    )
+
+    assertTableEquals(
+        BatchQuantityHistoryRecord(
+            activeGrowthQuantity = 2,
+            batchId = batchId,
+            createdBy = user.userId,
+            createdTime = clock.instant,
+            germinatingQuantity = 1,
+            hardeningOffQuantity = 4,
+            historyTypeId = BatchQuantityHistoryType.Observed,
+            notes = "Some notes",
+            readyQuantity = 3,
+            version = 2,
+        )
     )
   }
 

@@ -130,13 +130,14 @@ class BatchesController(
       @RequestBody payload: UpdateBatchQuantitiesRequestPayload,
   ): BatchResponsePayload {
     batchStore.updateQuantities(
-        batchId = id,
-        version = payload.version,
-        germinating = payload.germinatingQuantity,
         activeGrowth = payload.activeGrowthQuantity,
+        batchId = id,
+        germinating = payload.germinatingQuantity,
         hardeningOff = payload.hardeningOffQuantity ?: 0,
-        ready = payload.readyQuantity,
         historyType = BatchQuantityHistoryType.Observed,
+        notes = payload.notes,
+        ready = payload.readyQuantity,
+        version = payload.version,
     )
 
     return getBatch(id)
@@ -390,14 +391,22 @@ data class UpdateBatchRequestPayload(
 }
 
 data class UpdateBatchQuantitiesRequestPayload(
-    @JsonSetter(nulls = Nulls.FAIL) @Min(0) val germinatingQuantity: Int,
-    @Min(0) val hardeningOffQuantity: Int? = 0,
     @JsonSetter(nulls = Nulls.FAIL)
     @Min(0)
     @JsonAlias("notReadyQuantity")
     val activeGrowthQuantity: Int,
-    @JsonSetter(nulls = Nulls.FAIL) @Min(0) val readyQuantity: Int,
-    @JsonSetter(nulls = Nulls.FAIL) val version: Int,
+    @JsonSetter(nulls = Nulls.FAIL)
+    @Min(0) //
+    val germinatingQuantity: Int,
+    @Min(0) //
+    val hardeningOffQuantity: Int? = 0,
+    // This can become mandatory once clients are updated to require it in the UI.
+    val notes: String?,
+    @JsonSetter(nulls = Nulls.FAIL)
+    @Min(0) //
+    val readyQuantity: Int,
+    @JsonSetter(nulls = Nulls.FAIL) //
+    val version: Int,
 )
 
 enum class ChangeBatchStatusOperation(

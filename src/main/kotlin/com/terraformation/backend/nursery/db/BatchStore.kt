@@ -469,6 +469,7 @@ class BatchStore(
       ready: Int,
       historyType: BatchQuantityHistoryType,
       withdrawalId: WithdrawalId? = null,
+      notes: String? = null,
   ) {
     if (germinating < 0 || activeGrowth < 0 || hardeningOff < 0 || ready < 0) {
       throw IllegalArgumentException("Quantities may not be negative")
@@ -497,6 +498,7 @@ class BatchStore(
             historyType,
             newVersion,
             withdrawalId,
+            notes,
         )
         updateRates(batchId)
       }
@@ -1004,7 +1006,7 @@ class BatchStore(
             destinationBatch.hardeningOffQuantity!! + batchWithdrawal.hardeningOffQuantityWithdrawn,
             destinationBatch.readyQuantity!! + batchWithdrawal.readyQuantityWithdrawn,
             BatchQuantityHistoryType.Computed,
-            withdrawalId,
+            withdrawalId = withdrawalId,
         )
 
         batchWithdrawal.batchId to destinationBatch.id!!
@@ -1095,17 +1097,19 @@ class BatchStore(
       historyType: BatchQuantityHistoryType,
       version: Int,
       withdrawalId: WithdrawalId? = null,
+      notes: String? = null,
   ) {
     batchQuantityHistoryDao.insert(
         BatchQuantityHistoryRow(
+            activeGrowthQuantity = activeGrowthQuantity,
             batchId = batchId,
-            historyTypeId = historyType,
             createdBy = currentUser().userId,
             createdTime = clock.instant(),
-            readyQuantity = readyQuantity,
-            activeGrowthQuantity = activeGrowthQuantity,
             germinatingQuantity = germinatingQuantity,
             hardeningOffQuantity = hardeningOffQuantity,
+            historyTypeId = historyType,
+            notes = notes,
+            readyQuantity = readyQuantity,
             version = version,
             withdrawalId = withdrawalId,
         ),

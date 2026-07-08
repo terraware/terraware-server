@@ -270,6 +270,7 @@ data class BatchHistoryQuantityEditedPayload(
     override val createdTime: Instant,
     val germinatingQuantity: Int,
     val hardeningOffQuantity: Int,
+    val notes: String?,
     val readyQuantity: Int,
     override val version: Int,
 ) : BatchHistoryPayload, BatchHistoryPayloadCommonProps {
@@ -281,6 +282,7 @@ data class BatchHistoryQuantityEditedPayload(
       createdTime = row.createdTime!!,
       germinatingQuantity = row.germinatingQuantity!!,
       hardeningOffQuantity = row.hardeningOffQuantity!!,
+      notes = row.notes,
       readyQuantity = row.readyQuantity!!,
       version = row.version!!,
   )
