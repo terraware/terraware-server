@@ -1,4 +1,10 @@
-3a764133 Send slack notification when main build fails (#4744)
+e14d924b Pass temp dir to deploy command
+959007dd Don't capture log message as part of temp dir path
+fd29667e Move trap directive out of subshell
+b2dd5b5d Quote redirect path
+6964e267 Use unique name for temporary testing step
+bfd9df3d Show script commands; run main docs script at start of build on this branch
+707676af Split GitHub Pages docs deploy into main and release
 66cba2da Wait for ECS tasks to stop (#4741)
 f6f73e19 Add species nativity calculation to admin UI (#4739)
 fa54e04f Move species admin to a separate page (#4738)
