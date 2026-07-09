@@ -33,6 +33,7 @@ import com.terraformation.backend.db.default_schema.tables.pojos.UserPreferences
 import com.terraformation.backend.db.default_schema.tables.records.OrganizationManagedLocationTypesRecord
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
 import com.terraformation.backend.mockUser
+import com.terraformation.backend.point
 import io.mockk.every
 import java.time.Instant
 import java.time.ZoneId
@@ -62,6 +63,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
         description = "Description 1",
         facilityNumber = 1,
         id = facilityId,
+        location = point(1),
         modifiedTime = Instant.EPOCH,
         name = "Facility 1",
         organizationId = organizationId,
@@ -97,7 +99,7 @@ internal class OrganizationStoreTest : DatabaseTest(), RunsAsUser {
 
     organizationId = insertOrganization(countryCode = "US", countrySubdivisionCode = "US-HI")
     insertOrganizationInternalTag(organizationId, InternalTagIds.Reporter)
-    facilityId = insertFacility()
+    facilityId = insertFacility(location = point(1))
 
     every { user.canCreateEntityWithOwner(any()) } returns true
     every { user.canReadOrganization(any()) } returns true

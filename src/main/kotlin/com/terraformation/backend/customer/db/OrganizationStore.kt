@@ -37,6 +37,7 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATION_USERS
 import com.terraformation.backend.db.default_schema.tables.references.USERS
 import com.terraformation.backend.db.default_schema.tables.references.USER_PREFERENCES
+import com.terraformation.backend.db.forMultiset
 import com.terraformation.backend.log.perClassLogger
 import jakarta.inject.Named
 import java.time.Clock
@@ -53,6 +54,7 @@ class OrganizationStore(
     private val organizationsDao: OrganizationsDao,
     private val publisher: ApplicationEventPublisher,
 ) {
+  private val facilitiesLocationField = FACILITIES.LOCATION.forMultiset()
   private val log = perClassLogger()
 
   /** Returns all the organizations the user is a member of. */
@@ -101,13 +103,36 @@ class OrganizationStore(
                 DSL.falseCondition()
               }
 
-          DSL.multiset(
-                  DSL.selectFrom(FACILITIES)
-                      .where(FACILITIES.ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
-                      .and(facilitiesCondition)
-                      .orderBy(FACILITIES.ID)
-              )
-              .convertFrom { result -> result.map { FacilityModel(it) } }
+          with(FACILITIES) {
+            DSL.multiset(
+                    DSL.select(
+                            BUILD_COMPLETED_DATE,
+                            BUILD_STARTED_DATE,
+                            CAPACITY,
+                            CONNECTION_STATE_ID,
+                            CREATED_TIME,
+                            DESCRIPTION,
+                            facilitiesLocationField,
+                            FACILITY_NUMBER,
+                            ID,
+                            LAST_NOTIFICATION_DATE,
+                            LAST_TIMESERIES_TIME,
+                            MAX_IDLE_MINUTES,
+                            MODIFIED_TIME,
+                            NAME,
+                            NEXT_NOTIFICATION_TIME,
+                            OPERATION_STARTED_DATE,
+                            ORGANIZATION_ID,
+                            TIME_ZONE,
+                            TYPE_ID,
+                        )
+                        .from(FACILITIES)
+                        .where(ORGANIZATION_ID.eq(ORGANIZATIONS.ID))
+                        .and(facilitiesCondition)
+                        .orderBy(ID),
+                )
+                .convertFrom { result -> result.map { FacilityModel(it, facilitiesLocationField) } }
+          }
         } else {
           DSL.value(null as List<FacilityModel>?)
         }
