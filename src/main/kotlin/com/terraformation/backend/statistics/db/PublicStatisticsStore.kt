@@ -7,9 +7,8 @@ import com.terraformation.backend.db.default_schema.tables.references.ORGANIZATI
 import com.terraformation.backend.db.default_schema.tables.references.PROJECTS
 import com.terraformation.backend.db.nursery.tables.references.BATCHES
 import com.terraformation.backend.db.seedbank.AccessionState
-import com.terraformation.backend.db.seedbank.SeedQuantityUnits
 import com.terraformation.backend.db.seedbank.tables.references.ACCESSIONS
-import com.terraformation.backend.db.tracking.tables.references.DELIVERIES
+import com.terraformation.backend.db.tracking.tables.references.PLANTINGS
 import com.terraformation.backend.db.tracking.tables.references.PLANTING_SITES
 import com.terraformation.backend.statistics.PublicStatisticsModel
 import jakarta.inject.Named
@@ -34,6 +33,12 @@ import org.jooq.impl.DSL
 class PublicStatisticsStore(
     private val dslContext: DSLContext,
 ) {
+  /**
+   * Maximum area of a planting site that we consider. Larger than this is probably just for
+   * testing.
+   */
+  private val MAX_SITE_AREA_HA = BigDecimal("100000")
+
   /** Subquery selecting the IDs of organizations that are tagged as internal to Terraformation. */
   private val internalOrganizationIds =
       DSL.select(ORGANIZATION_INTERNAL_TAGS.ORGANIZATION_ID)
@@ -89,37 +94,18 @@ class PublicStatisticsStore(
         .select(DSL.sum(PLANTING_SITES.AREA_HA))
         .from(PLANTING_SITES)
         .where(PLANTING_SITES.ORGANIZATION_ID.notIn(internalOrganizationIds))
+        .and(PLANTING_SITES.AREA_HA.le(MAX_SITE_AREA_HA))
         .fetchOne(0, BigDecimal::class.java) ?: BigDecimal.ZERO
   }
 
   private fun sumSeedsInStorage(): Long {
-    val totalSeeds =
-        DSL.sum(
-            DSL.case_()
-                .`when`(
-                    ACCESSIONS.REMAINING_UNITS_ID.eq(SeedQuantityUnits.Seeds),
-                    ACCESSIONS.REMAINING_QUANTITY,
-                )
-                .`when`(
-                    ACCESSIONS.REMAINING_UNITS_ID.ne(SeedQuantityUnits.Seeds)
-                        .and(ACCESSIONS.SUBSET_COUNT.isNotNull)
-                        .and(ACCESSIONS.SUBSET_WEIGHT_GRAMS.isNotNull)
-                        .and(ACCESSIONS.REMAINING_GRAMS.isNotNull),
-                    ACCESSIONS.REMAINING_GRAMS.div(ACCESSIONS.SUBSET_WEIGHT_GRAMS)
-                        .mul(ACCESSIONS.SUBSET_COUNT),
-                )
-                .else_(BigDecimal.ZERO)
-        )
-
-    val activeStates = AccessionState.entries.filter { it.active }
-
     return dslContext
-        .select(totalSeeds)
+        .select(DSL.sum(ACCESSIONS.EST_SEED_COUNT))
         .from(ACCESSIONS)
         .join(FACILITIES)
         .on(ACCESSIONS.FACILITY_ID.eq(FACILITIES.ID))
         .where(FACILITIES.ORGANIZATION_ID.notIn(internalOrganizationIds))
-        .and(ACCESSIONS.STATE_ID.`in`(activeStates))
+        .and(ACCESSIONS.STATE_ID.`in`(AccessionState.entries.filter { it.active }))
         .fetchOne { (total) -> (total ?: BigDecimal.ZERO).toLong() } ?: 0L
   }
 
@@ -139,10 +125,10 @@ class PublicStatisticsStore(
 
   private fun countPlantings(): Int {
     return dslContext
-        .selectCount()
-        .from(DELIVERIES)
+        .select(DSL.sum(PLANTINGS.NUM_PLANTS))
+        .from(PLANTINGS)
         .join(PLANTING_SITES)
-        .on(DELIVERIES.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
+        .on(PLANTINGS.PLANTING_SITE_ID.eq(PLANTING_SITES.ID))
         .where(PLANTING_SITES.ORGANIZATION_ID.notIn(internalOrganizationIds))
         .fetchOne(0, Int::class.java) ?: 0
   }
